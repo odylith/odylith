@@ -4,7 +4,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
 
 target_version="${1:-${VERSION:-}}"
 previous_version="${2:-${PREVIOUS_VERSION:-}}"
-release_repo="${RELEASE_REPO:-freedom-research/odylith}"
+release_repo="${RELEASE_REPO:-odylith/odylith}"
 
 if [[ -z "$target_version" ]]; then
   target_version="$(release_session_field version)"

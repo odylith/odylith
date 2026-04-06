@@ -55,7 +55,7 @@ DEFAULT_REPO_SCHEMA_VERSION = 1
 MANIFEST_SCHEMA_VERSION = "odylith-release-manifest.v1"
 PROVENANCE_SCHEMA_VERSION = "odylith-release-provenance.v1"
 SBOM_LICENSE = "Apache-2.0"
-AUTHORITATIVE_RELEASE_REPO = "freedom-research/odylith"
+AUTHORITATIVE_RELEASE_REPO = "odylith/odylith"
 AUTHORITATIVE_RELEASE_ACTOR = "freedom-research"
 WORKFLOW_PATH = ".github/workflows/release.yml"
 WORKFLOW_REF = "refs/heads/main"
@@ -971,7 +971,7 @@ def _release_upload_artifacts(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Publish Odylith GitHub release assets.")
-    parser.add_argument("--repo", default="freedom-research/odylith", help="GitHub repo.")
+    parser.add_argument("--repo", default="odylith/odylith", help="GitHub repo.")
     parser.add_argument("--tag", required=True, help="Release tag, for example v0.1.0.")
     parser.add_argument("--dist-dir", default="dist", help="Directory containing built wheels.")
     parser.add_argument("--upload", action="store_true", help="Sign and upload the generated assets to GitHub Releases.")

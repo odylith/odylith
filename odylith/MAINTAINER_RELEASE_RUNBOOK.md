@@ -11,7 +11,7 @@ as the reusable launch-readiness overlay for narrative, proof, asset, and
 announcement review. The runbook remains the canonical command order.
 
 The release lane is authoritative only when all of these are true:
-- repo: `freedom-research/odylith`
+- repo: `odylith/odylith`
 - GitHub actor: `freedom-research`
 - release commit: matches `origin/main`
 - local proof checkout: clean

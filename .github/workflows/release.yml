@@ -16,7 +16,7 @@ jobs:
   build-and-upload:
     runs-on: ubuntu-24.04
     env:
-      ODYLITH_RELEASE_REPO: freedom-research/odylith
+      ODYLITH_RELEASE_REPO: odylith/odylith
       ODYLITH_RELEASE_ACTOR: freedom-research
       ODYLITH_RELEASE_REF: refs/heads/main
     permissions:

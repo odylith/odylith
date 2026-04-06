@@ -29,7 +29,7 @@
 - Use `./.odylith/bin/odylith reinstall --repo-root . --latest` to rematerialize the local install and align the active runtime plus repo pin in one step. `./.odylith/bin/odylith install --repo-root . --adopt-latest` is the equivalent explicit install-form spelling.
 - Use `--dry-run` on `install`, `reinstall`, `upgrade`, `sync`, `dashboard refresh`, and `atlas auto-update` when you want the exact mutation plan and dirty-worktree overlap before Odylith writes files.
 - Consumer repos still carrying a legacy install, including repo-owned truth under `odyssey/` and runtime state under `.odyssey/`, should rerun the latest hosted installer from the repo root. That rescue path renames the legacy roots into `odylith/` and `.odylith/`, preserves repo-owned truth, and purges old volatile state before normal Odylith upgrade continues:
-  `curl -fsSL https://github.com/freedom-research/odylith/releases/latest/download/install.sh | bash`
+  `curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash`
 - If the repo already has `./.odylith/bin/odylith`, `./.odylith/bin/odylith migrate-legacy-install --repo-root .` performs the same legacy-root migration directly.
 - Consumer repos still pinned to the legacy `0.1.0` or `0.1.1` Odylith launcher need that same hosted-installer rerun once to pick up the safer launcher bootstrap before plain `odylith upgrade` can jump to the latest verified release.
 - Use `./.odylith/bin/odylith dashboard refresh --repo-root .` for the low-friction shell-facing refresh path; it refreshes `tooling_shell`, `radar`, and `compass` by default, prints the included and excluded surfaces, and suggests the exact Atlas follow-up command when Atlas is stale but skipped. Add `--surfaces atlas --atlas-sync` when you intentionally want Atlas source preflight plus refresh. Keep `odylith sync --repo-root . --force --impact-mode full` for authoritative write-mode regeneration.
@@ -39,7 +39,7 @@
 - If `./.odylith/bin/odylith` itself is missing, use `./.odylith/bin/odylith-bootstrap doctor --repo-root . --repair` to restore the repo-local launcher without a second Odylith checkout.
 - Use `./.odylith/bin/odylith doctor --repo-root . --repair --reset-local-state` when local cache, tuning, or derived runtime state looks poisoned.
 - If Odylith is not installed yet and no repo-local bootstrap launcher exists, rerun the hosted installer from the repo root instead of cloning a second Odylith checkout:
-  `curl -fsSL https://github.com/freedom-research/odylith/releases/latest/download/install.sh | bash`
+  `curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash`
 - Use `./.odylith/bin/odylith off --repo-root .` and `./.odylith/bin/odylith on --repo-root .` to toggle Odylith guidance for coding agents without removing the runtime. `off` restores default coding-agent behavior for the repo; `on` restores Odylith as the default first path.
 - Use `./.odylith/bin/odylith uninstall --repo-root .` to detach runtime integration while preserving both `odylith/` and `.odylith/`.
 

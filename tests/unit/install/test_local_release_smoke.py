@@ -73,7 +73,7 @@ def test_previous_release_is_published_returns_true_when_release_exists(monkeypa
     monkeypatch.setattr(module, "fetch_release", fake_fetch_release)
 
     assert module._previous_release_is_published(version="0.1.5") is True
-    assert seen["repo"] == "freedom-research/odylith"
+    assert seen["repo"] == "odylith/odylith"
     assert seen["version"] == "0.1.5"
 
 

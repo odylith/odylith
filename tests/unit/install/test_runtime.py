@@ -914,7 +914,7 @@ def test_install_release_runtime_reuses_existing_verified_runtime(monkeypatch, t
         lambda **_: (_ for _ in ()).throw(AssertionError("existing verified runtime should be reused")),
     )
 
-    staged = runtime.install_release_runtime(repo_root=repo_root, repo="freedom-research/odylith", version="1.2.3", activate=False)
+    staged = runtime.install_release_runtime(repo_root=repo_root, repo="odylith/odylith", version="1.2.3", activate=False)
 
     assert staged.root == version_root
     assert staged.python == version_root / "bin" / "python"
@@ -958,7 +958,7 @@ def test_install_release_runtime_reextracts_untrusted_existing_runtime(monkeypat
 
     monkeypatch.setattr(runtime, "_extract_runtime_bundle", _fake_extract_runtime_bundle)
 
-    staged = runtime.install_release_runtime(repo_root=repo_root, repo="freedom-research/odylith", version="1.2.3", activate=False)
+    staged = runtime.install_release_runtime(repo_root=repo_root, repo="odylith/odylith", version="1.2.3", activate=False)
 
     assert len(extracted) == 1
     assert extracted[0].name == version_root.name
@@ -993,7 +993,7 @@ def test_install_release_runtime_preserves_existing_runtime_when_restage_fails(m
     )
 
     try:
-        runtime.install_release_runtime(repo_root=repo_root, repo="freedom-research/odylith", version="1.2.3", activate=False)
+        runtime.install_release_runtime(repo_root=repo_root, repo="odylith/odylith", version="1.2.3", activate=False)
     except RuntimeError as exc:
         assert "extract failed" in str(exc)
     else:  # pragma: no cover

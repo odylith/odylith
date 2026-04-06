@@ -18,7 +18,7 @@ else
   odylith_python="$odylith_host_repo_root/.venv/bin/python"
 fi
 odylith_launcher="$odylith_repo_root/.odylith/bin/odylith"
-odylith_release_repo="freedom-research/odylith"
+odylith_release_repo="odylith/odylith"
 odylith_release_actor="freedom-research"
 odylith_release_ref="main"
 odylith_release_session_file="${ODYLITH_RELEASE_SESSION_FILE:-$odylith_host_repo_root/.odylith/locks/release-session.json}"
@@ -275,7 +275,7 @@ run_release_proof_steps() {
   git diff --quiet --ignore-submodules --cached -- || die "release proof validation staged tracked files; commit them before release"
   odylith_cli validate self-host-posture --repo-root . --mode release --expected-tag "$tag"
   "$odylith_python" -m hatch build --target wheel "$dist_dir"
-  "$odylith_python" scripts/release/publish_release_assets.py --repo freedom-research/odylith --tag "$tag" --dist-dir "$dist_dir" --allow-local
+  "$odylith_python" scripts/release/publish_release_assets.py --repo odylith/odylith --tag "$tag" --dist-dir "$dist_dir" --allow-local
 
   ODYLITH_RELEASE_PREFLIGHT_DIST_DIR="$dist_dir" "$odylith_python" - <<'PY'
 from __future__ import annotations

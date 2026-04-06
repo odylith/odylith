@@ -27,7 +27,7 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     module._write_install_script(  # noqa: SLF001
         output_path=output_path,
         tag="v1.2.3",
-        repo="freedom-research/odylith",
+        repo="odylith/odylith",
         odylith_wheel="odylith-1.2.3-py3-none-any.whl",
     )
 
@@ -126,11 +126,11 @@ def test_publish_release_assets_rejects_non_canonical_release_context() -> None:
 def test_publish_release_assets_accepts_canonical_github_actions_context(monkeypatch) -> None:
     module = _load_module()
     monkeypatch.setenv("GITHUB_ACTIONS", "true")
-    monkeypatch.setenv("GITHUB_REPOSITORY", "freedom-research/odylith")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "odylith/odylith")
     monkeypatch.setenv("GITHUB_ACTOR", "freedom-research")
     monkeypatch.setenv("GITHUB_REF", "refs/heads/main")
 
-    module._require_canonical_release_context(repo="freedom-research/odylith")  # noqa: SLF001
+    module._require_canonical_release_context(repo="odylith/odylith")  # noqa: SLF001
 
 
 def test_release_manifest_tracks_third_party_attribution_asset(tmp_path: Path) -> None:
@@ -153,7 +153,7 @@ def test_release_manifest_tracks_third_party_attribution_asset(tmp_path: Path) -
     module._write_release_manifest(  # noqa: SLF001
         output_path=output_path,
         tag="v1.2.3",
-        repo="freedom-research/odylith",
+        repo="odylith/odylith",
         wheel=wheel,
         install_sh=install_sh,
         provenance=provenance,
@@ -190,7 +190,7 @@ def test_local_provenance_defaults_to_authoritative_actor_for_canonical_repo(tmp
     module._write_provenance(  # noqa: SLF001
         output_path=output_path,
         tag="v1.2.3",
-        repo="freedom-research/odylith",
+        repo="odylith/odylith",
         allow_local=True,
         feature_packs=[],
         wheel=wheel,

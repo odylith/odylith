@@ -415,7 +415,7 @@ class VerifiedReleaseLifecycleSimulator(InstallLifecycleSimulator):
                 "schema_version": "odylith-release-manifest.v1",
                 "version": release.version,
                 "tag": f"v{release.version}",
-                "repo": "freedom-research/odylith",
+                "repo": "odylith/odylith",
                 "repo_schema_version": release.repo_schema_version,
                 "migration_required": release.migration_required,
                 "supported_platforms": ["darwin-arm64"],
@@ -441,7 +441,7 @@ class VerifiedReleaseLifecycleSimulator(InstallLifecycleSimulator):
             },
             provenance={
                 "version": "odylith-release-provenance.v1",
-                "repo": "freedom-research/odylith",
+                "repo": "odylith/odylith",
                 "actor": "freedom-research",
                 "release_version": release.version,
                 "tag": f"v{release.version}",
@@ -488,7 +488,7 @@ class VerifiedReleaseLifecycleSimulator(InstallLifecycleSimulator):
                 "manifest_sha256": f"manifest-{release.version}",
                 "provenance_sha256": f"provenance-{release.version}",
                 "sbom_sha256": f"sbom-{release.version}",
-                "signer_identity": "https://github.com/freedom-research/odylith/.github/workflows/release.yml@refs/heads/main",
+                "signer_identity": "https://github.com/odylith/odylith/.github/workflows/release.yml@refs/heads/main",
             },
         )
         return verified
@@ -506,7 +506,7 @@ class VerifiedReleaseLifecycleSimulator(InstallLifecycleSimulator):
         repo: str,
         version: str = "latest",
     ) -> release_assets_module.VerifiedRelease:
-        if repo != "freedom-research/odylith":
+        if repo != "odylith/odylith":
             raise ValueError(f"unexpected fake release repo: {repo}")
         token = str(version or "").strip()
         if token == "latest":
@@ -549,7 +549,7 @@ class VerifiedReleaseLifecycleSimulator(InstallLifecycleSimulator):
         version: str,
         pack_id: str = CONTEXT_ENGINE_FEATURE_PACK_ID,
     ) -> release_assets_module.VerifiedFeaturePack:
-        if repo != "freedom-research/odylith":
+        if repo != "odylith/odylith":
             raise ValueError(f"unexpected fake release repo: {repo}")
         if pack_id != CONTEXT_ENGINE_FEATURE_PACK_ID:
             raise ValueError(f"unexpected fake feature pack id: {pack_id}")

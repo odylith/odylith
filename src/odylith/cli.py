@@ -413,7 +413,7 @@ def _single_line_error(exc: Exception) -> str:
 
 
 def _bootstrap_failure_guidance(*, repo_root: str | Path) -> tuple[str, str]:
-    hosted_install_command = "curl -fsSL https://github.com/freedom-research/odylith/releases/latest/download/install.sh | bash"
+    hosted_install_command = "curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash"
     repair_command = preferred_repair_entrypoint(repo_root=repo_root) or hosted_install_command
     if repair_command == hosted_install_command:
         followup = "./.odylith/bin/odylith start --repo-root ."

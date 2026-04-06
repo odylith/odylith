@@ -91,7 +91,7 @@ _FIRST_RUN_SURFACE_TARGETS: tuple[str, ...] = (
     "odylith/casebook/casebook.html",
 )
 _HOSTED_INSTALL_COMMAND = (
-    "curl -fsSL https://github.com/freedom-research/odylith/releases/latest/download/install.sh | bash"
+    "curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash"
 )
 _LEGACY_TEXT_FILE_SUFFIXES = frozenset(
     {

@@ -26,7 +26,7 @@ Constraints:
 - Preserve the `odylith` CLI and hosted `install.sh` as the public operator
   contract.
 - Keep canonical release authority restricted to
-  `freedom-research/odylith` on `main`.
+  `odylith/odylith` on `main`.
 - Keep customer-owned `odylith/` truth separate from mutable `.odylith/`
   runtime state.
 - Do not reintroduce consumer-machine Python as the install bootstrap for

@@ -251,7 +251,7 @@ def test_install_adopt_latest_reinstalls_and_updates_repo_pin(monkeypatch, tmp_p
 
     assert rc == 0
     assert captured["repo_root"] == str(tmp_path)
-    assert captured["release_repo"] == "freedom-research/odylith"
+    assert captured["release_repo"] == "odylith/odylith"
     assert captured["version"] == ""
     assert captured["source_repo"] is None
     assert captured["write_pin"] is True
@@ -406,7 +406,7 @@ def test_reinstall_defaults_to_latest_verified_release(monkeypatch, tmp_path: Pa
 
     assert rc == 0
     assert captured["version"] == ""
-    assert captured["release_repo"] == "freedom-research/odylith"
+    assert captured["release_repo"] == "odylith/odylith"
     assert "Reinstalled Odylith from 1.2.3 to 1.2.4 and adopted the verified repo pin." in output
     assert "Repo pin updated to 1.2.4." in output
     assert "Dashboard refreshed." in output
@@ -1223,7 +1223,7 @@ def test_start_install_lane_prints_hosted_installer(monkeypatch, tmp_path: Path,
         lambda **kwargs: SimpleNamespace(
             lane="install",
             reason="not installed",
-            next_command="curl -fsSL https://github.com/freedom-research/odylith/releases/latest/download/install.sh | bash",
+            next_command="curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash",
             healthy=False,
             launcher_exists=False,
             bootstrap_launcher_exists=False,
@@ -1237,7 +1237,7 @@ def test_start_install_lane_prints_hosted_installer(monkeypatch, tmp_path: Path,
 
     assert rc == 1
     assert "- lane: install" in captured
-    assert "curl -fsSL https://github.com/freedom-research/odylith/releases/latest/download/install.sh | bash" in captured
+    assert "curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash" in captured
 
 
 def test_start_bootstrap_exception_prints_repair_guidance(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -1427,7 +1427,7 @@ def test_upgrade_dispatches_to_upgrade_install(monkeypatch, tmp_path: Path, caps
 
     assert rc == 0
     assert captured["repo_root"] == str(repo_root)
-    assert captured["release_repo"] == "freedom-research/odylith"
+    assert captured["release_repo"] == "odylith/odylith"
     assert captured["version"] == "1.2.3"
     assert captured["source_repo"] is None
     assert captured["write_pin"] is True

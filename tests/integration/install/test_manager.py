@@ -465,7 +465,7 @@ def _stub_release_install_for_consumer_bootstrap(monkeypatch):
     )
 
     def _fake_install_release_runtime(*, repo_root, repo, version="latest", activate=True):  # noqa: ANN001
-        assert repo == "freedom-research/odylith"
+        assert repo == "odylith/odylith"
         resolved_version = "1.2.3" if version == "latest" else str(version)
         runtime_root, python = _seed_verified_release_runtime(
             Path(repo_root),
@@ -491,7 +491,7 @@ def _stub_release_install_for_consumer_bootstrap(monkeypatch):
     monkeypatch.setattr(install_manager_module, "install_release_runtime", _fake_install_release_runtime)
 
     def _fake_install_release_feature_pack(*, repo_root, repo, version, runtime_root=None, pack_id="odylith-context-engine-memory"):  # noqa: ANN001
-        assert repo == "freedom-research/odylith"
+        assert repo == "odylith/odylith"
         assert pack_id == "odylith-context-engine-memory"
         target_root = Path(runtime_root) if runtime_root is not None else Path(repo_root) / ".odylith" / "runtime" / "versions" / str(version)
         _write_fake_context_engine_pack(
@@ -794,7 +794,7 @@ def test_upgrade_install_prunes_previous_consumer_release_notes_and_keeps_curren
 
     summary = upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version=target_version,
         write_pin=True,
     )
@@ -881,7 +881,7 @@ def test_start_preflight_uses_hosted_installer_when_odylith_is_not_installed(tmp
     preflight = evaluate_start_preflight(repo_root=repo_root)
 
     assert preflight.lane == "install"
-    assert preflight.next_command == "curl -fsSL https://github.com/freedom-research/odylith/releases/latest/download/install.sh | bash"
+    assert preflight.next_command == "curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash"
 
 
 def test_start_preflight_prefers_repo_local_bootstrap_repair_when_available(tmp_path: Path) -> None:
@@ -1028,7 +1028,7 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     (repo_root / "odylith" / "AGENTS.md").write_text("stale consumer guidance\n", encoding="utf-8")
     (repo_root / "odylith" / "skills" / "subagent-router" / "SKILL.md").unlink()
 
-    upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
     guidance_text = (repo_root / "odylith" / "AGENTS.md").read_text(encoding="utf-8")
     assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in guidance_text
@@ -1087,7 +1087,7 @@ def test_upgrade_backfills_odylith_state_root_in_gitignore(tmp_path: Path) -> No
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
     (repo_root / ".gitignore").unlink()
 
-    upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
     assert (repo_root / ".gitignore").read_text(encoding="utf-8") == "/.odylith/\n"
 
@@ -1157,7 +1157,7 @@ def test_upgrade_leaves_customer_truth_untouched_and_only_refreshes_managed_guid
 
     summary = upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version="1.2.4",
         write_pin=True,
     )
@@ -1181,7 +1181,7 @@ def test_upgrade_rejects_missing_repo_pin_without_explicit_write_pin(tmp_path: P
     (repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").unlink()
 
     try:
-        upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+        upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
     except ValueError as exc:
         assert "repo pin missing" in str(exc)
     else:  # pragma: no cover
@@ -1196,7 +1196,7 @@ def test_install_bundle_replaces_source_local_override_with_real_version(tmp_pat
     source_root = _write_fake_source_checkout(tmp_path)
 
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
-    upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith", source_repo=source_root)
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
 
     summary = install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
 
@@ -1216,7 +1216,7 @@ def test_source_repo_upgrade_is_detached_override_and_preserves_last_known_good(
 
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
 
-    summary = upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith", source_repo=source_root)
+    summary = upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
 
     state = load_install_state(repo_root=repo_root)
     status = version_status(repo_root=repo_root)
@@ -1242,7 +1242,7 @@ def test_source_repo_upgrade_normalizes_current_runtime_symlink_fallback(monkeyp
     current_python = repo_root / ".odylith" / "runtime" / "current" / "bin" / "python"
     monkeypatch.setattr(install_manager_module.sys, "executable", str(current_python))
 
-    summary = upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith", source_repo=source_root)
+    summary = upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
 
     assert summary.active_version == "source-local"
     wrapper_text = (repo_root / ".odylith" / "runtime" / "versions" / "source-local" / "bin" / "python").read_text(
@@ -1264,7 +1264,7 @@ def test_version_status_prefers_live_runtime_over_stale_install_state(tmp_path: 
     source_root = _write_fake_source_checkout(tmp_path)
 
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
-    upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith", source_repo=source_root)
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
 
     stale_state = load_install_state(repo_root=repo_root)
     stale_state["active_version"] = "1.2.3"
@@ -1291,7 +1291,7 @@ def test_doctor_bundle_reports_detached_override_from_live_runtime_when_install_
     source_root = _write_fake_source_checkout(tmp_path)
 
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
-    upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith", source_repo=source_root)
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
 
     stale_state = load_install_state(repo_root=repo_root)
     stale_state["active_version"] = "1.2.3"
@@ -1335,7 +1335,7 @@ def test_source_repo_upgrade_rejects_explicit_target_version(tmp_path: Path) -> 
     try:
         upgrade_install(
             repo_root=repo_root,
-            release_repo="freedom-research/odylith",
+            release_repo="odylith/odylith",
             version="1.2.4",
             source_repo=source_root,
         )
@@ -1356,7 +1356,7 @@ def test_source_repo_upgrade_is_rejected_for_consumer_repos(tmp_path: Path) -> N
     try:
         upgrade_install(
             repo_root=repo_root,
-            release_repo="freedom-research/odylith",
+            release_repo="odylith/odylith",
             source_repo=source_root,
         )
     except ValueError as exc:
@@ -1411,7 +1411,7 @@ def test_doctor_bundle_recreates_real_repo_pin_after_source_local_override(tmp_p
     source_root = _write_fake_source_checkout(tmp_path)
 
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
-    upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith", source_repo=source_root)
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
     (repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").unlink()
 
     healthy, message = doctor_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", repair=True)
@@ -1432,7 +1432,7 @@ def test_doctor_bundle_clears_detached_mode_when_repair_falls_back_to_real_versi
     source_root = _write_fake_source_checkout(tmp_path)
 
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
-    upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith", source_repo=source_root)
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
 
     current_link = repo_root / ".odylith" / "runtime" / "current"
     source_runtime_root = current_link.resolve()
@@ -1479,7 +1479,7 @@ def test_doctor_bundle_rehydrates_missing_trust_for_detached_product_repo_pin(tm
         version_root=managed_runtime_root,
         verification=runtime.runtime_verification_evidence(managed_runtime_root),
     )
-    upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith", source_repo=source_root)
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
     runtime.ensure_wrapped_runtime(
         repo_root=repo_root,
         version="source-local",
@@ -1727,7 +1727,7 @@ def test_rollback_install_returns_to_previous_verified_version(tmp_path: Path, m
 
     upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version="1.2.4",
         write_pin=True,
     )
@@ -1792,7 +1792,7 @@ def test_rollback_install_allows_legacy_repo_local_venv_runtime_paths(tmp_path: 
 
     upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version="1.2.4",
         write_pin=True,
     )
@@ -1845,7 +1845,7 @@ def test_upgrade_smoke_runs_with_scrubbed_python_environment(tmp_path: Path, mon
 
     upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version="1.2.4",
         write_pin=True,
     )
@@ -1956,7 +1956,7 @@ def test_rollback_smoke_runs_with_scrubbed_python_environment(tmp_path: Path, mo
 
     upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version="1.2.4",
         write_pin=True,
     )
@@ -1992,7 +1992,7 @@ def test_upgrade_same_version_is_a_noop_for_verified_full_stack_runtime(tmp_path
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
-    summary = upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+    summary = upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
     state = load_install_state(repo_root=repo_root)
 
     assert summary.active_version == "1.2.3"
@@ -2024,7 +2024,7 @@ def test_upgrade_same_version_backfills_legacy_casebook_bug_ids(tmp_path: Path, 
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
-    summary = upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+    summary = upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
     index_text = (repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md").read_text(encoding="utf-8")
 
     assert summary.active_version == "1.2.3"
@@ -2078,7 +2078,7 @@ def test_consumer_upgrade_without_target_advances_to_latest_and_updates_pin(tmp_
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
-    summary = upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+    summary = upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
     pin = load_version_pin(repo_root=repo_root)
     assert captured["fetch_version"] == "latest"
@@ -2125,7 +2125,7 @@ def test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activ
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
-    summary = upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+    summary = upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
     index_text = (repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md").read_text(encoding="utf-8")
 
     assert summary.active_version == "1.2.4"
@@ -2171,7 +2171,7 @@ def test_product_repo_upgrade_without_target_keeps_tracked_pin(tmp_path: Path, m
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
-    summary = upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+    summary = upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
     assert captured["fetch_version"] == "1.2.3"
     assert summary.active_version == "1.2.3"
@@ -2200,7 +2200,7 @@ def test_upgrade_same_version_requires_doctor_repair_when_full_stack_pack_is_mis
     )
 
     with pytest.raises(ValueError, match="doctor --repo-root \\. --repair"):
-        upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+        upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
 
 def test_reinstall_install_repairs_same_version_runtime_when_upgrade_requires_doctor(tmp_path: Path, monkeypatch) -> None:
@@ -2255,7 +2255,7 @@ def test_reinstall_install_repairs_same_version_runtime_when_upgrade_requires_do
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
-    summary = reinstall_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+    summary = reinstall_install(repo_root=repo_root, release_repo="odylith/odylith")
 
     pin = load_version_pin(repo_root=repo_root)
     assert summary.active_version == "1.2.3"
@@ -2274,7 +2274,7 @@ def test_reinstall_install_rejects_product_repo(tmp_path: Path) -> None:
     _write_product_repo_shape(repo_root, version="1.2.3")
 
     with pytest.raises(ValueError, match="only supported for consumer repos"):
-        reinstall_install(repo_root=repo_root, release_repo="freedom-research/odylith")
+        reinstall_install(repo_root=repo_root, release_repo="odylith/odylith")
 
 
 def test_upgrade_rejects_migration_required_release(tmp_path: Path, monkeypatch) -> None:
@@ -2309,7 +2309,7 @@ def test_upgrade_rejects_migration_required_release(tmp_path: Path, monkeypatch)
     try:
         upgrade_install(
             repo_root=repo_root,
-            release_repo="freedom-research/odylith",
+            release_repo="odylith/odylith",
             version="1.2.4",
             write_pin=True,
         )
@@ -2346,7 +2346,7 @@ def test_upgrade_rejects_downgrade_even_when_write_pin_is_requested(tmp_path: Pa
     try:
         upgrade_install(
             repo_root=repo_root,
-            release_repo="freedom-research/odylith",
+            release_repo="odylith/odylith",
             version="1.2.3",
             write_pin=True,
         )
@@ -2370,7 +2370,7 @@ def test_upgrade_realigns_to_existing_lower_repo_pin_and_discards_newer_versions
 
     upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version="1.2.4",
         write_pin=True,
     )
@@ -2383,7 +2383,7 @@ def test_upgrade_realigns_to_existing_lower_repo_pin_and_discards_newer_versions
 
     write_version_pin(repo_root=repo_root, version="1.2.3")
 
-    summary = upgrade_install(repo_root=repo_root, release_repo="freedom-research/odylith", version="1.2.3")
+    summary = upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", version="1.2.3")
     updated_state = load_install_state(repo_root=repo_root)
     retained_runtime_versions = sorted(path.name for path in (repo_root / ".odylith" / "runtime" / "versions").iterdir())
     retained_cache_versions = sorted(path.name for path in releases_cache_root.iterdir())
@@ -2466,7 +2466,7 @@ def test_upgrade_reuses_matching_context_engine_pack_from_previous_runtime(tmp_p
 
     summary = upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version="1.2.4",
         write_pin=True,
     )
@@ -2567,7 +2567,7 @@ def test_upgrade_redownloads_context_engine_pack_when_previous_paths_are_untrust
 
     upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version="1.2.4",
         write_pin=True,
     )
@@ -2623,7 +2623,7 @@ def test_upgrade_prunes_runtime_and_release_cache_retention(tmp_path: Path, monk
 
     summary = upgrade_install(
         repo_root=repo_root,
-        release_repo="freedom-research/odylith",
+        release_repo="odylith/odylith",
         version="1.2.3",
         write_pin=True,
     )

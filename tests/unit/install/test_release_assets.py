@@ -44,7 +44,7 @@ def test_fetch_release_returns_api_assets_without_manifest_checksums(monkeypatch
 
     release = release_assets.fetch_release(
         repo_root=Path(__file__).resolve().parents[3],
-        repo="freedom-research/odylith",
+        repo="odylith/odylith",
         version="latest",
     )
 
@@ -57,7 +57,7 @@ def test_fetch_release_with_local_base_url_exposes_manifest_and_sigstore_sidecar
         "schema_version": "odylith-release-manifest.v1",
         "version": "1.2.3",
         "tag": "v1.2.3",
-        "repo": "freedom-research/odylith",
+        "repo": "odylith/odylith",
         "assets": {
             "odylith-1.2.3-py3-none-any.whl": {"sha256": "wheel"},
             "build-provenance.v1.json": {"sha256": "prov"},
@@ -75,7 +75,7 @@ def test_fetch_release_with_local_base_url_exposes_manifest_and_sigstore_sidecar
     monkeypatch.setattr(release_assets.urllib.request, "urlopen", _fake_urlopen)
 
     repo_root = Path(__file__).resolve().parents[3]
-    release = release_assets.fetch_release(repo_root=repo_root, repo="freedom-research/odylith", version="1.2.3")
+    release = release_assets.fetch_release(repo_root=repo_root, repo="odylith/odylith", version="1.2.3")
 
     assert "release-manifest.json" in release.assets
     assert "release-manifest.json.sigstore.json" in release.assets
@@ -88,7 +88,7 @@ def test_fetch_release_rejects_local_base_url_outside_product_repo(monkeypatch, 
     monkeypatch.setenv("ODYLITH_RELEASE_BASE_URL", "http://127.0.0.1:8123")
 
     with pytest.raises(ValueError, match="only supported in the Odylith product repo maintainer lane"):
-        release_assets.fetch_release(repo_root=tmp_path, repo="freedom-research/odylith", version="1.2.3")
+        release_assets.fetch_release(repo_root=tmp_path, repo="odylith/odylith", version="1.2.3")
 
 
 def test_download_asset_rejects_untrusted_or_insecure_urls(tmp_path: Path) -> None:
@@ -104,7 +104,7 @@ def test_download_asset_rejects_untrusted_or_insecure_urls(tmp_path: Path) -> No
 def test_download_asset_refuses_symlink_destination(monkeypatch, tmp_path: Path) -> None:
     asset = release_assets.ReleaseAsset(
         name="odylith.whl",
-        download_url="https://github.com/freedom-research/odylith/releases/download/v1.2.3/odylith.whl",
+        download_url="https://github.com/odylith/odylith/releases/download/v1.2.3/odylith.whl",
     )
     destination = tmp_path / "odylith.whl"
     destination.symlink_to(tmp_path / "elsewhere.whl")
@@ -136,7 +136,7 @@ def test_download_asset_reuses_existing_sha_matched_payload_without_network(monk
     destination.write_bytes(payload)
     asset = release_assets.ReleaseAsset(
         name=destination.name,
-        download_url="https://github.com/freedom-research/odylith/releases/download/v1.2.3/odylith-runtime-linux-x86_64.tar.gz",
+        download_url="https://github.com/odylith/odylith/releases/download/v1.2.3/odylith-runtime-linux-x86_64.tar.gz",
         sha256=hashlib.sha256(payload).hexdigest(),
     )
 
@@ -157,7 +157,7 @@ def test_download_asset_retries_transient_network_failure(monkeypatch, tmp_path:
     destination = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
     asset = release_assets.ReleaseAsset(
         name=destination.name,
-        download_url="https://github.com/freedom-research/odylith/releases/download/v1.2.3/odylith-runtime-linux-x86_64.tar.gz",
+        download_url="https://github.com/odylith/odylith/releases/download/v1.2.3/odylith-runtime-linux-x86_64.tar.gz",
         sha256=hashlib.sha256(payload).hexdigest(),
     )
     attempts = {"count": 0}
@@ -183,7 +183,7 @@ def test_download_asset_retries_transient_network_failure(monkeypatch, tmp_path:
 def test_download_asset_cleans_temporary_files_after_failed_download(monkeypatch, tmp_path: Path) -> None:
     asset = release_assets.ReleaseAsset(
         name="odylith.whl",
-        download_url="https://github.com/freedom-research/odylith/releases/download/v1.2.3/odylith.whl",
+        download_url="https://github.com/odylith/odylith/releases/download/v1.2.3/odylith.whl",
     )
 
     monkeypatch.setattr(
@@ -271,7 +271,7 @@ def test_download_verified_release_validates_manifest_and_signed_assets(monkeypa
         "schema_version": "odylith-release-manifest.v1",
         "version": "1.2.3",
         "tag": "v1.2.3",
-        "repo": "freedom-research/odylith",
+        "repo": "odylith/odylith",
         "repo_schema_version": 1,
         "migration_required": False,
         "supported_platforms": [
@@ -290,7 +290,7 @@ def test_download_verified_release_validates_manifest_and_signed_assets(monkeypa
     }
     provenance_payload = {
         "version": "odylith-release-provenance.v1",
-        "repo": "freedom-research/odylith",
+        "repo": "odylith/odylith",
         "actor": "freedom-research",
         "release_version": "1.2.3",
         "tag": "v1.2.3",
@@ -332,7 +332,7 @@ def test_download_verified_release_validates_manifest_and_signed_assets(monkeypa
 
     def _fake_fetch_release(*, repo_root, repo: str, version: str = "latest"):  # noqa: ANN001
         assert repo_root == tmp_path
-        assert repo == "freedom-research/odylith"
+        assert repo == "odylith/odylith"
         assert version == "latest"
         return release
 
@@ -355,7 +355,7 @@ def test_download_verified_release_validates_manifest_and_signed_assets(monkeypa
 
     def _fake_verify_sigstore_asset(*, repo_root, asset_path: Path, bundle_path: Path, repo: str) -> None:
         assert repo_root == tmp_path
-        assert repo == "freedom-research/odylith"
+        assert repo == "odylith/odylith"
         assert bundle_path.name.endswith(".sigstore.json")
         verified_assets.append(asset_path.name)
 
@@ -371,7 +371,7 @@ def test_download_verified_release_validates_manifest_and_signed_assets(monkeypa
 
     verified = release_assets.download_verified_release(
         repo_root=tmp_path,
-        repo="freedom-research/odylith",
+        repo="odylith/odylith",
         version="latest",
     )
 
@@ -396,7 +396,7 @@ def test_validate_provenance_rejects_untrusted_release_actor() -> None:
         release_assets._validate_provenance(  # noqa: SLF001
             provenance={
                 "version": "odylith-release-provenance.v1",
-                "repo": "freedom-research/odylith",
+                "repo": "odylith/odylith",
                 "actor": "someone-else",
                 "release_version": "1.2.3",
                 "tag": "v1.2.3",
@@ -417,7 +417,7 @@ def test_validate_provenance_rejects_untrusted_release_actor() -> None:
                     },
                 },
             },
-            repo="freedom-research/odylith",
+            repo="odylith/odylith",
             release=release_assets.ReleaseInfo(version="1.2.3", tag="v1.2.3", assets={}),
             runtime_bundle_name="odylith-runtime-darwin-arm64.tar.gz",
             runtime_bundle_sha256="runtime-sha",
@@ -448,7 +448,7 @@ def test_validate_manifest_rejects_partial_supported_platform_matrix() -> None:
         "schema_version": "odylith-release-manifest.v1",
         "version": "1.2.3",
         "tag": "v1.2.3",
-        "repo": "freedom-research/odylith",
+        "repo": "odylith/odylith",
         "repo_schema_version": 1,
         "migration_required": False,
         "supported_platforms": ["darwin-arm64"],
@@ -462,7 +462,7 @@ def test_validate_manifest_rejects_partial_supported_platform_matrix() -> None:
         release_assets._validate_manifest(  # noqa: SLF001
             manifest=manifest,
             release=release,
-            repo="freedom-research/odylith",
+            repo="odylith/odylith",
         )
 
 
@@ -486,7 +486,7 @@ def test_validate_manifest_rejects_sidecar_wheel_assets() -> None:
         "schema_version": "odylith-release-manifest.v1",
         "version": "1.2.3",
         "tag": "v1.2.3",
-        "repo": "freedom-research/odylith",
+        "repo": "odylith/odylith",
         "repo_schema_version": 1,
         "migration_required": False,
         "assets": {
@@ -498,7 +498,7 @@ def test_validate_manifest_rejects_sidecar_wheel_assets() -> None:
         release_assets._validate_manifest(  # noqa: SLF001
             manifest=manifest,
             release=release,
-            repo="freedom-research/odylith",
+            repo="odylith/odylith",
         )
 
 
@@ -521,7 +521,7 @@ def test_validate_manifest_rejects_missing_odylith_wheel_metadata() -> None:
         "schema_version": "odylith-release-manifest.v1",
         "version": "1.2.3",
         "tag": "v1.2.3",
-        "repo": "freedom-research/odylith",
+        "repo": "odylith/odylith",
         "repo_schema_version": 1,
         "migration_required": False,
         "assets": {},
@@ -531,7 +531,7 @@ def test_validate_manifest_rejects_missing_odylith_wheel_metadata() -> None:
         release_assets._validate_manifest(  # noqa: SLF001
             manifest=manifest,
             release=release,
-            repo="freedom-research/odylith",
+            repo="odylith/odylith",
         )
 
 
@@ -553,7 +553,7 @@ def test_verify_sigstore_asset_scrubs_python_environment(monkeypatch, tmp_path: 
         repo_root=tmp_path,
         asset_path=asset_path,
         bundle_path=bundle_path,
-        repo="freedom-research/odylith",
+        repo="odylith/odylith",
     )
 
     env = captured["env"]
@@ -579,7 +579,7 @@ def test_verify_sigstore_asset_rejects_skip_override_outside_product_repo(monkey
             repo_root=tmp_path,
             asset_path=asset_path,
             bundle_path=bundle_path,
-            repo="freedom-research/odylith",
+            repo="odylith/odylith",
         )
 
 
@@ -683,7 +683,7 @@ def test_download_asset_rejects_checksum_mismatch(monkeypatch, tmp_path: Path) -
     payload = b"wheel-bytes"
 
     def _fake_urlopen(url: str, timeout: int | None = None):  # noqa: ANN001
-        assert url == "https://github.com/freedom-research/odylith/releases/download/v1.2.3/odylith.whl"
+        assert url == "https://github.com/odylith/odylith/releases/download/v1.2.3/odylith.whl"
         assert timeout is not None
         return _Response(payload)
 
@@ -694,7 +694,7 @@ def test_download_asset_rejects_checksum_mismatch(monkeypatch, tmp_path: Path) -
             repo_root=tmp_path,
             asset=release_assets.ReleaseAsset(
                 name="odylith.whl",
-                download_url="https://github.com/freedom-research/odylith/releases/download/v1.2.3/odylith.whl",
+                download_url="https://github.com/odylith/odylith/releases/download/v1.2.3/odylith.whl",
                 sha256="deadbeef",
             ),
             destination=tmp_path / "odylith.whl",

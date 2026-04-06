@@ -30,7 +30,7 @@ If a consumer repo is still on the legacy `0.1.0` or `0.1.1` launcher, rerun
 the hosted installer once from that repo root, then use `upgrade` normally:
 
 ```bash
-curl -fsSL https://github.com/freedom-research/odylith/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash
 ```
 
 If you want the active runtime and tracked repo pin aligned to the latest

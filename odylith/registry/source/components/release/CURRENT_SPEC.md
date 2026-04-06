@@ -205,7 +205,7 @@ claims aligned for public publication.
 
 ## Authority And Safety Model
 - Canonical releases are restricted to:
-  `freedom-research/odylith` on `main` as GitHub actor `freedom-research`.
+  `odylith/odylith` on `main` as GitHub actor `freedom-research`.
 - Local release wrappers must fail closed unless:
   - the origin remote is canonical
   - GitHub auth resolves to the canonical actor

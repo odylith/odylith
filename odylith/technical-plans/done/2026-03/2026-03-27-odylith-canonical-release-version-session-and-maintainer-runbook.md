@@ -9,7 +9,7 @@ Backlog: B-005
 Goal: Make Odylith's canonical release lane deterministic and repeatable by adding a sticky release-version session, safe next-patch auto-tagging, thin maintainer Make/bin orchestration, and one concise maintainer runbook that explains the exact order of operations.
 
 Assumptions:
-- Odylith canonical releases remain restricted to `freedom-research/odylith` on `main` as GitHub actor `freedom-research`.
+- Odylith canonical releases remain restricted to `odylith/odylith` on `main` as GitHub actor `freedom-research`.
 - Maintainer release automation should stay thin and should not become a second product contract.
 - The canonical release lane needs deterministic version reuse across retries before the first public release is cut.
 
@@ -116,7 +116,7 @@ Boundary Conditions:
 
 ## Dependencies/Preconditions
 - [x] Keep workstream `B-005` active in `odylith/radar/source/INDEX.md`.
-- [x] Keep canonical release authority restricted to `freedom-research/odylith` on `main` as actor `freedom-research`.
+- [x] Keep canonical release authority restricted to `odylith/odylith` on `main` as actor `freedom-research`.
 - [x] No related bug found.
 
 ## Edge Cases
