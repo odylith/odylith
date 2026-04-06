@@ -1,0 +1,16 @@
+{
+  "0.1.5": {
+    "report_id": "167b3d9b142937eb",
+    "generated_utc": "2026-03-31T23:12:49Z",
+    "status": "provisional_pass",
+    "product_version": "0.1.5",
+    "latency_delta_ms": 9.792,
+    "prompt_token_delta": 46.5,
+    "required_path_recall_delta": 0.993,
+    "validation_success_delta": 0.9,
+    "critical_required_path_recall_delta": 0.96,
+    "critical_validation_success_delta": 0.8,
+    "hallucinated_surface_rate_delta": 0.0,
+    "unnecessary_widening_rate_delta": 0.0
+  }
+}

@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat <<'EOF'
+Odylith maintainer interface
+
+make validate
+  Run the baseline maintainer validation suite.
+
+make dev-validate
+  Run the detached source-local maintainer validation lane for current unreleased workspace changes.
+
+make license-audit
+  Audit the runtime dependency closure and refresh THIRD_PARTY_ATTRIBUTION.md.
+
+make lane-show
+  Show maintainer lane posture, release session state, version drift, benchmark compare, and the exact next command.
+
+make benchmark-analysis [OUT=/tmp/odylith-benchmark-...]
+  Run diagnostic then proof, archive logs plus JSON artifacts plus SVG graphs into a local analysis bundle, emit a markdown summary for deeper benchmark review, and show heartbeat progress plus ETA while long stages run.
+
+make release-version-preview
+  Print the next auto patch version without mutating tags or session state.
+
+make release-version-show
+  Show session state, highest semver tag, next auto tag, and the effective release version.
+
+make release-session-show
+  Show the raw sticky release-session fields under .odylith/locks/.
+
+make release-candidate [VERSION=X.Y.Z]
+  Run the shared non-publishing release-proof lane on the current clean checkout and compare benchmarks against the last shipped release baseline.
+
+make release-preflight [VERSION=X.Y.Z]
+  Initialize or reuse the sticky release session, reserve the release tag, and run preflight checks.
+
+make release-dispatch
+  Reuse the active release session and dispatch the canonical GitHub release workflow.
+
+make dogfood-activate
+  Return the product repo from detached source-local to the pinned installed runtime.
+
+make consumer-rehearsal [VERSION=X.Y.Z] [PREVIOUS_VERSION=Y.Y.Y]
+  Exercise a disposable consumer repo against hosted release assets. VERSION defaults to the active release session.
+
+make ga-gate [VERSION=X.Y.Z] [PREVIOUS_VERSION=Y.Y.Y]
+  Run the post-publish dogfood and consumer rehearsal gate for the session version or an explicit version.
+
+make release-session-clear
+  Clear the sticky release session after a completed lane or intentional abort.
+EOF

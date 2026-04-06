@@ -1,0 +1,20 @@
+{
+  "report_id": "52aa3f76538cf12f",
+  "generated_utc": "2026-04-05T22:51:40Z",
+  "status": "provisional_pass",
+  "product_version": "0.1.7",
+  "latency_delta_ms": -12426.968,
+  "avg_latency_delta_ms": 3778.298,
+  "p95_latency_delta_ms": 56787.369,
+  "prompt_token_delta": -52561.0,
+  "total_payload_token_delta": -53774.0,
+  "required_path_recall_delta": 0.227,
+  "required_path_precision_delta": 0.168,
+  "validation_success_delta": 0.069,
+  "critical_required_path_recall_delta": 0.33,
+  "critical_validation_success_delta": 0.167,
+  "expectation_success_delta": 0.393,
+  "hallucinated_surface_rate_delta": -0.141,
+  "write_surface_precision_delta": 0.124,
+  "unnecessary_widening_rate_delta": -0.17
+}

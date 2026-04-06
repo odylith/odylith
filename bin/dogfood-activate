@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+if [[ ! -x "$odylith_launcher" ]]; then
+  odylith_cli doctor --repo-root . --repair
+fi
+
+launcher_cli upgrade --repo-root .
+launcher_cli version --repo-root .
+launcher_cli validate self-host-posture --repo-root . --mode local-runtime

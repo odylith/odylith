@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+target_version="${1:-${VERSION:-}}"
+previous_version="${2:-${PREVIOUS_VERSION:-}}"
+release_repo="${RELEASE_REPO:-freedom-research/odylith}"
+
+if [[ -z "$target_version" ]]; then
+  target_version="$(release_session_field version)"
+fi
+require_version "$target_version"
+if [[ -n "$previous_version" ]]; then
+  require_version "$previous_version"
+  [[ "$previous_version" != "$target_version" ]] || die "PREVIOUS_VERSION must differ from VERSION"
+fi
+require_cmd curl
+
+tmpdir="$(mktemp -d)"
+repo_dir="$tmpdir/rehearsal-repo"
+bootstrap_bin_dir="$tmpdir/bootstrap-bin"
+mkdir -p "$repo_dir"
+mkdir -p "$bootstrap_bin_dir"
+ln -sf "$odylith_python" "$bootstrap_bin_dir/python3"
+ln -sf "$odylith_python" "$bootstrap_bin_dir/python"
+
+cat >"$repo_dir/AGENTS.md" <<'EOF'
+# Rehearsal Repo
+EOF
+
+download_install_script() {
+  local version="$1"
+  local tag="v${version}"
+  local output="$tmpdir/install-${version}.sh"
+  curl -fsSL "https://github.com/${release_repo}/releases/download/${tag}/install.sh" -o "$output"
+  chmod +x "$output"
+  printf '%s\n' "$output"
+}
+
+run_repo_cmd() {
+  (
+    cd "$repo_dir"
+    "$@"
+  )
+}
+
+run_install_script() {
+  local version="$1"
+  local script_path="$2"
+  run_repo_cmd env \
+    PATH="$bootstrap_bin_dir:$PATH" \
+    ODYLITH_PYTHON="$odylith_python" \
+    ODYLITH_VERSION="$version" \
+    bash "$script_path"
+}
+
+verify_compass_history_contract() {
+  "$odylith_python" - <<'PY' "$repo_dir"
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+repo_root = Path(sys.argv[1])
+index_path = repo_root / "odylith" / "compass" / "runtime" / "history" / "index.v1.json"
+payload = json.loads(index_path.read_text(encoding="utf-8"))
+retention = int(payload.get("retention_days") or 0)
+if retention != 15:
+    raise SystemExit(f"unexpected compass retention_days: {retention}")
+print(f"consumer rehearsal compass retention ok: {retention}")
+PY
+}
+
+if [[ -n "$previous_version" ]]; then
+  previous_install="$(download_install_script "$previous_version")"
+  run_install_script "$previous_version" "$previous_install"
+  run_repo_cmd ./.odylith/bin/odylith version --repo-root .
+  run_repo_cmd ./.odylith/bin/odylith upgrade --repo-root . --to "$target_version" --write-pin
+  run_repo_cmd ./.odylith/bin/odylith rollback --previous --repo-root .
+  run_repo_cmd ./.odylith/bin/odylith upgrade --repo-root .
+else
+  install_script="$(download_install_script "$target_version")"
+  run_install_script "$target_version" "$install_script"
+fi
+
+run_repo_cmd ./.odylith/bin/odylith version --repo-root .
+run_repo_cmd ./.odylith/bin/odylith doctor --repo-root .
+run_repo_cmd ./.odylith/bin/odylith sync --repo-root . --force
+verify_compass_history_contract
+
+echo "consumer rehearsal completed in $repo_dir"

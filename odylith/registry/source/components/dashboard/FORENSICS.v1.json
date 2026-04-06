@@ -1,0 +1,667 @@
+{
+  "component_id": "dashboard",
+  "diagrams": [
+    "D-001",
+    "D-004",
+    "D-005",
+    "D-006",
+    "D-002",
+    "D-003",
+    "D-007",
+    "D-008",
+    "D-009",
+    "D-010",
+    "D-011",
+    "D-012",
+    "D-013",
+    "D-014",
+    "D-015",
+    "D-016",
+    "D-017",
+    "D-018",
+    "D-019",
+    "D-020",
+    "D-021",
+    "D-022",
+    "D-023",
+    "D-024"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 20,
+    "mapped_workstream_evidence_count": 1,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 5,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 21
+  },
+  "name": "Dashboard",
+  "path_prefixes": [
+    "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+    "src/odylith/runtime/surfaces/dashboard_surface_bundle.py",
+    "odylith/surfaces/README.md"
+  ],
+  "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/surfaces/README.md",
+        "src/odylith/bundle/assets/odylith/surfaces/README.md",
+        "src/odylith/runtime/surfaces/dashboard_surface_bundle.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 46,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "dashboard"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/dashboard/CURRENT_SPEC.md, odylith/surfaces/README.md +3 more",
+      "ts_iso": "2026-04-05T13:21:53-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 41,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-03T22:07:58-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 40,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-03T21:55:34-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 37,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-04-01T08:31:03-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 36,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.6 for the current repository; repo pin is 0.1.6.",
+      "ts_iso": "2026-03-31T22:01:06-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 35,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-03-31T20:36:09-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+        "odylith/technical-plans/in-progress/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md"
+      ],
+      "confidence": "high",
+      "event_index": 34,
+      "explicit_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Plan binding: advanced B-010 from queued to implementation for odylith/technical-plans/in-progress/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+      "ts_iso": "2026-03-28T21:05:40-07:00",
+      "workstreams": [
+        "B-010"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 33,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.0 for the current repository; repo pin is 0.1.0.",
+      "ts_iso": "2026-03-27T18:27:10-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 32,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.0 for the current repository; repo pin is 0.1.0.",
+      "ts_iso": "2026-03-27T18:25:50-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 31,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-03-27T16:19:09-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 30,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-03-27T16:12:16-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 29,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-03-27T16:07:04-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 27,
+      "explicit_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-279 reopens B-278 for active plan binding",
+      "ts_iso": "2026-03-23T15:48:37-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 24,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-258 reopens B-256 for active plan binding",
+      "ts_iso": "2026-03-20T14:33:15-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 14,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry",
+        "odylith"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Current execution: the standup now reflects the refreshed dashboard state from the current working tree, with generated UI artifacts awaiting review.",
+      "ts_iso": "2026-03-05T16:16:20-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 13,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Refreshed Radar, Atlas, Compass, Registry, Odylith, and the tooling shell; auto-synced the stale Mermaid diagrams; and fixed Odylith dashboard rendering so the workstream sync completes.",
+      "ts_iso": "2026-03-05T16:16:20-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 12,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry",
+        "odylith"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Decision: treat stale Atlas diagrams and Odylith render errors as fail-closed blockers before accepting a dashboard refresh.",
+      "ts_iso": "2026-03-05T16:16:20-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 11,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Latest check-in completed the Registry migration and cross-dashboard governance UX unification.",
+      "ts_iso": "2026-03-04T19:05:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 10,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Shipped Registry dashboard rendering plus governance and traceability sync updates, and refreshed generated Radar, Atlas, and Compass shells.",
+      "ts_iso": "2026-03-04T19:05:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 9,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Standardized governance visibility around Registry as the canonical component audit surface across Radar, Atlas, and Compass.",
+      "ts_iso": "2026-03-04T19:05:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 8,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Closed stale unbound dashboard plans and reduced active-plan noise; refreshed workstream context.",
+      "ts_iso": "2026-03-03T19:41:13-08:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Shell host for the Odylith evidence and governance surfaces.",
+  "why_tracked": "Controls the top-level surface boundary, navigation model, and installed product shell contract.",
+  "workstreams": [
+    "B-001",
+    "B-006",
+    "B-002",
+    "B-005",
+    "B-004",
+    "B-010",
+    "B-008",
+    "B-023",
+    "B-022",
+    "B-021",
+    "B-025",
+    "B-011",
+    "B-018",
+    "B-013",
+    "B-017",
+    "B-034",
+    "B-030",
+    "B-035",
+    "B-027",
+    "B-037",
+    "B-036",
+    "B-028",
+    "B-032",
+    "B-033",
+    "B-039",
+    "B-040",
+    "B-044",
+    "B-041",
+    "B-045"
+  ]
+}

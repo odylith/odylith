@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+echo "maintainer dev lane: refreshing Odylith surfaces from detached source-local workspace changes; release eligibility remains no until pinned dogfood proof." >&2
+odylith_cli sync --repo-root . --force --impact-mode full "$@"

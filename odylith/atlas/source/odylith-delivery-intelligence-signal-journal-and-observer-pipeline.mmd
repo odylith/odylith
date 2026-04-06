@@ -1,0 +1,90 @@
+%% Reviewed 2026-03-30 for deterministic dashboard refresh and Tribunal provider-breaker behavior before release proof.
+flowchart TB
+  subgraph Sources["1. External signal sources"]
+    Repo["Repo worktree + git state<br/>dirty paths, generated changes, touched artifacts"]
+    Compass["Compass timeline stream<br/>mapped decisions, implementations, statements"]
+    Runtime["Build / CI / deploy / precommit / explicit Odylith events"]
+  end
+
+  subgraph Journal["2. Signal normalization and journal"]
+    RepoRows["_repo_signal_rows()<br/>synthetic repo_change rows"]
+    TimelineRows["_timeline_signal_rows()<br/>explicit mapped events"]
+    Logger["src/odylith/runtime/context_engine/odylith_context_engine.py<br/>validate source, status, workstreams, components, artifacts"]
+    Events["odylith/runtime/events.v1.jsonl<br/>append-only Signal Journal"]
+  end
+
+  subgraph Observer["3. Odylith observer loop"]
+    Watcher["src/odylith/runtime/governance/sync_workstream_artifacts.py<br/>fingerprint-gated watcher"]
+    Posture["_build_posture()<br/>signals, correlation, policy breaches,<br/>base posture shell"]
+    Cadence["Adaptive cadence<br/>30s active, back off to 300s idle"]
+    Merge["_compute_posture_and_reasoning()<br/>Delivery Intelligence + Tribunal + packet-state merge"]
+  end
+
+  subgraph Delivery["4. Scope synthesis"]
+    Artifact["build_delivery_intelligence_artifact()<br/>components + workstreams + diagrams + surfaces + grid"]
+    Live["_annotate_live_actionability()<br/>diagnostics.live_actionable + live_reason"]
+  end
+
+  subgraph Tribunal["5. Downstream reasoning boundary"]
+    Fallback["Deterministic Tribunal fallback<br/>sync + dashboard refresh when reasoning artifact is missing"]
+    Adapter["odylith_reasoning.build_reasoning_payload()<br/>provider config + adapter boundary"]
+    Engine["tribunal_engine.build_tribunal_payload()<br/>selection, dossier, actors, adjudication, editor"]
+    Breaker["Run-scoped provider breaker<br/>disable enrichment after first timeout or transport failure"]
+    Remediator["remediator.compile_correction_packet()<br/>bounded packet compilation"]
+  end
+
+  subgraph RuntimeStore["6. Persisted runtime truth"]
+    PostureFile["odylith/runtime/posture.v4.json"]
+    ReasoningFile["odylith/runtime/reasoning.v4.json"]
+    DeliveryFile["odylith/runtime/delivery_intelligence.v4.json"]
+    DecisionLedger["odylith/runtime/decisions.v1.jsonl"]
+  end
+
+  subgraph Consumers["7. Maintainer-facing consumers"]
+    CLI["odylith ..."]
+    Dashboard["odylith/index.html"]
+    Atlas["Atlas / Radar / Registry / Compass proof routes"]
+    Sync["sync_workstream_artifacts + surface renderers"]
+  end
+
+  Repo --> RepoRows
+  Compass --> TimelineRows
+  Runtime --> Logger
+  Logger --> Events
+
+  RepoRows --> Watcher
+  TimelineRows --> Watcher
+  Events --> Watcher
+
+  Watcher --> Cadence
+  Watcher --> Posture
+  Posture --> Merge
+  Merge --> Artifact
+  Artifact --> Live
+  Live --> Fallback
+  Live --> Adapter
+  Fallback --> Engine
+  Adapter --> Engine
+  Breaker -. governs provider retries .-> Engine
+  Engine --> Remediator
+
+  Artifact --> DeliveryFile
+  Merge --> PostureFile
+  Engine --> ReasoningFile
+  DecisionLedger --> Merge
+
+  PostureFile --> CLI
+  ReasoningFile --> CLI
+  DeliveryFile --> CLI
+  PostureFile --> Dashboard
+  ReasoningFile --> Dashboard
+  DeliveryFile --> Dashboard
+  ReasoningFile --> Atlas
+  Dashboard --> Sync
+
+  NoteA["Delivery Intelligence owns scope synthesis and live-actionability.<br/>Tribunal starts only after that boundary."]:::note
+  NoteB["Missing reasoning cache on sync or dashboard refresh stays deterministic.<br/>Provider-backed enrichment is reserved for explicit Tribunal reasoning flows."]:::note
+  Live -. ownership boundary .-> NoteA
+  Fallback -. hot-path guardrail .-> NoteB
+
+  classDef note fill:#eef4ff,stroke:#7a9ad8,color:#163a63;

@@ -1,0 +1,83 @@
+%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+flowchart TB
+  subgraph Universe["1. Observed scope universe (Delivery Intelligence)"]
+    Components["Component snapshots"]
+    Workstreams["Workstream snapshots"]
+    Diagrams["Diagram snapshots"]
+    Surfaces["Surface aggregate snapshots"]
+    Grid["Grid aggregate snapshot"]
+    Build["build_delivery_intelligence_artifact()"]
+  end
+
+  subgraph Live["2. Live-actionability pass (Delivery Intelligence)"]
+    Annotate["_annotate_live_actionability()"]
+    LiveReason["diagnostics.live_actionable<br/>diagnostics.live_reason"]
+    Scenario["operator_readout.primary_scenario<br/>severity, action framing, proof refs"]
+  end
+
+  subgraph Eligibility["3. Tribunal eligibility gate"]
+    GateType{"scope_type in<br/>workstream | component | diagram ?"}
+    ExType["Exclude<br/>unsupported_scope_type"]
+    GateLive{"diagnostics.live_actionable ?"}
+    ExLive["Exclude<br/>not_live_actionable"]
+    GateScenario{"primary_scenario != clear_path ?"}
+    ExScenario["Exclude<br/>clear_path"]
+    Eligible["Eligible candidate set"]
+  end
+
+  subgraph Selection["4. Tribunal selection"]
+    Rank["_candidate_selection()<br/>rank by type -> scenario -> severity -><br/>decision debt -> governance lag -> blast radius"]
+    Coverage["Scenario coverage pass<br/>take highest-ranked case per scenario first"]
+    Fill["Priority fill pass<br/>fill remaining slots by score"]
+    Tie["Stable tie-break inside score bands<br/>scope_id then scope_key"]
+    Breaker["Run-scoped provider breaker<br/>timeout or transport failure disables<br/>provider enrichment for remaining cases"]
+    Queue["Selected case queue<br/>selection_slot + selection_reason +<br/>selection_metrics + selection_score_band_size"]
+    Summary["selection_summary<br/>total / eligible / shown / truncated + mixes"]
+  end
+
+  subgraph Render["5. Odylith presentation"]
+    Findings["posture.findings + reasoning.case_queue"]
+    Rail["Live decision rail"]
+    Brief["Decision brief workspace"]
+  end
+
+  Components --> Build
+  Workstreams --> Build
+  Diagrams --> Build
+  Surfaces --> Build
+  Grid --> Build
+
+  Build --> Annotate
+  Annotate --> LiveReason
+  Annotate --> Scenario
+  LiveReason --> GateType
+  Scenario --> GateScenario
+
+  GateType -- "no" --> ExType
+  GateType -- "yes" --> GateLive
+  GateLive -- "no" --> ExLive
+  GateLive -- "yes" --> GateScenario
+  GateScenario -- "no" --> ExScenario
+  GateScenario -- "yes" --> Eligible
+
+  Eligible --> Rank
+  Rank --> Coverage
+  Coverage --> Fill
+  Fill --> Tie
+  Tie --> Breaker
+  Breaker --> Queue
+  Queue --> Summary
+
+  Queue --> Findings
+  Summary --> Findings
+  Findings --> Rail
+  Findings --> Brief
+
+  DI["Delivery Intelligence decides scope existence,<br/>scenario classification, and live-actionability."]:::owner
+  Tribunal["Tribunal decides eligibility, ranking,<br/>scenario coverage, priority fill, truncation,<br/>and run-scoped provider degradation."]:::owner
+  Build -. owner .-> DI
+  Annotate -. owner .-> DI
+  Rank -. owner .-> Tribunal
+  Coverage -. owner .-> Tribunal
+
+  classDef owner fill:#eef4ff,stroke:#7a9ad8,color:#163a63;

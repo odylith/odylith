@@ -1,0 +1,38 @@
+{
+  "brand": "odylith",
+  "delivery": "2026-04-rebrand-package",
+  "source_package": "docs/brand/odylith/2026-04-rebrand-package",
+  "raster_wrapped_svg": true,
+  "icon": {
+    "primary_svg": "icon/odylith-icon.svg",
+    "monochrome_svg": "icon/odylith-icon-monochrome.svg",
+    "png_sizes": [
+      "icon/odylith-icon-16x16.png",
+      "icon/odylith-icon-32x32.png",
+      "icon/odylith-icon-48x48.png",
+      "icon/odylith-icon-64x64.png",
+      "icon/odylith-icon-128x128.png",
+      "icon/odylith-icon-256x256.png",
+      "icon/odylith-icon-512x512.png"
+    ],
+    "monochrome_png": "icon/odylith-icon-monochrome-512x512.png"
+  },
+  "lockup": {
+    "primary_svg": "lockup/odylith-lockup-horizontal.svg",
+    "monochrome_svg": "lockup/odylith-lockup-horizontal-monochrome.svg",
+    "png_variants": [
+      "lockup/odylith-lockup-horizontal-1200x300.png",
+      "lockup/odylith-lockup-horizontal-1600x400.png",
+      "lockup/odylith-lockup-horizontal-monochrome-1600x400.png"
+    ]
+  },
+  "favicon": {
+    "svg": "favicon/favicon.svg",
+    "png_sizes": [
+      "favicon/favicon-16.png",
+      "favicon/favicon-32.png",
+      "favicon/favicon-48.png"
+    ],
+    "ico": "favicon/favicon.ico"
+  }
+}

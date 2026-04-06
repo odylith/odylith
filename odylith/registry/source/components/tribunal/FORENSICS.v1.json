@@ -1,0 +1,80 @@
+{
+  "component_id": "tribunal",
+  "diagrams": [
+    "D-003",
+    "D-007",
+    "D-008",
+    "D-010",
+    "D-011",
+    "D-001",
+    "D-002",
+    "D-004",
+    "D-005",
+    "D-006",
+    "D-009",
+    "D-012",
+    "D-013",
+    "D-014",
+    "D-015",
+    "D-016",
+    "D-017",
+    "D-018",
+    "D-019",
+    "D-020",
+    "D-024"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 0,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 1,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 1
+  },
+  "name": "Tribunal",
+  "path_prefixes": [
+    "src/odylith/runtime/evaluation/tribunal_engine.py",
+    "odylith/runtime/odylith-tribunal-and-remediation-design.md"
+  ],
+  "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "src/odylith/runtime/evaluation/tribunal_engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 58,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/tribunal/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/runtime/odylith-tribunal-and-remediation-design.md +1 more",
+      "ts_iso": "2026-04-04T23:43:30-07:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Structured diagnosis engine that turns grounded dossiers into explicit leading and rival explanations, risks, and next checks.",
+  "why_tracked": "Provides the explanation contract behind Odylith's approval-gated operational intelligence.",
+  "workstreams": [
+    "B-001",
+    "B-022",
+    "B-012",
+    "B-038",
+    "B-044",
+    "B-042",
+    "B-045",
+    "B-046",
+    "B-047"
+  ]
+}

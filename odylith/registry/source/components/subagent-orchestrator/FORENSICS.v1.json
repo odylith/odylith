@@ -1,0 +1,173 @@
+{
+  "component_id": "subagent-orchestrator",
+  "diagrams": [
+    "D-002",
+    "D-014",
+    "D-015",
+    "D-016",
+    "D-017",
+    "D-024",
+    "D-001",
+    "D-003",
+    "D-004",
+    "D-005",
+    "D-006",
+    "D-007",
+    "D-008",
+    "D-009",
+    "D-010",
+    "D-011",
+    "D-012",
+    "D-013",
+    "D-018",
+    "D-019",
+    "D-020"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 3,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 2,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 4
+  },
+  "name": "Subagent Orchestrator",
+  "path_prefixes": [
+    "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+    "odylith/skills/subagent-orchestrator/SKILL.md"
+  ],
+  "spec_ref": "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "src/odylith/bundle/assets/odylith/skills/subagent-orchestrator/SKILL.md",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py"
+      ],
+      "confidence": "high",
+      "event_index": 56,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "subagent-orchestrator"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md, odylith/skills/subagent-orchestrator/SKILL.md +2 more",
+      "ts_iso": "2026-04-04T23:43:30-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/common/host_runtime.py",
+        "src/odylith/runtime/context_engine/tooling_context_routing.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+        "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+        "tests/unit/runtime/test_tooling_context_routing.py"
+      ],
+      "confidence": "high",
+      "event_index": 39,
+      "explicit_components": [
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Validated the routed model ladder still behaves under explicit Codex host signals: bounded patch -> gpt-5.3-codex/medium, higher-risk write -> gpt-5.3-codex/high, broader deep-validation slice -> gpt-5.4/high.",
+      "ts_iso": "2026-04-03T12:22:17-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/common/host_runtime.py",
+        "src/odylith/runtime/context_engine/tooling_context_routing.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+        "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+        "tests/unit/runtime/test_tooling_context_routing.py"
+      ],
+      "confidence": "high",
+      "event_index": 38,
+      "explicit_components": [
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Hardened subagent native-spawn gating so only explicit Codex-capable hosts emit native spawn payloads; Claude, unknown hosts, and provider-only backend hints now fail closed to local-guidance-only.",
+      "ts_iso": "2026-04-03T12:22:17-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 26,
+      "explicit_components": [
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "odylith",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-276 reopens B-275 for active plan binding",
+      "ts_iso": "2026-03-23T08:03:30-07:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Prompt-level planning and bounded fan-out engine for Codex tasks.",
+  "why_tracked": "Owns the product decision about when a prompt stays local, becomes one bounded leaf, or decomposes into multiple leaves.",
+  "workstreams": [
+    "B-001",
+    "B-020",
+    "B-022",
+    "B-038",
+    "B-002",
+    "B-009",
+    "B-019",
+    "B-021",
+    "B-024",
+    "B-016",
+    "B-013",
+    "B-015",
+    "B-031",
+    "B-042"
+  ]
+}

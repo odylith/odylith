@@ -1,0 +1,64 @@
+%% Reviewed 2026-03-30 for B-027 to keep runtime, write, and validation boundaries explicit across consumer and maintainer execution.
+flowchart LR
+    subgraph Inputs["1. Product truth and contracts"]
+        CLI["src/odylith/cli.py + install/*"]
+        Registry["odylith/registry/source/component_registry.v1.json"]
+        Specs["odylith/registry/source/components/*/CURRENT_SPEC.md"]
+        Radar["odylith/radar/source/*"]
+        Plans["odylith/technical-plans/*"]
+        Bugs["odylith/casebook/bugs/*"]
+        Atlas["odylith/atlas/source/*"]
+    end
+
+    subgraph Runtime["2. Runtime modules"]
+        Context["runtime/context_engine/*"]
+        Memory["runtime/memory/*"]
+        Governance["runtime/governance/*"]
+        Evaluation["runtime/evaluation/*"]
+        Orchestration["runtime/orchestration/*"]
+        Surfaces["runtime/surfaces/*"]
+    end
+
+    subgraph State["3. Runtime state and generated assets"]
+        ProductRoot["odylith/<br/>materialized product files + generated surfaces"]
+        RuntimeRoot[".odylith/<br/>cache + ledgers + benchmarks + runtime snapshots"]
+    end
+
+    subgraph Boundaries["4. Execution boundaries"]
+        RuntimeBoundary["Runtime boundary<br/>invoked Odylith executable decides interpreter"]
+        WriteBoundary["Write boundary<br/>repo scope decides editable files"]
+        ValidationBoundary["Validation boundary<br/>target repo toolchain proves target code"]
+        RepoToolchain["Target repo toolchain<br/>consumer repo toolchain or product source-tree helpers"]
+        RuntimeBoundary -. distinct .-> WriteBoundary
+        WriteBoundary -. distinct .-> ValidationBoundary
+        ValidationBoundary --> RepoToolchain
+    end
+
+    CLI --> Context
+    CLI --> Governance
+    Registry --> Context
+    Registry --> Evaluation
+    Specs --> Governance
+    Specs --> Surfaces
+    Radar --> Governance
+    Plans --> Governance
+    Bugs --> Evaluation
+    Atlas --> Surfaces
+
+    Context --> Memory
+    Memory --> Governance
+    Memory --> Evaluation
+    Governance --> Surfaces
+    Evaluation --> Surfaces
+    Orchestration --> Surfaces
+
+    Governance --> ProductRoot
+    Surfaces --> ProductRoot
+    Memory --> RuntimeRoot
+    Governance --> RuntimeRoot
+    Evaluation --> RuntimeRoot
+    Orchestration --> RuntimeRoot
+
+    CLI --> RuntimeBoundary
+    ProductRoot --> WriteBoundary
+    RuntimeRoot --> RuntimeBoundary

@@ -1,0 +1,35 @@
+{
+  "version": "v1",
+  "domains": [
+    {
+      "domain_id": "odylith-context-engine",
+      "label": "Odylith Context Engine",
+      "summary": "Odylith Context Engine accelerates grounded review but never replaces Atlas or topology docs as source of truth.",
+      "risk_tier": "moderate",
+      "path_prefixes": [
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/context_engine/odylith_context_cache.py",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "agents-guidelines/TOOLING.MD",
+        "agents-guidelines/ARCHITECTURE.MD"
+      ],
+      "components": [
+        "odylith-context-engine"
+      ],
+      "required_reads": [
+        "agents-guidelines/TOOLING.MD",
+        "agents-guidelines/ARCHITECTURE.MD",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd"
+      ],
+      "checks": [
+        "Treat runtime output as advisory and path-scoped, not as architecture proof.",
+        "If runtime packets report watch gaps or full_scan_recommended, fall back to rg plus direct source reads."
+      ],
+      "operator_consequences": [
+        "If operators treat runtime output as proof instead of accelerator guidance, architecture drift will hide behind local convenience."
+      ]
+    }
+  ]
+}

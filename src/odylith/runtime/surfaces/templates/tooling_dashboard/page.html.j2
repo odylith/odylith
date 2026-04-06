@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ shell_title }}</title>
+  {{ brand_head_html | safe }}
+  <style>
+{{ style_css | safe }}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="toolbar">
+      <div class="title-wrap">
+        <div class="brand-banner">
+          <div class="brand-banner-copy">
+            <img class="brand-lockup" src="{{ shell_brand_lockup_href }}" alt="Odylith" />
+          </div>
+        </div>
+      </div>
+{% if shell_repo_name %}      <div class="toolbar-center" aria-label="Current repository">
+        <p class="toolbar-repo-name">{{ shell_repo_name }}</p>
+      </div>
+{% endif %}
+      <div class="toolbar-meta">
+{% if shell_version_label %}        <p class="toolbar-version">{{ shell_version_label }}</p>
+{% endif %}
+        <div class="toolbar-actions">
+{% if version_story_href %}          <a id="toolbarVersionStoryLink" class="toolbar-link-button" href="{{ version_story_href }}">{{ version_story_label }}</a>
+{% endif %}
+        </div>
+        <nav class="tabs" role="tablist" aria-label="Dashboard tabs">
+          <button id="tab-registry" type="button" role="tab" class="tab" data-tab="registry" aria-selected="false">Registry</button>
+          <button id="tab-casebook" type="button" role="tab" class="tab" data-tab="casebook" aria-selected="false">Casebook</button>
+          <button id="tab-atlas" type="button" role="tab" class="tab" data-tab="atlas" aria-selected="false">Atlas</button>
+          <button id="tab-radar" type="button" role="tab" class="tab" data-tab="radar" aria-selected="true">Radar</button>
+          <button id="tab-compass" type="button" role="tab" class="tab" data-tab="compass" aria-selected="false">Compass</button>
+        </nav>
+      </div>
+    </header>
+
+    <section class="viewport" aria-live="polite">
+{% if welcome_html %}{{ welcome_html | safe }}{% endif %}
+      <div id="shellRecoveryDock" class="shell-recovery-dock" hidden aria-live="polite">
+        <button id="welcomeReopen" type="button" class="shell-recovery-button" hidden aria-hidden="true">Show starter guide</button>
+        <button id="upgradeReopen" type="button" class="shell-recovery-button shell-recovery-button-upgrade" hidden aria-hidden="true">Show release note</button>
+        <button id="runtimeStatusReopen" type="button" class="shell-recovery-button shell-recovery-button-runtime" hidden aria-hidden="true">Show status</button>
+      </div>
+      <section id="shellRuntimeStatus" class="shell-runtime-status" hidden aria-live="polite">
+        <div class="shell-runtime-status-copy">
+          <p id="shellRuntimeStatusKicker" class="shell-runtime-status-kicker"></p>
+          <p id="shellRuntimeStatusTitle" class="shell-runtime-status-title"></p>
+          <p id="shellRuntimeStatusBody" class="shell-runtime-status-body"></p>
+          <p id="shellRuntimeStatusMeta" class="shell-runtime-status-meta"></p>
+        </div>
+        <div class="shell-runtime-status-actions">
+          <button id="shellRuntimeStatusDismiss" type="button" class="shell-runtime-status-dismiss" hidden aria-label="Hide runtime status">Hide</button>
+          <button id="shellRuntimeStatusReload" type="button" class="shell-runtime-status-button" hidden>Reload view</button>
+        </div>
+      </section>
+      <iframe id="frame-radar" class="pane" title="Backlog Radar"></iframe>
+      <iframe id="frame-atlas" class="pane" title="Atlas" hidden></iframe>
+      <iframe id="frame-compass" class="pane" title="Executive Compass" hidden></iframe>
+      <iframe id="frame-registry" class="pane" title="Component Registry" hidden></iframe>
+      <iframe id="frame-casebook" class="pane" title="Casebook Bug Knowledge Surface" hidden></iframe>
+      <aside id="gridBriefDrawer" class="brief-drawer brief-drawer-notes" aria-label="Developer notes drawer">
+        <button id="gridBriefToggle" type="button" class="brief-handle" aria-expanded="false" aria-controls="gridBriefDrawerPanel">Developer Notes</button>
+        <div id="gridBriefDrawerPanel" class="brief-drawer-panel" aria-hidden="true" hidden>
+          <div class="brief-drawer-head">
+            <div class="brief-drawer-copy">
+              <p class="brief-drawer-title">Developer Notes</p>
+              <p class="brief-drawer-note">Persistent shell-owned developer notes. Each note is self-contained and addressable by its <code>N-###</code> id.</p>
+            </div>
+            <button id="gridBriefClose" type="button" class="brief-close" aria-label="Collapse developer notes">Close</button>
+          </div>
+          <div class="brief-drawer-body">
+            {{ maintainer_notes_html | safe }}
+          </div>
+        </div>
+      </aside>
+      <aside id="odylithDrawer" class="brief-drawer brief-drawer-cheatsheet" aria-label="Odylith agent cheatsheet drawer">
+        <button id="odylithToggle" type="button" class="brief-handle" aria-expanded="false" aria-controls="odylithDrawerPanel">Cheatsheet</button>
+        <div id="odylithDrawerPanel" class="brief-drawer-panel" aria-hidden="true" hidden>
+          <div class="brief-drawer-head">
+            <div class="brief-drawer-copy">
+              <p class="brief-drawer-title">Odylith Dashboard Cheatsheet</p>
+              <p class="brief-drawer-note">Search prompts, routes, refreshes, Atlas wins, and proof checks across Odylith surfaces.</p>
+            </div>
+            <button id="odylithClose" type="button" class="brief-close" aria-label="Collapse Odylith agent cheatsheet">Close</button>
+          </div>
+          <div class="brief-drawer-body">
+            {{ cheatsheet_html | safe }}
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script id="toolingDashboardData" type="application/json">{{ payload_json | safe }}</script>
+  <script>
+{{ control_script | safe }}
+  </script>
+</body>
+</html>

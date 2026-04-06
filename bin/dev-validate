@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+echo "maintainer dev lane: validating detached source-local workspace changes; release eligibility remains no until pinned dogfood proof." >&2
+"$odylith_host_repo_root/bin/validate" --dev-source-local

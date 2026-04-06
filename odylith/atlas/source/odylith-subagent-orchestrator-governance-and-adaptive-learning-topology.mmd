@@ -1,0 +1,29 @@
+%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+flowchart TD
+    A["Repo policy and operator guidance"] --> A1["AGENTS.md"]
+    A --> A2["Product guidance<br/>AGENTS, docs, decision rules, skills"]
+    A --> A3["Runbooks + skills"]
+
+    A3 --> B["Subagent Orchestrator"]
+    B --> C["Subagent Router"]
+
+    B --> D["Local tuning state<br/>.odylith/subagent_orchestrator"]
+    C --> E["Local tuning state<br/>.odylith/subagent_router"]
+    B --> F["Optional Compass audit stream"]
+    C --> F
+
+    B --> G["Execution plan<br/>local_only / single_leaf / serial_batch / parallel_batch"]
+    C --> H["Leaf route decision<br/>model + reasoning + escalation posture<br/>plus native spawn/close payloads"]
+
+    G --> I["Main thread execution + merge barrier<br/>owner/goal/output/termination contract<br/>plus closeout ledger"]
+    H --> I
+
+    I --> J["Feedback recording"]
+    J --> D
+    J --> E
+
+    B --> K["Registry component manifest"]
+    C --> K
+    K --> L["Living specs"]
+    L --> M["Atlas diagrams"]
+    M --> N["Tooling shell / Atlas / Registry visibility"]

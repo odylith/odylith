@@ -1,0 +1,54 @@
+# Security And Trust
+
+## Security Boundary
+- Treat the repo launcher, the managed runtime, the repo-root trust anchor,
+  and the signed release asset path as one connected trust boundary.
+- Fail closed when runtime trust is ambiguous. Do not widen into host Python
+  or insecure local asset overrides just to keep work moving.
+- Only the verified managed runtime is part of the supported consumer trust
+  contract.
+
+## Lane Rules
+- Consumer lane:
+  - use only the verified managed runtime behind `./.odylith/bin/odylith`
+  - reject `ODYLITH_RELEASE_BASE_URL`,
+    `ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST`, and
+    `ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY`
+  - treat `.odylith/trust/managed-runtime-trust/` as the gitignored
+    local trust anchor for managed-runtime integrity
+  - allow legacy `0.1.0` and `0.1.1` compatibility only long enough to
+    bootstrap onto a newer trusted release
+
+## Runtime Integrity Rules
+- The launcher must only execute trusted managed runtimes or validated
+  compatibility wrappers.
+- Legacy `0.1.0` and `0.1.1` managed runtimes are compatibility exceptions,
+  not full-trust peers; prefer repairing or upgrading away from them.
+- Managed-runtime trust must live outside `.odylith/` so runtime-only tamper
+  cannot rewrite its own proof.
+- Hot-path verification happens before `odylith.cli` import; deeper tree
+  verification belongs in doctor, repair, and same-version runtime reuse.
+- Feature packs only attach to already trusted managed runtimes.
+
+## Supply-Chain Rules
+- Release assets must come from trusted hosts and verify against the expected
+  Sigstore signer identity plus OIDC issuer.
+- Canonical workflows should pin first-party GitHub Actions to immutable SHAs,
+  pin the runner image, and avoid floating tooling installs.
+- Local hosted-release overrides are outside the installed consumer contract.
+
+## Process-Lifetime Rules
+- Treat unexpected long-lived Odylith Python helpers as bugs until proven
+  otherwise.
+- Startup, daemon readiness, timed-out child process groups, and worker
+  shutdown should all fail closed.
+- After runtime or daemon changes, explicitly verify that Odylith-owned Python
+  processes exit when the command or timeout path is complete.
+
+## Canonical Commands
+```bash
+./.odylith/bin/odylith version --repo-root .
+./.odylith/bin/odylith doctor --repo-root . --repair
+./.odylith/bin/odylith reinstall --repo-root . --latest
+./.odylith/bin/odylith context-engine status --repo-root .
+```

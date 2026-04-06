@@ -1,0 +1,730 @@
+{
+  "component_id": "radar",
+  "diagrams": [
+    "D-001",
+    "D-004",
+    "D-005",
+    "D-006",
+    "D-002",
+    "D-003",
+    "D-007",
+    "D-008",
+    "D-009",
+    "D-010",
+    "D-011",
+    "D-012",
+    "D-013",
+    "D-014",
+    "D-015",
+    "D-016",
+    "D-017",
+    "D-018",
+    "D-019",
+    "D-020",
+    "D-024"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 21,
+    "mapped_workstream_evidence_count": 1,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 1,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 22
+  },
+  "name": "Radar",
+  "path_prefixes": [
+    "src/odylith/runtime/surfaces/render_backlog_ui.py",
+    "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+    "odylith/radar/source"
+  ],
+  "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/radar/source/AGENTS.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-corpus-expansion-diagnostics-and-publication-refresh.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-external-benchmark-failure-taxonomy-slice-analytics-and-publication-discipline.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-swe-bench-external-harness-predictions-contract-and-reproducible-verified-adapter.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-zero-governance-external-repo-grounding-and-swe-bench-verified-frontier.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-benchmark-families-no-tribunal-ablation-and-diagnosis-proof-publication.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-default-diagnosis-triggers-two-speed-execution-and-cached-case-reuse.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/radar/source/AGENTS.md",
+        "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-corpus-expansion-diagnostics-and-publication-refresh.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-02-odylith-external-benchmark-failure-taxonomy-slice-analytics-and-publication-discipline.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-02-odylith-swe-bench-external-harness-predictions-contract-and-reproducible-verified-adapter.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-02-odylith-zero-governance-external-repo-grounding-and-swe-bench-verified-frontier.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-benchmark-families-no-tribunal-ablation-and-diagnosis-proof-publication.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-default-diagnosis-triggers-two-speed-execution-and-cached-case-reuse.md",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py"
+      ],
+      "confidence": "high",
+      "event_index": 51,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/AGENTS.md, odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md +98 more",
+      "ts_iso": "2026-04-05T19:28:16-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+        "odylith/technical-plans/in-progress/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md"
+      ],
+      "confidence": "high",
+      "event_index": 34,
+      "explicit_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Plan binding: advanced B-010 from queued to implementation for odylith/technical-plans/in-progress/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+      "ts_iso": "2026-03-28T21:05:40-07:00",
+      "workstreams": [
+        "B-010"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 28,
+      "explicit_components": [
+        "odylith-context-engine"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-280 reopens B-279 for active plan binding",
+      "ts_iso": "2026-03-23T17:32:23-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 27,
+      "explicit_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-279 reopens B-278 for active plan binding",
+      "ts_iso": "2026-03-23T15:48:37-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 26,
+      "explicit_components": [
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "odylith",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-276 reopens B-275 for active plan binding",
+      "ts_iso": "2026-03-23T08:03:30-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 25,
+      "explicit_components": [
+        "casebook"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "casebook",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-266 reopens B-265 for active plan binding",
+      "ts_iso": "2026-03-20T18:10:05-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 24,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-258 reopens B-256 for active plan binding",
+      "ts_iso": "2026-03-20T14:33:15-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 23,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "compass",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-255 reopens B-253 for active plan binding",
+      "ts_iso": "2026-03-20T13:47:21-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 22,
+      "explicit_components": [
+        "odylith-context-engine"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-220 reopens B-219 for active plan binding",
+      "ts_iso": "2026-03-18T13:39:19-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 14,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry",
+        "odylith"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Current execution: the standup now reflects the refreshed dashboard state from the current working tree, with generated UI artifacts awaiting review.",
+      "ts_iso": "2026-03-05T16:16:20-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 13,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Refreshed Radar, Atlas, Compass, Registry, Odylith, and the tooling shell; auto-synced the stale Mermaid diagrams; and fixed Odylith dashboard rendering so the workstream sync completes.",
+      "ts_iso": "2026-03-05T16:16:20-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 12,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry",
+        "odylith"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Decision: treat stale Atlas diagrams and Odylith render errors as fail-closed blockers before accepting a dashboard refresh.",
+      "ts_iso": "2026-03-05T16:16:20-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 11,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Latest check-in completed the Registry migration and cross-dashboard governance UX unification.",
+      "ts_iso": "2026-03-04T19:05:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 10,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Shipped Registry dashboard rendering plus governance and traceability sync updates, and refreshed generated Radar, Atlas, and Compass shells.",
+      "ts_iso": "2026-03-04T19:05:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 9,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Standardized governance visibility around Registry as the canonical component audit surface across Radar, Atlas, and Compass.",
+      "ts_iso": "2026-03-04T19:05:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 8,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Closed stale unbound dashboard plans and reduced active-plan noise; refreshed workstream context.",
+      "ts_iso": "2026-03-03T19:41:13-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 7,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "radar"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "B-034 lineage hardening is complete; active execution remains on the current Odylith governance tracks.",
+      "ts_iso": "2026-03-03T16:48:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 6,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Implemented B-034 closeout by setting backlog status to finished, moving the plan to done, updating traceability links, and regenerating sync artifacts.",
+      "ts_iso": "2026-03-03T16:48:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 5,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Decision: Closed B-034 and moved the implementation plan to done with backlog/plan lifecycle state synchronized.",
+      "ts_iso": "2026-03-03T16:48:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 4,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "radar"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Current execution is completing phase auto-promotion wiring and Atlas lineage diagram pack registration.",
+      "ts_iso": "2026-03-03T13:56:10-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 3,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Implemented lineage fields and relation edges across validation, reciprocal backfill, traceability graph, and Radar/Compass rendering.",
+      "ts_iso": "2026-03-03T13:56:10-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 2,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Decision: kickoff B-034 lineage model with successor-first reopen policy and typed relation semantics.",
+      "ts_iso": "2026-03-03T13:56:10-08:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Workstream backlog and queue-governance surface.",
+  "why_tracked": "Owns Odylith's ranked workstream truth and keeps feature work linked to plans and component changes.",
+  "workstreams": [
+    "B-001",
+    "B-006",
+    "B-002",
+    "B-024",
+    "B-018",
+    "B-013",
+    "B-017",
+    "B-043",
+    "B-047"
+  ]
+}

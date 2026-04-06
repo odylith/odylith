@@ -1,0 +1,34 @@
+%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+flowchart LR
+  Tribunal["Tribunal outcome<br/>case brief, systemic brief, proof refs,<br/>confidence, next discriminating check"]
+  Packet["Remediator packet<br/>Approve and apply / Send to AI engine / Review manually"]
+
+  subgraph Inbox["Shell + Odylith"]
+    Shell["Tooling shell<br/>Operator inbox preview<br/>top ranked cases + terse warnings"]
+    Odylith["Odylith workspace<br/>ranked cases, selected brief, proof, action buttons,<br/>approval and clearance state"]
+  end
+
+  subgraph Evidence["Native Evidence Surfaces"]
+    Radar["Radar<br/>workstream evidence,<br/>traceability, and topology"]
+    Registry["Registry<br/>component authority,<br/>forensics, and ownership evidence"]
+    Casebook["Casebook<br/>bug history,<br/>root cause, and prevention evidence"]
+    Atlas["Atlas<br/>diagram freshness,<br/>topology, and linked artifacts"]
+    Compass["Compass<br/>timeline evidence,<br/>recent changes, and checkpoints"]
+  end
+
+  Tribunal --> Shell
+  Tribunal --> Odylith
+  Packet --> Odylith
+
+  Shell -->|Open full case| Odylith
+  Odylith -->|Open proof| Radar
+  Odylith -->|Open proof| Registry
+  Odylith -->|Open proof| Casebook
+  Odylith -->|Open proof| Atlas
+  Odylith -->|Open proof| Compass
+
+  Radar -->|Native evidence only| Odylith
+  Registry -->|Native evidence only| Odylith
+  Casebook -->|Native evidence only| Odylith
+  Atlas -->|Native evidence only| Odylith
+  Compass -->|Native evidence only| Odylith

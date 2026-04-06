@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Compass</title>
+  <meta name="application-name" content="Odylith" />
+  <meta name="theme-color" content="#edf4ff" />
+  <link rel="manifest" href="../surfaces/brand/manifest.json" />
+  <link rel="icon" href="../surfaces/brand/favicon/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="../surfaces/brand/favicon/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../surfaces/brand/favicon/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../surfaces/brand/favicon/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="../surfaces/brand/icon/odylith-icon-256x256.png" />
+  <link rel="mask-icon" href="../surfaces/brand/icon/odylith-icon-monochrome.svg" color="#173f83" />
+  <link rel="stylesheet" href="compass-style-base.v1.css?v=1775445875613257993" />
+  <link rel="stylesheet" href="compass-style-execution-waves.v1.css?v=1775445875613460410" />
+  <link rel="stylesheet" href="compass-style-surface.v1.css?v=1775445875613565369" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="kicker">Delivery Posture and Risk Brief</p>
+      <h1>Executive Compass</h1>
+      <p class="subtitle">Current workstream direction, risks, and runtime evidence across Radar, plans, bugs, and Atlas traceability.</p>
+      <section class="stats" id="kpi-grid"></section>
+      <div class="controls" id="controls">
+        <button class="pill" data-window="24h" type="button">24h Window</button>
+        <button class="pill" data-window="48h" type="button">48h Window</button>
+        <label for="audit-day-input">Audit Day</label>
+        <input id="audit-day-input" class="pill subtle select-pill" type="date" aria-label="Audit day calendar" />
+        <label for="scope-select">Scope</label>
+        <select id="scope-select" class="pill subtle select-pill" aria-label="Workstream scope selector">
+          <option value="">Global</option>
+        </select>
+        <button class="pill subtle" id="scope-global" type="button">Global</button>
+        <button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>
+        <span class="grow"></span>
+        <span class="pill subtle" id="scope-pill">Scope: Global</span>
+        <span class="pill subtle" id="audit-day-pill">Audit Day: -</span>
+      </div>
+      <div id="status-banner" class="status-banner hidden" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <article class="card">
+          <h2>Standup Brief</h2>
+          <div class="bullet-list standup-brief-panel" id="digest-list"></div>
+        </article>
+
+        <div id="execution-waves-host"></div>
+
+        <article class="card">
+          <h2>Current Workstreams</h2>
+          <div id="current-workstreams" class="muted"></div>
+        </article>
+      </div>
+
+      <div class="stack">
+        <article class="card">
+          <h2>Critical Risks</h2>
+          <div id="risk-list" class="muted"></div>
+        </article>
+
+        <article class="card">
+          <h2>Timeline Audit</h2>
+          <div class="timeline-calendar" id="timeline"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+  <script>
+(function enforceShellOwnedSurfaceAccessInline() {
+  try {
+    const expectedFrameId = "frame-compass";
+    const frameElement = window.frameElement;
+    const actualFrameId = frameElement && typeof frameElement.id === "string" ? frameElement.id : "";
+    if (window.parent && window.parent !== window && actualFrameId === expectedFrameId) {
+      return;
+    }
+    const shellUrl = new URL("../index.html", window.location.href);
+    const currentParams = new URLSearchParams(window.location.search || "");
+    const nextParams = new URLSearchParams();
+    nextParams.set("tab", "compass");
+    const passthroughRules = [{"target":"scope","sources":["scope","workstream"]},{"target":"window","sources":["window"]},{"target":"date","sources":["date"]},{"target":"audit_day","sources":["audit_day"]}];
+    for (const rule of passthroughRules) {
+      if (!rule || !rule.target) continue;
+      const sources = Array.isArray(rule.sources) && rule.sources.length ? rule.sources : [rule.target];
+      let selected = "";
+      for (const sourceKey of sources) {
+        const token = String(currentParams.get(sourceKey) || "").trim();
+        if (token) {
+          selected = token;
+          break;
+        }
+      }
+      if (selected) {
+        nextParams.set(rule.target, selected);
+      }
+    }
+    shellUrl.search = nextParams.toString() ? `?${nextParams.toString()}` : "";
+    shellUrl.hash = "";
+    if (window.__ODYLITH_SHELL_REDIRECTING__ === true && window.__ODYLITH_SHELL_REDIRECT_TARGET__ === shellUrl.toString()) {
+      return;
+    }
+    const targetWindow = window.top && window.top !== window ? window.top : window;
+    if (targetWindow.location && targetWindow.location.href === shellUrl.toString()) {
+      return;
+    }
+    window.__ODYLITH_SHELL_REDIRECTING__ = true;
+    window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
+    if (typeof window.stop === "function") {
+      window.stop();
+    }
+    targetWindow.location.replace(shellUrl.toString());
+  } catch (_error) {
+    // Fail open so embedded surfaces can still load if canonical shell handoff cannot be resolved.
+  }
+})();
+</script>
+  <script src="compass-shared.v1.js?v=1775445875612653576"></script>
+  <script src="compass-state.v1.js?v=1775445875612881410"></script>
+  <script src="compass-summary.v1.js?v=1775445875613800827"></script>
+  <script src="compass-timeline.v1.js?v=1775445875613931327"></script>
+  <script src="compass-waves.v1.js?v=1775445875614265619"></script>
+  <script src="compass-workstreams.v1.js?v=1775445875614488911"></script>
+  <script src="compass-ui-runtime.v1.js?v=1775445875614171077"></script>
+  <script src="runtime/current.v1.js?v=1775447257598096589"></script>
+  <script id="compassShellData" src="compass-payload.v1.js?v=7bc12c1fb210"></script>
+  <script src="compass-app.v1.js?v=7bc12c1fb210"></script>
+</body>
+</html>

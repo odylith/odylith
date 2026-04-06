@@ -1,0 +1,54 @@
+flowchart TB
+    subgraph Consumer["Installed Consumer Repo Lane"]
+        ConsumerLauncher["./.odylith/bin/odylith<br/>Odylith-managed runtime"]
+        ConsumerWrites["Agent may edit in-scope repo files"]
+        ConsumerToolchain["Repo tests/build/lint<br/>consumer toolchain"]
+        ConsumerLauncher --> ConsumerWrites --> ConsumerToolchain
+    end
+
+    subgraph Maintainer["Odylith Product Repo Maintainer Mode"]
+        subgraph Dogfood["Pinned dogfood posture (default)"]
+            Source["Tracked source contract<br/>pyproject.toml<br/>odylith/runtime/source/product-version.v1.json"]
+            Runtime[".odylith/runtime/current<br/>verified pinned runtime"]
+            Status["odylith version / odylith doctor<br/>repo_role=product_repo<br/>posture=pinned_release<br/>release_eligible = yes"]
+            Source --> Runtime --> Status
+        end
+
+        subgraph Dev["Detached source-local dev posture (explicit override)"]
+            Override["odylith upgrade --source-repo ..."]
+            Detached[".odylith/runtime/current<br/>source-local detached runtime"]
+            LiveSource["Current unreleased src/odylith/* changes"]
+            DevHelpers["Source-tree tests/helpers<br/>product repo toolchain"]
+            DetachedStatus["Visible detached posture<br/>release_eligible = no"]
+            Override --> Detached --> DetachedStatus
+            LiveSource --> Detached
+            LiveSource --> DevHelpers
+        end
+    end
+
+    subgraph Boundaries["Execution Boundaries"]
+        RuntimeBoundary["Runtime boundary<br/>invoked Odylith executable decides interpreter"]
+        WriteBoundary["Write boundary<br/>repo scope decides editable files"]
+        ValidationBoundary["Validation boundary<br/>target repo toolchain proves target code"]
+        RuntimeBoundary -. distinct .-> WriteBoundary
+        WriteBoundary -. distinct .-> ValidationBoundary
+    end
+
+    subgraph Gate["Release Gate"]
+        Pin["Source version + repo pin + __version__"]
+        Validate["odylith validate self-host-posture<br/>--mode release --expected-tag vX.Y.Z"]
+        Workflow[".github/workflows/release.yml"]
+        Publish["GitHub release assets"]
+        Pin --> Validate --> Workflow --> Publish
+    end
+
+    ConsumerLauncher --> RuntimeBoundary
+    ConsumerWrites --> WriteBoundary
+    ConsumerToolchain --> ValidationBoundary
+    Runtime --> RuntimeBoundary
+    LiveSource --> WriteBoundary
+    DevHelpers --> ValidationBoundary
+    Runtime --> Validate
+    Detached -. blocked .-> Validate
+    Status --> Readouts["Dashboard shell + Compass runtime<br/>self_host payload and risk readouts"]
+    DetachedStatus --> Readouts

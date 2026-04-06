@@ -1,0 +1,211 @@
+{
+  "component_id": "security",
+  "diagrams": [],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 5,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 1,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 6
+  },
+  "name": "Security",
+  "path_prefixes": [
+    "src/odylith/install/runtime.py",
+    "src/odylith/install/runtime_integrity.py",
+    "src/odylith/install/release_assets.py",
+    "github/workflows/release.yml",
+    "github/workflows/release-candidate.yml",
+    "github/workflows/test.yml",
+    "odylith/SECURITY_POSTURE.md",
+    "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
+    "odylith/skills/security-hardening/SKILL.md"
+  ],
+  "spec_ref": "odylith/registry/source/components/security/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "github/workflows/release-candidate.yml",
+        "github/workflows/release.yml",
+        "odylith/SECURITY_POSTURE.md",
+        "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
+        "odylith/registry/source/components/security/CURRENT_SPEC.md",
+        "odylith/skills/security-hardening/SKILL.md",
+        "src/odylith/bundle/assets/odylith/SECURITY_POSTURE.md",
+        "src/odylith/bundle/assets/odylith/agents-guidelines/SECURITY_AND_TRUST.md",
+        "src/odylith/bundle/assets/odylith/skills/security-hardening/SKILL.md",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/install/runtime.py",
+        "src/odylith/install/runtime_integrity.py"
+      ],
+      "confidence": "high",
+      "event_index": 55,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: github/workflows/release-candidate.yml, github/workflows/release.yml +10 more",
+      "ts_iso": "2026-04-05T01:32:05-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 41,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-03T22:07:58-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 40,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-03T21:55:34-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 31,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-03-27T16:19:09-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 30,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-03-27T16:12:16-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 29,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-03-27T16:07:04-07:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Cross-cutting runtime-trust, release-provenance, workflow-supply-chain, and process-lifetime boundary for Odylith's install and execution contract.",
+  "why_tracked": "Keeps Odylith's security posture explicit, governed, and auditable instead of spreading the trust model across ad hoc code comments and release notes.",
+  "workstreams": [
+    "B-033",
+    "B-040"
+  ]
+}

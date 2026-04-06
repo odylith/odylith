@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+"$odylith_python" "$odylith_repo_root/scripts/audit_third_party_licenses.py" --check --write "$odylith_repo_root/THIRD_PARTY_ATTRIBUTION.md" "$@"

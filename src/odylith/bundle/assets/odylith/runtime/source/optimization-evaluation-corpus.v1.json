@@ -1,0 +1,1574 @@
+{
+  "version": "v1",
+  "program": {
+    "umbrella_id": "B-238",
+    "status": "complete",
+    "active_wave_id": "",
+    "active_workstream_id": "",
+    "closeout_contract": {
+      "odylith_brand_note": "final_only_evidence_backed",
+      "allowed_label": "Odylith assist:",
+      "preferred_markdown_label": "**Odylith assist:**",
+      "benchmark_tax_policy": "metadata_only",
+      "rules": [
+        "Keep mid-task narration task-first and leave Odylith implicit unless a command or blocker matters.",
+        "At closeout, at most one short Odylith assist line may appear.",
+        "Prefer the bold Markdown label when formatting is available; otherwise use plain Odylith assist.",
+        "Lead with the user win, not Odylith mechanics.",
+        "When the evidence supports it, frame the edge against odylith_off or the broader unguided path.",
+        "Keep the line soulful, friendly, authentic, and factual.",
+        "Use only concrete observed counts, measured deltas, or validation outcomes; otherwise omit it.",
+        "If there is no clear user-facing delta, omit it.",
+        "Keep benchmark closeout branding metadata-only; do not add benchmark required paths, hot-path docs, or validation commands just to repeat this rubric."
+      ]
+    }
+  },
+  "scenarios": [
+    {
+      "case_id": "broad-shared-guarding",
+      "label": "Broad shared-path fail-closed guarding",
+      "family": "broad_shared_scope",
+      "priority": "critical",
+      "summary": "Shared guidance paths should narrow rather than flood packet payloads.",
+      "benchmark": {
+        "prompt": "Assess broad shared guidance updates without flooding the packet or claiming narrow ownership too early.",
+        "packet_source": "bootstrap_session",
+        "paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ],
+        "required_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ],
+        "acceptance_criteria": [
+          "Keep the packet fail-closed and narrowing-first for broad shared scope.",
+          "Do not spend deep reasoning or delegation on broad shared guidance alone."
+        ]
+      },
+      "match": {
+        "paths_all": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ]
+      },
+      "expect": {
+        "packet_state": [
+          "gated_broad_scope"
+        ],
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis"
+        ]
+      }
+    },
+    {
+      "case_id": "runtime-path-ambiguity",
+      "label": "Exact runtime path ambiguity remains bounded",
+      "family": "exact_path_ambiguity",
+      "priority": "high",
+      "summary": "A narrow runtime-path slice should stay within budget even when historical fanout is still ambiguous.",
+      "benchmark": {
+        "prompt": "Inspect an Odylith runtime path slice and keep the packet bounded even if historical fanout is still ambiguous.",
+        "packet_source": "bootstrap_session",
+        "paths": [
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "required_paths": [
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "acceptance_criteria": [
+          "Stay grounded on the exact runtime path.",
+          "Keep ambiguity bounded instead of broadening to unrelated surfaces."
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ]
+      },
+      "expect": {
+        "packet_state": [
+          "gated_ambiguous",
+          "expanded"
+        ],
+        "within_budget": true
+      }
+    },
+    {
+      "case_id": "session-brief-broad-shared-guarding",
+      "label": "Session brief shared-path guarding stays compact",
+      "family": "broad_shared_scope",
+      "priority": "high",
+      "summary": "The full session-brief delivery path should stay fail-closed and compact for shared-only guidance slices.",
+      "benchmark": {
+        "prompt": "Build the session brief for a shared-only guidance slice without flooding Codex-visible context or over-claiming ownership.",
+        "packet_source": "session_brief",
+        "paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ],
+        "required_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ],
+        "acceptance_criteria": [
+          "Keep the session brief fail-closed for shared-only guidance edits.",
+          "Do not reintroduce broad routing scaffolding into Codex-visible delivery."
+        ]
+      },
+      "match": {
+        "paths_all": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ]
+      },
+      "expect": {
+        "packet_state": [
+          "gated_broad_scope"
+        ],
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis"
+        ]
+      }
+    },
+    {
+      "case_id": "session-brief-runtime-path-ambiguity",
+      "label": "Session brief exact-path ambiguity stays bounded",
+      "family": "exact_path_ambiguity",
+      "priority": "high",
+      "summary": "The session-brief delivery path should keep exact-path ambiguity grounded without hauling internal runtime scaffolding into the prompt.",
+      "benchmark": {
+        "prompt": "Build the session brief for an exact runtime-path ambiguity slice and keep the Codex-visible payload compact and grounded.",
+        "packet_source": "session_brief",
+        "paths": [
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "required_paths": [
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "acceptance_criteria": [
+          "Stay grounded on the exact runtime path.",
+          "Keep the session brief within budget without dropping the core routing and intent signals."
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ]
+      },
+      "expect": {
+        "packet_state": [
+          "gated_ambiguous",
+          "expanded"
+        ],
+        "within_budget": true,
+        "intent_family": [
+          "analysis"
+        ]
+      }
+    },
+    {
+      "case_id": "wave3-explicit-workstream",
+      "label": "Explicit Wave 3 workstream grounding",
+      "family": "explicit_workstream",
+      "priority": "high",
+      "summary": "Explicit Wave 3 workstream slices should stay bounded and grounded.",
+      "benchmark": {
+        "prompt": "Ground the slice explicitly to the Wave 3 workstream and keep the resulting packet compact and routeable.",
+        "paths": [
+          "odylith/skills/subagent-orchestrator/SKILL.md"
+        ],
+        "required_paths": [
+          "odylith/skills/subagent-orchestrator/SKILL.md"
+        ],
+        "workstream": "B-001",
+        "validation_commands": [
+          "odylith subagent-orchestrator --repo-root . --help"
+        ]
+      },
+      "match": {
+        "workstream": "B-001"
+      },
+      "expect": {
+        "packet_state": [
+          "compact",
+          "expanded",
+          "gated_ambiguous"
+        ],
+        "within_budget": true
+      }
+    },
+    {
+      "case_id": "dashboard-shell-optimization-surface",
+      "label": "Tooling-shell renderer slice",
+      "family": "dashboard_surface",
+      "priority": "medium",
+      "summary": "Tooling-shell changes should remain explicit in the benchmark harness because operators rely on the drawer for optimization posture.",
+      "benchmark": {
+        "prompt": "Update the Odylith shell/runtime drawer slice without letting renderer context balloon beyond the real surface boundary.",
+        "paths": [
+          "odylith/index.html",
+          "odylith/surfaces/GOVERNANCE_SURFACES.md"
+        ],
+        "required_paths": [
+          "odylith/index.html",
+          "odylith/surfaces/GOVERNANCE_SURFACES.md"
+        ],
+        "validation_commands": [
+          "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "odylith/index.html"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "intent_family": [
+          "implementation",
+          "analysis"
+        ]
+      }
+    },
+    {
+      "case_id": "orchestrator-ledger-closeout",
+      "label": "Delegation closeout and inspection ledger slice",
+      "family": "orchestration_intelligence",
+      "priority": "medium",
+      "summary": "Subagent orchestration changes should stay visible in the benchmark harness because they directly affect speed and accuracy under delegation.",
+      "benchmark": {
+        "prompt": "Keep orchestration and evaluation-ledger slices visible and grounded so delegation control is measurable, not guessed.",
+        "paths": [
+          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
+        ],
+        "required_paths": [
+          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
+        ],
+        "workstream": "B-001",
+        "validation_commands": [
+          "odylith subagent-orchestrator --repo-root . --help",
+          "odylith context-engine --repo-root . status"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "odylith/skills/subagent-orchestrator/SKILL.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true
+      }
+    },
+    {
+      "case_id": "wave4-runtime-sparse-miss-recovery",
+      "label": "Wave 4 runtime sparse-retrieval miss recovery",
+      "family": "retrieval_miss_recovery",
+      "priority": "high",
+      "summary": "Ambiguous non-shared slices can recover a few compact supporting docs/tests through the bounded runtime sparse-recovery lane without exceeding packet budgets.",
+      "benchmark": {
+        "prompt": "Exercise the sparse miss-recovery lane on an ambiguous non-shared slice and keep the result compact and provenance-rich.",
+        "paths": [
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "required_paths": [
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "validation_commands": [
+          "odylith context-engine --repo-root . status"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md"
+        ]
+      },
+      "expect": {
+        "packet_state": [
+          "gated_ambiguous",
+          "expanded"
+        ],
+        "within_budget": true,
+        "miss_recovery_active": true,
+        "miss_recovery_applied": true,
+        "miss_recovery_mode": [
+          "projection_exact_rescue",
+          "repo_scan_fallback",
+          "tantivy_sparse_recall"
+        ]
+      }
+    },
+    {
+      "case_id": "exact-workstream-anchor-density",
+      "label": "Exact workstream anchor stays dense and grounded",
+      "family": "exact_anchor_recall",
+      "priority": "high",
+      "summary": "Explicit workstream and path slices should retain grounded dense packets without broadening unnecessarily.",
+      "benchmark": {
+        "prompt": "Use the exact workstream anchor and keep the retained packet dense, grounded, and route-ready.",
+        "paths": [
+          "odylith/skills/subagent-router/SKILL.md"
+        ],
+        "required_paths": [
+          "odylith/skills/subagent-router/SKILL.md"
+        ],
+        "workstream": "B-001",
+        "validation_commands": [
+          "odylith subagent-router --repo-root . --help"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "odylith/skills/subagent-router/SKILL.md"
+        ],
+        "workstream": "B-001"
+      },
+      "expect": {
+        "packet_state": [
+          "expanded",
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "analysis"
+        ]
+      }
+    },
+    {
+      "case_id": "cross-file-feature-budget-discipline",
+      "label": "Cross-file feature slices stay budget-disciplined",
+      "family": "cross_file_feature",
+      "priority": "high",
+      "summary": "Cross-file implementation slices should retain bounded packets with route-ready posture instead of flooding context.",
+      "benchmark": {
+        "prompt": "Work a cross-file router and orchestrator feature slice without flooding context or overspending fanout.",
+        "paths": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/subagent-orchestrator/SKILL.md"
+        ],
+        "required_paths": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/subagent-orchestrator/SKILL.md"
+        ],
+        "workstream": "B-001",
+        "validation_commands": [
+          "odylith subagent-router --repo-root . --help",
+          "odylith subagent-orchestrator --repo-root . --help"
+        ]
+      },
+      "match": {
+        "paths_all": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/subagent-orchestrator/SKILL.md"
+        ]
+      },
+      "expect": {
+        "packet_state": [
+          "expanded",
+          "gated_ambiguous",
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation"
+        ]
+      }
+    },
+    {
+      "case_id": "validation-heavy-router-fix",
+      "label": "Validation-heavy fixes earn deeper reasoning only when grounded",
+      "family": "validation_heavy_fix",
+      "priority": "high",
+      "summary": "Validation-heavy runtime fixes should justify deeper reasoning through route-ready grounding, not by default spend.",
+      "benchmark": {
+        "prompt": "Fix a validation-heavy router slice and justify deeper reasoning only when the packet is grounded enough to earn it.",
+        "paths": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/runtime/SUBAGENT_OPERATIONS.md"
+        ],
+        "required_paths": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/runtime/SUBAGENT_OPERATIONS.md"
+        ],
+        "critical_paths": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/runtime/SUBAGENT_OPERATIONS.md"
+        ],
+        "workstream": "B-001",
+        "validation_commands": [
+          "odylith subagent-router --repo-root . --help"
+        ],
+        "correctness_critical": true
+      },
+      "match": {
+        "paths_any": [
+          "odylith/runtime/SUBAGENT_OPERATIONS.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "merge-heavy-router-doc-sync",
+      "label": "Merge-heavy router and docs slices stay serial-aware",
+      "family": "merge_heavy_change",
+      "priority": "high",
+      "summary": "Co-owned router, orchestration, and governed-doc slices should stay grounded and bounded instead of paying unnecessary broad fan-out cost.",
+      "benchmark": {
+        "prompt": "Handle a merge-heavy router plus governed-doc slice without underestimating coordination or validation pressure.",
+        "paths": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/runtime/SUBAGENT_OPERATIONS.md",
+          "odylith/runtime/SUBAGENT_OPERATIONS.md"
+        ],
+        "required_paths": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/runtime/SUBAGENT_OPERATIONS.md"
+        ],
+        "critical_paths": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/runtime/SUBAGENT_OPERATIONS.md"
+        ],
+        "workstream": "B-001",
+        "validation_commands": [
+          "odylith subagent-router --repo-root . --help",
+          "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+        ],
+        "correctness_critical": true,
+        "allow_noop_completion": true
+      },
+      "match": {
+        "paths_all": [
+          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/runtime/SUBAGENT_OPERATIONS.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "docs-code-governed-closeout",
+      "label": "Docs plus code governed closeout stays compact",
+      "family": "docs_code_closeout",
+      "priority": "medium",
+      "summary": "Mixed code plus living-spec slices should stay compact and provenance-rich instead of ballooning from governed documentation.",
+      "benchmark": {
+        "prompt": "Close out a docs-plus-code governed slice without letting the packet bloat or lose provenance; if the grounded docs already satisfy the contract and further edits would force unrelated out-of-scope governance regeneration, preserve the current docs and stop.",
+        "paths": [
+          "odylith/registry/README.md",
+          "odylith/surfaces/GOVERNANCE_SURFACES.md",
+          "odylith/surfaces/GOVERNANCE_SURFACES.md"
+        ],
+        "required_paths": [
+          "odylith/registry/README.md",
+          "odylith/surfaces/GOVERNANCE_SURFACES.md"
+        ],
+        "validation_commands": [
+          "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+        ],
+        "allow_noop_completion": true
+      },
+      "match": {
+        "paths_all": [
+          "odylith/registry/README.md",
+          "odylith/surfaces/GOVERNANCE_SURFACES.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "closeout-surface-path-normalization",
+      "label": "Governed surface closeout path normalization stays truthful",
+      "family": "governed_surface_sync",
+      "priority": "high",
+      "summary": "Moved-plan closeouts should propagate cleanly through delivery intelligence, Odylith backlog reads, Compass, and Odylith without stale in-progress leaks.",
+      "benchmark": {
+        "prompt": "Keep plan closeout path truth synchronized across delivery intelligence, Odylith surface reads, Compass, and Odylith.",
+        "paths": [
+          "odylith/surfaces/GOVERNANCE_SURFACES.md",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+          "odylith/radar/source/INDEX.md"
+        ],
+        "required_paths": [
+          "odylith/surfaces/GOVERNANCE_SURFACES.md",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+          "odylith/radar/source/INDEX.md"
+        ],
+        "validation_commands": [
+          "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills",
+          "odylith context-engine --repo-root . status"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_governed_surface_closeout_path_truth_stays_normalized_across_runtime_readers"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true
+      },
+      "match": {
+        "paths_any": [
+          "odylith/surfaces/GOVERNANCE_SURFACES.md",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "orchestration-control-advisory-loop",
+      "label": "Orchestration control advisories stay visible",
+      "family": "orchestration_feedback",
+      "priority": "high",
+      "summary": "Subagent orchestration slices should preserve the closed-loop control advisory posture through routing and leaf shaping.",
+      "benchmark": {
+        "prompt": "Preserve the closed-loop orchestration advisory posture through routing, leaf shaping, and local evaluation evidence.",
+        "paths": [
+          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
+        ],
+        "required_paths": [
+          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
+        ],
+        "workstream": "B-001",
+        "validation_commands": [
+          "odylith subagent-orchestrator --repo-root . --help",
+          "odylith context-engine --repo-root . status"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true
+      }
+    },
+    {
+      "case_id": "consumer-install-upgrade-runtime-contract",
+      "label": "Consumer install and upgrade runtime contract stays grounded",
+      "family": "install_upgrade_runtime",
+      "priority": "critical",
+      "summary": "Consumer install and upgrade work should stay grounded across runtime activation, repo pin truth, release contract, and real integration coverage.",
+      "benchmark": {
+        "prompt": "Repair any consumer install or upgrade regression without breaking latest-version adoption, repo pin truth, or managed runtime activation; if the current tree already satisfies the grounded contract, preserve it and stop.",
+        "paths": [
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py",
+          "tests/integration/install/test_manager.py"
+        ],
+        "required_paths": [
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py",
+          "tests/integration/install/test_manager.py",
+          "tests/unit/install/test_runtime.py",
+          "tests/unit/test_cli.py",
+          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+          "odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+        ],
+        "critical_paths": [
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py",
+          "tests/integration/install/test_manager.py"
+        ],
+        "validation_commands": [
+          "odylith install --help",
+          "PYTHONPATH=src .venv/bin/pytest -q tests/integration/install/test_manager.py tests/unit/install/test_runtime.py tests/unit/test_cli.py"
+        ],
+        "focused_local_checks": [
+          "Legacy runtime launcher subset: `tests/unit/install/test_runtime.py::test_legacy_consumer_launcher_bootstraps_plain_upgrade_via_installer` and `tests/unit/install/test_runtime.py::test_install_release_runtime_reuses_existing_verified_runtime`.",
+          "Manager latest-adoption subset: `tests/integration/install/test_manager.py::test_consumer_upgrade_without_target_advances_to_latest_and_updates_pin` and `tests/integration/install/test_manager.py::test_reinstall_install_repairs_same_version_runtime_when_upgrade_requires_doctor`.",
+          "CLI latest-adoption subset: `tests/unit/test_cli.py::test_install_adopt_latest_reinstalls_and_updates_repo_pin` and `tests/unit/test_cli.py::test_reinstall_defaults_to_latest_verified_release`."
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-005"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "release-benchmark-publication-proof",
+      "label": "Release benchmark proof and publication stay governed",
+      "family": "release_publication",
+      "priority": "high",
+      "summary": "Release benchmark publication work should stay grounded across the runner, graphs, README, and maintainer release contract instead of drifting into presentation-only edits.",
+      "benchmark": {
+        "prompt": "Refresh the public benchmark proof and README only where needed, without drifting from the validated Codex report or the maintainer release rules; if the current report and anchored publication surfaces already match, preserve them.",
+        "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+          "README.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+          "README.md",
+          "docs/benchmarks/README.md",
+          "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+          "docs/benchmarks/REVIEWER_GUIDE.md",
+          "docs/benchmarks/release-baselines.v1.json",
+          "odylith/README.md",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/python -m odylith.runtime.evaluation.odylith_benchmark_graphs --report .odylith/runtime/odylith-benchmarks/latest.v1.json --out-dir .tmp-benchmark-publication-proof-graphs",
+          "PYTHONPATH=src .venv/bin/pytest -q --basetemp=./.tmp-pytest-benchmark-publication-proof -o cache_dir=./.tmp-pytest-cache-benchmark-publication-proof tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_benchmark_publication_hot_path_keeps_required_benchmark_spec_visible tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_publication_packet_keeps_graph_renderer_grounded tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_publication_hot_path_uses_light_supporting_evidence_profile tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_publication_hot_path_uses_light_component_detail_lookup tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_publication_hot_path_docs_keep_graph_renderer_without_leaking_into_component_governance tests/unit/runtime/test_odylith_benchmark_graphs.py::test_render_graph_assets_prefers_published_conservative_view tests/unit/runtime/test_odylith_benchmark_graphs.py::test_scenario_rows_normalize_public_odylith_off_alias tests/unit/runtime/test_hygiene.py::test_benchmark_honest_baseline_contract_stays_explicit"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q --basetemp=./.tmp-pytest-benchmark-publication-proof -o cache_dir=./.tmp-pytest-cache-benchmark-publication-proof tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_benchmark_publication_hot_path_keeps_required_benchmark_spec_visible tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_publication_packet_keeps_graph_renderer_grounded tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_publication_hot_path_uses_light_supporting_evidence_profile tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_publication_hot_path_uses_light_component_detail_lookup tests/unit/runtime/test_odylith_benchmark_runner.py::test_release_publication_hot_path_docs_keep_graph_renderer_without_leaking_into_component_governance tests/unit/runtime/test_odylith_benchmark_graphs.py::test_render_graph_assets_prefers_published_conservative_view tests/unit/runtime/test_odylith_benchmark_graphs.py::test_scenario_rows_normalize_public_odylith_off_alias tests/unit/runtime/test_hygiene.py::test_benchmark_honest_baseline_contract_stays_explicit"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-020"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "README.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "shell-and-compass-browser-reliability",
+      "label": "Shell and Compass browser reliability stays validated",
+      "family": "browser_surface_reliability",
+      "priority": "high",
+      "summary": "Rendered surface work should stay grounded across shell renderers, Compass interactions, and headless browser proof instead of drifting into HTML-only edits.",
+      "benchmark": {
+        "prompt": "Repair a shell or Compass browser regression without losing deep-link behavior, state restore, or headless proof coverage.",
+        "paths": [
+          "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+          "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+          "tests/integration/runtime/test_surface_browser_smoke.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+          "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+          "tests/integration/runtime/test_surface_browser_smoke.py",
+          "odylith/index.html",
+          "odylith/compass/compass.html"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py"
+        ],
+        "needs_write": true,
+        "workstream": "B-018"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+          "src/odylith/runtime/surfaces/compass_dashboard_shell.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "context-engine-daemon-security-hardening",
+      "label": "Context engine daemon security and lifecycle stay grounded",
+      "family": "daemon_security",
+      "priority": "critical",
+      "summary": "Daemon lifecycle and local transport changes should stay grounded across runtime code, repair behavior, and the context-engine contract instead of drifting into partial fixes.",
+      "benchmark": {
+        "prompt": "Harden the Odylith context-engine daemon transport and repair path without leaking background processes or weakening local security posture; if the grounded daemon lifecycle and repair anchors already satisfy the validator-backed contract, stop with no file changes.",
+        "paths": [
+          "src/odylith/runtime/context_engine/odylith_context_engine.py",
+          "src/odylith/install/repair.py",
+          "tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/context_engine/odylith_context_engine.py",
+          "src/odylith/install/repair.py",
+          "tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/context_engine/odylith_context_engine.py",
+          "src/odylith/install/repair.py",
+          "tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py tests/unit/install/test_repair.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py tests/unit/install/test_repair.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-014"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/context_engine/odylith_context_engine.py",
+          "src/odylith/install/repair.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "benchmark-component-governance-truth",
+      "label": "Benchmark component governance truth stays synchronized",
+      "family": "component_governance",
+      "priority": "high",
+      "summary": "Benchmark component work should stay grounded across Registry truth, Atlas catalog truth, and validation proof instead of drifting into one-surface edits.",
+      "benchmark": {
+        "prompt": "Tighten the benchmark component and its proof lane so Registry, Atlas, and validation proof stay aligned.",
+        "paths": [
+          "odylith/registry/source/component_registry.v1.json",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
+          "tests/unit/runtime/test_validate_component_registry_contract.py",
+          "tests/unit/runtime/test_render_mermaid_catalog.py"
+        ],
+        "required_paths": [
+          "odylith/registry/source/component_registry.v1.json",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
+          "odylith/atlas/source/catalog/diagrams.v1.json",
+          "tests/unit/runtime/test_validate_component_registry_contract.py",
+          "tests/unit/runtime/test_render_mermaid_catalog.py"
+        ],
+        "validation_commands": [
+          "odylith validate component-registry --repo-root .",
+          "odylith atlas render --repo-root . --check-only",
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_validate_component_registry_contract.py tests/unit/runtime/test_render_mermaid_catalog.py"
+        ],
+        "focused_local_checks": [
+          "odylith validate component-registry --repo-root .",
+          "odylith atlas render --repo-root . --check-only",
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_validate_component_registry_contract.py tests/unit/runtime/test_render_mermaid_catalog.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-020",
+        "component": "benchmark"
+      },
+      "match": {
+        "paths_any": [
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/registry/source/component_registry.v1.json"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "compass-brief-freshness-and-reactivity",
+      "label": "Compass brief freshness stays reactive across surfaces",
+      "family": "compass_brief_freshness",
+      "priority": "high",
+      "summary": "Compass brief work should stay grounded across runtime freshness logic, narrator behavior, and Compass surface contract instead of optimizing stale caches.",
+      "benchmark": {
+        "prompt": "Improve Compass brief speed without making 24h or 48h narration stale across Atlas, Registry, Casebook, or audit-timeline updates.",
+        "paths": [
+          "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+          "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+          "tests/unit/runtime/test_compass_dashboard_runtime.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+          "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+          "tests/unit/runtime/test_compass_dashboard_runtime.py",
+          "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/runtime/test_render_compass_dashboard.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/runtime/test_render_compass_dashboard.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-012"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+          "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "install-time-agent-activation-contract",
+      "label": "Install-time agent activation stays grounded",
+      "family": "agent_activation",
+      "priority": "high",
+      "summary": "Consumer agent activation should stay grounded across install code, root AGENTS activation, guidelines, and skills instead of drifting into partial onboarding behavior.",
+      "benchmark": {
+        "prompt": "Repair any install-time Odylith agent activation regression so consumer repos inherit Odylith guidance, skills, and grounded spawn posture; if the grounded install surfaces already satisfy the contract, stop with no file changes.",
+        "paths": [
+          "src/odylith/install/agents.py",
+          "src/odylith/install/manager.py",
+          "tests/unit/install/test_agents.py"
+        ],
+        "required_paths": [
+          "src/odylith/install/agents.py",
+          "src/odylith/install/manager.py",
+          "tests/unit/install/test_agents.py",
+          "tests/integration/install/test_manager.py",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+          "odylith/skills/subagent-orchestrator/SKILL.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/install/test_agents.py tests/integration/install/test_manager.py"
+        ],
+        "focused_local_checks": [
+          "Unit AGENTS block subset: `tests/unit/install/test_agents.py::test_managed_block_defaults_consumers_to_odylith_guidance_and_skills`.",
+          "Unit product-scope truth subset: `tests/unit/install/test_agents.py::test_managed_block_matches_repo_root_product_scope_truth`.",
+          "Integration activation subset: `tests/integration/install/test_manager.py::test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_bundle`."
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-016"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/install/agents.py",
+          "src/odylith/install/manager.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "cross-surface-governance-sync-truth",
+      "label": "Cross-surface governance sync truth stays consistent",
+      "family": "cross_surface_governance_sync",
+      "priority": "high",
+      "summary": "Cross-surface governance sync work should stay grounded across sync code, Radar, Plans, Registry, and Atlas instead of drifting into isolated index edits.",
+      "benchmark": {
+        "prompt": "Repair cross-surface governance sync truth so backlog, plans, Registry, and Atlas stay consistent after workstream movement or closeout.",
+        "paths": [
+          "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+          "odylith/radar/source/INDEX.md",
+          "odylith/technical-plans/INDEX.md"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+          "odylith/radar/source/INDEX.md",
+          "odylith/technical-plans/INDEX.md",
+          "odylith/atlas/source/catalog/diagrams.v1.json",
+          "odylith/registry/source/component_registry.v1.json",
+          "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md"
+        ],
+        "validation_commands": [
+          "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+        ],
+        "needs_write": true,
+        "workstream": "B-021"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+          "odylith/radar/source/INDEX.md",
+          "odylith/technical-plans/INDEX.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "benchmark-raw-baseline-publication-contract",
+      "label": "Benchmark publication makes raw baseline explicit",
+      "family": "release_publication",
+      "priority": "critical",
+      "summary": "Benchmark publication work should make `raw_agent_baseline` the honest same-task comparison while keeping the repo-scan lane visible only as a secondary scaffold control.",
+      "benchmark": {
+        "prompt": "Update Odylith benchmark publication only where needed so the public Codex proof compares `odylith_on` against `raw_agent_baseline`, while still publishing the repo-scan scaffold control separately; if the anchored docs already match that contract, preserve them.",
+        "paths": [
+          "README.md",
+          "docs/benchmarks/README.md",
+          "docs/benchmarks/REVIEWER_GUIDE.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md"
+        ],
+        "required_paths": [
+          "README.md",
+          "docs/benchmarks/README.md",
+          "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+          "docs/benchmarks/REVIEWER_GUIDE.md",
+          "odylith/README.md",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q --basetemp=./.tmp-pytest-benchmark-publication-raw -o cache_dir=./.tmp-pytest-cache-benchmark-publication-raw tests/unit/runtime/test_hygiene.py::test_benchmark_honest_baseline_contract_stays_explicit tests/unit/runtime/test_odylith_benchmark_graphs.py::test_render_graph_assets_prefers_published_conservative_view tests/unit/runtime/test_odylith_benchmark_graphs.py::test_scenario_rows_normalize_public_odylith_off_alias"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q --basetemp=./.tmp-pytest-benchmark-publication-raw -o cache_dir=./.tmp-pytest-cache-benchmark-publication-raw tests/unit/runtime/test_hygiene.py::test_benchmark_honest_baseline_contract_stays_explicit tests/unit/runtime/test_odylith_benchmark_graphs.py::test_render_graph_assets_prefers_published_conservative_view tests/unit/runtime/test_odylith_benchmark_graphs.py::test_scenario_rows_normalize_public_odylith_off_alias"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-022",
+        "component": "benchmark"
+      },
+      "match": {
+        "paths_any": [
+          "README.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md"
+        ],
+        "workstream": "B-022"
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "benchmark-raw-baseline-runner-gate",
+      "label": "Benchmark runner gate stays raw-baseline-first",
+      "family": "validation_heavy_fix",
+      "priority": "critical",
+      "summary": "Benchmark runner work should compare Odylith against the raw baseline first and treat slower or more expensive packets as honest tradeoffs instead of hidden failures.",
+      "benchmark": {
+        "prompt": "Rework the benchmark runner so `raw_agent_baseline` is the honest comparison baseline and the acceptance gate stays quality-first instead of silently privileging repo-scan or raw token cheapness.",
+        "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_runner.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_runner.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "docs/benchmarks/REVIEWER_GUIDE.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_graphs.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_run_benchmarks_publishes_conservative_multi_profile_view"
+        ],
+        "needs_write": true,
+        "allow_noop_completion": true,
+        "workstream": "B-022",
+        "component": "benchmark",
+        "correctness_critical": true,
+        "critical_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_runner.py"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_runner.py"
+        ],
+        "workstream": "B-022"
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "benchmark-docs-and-readme-closeout",
+      "label": "Benchmark README and docs closeout stays synchronized",
+      "family": "docs_code_closeout",
+      "priority": "high",
+      "summary": "Benchmark copy changes should stay synchronized across README, explainer docs, reviewer framing, and graph semantics instead of leaving one surface stale.",
+      "benchmark": {
+        "prompt": "Close out benchmark docs and README wording so the honest raw baseline story, graph framing, and four-lane table all say the same thing.",
+        "paths": [
+          "README.md",
+          "docs/benchmarks/README.md",
+          "docs/benchmarks/REVIEWER_GUIDE.md"
+        ],
+        "required_paths": [
+          "README.md",
+          "docs/benchmarks/README.md",
+          "docs/benchmarks/REVIEWER_GUIDE.md",
+          "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py tests/unit/runtime/test_hygiene.py"
+        ],
+        "needs_write": true,
+        "workstream": "B-022"
+      },
+      "match": {
+        "paths_any": [
+          "README.md",
+          "docs/benchmarks/README.md",
+          "docs/benchmarks/REVIEWER_GUIDE.md"
+        ],
+        "workstream": "B-022"
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "benchmark-component-honesty-governance",
+      "label": "Benchmark component honesty stays Registry-backed",
+      "family": "component_governance",
+      "priority": "high",
+      "summary": "Benchmark contract changes should stay grounded across the component spec, proof diagram, maintainer guidance, and benchmark docs instead of becoming one-file policy drift.",
+      "benchmark": {
+        "prompt": "Tighten the benchmark component so Registry, Atlas, maintainer guidance, and benchmark docs all reflect the same honest raw-baseline contract.",
+        "paths": [
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md"
+        ],
+        "required_paths": [
+          "odylith/registry/source/component_registry.v1.json",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+          "docs/benchmarks/README.md"
+        ],
+        "validation_commands": [
+          "odylith validate component-registry --repo-root .",
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_hygiene.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-022",
+        "component": "benchmark"
+      },
+      "match": {
+        "paths_any": [
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd"
+        ],
+        "workstream": "B-022"
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "benchmark-corpus-expansion-mirror-integrity",
+      "label": "Benchmark corpus expansion stays mirrored and governed",
+      "family": "cross_surface_governance_sync",
+      "priority": "high",
+      "summary": "Benchmark corpus growth should stay synchronized across the public corpus, bundled corpus mirror, Radar workstream truth, and validation tests instead of landing as an isolated JSON bump.",
+      "benchmark": {
+        "prompt": "Expand the Odylith benchmark corpus with additional realistic scenarios and keep the public corpus, bundled mirror, Radar truth, and validation tests aligned.",
+        "paths": [
+          "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+          "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+          "tests/unit/runtime/test_odylith_benchmark_corpus.py"
+        ],
+        "required_paths": [
+          "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+          "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+          "tests/unit/runtime/test_odylith_benchmark_corpus.py",
+          "tests/unit/runtime/test_hygiene.py",
+          "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py"
+        ],
+        "needs_write": true,
+        "workstream": "B-022"
+      },
+      "match": {
+        "paths_any": [
+          "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+          "tests/unit/runtime/test_odylith_benchmark_corpus.py"
+        ],
+        "workstream": "B-022"
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "tooling-dashboard-onboarding-browser-contract",
+      "label": "Tooling dashboard onboarding browser contract stays grounded",
+      "family": "browser_surface_reliability",
+      "priority": "high",
+      "summary": "First-run launchpad and onboarding browser behavior should stay grounded across the real shell renderer, onboarding copy, CLI install flow, and headless browser proof instead of drifting into static HTML edits.",
+      "benchmark": {
+        "prompt": "Keep the first-run launchpad and onboarding browser behavior grounded in the real rendered shell and the browser contract that proves it.",
+        "paths": [
+          "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+          "src/odylith/runtime/surfaces/shell_onboarding.py",
+          "tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+          "src/odylith/runtime/surfaces/shell_onboarding.py",
+          "src/odylith/cli.py",
+          "tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py",
+          "tests/unit/runtime/test_render_tooling_dashboard.py",
+          "odylith/index.html"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q --basetemp=./.tmp-pytest-browser-contract -o cache_dir=./.tmp-pytest-cache-browser-contract tests/unit/runtime/test_shell_onboarding.py::test_build_release_spotlight_for_recent_consumer_upgrade tests/unit/runtime/test_shell_onboarding.py::test_build_release_spotlight_ignores_first_install_with_stale_payload tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popup tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_upgrade_recovery_pill_expires_after_ten_minutes_even_without_rerender tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_install_renders_a_browser_valid_first_run_launchpad tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_install_adopt_latest_renders_a_browser_valid_incremental_upgrade_note"
+        ],
+        "needs_write": true,
+        "workstream": "B-028",
+        "component": "dashboard"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+          "src/odylith/runtime/surfaces/shell_onboarding.py",
+          "tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "cli-install-first-run-onboarding-contract",
+      "label": "CLI install first-run onboarding contract stays honest",
+      "family": "cli_contract_regression",
+      "priority": "high",
+      "summary": "Public CLI install and onboarding behavior should stay grounded across install lifecycle messaging, first-run surface bootstrap, browser-launch gating, and starter prompt truth instead of drifting into maintainer-only commands.",
+      "benchmark": {
+        "prompt": "Repair the public install or onboarding CLI contract without drifting from the user-facing first-run workflow that unit tests prove.",
+        "paths": [
+          "src/odylith/cli.py",
+          "src/odylith/runtime/surfaces/shell_onboarding.py",
+          "tests/unit/test_cli.py"
+        ],
+        "required_paths": [
+          "src/odylith/cli.py",
+          "src/odylith/runtime/surfaces/shell_onboarding.py",
+          "tests/unit/test_cli.py",
+          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+          "odylith/index.html"
+        ],
+        "validation_commands": [
+          "odylith install --help",
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/test_cli.py"
+        ],
+        "needs_write": true,
+        "workstream": "B-031"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/cli.py",
+          "src/odylith/runtime/surfaces/shell_onboarding.py",
+          "tests/unit/test_cli.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "consumer-profile-truth-root-compatibility",
+      "label": "Consumer profile truth-root compatibility stays intact",
+      "family": "consumer_profile_compatibility",
+      "priority": "high",
+      "summary": "Consumer profile loading should preserve explicit consumer truth roots and write policy across installed Odylith trees, legacy aliases, and public-product posture instead of silently rebinding the repo to product defaults.",
+      "benchmark": {
+        "prompt": "Preserve explicit consumer truth roots and compatibility behavior instead of silently rebinding the repo to product defaults.",
+        "paths": [
+          "src/odylith/runtime/common/consumer_profile.py",
+          "tests/unit/runtime/test_consumer_profile.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/common/consumer_profile.py",
+          "tests/unit/runtime/test_consumer_profile.py",
+          "odylith/AGENTS.md",
+          "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+          "odylith/registry/source/components/registry/CURRENT_SPEC.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_consumer_profile.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_consumer_profile.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-027"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/common/consumer_profile.py",
+          "tests/unit/runtime/test_consumer_profile.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "product-runtime-state-js-companion-contract",
+      "label": "Product runtime state JS companion contract stays correct",
+      "family": "runtime_state_integrity",
+      "priority": "high",
+      "summary": "Runtime state writes should preserve the JSON-plus-JS companion contract across consumer repos, product repos, and detached source-local posture instead of leaking stale probe assets or hiding live state.",
+      "benchmark": {
+        "prompt": "Preserve the JSON-plus-JS state-write contract so product and consumer repos expose the right runtime probe surface under tests.",
+        "paths": [
+          "src/odylith/runtime/context_engine/odylith_control_state.py",
+          "src/odylith/install/state.py",
+          "tests/unit/runtime/test_odylith_control_state.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/context_engine/odylith_control_state.py",
+          "src/odylith/install/state.py",
+          "tests/unit/runtime/test_odylith_control_state.py",
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+          "odylith/registry/source/components/dashboard/CURRENT_SPEC.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_control_state.py"
+        ],
+        "needs_write": true,
+        "workstream": "B-025",
+        "component": "odylith-context-engine"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/context_engine/odylith_control_state.py",
+          "tests/unit/runtime/test_odylith_control_state.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "managed-runtime-repair-and-rollback-contract",
+      "label": "Managed runtime repair and rollback stays validator-backed",
+      "family": "install_upgrade_runtime",
+      "priority": "critical",
+      "summary": "Managed runtime repair and rollback work should stay grounded in the install manager, repair path, verified runtime retention, and real integration proof instead of drifting into policy-only guidance.",
+      "benchmark": {
+        "prompt": "Repair any managed runtime repair or rollback regression against the real install manager and integration tests instead of via policy-only guidance; if the grounded install surfaces already satisfy the contract, stop with no file changes.",
+        "paths": [
+          "src/odylith/install/manager.py",
+          "src/odylith/install/repair.py",
+          "tests/integration/install/test_manager.py"
+        ],
+        "required_paths": [
+          "src/odylith/install/manager.py",
+          "src/odylith/install/repair.py",
+          "src/odylith/install/state.py",
+          "tests/integration/install/test_manager.py",
+          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+          "odylith/registry/source/components/release/CURRENT_SPEC.md"
+        ],
+        "critical_paths": [
+          "src/odylith/install/manager.py",
+          "src/odylith/install/repair.py",
+          "tests/integration/install/test_manager.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/integration/install/test_manager.py -k 'doctor_bundle or rollback_install or reinstall_install'"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-030",
+        "component": "release"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/install/manager.py",
+          "src/odylith/install/repair.py",
+          "tests/integration/install/test_manager.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    }
+  ],
+  "architecture_scenarios": [
+    {
+      "case_id": "architecture-odylith-self-grounding",
+      "label": "Odylith self-architecture stays contract-backed",
+      "summary": "Architecture mode over Odylith code should still ground against component specs and architecture guidance instead of free-form prose.",
+      "benchmark": {
+        "prompt": "Audit the Odylith context engine architecture and keep the dossier grounded against the actual component and architecture surface.",
+        "paths": [
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "required_paths": [
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "domains_any": [
+          "odylith-context-engine"
+        ]
+      },
+      "expect": {
+        "confidence_tier": [
+          "medium",
+          "high"
+        ],
+        "contract_touchpoints_min": 1
+      }
+    },
+    {
+      "case_id": "architecture-release-install-runtime-boundary",
+      "label": "Release and install runtime boundary stays contract-backed",
+      "summary": "Architecture mode over Odylith release and install work should stay grounded against runtime activation code, install runbooks, and release component contracts.",
+      "benchmark": {
+        "prompt": "Audit the Odylith release and install runtime boundary and keep the dossier grounded against the real contracts and operator runbooks.",
+        "paths": [
+          "src/odylith/install/runtime.py"
+        ],
+        "required_paths": [
+          "src/odylith/install/runtime.py",
+          "src/odylith/install/manager.py",
+          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+          "odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/install/runtime.py",
+          "src/odylith/install/manager.py"
+        ],
+        "domains_any": [
+          "release",
+          "odylith"
+        ]
+      },
+      "expect": {
+        "confidence_tier": [
+          "medium",
+          "high"
+        ],
+        "contract_touchpoints_min": 2
+      }
+    },
+    {
+      "case_id": "architecture-benchmark-proof-publication-lane",
+      "label": "Benchmark proof and publication lane stays grounded",
+      "summary": "Architecture mode over Odylith benchmark publication should stay grounded against the benchmark component, Atlas proof lane, README publication surface, and maintainer release contract.",
+      "benchmark": {
+        "prompt": "Audit the Odylith benchmark proof and publication lane and keep the dossier grounded against the benchmark component, D-024, and release publication contract.",
+        "paths": [
+          "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd"
+        ],
+        "required_paths": [
+          "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "README.md",
+          "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
+        ],
+        "domains_any": [
+          "benchmark"
+        ]
+      },
+      "expect": {
+        "confidence_tier": [
+          "medium",
+          "high"
+        ],
+        "contract_touchpoints_min": 2
+      }
+    },
+    {
+      "case_id": "architecture-benchmark-honest-baseline-contract",
+      "label": "Benchmark honest-baseline contract stays grounded",
+      "summary": "Architecture mode over Odylith benchmark comparison rules should stay grounded against the runner, benchmark component, maintainer guidance, and public publication surfaces instead of turning into vague narrative policy.",
+      "benchmark": {
+        "prompt": "Audit the Odylith benchmark honest-baseline contract and keep the dossier grounded against the runner, benchmark component, maintainer guidance, and public publication surfaces.",
+        "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "README.md",
+          "docs/benchmarks/README.md"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
+        ],
+        "domains_any": [
+          "benchmark"
+        ]
+      },
+      "expect": {
+        "confidence_tier": [
+          "medium",
+          "high"
+        ],
+        "contract_touchpoints_min": 3
+      }
+    }
+  ]
+}

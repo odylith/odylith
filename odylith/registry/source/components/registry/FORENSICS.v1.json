@@ -1,0 +1,471 @@
+{
+  "component_id": "registry",
+  "diagrams": [
+    "D-001",
+    "D-004",
+    "D-005",
+    "D-013",
+    "D-018",
+    "D-002",
+    "D-003",
+    "D-006",
+    "D-007",
+    "D-008",
+    "D-009",
+    "D-010",
+    "D-011",
+    "D-012",
+    "D-014",
+    "D-015",
+    "D-016",
+    "D-017",
+    "D-019",
+    "D-020",
+    "D-021",
+    "D-022",
+    "D-023",
+    "D-024"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 14,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 1,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 15
+  },
+  "name": "Registry",
+  "path_prefixes": [
+    "odylith/registry/source/component_registry.v1.json",
+    "src/odylith/runtime/governance/component_registry_intelligence.py",
+    "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+  ],
+  "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "src/odylith/runtime/governance/component_registry_intelligence.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 52,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json, odylith/registry/source/components/registry/CURRENT_SPEC.md +2 more",
+      "ts_iso": "2026-04-05T12:51:52-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 26,
+      "explicit_components": [
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "odylith",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Successor created: B-276 reopens B-275 for active plan binding",
+      "ts_iso": "2026-03-23T08:03:30-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 21,
+      "explicit_components": [
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Added quick-tooltip metadata to Registry component spec inline links and code spans for hover parity in the Current Spec pane.",
+      "ts_iso": "2026-03-17T19:15:09-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 20,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "The Subagent Router hardening keeps bounded delegation accuracy-first and stops retrying when the slice itself is wrong.",
+      "ts_iso": "2026-03-16T15:14:19-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 19,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implemented family-aware adaptive tuning, low-confidence GPT-5.4 promotion, smarter hard gates, and broader-coordination rescope handling in the Subagent Router.",
+      "ts_iso": "2026-03-16T15:14:19-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 18,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Deepened Subagent Router with task-family assessment, route-confidence backstops, and escalation refusal that can return control to the main thread.",
+      "ts_iso": "2026-03-16T15:14:19-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 17,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Current execution focus is validator-backed router and governance-surface sync for the Subagent Router slice.",
+      "ts_iso": "2026-03-16T14:37:51-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 16,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implemented the Subagent Router runtime, the thin router skill, the component spec and runbook, and the Atlas routing topology diagrams.",
+      "ts_iso": "2026-03-16T14:37:51-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 15,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Decision: keep Subagent Router accuracy-first, hard-gated, and first-class in Registry and Atlas instead of hiding delegation policy in prompt folklore.",
+      "ts_iso": "2026-03-16T14:37:51-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 14,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry",
+        "odylith"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Current execution: the standup now reflects the refreshed dashboard state from the current working tree, with generated UI artifacts awaiting review.",
+      "ts_iso": "2026-03-05T16:16:20-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 13,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Refreshed Radar, Atlas, Compass, Registry, Odylith, and the tooling shell; auto-synced the stale Mermaid diagrams; and fixed Odylith dashboard rendering so the workstream sync completes.",
+      "ts_iso": "2026-03-05T16:16:20-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 12,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry",
+        "odylith"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Decision: treat stale Atlas diagrams and Odylith render errors as fail-closed blockers before accepting a dashboard refresh.",
+      "ts_iso": "2026-03-05T16:16:20-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 11,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Latest check-in completed the Registry migration and cross-dashboard governance UX unification.",
+      "ts_iso": "2026-03-04T19:05:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 10,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Shipped Registry dashboard rendering plus governance and traceability sync updates, and refreshed generated Radar, Atlas, and Compass shells.",
+      "ts_iso": "2026-03-04T19:05:08-08:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 9,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Standardized governance visibility around Registry as the canonical component audit surface across Radar, Atlas, and Compass.",
+      "ts_iso": "2026-03-04T19:05:08-08:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Component inventory, spec snapshot, and evidence-correlation surface.",
+  "why_tracked": "Defines the authoritative component inventory for the Odylith product repo and its installed product contract.",
+  "workstreams": [
+    "B-001",
+    "B-006",
+    "B-002",
+    "B-005",
+    "B-007",
+    "B-024",
+    "B-018",
+    "B-013",
+    "B-017",
+    "B-034",
+    "B-035",
+    "B-043",
+    "B-045"
+  ]
+}

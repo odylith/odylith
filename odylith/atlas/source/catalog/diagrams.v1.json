@@ -1,0 +1,1769 @@
+{
+  "version": "v1",
+  "diagrams": [
+    {
+      "diagram_id": "D-001",
+      "slug": "odylith-product-governance-loop",
+      "title": "Odylith Product Governance Loop",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-product-governance-loop.mmd",
+      "source_svg": "odylith/atlas/source/odylith-product-governance-loop.svg",
+      "source_png": "odylith/atlas/source/odylith-product-governance-loop.png",
+      "summary": "Odylith governs its own product backlog, plans, bugs, diagrams, and generated surfaces inside the public repo while consumers keep their own repo truth locally.",
+      "change_watch_paths": [
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/components/casebook/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/common/log_compass_timeline_event.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "components": [
+        {
+          "name": "odylith",
+          "description": "Top-level product contract that owns the installable CLI, governance loop, and self-governing repo boundary."
+        },
+        {
+          "name": "dashboard",
+          "description": "Shell surface that links the Odylith governance views into one operator-facing product entrypoint."
+        },
+        {
+          "name": "radar",
+          "description": "Backlog/workstream surface that tracks active product slices and ranking decisions for Odylith itself."
+        },
+        {
+          "name": "atlas",
+          "description": "Diagram surface that stores and renders the architecture maps governing the Odylith product."
+        },
+        {
+          "name": "compass",
+          "description": "Execution-audit surface that records and renders Odylith timeline evidence for its own repo."
+        },
+        {
+          "name": "registry",
+          "description": "Component evidence surface that ties Odylith product components to specs, workstreams, and conversation traces."
+        },
+        {
+          "name": "casebook",
+          "description": "Bug and learning surface that captures Odylith product incidents and corrective follow-through."
+        }
+      ]
+    },
+    {
+      "diagram_id": "D-002",
+      "slug": "odylith-context-and-agent-execution-stack",
+      "title": "Odylith Context And Agent Execution Stack",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd",
+      "source_svg": "odylith/atlas/source/odylith-context-and-agent-execution-stack.svg",
+      "source_png": "odylith/atlas/source/odylith-context-and-agent-execution-stack.png",
+      "summary": "The context engine, memory layer, and agent-routing/orchestration stack collaborate to ground tasks before leaf execution or escalation.",
+      "change_watch_paths": [
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "components": [
+        {
+          "name": "odylith-context-engine",
+          "description": "Grounding engine that builds deterministic packets from repo truth before implementation and governance actions."
+        },
+        {
+          "name": "subagent-router",
+          "description": "Bounded leaf-routing layer that decides whether one grounded subtask should stay local or delegate."
+        },
+        {
+          "name": "subagent-orchestrator",
+          "description": "Prompt-level orchestration layer that decomposes grounded work into safe serial or parallel leaves."
+        }
+      ]
+    },
+    {
+      "diagram_id": "D-003",
+      "slug": "odylith-diagnosis-and-remediation-loop",
+      "title": "Odylith Diagnosis And Remediation Loop",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.mmd",
+      "source_svg": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.svg",
+      "source_png": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.png",
+      "summary": "Tribunal diagnoses grounded dossiers and Remediator turns approved outcomes into bounded correction packets with explicit validation and rollback posture.",
+      "change_watch_paths": [
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "components": [
+        {
+          "name": "tribunal",
+          "description": "Diagnosis engine that weighs grounded evidence and produces ranked explanations, risks, and next checks."
+        },
+        {
+          "name": "remediator",
+          "description": "Correction-packet compiler that turns approved diagnoses into bounded execution, validation, and rollback instructions."
+        }
+      ]
+    },
+    {
+      "diagram_id": "D-004",
+      "slug": "odylith-delivery-governance-topology",
+      "title": "Odylith Delivery Governance Topology",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-delivery-governance-topology.mmd",
+      "source_svg": "odylith/atlas/source/odylith-delivery-governance-topology.svg",
+      "source_png": "odylith/atlas/source/odylith-delivery-governance-topology.png",
+      "initial_view_fit_factor": 0.66,
+      "summary": "Topology view of the Odylith observer, Tribunal reasoning engine, and Remediator packet flow showing case ranking, approval and clearance state, runtime v4 artifacts, and native-evidence non-Odylith surfaces including Casebook for bug history.",
+      "components": [
+        {
+          "name": "Odylith",
+          "description": "Observer daemon and control-plane surface that owns the full operator queue, approvals, recommendations, and verification."
+        },
+        {
+          "name": "Registry",
+          "description": "Component intelligence surface that stays native to component evidence, spec traceability, and forensic timeline."
+        },
+        {
+          "name": "Casebook",
+          "description": "Bug knowledge surface that stays native to bug history, root cause, solution, verification, and prevention evidence."
+        },
+        {
+          "name": "Compass",
+          "description": "Timeline evidence source that stays native to execution chronology, current workstreams, and risk framing."
+        },
+        {
+          "name": "Radar",
+          "description": "Workstream requirement and success-metric surface that stays native to backlog evidence and traceability."
+        },
+        {
+          "name": "Atlas",
+          "description": "Architecture surface that stays native to topology, freshness, and linked engineering artifacts."
+        },
+        {
+          "name": "Dashboard",
+          "description": "Shared tooling shell that owns the top-3 Operator Inbox drawer and deep-link coherence across governance surfaces."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/governance/component_registry_intelligence.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/governance/operator_readout.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/governance/component_registry_intelligence.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/governance/operator_readout.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "diagram_id": "D-005",
+      "slug": "odylith-delivery-intelligence-closed-loop",
+      "title": "Odylith Delivery Intelligence Closed Loop",
+      "kind": "sequence",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.mmd",
+      "source_svg": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.svg",
+      "source_png": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.png",
+      "initial_view_fit_factor": 0.68,
+      "summary": "Sequence view of the Observe -> Correlate -> Triage -> Tribunal -> Packetize -> Await Approval -> Apply or Delegate -> Await Clearance loop after the B-062 redesign.",
+      "components": [
+        {
+          "name": "Odylith",
+          "description": "Continuous observer loop that owns delta detection, correlation, posture persistence, queue refresh, and surface refresh."
+        },
+        {
+          "name": "Registry",
+          "description": "Supplies component scope and proof routing context for queue items that land on live components."
+        },
+        {
+          "name": "Compass",
+          "description": "Receives verification evidence and contributes timeline proof for queue items."
+        },
+        {
+          "name": "Dashboard",
+          "description": "Hosts the tabbed operator surfaces plus the top-ranked shell inbox refreshed after posture changes."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/governance/operator_readout.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/governance/operator_readout.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "diagram_id": "D-006",
+      "slug": "odylith-operator-inbox-and-evidence-routing",
+      "title": "Odylith Operator Inbox and Evidence Routing",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.mmd",
+      "source_svg": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.svg",
+      "source_png": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.png",
+      "initial_view_fit_factor": 0.7,
+      "summary": "Focused routing diagram showing how Odylith publishes ranked case briefs and approval-gated packet actions to the shell inbox and Odylith, while the other surfaces stay native to timeline, topology, traceability, component evidence, and bug evidence.",
+      "components": [
+        {
+          "name": "Operator queue",
+          "description": "Ranked interventions with why_now, do_this_now, success_check, and proof_highlights."
+        },
+        {
+          "name": "Shell inbox",
+          "description": "Viewport-owned top-3 drawer that surfaces ranked interventions and deep-links into Odylith."
+        },
+        {
+          "name": "Native evidence surfaces",
+          "description": "Radar, Registry, Casebook, Atlas, and Compass stay native to their own evidence model and only route operators into Odylith when deeper intervention detail is needed."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "diagram_id": "D-007",
+      "slug": "odylith-tribunal-multi-actor-reasoning-engine",
+      "title": "Odylith Tribunal Multi-Actor Reasoning Engine",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.mmd",
+      "source_svg": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.svg",
+      "source_png": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.png",
+      "initial_view_fit_factor": 0.78,
+      "summary": "Detailed Tribunal anatomy showing dossier intake, the full actor inventory, adjudication/editor flow, and the guardrails that keep Odylith briefs grounded and non-generic.",
+      "components": [
+        {
+          "name": "Grounded dossier intake",
+          "description": "Decision scope, named artifacts, timestamps, components, surfaces, approvals, and clearance state are normalized into one grounded Tribunal dossier."
+        },
+        {
+          "name": "Independent actor pass",
+          "description": "Observer, ownership, causal, policy, normative, adversary, counterfactual, gap, risk, and prescriber all examine the same dossier before adjudication."
+        },
+        {
+          "name": "Adjudication and editorial merge",
+          "description": "The adjudicator chooses the leading and rival explanations, then the editor compresses that into one maintainer-facing decision brief plus systemic context."
+        },
+        {
+          "name": "Reasoning guardrails",
+          "description": "Grounding, non-generic output, self-reference downgrade, proof routing, and fingerprint-gated cache reuse constrain the actor system."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "diagram_id": "D-008",
+      "slug": "odylith-tribunal-dossier-and-remediation-lifecycle",
+      "title": "Odylith Tribunal Dossier and Remediation Lifecycle",
+      "kind": "sequence",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.mmd",
+      "source_svg": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.svg",
+      "source_png": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.png",
+      "initial_view_fit_factor": 0.75,
+      "summary": "Detailed lifecycle view of dossier assembly, actor adjudication, packet compilation, approval, execution or delegation, and final clearance update.",
+      "components": [
+        {
+          "name": "Dossier builder",
+          "description": "Delivery intelligence assembles one grounded case dossier with repo objects, checkpoints, approvals, and evidence before the actor pass starts."
+        },
+        {
+          "name": "Tribunal adjudication",
+          "description": "Actor memos are merged into one leading explanation, one rival explanation, and an editorial brief rather than leaking raw actor chatter to Odylith."
+        },
+        {
+          "name": "Remediator packet engine",
+          "description": "Executable prescriptions become bounded deterministic, AI-engine, hybrid, or manual packets with fingerprints, validation, and rollback semantics."
+        },
+        {
+          "name": "Approval and clearance loop",
+          "description": "Operator approval, execution or delegation, stale checks, and clearance updates drive the final posture back into Odylith runtime state."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "diagram_id": "D-009",
+      "slug": "odylith-delivery-intelligence-signal-journal-and-observer-pipeline",
+      "title": "Odylith Delivery Intelligence Signal Journal and Observer Pipeline",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.mmd",
+      "source_svg": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.svg",
+      "source_png": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.png",
+      "initial_view_fit_factor": 0.74,
+      "summary": "End-to-end view of Odylith signal intake, runtime signal journaling, observer posture build, delivery-intelligence scope synthesis, and the runtime artifacts that feed the maintainer-facing control plane.",
+      "components": [
+        {
+          "name": "Signal sources",
+          "description": "Repo worktree changes, Compass timeline events, and runtime-local build/CI/deploy/precommit signals all feed Odylith's observer loop."
+        },
+        {
+          "name": "Signal Journal",
+          "description": "The runtime-local `events.v1.jsonl` journal records normalized non-Compass signals so the observer loop can correlate them on each refresh."
+        },
+        {
+          "name": "Observer and scope synthesis",
+          "description": "The watcher builds the cheap posture shell, then Delivery Intelligence synthesizes the full scope universe and marks live-actionable scopes before Tribunal starts."
+        },
+        {
+          "name": "Runtime truth and consumers",
+          "description": "Odylith persists posture, reasoning, delivery, and decision-ledger artifacts that drive the CLI, Odylith UI, Atlas proof routes, and full sync workflows."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "diagram_id": "D-010",
+      "slug": "odylith-tribunal-selection-funnel-and-queue-formation",
+      "title": "Odylith Tribunal Selection Funnel and Queue Formation",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd",
+      "source_svg": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.svg",
+      "source_png": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.png",
+      "initial_view_fit_factor": 0.76,
+      "summary": "Selection-funnel view showing how the full Delivery Intelligence scope universe narrows through live-actionability, Tribunal eligibility, scenario coverage, and priority fill into the bounded maintainer queue.",
+      "components": [
+        {
+          "name": "Observed scope universe",
+          "description": "Delivery Intelligence synthesizes workstream, component, diagram, surface, and grid scopes before Tribunal begins narrowing them."
+        },
+        {
+          "name": "Eligibility gate",
+          "description": "Tribunal only considers live-actionable workstreams/components/diagrams whose primary scenario is not `clear_path`."
+        },
+        {
+          "name": "Selection contract",
+          "description": "Tribunal ranks candidates, covers distinct scenario classes first, then fills remaining slots by priority while keeping stable tie-break semantics explicit."
+        },
+        {
+          "name": "Queue rationale output",
+          "description": "The bounded queue carries both queue-level funnel stats and per-case inclusion rationale so truncation remains auditable."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "diagram_id": "D-011",
+      "slug": "odylith-tribunal-adjudication-editor-and-packet-assembly",
+      "title": "Odylith Tribunal Adjudication, Editorial Merge, and Packet Assembly",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.mmd",
+      "source_svg": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.svg",
+      "source_png": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.png",
+      "initial_view_fit_factor": 0.78,
+      "summary": "Detailed view of how one selected Tribunal case moves from grounded dossier to actor memos, adjudication, provider validation, editorial merge, packet compilation, and control-plane feedback through approval and clearance.",
+      "components": [
+        {
+          "name": "Grounded dossier and actor pass",
+          "description": "Tribunal builds one dossier and runs the full actor lattice over the same evidence before any editorial merge occurs."
+        },
+        {
+          "name": "Adjudication and provider validation",
+          "description": "The adjudicator chooses the leading story and bounded provider refinements are accepted only when they validate against named evidence ids."
+        },
+        {
+          "name": "Editorial merge",
+          "description": "Tribunal compresses the adjudicated outcome into a short queue headline and lead brief while keeping systemic and rival/risk context as separate outputs."
+        },
+        {
+          "name": "Packet assembly and feedback loop",
+          "description": "Remediator compiles the bounded packet and Odylith later folds approval, delegation, apply, and clearance state back into posture."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/evaluation/odylith_reasoning.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "diagram_id": "D-012",
+      "slug": "odylith-subagent-router-decision-and-escalation-flow",
+      "title": "Odylith Subagent Router Decision and Escalation Flow",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.mmd",
+      "source_svg": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.svg",
+      "source_png": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.png",
+      "summary": "Decision flow for bounded subagent routing beneath the prompt-level orchestrator: intake, measured Odylith control-advisory assessment, graph-backed architecture-execution guards, confidence-backed profile selection, native spawn/close payload emission, rescope-vs-escalate outcomes, and family-aware adaptive tuning.",
+      "components": [
+        {
+          "name": "Route intake and assessment",
+          "description": "The router normalizes bounded prompt metadata, scores ambiguity/risk/scope/validation signals, and assigns task family plus route confidence before delegation."
+        },
+        {
+          "name": "Measured control-advisory layer",
+          "description": "The router now reads one bounded Odylith advisory contract compiled from the local evaluation ledger, carrying measured state/confidence plus depth/delegation/parallelism/budget/retrieval/speed posture, and also respects architecture-dossier execution hints when topology grounding is weak or high-risk."
+        },
+        {
+          "name": "Profile selection, confidence backstop, and xhigh gate",
+          "description": "Weighted profile scoring chooses among Spark and GPT-5.4 tiers, low-confidence writes can be promoted to stronger GPT-5.4 profiles, grounded high-risk architecture slices can earn the strongest bounded lane, and `xhigh` remains separately gated by critical risk or maximum-accuracy feature conditions."
+        },
+        {
+          "name": "Validation, rescope, and adaptive loop",
+          "description": "One spawned subagent is validated explicitly, may escalate once, may instead return control to the main thread for local rescope, and now emits native spawn-agent plus closeout payloads that keep the host thread aligned with the routed contract."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "related_component_ids": [
+        "subagent-orchestrator",
+        "subagent-router"
+      ]
+    },
+    {
+      "diagram_id": "D-013",
+      "slug": "odylith-subagent-router-governance-and-audit-topology",
+      "title": "Odylith Subagent Router Governance and Audit Topology",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.mmd",
+      "source_svg": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.svg",
+      "source_png": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.png",
+      "summary": "Governance topology for the Subagent Router as the bounded leaf-routing layer beneath the Subagent Orchestrator, including thin skills, route-confidence outputs, native spawn/close payloads, the local evaluation-to-advisory control loop, Compass audit stream, Registry manifest, living spec, runbook, and Atlas coverage.",
+      "components": [
+        {
+          "name": "Operator and execution surface",
+          "description": "The main agent or maintainer invokes the thin skill and router script, which choose one worker profile for bounded delegation and emit route-confidence plus native host-call payloads."
+        },
+        {
+          "name": "Local state and forensic audit",
+          "description": "Local evaluation and tuning state plus optional Compass timeline events preserve explainability, measured control advisories, family-aware adaptation, and feedback without creating tracked runtime truth."
+        },
+        {
+          "name": "Registry and Atlas governance",
+          "description": "The component manifest, living spec, runbook, and diagram metadata make the routing policy inspectable across Registry, Atlas, Compass, and the tooling shell as a governed AI execution surface."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/common/log_compass_timeline_event.py",
+        "odylith/registry/source/component_registry.v1.json"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/common/log_compass_timeline_event.py",
+        "odylith/registry/source/component_registry.v1.json"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "related_component_ids": [
+        "subagent-orchestrator",
+        "subagent-router",
+        "compass",
+        "atlas",
+        "registry"
+      ]
+    },
+    {
+      "diagram_id": "D-014",
+      "slug": "odylith-subagent-orchestrator-prompt-triage-and-routing-flow",
+      "title": "Odylith Subagent Orchestrator Prompt Triage and Routing Flow",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.mmd",
+      "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.svg",
+      "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.png",
+      "summary": "Prompt-level orchestration flow from an evidence-grounded repo-work prompt across the consumer lane, pinned dogfood, and detached `source-local` maintainer-dev posture through measured Odylith control advisories, architecture-dossier execution hints, local-only gates, orchestration-mode selection, and per-leaf handoff into the bounded Subagent Router, including native spawn and closeout payloads for host execution.",
+      "components": [
+        {
+          "name": "Evidence grounding and request shaping",
+          "description": "The main thread grounds the evidence cone first, then converts the substantive grounded repo-work prompt into an orchestration request with candidate paths, acceptance criteria, validation commands, and accuracy posture."
+        },
+        {
+          "name": "Prompt triage and orchestration mode selection",
+          "description": "The orchestrator evaluates hard local-only gates, measured control advisories, architecture execution hints, and conservative parallel-safety rules to choose `local_only`, `single_leaf`, `serial_batch`, or `parallel_batch`."
+        },
+        {
+          "name": "Leaf-routing handoff",
+          "description": "Every delegated leaf is routed through Subagent Router for explicit model plus reasoning selection, while the orchestrator keeps merge ownership and now carries native spawn-agent plus closeout payloads, compact control-advisory posture, and architecture risk/fanout hints in the main-thread execution plan."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "related_component_ids": [
+        "subagent-orchestrator",
+        "subagent-router"
+      ]
+    },
+    {
+      "diagram_id": "D-015",
+      "slug": "odylith-subagent-orchestrator-safe-fanout-and-parallel-safety",
+      "title": "Odylith Subagent Orchestrator Safe Fan-Out and Parallel Safety",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.mmd",
+      "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.svg",
+      "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.png",
+      "summary": "Parallel-safety decision tree for automatic orchestration, including read-only fan-out caps, disjoint-write checks, coupled-path downgrades, native per-leaf spawn/close payloads, and the local fallback path when any leaf becomes unsafe.",
+      "components": [
+        {
+          "name": "Safety classification",
+          "description": "The orchestrator classifies grounded prompts into `read_only_safe`, `disjoint_write_safe`, `serial_ordered`, or `local_only` based on path ownership, criticality, and validation clarity."
+        },
+        {
+          "name": "Conservative batch shaping",
+          "description": "Read-only work may split into a small parallel batch, disjoint writes may split into a smaller capped batch, and coupled docs/tests/skills/contracts/tooling work is downgraded to serial or local execution."
+        },
+        {
+          "name": "Leaf fallback and safety override",
+          "description": "Even after prompt-level decomposition, any leaf-router `main_thread` refusal collapses the whole orchestration plan back to local rescope instead of forcing unsafe fan-out, and accepted leaves still carry native spawn/close payloads for the main thread."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "related_component_ids": [
+        "subagent-orchestrator",
+        "subagent-router"
+      ]
+    },
+    {
+      "diagram_id": "D-016",
+      "slug": "odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership",
+      "title": "Odylith Subagent Orchestrator Merge Barrier and Adjudication Ownership",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.mmd",
+      "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.svg",
+      "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.png",
+      "summary": "Main-thread ownership model for serial and parallel orchestration, covering dependency barriers, cross-leaf merge responsibility, local rescope fallbacks, native closeout payload application, and the rule that architectural adjudication never belongs to a worker leaf.",
+      "components": [
+        {
+          "name": "Serial dependency ownership",
+          "description": "Ordered leaves expose explicit dependency ids so the main thread controls when the next leaf may start and whether earlier results require local correction first."
+        },
+        {
+          "name": "Parallel merge barrier",
+          "description": "Parallel leaves run only on disjoint owned paths, but the main thread still owns merge, final validation, cross-leaf acceptance, and delegated-leaf closeout before any result is treated as landed."
+        },
+        {
+          "name": "Rescope and adjudication fallback",
+          "description": "If a leaf route or escalation reveals broader coordination, design conflict, or unclear ownership, control returns to the main thread rather than bouncing the ambiguity between workers."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "related_component_ids": [
+        "subagent-orchestrator",
+        "subagent-router"
+      ]
+    },
+    {
+      "diagram_id": "D-017",
+      "slug": "odylith-subagent-orchestrator-governance-and-adaptive-learning-topology",
+      "title": "Odylith Subagent Orchestrator Governance and Adaptive Learning Topology",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.mmd",
+      "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.svg",
+      "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.png",
+      "summary": "Governance topology for automatic orchestration across repo policy, thin skills, Registry and Atlas linkage, native host payload contracts, local adaptive learning state, and optional Compass audit so prompt-level delegation remains inspectable and bounded.",
+      "components": [
+        {
+          "name": "Policy and operator surface",
+          "description": "Root agent policy, agent guidelines, runbooks, and thin skills define when orchestration is automatic, when routing remains leaf-only, and how maintainers should interpret native spawn/close payloads alongside commit-ready vs clean-snapshot proof."
+        },
+        {
+          "name": "Local adaptive state and audit",
+          "description": "The orchestrator stores local-only replay-safe tuning by mode and task family, and may append Compass runtime events without turning local adaptation into tracked repo truth."
+        },
+        {
+          "name": "Registry and Atlas governance",
+          "description": "The Registry manifest, living specs, runbooks, and diagram catalog make automatic orchestration a first-class governed component linked to the router, Atlas, Registry, and shell evidence surfaces."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "related_component_ids": [
+        "subagent-orchestrator",
+        "subagent-router",
+        "compass",
+        "atlas",
+        "registry"
+      ]
+    },
+    {
+      "diagram_id": "D-018",
+      "slug": "odylith-installable-product-layered-topology",
+      "title": "Odylith Installable Product Layered Topology",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-installable-product-layered-topology.mmd",
+      "source_svg": "odylith/atlas/source/odylith-installable-product-layered-topology.svg",
+      "source_png": "odylith/atlas/source/odylith-installable-product-layered-topology.png",
+      "initial_view_fit_factor": 0.62,
+      "summary": "Layered topology for the Odylith product showing tracked repo truth, explicit local memory and retrieval, governance and evaluation engines, governed surfaces, and optional remote augmentation without consumer-specific product branches.",
+      "components": [
+        {
+          "name": "Tracked product truth and local state",
+          "description": "Keeps repo-owned Radar, Atlas, Casebook, technical plans, contracts, and docs separate from mutable `.odylith/` runtime state."
+        },
+        {
+          "name": "Local-first product layers",
+          "description": "Shows the install/CLI, context engine, memory, governance, evaluation, agent-control, and surface-runtime layers that compose the Odylith product."
+        },
+        {
+          "name": "Optional remote augmentation",
+          "description": "Makes sparse recall and control attachments explicit as optional edges rather than hidden requirements for local-first operation."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+        "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+        "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "related_component_ids": [
+        "odylith",
+        "dashboard",
+        "radar",
+        "atlas",
+        "compass",
+        "registry",
+        "odylith-context-engine",
+        "tribunal",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router"
+      ]
+    },
+    {
+      "diagram_id": "D-019",
+      "slug": "odylith-installable-product-bootstrap-and-validation-flow",
+      "title": "Odylith Installable Product Bootstrap and Validation Flow",
+      "kind": "sequence",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.mmd",
+      "source_svg": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.svg",
+      "source_png": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.png",
+      "initial_view_fit_factor": 0.74,
+      "summary": "Bootstrap and validation flow for Odylith showing consumer-profile resolution, local-first runtime initialization, surface materialization, and the proof gates that keep install and sync honest.",
+      "components": [
+        {
+          "name": "Bootstrap lane",
+          "description": "Shows the `odylith install` or `odylith sync` path through consumer-profile resolution and runtime bootstrap."
+        },
+        {
+          "name": "Governed surface materialization",
+          "description": "Shows where governance, evaluation, and agent-control evidence land in the rendered product surfaces."
+        },
+        {
+          "name": "Validation gates",
+          "description": "Makes the product proof boundary explicit so surface coherence, packet contracts, and execution payloads are checked together."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+        "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+        "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py"
+      ],
+      "related_workstreams": [
+        "B-001"
+      ],
+      "related_component_ids": [
+        "odylith",
+        "dashboard",
+        "radar",
+        "atlas",
+        "compass",
+        "registry",
+        "odylith-context-engine"
+      ]
+    },
+    {
+      "diagram_id": "D-020",
+      "slug": "odylith-product-runtime-boundary-map",
+      "title": "Odylith Product Runtime Boundary Map",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-product-runtime-boundary-map.mmd",
+      "source_svg": "odylith/atlas/source/odylith-product-runtime-boundary-map.svg",
+      "source_png": "odylith/atlas/source/odylith-product-runtime-boundary-map.png",
+      "initial_view_fit_factor": 0.58,
+      "summary": "Runtime boundary map for Odylith showing how product truth, runtime modules, generated surfaces, `.odylith` state, and the separate runtime/write/validation boundaries fit together.",
+      "components": [
+        {
+          "name": "Product truth inputs",
+          "description": "Names the product-owned source roots and contracts that drive the runtime instead of flattening them into one generic repo box."
+        },
+        {
+          "name": "Runtime module boundary",
+          "description": "Separates context, memory, governance, evaluation, orchestration, and surface modules as the live executable product boundary."
+        },
+        {
+          "name": "Generated outputs and local state",
+          "description": "Shows how materialized `odylith/` surfaces and mutable `.odylith/` state differ while still feeding the same governed runtime loop."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/dashboard_surface_bundle.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/dashboard_surface_bundle.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "related_workstreams": [
+        "B-001",
+        "B-027"
+      ],
+      "related_component_ids": [
+        "odylith",
+        "dashboard",
+        "radar",
+        "atlas",
+        "compass",
+        "registry",
+        "odylith-context-engine",
+        "tribunal",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router"
+      ]
+    },
+    {
+      "diagram_id": "D-021",
+      "slug": "odylith-self-host-runtime-and-release-gate",
+      "title": "Odylith Self-Host Runtime And Release Gate",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.mmd",
+      "source_svg": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.svg",
+      "source_png": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.png",
+      "initial_view_fit_factor": 0.68,
+      "summary": "Self-host posture map showing the installed consumer lane, the Odylith product repo's maintainer mode with pinned dogfood versus detached source-local dev posture, the separate runtime/write/validation boundaries, and the release gate that only accepts pinned dogfood proof.",
+      "components": [
+        {
+          "name": "Pinned dogfood lane",
+          "description": "Shows the main product repo operating against its tracked pinned runtime rather than implicitly running from a live checkout."
+        },
+        {
+          "name": "Detached dev lane",
+          "description": "Makes source-local work an explicit separate override with loud release-ineligible posture instead of a hidden default."
+        },
+        {
+          "name": "Release gate and readouts",
+          "description": "Shows the source-only validator and the shell and Compass self-host readouts that expose product-repo drift."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+        "odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/cli.py",
+        "src/odylith/runtime/governance/validate_self_host_posture.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+        ".github/workflows/release.yml"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "docs/specs/odylith-repo-integration-contract.md",
+        "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+      ],
+      "related_code": [
+        "src/odylith/install/manager.py",
+        "src/odylith/cli.py",
+        "src/odylith/runtime/governance/validate_self_host_posture.py",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+        ".github/workflows/release.yml"
+      ],
+      "related_workstreams": [
+        "B-004",
+        "B-027"
+      ],
+      "related_component_ids": [
+        "odylith",
+        "dashboard",
+        "compass"
+      ]
+    },
+    {
+      "diagram_id": "D-022",
+      "slug": "odylith-canonical-release-version-session-and-publish-lane",
+      "title": "Odylith Canonical Release Version Session And Publish Lane",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.mmd",
+      "source_svg": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.svg",
+      "source_png": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.png",
+      "initial_view_fit_factor": 0.66,
+      "summary": "Canonical maintainer release lane showing preview and sticky session resolution, commit-bound dispatch into the GitHub workflow, signed asset publication, and the post-publish dogfood plus consumer proof sequence.",
+      "components": [
+        {
+          "name": "Sticky release session",
+          "description": "Shows how one local session version and head SHA are resolved once and then reused across preflight and dispatch."
+        },
+        {
+          "name": "Canonical publish lane",
+          "description": "Shows the repo, actor, branch, clean-worktree, and commit-binding guards that keep the maintained release lane authoritative."
+        },
+        {
+          "name": "Post-publish proof",
+          "description": "Shows the dogfood activation and consumer rehearsal steps that turn a published version into a credible release candidate."
+        }
+      ],
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
+        "odylith/technical-plans/done/2026-03/2026-03-27-odylith-canonical-release-version-session-and-maintainer-runbook.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "Makefile",
+        "bin/release-version-preview",
+        "bin/release-version-show",
+        "bin/release-session-show",
+        "bin/release-session-clear",
+        "bin/release-preflight",
+        "bin/release-dispatch",
+        "bin/dogfood-activate",
+        "bin/consumer-rehearsal",
+        "bin/ga-gate",
+        "bin/_odylith.sh",
+        ".github/workflows/release.yml",
+        "src/odylith/runtime/governance/validate_self_host_posture.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-27-odylith-canonical-release-version-session-and-maintainer-runbook.md"
+      ],
+      "related_docs": [
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "README.md",
+        "CONTRIBUTING.md"
+      ],
+      "related_code": [
+        "Makefile",
+        "bin/release-version-preview",
+        "bin/release-version-show",
+        "bin/release-session-show",
+        "bin/release-session-clear",
+        "bin/release-preflight",
+        "bin/release-dispatch",
+        "bin/dogfood-activate",
+        "bin/consumer-rehearsal",
+        "bin/ga-gate",
+        "bin/_odylith.sh",
+        ".github/workflows/release.yml",
+        "src/odylith/runtime/governance/validate_self_host_posture.py"
+      ],
+      "related_workstreams": [
+        "B-005"
+      ],
+      "related_component_ids": [
+        "odylith",
+        "release"
+      ]
+    },
+    {
+      "diagram_id": "D-023",
+      "slug": "odylith-managed-runtime-release-and-install-flow",
+      "title": "Odylith Managed Runtime Release And Install Flow",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd",
+      "source_svg": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.svg",
+      "source_png": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.png",
+      "initial_view_fit_factor": 0.7,
+      "summary": "Supported-platform release and install flow showing managed runtime bundle publication, signed verification, and strict interpreter separation between Odylith and the consumer repo toolchain.",
+      "components": [
+        {
+          "name": "Managed runtime bundles",
+          "description": "Canonical releases ship platform-specific Odylith-managed Python runtimes for macOS and Linux."
+        },
+        {
+          "name": "Installer verification",
+          "description": "The hosted installer selects the current supported platform, verifies signed assets, and stages the runtime under .odylith."
+        },
+        {
+          "name": "Interpreter boundary",
+          "description": "Odylith commands run inside .odylith while consumer repo commands stay on the consumer toolchain with no shell-level switching."
+        }
+      ],
+      "change_watch_paths": [
+        "README.md",
+        "odylith/INSTALL.md",
+        "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
+        "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md",
+        "odylith/casebook/bugs/2026-03-28-public-consumer-install-depends-on-machine-python.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/managed_runtime.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/install/runtime.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md"
+      ],
+      "related_docs": [
+        "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/install/managed_runtime.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/install/runtime.py",
+        "tests/unit/install/test_python_env.py",
+        "tests/unit/install/test_release_assets.py",
+        "tests/unit/install/test_release_bootstrap.py",
+        "tests/unit/install/test_runtime.py",
+        "tests/integration/install/simulator.py",
+        "tests/integration/install/test_manager.py",
+        "tests/integration/install/test_lifecycle_simulator.py"
+      ],
+      "related_workstreams": [
+        "B-005"
+      ],
+      "related_component_ids": [
+        "odylith",
+        "release"
+      ]
+    },
+    {
+      "diagram_id": "D-024",
+      "slug": "odylith-benchmark-proof-and-publication-lane",
+      "title": "Odylith Benchmark Proof And Publication Lane",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-05",
+      "source_mmd": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
+      "source_svg": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.svg",
+      "source_png": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.png",
+      "change_watch_paths": [
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+        "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+        "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+        "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py",
+        "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "README.md",
+        "docs/benchmarks/README.md",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+        "docs/benchmarks/odylith-benchmark-family-heatmap.svg",
+        "docs/benchmarks/odylith-benchmark-operating-posture.svg",
+        "docs/benchmarks/odylith-benchmark-frontier.svg"
+      ],
+      "summary": "Maps the benchmark corpus, the scoped clean-room snapshot used by the live matched pair, validator-truth restore, conservative publication logic, and the README or release outputs that Odylith uses to prove Codex-on value honestly.",
+      "components": [
+        {
+          "name": "Benchmark",
+          "description": "Benchmark runner, corpus, conservative publication view, and graph pipeline that turn Odylith benchmark data into release-safe proof."
+        },
+        {
+          "name": "Odylith Context Engine",
+          "description": "Grounding and packet runtime whose real task behavior is measured by the benchmark corpus."
+        },
+        {
+          "name": "Subagent Orchestrator",
+          "description": "Delegation and execution posture layer whose grounded behavior is a core benchmark subject."
+        }
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md",
+        "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md",
+        "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "README.md",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+        "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+        "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py",
+        "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+      ],
+      "related_workstreams": [
+        "B-020",
+        "B-022",
+        "B-038"
+      ]
+    }
+  ]
+}

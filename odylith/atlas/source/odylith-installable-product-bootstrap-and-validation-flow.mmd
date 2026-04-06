@@ -1,0 +1,29 @@
+%% Reviewed 2026-03-26 for B-001 to show Odylith bootstrap, governed-surface materialization, and the validation flow that keeps the product boundary coherent.
+sequenceDiagram
+    participant Repo as Product or host repo
+    participant CLI as odylith CLI
+    participant Profile as repo profile
+    participant Context as context engine
+    participant Memory as memory layer
+    participant Gov as governance engine
+    participant Eval as tribunal/remediator
+    participant Agents as router/orchestrator
+    participant Surfaces as governed surfaces
+    participant Proof as validation harness
+
+    Repo->>CLI: odylith install | odylith sync
+    CLI->>Profile: resolve repo truth roots
+    CLI->>Context: bootstrap grounding + retained packets
+    CLI->>Memory: bootstrap Lance/Tantivy retrieval + local runtime state
+    CLI->>Gov: bootstrap delivery intelligence + registry + sync
+    CLI->>Eval: bootstrap dossier + packet contracts
+    CLI->>Agents: bootstrap route/plan execution controls
+    Gov->>Surfaces: render Radar / Atlas / Registry / Compass / Casebook / Dashboard
+    Eval->>Surfaces: publish diagnosis + remediation evidence
+    Agents->>Surfaces: publish routing + closeout posture
+    Context->>Proof: validate packet contracts
+    Memory->>Proof: validate retrieval state and memory posture
+    Gov->>Proof: validate governed surface freshness and traceability
+    Eval->>Proof: validate dossier and correction-packet contracts
+    Agents->>Proof: validate routed execution payloads
+    Proof-->>Repo: accept only if product surfaces and runtime contracts stay coherent

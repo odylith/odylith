@@ -1,0 +1,43 @@
+%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+sequenceDiagram
+  participant Odylith as Odylith Observer
+  participant Delivery as Delivery Intelligence
+  participant Dossier as Dossier Builder
+  participant Actors as Tribunal Actors
+  participant Judge as Adjudicator
+  participant Editor as Editor
+  participant Remediator as Remediator
+  participant Approval as Approval Ledger
+  participant Operator as Maintainer
+  participant Clearance as Clearance Check
+  participant Runtime as Runtime v4 Store
+
+  Odylith->>Delivery: Select changed or contested scope
+  Delivery->>Dossier: Assemble case dossier with repo objects, checkpoints, approvals, and evidence
+  Dossier->>Actors: Run observer, ownership, causal, policy, normative, adversary, counterfactual, gap, risk, prescriber
+  Actors-->>Judge: Actor memos + disagreement
+  Judge->>Judge: Choose leading explanation, rival explanation, and confidence
+  Judge->>Editor: Produce decision brief + systemic context
+  Judge->>Remediator: Hand off executable prescription candidate
+
+  alt No bounded execution path
+    Remediator-->>Odylith: Manual-only recommendation
+    Odylith->>Runtime: Persist outcome without packet
+  else Bounded packet candidate
+    Remediator->>Remediator: Compile deterministic, AI-engine, or hybrid packet
+    Remediator->>Approval: Persist fingerprint, preconditions, validation, rollback
+    Odylith->>Runtime: Persist case, reasoning, posture, and packet state
+    Operator->>Odylith: Approve or reject packet
+    alt Deterministic packet approved
+      Odylith->>Remediator: Execute bounded local action
+      Remediator->>Clearance: Run validation + stale checks
+    else AI-engine or hybrid packet approved
+      Remediator-->>Operator: Emit constrained AI-engine handoff
+      Operator->>Odylith: Record outcome after external execution
+      Odylith->>Clearance: Run post-action validation
+    else Rejected or stale
+      Approval-->>Odylith: Keep case contested or reopen
+    end
+    Clearance-->>Odylith: Cleared, failed, or reopened
+    Odylith->>Runtime: Update posture and clearance state
+  end

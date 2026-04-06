@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:odylith:contract:delivery_intelligence_snapshot.v1.schema.json",
+  "title": "Delivery Intelligence Snapshot v1",
+  "type": "object",
+  "required": [
+    "version",
+    "generated_utc",
+    "scopes",
+    "indexes",
+    "summary"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "v1"
+    },
+    "generated_utc": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "object"
+    },
+    "indexes": {
+      "type": "object",
+      "required": [
+        "grid",
+        "surfaces",
+        "workstreams",
+        "components",
+        "diagrams"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "grid": {
+          "type": "object"
+        },
+        "surfaces": {
+          "type": "object"
+        },
+        "workstreams": {
+          "type": "object"
+        },
+        "components": {
+          "type": "object"
+        },
+        "diagrams": {
+          "type": "object"
+        }
+      }
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scopeSnapshot"
+      },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "scopeSnapshot": {
+      "type": "object",
+      "required": [
+        "scope_key",
+        "scope_type",
+        "scope_id",
+        "scope_label",
+        "posture_mode",
+        "trajectory",
+        "confidence",
+        "source",
+        "cards",
+        "evidence_context",
+        "explanation_facts",
+        "evidence_refs",
+        "scores",
+        "change_vector"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "scope_key": {
+          "type": "string"
+        },
+        "scope_type": {
+          "type": "string",
+          "enum": [
+            "grid",
+            "surface",
+            "workstream",
+            "component",
+            "diagram"
+          ]
+        },
+        "scope_id": {
+          "type": "string"
+        },
+        "scope_label": {
+          "type": "string"
+        },
+        "posture_mode": {
+          "type": "string",
+          "enum": [
+            "converging",
+            "fragmenting",
+            "execution_outrunning_governance",
+            "governance_leading_execution",
+            "contract_shift",
+            "operator_boundary_hardening",
+            "closure_hardening",
+            "dormant_but_risky"
+          ]
+        },
+        "trajectory": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "rules",
+            "hybrid-model"
+          ]
+        },
+        "cards": {
+          "type": "object",
+          "required": [
+            "executive_thesis",
+            "delivery_tension",
+            "why_now",
+            "blast_radius",
+            "next_forcing_function"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "executive_thesis": {
+              "type": "string"
+            },
+            "delivery_tension": {
+              "type": "string"
+            },
+            "why_now": {
+              "type": "string"
+            },
+            "blast_radius": {
+              "type": "string"
+            },
+            "next_forcing_function": {
+              "type": "string"
+            }
+          }
+        },
+        "evidence_context": {
+          "type": "object"
+        },
+        "explanation_facts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "kind",
+              "value",
+              "label"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "scores": {
+          "type": "object",
+          "required": [
+            "governance_lag",
+            "decision_debt",
+            "closure_readiness",
+            "cross_surface_convergence",
+            "workstream_concentration",
+            "blast_radius_severity"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "governance_lag": {
+              "type": "integer"
+            },
+            "decision_debt": {
+              "type": "integer"
+            },
+            "closure_readiness": {
+              "type": "integer"
+            },
+            "cross_surface_convergence": {
+              "type": "integer"
+            },
+            "workstream_concentration": {
+              "type": "integer"
+            },
+            "blast_radius_severity": {
+              "type": "integer"
+            }
+          }
+        },
+        "change_vector": {
+          "type": "object",
+          "required": [
+            "contract",
+            "spec",
+            "renderer",
+            "runtime",
+            "policy",
+            "runbook",
+            "doc",
+            "build_ci",
+            "cli"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "contract": {"type": "integer"},
+            "spec": {"type": "integer"},
+            "renderer": {"type": "integer"},
+            "runtime": {"type": "integer"},
+            "policy": {"type": "integer"},
+            "runbook": {"type": "integer"},
+            "doc": {"type": "integer"},
+            "build_ci": {"type": "integer"},
+            "cli": {"type": "integer"}
+          }
+        }
+      }
+    }
+  }
+}

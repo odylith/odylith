@@ -1,0 +1,321 @@
+{
+  "version": "v1",
+  "chunks": [
+    {
+      "chunk_id": "grounding-and-narrowing-bounded-proof-slices",
+      "note_kind": "workflow",
+      "canonical_source": "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
+      "chunk_path": "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
+      "title": "Grounding And Narrowing",
+      "section": "Bounded proof slices",
+      "summary": "Use bounded grounded slices, keep explicit anchors authoritative, and fail closed before widening benchmark proof work.",
+      "tags": [
+        "benchmark",
+        "grounding",
+        "bounded-slice"
+      ],
+      "task_families": [
+        "architecture",
+        "component_governance",
+        "cross_file_feature",
+        "exact_anchor_recall",
+        "explicit_workstream",
+        "orchestration_feedback",
+        "orchestration_intelligence"
+      ],
+      "risk_class": "precision",
+      "component_affinity": [
+        "benchmark",
+        "odylith-context-engine"
+      ],
+      "path_prefixes": [
+        "odylith/skills/",
+        "odylith/runtime/"
+      ],
+      "path_refs": [
+        "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+        "odylith/skills/subagent-router/SKILL.md",
+        "odylith/skills/subagent-orchestrator/SKILL.md"
+      ],
+      "workstreams": [
+        "B-021",
+        "B-038"
+      ]
+    },
+    {
+      "chunk_id": "delivery-governance-benchmark-sync",
+      "note_kind": "workflow",
+      "canonical_source": "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+      "chunk_path": "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+      "title": "Delivery And Governance Surfaces",
+      "section": "Benchmark truth synchronization",
+      "summary": "Keep Registry, Atlas, Radar, Compass, and benchmark docs synchronized as one governed truth set when proof slices touch them.",
+      "tags": [
+        "benchmark",
+        "governance",
+        "sync"
+      ],
+      "task_families": [
+        "component_governance",
+        "cross_surface_governance_sync",
+        "docs_code_closeout",
+        "release_publication"
+      ],
+      "risk_class": "governance_drift",
+      "component_affinity": [
+        "benchmark",
+        "compass",
+        "registry"
+      ],
+      "path_prefixes": [
+        "odylith/atlas/source/",
+        "odylith/registry/source/",
+        "docs/benchmarks/"
+      ],
+      "path_refs": [
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "docs/benchmarks/README.md"
+      ],
+      "workstreams": [
+        "B-021",
+        "B-038"
+      ]
+    },
+    {
+      "chunk_id": "context-engine-daemon-boundaries",
+      "note_kind": "tooling_policy",
+      "canonical_source": "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+      "chunk_path": "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+      "title": "Odylith Context Engine",
+      "section": "Context-engine boundary and daemon posture",
+      "summary": "Keep daemon and context-engine work on the exact transport, repair, and trust-boundary surfaces that the validator names.",
+      "tags": [
+        "context-engine",
+        "daemon",
+        "security"
+      ],
+      "task_families": [
+        "architecture",
+        "daemon_security",
+        "install_upgrade_runtime"
+      ],
+      "risk_class": "security_boundary",
+      "component_affinity": [
+        "odylith-context-engine",
+        "release"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/context_engine/",
+        "src/odylith/install/"
+      ],
+      "path_refs": [
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/install/repair.py",
+        "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md"
+      ],
+      "workstreams": [
+        "B-014",
+        "B-038"
+      ]
+    },
+    {
+      "chunk_id": "product-surfaces-compass-freshness",
+      "note_kind": "workflow",
+      "canonical_source": "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+      "chunk_path": "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+      "title": "Product Surfaces And Runtime",
+      "section": "Compass surface freshness",
+      "summary": "Keep Compass freshness work on the real Compass runtime, narrator, tests, and named product-surface contracts instead of widening into adjacent runtime ballast.",
+      "tags": [
+        "compass",
+        "surface",
+        "freshness"
+      ],
+      "task_families": [
+        "browser_surface_reliability",
+        "compass_brief_freshness",
+        "dashboard_surface"
+      ],
+      "risk_class": "surface_drift",
+      "component_affinity": [
+        "compass",
+        "dashboard"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/surfaces/"
+      ],
+      "path_refs": [
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+        "tests/unit/runtime/test_compass_dashboard_runtime.py",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md"
+      ],
+      "workstreams": [
+        "B-012",
+        "B-025"
+      ]
+    },
+    {
+      "chunk_id": "security-trust-consumer-boundaries",
+      "note_kind": "guardrail",
+      "canonical_source": "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
+      "chunk_path": "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
+      "title": "Security And Trust",
+      "section": "Consumer and registry trust boundaries",
+      "summary": "Use named AGENTS, product specs, and trust-boundary contracts for consumer compatibility and security-sensitive slices; avoid widening into inventory or ambient repo state.",
+      "tags": [
+        "security",
+        "consumer",
+        "registry"
+      ],
+      "task_families": [
+        "consumer_profile_compatibility",
+        "daemon_security",
+        "architecture"
+      ],
+      "risk_class": "trust_boundary",
+      "component_affinity": [
+        "odylith",
+        "odylith-context-engine",
+        "registry"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/common/",
+        "odylith/registry/source/components/"
+      ],
+      "path_refs": [
+        "src/odylith/runtime/common/consumer_profile.py",
+        "tests/unit/runtime/test_consumer_profile.py",
+        "odylith/AGENTS.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md"
+      ],
+      "workstreams": [
+        "B-027",
+        "B-040"
+      ]
+    },
+    {
+      "chunk_id": "upgrade-recovery-install-activation",
+      "note_kind": "runbook",
+      "canonical_source": "odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md",
+      "chunk_path": "odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md",
+      "title": "Upgrade And Recovery",
+      "section": "Install and activation recovery",
+      "summary": "Stay on the exact install, upgrade, repair, and activation surfaces that the validator names, and treat no-op validator success as a legitimate bounded closeout.",
+      "tags": [
+        "install",
+        "upgrade",
+        "activation"
+      ],
+      "task_families": [
+        "agent_activation",
+        "install_upgrade_runtime"
+      ],
+      "risk_class": "operator_recovery",
+      "component_affinity": [
+        "odylith",
+        "release"
+      ],
+      "path_prefixes": [
+        "src/odylith/install/"
+      ],
+      "path_refs": [
+        "src/odylith/install/manager.py",
+        "src/odylith/install/runtime.py",
+        "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/AGENTS.md"
+      ],
+      "workstreams": [
+        "B-027",
+        "B-030"
+      ]
+    },
+    {
+      "chunk_id": "validation-proof-weak-family-guards",
+      "note_kind": "testing",
+      "canonical_source": "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+      "chunk_path": "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+      "title": "Validation And Testing",
+      "section": "Weak-family proof guards",
+      "summary": "Keep proof work tied to focused validators and deterministic regression checks so weak-family fixes do not buy wins by widening or softening the task.",
+      "tags": [
+        "validation",
+        "proof",
+        "regression"
+      ],
+      "task_families": [
+        "component_governance",
+        "compass_brief_freshness",
+        "consumer_profile_compatibility",
+        "daemon_security"
+      ],
+      "risk_class": "validator_regression",
+      "component_affinity": [
+        "benchmark",
+        "compass",
+        "odylith-context-engine"
+      ],
+      "path_prefixes": [
+        "tests/unit/runtime/",
+        "tests/integration/install/"
+      ],
+      "path_refs": [
+        "tests/unit/runtime/test_validate_component_registry_contract.py",
+        "tests/unit/runtime/test_render_mermaid_catalog.py",
+        "tests/unit/runtime/test_compass_dashboard_runtime.py",
+        "tests/unit/runtime/test_consumer_profile.py",
+        "tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py"
+      ],
+      "workstreams": [
+        "B-021",
+        "B-038"
+      ]
+    },
+    {
+      "chunk_id": "subagent-routing-anchored-orchestration",
+      "note_kind": "workflow",
+      "canonical_source": "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+      "chunk_path": "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+      "title": "Subagent Routing And Orchestration",
+      "section": "Anchored orchestration slices",
+      "summary": "Keep orchestration proof work on the named skill and runtime anchors, and do not widen into adjacent governance or support docs unless the focused validator points there directly.",
+      "tags": [
+        "orchestration",
+        "skills",
+        "anchors"
+      ],
+      "task_families": [
+        "agent_activation",
+        "cross_file_feature",
+        "exact_anchor_recall",
+        "explicit_workstream",
+        "orchestration_feedback",
+        "orchestration_intelligence"
+      ],
+      "risk_class": "support_doc_spillover",
+      "component_affinity": [
+        "benchmark"
+      ],
+      "path_prefixes": [
+        "odylith/skills/",
+        "odylith/runtime/"
+      ],
+      "path_refs": [
+        "odylith/skills/subagent-router/SKILL.md",
+        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
+      ],
+      "workstreams": [
+        "B-001",
+        "B-038"
+      ]
+    }
+  ]
+}

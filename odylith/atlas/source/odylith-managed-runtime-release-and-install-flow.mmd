@@ -1,0 +1,47 @@
+%% Reviewed 2026-03-30 for managed-runtime boundary clarity across consumer installs, detached source-local validation, and canonical maintainer proof.
+flowchart TD
+    maintainer["Maintainer workspace"]
+    devvalidate["dev-validate<br/>detached source-local current workspace"]
+    canonical["Canonical release commit<br/>origin/main"]
+    proof["Isolated clean proof checkout<br/>optional when workspace is dirty or off-main"]
+    bundles["Publish wheel + managed runtime bundles<br/>darwin-arm64 / linux-arm64 / linux-x86_64"]
+    manifest["Signed manifest + provenance + SBOM"]
+    install["Hosted install.sh"]
+    detect["Detect supported platform"]
+    verify["Verify manifest + runtime bundle + provenance + SBOM"]
+    stage["Stage runtime under .odylith/runtime/versions/<version>"]
+    launcher["Write .odylith/bin/odylith"]
+
+    subgraph consumer["Consumer repo runtime boundary"]
+        shell["Consumer shell may already be inside Python 3.11 / uv / Poetry / Conda"]
+        odylith_cmd["./.odylith/bin/odylith ..."]
+        scrub["Scrub VIRTUAL_ENV / CONDA_* / PYTHONHOME / PYTHONPATH"]
+        managed[".odylith/runtime/current/bin/python"]
+        repo_files["Agent may still edit in-scope consumer repo files"]
+        consumer_cmd["python / uv / poetry / conda ..."]
+        consumer_rt["Consumer repo toolchain"]
+    end
+
+    maintainer --> canonical
+    maintainer --> devvalidate
+    canonical --> proof
+    canonical --> bundles
+    proof --> bundles
+    bundles --> manifest
+    manifest --> install
+    install --> detect
+    detect --> verify
+    verify --> stage
+    stage --> launcher
+
+    shell --> odylith_cmd
+    shell --> consumer_cmd
+    launcher --> odylith_cmd
+    odylith_cmd --> scrub
+    scrub --> managed
+    managed --> repo_files
+    consumer_cmd --> consumer_rt
+
+    verify -. fail closed on unsupported or invalid bundle .-> shell
+    managed -. no shell-level interpreter switching .-> consumer_rt
+    repo_files -. validation still belongs to the consumer repo toolchain .-> consumer_rt

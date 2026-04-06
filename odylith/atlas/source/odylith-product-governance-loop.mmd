@@ -1,0 +1,12 @@
+flowchart LR
+    registry["Registry"] --> radar["Radar"]
+    radar --> plans["Technical Plans"]
+    plans --> compass["Compass"]
+    compass --> casebook["Casebook"]
+    atlas["Atlas"] --> registry
+    dashboard["Dashboard"] --> radar
+    dashboard --> atlas
+    dashboard --> compass
+    dashboard --> casebook
+    dashboard --> registry
+    odylith["Odylith"] --> dashboard

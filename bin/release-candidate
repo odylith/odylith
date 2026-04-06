@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+requested_version="${1:-}"
+resolved_version="${requested_version:-${VERSION:-$(current_source_version)}}"
+require_version "$resolved_version"
+
+require_clean_worktree
+
+candidate_root="$(mktemp -d "${TMPDIR:-/tmp}/odylith-release-candidate.XXXXXX")"
+dist_dir="$candidate_root/dist"
+mkdir -p "$dist_dir"
+trap 'rm -rf "$candidate_root"' EXIT
+
+run_release_proof_steps "$resolved_version" "$dist_dir"
+odylith_cli benchmark compare --repo-root . --baseline last-shipped
+
+echo "release candidate proof ready for v${resolved_version}"

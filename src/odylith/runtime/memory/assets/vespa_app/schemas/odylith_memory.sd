@@ -1,0 +1,64 @@
+schema odylith_memory {
+    document odylith_memory {
+        field doc_key type string {
+            indexing: summary | attribute
+            attribute: fast-search
+        }
+
+        field kind type string {
+            indexing: summary | index | attribute
+            attribute: fast-search
+            match: word
+            index: enable-bm25
+        }
+
+        field entity_id type string {
+            indexing: summary | index | attribute
+            attribute: fast-search
+            match: text
+            index: enable-bm25
+        }
+
+        field title type string {
+            indexing: summary | index
+            match: text
+            index: enable-bm25
+        }
+
+        field path type string {
+            indexing: summary | index | attribute
+            attribute: fast-search
+            match: text
+            index: enable-bm25
+        }
+
+        field content type string {
+            indexing: summary | index
+            match: text
+            index: enable-bm25
+        }
+
+        field embedding type tensor<float>(x[96]) {
+            indexing: attribute
+            attribute {
+                distance-metric: angular
+            }
+        }
+    }
+
+    fieldset default {
+        fields: title, content, path, entity_id, kind
+    }
+
+    rank-profile default {
+        first-phase {
+            expression: bm25(title) + bm25(content) + 0.4 * bm25(path) + 0.4 * bm25(entity_id)
+        }
+    }
+
+    rank-profile odylith_sparse_default inherits default {
+        first-phase {
+            expression: bm25(title) + bm25(content) + 0.4 * bm25(path) + 0.4 * bm25(entity_id)
+        }
+    }
+}

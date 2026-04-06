@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability report
+    url: https://github.com/freedom-research/odylith/security/policy
+    about: Use Odylith's security policy and repository security reporting path instead of public issues.
+  - name: Support policy
+    url: https://github.com/freedom-research/odylith/blob/main/SUPPORT.md
+    about: Read Odylith's current support scope and response expectations.

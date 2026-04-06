@@ -1,0 +1,94 @@
+%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+flowchart TB
+  subgraph Intake["1. Route request intake"]
+    Prompt["Bounded prompt"]
+    Criteria["Acceptance criteria"]
+    Validation["Validation commands"]
+    Scope["Allowed paths, components, workstreams"]
+    Bias["Accuracy preference<br/>balanced | accuracy | max_accuracy"]
+    Odylith["Odylith routing_handoff / context_packet<br/>execution profile + density/readiness posture"]
+  end
+
+  subgraph Assessment["2. Normalize and assess"]
+    Normalize["Normalize request fields"]
+    Features["Feature scoring<br/>ambiguity, blast radius, context breadth,<br/>coordination, reversibility, mechanicalness,<br/>write-scope clarity, latency, requested depth"]
+    Advisories["Measured Odylith control advisories<br/>state + confidence + freshness/evidence strength<br/>signal conflict + packetizer alignment<br/>depth/delegation + parallelism + budget/retrieval/speed"]
+    Families["Task-family + route confidence<br/>mechanical patch, bounded bugfix,<br/>bounded feature, analysis/review,<br/>critical change, coordination heavy"]
+    Gates["Hard gates<br/>coordination too high, unclear write scope,<br/>critical write under-specified,<br/>cross-surface ownership unclear,<br/>multi-agent adjudication, evolving context"]
+  end
+
+  subgraph Selection["3. Route profile selection"]
+    Local["Keep in main thread"]
+    Weighted["Weighted profile scoring"]
+    Guard["Runtime-backed local guard<br/>hold local when Odylith still wants narrowing,<br/>route is not spawn-ready, merge burden stays too high,<br/>architecture dossier says full_scan_recommended or low-confidence high-risk,<br/>advisory evidence is stale / weak / conflicted,<br/>or packetizer alignment drifts / packet yield turns wasteful"]
+    Backstop["Confidence backstop<br/>promote low-confidence writes<br/>onto stronger GPT-5.4 tiers"]
+    Align["Odylith execution alignment<br/>runtime-backed priors bias profile/model/reasoning choice<br/>when confidence + route readiness agree;<br/>grounded high-risk architecture can earn strongest bounded lane"]
+    Policy["Task-class policy matrix<br/>default profile + minimum delegated floor<br/>per task family"]
+    SparkM["gpt-5.3-codex-spark<br/>medium"]
+    SparkH["gpt-5.3-codex-spark<br/>high"]
+    G54M["gpt-5.4<br/>medium"]
+    G54H["gpt-5.4<br/>high"]
+    XGate["xhigh gate<br/>critical-risk or max-accuracy feature slice"]
+    G54X["gpt-5.4<br/>xhigh"]
+  end
+
+  subgraph Execution["4. Spawn, validate, and adapt"]
+    Spawn["Spawn one subagent<br/>native spawn_agent_overrides<br/>or richer spawn_overrides"]
+    Contract["Spawn + close contract<br/>agent_role alias + agent_type,<br/>owner, goal, expected_output,<br/>termination_expectation, closeout payload"]
+    Idle["Idle timeout rule<br/>waiting on instruction >= threshold<br/>use close_agent_overrides<br/>then resume/reroute fresh slice"]
+    Validate["Outcome classification<br/>accepted | blocked | ambiguous | artifact missing | quality weak | broader coordination"]
+    Escalate["One-step escalation ladder<br/>Spark M -> Spark H or 5.4 M<br/>Spark H -> 5.4 H<br/>5.4 M -> 5.4 H<br/>5.4 H -> 5.4 X"]
+    Rescope["Return to main thread<br/>when failure shows the slice should be tightened locally"]
+    Return["Return control to main thread after xhigh or refusal"]
+    Tune["record_outcome()<br/>global + family-aware soft-bias tuning in .odylith"]
+  end
+
+  Prompt --> Normalize
+  Criteria --> Normalize
+  Validation --> Normalize
+  Scope --> Normalize
+  Bias --> Normalize
+  Odylith --> Features
+  Odylith --> Advisories
+  Normalize --> Features
+  Features --> Advisories
+  Advisories --> Families
+  Features --> Families
+  Families --> Gates
+  Gates -- "gate hit" --> Local
+  Gates -- "delegate" --> Guard
+  Guard -- "runtime says keep local" --> Local
+  Guard -- "delegation still viable" --> Weighted
+
+  Weighted --> Policy
+  Policy --> Backstop
+  Backstop --> Align
+  Weighted --> SparkM
+  Weighted --> SparkH
+  Weighted --> G54M
+  Weighted --> G54H
+  Align --> G54M
+  Align --> G54H
+  Align --> SparkM
+  Align --> SparkH
+  Features --> XGate
+  XGate -- "open" --> G54X
+
+  SparkM --> Spawn
+  SparkH --> Spawn
+  G54M --> Spawn
+  G54H --> Spawn
+  G54X --> Spawn
+
+  Spawn --> Contract
+  Contract --> Idle
+  Idle --> Validate
+  Spawn --> Validate
+  Validate -- "accepted" --> Tune
+  Validate -- "first-pass failure" --> Escalate
+  Validate -- "scope / ownership drift" --> Rescope
+  Escalate --> Spawn
+  Escalate -- "rescope instead of retry" --> Rescope
+  Rescope --> Return
+  Escalate -- "no valid stronger tier" --> Return
+  Validate -- "already local / too broad" --> Return

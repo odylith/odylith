@@ -1,0 +1,482 @@
+{
+  "schema_version": "odylith-third-party-runtime-inventory.v1",
+  "dependencies": [
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "license_expression": "BSD-3-Clause",
+      "license_source": "metadata:License",
+      "direct": true,
+      "source_url": "https://github.com/encode/httpx",
+      "note": ""
+    },
+    {
+      "name": "Jinja2",
+      "version": "3.1.6",
+      "license_expression": "BSD-3-Clause",
+      "license_source": "metadata:License-File",
+      "direct": true,
+      "source_url": "https://github.com/pallets/jinja/",
+      "note": ""
+    },
+    {
+      "name": "lancedb",
+      "version": "0.30.0",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:Classifier",
+      "direct": true,
+      "source_url": "https://github.com/lancedb/lancedb",
+      "note": ""
+    },
+    {
+      "name": "sigstore",
+      "version": "3.6.7",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:Classifier",
+      "direct": true,
+      "source_url": "https://github.com/sigstore/sigstore-python",
+      "note": ""
+    },
+    {
+      "name": "tantivy",
+      "version": "0.25.1",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-File",
+      "direct": true,
+      "source_url": "https://github.com/quickwit-oss/tantivy-py",
+      "note": ""
+    },
+    {
+      "name": "watchdog",
+      "version": "6.0.0",
+      "license_expression": "Apache-2.0",
+      "license_source": "policy:platform-union-override",
+      "direct": true,
+      "source_url": "https://github.com/gorakhargosh/watchdog/",
+      "note": ""
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.7.0",
+      "license_expression": "MIT",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/annotated-types/annotated-types",
+      "note": ""
+    },
+    {
+      "name": "anyio",
+      "version": "4.13.0",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/agronholm/anyio",
+      "note": ""
+    },
+    {
+      "name": "betterproto",
+      "version": "2.0.0b6",
+      "license_expression": "MIT",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/danielgtaylor/python-betterproto",
+      "note": ""
+    },
+    {
+      "name": "certifi",
+      "version": "2026.2.25",
+      "license_expression": "MPL-2.0",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/certifi/python-certifi",
+      "note": ""
+    },
+    {
+      "name": "cffi",
+      "version": "2.0.0",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/python-cffi/cffi",
+      "note": ""
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.4.6",
+      "license_expression": "MIT",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/jawah/charset_normalizer",
+      "note": ""
+    },
+    {
+      "name": "cryptography",
+      "version": "46.0.6",
+      "license_expression": "Apache-2.0 OR BSD-3-Clause",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/pyca/cryptography/",
+      "note": ""
+    },
+    {
+      "name": "deprecation",
+      "version": "2.1.0",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/briancurtin/deprecation",
+      "note": ""
+    },
+    {
+      "name": "grpclib",
+      "version": "0.4.9",
+      "license_expression": "BSD-3-Clause",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/vmagamedov/grpclib",
+      "note": ""
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "license_expression": "MIT",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/python-hyper/h11",
+      "note": ""
+    },
+    {
+      "name": "h2",
+      "version": "4.3.0",
+      "license_expression": "MIT",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/python-hyper/h2/",
+      "note": ""
+    },
+    {
+      "name": "hpack",
+      "version": "4.1.0",
+      "license_expression": "MIT",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/python-hyper/hpack/",
+      "note": ""
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "license_expression": "BSD-3-Clause",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/encode/httpcore",
+      "note": ""
+    },
+    {
+      "name": "hyperframe",
+      "version": "6.1.0",
+      "license_expression": "MIT",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/python-hyper/hyperframe/",
+      "note": ""
+    },
+    {
+      "name": "id",
+      "version": "1.6.1",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/di/id",
+      "note": ""
+    },
+    {
+      "name": "idna",
+      "version": "3.11",
+      "license_expression": "BSD-3-Clause",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/kjd/idna",
+      "note": ""
+    },
+    {
+      "name": "lance-namespace",
+      "version": "0.6.1",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/lance-format/lance-namespace",
+      "note": ""
+    },
+    {
+      "name": "lance-namespace-urllib3-client",
+      "version": "0.6.1",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/lance-format/lance-namespace",
+      "note": ""
+    },
+    {
+      "name": "markdown-it-py",
+      "version": "4.0.0",
+      "license_expression": "MIT",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/executablebooks/markdown-it-py",
+      "note": ""
+    },
+    {
+      "name": "MarkupSafe",
+      "version": "3.0.3",
+      "license_expression": "BSD-3-Clause",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/pallets/markupsafe/",
+      "note": ""
+    },
+    {
+      "name": "mdurl",
+      "version": "0.1.2",
+      "license_expression": "MIT",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/executablebooks/mdurl",
+      "note": ""
+    },
+    {
+      "name": "multidict",
+      "version": "6.7.1",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/aio-libs/multidict",
+      "note": ""
+    },
+    {
+      "name": "numpy",
+      "version": "2.4.3",
+      "license_expression": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/numpy/numpy",
+      "note": ""
+    },
+    {
+      "name": "packaging",
+      "version": "26.0",
+      "license_expression": "Apache-2.0 OR BSD-2-Clause",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/pypa/packaging",
+      "note": ""
+    },
+    {
+      "name": "platformdirs",
+      "version": "4.9.4",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/tox-dev/platformdirs",
+      "note": ""
+    },
+    {
+      "name": "pyarrow",
+      "version": "23.0.1",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/apache/arrow",
+      "note": ""
+    },
+    {
+      "name": "pyasn1",
+      "version": "0.6.3",
+      "license_expression": "BSD-2-Clause",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/pyasn1/pyasn1",
+      "note": ""
+    },
+    {
+      "name": "pycparser",
+      "version": "3.0",
+      "license_expression": "BSD-3-Clause",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/eliben/pycparser",
+      "note": ""
+    },
+    {
+      "name": "pydantic",
+      "version": "2.12.5",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/pydantic/pydantic",
+      "note": ""
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.41.5",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/pydantic/pydantic-core",
+      "note": ""
+    },
+    {
+      "name": "Pygments",
+      "version": "2.19.2",
+      "license_expression": "BSD-2-Clause",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/pygments/pygments",
+      "note": ""
+    },
+    {
+      "name": "PyJWT",
+      "version": "2.12.1",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/jpadilla/pyjwt",
+      "note": ""
+    },
+    {
+      "name": "pyOpenSSL",
+      "version": "26.0.0",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/pyca/pyopenssl",
+      "note": ""
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "license_expression": "Apache-2.0 OR BSD",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/dateutil/dateutil",
+      "note": ""
+    },
+    {
+      "name": "requests",
+      "version": "2.33.0",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/psf/requests",
+      "note": ""
+    },
+    {
+      "name": "rfc3161-client",
+      "version": "1.0.5",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/trailofbits/rfc3161-client",
+      "note": ""
+    },
+    {
+      "name": "rfc8785",
+      "version": "0.1.4",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/trailofbits/rfc8785.py",
+      "note": ""
+    },
+    {
+      "name": "rich",
+      "version": "14.3.3",
+      "license_expression": "MIT",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/Textualize/rich",
+      "note": ""
+    },
+    {
+      "name": "securesystemslib",
+      "version": "1.3.1",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/secure-systems-lab/securesystemslib",
+      "note": ""
+    },
+    {
+      "name": "sigstore-protobuf-specs",
+      "version": "0.3.2",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/sigstore/protobuf-specs",
+      "note": ""
+    },
+    {
+      "name": "sigstore-rekor-types",
+      "version": "0.0.18",
+      "license_expression": "Apache-2.0",
+      "license_source": "metadata:Classifier",
+      "direct": false,
+      "source_url": "https://github.com/trailofbits/sigstore-rekor-types",
+      "note": ""
+    },
+    {
+      "name": "six",
+      "version": "1.17.0",
+      "license_expression": "MIT",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/benjaminp/six",
+      "note": ""
+    },
+    {
+      "name": "tqdm",
+      "version": "4.67.3",
+      "license_expression": "MPL-2.0 AND MIT",
+      "license_source": "metadata:License",
+      "direct": false,
+      "source_url": "https://github.com/tqdm/tqdm",
+      "note": ""
+    },
+    {
+      "name": "tuf",
+      "version": "6.0.0",
+      "license_expression": "Apache-2.0 OR MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/theupdateframework/python-tuf",
+      "note": ""
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.15.0",
+      "license_expression": "PSF-2.0",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/python/typing_extensions",
+      "note": ""
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.2",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/pydantic/typing-inspection",
+      "note": ""
+    },
+    {
+      "name": "urllib3",
+      "version": "2.6.3",
+      "license_expression": "MIT",
+      "license_source": "metadata:License-Expression",
+      "direct": false,
+      "source_url": "https://github.com/urllib3/urllib3",
+      "note": ""
+    }
+  ]
+}

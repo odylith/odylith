@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+dev_source_local="false"
+if [[ "${1:-}" == "--dev-source-local" ]]; then
+  dev_source_local="true"
+  shift
+fi
+[[ "$#" -eq 0 ]] || die "unexpected arguments: $*"
+
+"$odylith_python" "$odylith_host_repo_root/scripts/validate_git_identity.py" history --repo-root . HEAD
+"$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . check
+"$odylith_python" -m pytest -q
+"$odylith_python" -m compileall src/odylith
+"$odylith_host_repo_root/bin/license-audit"
+sync_args=(
+  --repo-root .
+  --check-only
+  --runtime-mode standalone
+  --registry-policy-mode enforce-critical
+  --enforce-deep-skills
+)
+if [[ "$dev_source_local" != "true" ]]; then
+  sync_args+=(--check-clean)
+fi
+odylith_cli sync "${sync_args[@]}"
+odylith_cli validate backlog-contract --repo-root .
+odylith_cli validate component-registry --repo-root .
+odylith_cli validate guidance-portability --repo-root .
+odylith_cli validate plan-workstream-binding --repo-root .
+odylith_cli validate plan-traceability --repo-root .
+odylith_cli validate plan-risk-mitigation --repo-root .
+odylith_cli validate version-truth --repo-root .

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+canonical_exec="false"
+if [[ "${1:-}" == "--canonical-exec" ]]; then
+  canonical_exec="true"
+  shift
+fi
+
+requested_version="${1:-${VERSION:-}}"
+if [[ -n "$requested_version" ]]; then
+  require_version "$requested_version"
+fi
+require_cmd gh
+
+if [[ "$canonical_exec" != "true" ]]; then
+  if [[ -n "$requested_version" ]]; then
+    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/release-dispatch" --canonical-exec "$requested_version"
+  else
+    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/release-dispatch" --canonical-exec
+  fi
+  exit $?
+fi
+
+require_canonical_release_checkout
+resolved_version="$(resolve_release_session_version "release-dispatch" "$requested_version" "false" "true")"
+tag="v${resolved_version}"
+expected_sha="$(release_session_field head_sha)"
+
+gh workflow run release.yml --repo "$odylith_release_repo" --ref "$odylith_release_ref" -f tag="$tag" -f expected_sha="$expected_sha"
+echo "dispatched canonical release workflow for $tag on repo $odylith_release_repo ref $odylith_release_ref sha $expected_sha"

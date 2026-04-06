@@ -1,0 +1,33 @@
+%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+flowchart TD
+    A["Orchestration decision returned"] --> B{"Mode"}
+
+    B -->|local_only| C["Main thread owns everything"]
+    B -->|single_leaf| D["One bounded worker"]
+    B -->|serial_batch| E["Ordered leaves"]
+    B -->|parallel_batch| F["Concurrent disjoint leaves"]
+
+    D --> G["Worker returns bounded output<br/>or waits on instruction until<br/>main-thread closeout applies"]
+    E --> E1["Leaf 1"] --> E2["Main thread review"]
+    E2 --> E3{"Accept and continue?"}
+    E3 -->|Yes| E4["Leaf 2"]
+    E3 -->|No| C
+    F --> F1["Leaf A"]
+    F --> F2["Leaf B"]
+    F --> F3["Leaf C (optional)"]
+
+    G --> H["Main thread validation"]
+    E4 --> H
+    F1 --> I["Merge barrier"]
+    F2 --> I
+    F3 --> I
+
+    I --> J["Main thread compares outputs,<br/>runs final validation, resolves conflicts"]
+    H --> J
+
+    J --> K{"Cross-leaf design or ownership conflict?"}
+    K -->|Yes| L["Keep local<br/>main thread adjudicates and rescopes"]
+    K -->|No| M["Merge accepted output"]
+
+    M --> N["Record orchestration feedback<br/>and apply routed closeout payloads"]
+    L --> N

@@ -1,0 +1,67 @@
+%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+flowchart LR
+  subgraph Operator["1. Operator and bounded delegation surface"]
+    Main["Main agent or maintainer"]
+    Skill["subagent-router skill"]
+    Router["src/odylith/runtime/orchestration/subagent_router.py"]
+    Worker["One spawned subagent<br/>agent_type + model + reasoning_effort<br/>from router native payload"]
+    Confidence["Task family + route confidence<br/>manual-review / rescope signals"]
+    Policy["Task-class policy matrix<br/>default profile + delegated floor"]
+    Lifecycle["Native spawn + close payloads<br/>idle timeout action + termination expectation"]
+  end
+
+  subgraph LocalState["2. Local state and audit"]
+    Tuning[".odylith/subagent_router/tuning.v1.json"]
+    Stream["odylith/compass/runtime/codex-stream.v1.jsonl"]
+    Outcome["Route decisions, escalation signals,<br/>rescope outcomes, and adaptive feedback"]
+    FamilyBias["Family-aware soft bias + outcome counters"]
+  end
+
+  subgraph Governance["3. Governed repo truth"]
+    Backlog["Radar workstream baseline"]
+    Spec["Subagent Router living spec"]
+    Runbook["Subagent Router operations runbook"]
+    RegistryManifest["odylith/registry/source/component_registry.v1.json"]
+    Diagrams["D-012 and D-013 metadata"]
+  end
+
+  subgraph Surfaces["4. Rendered Odylith surfaces"]
+    Compass["Compass forensic timeline"]
+    Registry["Registry component inventory"]
+    Atlas["Atlas diagram evidence"]
+    Shell["Tooling shell cross-surface routes"]
+  end
+
+  Main --> Skill
+  Skill --> Router
+  Router --> Worker
+  Router --> Confidence
+  Router --> Policy
+  Router --> Lifecycle
+  Worker --> Outcome
+  Router --> Outcome
+
+  Router --> Tuning
+  Router --> Stream
+  Outcome --> Tuning
+  Outcome --> Stream
+  Tuning --> FamilyBias
+  Confidence --> FamilyBias
+  Policy --> Worker
+  Lifecycle --> Worker
+
+  Backlog --> Spec
+  Backlog --> Diagrams
+  Spec --> RegistryManifest
+  Spec --> Diagrams
+  Runbook --> Spec
+
+  Stream --> Compass
+  RegistryManifest --> Registry
+  Spec --> Registry
+  Diagrams --> Atlas
+  Spec --> Atlas
+
+  Compass --> Shell
+  Registry --> Shell
+  Atlas --> Shell

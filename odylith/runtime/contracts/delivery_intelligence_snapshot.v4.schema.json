@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:odylith:contract:delivery_intelligence_snapshot.v4.schema.json",
+  "title": "Delivery Intelligence Snapshot v4",
+  "type": "object",
+  "required": [
+    "version",
+    "generated_utc",
+    "scopes",
+    "case_queue",
+    "indexes",
+    "summary",
+    "systemic_brief"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "v4"
+    },
+    "generated_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scopes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "scope_key",
+          "scope_type",
+          "scope_id",
+          "scope_label"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "scope_key": { "type": "string", "minLength": 1 },
+          "scope_type": { "type": "string", "minLength": 1 },
+          "scope_id": { "type": "string", "minLength": 1 },
+          "scope_label": { "type": "string", "minLength": 1 },
+          "case_refs": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "surface_contributions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "evidence_bundle": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "case_queue": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "rank",
+          "scope_key",
+          "headline",
+          "brief",
+          "packet_mode",
+          "action_label"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "rank": { "type": "integer", "minimum": 1 },
+          "scope_key": { "type": "string", "minLength": 1 },
+          "headline": { "type": "string", "minLength": 1 },
+          "brief": { "type": "string", "minLength": 1 },
+          "packet_mode": { "type": "string", "minLength": 1 },
+          "reasoning_state": { "type": "string" },
+          "action_label": { "type": "string", "minLength": 1 },
+          "proof_routes": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "confidence_factors": {
+            "type": "object",
+            "additionalProperties": { "type": "number" }
+          }
+        }
+      }
+    },
+    "indexes": {
+      "type": "object",
+      "required": [
+        "grid",
+        "surfaces",
+        "workstreams",
+        "components",
+        "diagrams",
+        "cases"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "grid": { "type": "object" },
+        "surfaces": { "type": "object" },
+        "workstreams": { "type": "object" },
+        "components": { "type": "object" },
+        "diagrams": { "type": "object" },
+        "cases": { "type": "object" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "grid_scope",
+        "highest_severity_scope",
+        "highest_risk_scope",
+        "grid_action",
+        "queue_size",
+        "top_queue_item"
+      ],
+      "additionalProperties": true
+    },
+    "systemic_brief": {
+      "type": "object",
+      "required": [
+        "headline",
+        "summary",
+        "latent_causes",
+        "leverage_actions"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

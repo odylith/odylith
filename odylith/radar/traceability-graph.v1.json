@@ -1,0 +1,4351 @@
+{
+  "version": "v1",
+  "source": {
+    "ideas_root": "odylith/radar/source/ideas",
+    "catalog": "odylith/atlas/source/catalog/diagrams.v1.json",
+    "execution_programs_root": "odylith/radar/source/programs"
+  },
+  "workstreams": [
+    {
+      "idea_id": "B-001",
+      "title": "Odylith Product Self-Governance and Repo Boundary",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-001",
+        "D-002",
+        "D-003",
+        "D-004",
+        "D-005",
+        "D-006",
+        "D-007",
+        "D-008",
+        "D-009",
+        "D-010",
+        "D-011",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-015",
+        "D-016",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+      "plan_traceability": {
+        "runbooks": [
+          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+        ],
+        "developer_docs": [
+          "docs/specs/odylith-repo-integration-contract.md",
+          "odylith/PRODUCT_COMPONENTS.md",
+          "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+        ],
+        "code_references": [
+          "src/odylith/cli.py",
+          "src/odylith/runtime/governance/component_registry_intelligence.py",
+          "src/odylith/runtime/governance/sync_workstream_artifacts.py"
+        ]
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 20,
+        "runbook_count": 1,
+        "developer_doc_count": 3,
+        "code_reference_count": 3
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-002",
+      "title": "Odylith Multi-Developer Repo Collaboration Architecture",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-001",
+        "D-002",
+        "D-018",
+        "D-019",
+        "D-020"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 5,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-003",
+      "title": "Compass History Retention, Compressed Archive, and Restore",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
+      "plan_traceability": {
+        "runbooks": [
+          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+        ],
+        "developer_docs": [
+          "odylith/README.md",
+          "odylith/registry/source/components/compass/CURRENT_SPEC.md"
+        ],
+        "code_references": [
+          "src/odylith/cli.py",
+          "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+          "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+          "src/odylith/runtime/surfaces/update_compass.py"
+        ]
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 1,
+        "developer_doc_count": 2,
+        "code_reference_count": 4
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-004",
+      "title": "Odylith Self-Hosting Posture Hardening",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-021"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+      "plan_traceability": {
+        "runbooks": [
+          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+        ],
+        "developer_docs": [
+          "docs/specs/odylith-repo-integration-contract.md",
+          "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+          "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+          "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+        ],
+        "code_references": [
+          "github/workflows/release.yml",
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py",
+          "src/odylith/runtime/governance/validate_self_host_posture.py",
+          "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+          "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+          "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+        ]
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 1,
+        "developer_doc_count": 4,
+        "code_reference_count": 7
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-005",
+      "title": "Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001",
+        "B-004"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md",
+      "plan_traceability": {
+        "runbooks": [
+          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+          "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+        ],
+        "developer_docs": [
+          "odylith/README.md",
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+          "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+          "odylith/registry/source/components/release/CURRENT_SPEC.md"
+        ],
+        "code_references": [
+          "github/workflows/test.yml",
+          "src/odylith/cli.py",
+          "src/odylith/install/managed_runtime.py",
+          "src/odylith/install/manager.py",
+          "src/odylith/install/release_assets.py",
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/common/consumer_profile.py",
+          "tests/integration/install/test_manager.py",
+          "tests/unit/install/test_release_assets.py",
+          "tests/unit/install/test_runtime.py",
+          "tests/unit/test_cli.py"
+        ]
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 5,
+        "runbook_count": 2,
+        "developer_doc_count": 4,
+        "code_reference_count": 11
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-006",
+      "title": "Odylith Dark Theme and Adaptive Surface Tokens",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-007",
+      "title": "Odylith GA Promotion and Supported Platform Contract",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-005"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
+      "plan_traceability": {
+        "runbooks": [
+          "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+        ],
+        "developer_docs": [
+          "odylith/README.md",
+          "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+          "odylith/registry/source/components/release/CURRENT_SPEC.md"
+        ],
+        "code_references": [
+          "src/odylith/install/manager.py",
+          "tests/integration/install/test_manager.py"
+        ]
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 5,
+        "runbook_count": 1,
+        "developer_doc_count": 3,
+        "code_reference_count": 2
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-008",
+      "title": "Odylith Memory Areas and Operator Readout",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-009",
+      "title": "Odylith Benchmark Corpus Truth and Adoption Proof Parity",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001",
+        "B-008"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-010",
+      "title": "Odylith Durable Judgment Memory and Memory Backend Productization",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-002",
+        "B-008",
+        "B-009"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-020"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-011",
+      "title": "Odylith Memory Coherence, Contradiction Retention, and Onboarding Continuity",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-008",
+        "B-009",
+        "B-010"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-012",
+      "title": "Odylith Local Provider Autodetect and Compass AI Brief Recovery",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-013",
+      "title": "Odylith Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-014",
+      "title": "Odylith Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-018",
+        "D-020"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 3,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-015",
+      "title": "Odylith Subagent Reasoning Ladder and Grounded Spawn Defaults",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001",
+        "B-009",
+        "B-013"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-016",
+      "title": "Odylith Install-Time Agent Activation and Dogfood Guidance Split",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-005",
+        "B-015"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-017",
+      "title": "Odylith Surface Browser Stability and End-to-End Hardening",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-012",
+        "B-013",
+        "B-016"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-018",
+      "title": "Odylith Query-State Reload and Standalone Surface Browser Proof",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-017"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-019",
+      "title": "Odylith Benchmark Frontier Compaction and README Refresh",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-009",
+        "B-015"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-020",
+      "title": "Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-009",
+        "B-019"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-021",
+      "title": "Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-009",
+        "B-019",
+        "B-020"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-022",
+      "title": "Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
+      "status": "implementation",
+      "workstream_type": "umbrella",
+      "workstream_parent": "",
+      "workstream_children": [
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-046"
+      ],
+      "workstream_depends_on": [
+        "B-020",
+        "B-021"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-046"
+      ],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-023",
+      "title": "Odylith Atlas Tab-State Isolation, Query Self-Healing, and Browser Hardening",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-018"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-024",
+      "title": "Odylith Governance Autopilot and Prebaked Consumer Change Management",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001",
+        "B-010",
+        "B-016"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-025",
+      "title": "Odylith Cross-Surface Runtime Freshness and UX Browser Hardening",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-017",
+        "B-018",
+        "B-023"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-026",
+      "title": "Odylith Release Tag Reuse and Published Release Anchoring",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-005"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-027",
+      "title": "Odylith Lane Boundary, Runtime, and Toolchain Clarity",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-004",
+        "B-005",
+        "B-016"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-014",
+        "D-020",
+        "D-021"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 3,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-028",
+      "title": "Odylith Starter Launchpad UX and Visual Redesign",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-016",
+        "B-017",
+        "B-018"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-029",
+      "title": "Odylith Install-Time Gitignore Bootstrap for Managed State",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-016"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-030",
+      "title": "Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-016",
+        "B-028"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-031",
+      "title": "Odylith First-Turn Bootstrap and Short-Form Grounding Commands",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-015",
+        "B-016",
+        "B-027"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-032",
+      "title": "Odylith v0.1.5 Agent-First Operator Workflow and Recovery Polish",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-027",
+        "B-030",
+        "B-031"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-033",
+      "title": "Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [
+        "B-040"
+      ],
+      "workstream_depends_on": [
+        "B-006",
+        "B-021",
+        "B-022",
+        "B-028",
+        "B-030"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-034",
+      "title": "Odylith Constitution Tab for Non-Negotiable Product Truth",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001",
+        "B-027"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-035",
+      "title": "Odylith Decisions Tab and Architecture Decision Ledger",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001",
+        "B-024"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-036",
+      "title": "Odylith Product Canon Tab for Feature Narrative",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-028",
+        "B-033"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-037",
+      "title": "Odylith Live Benchmarks Drawer and Dynamic Metric Readout",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-021",
+        "B-022",
+        "B-033"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-038",
+      "title": "Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-022",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-022"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "B-022",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-039",
+      "title": "Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-022",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-021",
+        "B-022",
+        "B-038"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "B-022",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-corpus-expansion-diagnostics-and-publication-refresh.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-040",
+      "title": "Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-033",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-027",
+        "B-029",
+        "B-030"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-041",
+      "title": "Odylith SWE-bench External Harness, Predictions Contract, and Reproducible Verified Adapter",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-022",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-022",
+        "B-039"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "B-022",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-swe-bench-external-harness-predictions-contract-and-reproducible-verified-adapter.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-042",
+      "title": "Odylith Zero-Governance External-Repo Grounding and SWE-bench Verified Frontier",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-022",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-022",
+        "B-041"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "B-022",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-zero-governance-external-repo-grounding-and-swe-bench-verified-frontier.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-043",
+      "title": "Odylith Bootstrapped Consumer Governance Lane for SWE-bench Verified",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-022",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-022",
+        "B-041",
+        "B-042"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "B-022",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-044",
+      "title": "Odylith External Benchmark Failure Taxonomy, Slice Analytics, and Publication Discipline",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-022",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-022",
+        "B-041",
+        "B-042",
+        "B-043"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "B-022",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-external-benchmark-failure-taxonomy-slice-analytics-and-publication-discipline.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-045",
+      "title": "Odylith Registry Source-Mirror Forensic Coverage Alignment",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-006",
+        "D-008",
+        "D-011"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 3,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-046",
+      "title": "Odylith Tribunal Benchmark Families, No-Tribunal Ablation, and Diagnosis-Proof Publication",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-022",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-022",
+        "B-039"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "B-022",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-benchmark-families-no-tribunal-ablation-and-diagnosis-proof-publication.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-047",
+      "title": "Odylith Tribunal Default Diagnosis Triggers, Two-Speed Execution, and Cached Case Reuse",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-005",
+        "D-007",
+        "D-010",
+        "D-011"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-default-diagnosis-triggers-two-speed-execution-and-cached-case-reuse.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 4,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    }
+  ],
+  "execution_programs": [],
+  "nodes": [
+    {
+      "id": "B-001",
+      "type": "workstream",
+      "label": "Odylith Product Self-Governance and Repo Boundary",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+    },
+    {
+      "id": "B-002",
+      "type": "workstream",
+      "label": "Odylith Multi-Developer Repo Collaboration Architecture",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md"
+    },
+    {
+      "id": "B-003",
+      "type": "workstream",
+      "label": "Compass History Retention, Compressed Archive, and Restore",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md"
+    },
+    {
+      "id": "B-004",
+      "type": "workstream",
+      "label": "Odylith Self-Hosting Posture Hardening",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md"
+    },
+    {
+      "id": "B-005",
+      "type": "workstream",
+      "label": "Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md"
+    },
+    {
+      "id": "B-006",
+      "type": "workstream",
+      "label": "Odylith Dark Theme and Adaptive Surface Tokens",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md"
+    },
+    {
+      "id": "B-007",
+      "type": "workstream",
+      "label": "Odylith GA Promotion and Supported Platform Contract",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md"
+    },
+    {
+      "id": "B-008",
+      "type": "workstream",
+      "label": "Odylith Memory Areas and Operator Readout",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md"
+    },
+    {
+      "id": "B-009",
+      "type": "workstream",
+      "label": "Odylith Benchmark Corpus Truth and Adoption Proof Parity",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md"
+    },
+    {
+      "id": "B-010",
+      "type": "workstream",
+      "label": "Odylith Durable Judgment Memory and Memory Backend Productization",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md"
+    },
+    {
+      "id": "B-011",
+      "type": "workstream",
+      "label": "Odylith Memory Coherence, Contradiction Retention, and Onboarding Continuity",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md"
+    },
+    {
+      "id": "B-012",
+      "type": "workstream",
+      "label": "Odylith Local Provider Autodetect and Compass AI Brief Recovery",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md"
+    },
+    {
+      "id": "B-013",
+      "type": "workstream",
+      "label": "Odylith Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md"
+    },
+    {
+      "id": "B-014",
+      "type": "workstream",
+      "label": "Odylith Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md"
+    },
+    {
+      "id": "B-015",
+      "type": "workstream",
+      "label": "Odylith Subagent Reasoning Ladder and Grounded Spawn Defaults",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md"
+    },
+    {
+      "id": "B-016",
+      "type": "workstream",
+      "label": "Odylith Install-Time Agent Activation and Dogfood Guidance Split",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md"
+    },
+    {
+      "id": "B-017",
+      "type": "workstream",
+      "label": "Odylith Surface Browser Stability and End-to-End Hardening",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md"
+    },
+    {
+      "id": "B-018",
+      "type": "workstream",
+      "label": "Odylith Query-State Reload and Standalone Surface Browser Proof",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md"
+    },
+    {
+      "id": "B-019",
+      "type": "workstream",
+      "label": "Odylith Benchmark Frontier Compaction and README Refresh",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md"
+    },
+    {
+      "id": "B-020",
+      "type": "workstream",
+      "label": "Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md"
+    },
+    {
+      "id": "B-021",
+      "type": "workstream",
+      "label": "Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md"
+    },
+    {
+      "id": "B-022",
+      "type": "workstream",
+      "label": "Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md"
+    },
+    {
+      "id": "B-023",
+      "type": "workstream",
+      "label": "Odylith Atlas Tab-State Isolation, Query Self-Healing, and Browser Hardening",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md"
+    },
+    {
+      "id": "B-024",
+      "type": "workstream",
+      "label": "Odylith Governance Autopilot and Prebaked Consumer Change Management",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md"
+    },
+    {
+      "id": "B-025",
+      "type": "workstream",
+      "label": "Odylith Cross-Surface Runtime Freshness and UX Browser Hardening",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md"
+    },
+    {
+      "id": "B-026",
+      "type": "workstream",
+      "label": "Odylith Release Tag Reuse and Published Release Anchoring",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md"
+    },
+    {
+      "id": "B-027",
+      "type": "workstream",
+      "label": "Odylith Lane Boundary, Runtime, and Toolchain Clarity",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+    },
+    {
+      "id": "B-028",
+      "type": "workstream",
+      "label": "Odylith Starter Launchpad UX and Visual Redesign",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md"
+    },
+    {
+      "id": "B-029",
+      "type": "workstream",
+      "label": "Odylith Install-Time Gitignore Bootstrap for Managed State",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md"
+    },
+    {
+      "id": "B-030",
+      "type": "workstream",
+      "label": "Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md"
+    },
+    {
+      "id": "B-031",
+      "type": "workstream",
+      "label": "Odylith First-Turn Bootstrap and Short-Form Grounding Commands",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md"
+    },
+    {
+      "id": "B-032",
+      "type": "workstream",
+      "label": "Odylith v0.1.5 Agent-First Operator Workflow and Recovery Polish",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md"
+    },
+    {
+      "id": "B-033",
+      "type": "workstream",
+      "label": "Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md"
+    },
+    {
+      "id": "B-034",
+      "type": "workstream",
+      "label": "Odylith Constitution Tab for Non-Negotiable Product Truth",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md"
+    },
+    {
+      "id": "B-035",
+      "type": "workstream",
+      "label": "Odylith Decisions Tab and Architecture Decision Ledger",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md"
+    },
+    {
+      "id": "B-036",
+      "type": "workstream",
+      "label": "Odylith Product Canon Tab for Feature Narrative",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md"
+    },
+    {
+      "id": "B-037",
+      "type": "workstream",
+      "label": "Odylith Live Benchmarks Drawer and Dynamic Metric Readout",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md"
+    },
+    {
+      "id": "B-038",
+      "type": "workstream",
+      "label": "Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md"
+    },
+    {
+      "id": "B-039",
+      "type": "workstream",
+      "label": "Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-corpus-expansion-diagnostics-and-publication-refresh.md"
+    },
+    {
+      "id": "B-040",
+      "type": "workstream",
+      "label": "Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md"
+    },
+    {
+      "id": "B-041",
+      "type": "workstream",
+      "label": "Odylith SWE-bench External Harness, Predictions Contract, and Reproducible Verified Adapter",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-swe-bench-external-harness-predictions-contract-and-reproducible-verified-adapter.md"
+    },
+    {
+      "id": "B-042",
+      "type": "workstream",
+      "label": "Odylith Zero-Governance External-Repo Grounding and SWE-bench Verified Frontier",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-zero-governance-external-repo-grounding-and-swe-bench-verified-frontier.md"
+    },
+    {
+      "id": "B-043",
+      "type": "workstream",
+      "label": "Odylith Bootstrapped Consumer Governance Lane for SWE-bench Verified",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md"
+    },
+    {
+      "id": "B-044",
+      "type": "workstream",
+      "label": "Odylith External Benchmark Failure Taxonomy, Slice Analytics, and Publication Discipline",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-external-benchmark-failure-taxonomy-slice-analytics-and-publication-discipline.md"
+    },
+    {
+      "id": "B-045",
+      "type": "workstream",
+      "label": "Odylith Registry Source-Mirror Forensic Coverage Alignment",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md"
+    },
+    {
+      "id": "B-046",
+      "type": "workstream",
+      "label": "Odylith Tribunal Benchmark Families, No-Tribunal Ablation, and Diagnosis-Proof Publication",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-benchmark-families-no-tribunal-ablation-and-diagnosis-proof-publication.md"
+    },
+    {
+      "id": "B-047",
+      "type": "workstream",
+      "label": "Odylith Tribunal Default Diagnosis Triggers, Two-Speed Execution, and Cached Case Reuse",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-default-diagnosis-triggers-two-speed-execution-and-cached-case-reuse.md"
+    },
+    {
+      "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
+      "type": "artifact",
+      "label": "docs/specs/odylith-repo-integration-contract.md",
+      "bucket": "developer_docs",
+      "file": "docs/specs/odylith-repo-integration-contract.md"
+    },
+    {
+      "id": "artifact:github/workflows/release.yml",
+      "type": "artifact",
+      "label": "github/workflows/release.yml",
+      "bucket": "code_references",
+      "file": "github/workflows/release.yml"
+    },
+    {
+      "id": "artifact:github/workflows/test.yml",
+      "type": "artifact",
+      "label": "github/workflows/test.yml",
+      "bucket": "code_references",
+      "file": "github/workflows/test.yml"
+    },
+    {
+      "id": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "type": "artifact",
+      "label": "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "bucket": "runbooks",
+      "file": "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+    },
+    {
+      "id": "artifact:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "type": "artifact",
+      "label": "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "bucket": "runbooks",
+      "file": "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+    },
+    {
+      "id": "artifact:odylith/PRODUCT_COMPONENTS.md",
+      "type": "artifact",
+      "label": "odylith/PRODUCT_COMPONENTS.md",
+      "bucket": "developer_docs",
+      "file": "odylith/PRODUCT_COMPONENTS.md"
+    },
+    {
+      "id": "artifact:odylith/README.md",
+      "type": "artifact",
+      "label": "odylith/README.md",
+      "bucket": "developer_docs",
+      "file": "odylith/README.md"
+    },
+    {
+      "id": "artifact:odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "type": "artifact",
+      "label": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "bucket": "developer_docs",
+      "file": "odylith/registry/source/components/compass/CURRENT_SPEC.md"
+    },
+    {
+      "id": "artifact:odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+      "type": "artifact",
+      "label": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+      "bucket": "developer_docs",
+      "file": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md"
+    },
+    {
+      "id": "artifact:odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+      "type": "artifact",
+      "label": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+      "bucket": "developer_docs",
+      "file": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md"
+    },
+    {
+      "id": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "type": "artifact",
+      "label": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "bucket": "developer_docs",
+      "file": "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+    },
+    {
+      "id": "artifact:odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "type": "artifact",
+      "label": "odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "bucket": "developer_docs",
+      "file": "odylith/registry/source/components/release/CURRENT_SPEC.md"
+    },
+    {
+      "id": "artifact:src/odylith/cli.py",
+      "type": "artifact",
+      "label": "src/odylith/cli.py",
+      "bucket": "code_references",
+      "file": "src/odylith/cli.py"
+    },
+    {
+      "id": "artifact:src/odylith/install/managed_runtime.py",
+      "type": "artifact",
+      "label": "src/odylith/install/managed_runtime.py",
+      "bucket": "code_references",
+      "file": "src/odylith/install/managed_runtime.py"
+    },
+    {
+      "id": "artifact:src/odylith/install/manager.py",
+      "type": "artifact",
+      "label": "src/odylith/install/manager.py",
+      "bucket": "code_references",
+      "file": "src/odylith/install/manager.py"
+    },
+    {
+      "id": "artifact:src/odylith/install/release_assets.py",
+      "type": "artifact",
+      "label": "src/odylith/install/release_assets.py",
+      "bucket": "code_references",
+      "file": "src/odylith/install/release_assets.py"
+    },
+    {
+      "id": "artifact:src/odylith/install/runtime.py",
+      "type": "artifact",
+      "label": "src/odylith/install/runtime.py",
+      "bucket": "code_references",
+      "file": "src/odylith/install/runtime.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/common/consumer_profile.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/common/consumer_profile.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/common/consumer_profile.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/governance/component_registry_intelligence.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/governance/component_registry_intelligence.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/governance/component_registry_intelligence.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/governance/sync_workstream_artifacts.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/governance/sync_workstream_artifacts.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/governance/validate_self_host_posture.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/governance/validate_self_host_posture.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/governance/validate_self_host_posture.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/surfaces/compass_dashboard_runtime.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/surfaces/compass_dashboard_shell.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/surfaces/render_compass_dashboard.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/surfaces/update_compass.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/surfaces/update_compass.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/surfaces/update_compass.py"
+    },
+    {
+      "id": "artifact:tests/integration/install/test_manager.py",
+      "type": "artifact",
+      "label": "tests/integration/install/test_manager.py",
+      "bucket": "code_references",
+      "file": "tests/integration/install/test_manager.py"
+    },
+    {
+      "id": "artifact:tests/unit/install/test_release_assets.py",
+      "type": "artifact",
+      "label": "tests/unit/install/test_release_assets.py",
+      "bucket": "code_references",
+      "file": "tests/unit/install/test_release_assets.py"
+    },
+    {
+      "id": "artifact:tests/unit/install/test_runtime.py",
+      "type": "artifact",
+      "label": "tests/unit/install/test_runtime.py",
+      "bucket": "code_references",
+      "file": "tests/unit/install/test_runtime.py"
+    },
+    {
+      "id": "artifact:tests/unit/test_cli.py",
+      "type": "artifact",
+      "label": "tests/unit/test_cli.py",
+      "bucket": "code_references",
+      "file": "tests/unit/test_cli.py"
+    },
+    {
+      "id": "diagram:D-001",
+      "type": "diagram",
+      "label": "Odylith Product Governance Loop",
+      "diagram_id": "D-001",
+      "file": "odylith/atlas/source/odylith-product-governance-loop.mmd"
+    },
+    {
+      "id": "diagram:D-002",
+      "type": "diagram",
+      "label": "Odylith Context And Agent Execution Stack",
+      "diagram_id": "D-002",
+      "file": "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd"
+    },
+    {
+      "id": "diagram:D-003",
+      "type": "diagram",
+      "label": "Odylith Diagnosis And Remediation Loop",
+      "diagram_id": "D-003",
+      "file": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.mmd"
+    },
+    {
+      "id": "diagram:D-004",
+      "type": "diagram",
+      "label": "Odylith Delivery Governance Topology",
+      "diagram_id": "D-004",
+      "file": "odylith/atlas/source/odylith-delivery-governance-topology.mmd"
+    },
+    {
+      "id": "diagram:D-005",
+      "type": "diagram",
+      "label": "Odylith Delivery Intelligence Closed Loop",
+      "diagram_id": "D-005",
+      "file": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.mmd"
+    },
+    {
+      "id": "diagram:D-006",
+      "type": "diagram",
+      "label": "Odylith Operator Inbox and Evidence Routing",
+      "diagram_id": "D-006",
+      "file": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.mmd"
+    },
+    {
+      "id": "diagram:D-007",
+      "type": "diagram",
+      "label": "Odylith Tribunal Multi-Actor Reasoning Engine",
+      "diagram_id": "D-007",
+      "file": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.mmd"
+    },
+    {
+      "id": "diagram:D-008",
+      "type": "diagram",
+      "label": "Odylith Tribunal Dossier and Remediation Lifecycle",
+      "diagram_id": "D-008",
+      "file": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.mmd"
+    },
+    {
+      "id": "diagram:D-009",
+      "type": "diagram",
+      "label": "Odylith Delivery Intelligence Signal Journal and Observer Pipeline",
+      "diagram_id": "D-009",
+      "file": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.mmd"
+    },
+    {
+      "id": "diagram:D-010",
+      "type": "diagram",
+      "label": "Odylith Tribunal Selection Funnel and Queue Formation",
+      "diagram_id": "D-010",
+      "file": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd"
+    },
+    {
+      "id": "diagram:D-011",
+      "type": "diagram",
+      "label": "Odylith Tribunal Adjudication, Editorial Merge, and Packet Assembly",
+      "diagram_id": "D-011",
+      "file": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.mmd"
+    },
+    {
+      "id": "diagram:D-012",
+      "type": "diagram",
+      "label": "Odylith Subagent Router Decision and Escalation Flow",
+      "diagram_id": "D-012",
+      "file": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.mmd"
+    },
+    {
+      "id": "diagram:D-013",
+      "type": "diagram",
+      "label": "Odylith Subagent Router Governance and Audit Topology",
+      "diagram_id": "D-013",
+      "file": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.mmd"
+    },
+    {
+      "id": "diagram:D-014",
+      "type": "diagram",
+      "label": "Odylith Subagent Orchestrator Prompt Triage and Routing Flow",
+      "diagram_id": "D-014",
+      "file": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.mmd"
+    },
+    {
+      "id": "diagram:D-015",
+      "type": "diagram",
+      "label": "Odylith Subagent Orchestrator Safe Fan-Out and Parallel Safety",
+      "diagram_id": "D-015",
+      "file": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.mmd"
+    },
+    {
+      "id": "diagram:D-016",
+      "type": "diagram",
+      "label": "Odylith Subagent Orchestrator Merge Barrier and Adjudication Ownership",
+      "diagram_id": "D-016",
+      "file": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.mmd"
+    },
+    {
+      "id": "diagram:D-017",
+      "type": "diagram",
+      "label": "Odylith Subagent Orchestrator Governance and Adaptive Learning Topology",
+      "diagram_id": "D-017",
+      "file": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.mmd"
+    },
+    {
+      "id": "diagram:D-018",
+      "type": "diagram",
+      "label": "Odylith Installable Product Layered Topology",
+      "diagram_id": "D-018",
+      "file": "odylith/atlas/source/odylith-installable-product-layered-topology.mmd"
+    },
+    {
+      "id": "diagram:D-019",
+      "type": "diagram",
+      "label": "Odylith Installable Product Bootstrap and Validation Flow",
+      "diagram_id": "D-019",
+      "file": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.mmd"
+    },
+    {
+      "id": "diagram:D-020",
+      "type": "diagram",
+      "label": "Odylith Product Runtime Boundary Map",
+      "diagram_id": "D-020",
+      "file": "odylith/atlas/source/odylith-product-runtime-boundary-map.mmd"
+    },
+    {
+      "id": "diagram:D-021",
+      "type": "diagram",
+      "label": "Odylith Self-Host Runtime And Release Gate",
+      "diagram_id": "D-021",
+      "file": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.mmd"
+    },
+    {
+      "id": "diagram:D-022",
+      "type": "diagram",
+      "label": "Odylith Canonical Release Version Session And Publish Lane",
+      "diagram_id": "D-022",
+      "file": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.mmd"
+    },
+    {
+      "id": "diagram:D-023",
+      "type": "diagram",
+      "label": "Odylith Managed Runtime Release And Install Flow",
+      "diagram_id": "D-023",
+      "file": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd"
+    },
+    {
+      "id": "diagram:D-024",
+      "type": "diagram",
+      "label": "Odylith Benchmark Proof And Publication Lane",
+      "diagram_id": "D-024",
+      "file": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
+      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
+      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md",
+      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md"
+    }
+  ],
+  "edges": [
+    {
+      "source": "B-001",
+      "target": "B-002",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-003",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-004",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-005",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-006",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-009",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-012",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-013",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-014",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-015",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-024",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-034",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-035",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "artifact:docs/specs/odylith-repo-integration-contract.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-001",
+      "target": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "edge_type": "plan_traceability:runbooks"
+    },
+    {
+      "source": "B-001",
+      "target": "artifact:odylith/PRODUCT_COMPONENTS.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-001",
+      "target": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-001",
+      "target": "artifact:src/odylith/cli.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-001",
+      "target": "artifact:src/odylith/runtime/governance/component_registry_intelligence.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-001",
+      "target": "artifact:src/odylith/runtime/governance/sync_workstream_artifacts.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-001",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-003",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-004",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-005",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-006",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-007",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-008",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-009",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-010",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-011",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-012",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-013",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-014",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-015",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-016",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-017",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-018",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-019",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-002",
+      "target": "B-010",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-002",
+      "target": "diagram:D-001",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-002",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-002",
+      "target": "diagram:D-018",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-002",
+      "target": "diagram:D-019",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-002",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-003",
+      "target": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "edge_type": "plan_traceability:runbooks"
+    },
+    {
+      "source": "B-003",
+      "target": "artifact:odylith/README.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-003",
+      "target": "artifact:odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-003",
+      "target": "artifact:src/odylith/cli.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-003",
+      "target": "artifact:src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-003",
+      "target": "artifact:src/odylith/runtime/surfaces/render_compass_dashboard.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-003",
+      "target": "artifact:src/odylith/runtime/surfaces/update_compass.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-003",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-004",
+      "target": "B-005",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-004",
+      "target": "B-027",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:docs/specs/odylith-repo-integration-contract.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:github/workflows/release.yml",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "edge_type": "plan_traceability:runbooks"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:src/odylith/cli.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:src/odylith/install/manager.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:src/odylith/runtime/governance/validate_self_host_posture.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-004",
+      "target": "artifact:src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-004",
+      "target": "diagram:D-021",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-004",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-005",
+      "target": "B-007",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-005",
+      "target": "B-016",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-005",
+      "target": "B-026",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-005",
+      "target": "B-027",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:github/workflows/test.yml",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "edge_type": "plan_traceability:runbooks"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "edge_type": "plan_traceability:runbooks"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:odylith/README.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:src/odylith/cli.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:src/odylith/install/managed_runtime.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:src/odylith/install/manager.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:src/odylith/install/release_assets.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:src/odylith/install/runtime.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:src/odylith/runtime/common/consumer_profile.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:tests/integration/install/test_manager.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:tests/unit/install/test_release_assets.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:tests/unit/install/test_runtime.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "artifact:tests/unit/test_cli.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-005",
+      "target": "diagram:D-019",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-005",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-005",
+      "target": "diagram:D-021",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-005",
+      "target": "diagram:D-022",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-005",
+      "target": "diagram:D-023",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-005",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-006",
+      "target": "B-033",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-007",
+      "target": "artifact:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "edge_type": "plan_traceability:runbooks"
+    },
+    {
+      "source": "B-007",
+      "target": "artifact:odylith/README.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-007",
+      "target": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-007",
+      "target": "artifact:odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-007",
+      "target": "artifact:src/odylith/install/manager.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-007",
+      "target": "artifact:tests/integration/install/test_manager.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-007",
+      "target": "diagram:D-019",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-007",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-007",
+      "target": "diagram:D-021",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-007",
+      "target": "diagram:D-022",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-007",
+      "target": "diagram:D-023",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-007",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-008",
+      "target": "B-009",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-008",
+      "target": "B-010",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-008",
+      "target": "B-011",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-008",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-009",
+      "target": "B-010",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-009",
+      "target": "B-011",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-009",
+      "target": "B-015",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-009",
+      "target": "B-019",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-009",
+      "target": "B-020",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-009",
+      "target": "B-021",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-009",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-009",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-010",
+      "target": "B-011",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-010",
+      "target": "B-024",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-010",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-010",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-010",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-011",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-012",
+      "target": "B-017",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-012",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-013",
+      "target": "B-015",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-013",
+      "target": "B-017",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-013",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-014",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-014",
+      "target": "diagram:D-018",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-014",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-014",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-015",
+      "target": "B-016",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-015",
+      "target": "B-019",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-015",
+      "target": "B-031",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-015",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-016",
+      "target": "B-017",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-016",
+      "target": "B-024",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-016",
+      "target": "B-027",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-016",
+      "target": "B-028",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-016",
+      "target": "B-029",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-016",
+      "target": "B-030",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-016",
+      "target": "B-031",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-016",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-017",
+      "target": "B-018",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-017",
+      "target": "B-025",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-017",
+      "target": "B-028",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-017",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-018",
+      "target": "B-023",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-018",
+      "target": "B-025",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-018",
+      "target": "B-028",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-018",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-019",
+      "target": "B-020",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-019",
+      "target": "B-021",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-019",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-019",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-020",
+      "target": "B-021",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-020",
+      "target": "B-022",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-020",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-020",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-021",
+      "target": "B-022",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-021",
+      "target": "B-033",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-021",
+      "target": "B-037",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-021",
+      "target": "B-039",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-021",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-021",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-022",
+      "target": "B-033",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-037",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-038",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-038",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-022",
+      "target": "B-038",
+      "edge_type": "split"
+    },
+    {
+      "source": "B-022",
+      "target": "B-039",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-039",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-022",
+      "target": "B-039",
+      "edge_type": "split"
+    },
+    {
+      "source": "B-022",
+      "target": "B-041",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-041",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-022",
+      "target": "B-041",
+      "edge_type": "split"
+    },
+    {
+      "source": "B-022",
+      "target": "B-042",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-042",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-022",
+      "target": "B-042",
+      "edge_type": "split"
+    },
+    {
+      "source": "B-022",
+      "target": "B-043",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-043",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-022",
+      "target": "B-043",
+      "edge_type": "split"
+    },
+    {
+      "source": "B-022",
+      "target": "B-044",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-044",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-022",
+      "target": "B-044",
+      "edge_type": "split"
+    },
+    {
+      "source": "B-022",
+      "target": "B-046",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-046",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-022",
+      "target": "B-046",
+      "edge_type": "split"
+    },
+    {
+      "source": "B-022",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-022",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-023",
+      "target": "B-025",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-023",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-024",
+      "target": "B-035",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-024",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-025",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-026",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-027",
+      "target": "B-031",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-027",
+      "target": "B-032",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-027",
+      "target": "B-034",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-027",
+      "target": "B-040",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-027",
+      "target": "diagram:D-014",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-027",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-027",
+      "target": "diagram:D-021",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-027",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-028",
+      "target": "B-030",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-028",
+      "target": "B-033",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-028",
+      "target": "B-036",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-028",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-029",
+      "target": "B-040",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-029",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-030",
+      "target": "B-032",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-030",
+      "target": "B-033",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-030",
+      "target": "B-040",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-030",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-031",
+      "target": "B-032",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-031",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-032",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-033",
+      "target": "B-036",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-033",
+      "target": "B-037",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-033",
+      "target": "B-040",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-033",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-038",
+      "target": "B-039",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-038",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-038",
+      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-039",
+      "target": "B-041",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-039",
+      "target": "B-046",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-039",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-040",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-041",
+      "target": "B-042",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-041",
+      "target": "B-043",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-041",
+      "target": "B-044",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-041",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-042",
+      "target": "B-043",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-042",
+      "target": "B-044",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-042",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-043",
+      "target": "B-044",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-043",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-044",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-045",
+      "target": "diagram:D-006",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-045",
+      "target": "diagram:D-008",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-045",
+      "target": "diagram:D-011",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-045",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-046",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-047",
+      "target": "diagram:D-005",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-047",
+      "target": "diagram:D-007",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-047",
+      "target": "diagram:D-010",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-047",
+      "target": "diagram:D-011",
+      "edge_type": "diagram_linkage"
+    }
+  ],
+  "coverage": {
+    "B-001": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 20,
+      "runbook_count": 1,
+      "developer_doc_count": 3,
+      "code_reference_count": 3
+    },
+    "B-002": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 5,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-003": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 1,
+      "developer_doc_count": 2,
+      "code_reference_count": 4
+    },
+    "B-004": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 1,
+      "developer_doc_count": 4,
+      "code_reference_count": 7
+    },
+    "B-005": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 5,
+      "runbook_count": 2,
+      "developer_doc_count": 4,
+      "code_reference_count": 11
+    },
+    "B-006": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-007": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 5,
+      "runbook_count": 1,
+      "developer_doc_count": 3,
+      "code_reference_count": 2
+    },
+    "B-008": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-009": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-010": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-011": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-012": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-013": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-014": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 3,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-015": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-016": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-017": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-018": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-019": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-020": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-021": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-022": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-023": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-024": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-025": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-026": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-027": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 3,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-028": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-029": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-030": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-031": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-032": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-033": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-034": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-035": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-036": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-037": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-038": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-039": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-040": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-041": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-042": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-043": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-044": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-045": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 3,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-046": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-047": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 4,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    }
+  },
+  "warning_items": [
+    {
+      "severity": "info",
+      "category": "topology_conflict",
+      "message": "B-022: autofix skipped `workstream_split_into` due to metadata conflict",
+      "idea_id": "B-022",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md: current='B-038,B-039' candidate='B-038,B-039,B-041,B-042,B-043,B-044'. Reason: reciprocal lineage inferred from `workstream_split_from`.",
+      "source": "odylith/radar/traceability-autofix-report.v1.json"
+    }
+  ],
+  "warnings": [
+    "B-022: autofix skipped `workstream_split_into` due to metadata conflict"
+  ],
+  "summary": {
+    "workstream_count": 47,
+    "execution_program_count": 0,
+    "execution_wave_count": 0,
+    "node_count": 134,
+    "edge_count": 254,
+    "warning_count": 1,
+    "warning_item_count": 1
+  },
+  "generated_utc": "2026-04-06 03:44:34Z"
+}

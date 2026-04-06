@@ -1,0 +1,325 @@
+{
+  "component_id": "odylith-chatter",
+  "diagrams": [],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 8,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 1,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 9
+  },
+  "name": "Odylith Chatter",
+  "path_prefixes": [
+    "AGENTS.md",
+    "odylith/AGENTS.md",
+    "odylith/README.md",
+    "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
+    "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+    "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+    "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+    "odylith/skills/delivery-governance-surface-ops/SKILL.md",
+    "odylith/skills/odylith-context-engine-operations/SKILL.md",
+    "odylith/skills/session-context/SKILL.md",
+    "odylith/skills/subagent-orchestrator/SKILL.md",
+    "odylith/skills/subagent-router/SKILL.md",
+    "odylith/maintainer/AGENTS.md",
+    "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+    "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+    "docs/benchmarks/README.md",
+    "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+    "docs/benchmarks/REVIEWER_GUIDE.md",
+    "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+    "src/odylith/install/agents.py",
+    "src/odylith/install/manager.py",
+    "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+    "src/odylith/runtime/orchestration/subagent_orchestrator_runtime_signals.py",
+    "src/odylith/runtime/orchestration/subagent_router.py",
+    "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+    "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py"
+  ],
+  "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "AGENTS.md",
+        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+        "docs/benchmarks/README.md",
+        "docs/benchmarks/REVIEWER_GUIDE.md",
+        "odylith/AGENTS.md",
+        "odylith/README.md",
+        "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
+        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/skills/delivery-governance-surface-ops/SKILL.md",
+        "odylith/skills/odylith-context-engine-operations/SKILL.md",
+        "odylith/skills/session-context/SKILL.md",
+        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/subagent-router/SKILL.md",
+        "src/odylith/bundle/assets/odylith/AGENTS.md",
+        "src/odylith/bundle/assets/odylith/README.md",
+        "src/odylith/bundle/assets/odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
+        "src/odylith/bundle/assets/odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+        "src/odylith/bundle/assets/odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+        "src/odylith/bundle/assets/odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "src/odylith/bundle/assets/odylith/skills/delivery-governance-surface-ops/SKILL.md",
+        "src/odylith/bundle/assets/odylith/skills/odylith-context-engine-operations/SKILL.md",
+        "src/odylith/bundle/assets/odylith/skills/session-context/SKILL.md",
+        "src/odylith/bundle/assets/odylith/skills/subagent-orchestrator/SKILL.md",
+        "src/odylith/bundle/assets/odylith/skills/subagent-router/SKILL.md",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator_runtime_signals.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+        "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py"
+      ],
+      "confidence": "high",
+      "event_index": 48,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, docs/benchmarks/METRICS_AND_PRIORITIES.md +36 more",
+      "ts_iso": "2026-04-05T19:27:19-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/common/host_runtime.py",
+        "src/odylith/runtime/context_engine/tooling_context_routing.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+        "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+        "tests/unit/runtime/test_tooling_context_routing.py"
+      ],
+      "confidence": "high",
+      "event_index": 39,
+      "explicit_components": [
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Validated the routed model ladder still behaves under explicit Codex host signals: bounded patch -> gpt-5.3-codex/medium, higher-risk write -> gpt-5.3-codex/high, broader deep-validation slice -> gpt-5.4/high.",
+      "ts_iso": "2026-04-03T12:22:17-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/common/host_runtime.py",
+        "src/odylith/runtime/context_engine/tooling_context_routing.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+        "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+        "tests/unit/runtime/test_tooling_context_routing.py"
+      ],
+      "confidence": "high",
+      "event_index": 38,
+      "explicit_components": [
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Hardened subagent native-spawn gating so only explicit Codex-capable hosts emit native spawn payloads; Claude, unknown hosts, and provider-only backend hints now fail closed to local-guidance-only.",
+      "ts_iso": "2026-04-03T12:22:17-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 20,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "The Subagent Router hardening keeps bounded delegation accuracy-first and stops retrying when the slice itself is wrong.",
+      "ts_iso": "2026-03-16T15:14:19-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 19,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implemented family-aware adaptive tuning, low-confidence GPT-5.4 promotion, smarter hard gates, and broader-coordination rescope handling in the Subagent Router.",
+      "ts_iso": "2026-03-16T15:14:19-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 18,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Deepened Subagent Router with task-family assessment, route-confidence backstops, and escalation refusal that can return control to the main thread.",
+      "ts_iso": "2026-03-16T15:14:19-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 17,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Current execution focus is validator-backed router and governance-surface sync for the Subagent Router slice.",
+      "ts_iso": "2026-03-16T14:37:51-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 16,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implemented the Subagent Router runtime, the thin router skill, the component spec and runbook, and the Atlas routing topology diagrams.",
+      "ts_iso": "2026-03-16T14:37:51-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 15,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "odylith-chatter",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Decision: keep Subagent Router accuracy-first, hard-gated, and first-class in Registry and Atlas instead of hiding delegation policy in prompt folklore.",
+      "ts_iso": "2026-03-16T14:37:51-07:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Cross-lane narration contract that keeps Odylith control-plane chatter implicit during active work and limits Odylith-by-name branding to one optional evidence-backed end-of-work assist line.",
+  "why_tracked": "Makes user-visible Odylith narration a governed subsystem so AGENTS guidance, skills, install assets, runtime explanation templates, and benchmark-facing artifacts do not drift into noisy or marketing-style chatter.",
+  "workstreams": [
+    "B-031"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "repo_root": "/Users/freedom/code/odylith",
+  "dry_run": false,
+  "force_overwrite": false,
+  "modified_files": [],
+  "fields_filled": [],
+  "conflicts_skipped": [
+    {
+      "idea_id": "B-022",
+      "field": "workstream_split_into",
+      "current": "B-038,B-039",
+      "candidate": "B-038,B-039,B-041,B-042,B-043,B-044",
+      "reason": "reciprocal lineage inferred from `workstream_split_from`"
+    }
+  ],
+  "fields_unresolved": [],
+  "warnings": [],
+  "summary": {
+    "ideas_seen": 44,
+    "files_modified": 0,
+    "fields_filled": 0,
+    "conflicts": 1,
+    "unresolved": 0,
+    "warnings": 0
+  },
+  "generated_utc": "2026-04-06 03:44:34Z"
+}

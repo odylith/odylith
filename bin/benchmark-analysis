@@ -1,0 +1,686 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+ACTIVE_STAGE_PID=""
+ACTIVE_HEARTBEAT_PID=""
+INTERRUPTED="0"
+INTERRUPT_CLEANUP_DONE="0"
+
+usage() {
+  cat <<'EOF'
+Usage: make benchmark-analysis [OUT=/tmp/odylith-benchmark-...]
+   or: ./bin/benchmark-analysis [/tmp/odylith-benchmark-...]
+   or: ./bin/benchmark-analysis --resume-from /tmp/odylith-benchmark-...
+
+Runs the diagnostic benchmark first, then the full proof benchmark, copies the
+resulting JSON artifacts into a timestamped analysis bundle, regenerates the
+profile graph sets into that bundle, and writes a markdown summary that can be
+used for deeper follow-on analysis or README updates. While long stages are
+running, it emits heartbeat progress lines with dynamic ETA when benchmark
+progress data is available.
+
+When `--resume-from` is supplied, the script skips benchmark execution and
+resumes graph rendering plus summary generation from the copied JSON artifacts
+already present in that analysis bundle.
+
+Environment overrides:
+  ODYLITH_REASONING_MODEL
+  ODYLITH_REASONING_CODEX_REASONING_EFFORT
+  ODYLITH_BENCHMARK_CODEX_TIMEOUT_SECONDS
+  ODYLITH_BENCHMARK_VALIDATOR_TIMEOUT_SECONDS
+  ODYLITH_BENCHMARK_ANALYSIS_OUT
+  ODYLITH_BENCHMARK_ANALYSIS_HEARTBEAT_SECONDS
+EOF
+}
+
+now_epoch_seconds() {
+  date +%s
+}
+
+format_elapsed() {
+  local total="${1:-0}"
+  local hours=$(( total / 3600 ))
+  local minutes=$(( (total % 3600) / 60 ))
+  local seconds=$(( total % 60 ))
+  if (( hours > 0 )); then
+    printf '%dh %02dm %02ds' "$hours" "$minutes" "$seconds"
+    return 0
+  fi
+  if (( minutes > 0 )); then
+    printf '%dm %02ds' "$minutes" "$seconds"
+    return 0
+  fi
+  printf '%ds' "$seconds"
+}
+
+print_stage_banner() {
+  local stage="$1"
+  local detail="$2"
+  echo
+  echo "==> $stage"
+  echo "    $detail"
+}
+
+terminate_process_tree() {
+  local signal="${1:-TERM}"
+  local root_pid="${2:-}"
+  if [[ -z "$root_pid" ]] || ! [[ "$root_pid" =~ ^[0-9]+$ ]]; then
+    return 0
+  fi
+  if ! kill -0 "$root_pid" >/dev/null 2>&1; then
+    return 0
+  fi
+  local children
+  children="$(pgrep -P "$root_pid" 2>/dev/null || true)"
+  if [[ -n "$children" ]]; then
+    local child
+    for child in $children; do
+      terminate_process_tree "$signal" "$child"
+    done
+  fi
+  kill "-$signal" "$root_pid" >/dev/null 2>&1 || true
+}
+
+cleanup_interrupted_benchmark_runtime() {
+  if [[ "${INTERRUPT_CLEANUP_DONE:-0}" == "1" ]]; then
+    return 0
+  fi
+  INTERRUPT_CLEANUP_DONE="1"
+  local cleanup_summary=""
+  cleanup_summary="$(
+    PYTHONPATH=src "$odylith_python" - <<'PY' "$odylith_repo_root"
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+
+repo_root = Path(sys.argv[1]).resolve()
+cleanup = runner._cleanup_stale_benchmark_state(repo_root=repo_root, clear_progress=True)  # noqa: SLF001
+process_cleanup = dict(cleanup.get("process_cleanup", {})) if isinstance(cleanup.get("process_cleanup"), dict) else {}
+worktree_cleanup = dict(cleanup.get("worktree_cleanup", {})) if isinstance(cleanup.get("worktree_cleanup"), dict) else {}
+temp_cleanup = (
+    dict(cleanup.get("temp_directory_cleanup", {}))
+    if isinstance(cleanup.get("temp_directory_cleanup"), dict)
+    else {}
+)
+parts: list[str] = []
+if cleanup.get("stale_progress_cleared"):
+    parts.append("cleared_progress=1")
+terminated_pid_count = int(process_cleanup.get("terminated_pid_count", 0) or 0)
+if terminated_pid_count > 0:
+    parts.append(f"terminated_pids={terminated_pid_count}")
+remaining_pid_count = int(process_cleanup.get("remaining_pid_count", 0) or 0)
+if remaining_pid_count > 0:
+    parts.append(f"remaining_pids={remaining_pid_count}")
+removed_worktree_count = int(worktree_cleanup.get("removed_worktree_count", 0) or 0)
+if removed_worktree_count > 0:
+    parts.append(f"removed_worktrees={removed_worktree_count}")
+failed_worktree_count = int(worktree_cleanup.get("failed_worktree_count", 0) or 0)
+if failed_worktree_count > 0:
+    parts.append(f"failed_worktrees={failed_worktree_count}")
+removed_temp_directory_count = int(temp_cleanup.get("removed_temp_directory_count", 0) or 0)
+if removed_temp_directory_count > 0:
+    parts.append(f"removed_temp_dirs={removed_temp_directory_count}")
+failed_temp_directory_count = int(temp_cleanup.get("failed_temp_directory_count", 0) or 0)
+if failed_temp_directory_count > 0:
+    parts.append(f"failed_temp_dirs={failed_temp_directory_count}")
+print(" ".join(parts))
+PY
+  )" || true
+  if [[ -n "$cleanup_summary" ]]; then
+    echo "interrupt cleanup: $cleanup_summary"
+  fi
+}
+
+interrupt_active_work() {
+  if [[ -n "${ACTIVE_HEARTBEAT_PID:-}" ]]; then
+    terminate_process_tree TERM "$ACTIVE_HEARTBEAT_PID"
+    ACTIVE_HEARTBEAT_PID=""
+  fi
+  if [[ -n "${ACTIVE_STAGE_PID:-}" ]]; then
+    echo
+    echo "interrupt: stopping active benchmark stage..."
+    terminate_process_tree INT "$ACTIVE_STAGE_PID"
+    sleep 1
+    terminate_process_tree TERM "$ACTIVE_STAGE_PID"
+    sleep 1
+    terminate_process_tree KILL "$ACTIVE_STAGE_PID"
+    ACTIVE_STAGE_PID=""
+  fi
+  cleanup_interrupted_benchmark_runtime
+}
+
+handle_interrupt() {
+  INTERRUPTED="1"
+  interrupt_active_work
+  exit 130
+}
+
+progress_snapshot() {
+  local profile="$1"
+  PYTHONPATH=src "$odylith_python" - <<'PY' "$odylith_repo_root" "$profile"
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+repo_root = Path(sys.argv[1]).resolve()
+profile = sys.argv[2]
+benchmark_root = repo_root / ".odylith" / "runtime" / "odylith-benchmarks"
+progress_path = benchmark_root / "in-progress.v1.json"
+latest_path = benchmark_root / ("latest-diagnostic.v1.json" if profile == "diagnostic" else "latest.v1.json")
+
+previous_total_seconds = 0.0
+if latest_path.is_file():
+    try:
+        report = json.loads(latest_path.read_text(encoding="utf-8"))
+    except Exception:
+        report = {}
+    summary = report.get("published_summary") if isinstance(report, dict) else {}
+    if not isinstance(summary, dict):
+        summary = {}
+    total_ms = float(summary.get("full_pair_total_wall_clock_ms", 0.0) or 0.0)
+    if total_ms <= 0.0 and isinstance(report.get("full_pair_timing_summary"), dict):
+        total_ms = float(report["full_pair_timing_summary"].get("total_pair_wall_clock_ms", 0.0) or 0.0)
+    previous_total_seconds = max(0.0, total_ms / 1000.0)
+
+progress: dict[str, object] = {}
+if progress_path.is_file():
+    try:
+        loaded = json.loads(progress_path.read_text(encoding="utf-8"))
+        if isinstance(loaded, dict):
+            progress = loaded
+    except Exception:
+        progress = {}
+
+running = (
+    str(progress.get("status", "")).strip() == "running"
+    and str(progress.get("benchmark_profile", "")).strip() == profile
+)
+
+fields = [
+    "1" if running else "0",
+    str(progress.get("status", "")).strip() if running else "",
+    str(int(progress.get("total_results", 0) or 0)) if running else "0",
+    str(int(progress.get("completed_results", 0) or 0)) if running else "0",
+    str(int(progress.get("scenario_count", 0) or 0)) if running else "0",
+    str(int(progress.get("completed_scenarios", 0) or 0)) if running else "0",
+    str(progress.get("current_cache_profile", "")).strip() if running else "",
+    str(progress.get("current_scenario_id", "")).strip() if running else "",
+    str(progress.get("current_mode", "")).strip() if running else "",
+    f"{previous_total_seconds:.3f}",
+]
+print("\t".join(token.replace("\t", " ").replace("\n", " ") for token in fields))
+PY
+}
+
+heartbeat_loop() {
+  local label="$1"
+  local started_at="$2"
+  local watched_pid="$3"
+  local log_path="$4"
+  local benchmark_profile="${5:-}"
+  local interval="${ODYLITH_BENCHMARK_ANALYSIS_HEARTBEAT_SECONDS:-30}"
+  if [[ ! "$interval" =~ ^[0-9]+$ ]] || (( interval < 5 )); then
+    interval=30
+  fi
+  while kill -0 "$watched_pid" >/dev/null 2>&1; do
+    sleep "$interval"
+    if ! kill -0 "$watched_pid" >/dev/null 2>&1; then
+      break
+    fi
+    local elapsed
+    local elapsed_seconds
+    elapsed_seconds="$(( $(now_epoch_seconds) - started_at ))"
+    elapsed="$(format_elapsed "$elapsed_seconds")"
+    local progress_bits=""
+    local eta_bits="eta pending first completed result"
+    if [[ -n "$benchmark_profile" ]]; then
+      local available status total_results completed_results scenario_count completed_scenarios current_cache_profile current_scenario_id current_mode previous_total_seconds_raw
+      IFS=$'\t' read -r available status total_results completed_results scenario_count completed_scenarios current_cache_profile current_scenario_id current_mode previous_total_seconds_raw <<< "$(progress_snapshot "$benchmark_profile")"
+      local previous_total_seconds=0
+      if [[ -n "$previous_total_seconds_raw" ]]; then
+        previous_total_seconds="${previous_total_seconds_raw%.*}"
+        if [[ -z "$previous_total_seconds" ]]; then
+          previous_total_seconds=0
+        fi
+      fi
+      if [[ "$available" == "1" ]]; then
+        if (( total_results > 0 )); then
+          local completed_pct
+          completed_pct=$(( completed_results * 100 / total_results ))
+          progress_bits="$completed_results/$total_results results (${completed_pct}%)"
+        fi
+        if (( scenario_count > 0 )); then
+          progress_bits="${progress_bits:+$progress_bits | }$completed_scenarios/$scenario_count scenarios"
+        fi
+        if [[ -n "$current_cache_profile" ]]; then
+          progress_bits="${progress_bits:+$progress_bits | }cache $current_cache_profile"
+        fi
+        if [[ -n "$current_mode" ]]; then
+          progress_bits="${progress_bits:+$progress_bits | }mode $current_mode"
+        fi
+        if [[ -n "$current_scenario_id" ]]; then
+          progress_bits="${progress_bits:+$progress_bits | }case $current_scenario_id"
+        fi
+        if (( total_results > 0 && completed_results > 0 && completed_results < total_results )); then
+          local eta_seconds
+          eta_seconds=$(( elapsed_seconds * (total_results - completed_results) / completed_results ))
+          eta_bits="eta $(format_elapsed "$eta_seconds") (observed)"
+        elif (( total_results > 0 && completed_results >= total_results )); then
+          eta_bits="eta very soon (post-run aggregation)"
+        elif (( previous_total_seconds > 0 )); then
+          local provisional_remaining
+          provisional_remaining=$(( previous_total_seconds - elapsed_seconds ))
+          if (( provisional_remaining < 0 )); then
+            provisional_remaining=0
+          fi
+          eta_bits="eta ~$(format_elapsed "$provisional_remaining") (previous run)"
+        fi
+      elif (( previous_total_seconds > 0 )); then
+        local provisional_remaining
+        provisional_remaining=$(( previous_total_seconds - elapsed_seconds ))
+        if (( provisional_remaining < 0 )); then
+          provisional_remaining=0
+        fi
+        progress_bits="progress artifact not populated yet"
+        eta_bits="eta ~$(format_elapsed "$provisional_remaining") (previous run)"
+      fi
+    fi
+    if [[ -n "$progress_bits" ]]; then
+      echo "    progress: $label still running | elapsed $elapsed | $progress_bits | $eta_bits | log $log_path"
+    else
+      echo "    progress: $label still running | elapsed $elapsed | log $log_path"
+    fi
+  done
+}
+
+run_logged_stage() {
+  local stage="$1"
+  local detail="$2"
+  local log_path="$3"
+  local benchmark_profile=""
+  case "${4:-}" in
+    diagnostic|proof|quick)
+      benchmark_profile="$4"
+      shift 4
+      ;;
+    "")
+      shift 4
+      ;;
+    *)
+      shift 3
+      ;;
+  esac
+  print_stage_banner "$stage" "$detail"
+  local started_at
+  started_at="$(now_epoch_seconds)"
+  (
+    set -o pipefail
+    "$@" 2>&1 | tee "$log_path"
+  ) &
+  local stage_pid=$!
+  ACTIVE_STAGE_PID="$stage_pid"
+  heartbeat_loop "$stage" "$started_at" "$stage_pid" "$log_path" "$benchmark_profile" &
+  local heartbeat_pid=$!
+  ACTIVE_HEARTBEAT_PID="$heartbeat_pid"
+  local status=0
+  wait "$stage_pid" || status=$?
+  kill "$heartbeat_pid" >/dev/null 2>&1 || true
+  wait "$heartbeat_pid" >/dev/null 2>&1 || true
+  ACTIVE_HEARTBEAT_PID=""
+  ACTIVE_STAGE_PID=""
+  if (( status != 0 )); then
+    if [[ "$INTERRUPTED" == "1" ]]; then
+      return 130
+    fi
+    echo "    failed: $stage | exit $status | log $log_path"
+    return "$status"
+  fi
+  local elapsed
+  elapsed="$(format_elapsed "$(( $(now_epoch_seconds) - started_at ))")"
+  echo "    completed: $stage | elapsed $elapsed | log $log_path"
+}
+
+maybe_reexec_under_caffeinate() {
+  if [[ "${ODYLITH_BENCHMARK_ANALYSIS_CAFFEINATED:-}" == "1" ]]; then
+    return 0
+  fi
+  if ! command -v caffeinate >/dev/null 2>&1; then
+    return 0
+  fi
+  export ODYLITH_BENCHMARK_ANALYSIS_CAFFEINATED=1
+  exec caffeinate -dimsu "$0" "$@"
+}
+
+render_graph_assets_into_bundle() {
+  local diagnostic_artifact="$1"
+  local proof_artifact="$2"
+  local out_dir="$3"
+  mkdir -p "$out_dir/diagnostic" "$out_dir/proof"
+  PYTHONPATH=src "$odylith_python" -m odylith.runtime.evaluation.odylith_benchmark_graphs \
+    --report "$diagnostic_artifact" \
+    --out-dir "$out_dir/diagnostic"
+  PYTHONPATH=src "$odylith_python" -m odylith.runtime.evaluation.odylith_benchmark_graphs \
+    --report "$proof_artifact" \
+    --out-dir "$out_dir/proof"
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+maybe_reexec_under_caffeinate "$@"
+
+requested_out=""
+resume_from=""
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --resume-from)
+      shift
+      if [[ "$#" -eq 0 ]]; then
+        usage >&2
+        die "--resume-from requires an analysis bundle path"
+      fi
+      resume_from="$1"
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    -*)
+      usage >&2
+      die "unknown option: $1"
+      ;;
+    *)
+      if [[ -n "$requested_out" ]]; then
+        usage >&2
+        die "benchmark-analysis accepts at most one optional output directory argument"
+      fi
+      requested_out="$1"
+      ;;
+  esac
+  shift
+done
+
+if [[ -n "$requested_out" && -n "$resume_from" ]]; then
+  usage >&2
+  die "use either an output directory argument or --resume-from, not both"
+fi
+
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+requested_out="${resume_from:-${requested_out:-${OUT:-${ODYLITH_BENCHMARK_ANALYSIS_OUT:-}}}}"
+analysis_out="${requested_out:-${TMPDIR:-/tmp}/odylith-benchmark-${timestamp}}"
+analysis_out="$("$odylith_python" - <<'PY' "$analysis_out"
+from pathlib import Path
+import sys
+
+print(Path(sys.argv[1]).expanduser().resolve())
+PY
+)"
+artifacts_dir="$analysis_out/artifacts"
+graphs_dir="$analysis_out/graphs"
+mkdir -p "$artifacts_dir" "$graphs_dir"
+
+summary_path="$analysis_out/summary.md"
+diagnostic_artifact="$artifacts_dir/latest-diagnostic.v1.json"
+proof_artifact="$artifacts_dir/latest.v1.json"
+proof_profile_artifact="$artifacts_dir/latest-proof.v1.json"
+
+cleanup_notice() {
+  local rc=$?
+  if [[ "$INTERRUPTED" == "1" ]]; then
+    cleanup_interrupted_benchmark_runtime
+  fi
+  ACTIVE_HEARTBEAT_PID=""
+  ACTIVE_STAGE_PID=""
+  echo
+  echo "analysis_bundle=$analysis_out"
+  if [[ -f "$summary_path" ]]; then
+    echo "summary_md=$summary_path"
+  fi
+  return "$rc"
+}
+trap cleanup_notice EXIT
+trap handle_interrupt INT TERM
+
+export ODYLITH_REASONING_MODEL="${ODYLITH_REASONING_MODEL:-gpt-5.4}"
+export ODYLITH_REASONING_CODEX_REASONING_EFFORT="${ODYLITH_REASONING_CODEX_REASONING_EFFORT:-medium}"
+live_timeout_override="${ODYLITH_BENCHMARK_CODEX_TIMEOUT_SECONDS:-}"
+export ODYLITH_BENCHMARK_CODEX_TIMEOUT_SECONDS="${live_timeout_override:-1200}"
+
+live_timeout_label="${live_timeout_override:-1200 (default)}"
+if [[ "$live_timeout_override" =~ ^(0|off|none|disabled|disable|infinite|inf|unbounded)$ ]]; then
+  live_timeout_label="disabled"
+fi
+validator_timeout_label="${ODYLITH_BENCHMARK_VALIDATOR_TIMEOUT_SECONDS:-disabled}"
+
+echo "benchmark analysis bundle: $analysis_out"
+echo "reasoning model: $ODYLITH_REASONING_MODEL"
+echo "reasoning effort: $ODYLITH_REASONING_CODEX_REASONING_EFFORT"
+echo "live timeout: $live_timeout_label"
+echo "validator timeout: $validator_timeout_label"
+echo "heartbeat: ${ODYLITH_BENCHMARK_ANALYSIS_HEARTBEAT_SECONDS:-30}s"
+if [[ -n "$resume_from" ]]; then
+  echo "resume from existing bundle: $analysis_out"
+fi
+echo
+
+if [[ -z "$resume_from" ]]; then
+  run_logged_stage \
+    "[1/4] diagnostic benchmark" \
+    "Running packet/prompt diagnostic and streaming the live benchmark log." \
+    "$analysis_out/diagnostic.log" \
+    "diagnostic" \
+    launcher_cli benchmark --repo-root . --profile diagnostic
+  cp "$odylith_repo_root/.odylith/runtime/odylith-benchmarks/latest-diagnostic.v1.json" \
+    "$diagnostic_artifact"
+  echo "    copied: $diagnostic_artifact"
+
+  run_logged_stage \
+    "[2/4] proof benchmark" \
+    "Running the full release-proof benchmark and streaming the live benchmark log." \
+    "$analysis_out/proof.log" \
+    "proof" \
+    launcher_cli benchmark --repo-root . --profile proof
+  cp "$odylith_repo_root/.odylith/runtime/odylith-benchmarks/latest.v1.json" \
+    "$proof_artifact"
+  echo "    copied: $proof_artifact"
+  if [[ -f "$odylith_repo_root/.odylith/runtime/odylith-benchmarks/latest-proof.v1.json" ]]; then
+    cp "$odylith_repo_root/.odylith/runtime/odylith-benchmarks/latest-proof.v1.json" \
+      "$proof_profile_artifact"
+    echo "    copied: $proof_profile_artifact"
+  fi
+else
+  [[ -f "$diagnostic_artifact" ]] || die "resume bundle is missing $diagnostic_artifact"
+  [[ -f "$proof_artifact" ]] || die "resume bundle is missing $proof_artifact"
+fi
+
+run_logged_stage \
+  "[3/4] graph render" \
+  "Regenerating diagnostic and proof SVG graph sets into the analysis bundle." \
+  "$analysis_out/graphs.log" \
+  render_graph_assets_into_bundle "$diagnostic_artifact" "$proof_artifact" "$graphs_dir"
+
+print_stage_banner "[4/4] summary write" "Building the markdown summary from the copied benchmark artifacts."
+PYTHONPATH=src "$odylith_python" - <<'PY' "$analysis_out" "$summary_path"
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+analysis_out = Path(sys.argv[1]).resolve()
+summary_path = Path(sys.argv[2]).resolve()
+
+artifacts = {
+    "diagnostic": analysis_out / "artifacts" / "latest-diagnostic.v1.json",
+    "proof": analysis_out / "artifacts" / "latest.v1.json",
+}
+
+headline_keys = [
+    "status",
+    "scenario_count",
+    "required_path_recall_delta",
+    "required_path_precision_delta",
+    "hallucinated_surface_rate_delta",
+    "validation_success_delta",
+    "critical_required_path_recall_delta",
+    "critical_validation_success_delta",
+    "expectation_success_delta",
+    "write_surface_precision_delta",
+    "latency_delta_ms",
+    "avg_latency_delta_ms",
+    "p95_latency_delta_ms",
+    "prompt_token_delta",
+    "total_payload_token_delta",
+    "adoption_proof_sample_size",
+    "adoption_proof_auto_grounded_rate",
+    "adoption_proof_grounded_delegate_rate",
+    "adoption_proof_requires_widening_rate",
+]
+
+family_keys = [
+    "required_path_recall_delta",
+    "required_path_precision_delta",
+    "hallucinated_surface_rate_delta",
+    "validation_success_delta",
+    "critical_required_path_recall_delta",
+    "critical_validation_success_delta",
+    "expectation_success_delta",
+    "write_surface_precision_delta",
+    "median_latency_delta_ms",
+    "p95_latency_delta_ms",
+    "median_prompt_token_delta",
+    "median_total_payload_token_delta",
+]
+
+
+def fmt(value: object) -> str:
+    if value is None:
+        return "n/a"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        if abs(value) >= 1000:
+            return f"{value:+,.0f}"
+        if abs(value) >= 100:
+            return f"{value:+.1f}"
+        return f"{value:+.3f}"
+    if isinstance(value, list):
+        return ", ".join(str(token) for token in value) if value else "none"
+    return str(value)
+
+
+def top_by(report: dict[str, object], key: str, *, reverse: bool, limit: int = 5) -> list[tuple[str, float]]:
+    rows: list[tuple[str, float]] = []
+    family_deltas = report.get("published_family_deltas") or {}
+    if not isinstance(family_deltas, dict):
+        return rows
+    for family, payload in family_deltas.items():
+        if not isinstance(payload, dict):
+            continue
+        value = payload.get(key)
+        if value is None:
+            continue
+        try:
+            rows.append((str(family), float(value)))
+        except (TypeError, ValueError):
+            continue
+    rows.sort(key=lambda row: row[1], reverse=reverse)
+    return rows[:limit]
+
+
+lines = [
+    "# Odylith Benchmark Analysis Bundle",
+    "",
+    f"- Bundle root: `{analysis_out}`",
+    f"- Diagnostic log: `{analysis_out / 'diagnostic.log'}`",
+    f"- Proof log: `{analysis_out / 'proof.log'}`",
+    f"- Graph render log: `{analysis_out / 'graphs.log'}`",
+    f"- Graph root: `{analysis_out / 'graphs'}`",
+    "",
+]
+
+for profile, path in artifacts.items():
+    report = json.loads(path.read_text(encoding="utf-8"))
+    summary = report.get("published_summary") or {}
+    if not isinstance(summary, dict):
+        summary = {}
+    lines.extend(
+        [
+            f"## {profile.capitalize()} Report",
+            "",
+            f"- Report id: `{report.get('report_id', '')}`",
+            f"- Generated: `{report.get('generated_utc', '')}`",
+            f"- Artifact: `{path}`",
+            "",
+            "### Headline",
+            "",
+        ]
+    )
+    for key in headline_keys:
+        lines.append(f"- `{key}`: {fmt(summary.get(key))}")
+    lines.extend(
+        [
+            "",
+            f"- `hard_gate_failure_labels`: {fmt(summary.get('hard_gate_failure_labels', []))}",
+            f"- `secondary_guardrail_failure_labels`: {fmt(summary.get('secondary_guardrail_failure_labels', []))}",
+            f"- `advisory_failure_labels`: {fmt(summary.get('advisory_failure_labels', []))}",
+            f"- `weak_families`: {fmt(summary.get('weak_families', []))}",
+            f"- `notes`: {fmt(summary.get('notes', []))}",
+            "",
+            "### Quick Movers",
+            "",
+            "- Best recall deltas:",
+        ]
+    )
+    for family, value in top_by(report, "required_path_recall_delta", reverse=True):
+        lines.append(f"  - `{family}`: {fmt(value)}")
+    lines.append("- Worst recall deltas:")
+    for family, value in top_by(report, "required_path_recall_delta", reverse=False):
+        lines.append(f"  - `{family}`: {fmt(value)}")
+    lines.append("- Worst validation deltas:")
+    for family, value in top_by(report, "validation_success_delta", reverse=False):
+        lines.append(f"  - `{family}`: {fmt(value)}")
+    lines.append("- Worst write precision deltas:")
+    for family, value in top_by(report, "write_surface_precision_delta", reverse=False):
+        lines.append(f"  - `{family}`: {fmt(value)}")
+    lines.append("- Slowest median latency deltas:")
+    for family, value in top_by(report, "median_latency_delta_ms", reverse=True):
+        lines.append(f"  - `{family}`: {fmt(value)}")
+    lines.append("- Best prompt-token deltas:")
+    for family, value in top_by(report, "median_prompt_token_delta", reverse=False):
+        lines.append(f"  - `{family}`: {fmt(value)}")
+    lines.extend(
+        [
+            "",
+            "### Family Delta Table",
+            "",
+            "| Family | Recall | Precision | Hallucination | Validation | Crit Recall | Crit Validation | Expectation | Write Precision | Median Time | P95 Time | Prompt Tokens | Total Tokens |",
+            "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
+    family_deltas = report.get("published_family_deltas") or {}
+    if isinstance(family_deltas, dict):
+        for family in sorted(str(token) for token in family_deltas.keys()):
+            payload = family_deltas.get(family)
+            if not isinstance(payload, dict):
+                continue
+            row = [f"`{family}`"] + [fmt(payload.get(key)) for key in family_keys]
+            lines.append("| " + " | ".join(row) + " |")
+    lines.append("")
+
+summary_path.write_text("\n".join(lines), encoding="utf-8")
+print(summary_path)
+PY
+
+echo "    completed: [4/4] summary write | output $summary_path"
+echo "benchmark_analysis_status=ok"

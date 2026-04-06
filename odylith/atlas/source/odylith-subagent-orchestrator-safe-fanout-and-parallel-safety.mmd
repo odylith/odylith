@@ -1,0 +1,36 @@
+%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+flowchart TD
+    A["Grounded orchestration request"] --> B["Group candidate paths"]
+
+    B --> C{"needs_write?"}
+    C -->|No| D["Read-only path grouping"]
+    C -->|Yes| E["Write path grouping"]
+
+    D --> D1{"1 group?"}
+    D1 -->|Yes| D2["single_leaf or serial_batch"]
+    D1 -->|No, 2-4 groups| D3["parallel_batch eligible<br/>read_only_safe"]
+    D1 -->|No, >4 groups| D4["serial_batch<br/>fan-out cap exceeded"]
+
+    E --> E1["Check prefixes and ownership clarity"]
+    E1 --> E2{"Coupled paths present?<br/>docs, tests, skills, contracts, tools, plan, bugs"}
+    E2 -->|Yes| E3["serial_batch<br/>parallel write unsafe"]
+    E2 -->|No| E4{"Prefixes limited to safe write domains?<br/>src/odylith, docs, contracts, odylith"}
+    E4 -->|No| E5["serial_batch<br/>ownership domains mixed"]
+    E4 -->|Yes| E6{"2-3 disjoint groups and validation clear?"}
+    E6 -->|No| E7["single_leaf or serial_batch"]
+    E6 -->|Yes| E8["parallel_batch eligible<br/>disjoint_write_safe"]
+
+    D3 --> F["Route each leaf"]
+    E8 --> F
+    D2 --> F
+    D4 --> F
+    E3 --> F
+    E5 --> F
+    E7 --> F
+
+    F --> G{"Any leaf route = main_thread?"}
+    G -->|Yes| H["Collapse whole plan to local_only<br/>main thread rescopes"]
+    G -->|No| I["Return plan with merge barrier notes<br/>and per-leaf owner/goal/output/termination contract<br/>plus native spawn/close payloads"]
+
+    I --> J["Parallel only on emitted disjoint leaves"]
+    I --> K["Main thread still owns merge + final validation<br/>and closeout-ledger / stale-idle enforcement"]

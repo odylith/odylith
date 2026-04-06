@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:odylith:contract:tribunal_outcome.v1.schema.json",
+  "title": "Tribunal Outcome v1",
+  "type": "object",
+  "required": [
+    "outcome_id",
+    "form",
+    "confidence",
+    "leading_explanation",
+    "strongest_rival",
+    "risk_if_wrong",
+    "discriminating_next_check",
+    "systemic_theme_tags"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "outcome_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "form": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "confidence_level": {
+      "type": "string"
+    },
+    "leading_explanation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "strongest_rival": {
+      "type": "string",
+      "minLength": 1
+    },
+    "risk_if_wrong": {
+      "type": "string",
+      "minLength": 1
+    },
+    "discriminating_next_check": {
+      "type": "string",
+      "minLength": 1
+    },
+    "systemic_theme_tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "actor_disagreement": {
+      "type": "boolean"
+    },
+    "actor_influence": {
+      "type": "object"
+    }
+  }
+}

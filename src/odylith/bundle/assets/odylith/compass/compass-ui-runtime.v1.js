@@ -1,0 +1,263 @@
+    function syncControls(state, events, payload) {
+      const persistAuditDay = Boolean(state && state.audit_day_pinned && DATE_RE.test(state.audit_day));
+      document.querySelectorAll('[data-window]').forEach((btn) => {
+        btn.classList.toggle('active', String(btn.getAttribute('data-window')) === state.window);
+        btn.addEventListener('click', () => {
+          const next = new URLSearchParams(window.location.search);
+          next.delete('workstream');
+          next.set('tab', 'compass');
+          next.set('window', String(btn.getAttribute('data-window')));
+          if (state.workstream) next.set('scope', state.workstream);
+          else next.delete('scope');
+          if (state.date) next.set('date', state.date);
+          if (persistAuditDay) next.set('audit_day', state.audit_day);
+          else next.delete('audit_day');
+          navigateCompass(next);
+        });
+      });
+      const scopeSelect = document.getElementById('scope-select');
+      if (scopeSelect) {
+        const ids = collectScopedWorkstreamIds(payload, stateForSummary(state));
+        const validIdSet = new Set(
+          workstreamRowsForLookup(payload)
+            .map((row) => String(row && row.idea_id ? row.idea_id : "").trim())
+            .filter((token) => WORKSTREAM_RE.test(token))
+        );
+        const selectedScope = WORKSTREAM_RE.test(String(state.workstream || ""))
+          ? String(state.workstream || "")
+          : "";
+        // Preserve a valid deep-linked scope even when the current Compass
+        // window has no local signal for it yet, so the selector never
+        // contradicts the visible scoped state/pill.
+        const optionIds = selectedScope && validIdSet.has(selectedScope) && !ids.includes(selectedScope)
+          ? [selectedScope, ...ids]
+          : ids;
+        scopeSelect.innerHTML = [
+          '<option value="">Global</option>',
+          ...optionIds.map((id) => `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`),
+        ].join("");
+        scopeSelect.value = optionIds.includes(selectedScope) ? selectedScope : "";
+        if (!scopeSelect.dataset.bound) {
+          scopeSelect.dataset.bound = "1";
+          scopeSelect.addEventListener('change', () => {
+            const next = new URLSearchParams(window.location.search);
+            next.delete('workstream');
+            next.set('tab', 'compass');
+            next.set('window', state.window);
+            if (state.date) next.set('date', state.date);
+            if (persistAuditDay) next.set('audit_day', state.audit_day);
+            else next.delete('audit_day');
+            const selected = String(scopeSelect.value || "").trim();
+            if (WORKSTREAM_RE.test(selected)) {
+              next.set('scope', selected);
+            } else {
+              next.delete('scope');
+            }
+            navigateCompass(next);
+          });
+        }
+      }
+      const globalButton = document.getElementById('scope-global');
+      if (globalButton) {
+        globalButton.classList.toggle('active', !state.workstream);
+        globalButton.setAttribute('aria-pressed', String(!state.workstream));
+        if (!globalButton.dataset.bound) {
+          globalButton.dataset.bound = "1";
+          globalButton.addEventListener('click', () => {
+            if (!state.workstream) return;
+            const next = new URLSearchParams(window.location.search);
+            next.delete('workstream');
+            next.set('tab', 'compass');
+            next.set('window', state.window);
+            if (state.date) next.set('date', state.date);
+            if (persistAuditDay) next.set('audit_day', state.audit_day);
+            else next.delete('audit_day');
+            next.delete('scope');
+            navigateCompass(next);
+          });
+        }
+      }
+      const auditDayInput = document.getElementById('audit-day-input');
+      const bounds = rollingThirtyDayBounds(payload);
+      const todayToken = calendarMaxDateToken(payload) || toLocalDateToken(new Date());
+      if (auditDayInput) {
+        const fallbackDay = todayToken || bounds.max;
+        const preferredDay = DATE_RE.test(state.audit_day)
+          ? state.audit_day
+          : (state.date !== "live" && DATE_RE.test(state.date) ? state.date : fallbackDay);
+        const selectedDay = clampDateToken(preferredDay, bounds.min, bounds.max) || fallbackDay;
+        auditDayInput.disabled = false;
+        auditDayInput.min = bounds.min;
+        auditDayInput.max = bounds.max;
+        auditDayInput.value = selectedDay;
+        if (!auditDayInput.dataset.bound) {
+          auditDayInput.dataset.bound = "1";
+          auditDayInput.addEventListener('change', () => {
+            const next = new URLSearchParams(window.location.search);
+            next.delete('workstream');
+            next.set('tab', 'compass');
+            next.set('window', state.window);
+            if (state.workstream) next.set('scope', state.workstream);
+            else next.delete('scope');
+            const selected = clampDateToken(
+              String(auditDayInput.value || "").trim(),
+              bounds.min,
+              bounds.max
+            );
+            if (selected && DATE_RE.test(selected)) {
+              next.set('audit_day', selected);
+              next.set('date', selected === todayToken ? 'live' : selected);
+            } else {
+              next.set('date', 'live');
+              next.delete('audit_day');
+            }
+            navigateCompass(next);
+          });
+        }
+      }
+      const scopePill = document.getElementById('scope-pill');
+      const touchedIds = collectScopedWorkstreamIds(payload, state);
+      const workstreamTitles = workstreamTitleLookup(payload);
+      scopePill.textContent = state.workstream
+        ? `Scope: ${state.workstream}`
+        : `Scope: Global (${touchedIds.length} touched)`;
+      if (state.workstream && WORKSTREAM_RE.test(state.workstream)) {
+        const tooltip = workstreamTooltipText(
+          state.workstream,
+          workstreamTitles,
+          `Scoped to ${state.workstream}`,
+        );
+        scopePill.setAttribute("data-tooltip", tooltip);
+        scopePill.setAttribute("aria-label", `${state.workstream}: ${tooltip}`);
+      } else {
+        scopePill.removeAttribute("data-tooltip");
+        scopePill.removeAttribute("aria-label");
+      }
+      const auditDayPill = document.getElementById('audit-day-pill');
+      if (auditDayPill) {
+        auditDayPill.textContent = `Audit Day: ${state.audit_day || "-"}`;
+      }
+    }
+
+    function showFallback(message) {
+      const target = document.getElementById("kpi-grid");
+      target.innerHTML = `<article class="stat"><p class="kpi-label">Runtime Unavailable</p><p class="muted">${message}</p></article>`;
+      CURRENT_STANDUP_BRIEF = null;
+      document.getElementById("digest-list").innerHTML = '<div class="empty">Runtime data unavailable.</div>';
+      const executionWavesHost = document.getElementById("execution-waves-host");
+      if (executionWavesHost) executionWavesHost.innerHTML = "";
+      document.getElementById("current-workstreams").innerHTML = '<p class="empty">Run sync to regenerate Compass runtime snapshots.</p>';
+      document.getElementById("timeline").innerHTML = '<div class="empty">No timeline data available.</div>';
+      document.getElementById("risk-list").innerHTML = '<p class="empty">No risk payload available.</p>';
+    }
+
+    function bindCopyBrief() {
+      const button = document.getElementById("copy-brief");
+      if (!button) return;
+      button.addEventListener("click", async () => {
+        const lines = [];
+        const brief = CURRENT_STANDUP_BRIEF && typeof CURRENT_STANDUP_BRIEF === "object" ? CURRENT_STANDUP_BRIEF : null;
+        if (brief && String(brief.status || "").trim() === "ready") {
+          const notice = brief.notice && typeof brief.notice === "object" ? brief.notice : {};
+          const noticeTitle = String(notice.title || "").trim();
+          const noticeMessage = String(notice.message || "").trim();
+          if (noticeTitle && noticeMessage) {
+            lines.push(`${noticeTitle}: ${noticeMessage}`);
+          } else if (noticeTitle) {
+            lines.push(noticeTitle);
+          } else if (noticeMessage) {
+            lines.push(noticeMessage);
+          }
+          const sections = Array.isArray(brief.sections) ? brief.sections : [];
+          STANDUP_BRIEF_SECTION_SPECS.forEach((spec) => {
+            const section = sections.find((row) => row && String(row.key || "").trim() === spec.key);
+            const bullets = Array.isArray(section && section.bullets) ? section.bullets : [];
+            const voiceCount = new Set(
+              bullets
+                .map((bullet) => String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase())
+                .filter(Boolean)
+            ).size;
+            lines.push(`${spec.label}:`);
+            bullets.forEach((bullet) => {
+              const voice = String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase();
+              const text = String(bullet && bullet.text ? bullet.text : "").trim();
+              if (!text) return;
+              const voiceLabel = voiceCount > 1 ? briefVoiceLabel(voice) : "";
+              lines.push(voiceLabel ? `- ${voiceLabel}: ${text}` : `- ${text}`);
+            });
+          });
+        } else if (brief) {
+          const diagnostics = brief.diagnostics && typeof brief.diagnostics === "object" ? brief.diagnostics : {};
+          lines.push(String(diagnostics.title || "AI standup brief unavailable").trim() || "AI standup brief unavailable");
+          if (String(diagnostics.message || "").trim()) {
+            lines.push(String(diagnostics.message || "").trim());
+          }
+          if (String(diagnostics.reason || "").trim()) {
+            lines.push(`Reason: ${String(diagnostics.reason || "").trim()}`);
+          }
+        }
+        if (!lines.length) {
+          const fallback = Array.from(document.querySelectorAll("#digest-list .empty, #digest-list .brief-status-copy"))
+            .map((node) => String(node.textContent || "").trim())
+            .filter(Boolean);
+          lines.push(...fallback);
+        }
+        if (!lines.length) return;
+        const payload = lines.join("\n");
+        try {
+          await navigator.clipboard.writeText(payload);
+          showStatus("Standup brief copied to clipboard.", "info");
+        } catch (error) {
+          console.warn("clipboard write failed", error);
+          showStatus("Clipboard write failed. You can still copy from the Standup Brief panel.", "warn");
+        }
+      });
+    }
+
+    async function init() {
+      if (shellRedirectInProgress()) {
+        return;
+      }
+      bindCopyBrief();
+      const rawState = params();
+
+      const runtime = await loadRuntime(rawState);
+      if (!runtime.payload) {
+        showFallback("Compass runtime files were not found. Run `odylith sync --repo-root . --force`.");
+        return;
+      }
+      let payload = runtime.payload;
+      let normalized = normalizeStateWithPayload(rawState, payload);
+      payload = await augmentLiveHistoryIntoPayload(payload, normalized.state);
+      normalized = normalizeStateWithPayload(rawState, payload);
+      const state = normalized.state;
+      const summaryState = stateForSummary(state);
+      const summaryEvents = filterEventsByWindow(payload, summaryState);
+      const summaryTransactions = filterTransactionsByWindow(payload, summaryState);
+      const timelineEvents = filterEventsByWindow(payload, state);
+      const timelineTransactions = filterTransactionsByWindow(payload, state);
+      syncControls(state, summaryEvents, payload);
+
+      const notices = [];
+      const freshnessNotice = staleRuntimeNotice(payload, state);
+      if (freshnessNotice) notices.push(freshnessNotice);
+      if (runtime.warning) notices.push(runtime.warning);
+      if (normalized.warnings.length) notices.push(...normalized.warnings);
+      if (runtime.source.startsWith("history:")) {
+        notices.push(`Loaded historical snapshot ${runtime.source.replace("history:", "")}.`);
+      }
+      const uniqueNotices = dedupeNoticeLines(notices);
+      if (uniqueNotices.length) {
+        const hasWarn = uniqueNotices.some((line) => isWarningNotice(line));
+        showStatus(uniqueNotices.join(" "), hasWarn ? "warn" : "info");
+      } else {
+        showStatus("");
+      }
+
+      renderKpis(payload, summaryState, summaryEvents);
+      renderDigest(payload, summaryState, summaryEvents);
+      renderExecutionWaves(payload, summaryState);
+      renderCurrentWorkstreams(payload, summaryState, summaryEvents, summaryTransactions, state);
+      renderTimeline(payload, state, timelineEvents, timelineTransactions);
+      renderRisks(payload, summaryState);
+    }

@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Atlas</title>
+  <meta name="application-name" content="Odylith" />
+  <meta name="theme-color" content="#edf4ff" />
+  <link rel="manifest" href="../../../../../../odylith/surfaces/brand/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="../../../../../../odylith/surfaces/brand/favicon/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../../../../../odylith/surfaces/brand/favicon/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../../../../../odylith/surfaces/brand/favicon/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="../../../../../../odylith/surfaces/brand/icon/odylith-icon-256.png" />
+  <link rel="mask-icon" href="../../../../../../odylith/surfaces/brand/icon/odylith-icon-monochrome.svg" color="#173f83" />
+  <style>
+    :root {
+      --canvas-a: #f7f4ea;
+      --canvas-b: #eef7ff;
+      --canvas-c: #fefaf0;
+      --surface: rgba(255, 255, 255, 0.82);
+      --surface-strong: rgba(255, 255, 255, 0.95);
+      --ink: #1f2937;
+      --ink-soft: #4b5563;
+      --accent: #0ea5a3;
+      --accent-2: #0369a1;
+      --danger: #b42318;
+      --ok: #027a48;
+      --warning: #b54708;
+      --border: rgba(15, 23, 42, 0.12);
+      --shadow: 0 18px 46px rgba(15, 23, 42, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(1100px 660px at 8% -8%, #d7efe9 0%, transparent 55%),
+        radial-gradient(1200px 740px at 110% 0%, #d9ebfb 0%, transparent 56%),
+        linear-gradient(170deg, var(--canvas-a) 0%, var(--canvas-b) 52%, var(--canvas-c) 100%);
+      min-height: 100vh;
+    }
+    body {
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 16px;
+      max-width: 1580px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    body.sidebar-collapsed .layout {
+      grid-template-columns: 1fr;
+    }
+
+    body.sidebar-collapsed .sidebar {
+      display: none;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+      padding: 16px;
+      position: sticky;
+      top: 12px;
+      height: calc(100vh - 24px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sidebar-header {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      padding-right: 46px;
+    }
+
+    .sidebar-close {
+      position: absolute;
+      top: 0;
+      right: 0;
+      border: 1px solid rgba(3, 105, 161, 0.25);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.92);
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+    .sidebar-close {
+  font-family: inherit;
+  color: #144261;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 0em;
+  font-weight: 700;
+  text-transform: none;
+}
+
+    .sidebar-close:hover {
+      border-color: rgba(14, 165, 163, 0.65);
+      color: #0b645f;
+    }
+
+    .eyebrow {
+      margin: 0;
+    }
+
+    .title {
+      margin: 4px 0 0 0;
+      color: var(--ink);
+    }
+
+    .subtitle {
+      margin: 8px 0 0 0;
+      color: var(--ink-soft);
+    }
+    .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #0b7f77;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 31px;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--ink-soft, #334155);
+  max-width: unset;
+  line-height: 1.5;
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .title {
+    font-size: 22px;
+  }
+  .subtitle {
+    font-size: 13px;
+  }
+  .subtitle {
+    white-space: normal;
+  }
+}
+
+    .search {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface-strong);
+      padding: 10px 12px;
+      color: var(--ink);
+    }
+
+    .search:focus {
+      outline: 2px solid rgba(14, 165, 163, 0.35);
+      border-color: rgba(14, 165, 163, 0.45);
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      --chip-link-border: rgba(3, 105, 161, 0.18);
+      --chip-link-bg: rgba(255, 255, 255, 0.88);
+      --chip-link-text: #214968;
+      --chip-link-border-hover: rgba(14, 165, 163, 0.4);
+      --chip-link-bg-hover: rgba(240, 253, 250, 0.98);
+      --chip-link-text-hover: #0b645f;
+    }
+    .chip, .tool-btn, .source-link {
+  --chip-link-border: #b9c7db;
+  --chip-link-bg: #f3f6fb;
+  --chip-link-text: var(--chip-link-text);
+  --chip-link-border-hover: #9aaec9;
+  --chip-link-bg-hover: #e8eef7;
+  --chip-link-text-hover: #1e293b;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--chip-link-border);
+  background: var(--chip-link-bg);
+  color: var(--chip-link-text);
+  box-shadow: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.chip:hover, .tool-btn:hover, .source-link:hover,
+.chip:focus-visible, .tool-btn:focus-visible, .source-link:focus-visible {
+  border-color: var(--chip-link-border-hover);
+  background: var(--chip-link-bg-hover);
+  color: var(--chip-link-text-hover);
+}
+
+.chip:focus-visible, .tool-btn:focus-visible, .source-link:focus-visible {
+  outline: 2px solid #bfdbfe;
+  outline-offset: 1px;
+}
+
+.chip, .tool-btn, .source-link {
+  font-family: inherit;
+  color: var(--chip-link-text);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  text-transform: none;
+}
+
+    .chip.active {
+      --chip-link-bg: #0ea5a3;
+      --chip-link-text: white;
+      --chip-link-border: #0ea5a3;
+      --chip-link-border-hover: #0b938f;
+      --chip-link-bg-hover: #0b938f;
+      --chip-link-text-hover: white;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.78);
+      padding: 8px 10px;
+    }
+
+    .stat p {
+      margin: 0;
+    }
+
+    .stat .k {
+      color: #12324c;
+    }
+
+    .stat .l {
+      margin-top: 2px;
+      color: #48627a;
+    }
+    .stat .l {
+  font-size: 11px;
+  line-height: 1.15;
+  letter-spacing: 0.08em;
+}
+
+.stat .k {
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0em;
+}
+
+    .diagram-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .diagram-item {
+      border: 1px solid rgba(3, 105, 161, 0.16);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.74);
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .diagram-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(14, 165, 163, 0.42);
+      box-shadow: 0 10px 20px rgba(14, 116, 144, 0.08);
+    }
+
+    .diagram-item.active {
+      border-color: rgba(14, 165, 163, 0.68);
+      background: linear-gradient(170deg, rgba(229, 255, 252, 0.95), rgba(245, 250, 255, 0.92));
+    }
+
+    .diagram-btn {
+      border: 0;
+      padding: 10px;
+      width: 100%;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    .diagram-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      --label-bg: rgba(255, 255, 255, 0.9);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 0;
+      padding: 4px 8px;
+      white-space: nowrap;
+      color: #334155;
+      background: var(--label-bg);
+    }
+
+    .tag.stale {
+      --label-bg: #b42318;
+      color: white;
+    }
+
+    .diagram-name {
+    }
+
+    .diagram-owner {
+      margin-top: 3px;
+    }
+
+    .main {
+      padding: 16px;
+      display: grid;
+      gap: 13px;
+      grid-template-rows: auto auto auto 1fr;
+      min-height: calc(100vh - 40px);
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hero-title {
+  margin: 0;
+  color: var(--ink, #0b1324);
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+.hero-title-subtitle-unused {
+  margin: 0;
+  color: var(--ink-muted, #64748b);
+  font-size: 13px;
+  line-height: 1.2;
+  font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+@media (max-width: 1100px) {
+  .hero-title {
+    font-size: 23px;
+  }
+}
+
+@media (max-width: 920px) {
+  .hero-title {
+    font-size: 20px;
+  }
+}
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .meta-pill {
+      --label-bg: rgba(255, 255, 255, 0.9);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 0;
+      background: var(--label-bg);
+      padding: 4px 8px;
+      white-space: nowrap;
+      color: #334155;
+    }
+    .tag, .meta-pill {
+  color: #334155;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  text-transform: none;
+}
+
+    .meta-pill.ok {
+      --label-bg: #027a48;
+      color: white;
+    }
+
+    .meta-pill.warn {
+      --label-bg: #b54708;
+      color: white;
+    }
+
+    .source-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .source-links-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .source-link {
+      text-decoration: none;
+      --chip-link-border: rgba(3, 105, 161, 0.25);
+      --chip-link-bg: rgba(255, 255, 255, 0.9);
+      --chip-link-text: #0d4366;
+      --chip-link-border-hover: rgba(14, 165, 163, 0.6);
+      --chip-link-bg-hover: rgba(240, 253, 250, 0.98);
+      --chip-link-text-hover: #0b645f;
+    }
+
+    .alert {
+      border-radius: 12px;
+      border: 1px solid rgba(181, 71, 8, 0.36);
+      background: rgba(255, 244, 234, 0.95);
+      padding: 10px 12px;
+      display: none;
+    }
+
+    .alert.visible {
+      display: block;
+    }
+
+    .viewer-shell {
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 660px;
+    }
+
+    .viewer-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .viewer-toolbar-left {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .viewer-toolbar-right {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      --chip-link-border: rgba(3, 105, 161, 0.24);
+      --chip-link-bg: white;
+      --chip-link-text: #144261;
+      --chip-link-border-hover: rgba(14, 165, 163, 0.65);
+      --chip-link-bg-hover: rgba(240, 253, 250, 0.98);
+      --chip-link-text-hover: #0b645f;
+    }
+
+    .viewer-stage {
+      position: relative;
+      overflow: hidden;
+      min-height: 560px;
+      touch-action: none;
+      cursor: grab;
+      background: #ffffff;
+    }
+
+    .viewer-stage.dragging {
+      cursor: grabbing;
+    }
+
+    .viewer-image {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      transform-origin: 50% 50%;
+      max-width: none;
+      max-height: none;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .details-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+
+    .section {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.88);
+      padding: 12px;
+    }
+
+    .section h3 {
+    }
+
+    .summary {
+      margin: 0;
+    }
+
+    .component-list {
+      margin-top: 11px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 10px;
+    }
+
+    .component-card {
+      border: 1px solid rgba(3, 105, 161, 0.17);
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .component-card strong {
+      display: block;
+    }
+
+    .component-card p {
+      margin: 0;
+    }
+    .summary, .component-card p {
+  font-size: 15px;
+  line-height: 1.55;
+  color: #27445e;
+}
+
+    
+    
+    
+    
+
+    .artifact-group {
+      margin-bottom: 10px;
+    }
+
+    .artifact-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .artifact-label {
+      margin: 0 0 6px 0;
+    }
+    .artifact-label {
+  margin: 0 0 6px 0;
+  color: #4b647d;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+    .artifact-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .workstream-context-list {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .atlas-context-disclosure {
+      border: 1px solid rgba(3, 105, 161, 0.16);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      overflow: hidden;
+    }
+
+    .atlas-context-disclosure > summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .atlas-context-disclosure > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .atlas-context-disclosure > summary::before {
+      content: "▸";
+      color: #5d7389;
+    }
+
+    .atlas-context-disclosure[open] > summary::before {
+      content: "▾";
+    }
+
+    .atlas-context-disclosure[open] > summary {
+      border-bottom: 1px solid rgba(3, 105, 161, 0.16);
+    }
+
+    .atlas-context-disclosure .artifact-list {
+      padding: 10px;
+    }
+
+    .context-link-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .context-tags {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .context-tag {
+      display: inline-flex;
+      align-items: center;
+      --label-bg: rgba(255, 255, 255, 0.92);
+      border: 0;
+      background: var(--label-bg);
+      color: #36566f;
+      border-radius: 0;
+      padding: 2px 7px;
+    }
+
+    .artifact-list a {
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(13, 68, 104, 0.38);
+      width: fit-content;
+    }
+
+    .artifact-list a:hover {
+      color: #0a8a84;
+      border-bottom-color: rgba(10, 138, 132, 0.62);
+    }
+
+    .artifact-list a.workstream-pill-link {
+      border-bottom: 0;
+      width: auto;
+    }
+    .artifact-list a.workstream-pill-link {
+  --chip-link-border: #8cb8f4;
+  --chip-link-bg: #eaf3ff;
+  --chip-link-text: #1f4795;
+  --chip-link-border-hover: #68a0eb;
+  --chip-link-bg-hover: #deebff;
+  --chip-link-text-hover: #1d4ed8;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--chip-link-border);
+  background: var(--chip-link-bg);
+  color: var(--chip-link-text);
+  box-shadow: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.artifact-list a.workstream-pill-link:hover,
+.artifact-list a.workstream-pill-link:focus-visible {
+  border-color: var(--chip-link-border-hover);
+  background: var(--chip-link-bg-hover);
+  color: var(--chip-link-text-hover);
+}
+
+.artifact-list a.workstream-pill-link:focus-visible {
+  outline: 2px solid #bfdbfe;
+  outline-offset: 1px;
+}
+
+.artifact-list a.workstream-pill-link {
+  font-family: inherit;
+  color: #1f4795;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  text-transform: none;
+}
+
+    .artifact-list a.workstream-pill-link:hover {
+      border-bottom: 0;
+    }
+
+    .diagram-name {
+  margin: 0;
+  color: #12324c;
+  font-size: 14px;
+  line-height: 1.25;
+  letter-spacing: 0em;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.diagram-owner {
+  color: #516a83;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+
+.alert {
+  color: #8a2d06;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+
+.section h3 {
+  margin: 0 0 9px 0;
+  color: #1f4868;
+  font-size: 14px;
+  line-height: 1.2;
+  letter-spacing: 0.09em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.component-card strong {
+  margin: 0 0 4px 0;
+  color: #163f5d;
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: 0em;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.context-tag {
+  margin: 0;
+  color: #36566f;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.empty-note {
+  color: #6c8298;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+
+.artifact-list a {
+  color: #0d4468;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+    .quick-tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: min(340px, calc(100vw - 20px));
+  background: #0f172a;
+  border: 1px solid rgba(191, 219, 254, 0.48);
+  border-radius: 8px;
+  padding: 6px 8px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.32);
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 70ms linear, transform 70ms ease-out;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.quick-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.quick-tooltip {
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: 0em;
+}
+
+    .empty-note {
+      margin: 0;
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside id="sidebarPanel" class="panel sidebar">
+      <div class="sidebar-header">
+        <div>
+          <p class="eyebrow">Live Architecture Maps</p>
+          <h1 class="title">Atlas</h1>
+          <p class="subtitle">Browse diagrams tied to components, workstreams, and freshness.</p>
+        </div>
+        <button id="sidebarClose" class="sidebar-close" type="button" aria-label="Close Atlas panel">×</button>
+      </div>
+
+      <input id="search" class="search" placeholder="Search title, summary, component, owner..." />
+
+      <div>
+        <p class="eyebrow">Kind Filter</p>
+        <div id="kindFilters" class="chip-row"></div>
+      </div>
+
+      <div>
+        <p class="eyebrow">Workstream Filter</p>
+        <select id="workstreamFilter" class="search">
+          <option value="all">All Workstreams</option>
+        </select>
+      </div>
+
+      <div>
+        <p class="eyebrow">Freshness</p>
+        <div class="chip-row">
+          <button class="chip active" data-freshness="all">All</button>
+          <button class="chip" data-freshness="fresh">Fresh</button>
+          <button class="chip" data-freshness="stale">Needs Update</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><p class="k" id="statTotal">0</p><p class="l">Total</p></div>
+        <div class="stat"><p class="k" id="statFresh">0</p><p class="l">Fresh</p></div>
+        <div class="stat"><p class="k" id="statStale">0</p><p class="l">Needs Update</p></div>
+      </div>
+
+      <ul id="diagramList" class="diagram-list"></ul>
+    </aside>
+
+    <main class="panel main">
+      <section class="hero">
+        <div>
+          <h2 id="diagramTitle" class="hero-title"></h2>
+          <div class="hero-meta">
+            <span id="diagramId" class="meta-pill"></span>
+            <span id="diagramKind" class="meta-pill"></span>
+            <span id="diagramStatus" class="meta-pill"></span>
+            <span id="diagramOwner" class="meta-pill"></span>
+            <span id="diagramReviewed" class="meta-pill"></span>
+            <span id="diagramFreshness" class="meta-pill"></span>
+          </div>
+        </div>
+        <div class="source-links-wrap">
+          <button id="sidebarToggle" class="tool-btn" type="button" aria-controls="sidebarPanel" aria-expanded="true">Hide Panel</button>
+          <div id="sourceLinks" class="source-links"></div>
+        </div>
+      </section>
+
+      <section id="staleAlert" class="alert"></section>
+
+      <article class="section">
+        <h3>Connected Workstream Context</h3>
+        <div class="artifact-group">
+          <p class="artifact-label">Owners</p>
+          <ul id="ownerWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
+        </div>
+        <div class="artifact-group">
+          <p class="artifact-label">Active Touches</p>
+          <ul id="activeWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
+        </div>
+        <div id="historicalWorkstreamGroup" class="artifact-group" hidden>
+          <p class="artifact-label">Historical References</p>
+          <details id="historicalWorkstreamDisclosure" class="atlas-context-disclosure">
+            <summary id="historicalWorkstreamSummary"></summary>
+            <ul id="historicalWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
+          </details>
+        </div>
+      </article>
+
+      <section class="viewer-shell">
+        <div class="viewer-toolbar">
+          <div class="viewer-toolbar-left">
+            <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
+            <span class="meta-pill">Pinch: zoom</span>
+            <span class="meta-pill">Drag: pan</span>
+            <span class="meta-pill">Shortcuts: + - 0 f ↑ ↓</span>
+          </div>
+          <div class="viewer-toolbar-right">
+            <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
+            <button id="nextDiagram" class="tool-btn" type="button">Next</button>
+            <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
+            <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
+            <button id="fit" class="tool-btn" type="button">Fit</button>
+            <button id="reset" class="tool-btn" type="button">Reset</button>
+          </div>
+        </div>
+        <div id="viewerStage" class="viewer-stage">
+          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" />
+        </div>
+      </section>
+
+      <section class="details-grid">
+        <article class="section">
+          <h3>What This Diagram Constitutes</h3>
+          <p id="diagramSummary" class="summary"></p>
+          <div id="componentList" class="component-list"></div>
+        </article>
+
+        <article class="section">
+          <h3>Linked Engineering Context</h3>
+          <div class="artifact-group">
+            <p class="artifact-label">Backlog</p>
+            <ul id="backlogLinks" class="artifact-list"></ul>
+          </div>
+          <div class="artifact-group">
+            <p class="artifact-label">Plans</p>
+            <ul id="planLinks" class="artifact-list"></ul>
+          </div>
+          <div class="artifact-group">
+            <p class="artifact-label">Developer Docs</p>
+            <ul id="docLinks" class="artifact-list"></ul>
+          </div>
+          <div class="artifact-group">
+            <p class="artifact-label">Implementation Code</p>
+            <ul id="codeLinks" class="artifact-list"></ul>
+          </div>
+          <div class="artifact-group">
+            <p class="artifact-label">Registry Components</p>
+            <ul id="registryLinks" class="artifact-list"></ul>
+          </div>
+          <div class="artifact-group">
+            <p class="artifact-label">Operator Surfaces</p>
+            <ul id="surfaceLinks" class="artifact-list"></ul>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+(function enforceShellOwnedSurfaceAccessInline() {
+  try {
+    const expectedFrameId = "frame-atlas";
+    const frameElement = window.frameElement;
+    const actualFrameId = frameElement && typeof frameElement.id === "string" ? frameElement.id : "";
+    if (window.parent && window.parent !== window && actualFrameId === expectedFrameId) {
+      return;
+    }
+    const shellUrl = new URL("../index.html", window.location.href);
+    const currentParams = new URLSearchParams(window.location.search || "");
+    const nextParams = new URLSearchParams();
+    nextParams.set("tab", "atlas");
+    const passthroughRules = [{"target":"workstream","sources":["workstream"]},{"target":"diagram","sources":["diagram"]}];
+    for (const rule of passthroughRules) {
+      if (!rule || !rule.target) continue;
+      const sources = Array.isArray(rule.sources) && rule.sources.length ? rule.sources : [rule.target];
+      let selected = "";
+      for (const sourceKey of sources) {
+        const token = String(currentParams.get(sourceKey) || "").trim();
+        if (token) {
+          selected = token;
+          break;
+        }
+      }
+      if (selected) {
+        nextParams.set(rule.target, selected);
+      }
+    }
+    shellUrl.search = nextParams.toString() ? `?${nextParams.toString()}` : "";
+    shellUrl.hash = "";
+    if (window.__ODYLITH_SHELL_REDIRECTING__ === true && window.__ODYLITH_SHELL_REDIRECT_TARGET__ === shellUrl.toString()) {
+      return;
+    }
+    const targetWindow = window.top && window.top !== window ? window.top : window;
+    if (targetWindow.location && targetWindow.location.href === shellUrl.toString()) {
+      return;
+    }
+    window.__ODYLITH_SHELL_REDIRECTING__ = true;
+    window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
+    if (typeof window.stop === "function") {
+      window.stop();
+    }
+    targetWindow.location.replace(shellUrl.toString());
+  } catch (_error) {
+    // Fail open so embedded surfaces can still load if canonical shell handoff cannot be resolved.
+  }
+})();
+</script>
+  <script id="catalogData" src="mermaid-payload.v1.js"></script>
+  <script src="mermaid-app.v1.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+canonical_exec="false"
+if [[ "${1:-}" == "--canonical-exec" ]]; then
+  canonical_exec="true"
+  shift
+fi
+
+requested_version="${1:-${VERSION:-}}"
+if [[ -n "$requested_version" ]]; then
+  require_version "$requested_version"
+fi
+
+if [[ "$canonical_exec" != "true" ]]; then
+  if [[ -n "$requested_version" ]]; then
+    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/release-preflight" --canonical-exec "$requested_version"
+  else
+    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/release-preflight" --canonical-exec
+  fi
+  exit $?
+fi
+
+require_canonical_release_checkout
+resolved_version="$(resolve_release_session_version "release-preflight" "$requested_version" "true" "true")"
+tag="v${resolved_version}"
+preflight_root="$(mktemp -d "${TMPDIR:-/tmp}/odylith-release-preflight.XXXXXX")"
+dist_dir="$preflight_root/dist"
+mkdir -p "$dist_dir"
+trap 'rm -rf "$preflight_root"' EXIT
+
+run_release_proof_steps "$resolved_version" "$dist_dir"
+
+echo "release preflight ready for ${tag}"

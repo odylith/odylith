@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:odylith:contract:correction_packet.v1.schema.json",
+  "title": "Correction Packet v1",
+  "type": "object",
+  "required": [
+    "id",
+    "fingerprint",
+    "case_id",
+    "outcome_id",
+    "execution_mode",
+    "approval_scope",
+    "goal",
+    "preconditions",
+    "touched_paths",
+    "validation_steps",
+    "rollback_steps",
+    "stale_conditions",
+    "expected_evidence_after_success",
+    "status"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fingerprint": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outcome_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": [
+        "deterministic",
+        "ai_engine",
+        "hybrid",
+        "manual"
+      ]
+    },
+    "approval_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "preconditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "touched_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "ai_handoff": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "validation_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rollback_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stale_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expected_evidence_after_success": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

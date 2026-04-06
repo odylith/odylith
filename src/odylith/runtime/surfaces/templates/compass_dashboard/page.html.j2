@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Compass</title>
+  {{ brand_head_html | safe }}
+  <link rel="stylesheet" href="{{ base_style_href }}" />
+  <link rel="stylesheet" href="{{ execution_wave_style_href }}" />
+  <link rel="stylesheet" href="{{ surface_style_href }}" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="kicker">Delivery Posture and Risk Brief</p>
+      <h1>Executive Compass</h1>
+      <p class="subtitle">Current workstream direction, risks, and runtime evidence across Radar, plans, bugs, and Atlas traceability.</p>
+      <section class="stats" id="kpi-grid"></section>
+      <div class="controls" id="controls">
+        <button class="pill" data-window="24h" type="button">24h Window</button>
+        <button class="pill" data-window="48h" type="button">48h Window</button>
+        <label for="audit-day-input">Audit Day</label>
+        <input id="audit-day-input" class="pill subtle select-pill" type="date" aria-label="Audit day calendar" />
+        <label for="scope-select">Scope</label>
+        <select id="scope-select" class="pill subtle select-pill" aria-label="Workstream scope selector">
+          <option value="">Global</option>
+        </select>
+        <button class="pill subtle" id="scope-global" type="button">Global</button>
+        <button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>
+        <span class="grow"></span>
+        <span class="pill subtle" id="scope-pill">Scope: Global</span>
+        <span class="pill subtle" id="audit-day-pill">Audit Day: -</span>
+      </div>
+      <div id="status-banner" class="status-banner hidden" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <article class="card">
+          <h2>Standup Brief</h2>
+          <div class="bullet-list standup-brief-panel" id="digest-list"></div>
+        </article>
+
+        <div id="execution-waves-host"></div>
+
+        <article class="card">
+          <h2>Current Workstreams</h2>
+          <div id="current-workstreams" class="muted"></div>
+        </article>
+      </div>
+
+      <div class="stack">
+        <article class="card">
+          <h2>Critical Risks</h2>
+          <div id="risk-list" class="muted"></div>
+        </article>
+
+        <article class="card">
+          <h2>Timeline Audit</h2>
+          <div class="timeline-calendar" id="timeline"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+  <script src="{{ shared_js_href }}"></script>
+  <script src="{{ state_js_href }}"></script>
+  <script src="{{ summary_js_href }}"></script>
+  <script src="{{ timeline_js_href }}"></script>
+  <script src="{{ waves_js_href }}"></script>
+  <script src="{{ workstreams_js_href }}"></script>
+  <script src="{{ ui_runtime_js_href }}"></script>
+  <script src="{{ runtime_js_href }}"></script>
+  <script id="compassShellData" type="application/json">{{ payload_json | safe }}</script>
+  <script>
+{{ control_js | safe }}
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+hook_dir="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
+"$hook_dir/_identity_guard.sh" config
+exec "$hook_dir/_identity_guard.sh" history HEAD

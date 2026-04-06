@@ -1,0 +1,292 @@
+{
+  "component_id": "release",
+  "diagrams": [
+    "D-022",
+    "D-019",
+    "D-020",
+    "D-021",
+    "D-023",
+    "D-024",
+    "D-014"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 7,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 3,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 8
+  },
+  "name": "Release",
+  "path_prefixes": [
+    "github/workflows/release.yml",
+    "Makefile",
+    "bin/release-version-preview",
+    "bin/release-version-show",
+    "bin/release-session-show",
+    "bin/release-session-clear",
+    "bin/release-preflight",
+    "bin/release-dispatch",
+    "bin/dogfood-activate",
+    "bin/consumer-rehearsal",
+    "bin/ga-gate",
+    "bin/_odylith.sh",
+    "src/odylith/runtime/governance/validate_self_host_posture.py",
+    "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+    "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md"
+  ],
+  "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "bin/consumer-rehearsal",
+        "bin/dogfood-activate",
+        "bin/ga-gate",
+        "bin/release-dispatch",
+        "bin/release-preflight",
+        "bin/release-session-clear",
+        "bin/release-session-show",
+        "bin/release-version-preview",
+        "bin/release-version-show",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "bin/_odylith.sh",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md",
+        "src/odylith/runtime/governance/validate_self_host_posture.py"
+      ],
+      "confidence": "high",
+      "event_index": 53,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: github/workflows/release.yml, bin/consumer-rehearsal +13 more",
+      "ts_iso": "2026-04-04T23:44:02-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 41,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-03T22:07:58-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 40,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-03T21:55:34-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 37,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-04-01T08:31:03-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 35,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-03-31T20:36:09-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 31,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-03-27T16:19:09-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 30,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-03-27T16:12:16-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 29,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-03-27T16:07:04-07:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Canonical maintainer release lane that resolves one sticky semver session, binds it to a specific commit, publishes signed release assets plus managed runtime bundles, validates dogfood plus consumer rehearsal flow, and owns the reusable GTM-and-release readiness overlay for proof-backed launch assets.",
+  "why_tracked": "Makes Odylith's publication path a first-class governed subsystem instead of an undocumented maintainer ritual spread across ad hoc commands.",
+  "workstreams": [
+    "B-005",
+    "B-007",
+    "B-021",
+    "B-026",
+    "B-030",
+    "B-027",
+    "B-037",
+    "B-036",
+    "B-032",
+    "B-033",
+    "B-040",
+    "B-041"
+  ]
+}

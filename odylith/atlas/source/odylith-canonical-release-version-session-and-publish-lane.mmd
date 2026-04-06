@@ -1,0 +1,67 @@
+%% Reviewed 2026-03-30 for isolated clean release-proof checkout and explicit detached source-local validation.
+flowchart TD
+    maintainer["Maintainer Workspace"]
+    preview["release-version-preview / release-version-show"]
+    devvalidate["dev-validate<br/>detached source-local lane"]
+    preflight["release-preflight"]
+    session[".odylith/locks/release-session.json"]
+    dispatch["release-dispatch"]
+    isolated["Isolated clean checkout<br/>detached at origin/main when needed"]
+
+    subgraph local["Local Canonical Release Lane"]
+        preview --> preflight
+        preflight --> session
+        session --> dispatch
+    end
+
+    subgraph dev["Maintainer Dev Lane"]
+        devvalidate --> preview
+    end
+
+    subgraph guards["Canonical Lane Guards"]
+        origin["origin = freedom-research/odylith"]
+        actor["gh auth = freedom-research"]
+        sync["workspace HEAD = origin/main"]
+        clean["proof checkout = clean"]
+        detached["wrapper may materialize<br/>isolated clean checkout"]
+    end
+
+    subgraph publish["GitHub Release Workflow"]
+        workflow["release.yml"]
+        commit_guard["verify tag + expected_sha + GITHUB_SHA"]
+        posture["validate self-host-posture --mode release"]
+        build["build wheel"]
+        assets["publish install.sh + manifest + provenance + SBOM"]
+    end
+
+    subgraph proof["Post-Publish Proof"]
+        dogfood["dogfood-activate"]
+        consumer["consumer-rehearsal"]
+        ga["ga-gate"]
+    end
+
+    maintainer --> preview
+    maintainer --> devvalidate
+    maintainer --> origin
+    maintainer --> actor
+    maintainer --> sync
+    maintainer --> detached
+    detached --> isolated
+    isolated --> clean
+
+    origin --> preflight
+    actor --> preflight
+    clean --> preflight
+    sync --> preflight
+
+    dispatch --> workflow
+    session --> workflow
+    workflow --> commit_guard
+    commit_guard --> posture
+    posture --> build
+    build --> assets
+
+    assets --> dogfood
+    assets --> consumer
+    dogfood --> ga
+    consumer --> ga

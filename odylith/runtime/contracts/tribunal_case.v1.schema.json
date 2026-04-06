@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:odylith:contract:tribunal_case.v1.schema.json",
+  "title": "Tribunal Case v1",
+  "type": "object",
+  "required": [
+    "case_id",
+    "subject",
+    "decision_at_stake",
+    "observations",
+    "baseline"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subject": {
+      "type": "object",
+      "required": [
+        "type",
+        "id",
+        "label",
+        "scope_key"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "scope_key": { "type": "string", "minLength": 1 },
+        "status": { "type": "string" },
+        "scenario": { "type": "string" },
+        "severity": { "type": "string" }
+      }
+    },
+    "decision_at_stake": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observations": {
+      "type": "object",
+      "required": [
+        "linked_surfaces",
+        "change_mix"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "latest_activity_ts_iso": { "type": "string" },
+        "latest_explicit_ts_iso": { "type": "string" },
+        "linked_workstreams": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "linked_components": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "linked_diagrams": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "linked_surfaces": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "code_references": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "changed_artifacts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "owned_artifacts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "semantic_diff_candidates": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "semantic_diff_ready": { "type": "boolean" },
+        "ownership_evidence_state": { "type": "string" },
+        "change_mix": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idea_file": { "type": "string" },
+        "plan_path": { "type": "string" },
+        "reasoning_state": { "type": "string" },
+        "clearance_state": { "type": "string" },
+        "proof_route_quality": { "type": "string" },
+        "evidence_gaps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "policy_breaches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "proof_routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "proof_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "required": [
+        "primary_scenario",
+        "severity"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "primary_scenario": { "type": "string", "minLength": 1 },
+        "severity": { "type": "string", "minLength": 1 }
+      }
+    },
+    "evidence_quality": {
+      "type": "string"
+    }
+  }
+}

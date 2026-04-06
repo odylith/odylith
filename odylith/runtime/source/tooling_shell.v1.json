@@ -1,0 +1,17 @@
+{
+  "shell_repo_label": "Repo \u00b7 Odylith",
+  "maintainer_notes": [
+    {
+      "note_id": "N-001",
+      "title": "Product Self-Governance Is Live Here",
+      "recorded_at": "2026-03-26 13:05:00 PDT",
+      "context": "This repository is the public product home for Odylith, so its own Compass, Radar, Atlas, Registry, and Casebook surfaces are expected to govern this codebase directly.",
+      "section_title": "Watch",
+      "bullets": [
+        "Keep product docs, product guidance, product skills, and product runtime behavior source-owned in this repository; host repos keep their own plans, bugs, specs, and diagrams locally.",
+        "Use the local Odylith governance surfaces in this repository to validate product changes before publishing a release.",
+        "Do not reintroduce host-repo-branded notes, repo labels, or ownership cues into the public product shell."
+      ]
+    }
+  ]
+}

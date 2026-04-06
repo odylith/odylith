@@ -1,0 +1,5 @@
+flowchart LR
+    memory["Memory + Retrieval"] --> context["Context Engine"]
+    context --> router["Subagent Router"]
+    router --> orchestrator["Subagent Orchestrator"]
+    orchestrator --> cli["odylith CLI"]

@@ -1,0 +1,11 @@
+%% Reviewed 2026-03-30 for the Tribunal fallback and provider-breaker contract before release proof.
+flowchart LR
+    delivery["Delivery scope + grounded evidence"] --> dossier["Grounded dossier"]
+    dossier --> tribunal["Tribunal actor pass + adjudication"]
+    tribunal --> provider["Optional provider refinement"]
+    provider --> validator["Named-evidence validation"]
+    validator -- "valid" --> packet["Remediator"]
+    validator -- "timeout / transport / invalid" --> fallback["Deterministic fallback + run-scoped breaker"]
+    tribunal --> fallback
+    fallback --> packet
+    packet --> validation["Validation + rollback guidance"]

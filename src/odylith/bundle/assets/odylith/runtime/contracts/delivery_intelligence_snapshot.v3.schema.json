@@ -1,0 +1,461 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:odylith:contract:delivery_intelligence_snapshot.v3.schema.json",
+  "title": "Delivery Intelligence Snapshot v3",
+  "type": "object",
+  "required": [
+    "version",
+    "generated_utc",
+    "scopes",
+    "operator_queue",
+    "indexes",
+    "summary"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "v3"
+    },
+    "generated_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "grid_scope",
+        "highest_severity_scope",
+        "highest_risk_scope",
+        "grid_action",
+        "queue_size",
+        "top_queue_item"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "grid_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "highest_severity_scope": {
+          "$ref": "#/$defs/summaryScope"
+        },
+        "highest_risk_scope": {
+          "$ref": "#/$defs/summaryScope"
+        },
+        "grid_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "queue_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "top_queue_item": {
+          "type": "object"
+        }
+      }
+    },
+    "indexes": {
+      "type": "object",
+      "required": [
+        "grid",
+        "surfaces",
+        "workstreams",
+        "components",
+        "diagrams"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "grid": {
+          "type": "object"
+        },
+        "surfaces": {
+          "type": "object"
+        },
+        "workstreams": {
+          "type": "object"
+        },
+        "components": {
+          "type": "object"
+        },
+        "diagrams": {
+          "type": "object"
+        }
+      }
+    },
+    "scopes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/scopeSnapshot"
+      }
+    },
+    "operator_queue": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/operatorQueueItem"
+      }
+    }
+  },
+  "$defs": {
+    "summaryScope": {
+      "type": "object",
+      "required": [
+        "scope_key",
+        "scope_label",
+        "primary_scenario",
+        "severity",
+        "action"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "scope_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "primary_scenario": {
+          "$ref": "#/$defs/scenario"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "scenario": {
+      "type": "string",
+      "enum": [
+        "unsafe_closeout",
+        "cross_surface_conflict",
+        "orphan_activity",
+        "stale_authority",
+        "false_priority",
+        "clear_path"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "clear",
+        "watch",
+        "blocker"
+      ]
+    },
+    "actionKind": {
+      "type": "string",
+      "enum": [
+        "capture_checkpoint",
+        "verify_closeout",
+        "refresh_authority",
+        "resolve_conflict",
+        "rebind_scope",
+        "defer_scope"
+      ]
+    },
+    "proofRef": {
+      "type": "object",
+      "required": [
+        "kind",
+        "value",
+        "label"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "surface": {
+          "type": "string"
+        },
+        "href": {
+          "type": "string"
+        },
+        "anchor": {
+          "type": "string"
+        },
+        "fact_tag": {
+          "type": "string"
+        }
+      }
+    },
+    "operatorReadout": {
+      "type": "object",
+      "required": [
+        "primary_scenario",
+        "secondary_scenarios",
+        "severity",
+        "issue",
+        "why_hidden",
+        "action",
+        "action_kind",
+        "proof_refs",
+        "requires_approval",
+        "source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "primary_scenario": {
+          "$ref": "#/$defs/scenario"
+        },
+        "secondary_scenarios": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/scenario"
+          }
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "issue": {
+          "type": "string",
+          "minLength": 1
+        },
+        "why_hidden": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action_kind": {
+          "$ref": "#/$defs/actionKind"
+        },
+        "proof_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/proofRef"
+          }
+        },
+        "requires_approval": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "deterministic",
+            "odylith-llm"
+          ]
+        }
+      }
+    },
+    "scopeSnapshot": {
+      "type": "object",
+      "required": [
+        "scope_key",
+        "scope_type",
+        "scope_id",
+        "scope_label",
+        "posture_mode",
+        "trajectory",
+        "confidence",
+        "operator_readout",
+        "evidence_context",
+        "explanation_facts",
+        "evidence_refs",
+        "scores",
+        "change_vector",
+        "diagnostics"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "scope_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_type": {
+          "type": "string",
+          "enum": [
+            "grid",
+            "surface",
+            "workstream",
+            "component",
+            "diagram"
+          ]
+        },
+        "scope_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "posture_mode": {
+          "type": "string",
+          "enum": [
+            "converging",
+            "fragmenting",
+            "execution_outrunning_governance",
+            "governance_leading_execution",
+            "contract_shift",
+            "operator_boundary_hardening",
+            "closure_hardening",
+            "dormant_but_risky"
+          ]
+        },
+        "trajectory": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_readout": {
+          "$ref": "#/$defs/operatorReadout"
+        },
+        "evidence_context": {
+          "type": "object"
+        },
+        "explanation_facts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/proofRef"
+          }
+        },
+        "scores": {
+          "type": "object",
+          "required": [
+            "governance_lag",
+            "decision_debt",
+            "closure_readiness",
+            "cross_surface_convergence",
+            "workstream_concentration",
+            "blast_radius_severity"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "governance_lag": { "type": "integer" },
+            "decision_debt": { "type": "integer" },
+            "closure_readiness": { "type": "integer" },
+            "cross_surface_convergence": { "type": "integer" },
+            "workstream_concentration": { "type": "integer" },
+            "blast_radius_severity": { "type": "integer" }
+          }
+        },
+        "change_vector": {
+          "type": "object",
+          "required": [
+            "contract",
+            "spec",
+            "renderer",
+            "runtime",
+            "policy",
+            "runbook",
+            "doc",
+            "build_ci",
+            "cli"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "contract": { "type": "integer" },
+            "spec": { "type": "integer" },
+            "renderer": { "type": "integer" },
+            "runtime": { "type": "integer" },
+            "policy": { "type": "integer" },
+            "runbook": { "type": "integer" },
+            "doc": { "type": "integer" },
+            "build_ci": { "type": "integer" },
+            "cli": { "type": "integer" }
+          }
+        },
+        "diagnostics": {
+          "type": "object"
+        }
+      }
+    },
+    "operatorQueueItem": {
+      "type": "object",
+      "required": [
+        "id",
+        "rank",
+        "scope_key",
+        "scope_type",
+        "scope_id",
+        "scope_label",
+        "primary_scenario",
+        "secondary_scenarios",
+        "severity",
+        "issue",
+        "why_hidden",
+        "action",
+        "action_kind",
+        "proof_refs",
+        "requires_approval",
+        "source",
+        "why_now",
+        "success_check",
+        "proof_highlights",
+        "live_reason",
+        "next_surface"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "rank": { "type": "integer", "minimum": 1 },
+        "scope_key": { "type": "string", "minLength": 1 },
+        "scope_type": {
+          "type": "string",
+          "enum": ["workstream", "component", "diagram"]
+        },
+        "scope_id": { "type": "string", "minLength": 1 },
+        "scope_label": { "type": "string", "minLength": 1 },
+        "primary_scenario": { "$ref": "#/$defs/scenario" },
+        "secondary_scenarios": {
+          "type": "array",
+          "maxItems": 2,
+          "items": { "$ref": "#/$defs/scenario" }
+        },
+        "severity": { "$ref": "#/$defs/severity" },
+        "issue": { "type": "string", "minLength": 1 },
+        "why_hidden": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 },
+        "action_kind": { "$ref": "#/$defs/actionKind" },
+        "proof_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/proofRef" }
+        },
+        "requires_approval": { "type": "boolean" },
+        "source": {
+          "type": "string",
+          "enum": ["deterministic", "odylith-llm"]
+        },
+        "why_now": { "type": "string", "minLength": 1 },
+        "success_check": { "type": "string", "minLength": 1 },
+        "proof_highlights": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "live_reason": { "type": "string", "minLength": 1 },
+        "next_surface": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

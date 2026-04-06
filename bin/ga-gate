@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+canonical_exec="false"
+if [[ "${1:-}" == "--canonical-exec" ]]; then
+  canonical_exec="true"
+  shift
+fi
+
+target_version="${1:-${VERSION:-}}"
+previous_version="${2:-${PREVIOUS_VERSION:-}}"
+if [[ -z "$target_version" ]]; then
+  target_version="$(release_session_field version)"
+fi
+require_version "$target_version"
+if [[ -n "$previous_version" ]]; then
+  require_version "$previous_version"
+fi
+
+if [[ "$canonical_exec" != "true" ]]; then
+  if [[ -n "$previous_version" ]]; then
+    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/ga-gate" --canonical-exec "$target_version" "$previous_version"
+  else
+    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/ga-gate" --canonical-exec "$target_version"
+  fi
+  exit $?
+fi
+
+"$odylith_host_repo_root/bin/dogfood-activate"
+"$odylith_repo_root/bin/consumer-rehearsal" "$target_version" "$previous_version"

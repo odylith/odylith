@@ -1,0 +1,39 @@
+%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+flowchart TD
+    A["Grounded repo-work prompt<br/>consumer, pinned dogfood, or detached source-local dev"] --> B["Evidence cone complete?<br/>AGENTS, guidelines, specs, runbooks, source"]
+    B -->|No| C["Keep local<br/>Finish grounding first"]
+    B -->|Yes| D["Build orchestration request<br/>prompt, candidate paths, acceptance, validation, accuracy"]
+    D --> D1["Carry Odylith runtime handoff when present<br/>intent + packet quality + execution posture<br/>plus architecture dossier execution hint when applicable"]
+
+    D1 --> D2["Measured Odylith advisories<br/>state + confidence + freshness/evidence strength<br/>signal conflict + packetizer alignment + parallelism/budget/speed"]
+    D2 --> E["Prompt triage"]
+    E --> E1["Substantive repo work across supported Codex lanes?"]
+    E1 -->|No| C
+    E1 -->|Yes| F["Hard local-only gates"]
+
+    F --> F1{"Any gate hit?"}
+    F1 -->|Yes| G["Mode: local_only<br/>Main thread owns full loop"]
+    F1 -->|No| H["Assess parallel safety<br/>read-only vs disjoint-write vs serial-ordered"]
+
+    H --> H0["Apply Odylith orchestration posture<br/>runtime-backed hold-local or narrowing can stay local;<br/>architecture full_scan or low-confidence high-risk stays local,<br/>grounded high-risk architecture can force strongest bounded single-leaf,<br/>stale / weak / conflicted advisories, packetizer drift, or wasteful yield force serial discipline;<br/>reliable advisories can unlock bounded parallel"]
+    H0 --> H1{"Parallel-safe?"}
+    H1 -->|No, one slice| I["Mode: single_leaf"]
+    H1 -->|No, many slices| J["Mode: serial_batch"]
+    H1 -->|Yes| K["Mode: parallel_batch"]
+
+    I --> L["Emit one bounded leaf"]
+    J --> M["Emit ordered leaves<br/>dependency ids preserved"]
+    K --> N["Emit disjoint leaves<br/>fan-out caps enforced"]
+
+    L --> O["Leaf routing via Subagent Router"]
+    M --> O
+    N --> O
+
+    O --> P["Per-leaf Odylith execution profile<br/>scope role + readiness + utility + merge burden<br/>plus architecture mode / fanout / risk / confidence<br/>while preserving runtime-backed source provenance<br/>and the compact control-advisory contract"]
+    P --> P1["Per-leaf model + reasoning selection<br/>plus task-class policy baseline"]
+    P1 --> Q{"Any leaf refuses delegation?"}
+    Q -->|Yes| R["Collapse to local_only<br/>rescope in main thread"]
+    Q -->|No| S["Execution plan returned to main thread<br/>owner + goal + expected_output + termination_condition<br/>plus native spawn/close payloads"]
+
+    S --> T["Main thread spawns leaves<br/>serial or parallel as planned<br/>with route_spawn_agent_overrides<br/>and route_close_agent_overrides"]
+    T --> U["Main thread keeps merge barrier,<br/>final validation, and adjudication"]
