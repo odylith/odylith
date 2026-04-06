@@ -52,6 +52,7 @@ _LOCAL_RELEASE_BASE_URL_ENV = "ODYLITH_RELEASE_BASE_URL"
 _ALLOW_INSECURE_LOCAL_RELEASES_ENV = "ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST"
 _SKIP_SIGSTORE_VERIFY_ENV = "ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY"
 _MAINTAINER_ROOT_ENV = "ODYLITH_RELEASE_MAINTAINER_ROOT"
+_GITHUB_TOKEN_ENV_NAMES = ("GH_TOKEN", "GITHUB_TOKEN")
 _URL_TIMEOUT_SECONDS = 30
 _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_RETRY_ATTEMPTS = 3
@@ -231,7 +232,7 @@ def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") 
 
     api_path = "latest" if version == "latest" else f"tags/v{version}"
     url = f"https://api.github.com/repos/{repo}/releases/{api_path}"
-    with urllib.request.urlopen(url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted GitHub API endpoint
+    with _urlopen_release_url(url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted GitHub API endpoint
         payload = json.loads(response.read().decode("utf-8"))
     tag = str(payload.get("tag_name") or "").strip()
     match = _TAG_RE.match(tag)
@@ -564,7 +565,7 @@ def _download_asset_once(*, asset: ReleaseAsset, destination: Path) -> Path:
     temporary_destination = Path(temp_name)
     try:
         hasher = hashlib.sha256() if asset.sha256 else None
-        with urllib.request.urlopen(asset.download_url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted GitHub release asset URL
+        with _urlopen_release_url(asset.download_url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted GitHub release asset URL
             with os.fdopen(fd, "wb") as handle:
                 while True:
                     chunk = response.read(_DOWNLOAD_CHUNK_BYTES)
@@ -595,6 +596,36 @@ def _is_retryable_download_error(exc: Exception) -> bool:
     if isinstance(exc, urllib_error.HTTPError):
         return int(exc.code) in _DOWNLOAD_RETRYABLE_HTTP_CODES
     return isinstance(exc, (urllib_error.URLError, TimeoutError, OSError))
+
+
+def _urlopen_release_url(
+    url: str,
+    *,
+    timeout: int,
+):
+    request_or_url: str | urllib.request.Request = str(url)
+    auth_token = _github_auth_token()
+    if auth_token:
+        request_or_url = _github_authenticated_request(url=str(url), token=auth_token)
+    return urllib.request.urlopen(request_or_url, timeout=timeout)
+
+
+def _github_auth_token() -> str:
+    for env_name in _GITHUB_TOKEN_ENV_NAMES:
+        token = str(os.environ.get(env_name) or "").strip()
+        if token:
+            return token
+    return ""
+
+
+def _github_authenticated_request(*, url: str, token: str) -> urllib.request.Request:
+    parsed = urlparse(str(url))
+    hostname = str(parsed.hostname or "").strip().lower()
+    headers = {"Authorization": f"Bearer {token}"}
+    if hostname == "api.github.com":
+        headers["Accept"] = "application/vnd.github+json"
+        headers["X-GitHub-Api-Version"] = "2022-11-28"
+    return urllib.request.Request(str(url), headers=headers)
 
 
 def release_cache_dir(*, repo_root: str | Path, version: str) -> Path:

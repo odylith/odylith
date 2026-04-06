@@ -52,6 +52,31 @@ def test_fetch_release_returns_api_assets_without_manifest_checksums(monkeypatch
     assert release.asset(r"odylith-1\.2\.3-.*\.whl").sha256 is None
 
 
+def test_fetch_release_uses_github_token_for_api_requests(monkeypatch) -> None:
+    api_payload = {
+        "tag_name": "v1.2.3",
+        "assets": [],
+    }
+
+    def _fake_urlopen(request, timeout: int | None = None):  # noqa: ANN001
+        assert timeout is not None
+        assert request.full_url == "https://api.github.com/repos/odylith/odylith/releases/latest"
+        assert request.headers["Authorization"] == "Bearer token-value"
+        assert request.headers["Accept"] == "application/vnd.github+json"
+        return _Response(json.dumps(api_payload).encode("utf-8"))
+
+    monkeypatch.setenv("GH_TOKEN", "token-value")
+    monkeypatch.setattr(release_assets.urllib.request, "urlopen", _fake_urlopen)
+
+    release = release_assets.fetch_release(
+        repo_root=Path(__file__).resolve().parents[3],
+        repo="odylith/odylith",
+        version="latest",
+    )
+
+    assert release.version == "1.2.3"
+
+
 def test_fetch_release_with_local_base_url_exposes_manifest_and_sigstore_sidecars(monkeypatch) -> None:
     manifest_payload = {
         "schema_version": "odylith-release-manifest.v1",
@@ -220,6 +245,30 @@ def test_download_asset_retries_transient_network_failure(monkeypatch, tmp_path:
 
     assert observed == destination
     assert attempts["count"] == 2
+    assert destination.read_bytes() == payload
+
+
+def test_download_asset_uses_github_token_for_release_asset_requests(monkeypatch, tmp_path: Path) -> None:
+    payload = b"runtime-bundle"
+    destination = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
+    asset = release_assets.ReleaseAsset(
+        name=destination.name,
+        download_url="https://github.com/odylith/odylith/releases/download/v1.2.3/odylith-runtime-linux-x86_64.tar.gz",
+        sha256=hashlib.sha256(payload).hexdigest(),
+    )
+
+    def _fake_urlopen(request, timeout: int | None = None):  # noqa: ANN001
+        assert timeout is not None
+        assert request.full_url == asset.download_url
+        assert request.headers["Authorization"] == "Bearer token-value"
+        return _Response(payload)
+
+    monkeypatch.setenv("GITHUB_TOKEN", "token-value")
+    monkeypatch.setattr(release_assets.urllib.request, "urlopen", _fake_urlopen)
+
+    observed = release_assets.download_asset(repo_root=tmp_path, asset=asset, destination=destination)
+
+    assert observed == destination
     assert destination.read_bytes() == payload
 
 
