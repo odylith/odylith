@@ -26,7 +26,13 @@ class _Response:
         return None
 
 
+def _clear_github_tokens(monkeypatch) -> None:  # noqa: ANN001
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+
+
 def test_fetch_release_returns_api_assets_without_manifest_checksums(monkeypatch) -> None:
+    _clear_github_tokens(monkeypatch)
     api_payload = {
         "tag_name": "v1.2.3",
         "assets": [
@@ -54,6 +60,7 @@ def test_fetch_release_returns_api_assets_without_manifest_checksums(monkeypatch
 
 
 def test_fetch_release_uses_github_token_for_api_requests(monkeypatch) -> None:
+    _clear_github_tokens(monkeypatch)
     api_payload = {
         "tag_name": "v1.2.3",
         "assets": [],
@@ -79,6 +86,7 @@ def test_fetch_release_uses_github_token_for_api_requests(monkeypatch) -> None:
 
 
 def test_fetch_release_prefers_browser_download_url_without_github_token(monkeypatch) -> None:
+    _clear_github_tokens(monkeypatch)
     api_payload = {
         "tag_name": "v1.2.3",
         "assets": [
@@ -110,6 +118,7 @@ def test_fetch_release_prefers_browser_download_url_without_github_token(monkeyp
 
 
 def test_fetch_release_prefers_github_asset_api_url_with_github_token(monkeypatch) -> None:
+    _clear_github_tokens(monkeypatch)
     api_payload = {
         "tag_name": "v1.2.3",
         "assets": [
@@ -282,6 +291,7 @@ def test_download_asset_reuses_existing_sha_matched_payload_without_network(monk
 
 
 def test_download_asset_retries_transient_network_failure(monkeypatch, tmp_path: Path) -> None:
+    _clear_github_tokens(monkeypatch)
     payload = b"runtime-bundle"
     destination = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
     asset = release_assets.ReleaseAsset(
@@ -310,6 +320,7 @@ def test_download_asset_retries_transient_network_failure(monkeypatch, tmp_path:
 
 
 def test_download_asset_uses_github_token_for_release_asset_requests(monkeypatch, tmp_path: Path) -> None:
+    _clear_github_tokens(monkeypatch)
     payload = b"runtime-bundle"
     destination = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
     asset = release_assets.ReleaseAsset(
@@ -335,6 +346,7 @@ def test_download_asset_uses_github_token_for_release_asset_requests(monkeypatch
 
 
 def test_download_asset_uses_octet_stream_headers_for_github_asset_api_without_token(monkeypatch, tmp_path: Path) -> None:
+    _clear_github_tokens(monkeypatch)
     payload = b"runtime-bundle"
     destination = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
     asset = release_assets.ReleaseAsset(
@@ -877,6 +889,7 @@ def test_validate_runtime_bundle_archive_allows_in_tree_relative_symlink(tmp_pat
 
 
 def test_download_asset_rejects_checksum_mismatch(monkeypatch, tmp_path: Path) -> None:
+    _clear_github_tokens(monkeypatch)
     payload = b"wheel-bytes"
 
     def _fake_urlopen(url: str, timeout: int | None = None):  # noqa: ANN001
