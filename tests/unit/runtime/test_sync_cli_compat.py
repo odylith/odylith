@@ -28,6 +28,7 @@ def test_sync_parser_accepts_legacy_shape_aliases(tmp_path: Path) -> None:
     assert args.repo_root == str(tmp_path)
     assert args.check_only is True
     assert args.registry_policy_mode == "enforce-critical"
+    assert args.compass_refresh_profile == "shell-safe"
 
 
 def test_context_engine_defaults_to_current_runtime_without_workspace_opt_in(tmp_path: Path, monkeypatch) -> None:
@@ -225,7 +226,7 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
     compass_commands = [command for command in executed if "odylith.runtime.surfaces.render_compass_dashboard" in command]
     assert compass_commands
     assert "--refresh-profile" in compass_commands[0]
-    assert compass_commands[0][compass_commands[0].index("--refresh-profile") + 1] == "full"
+    assert compass_commands[0][compass_commands[0].index("--refresh-profile") + 1] == "shell-safe"
     assert "odylith.runtime.governance.sync_component_spec_requirements" not in modules
     assert "odylith.runtime.surfaces.render_registry_dashboard" not in modules
 

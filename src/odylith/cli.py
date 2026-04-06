@@ -73,6 +73,7 @@ _FIRST_RUN_SURFACE_OUTPUTS = (
     Path("odylith/registry/registry.html"),
     Path("odylith/casebook/casebook.html"),
 )
+_DEFAULT_COMPASS_REFRESH_PROFILE = "shell-safe"
 _DEFAULT_DASHBOARD_REFRESH_SURFACES = ("tooling_shell", "radar", "compass")
 _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV = ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
 
@@ -259,6 +260,7 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path) -> int:
         surfaces=("tooling_shell",),
         runtime_mode="auto",
         atlas_sync=False,
+        compass_refresh_profile=_DEFAULT_COMPASS_REFRESH_PROFILE,
     )
     remaining_missing = _missing_first_run_surfaces(repo_root=resolved_repo_root)
     if remaining_missing:
@@ -269,6 +271,8 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path) -> int:
                 "--force",
                 "--impact-mode",
                 "full",
+                "--compass-refresh-profile",
+                _DEFAULT_COMPASS_REFRESH_PROFILE,
             ]
         )
         if full_sync_rc == 0:
@@ -453,6 +457,7 @@ def _refresh_dashboard_after_upgrade(*, repo_root: Path) -> tuple[bool, str]:
         surfaces=_DEFAULT_DASHBOARD_REFRESH_SURFACES,
         runtime_mode="auto",
         atlas_sync=False,
+        compass_refresh_profile=_DEFAULT_COMPASS_REFRESH_PROFILE,
     )
     if render_rc != 0:
         return (
@@ -964,6 +969,7 @@ def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
         runtime_mode=str(args.runtime_mode),
         atlas_sync=bool(args.atlas_sync),
         dry_run=bool(args.dry_run),
+        compass_refresh_profile=str(args.compass_refresh_profile),
     )
 
 
@@ -1367,6 +1373,12 @@ def build_parser() -> argparse.ArgumentParser:
             "Execution mode for the render helpers. `auto` prefers the local runtime-backed fast path, "
             "`standalone` stays subprocess-only, and `daemon` requires runtime-backed execution."
         ),
+    )
+    dashboard_refresh.add_argument(
+        "--compass-refresh-profile",
+        choices=("full", "shell-safe"),
+        default=_DEFAULT_COMPASS_REFRESH_PROFILE,
+        help="Compass refresh profile. `shell-safe` defers live AI narration so refresh stays bounded.",
     )
 
     governance = subparsers.add_parser("governance", help="Run Odylith governance maintenance helpers.")

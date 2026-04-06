@@ -70,6 +70,7 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
     assert refresh_capture["surfaces"] == ("tooling_shell",)
     assert refresh_capture["runtime_mode"] == "auto"
     assert refresh_capture["atlas_sync"] is False
+    assert refresh_capture["compass_refresh_profile"] == "shell-safe"
     assert "Odylith 1.2.3 is ready" in output.out
     assert "Rendering first-run Odylith surfaces" in output.out
     assert "Dashboard:" in output.out
@@ -737,6 +738,8 @@ def test_install_fails_when_first_run_shell_bootstrap_fails(monkeypatch, tmp_pat
         "--force",
         "--impact-mode",
         "full",
+        "--compass-refresh-profile",
+        "shell-safe",
     ]
     assert "Odylith runtime install succeeded, but the first-run Odylith shell is incomplete." in captured.err
     assert "odylith sync --repo-root . --force --impact-mode full" in captured.err

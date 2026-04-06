@@ -93,6 +93,7 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
     "registry": "registry",
     "casebook": "casebook",
 }
+_DEFAULT_COMPASS_REFRESH_PROFILE = "shell-safe"
 _HEARTBEAT_INTERVAL_SECONDS = 10.0
 _DASHBOARD_REFRESH_TIMEOUT_SECONDS = 45.0
 
@@ -212,6 +213,15 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
             "Execution mode for local upkeep commands. `auto` prefers the local runtime-backed "
             "fast path with standalone fallback, `standalone` preserves subprocess-only strict "
             "behavior, and `daemon` requires runtime-backed execution."
+        ),
+    )
+    parser.add_argument(
+        "--compass-refresh-profile",
+        choices=("full", "shell-safe"),
+        default=_DEFAULT_COMPASS_REFRESH_PROFILE,
+        help=(
+            "Compass refresh profile for sync/render steps. "
+            "`shell-safe` defers live AI narration so sync stays bounded."
         ),
     )
     deep_skill_group = parser.add_mutually_exclusive_group()
@@ -746,6 +756,7 @@ def _dashboard_surface_steps(
     surface: str,
     runtime_mode: str,
     atlas_sync: bool,
+    compass_refresh_profile: str,
 ) -> list[ExecutionStep]:
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
     refresh_command = display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", surface)
@@ -795,12 +806,12 @@ def _dashboard_surface_steps(
             "--repo-root",
             str(repo_root),
             "--refresh-profile",
-            "full",
+            str(compass_refresh_profile).strip().lower() or _DEFAULT_COMPASS_REFRESH_PROFILE,
             *_runtime_args(normalized_runtime_mode),
         )
         steps.append(
             _execution_step(
-                "Render Compass in full refresh mode.",
+                "Render Compass in the selected refresh profile.",
                 surface=surface,
                 command=command,
                 standalone_command=_runtime_retry_command(command),
@@ -945,6 +956,7 @@ def _build_dashboard_refresh_steps(
     selected: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool,
+    compass_refresh_profile: str,
 ) -> list[ExecutionStep]:
     steps: list[ExecutionStep] = []
     for surface in selected:
@@ -954,6 +966,7 @@ def _build_dashboard_refresh_steps(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
+                compass_refresh_profile=compass_refresh_profile,
             )
         )
     return steps
@@ -965,6 +978,7 @@ def build_dashboard_refresh_plan(
     surfaces: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool = False,
+    compass_refresh_profile: str = _DEFAULT_COMPASS_REFRESH_PROFILE,
 ) -> ExecutionPlan:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -982,6 +996,7 @@ def build_dashboard_refresh_plan(
             selected=selected,
             runtime_mode=normalized_runtime_mode,
             atlas_sync=atlas_sync,
+            compass_refresh_profile=compass_refresh_profile,
         ),
         notes=notes,
         repo_root=repo_root,
@@ -1169,6 +1184,7 @@ def refresh_dashboard_surfaces(
     runtime_mode: str,
     atlas_sync: bool = False,
     dry_run: bool = False,
+    compass_refresh_profile: str = _DEFAULT_COMPASS_REFRESH_PROFILE,
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1177,6 +1193,7 @@ def refresh_dashboard_surfaces(
         surfaces=selected,
         runtime_mode=normalized_runtime_mode,
         atlas_sync=atlas_sync,
+        compass_refresh_profile=compass_refresh_profile,
     )
     _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run))
     if dry_run:
@@ -1190,6 +1207,7 @@ def refresh_dashboard_surfaces(
             surface=surface,
             runtime_mode=normalized_runtime_mode,
             atlas_sync=atlas_sync,
+            compass_refresh_profile=compass_refresh_profile,
         )
         result = _execute_dashboard_refresh_surface(
             repo_root=repo_root,
@@ -1555,6 +1573,9 @@ def build_sync_execution_plan(
                     "odylith.runtime.surfaces.render_compass_dashboard",
                     "--repo-root",
                     str(repo_root),
+                    "--refresh-profile",
+                    str(getattr(args, "compass_refresh_profile", _DEFAULT_COMPASS_REFRESH_PROFILE)).strip().lower()
+                    or _DEFAULT_COMPASS_REFRESH_PROFILE,
                     *_runtime_args(runtime_mode),
                 ),
                 mutation_classes=("generated_surfaces",),
