@@ -238,10 +238,11 @@ def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") 
     match = _TAG_RE.match(tag)
     if not match:
         raise ValueError(f"unexpected release tag format: {tag!r}")
+    auth_token = _github_auth_token()
     assets = {
         str(asset["name"]): ReleaseAsset(
             name=str(asset["name"]),
-            download_url=str(asset.get("url") or asset.get("browser_download_url") or ""),
+            download_url=_preferred_release_asset_url(asset=asset, auth_token=auth_token),
         )
         for asset in payload.get("assets", [])
     }
@@ -616,6 +617,14 @@ def _github_auth_token() -> str:
         if token:
             return token
     return ""
+
+
+def _preferred_release_asset_url(*, asset: dict[str, Any], auth_token: str) -> str:
+    browser_download_url = str(asset.get("browser_download_url") or "").strip()
+    api_download_url = str(asset.get("url") or "").strip()
+    if auth_token:
+        return api_download_url or browser_download_url
+    return browser_download_url or api_download_url
 
 
 def _github_request(*, url: str, token: str = "") -> urllib.request.Request:

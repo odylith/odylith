@@ -78,7 +78,7 @@ def test_fetch_release_uses_github_token_for_api_requests(monkeypatch) -> None:
     assert release.version == "1.2.3"
 
 
-def test_fetch_release_prefers_github_asset_api_url(monkeypatch) -> None:
+def test_fetch_release_prefers_browser_download_url_without_github_token(monkeypatch) -> None:
     api_payload = {
         "tag_name": "v1.2.3",
         "assets": [
@@ -95,6 +95,38 @@ def test_fetch_release_prefers_github_asset_api_url(monkeypatch) -> None:
         assert request.full_url == "https://api.github.com/repos/odylith/odylith/releases/latest"
         return _Response(json.dumps(api_payload).encode("utf-8"))
 
+    monkeypatch.setattr(release_assets.urllib.request, "urlopen", _fake_urlopen)
+
+    release = release_assets.fetch_release(
+        repo_root=Path(__file__).resolve().parents[3],
+        repo="odylith/odylith",
+        version="latest",
+    )
+
+    assert (
+        release.assets["release-manifest.json"].download_url
+        == "https://github.com/odylith/odylith/releases/download/v1.2.3/release-manifest.json"
+    )
+
+
+def test_fetch_release_prefers_github_asset_api_url_with_github_token(monkeypatch) -> None:
+    api_payload = {
+        "tag_name": "v1.2.3",
+        "assets": [
+            {
+                "name": "release-manifest.json",
+                "url": "https://api.github.com/repos/odylith/odylith/releases/assets/42",
+                "browser_download_url": "https://github.com/odylith/odylith/releases/download/v1.2.3/release-manifest.json",
+            },
+        ],
+    }
+
+    def _fake_urlopen(request, timeout: int | None = None):  # noqa: ANN001
+        assert timeout is not None
+        assert request.full_url == "https://api.github.com/repos/odylith/odylith/releases/latest"
+        return _Response(json.dumps(api_payload).encode("utf-8"))
+
+    monkeypatch.setenv("GH_TOKEN", "token-value")
     monkeypatch.setattr(release_assets.urllib.request, "urlopen", _fake_urlopen)
 
     release = release_assets.fetch_release(
