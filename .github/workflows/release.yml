@@ -40,10 +40,14 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+          fetch-tags: true
           persist-credentials: false
       - name: Verify release tag and commit binding
         run: |
-          git fetch --tags origin
+          if ! git rev-parse "${{ inputs.tag }}^{commit}" >/dev/null 2>&1; then
+            echo "release tag ${{ inputs.tag }} is not present in the checked-out repository state" >&2
+            exit 2
+          fi
           tag_sha="$(git rev-parse "${{ inputs.tag }}^{commit}")"
           if [[ "${GITHUB_SHA}" != "${{ inputs.expected_sha }}" ]]; then
             echo "workflow dispatch commit mismatch: expected ${{ inputs.expected_sha }} got ${GITHUB_SHA}" >&2
