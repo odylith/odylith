@@ -81,6 +81,7 @@ def _local_release_env(*, base_url: str, version: str) -> dict[str, str]:
     env = dict(os.environ)
     env["ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST"] = "1"
     env["ODYLITH_RELEASE_BASE_URL"] = base_url
+    env["ODYLITH_RELEASE_MAINTAINER_ROOT"] = str(REPO_ROOT)
     env["ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY"] = "1"
     env = _force_deterministic_reasoning_env(env)
     env["ODYLITH_VERSION"] = version

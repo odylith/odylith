@@ -51,6 +51,7 @@ _ALLOWED_RELEASE_URL_HOSTS = {
 _LOCAL_RELEASE_BASE_URL_ENV = "ODYLITH_RELEASE_BASE_URL"
 _ALLOW_INSECURE_LOCAL_RELEASES_ENV = "ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST"
 _SKIP_SIGSTORE_VERIFY_ENV = "ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY"
+_MAINTAINER_ROOT_ENV = "ODYLITH_RELEASE_MAINTAINER_ROOT"
 _URL_TIMEOUT_SECONDS = 30
 _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_RETRY_ATTEMPTS = 3
@@ -168,10 +169,19 @@ def _is_product_repo(repo_root: str | Path) -> bool:
     )
 
 
+def _is_maintainer_release_lane(repo_root: str | Path) -> bool:
+    if _is_product_repo(repo_root):
+        return True
+    maintainer_root = str(os.environ.get(_MAINTAINER_ROOT_ENV) or "").strip()
+    if not maintainer_root:
+        return False
+    return _is_product_repo(maintainer_root)
+
+
 def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") -> ReleaseInfo:
     local_release_base_url = str(os.environ.get(_LOCAL_RELEASE_BASE_URL_ENV) or "").strip().rstrip("/")
     if local_release_base_url:
-        if not _is_product_repo(repo_root):
+        if not _is_maintainer_release_lane(repo_root):
             raise ValueError("ODYLITH_RELEASE_BASE_URL is only supported in the Odylith product repo maintainer lane")
         manifest_url = f"{local_release_base_url}/release-manifest.json"
         with urllib.request.urlopen(manifest_url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - explicit local maintainer preflight override
@@ -468,7 +478,7 @@ def expected_signer_identity(*, repo: str) -> str:
 
 def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_path: Path, repo: str) -> None:
     if str(os.environ.get(_SKIP_SIGSTORE_VERIFY_ENV, "")).strip() == "1":
-        if not _is_product_repo(repo_root):
+        if not _is_maintainer_release_lane(repo_root):
             raise ValueError("ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY is only supported in the Odylith product repo maintainer lane")
         return
     command = [
@@ -527,11 +537,11 @@ def _validate_release_asset_url(*, repo_root: str | Path, url: str) -> None:
     parsed = urlparse(str(url))
     allow_local_http = (
         str(os.environ.get(_ALLOW_INSECURE_LOCAL_RELEASES_ENV, "")).strip() == "1"
-        and _is_product_repo(repo_root)
+        and _is_maintainer_release_lane(repo_root)
     )
     if (
         str(os.environ.get(_ALLOW_INSECURE_LOCAL_RELEASES_ENV, "")).strip() == "1"
-        and not _is_product_repo(repo_root)
+        and not _is_maintainer_release_lane(repo_root)
     ):
         raise ValueError("ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST is only supported in the Odylith product repo maintainer lane")
     hostname = str(parsed.hostname or "").strip().lower()

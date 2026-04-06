@@ -84,6 +84,29 @@ def test_fetch_release_with_local_base_url_exposes_manifest_and_sigstore_sidecar
     assert "odylith-runtime-darwin-arm64.tar.gz.sigstore.json" in release.assets
 
 
+def test_fetch_release_allows_local_base_url_with_maintainer_root_override(monkeypatch, tmp_path: Path) -> None:
+    manifest_payload = {
+        "schema_version": "odylith-release-manifest.v1",
+        "version": "1.2.3",
+        "tag": "v1.2.3",
+        "repo": "odylith/odylith",
+        "assets": {},
+    }
+
+    def _fake_urlopen(url: str, timeout: int | None = None):  # noqa: ANN001
+        assert url == "http://127.0.0.1:8123/release-manifest.json"
+        assert timeout is not None
+        return _Response(json.dumps(manifest_payload).encode("utf-8"))
+
+    monkeypatch.setenv("ODYLITH_RELEASE_BASE_URL", "http://127.0.0.1:8123")
+    monkeypatch.setenv("ODYLITH_RELEASE_MAINTAINER_ROOT", str(Path(__file__).resolve().parents[3]))
+    monkeypatch.setattr(release_assets.urllib.request, "urlopen", _fake_urlopen)
+
+    release = release_assets.fetch_release(repo_root=tmp_path, repo="odylith/odylith", version="1.2.3")
+
+    assert release.version == "1.2.3"
+
+
 def test_fetch_release_rejects_local_base_url_outside_product_repo(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv("ODYLITH_RELEASE_BASE_URL", "http://127.0.0.1:8123")
 
@@ -128,6 +151,26 @@ def test_download_asset_rejects_localhost_override_outside_product_repo(monkeypa
 
     with pytest.raises(ValueError, match="only supported in the Odylith product repo maintainer lane"):
         release_assets.download_asset(repo_root=tmp_path, asset=asset, destination=tmp_path / "odylith.whl")
+
+
+def test_download_asset_allows_localhost_override_with_maintainer_root_override(
+    monkeypatch, tmp_path: Path
+) -> None:
+    asset = release_assets.ReleaseAsset(
+        name="odylith.whl",
+        download_url="http://127.0.0.1:8123/odylith.whl",
+    )
+    monkeypatch.setenv("ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST", "1")
+    monkeypatch.setenv("ODYLITH_RELEASE_MAINTAINER_ROOT", str(Path(__file__).resolve().parents[3]))
+    monkeypatch.setattr(
+        release_assets.urllib.request,
+        "urlopen",
+        lambda *args, **kwargs: _Response(b"wheel"),
+    )
+
+    observed = release_assets.download_asset(repo_root=tmp_path, asset=asset, destination=tmp_path / "odylith.whl")
+
+    assert observed.read_bytes() == b"wheel"
 
 
 def test_download_asset_reuses_existing_sha_matched_payload_without_network(monkeypatch, tmp_path: Path) -> None:
@@ -581,6 +624,24 @@ def test_verify_sigstore_asset_rejects_skip_override_outside_product_repo(monkey
             bundle_path=bundle_path,
             repo="odylith/odylith",
         )
+
+
+def test_verify_sigstore_asset_allows_skip_override_with_maintainer_root_override(
+    monkeypatch, tmp_path: Path
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+    monkeypatch.setenv("ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY", "1")
+    monkeypatch.setenv("ODYLITH_RELEASE_MAINTAINER_ROOT", str(Path(__file__).resolve().parents[3]))
+
+    release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
 
 
 def test_validate_runtime_bundle_archive_rejects_metadata_platform_mismatch(tmp_path: Path) -> None:

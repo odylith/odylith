@@ -31,6 +31,7 @@ def test_local_release_env_forces_deterministic_reasoning(monkeypatch) -> None: 
     env = module._local_release_env(base_url="http://127.0.0.1:8123", version="0.1.6")
 
     assert env["ODYLITH_RELEASE_BASE_URL"] == "http://127.0.0.1:8123"
+    assert env["ODYLITH_RELEASE_MAINTAINER_ROOT"] == str(module.REPO_ROOT)
     assert env["ODYLITH_REASONING_MODE"] == "disabled"
     assert env["ODYLITH_REASONING_PROVIDER"] == "auto-local"
     assert env["ODYLITH_VERSION"] == "0.1.6"
