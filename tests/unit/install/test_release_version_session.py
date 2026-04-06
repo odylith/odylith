@@ -99,6 +99,39 @@ def test_release_session_resolve_explicit_version_creates_tag_and_session(tmp_pa
     assert "v0.1.0" in remote_tags
 
 
+def test_release_session_resolve_explicit_version_pushes_tag_when_branch_uses_same_name(
+    tmp_path: Path, monkeypatch
+) -> None:
+    module = _release_version_session_module()
+    repo, remote = _init_git_repo(tmp_path)
+    monkeypatch.chdir(repo)
+
+    _run("git", "checkout", "-b", "v0.1.0", cwd=repo)
+    _run("git", "push", "-u", "origin", "v0.1.0", cwd=repo)
+    _run("git", "checkout", "main", cwd=repo)
+
+    session_file = repo / ".odylith" / "locks" / "release-session.json"
+    exit_code = module.main(
+        [
+            "resolve",
+            "--session-file",
+            str(session_file),
+            "--remote",
+            "origin",
+            "--target",
+            "release-preflight",
+            "--requested-version",
+            "0.1.0",
+        ]
+    )
+
+    assert exit_code == 0
+    remote_tags = _run("git", "--git-dir", str(remote), "tag", "-l", cwd=repo).stdout.splitlines()
+    remote_heads = _run("git", "--git-dir", str(remote), "branch", "--list", cwd=repo).stdout
+    assert "v0.1.0" in remote_tags
+    assert "v0.1.0" in remote_heads
+
+
 def test_release_session_resolve_auto_tags_next_patch(tmp_path: Path, monkeypatch) -> None:
     module = _release_version_session_module()
     repo, remote = _init_git_repo(tmp_path)

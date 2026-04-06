@@ -211,7 +211,7 @@ def _push_tag_or_reuse_existing(*, tag: str, head_sha: str, remote: str, max_att
         pushed = release_semver.run_git(
             "push",
             remote,
-            tag,
+            f"refs/tags/{tag}",
             check=False,
             capture_output=True,
         )
@@ -265,7 +265,7 @@ def _auto_tag_next_version(*, remote: str, start_at: int, max_attempts: int) -> 
         pushed = release_semver.run_git(
             "push",
             remote,
-            next_tag,
+            f"refs/tags/{next_tag}",
             check=False,
             capture_output=True,
         )
