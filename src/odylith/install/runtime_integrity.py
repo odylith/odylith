@@ -55,13 +55,13 @@ def write_managed_runtime_trust(
         f"VERIFICATION_SHA256={verification_sha256}",
         f"TREE_SHA256={tree_digest}",
         f"HOT_FILE_COUNT={len(hot_entries)}",
-        f"BIN_PYTHON_SHA256={_hot_entry_sha256(hot_entries, 'bin/python')}",
-        f"BIN_PYTHON3_SHA256={_hot_entry_sha256(hot_entries, 'bin/python3')}",
-        f"BIN_ODYLITH_SHA256={_hot_entry_sha256(hot_entries, 'bin/odylith')}",
-        f"PYVENV_CFG_SHA256={_hot_entry_sha256(hot_entries, 'pyvenv.cfg')}",
-        f"RUNTIME_METADATA_SHA256={_hot_entry_sha256(hot_entries, 'runtime-metadata.json')}",
-        f"RUNTIME_VERIFICATION_SHA256={_hot_entry_sha256(hot_entries, MANAGED_RUNTIME_VERIFICATION_FILENAME)}",
-        f"RUNTIME_FEATURE_PACKS_SHA256={_hot_entry_sha256(hot_entries, MANAGED_RUNTIME_FEATURE_PACK_FILENAME)}",
+        f"BIN_PYTHON_SHA256={_runtime_file_sha256(version_root, 'bin/python')}",
+        f"BIN_PYTHON3_SHA256={_runtime_file_sha256(version_root, 'bin/python3')}",
+        f"BIN_ODYLITH_SHA256={_runtime_file_sha256(version_root, 'bin/odylith')}",
+        f"PYVENV_CFG_SHA256={_runtime_file_sha256(version_root, 'pyvenv.cfg')}",
+        f"RUNTIME_METADATA_SHA256={_runtime_file_sha256(version_root, 'runtime-metadata.json')}",
+        f"RUNTIME_VERIFICATION_SHA256={_runtime_file_sha256(version_root, MANAGED_RUNTIME_VERIFICATION_FILENAME)}",
+        f"RUNTIME_FEATURE_PACKS_SHA256={_runtime_file_sha256(version_root, MANAGED_RUNTIME_FEATURE_PACK_FILENAME)}",
     ]
     for index, entry in enumerate(hot_entries):
         prefix = f"HOT_FILE_{index:04d}"
@@ -456,12 +456,11 @@ def _runtime_verification_sha256(runtime_root: Path) -> str:
     return _verification_sha256(verification)
 
 
-def _hot_entry_sha256(entries: Iterable[RuntimeEntry], relative_path: str) -> str:
-    normalized = str(relative_path).strip()
-    for entry in entries:
-        if entry.path == normalized:
-            return entry.sha256
-    return ""
+def _runtime_file_sha256(version_root: Path, relative_path: str) -> str:
+    candidate = version_root / str(relative_path).strip()
+    if not candidate.is_file():
+        return ""
+    return _sha256_file(candidate)
 
 
 def _sha256_file(path: Path) -> str:

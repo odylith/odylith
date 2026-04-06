@@ -663,7 +663,7 @@ def _launcher_shell_common_lines(*, fallback_source_root: Path | None) -> list[s
         "}",
         "odylith_sha256_file() {",
         '  local candidate="${1:-}"',
-        '  [[ -f "$candidate" ]] && [[ ! -L "$candidate" ]] || return 1',
+        '  [[ -f "$candidate" ]] || return 1',
         '  if command -v shasum >/dev/null 2>&1; then',
         '    shasum -a 256 "$candidate" | awk \'{print $1}\'',
         "    return 0",

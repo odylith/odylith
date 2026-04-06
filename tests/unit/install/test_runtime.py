@@ -127,6 +127,8 @@ def test_ensure_launcher_points_at_repo_local_runtime(tmp_path: Path) -> None:
     assert "unset VIRTUAL_ENV" in text
     assert "unset PYTHONPATH" in text
     assert "export PYTHONNOUSERSITE=1" in text
+    assert '[[ -f "$candidate" ]] || return 1' in text
+    assert '[[ -f "$candidate" ]] && [[ ! -L "$candidate" ]] || return 1' not in text
     assert 'fallback_source_root=""' in text
     assert "odylith_upgrade_bootstrap_required" in text
     assert "Odylith is bootstrapping a safe upgrade path for this older consumer install." in text
@@ -452,6 +454,62 @@ def test_managed_runtime_integrity_ignores_generated_python_bytecode(tmp_path: P
     reasons = runtime_integrity.managed_runtime_integrity_reasons(repo_root=repo_root, runtime_root=version_root)
 
     assert reasons == []
+
+
+def test_write_managed_runtime_trust_hashes_symlinked_python_entrypoints(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    bin_dir = version_root / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    python_impl = bin_dir / "python3.13"
+    python_impl.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    python_impl.chmod(0o755)
+    for name in ("python", "python3"):
+        (bin_dir / name).symlink_to("python3.13")
+    odylith_executable = bin_dir / "odylith"
+    odylith_executable.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    odylith_executable.chmod(0o755)
+    (version_root / "pyvenv.cfg").write_text("version = 3.13.12\n", encoding="utf-8")
+    (version_root / "runtime-metadata.json").write_text(
+        json.dumps(
+            {
+                "schema_version": MANAGED_RUNTIME_SCHEMA_VERSION,
+                "version": "1.2.3",
+                "platform": "darwin-arm64",
+                "python_version": MANAGED_PYTHON_VERSION,
+                "source_wheel": "odylith-1.2.3-py3-none-any.whl",
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    runtime.runtime_verification_path(version_root).write_text(
+        json.dumps(
+            {
+                "schema_version": MANAGED_RUNTIME_VERIFICATION_SCHEMA_VERSION,
+                "version": "1.2.3",
+                "verification": {"wheel_sha256": "wheel-1.2.3"},
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    runtime.write_managed_runtime_trust(
+        repo_root=repo_root,
+        version_root=version_root,
+        verification=runtime.runtime_verification_evidence(version_root),
+    )
+
+    trust_payload = runtime_integrity._load_trust_env(repo_root=repo_root, version="1.2.3")  # noqa: SLF001
+
+    assert trust_payload["BIN_PYTHON_SHA256"] == runtime_integrity._sha256_file(version_root / "bin" / "python")  # noqa: SLF001
+    assert trust_payload["BIN_PYTHON3_SHA256"] == runtime_integrity._sha256_file(version_root / "bin" / "python3")  # noqa: SLF001
+    assert runtime_integrity.managed_runtime_integrity_reasons(repo_root=repo_root, runtime_root=version_root) == []
 
 
 def test_bootstrap_launcher_skips_unverified_managed_runtime_candidates(tmp_path: Path) -> None:
