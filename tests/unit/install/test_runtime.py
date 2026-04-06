@@ -365,6 +365,81 @@ def test_bootstrap_launcher_runs_repo_local_runtime_when_primary_launcher_is_mis
     )
 
 
+def test_launcher_runs_current_managed_runtime_via_current_symlink(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    runtime_python = version_root / "bin" / "python"
+    runtime_python.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'printf "%s\\n" "$*" > "$PWD/runtime-invocation.txt"',
+                "exit 0",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    runtime_python.chmod(0o755)
+    _trust_managed_runtime(version_root)
+
+    runtime.switch_runtime(repo_root=repo_root, target=version_root)
+    runtime.ensure_launcher(repo_root=repo_root, fallback_python=runtime_python)
+
+    completed = subprocess.run(
+        [str(repo_root / ".odylith" / "bin" / "odylith"), "version", "--repo-root", "."],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0
+    assert (repo_root / "runtime-invocation.txt").read_text(encoding="utf-8").strip() == (
+        "-I -m odylith.cli version --repo-root ."
+    )
+
+
+def test_launcher_error_guidance_does_not_execute_bootstrap_command_substitution(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    fallback_python = version_root / "bin" / "python"
+
+    runtime.ensure_launcher(repo_root=repo_root, fallback_python=fallback_python)
+    (repo_root / ".odylith" / "trust" / "managed-runtime-trust" / "1.2.3.env").unlink()
+    bootstrap_marker = repo_root / "bootstrap-recursed.txt"
+    bootstrap = repo_root / ".odylith" / "bin" / "odylith-bootstrap"
+    bootstrap.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'printf "recursed\\n" > "$PWD/bootstrap-recursed.txt"',
+                "exit 99",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    bootstrap.chmod(0o755)
+
+    completed = subprocess.run(
+        [str(repo_root / ".odylith" / "bin" / "odylith"), "version", "--repo-root", "."],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    assert not bootstrap_marker.exists()
+    assert "Odylith launcher detected untrusted or unhealthy runtime state." in completed.stderr
+    assert "odylith-bootstrap doctor --repo-root . --repair" in completed.stderr
+
+
 def test_managed_runtime_integrity_ignores_generated_python_bytecode(tmp_path: Path) -> None:
     repo_root = _repo_root(tmp_path)
     version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
