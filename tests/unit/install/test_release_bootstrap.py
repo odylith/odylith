@@ -90,6 +90,9 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "managed runtime bundle metadata source wheel mismatch" in text
     assert "managed runtime bundle missing required paths" in text
     assert "runtime-verification.v1.json" in text
+    assert "write_runtime_trust.py" in text
+    assert "from odylith.install.runtime_integrity import write_managed_runtime_trust" in text
+    assert "\"$version_root/bin/python\" \"$tmpdir/write_runtime_trust.py\" \"$repo_root\" \"$version_root\"" in text
     assert "rm -rf \"$version_root\"" in text
     assert "mkdir -p \"$state_root/runtime/versions\" \"$state_root/bin\"" in text
     assert "mv \"$bootstrap_runtime\" \"$version_root\"" in text
@@ -100,6 +103,9 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "detect_repo_root" in text
     assert "version_root=\"$state_root/runtime/versions/$release_version\"" in text
     assert "\"$state_root/bin/odylith\" install --repo-root \"$repo_root\" --version \"$release_version\"" in text
+    assert text.index("\"$version_root/bin/python\" \"$tmpdir/write_runtime_trust.py\" \"$repo_root\" \"$version_root\"") < text.index(
+        "\"$state_root/bin/odylith\" install --repo-root \"$repo_root\" --version \"$release_version\""
+    )
     assert "read -p" not in text
     assert "select " not in text
     assert "unset VIRTUAL_ENV" in text
