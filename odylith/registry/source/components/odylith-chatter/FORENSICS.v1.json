@@ -3,12 +3,12 @@
   "diagrams": [],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 8,
-    "mapped_workstream_evidence_count": 0,
+    "explicit_event_count": 9,
+    "mapped_workstream_evidence_count": 1,
     "recent_path_match_count": 1,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 9
+    "timeline_event_count": 10
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -43,56 +43,66 @@
   "timeline": [
     {
       "artifacts": [
-        "AGENTS.md",
-        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
-        "docs/benchmarks/README.md",
-        "docs/benchmarks/REVIEWER_GUIDE.md",
-        "odylith/AGENTS.md",
-        "odylith/README.md",
-        "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
-        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
-        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
-        "odylith/maintainer/AGENTS.md",
-        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
-        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
-        "odylith/skills/delivery-governance-surface-ops/SKILL.md",
-        "odylith/skills/odylith-context-engine-operations/SKILL.md",
-        "odylith/skills/session-context/SKILL.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
-        "odylith/skills/subagent-router/SKILL.md",
-        "src/odylith/bundle/assets/odylith/AGENTS.md",
-        "src/odylith/bundle/assets/odylith/README.md",
-        "src/odylith/bundle/assets/odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
-        "src/odylith/bundle/assets/odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
-        "src/odylith/bundle/assets/odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        "src/odylith/bundle/assets/odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "src/odylith/bundle/assets/odylith/skills/delivery-governance-surface-ops/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/odylith-context-engine-operations/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/session-context/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/subagent-orchestrator/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/subagent-router/SKILL.md",
-        "src/odylith/install/agents.py",
-        "src/odylith/install/manager.py",
-        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
-        "src/odylith/runtime/orchestration/subagent_orchestrator_runtime_signals.py",
-        "src/odylith/runtime/orchestration/subagent_router.py",
-        "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
-        "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py"
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 48,
+      "event_index": 52,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-chatter"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, docs/benchmarks/METRICS_AND_PRIORITIES.md +36 more",
-      "ts_iso": "2026-04-05T19:27:19-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-05T22:39:45-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "README.md",
+        "docs/benchmarks/README.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+      ],
+      "confidence": "high",
+      "event_index": 42,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.",
+      "ts_iso": "2026-04-05T19:43:45-07:00",
+      "workstreams": [
+        "B-021",
+        "B-022"
+      ]
     },
     {
       "artifacts": [

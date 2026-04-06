@@ -27,10 +27,10 @@
     "empty_reasons": [],
     "explicit_event_count": 9,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 10
+    "timeline_event_count": 9
   },
   "name": "Subagent Router",
   "path_prefixes": [
@@ -39,25 +39,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
-        "odylith/skills/subagent-router/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/subagent-router/SKILL.md",
-        "src/odylith/runtime/orchestration/subagent_router.py"
-      ],
-      "confidence": "high",
-      "event_index": 57,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "subagent-router"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/subagent-router/CURRENT_SPEC.md, odylith/skills/subagent-router/SKILL.md +2 more",
-      "ts_iso": "2026-04-04T23:43:30-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "src/odylith/runtime/common/host_runtime.py",
@@ -303,9 +284,19 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/cli.py",
+      "src/odylith/runtime/governance/component_registry_intelligence.py",
+      "src/odylith/runtime/governance/sync_workstream_artifacts.py"
+    ],
+    "developer_docs": [
+      "docs/specs/odylith-repo-integration-contract.md",
+      "odylith/PRODUCT_COMPONENTS.md",
+      "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+    ],
+    "runbooks": [
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Bounded leaf-routing engine that selects local vs delegated execution and the requested model plus reasoning posture.",

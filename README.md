@@ -76,9 +76,7 @@ More on the operating frame:
 
 ## Tribunal
 
-Tribunal is Odylith's diagnosis engine for blocked or ambiguous work. It takes
-grounded evidence, runs specialist review over the same case, and hands a
-bounded correction packet to Remediator when the path is no longer clear.
+One of Odylith's core strengths is that it can take one blocked or ambiguous repo posture, run ten specialist actors over the same grounded evidence, and force an adjudicated case before the agent acts. Tribunal is the engine for that step. It is not the first-turn grounding path. It runs in higher-level delivery-intelligence flows such as odylith sync, governed surface refresh, and evaluation or benchmark paths when Odylith needs to explain a live blocker, conflict, failure, or ambiguous posture in a workstream, component, or diagram.
 
 <p align="center">
   <img
@@ -217,6 +215,8 @@ Odylith publishes two benchmark views and keeps their claims separate:
 - `Live Benchmark` (`--profile proof`): measures how well Odylith completes
   the real task end to end against raw Codex CLI
 
+In README framing, `odylith_off` is the raw Codex CLI lane.
+
 Current public proof posture is local-first memory on LanceDB plus Tantivy.
 These are first public eval runs and should be read as a baseline, not a
 ceiling. Odylith wins by grounding and operationalizing shared repo truth
@@ -243,7 +243,18 @@ Grounding benchmark tables:
 
 #### Grounding Graphs
 
-Generated from `.odylith/runtime/odylith-benchmarks/74cbe36427f2c375.json`.
+**Headline win:** Odylith starts the model with materially better grounding:
+`+0.320` required-path recall and `+0.690` validation-success proxy versus
+`odylith_off`.
+
+On the warm-cache diagnostic lane, `odylith_on` beat `odylith_off` across `37`
+seeded packet and prompt scenarios with:
+
+- `+0.320` required-path recall
+- `+0.084` required-path precision
+- `+0.690` validation-success proxy
+- `+7.048 ms` median wall clock (`9.881 ms` p95, `254.219 ms` total across all `37` pairs)
+
 The family heatmap uses the linked developer-first family order rather than raw
 token cost. The grounding quality frontier credits prompt-visible repo paths on
 the raw control lane, and the operating-posture view comes from the sampled
@@ -298,7 +309,23 @@ Live benchmark tables:
 
 #### Live Graphs
 
-Generated from `.odylith/runtime/odylith-benchmarks/52aa3f76538cf12f.json`.
+**Headline win:** Odylith reaches valid outcomes faster and with far less
+model spend: `-12.43s` median time to valid outcome and `-52,561` median
+live-session input tokens versus `odylith_off`.
+
+On the conservative published proof view, `odylith_on` beat `odylith_off`
+across `37` seeded scenarios with:
+
+- `-12.43s` median time to valid outcome
+- `-52,561` median live-session input tokens
+- `+0.227` required-path recall
+- `+0.168` required-path precision
+- `+0.393` expectation success
+
+This published view keeps the scenario-wise worst-of-warm/cold result for each
+scenario, drawn from `74` matched pairs (`148` total live results), so the
+headline stays conservative rather than cherry-picked.
+
 The family heatmap uses the linked developer-first family order rather than
 prompt-token cost.
 

@@ -6149,8 +6149,8 @@ def test_packet_level_architecture_audit_keeps_doc_only_slice_grounded() -> None
         },
         "authority_graph": {
             "counts": {
-                "edges": 2,
-                "traceability_edges": 1,
+                "edges": 3,
+                "traceability_edges": 2,
             },
         },
         "execution_hint": {

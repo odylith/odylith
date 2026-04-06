@@ -392,6 +392,9 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
+  - Scope: B-021, B-022
+  - Evidence: README.md, docs/benchmarks/README.md +3 more
 - **2026-03-23 · Decision:** Successor created: B-280 reopens B-279 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
 - **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
@@ -402,8 +405,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/casebook/CURRENT_SPEC.md +1 more
 - **2026-03-20 · Decision:** Successor created: B-258 reopens B-256 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +1 more
-- **2026-03-20 · Decision:** Successor created: B-255 reopens B-253 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/compass/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

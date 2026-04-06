@@ -26,10 +26,10 @@
     "empty_reasons": [],
     "explicit_event_count": 1,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 2
+    "timeline_event_count": 1
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -38,24 +38,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/odylith/casebook/bugs/INDEX.md",
-        "src/odylith/runtime/surfaces/render_casebook_dashboard.py"
-      ],
-      "confidence": "high",
-      "event_index": 44,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "casebook"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/casebook/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/casebook/bugs/INDEX.md +1 more",
-      "ts_iso": "2026-04-05T09:46:19-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/radar/source/INDEX.md",
@@ -80,9 +62,19 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/cli.py",
+      "src/odylith/runtime/governance/component_registry_intelligence.py",
+      "src/odylith/runtime/governance/sync_workstream_artifacts.py"
+    ],
+    "developer_docs": [
+      "docs/specs/odylith-repo-integration-contract.md",
+      "odylith/PRODUCT_COMPONENTS.md",
+      "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+    ],
+    "runbooks": [
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Bug intelligence and learning surface for Odylith product defects and regressions.",

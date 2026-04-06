@@ -590,7 +590,9 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- No synchronized requirement or contract signals yet.
+- **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
+  - Scope: B-021, B-022
+  - Evidence: README.md, docs/benchmarks/README.md +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History

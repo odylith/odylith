@@ -28,12 +28,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 16,
-    "mapped_workstream_evidence_count": 1,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 24,
+    "mapped_workstream_evidence_count": 2,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 17
+    "timeline_event_count": 24
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -44,59 +44,243 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/odylith-vespa-app/README.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/odylith-vespa-app/schemas/odylith_memory.sd",
-        "src/odylith/bundle/assets/odylith/runtime/source/odylith-vespa-app/services.xml",
-        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.5.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.6.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.7.md",
-        "src/odylith/runtime/context_engine/grounding_component_priority.py",
-        "src/odylith/runtime/context_engine/odylith_architecture_mode.py",
-        "src/odylith/runtime/context_engine/odylith_context_cache.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_code_graph_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_engineering_notes_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_grounding_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_delivery_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_governance_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_packet_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_memory_snapshot_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_projection_query_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_projection_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_projection_surface_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_registry_detail_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_session_packet_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
-        "src/odylith/runtime/context_engine/odylith_control_state.py",
-        "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
-        "src/odylith/runtime/context_engine/projection_repo_state_runtime.py",
-        "src/odylith/runtime/context_engine/session_bootstrap_payload_compactor.py",
-        "src/odylith/runtime/context_engine/surface_projection_fingerprint.py",
-        "src/odylith/runtime/context_engine/tooling_context_budgeting.py",
-        "src/odylith/runtime/context_engine/tooling_context_packet_builder.py",
-        "src/odylith/runtime/context_engine/tooling_context_quality.py",
-        "src/odylith/runtime/context_engine/tooling_context_retrieval.py",
-        "src/odylith/runtime/context_engine/tooling_context_routing.py",
-        "src/odylith/runtime/context_engine/tooling_guidance_catalog.py"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 49,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
       "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-05T22:24:37-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 48,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-04-05T22:21:07-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 47,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-04-05T22:19:16-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 46,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
         "odylith-context-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/runtime/source/odylith-vespa-app/README.md +39 more",
-      "ts_iso": "2026-04-05T15:32:28-07:00",
+      "summary": "Prepared Odylith self-host runtime 0.1.7 in the current repository.",
+      "ts_iso": "2026-04-05T22:17:25-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 45,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-04-05T20:36:11-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 44,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-05T20:35:50-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 43,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-04-05T20:33:45-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "README.md",
+        "docs/benchmarks/README.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+      ],
+      "confidence": "high",
+      "event_index": 42,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.",
+      "ts_iso": "2026-04-05T19:43:45-07:00",
+      "workstreams": [
+        "B-021",
+        "B-022"
+      ]
     },
     {
       "artifacts": [
@@ -534,9 +718,33 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/cli.py",
+      "src/odylith/runtime/governance/component_registry_intelligence.py",
+      "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+      "github/workflows/test.yml",
+      "src/odylith/install/managed_runtime.py",
+      "src/odylith/install/manager.py",
+      "src/odylith/install/release_assets.py",
+      "src/odylith/install/runtime.py",
+      "src/odylith/runtime/common/consumer_profile.py",
+      "tests/integration/install/test_manager.py",
+      "tests/unit/install/test_release_assets.py",
+      "tests/unit/install/test_runtime.py",
+      "tests/unit/test_cli.py"
+    ],
+    "developer_docs": [
+      "docs/specs/odylith-repo-integration-contract.md",
+      "odylith/PRODUCT_COMPONENTS.md",
+      "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "odylith/README.md",
+      "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+      "odylith/registry/source/components/release/CURRENT_SPEC.md"
+    ],
+    "runbooks": [
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Local deterministic context, memory, retrieval, and packetization runtime.",

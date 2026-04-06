@@ -28,9 +28,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 14,
-    "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 15,
+    "mapped_workstream_evidence_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
     "timeline_event_count": 15
@@ -45,22 +45,50 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/component_registry.v1.json",
-        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
-        "src/odylith/runtime/governance/component_registry_intelligence.py",
-        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+        "README.md",
+        "docs/benchmarks/README.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
       ],
       "confidence": "high",
-      "event_index": 52,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 42,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "registry"
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json, odylith/registry/source/components/registry/CURRENT_SPEC.md +2 more",
-      "ts_iso": "2026-04-05T12:51:52-07:00",
-      "workstreams": []
+      "summary": "Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.",
+      "ts_iso": "2026-04-05T19:43:45-07:00",
+      "workstreams": [
+        "B-021",
+        "B-022"
+      ]
     },
     {
       "artifacts": [
@@ -446,9 +474,33 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/cli.py",
+      "src/odylith/runtime/governance/component_registry_intelligence.py",
+      "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+      "github/workflows/test.yml",
+      "src/odylith/install/managed_runtime.py",
+      "src/odylith/install/manager.py",
+      "src/odylith/install/release_assets.py",
+      "src/odylith/install/runtime.py",
+      "src/odylith/runtime/common/consumer_profile.py",
+      "tests/integration/install/test_manager.py",
+      "tests/unit/install/test_release_assets.py",
+      "tests/unit/install/test_runtime.py",
+      "tests/unit/test_cli.py"
+    ],
+    "developer_docs": [
+      "docs/specs/odylith-repo-integration-contract.md",
+      "odylith/PRODUCT_COMPONENTS.md",
+      "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "odylith/README.md",
+      "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+      "odylith/registry/source/components/release/CURRENT_SPEC.md"
+    ],
+    "runbooks": [
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Component inventory, spec snapshot, and evidence-correlation surface.",

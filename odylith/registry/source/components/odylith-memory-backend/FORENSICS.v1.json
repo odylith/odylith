@@ -7,9 +7,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 1,
-    "mapped_workstream_evidence_count": 1,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 2,
+    "mapped_workstream_evidence_count": 2,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
     "timeline_event_count": 2
@@ -23,27 +23,50 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
-        "src/odylith/runtime/memory/assets/vespa_app/README.md",
-        "src/odylith/runtime/memory/assets/vespa_app/schemas/odylith_memory.sd",
-        "src/odylith/runtime/memory/assets/vespa_app/services.xml",
-        "src/odylith/runtime/memory/odylith_memory_backend.py",
-        "src/odylith/runtime/memory/odylith_projection_bundle.py",
-        "src/odylith/runtime/memory/odylith_projection_snapshot.py",
-        "src/odylith/runtime/memory/odylith_remote_retrieval.py",
-        "src/odylith/runtime/memory/tooling_memory_contracts.py"
+        "README.md",
+        "docs/benchmarks/README.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
       ],
       "confidence": "high",
-      "event_index": 50,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 42,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "odylith-memory-backend"
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md, src/odylith/runtime/memory/assets/vespa_app/README.md +7 more",
-      "ts_iso": "2026-04-05T09:46:02-07:00",
-      "workstreams": []
+      "summary": "Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.",
+      "ts_iso": "2026-04-05T19:43:45-07:00",
+      "workstreams": [
+        "B-021",
+        "B-022"
+      ]
     },
     {
       "artifacts": [
