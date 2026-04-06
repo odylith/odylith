@@ -376,7 +376,10 @@ def _hot_entries(version_root: Path) -> list[RuntimeEntry]:
                 continue
             for candidate in sorted(candidate_root.rglob("*")):
                 if candidate.is_file() and not candidate.is_symlink():
-                    hot_paths.append(candidate.relative_to(version_root).as_posix())
+                    relative_path = candidate.relative_to(version_root).as_posix()
+                    if _is_generated_python_cache(relative_path):
+                        continue
+                    hot_paths.append(relative_path)
     unique_paths = sorted(dict.fromkeys(hot_paths))
     return [
         RuntimeEntry(
@@ -392,11 +395,14 @@ def _hot_entries(version_root: Path) -> list[RuntimeEntry]:
 def _tree_entries(version_root: Path) -> list[RuntimeEntry]:
     entries: list[RuntimeEntry] = []
     for candidate in sorted(version_root.rglob("*")):
+        relative_path = candidate.relative_to(version_root).as_posix()
+        if _is_generated_python_cache(relative_path):
+            continue
         if candidate.is_symlink():
             entries.append(
                 RuntimeEntry(
                     kind="symlink",
-                    path=candidate.relative_to(version_root).as_posix(),
+                    path=relative_path,
                     target=str(candidate.readlink()),
                 )
             )
@@ -405,12 +411,20 @@ def _tree_entries(version_root: Path) -> list[RuntimeEntry]:
             entries.append(
                 RuntimeEntry(
                     kind="file",
-                    path=candidate.relative_to(version_root).as_posix(),
+                    path=relative_path,
                     sha256=_sha256_file(candidate),
                     size=candidate.stat().st_size,
                 )
             )
     return entries
+
+
+def _is_generated_python_cache(relative_path: str) -> bool:
+    normalized = str(relative_path).strip()
+    if not normalized:
+        return False
+    path = Path(normalized)
+    return "__pycache__" in path.parts or path.suffix in {".pyc", ".pyo"}
 
 
 def _tree_digest(entries: Iterable[RuntimeEntry]) -> str:

@@ -9,7 +9,7 @@ import tarfile
 from pathlib import Path
 from types import SimpleNamespace
 
-from odylith.install import runtime
+from odylith.install import runtime, runtime_integrity
 from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_SCHEMA_VERSION,
     MANAGED_RUNTIME_VERIFICATION_SCHEMA_VERSION,
@@ -363,6 +363,20 @@ def test_bootstrap_launcher_runs_repo_local_runtime_when_primary_launcher_is_mis
     assert (repo_root / "bootstrap-runtime-invocation.txt").read_text(encoding="utf-8").strip() == (
         "-I -m odylith.cli doctor --repo-root . --repair"
     )
+
+
+def test_managed_runtime_integrity_ignores_generated_python_bytecode(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+
+    pycache = version_root / "lib" / "python3.13" / "__pycache__"
+    pycache.mkdir(parents=True, exist_ok=True)
+    (pycache / "_colorize.cpython-313.pyc").write_bytes(b"bytecode")
+
+    reasons = runtime_integrity.managed_runtime_integrity_reasons(repo_root=repo_root, runtime_root=version_root)
+
+    assert reasons == []
 
 
 def test_bootstrap_launcher_skips_unverified_managed_runtime_candidates(tmp_path: Path) -> None:
