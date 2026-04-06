@@ -35,8 +35,9 @@ def test_fetch_release_returns_api_assets_without_manifest_checksums(monkeypatch
         ],
     }
 
-    def _fake_urlopen(url: str, timeout: int | None = None):  # noqa: ANN001
-        assert "api.github.com" in url
+    def _fake_urlopen(request, timeout: int | None = None):  # noqa: ANN001
+        assert request.full_url == "https://api.github.com/repos/odylith/odylith/releases/latest"
+        assert request.headers["Accept"] == "application/vnd.github+json"
         assert timeout is not None
         return _Response(json.dumps(api_payload).encode("utf-8"))
 
@@ -75,6 +76,34 @@ def test_fetch_release_uses_github_token_for_api_requests(monkeypatch) -> None:
     )
 
     assert release.version == "1.2.3"
+
+
+def test_fetch_release_prefers_github_asset_api_url(monkeypatch) -> None:
+    api_payload = {
+        "tag_name": "v1.2.3",
+        "assets": [
+            {
+                "name": "release-manifest.json",
+                "url": "https://api.github.com/repos/odylith/odylith/releases/assets/42",
+                "browser_download_url": "https://github.com/odylith/odylith/releases/download/v1.2.3/release-manifest.json",
+            },
+        ],
+    }
+
+    def _fake_urlopen(request, timeout: int | None = None):  # noqa: ANN001
+        assert timeout is not None
+        assert request.full_url == "https://api.github.com/repos/odylith/odylith/releases/latest"
+        return _Response(json.dumps(api_payload).encode("utf-8"))
+
+    monkeypatch.setattr(release_assets.urllib.request, "urlopen", _fake_urlopen)
+
+    release = release_assets.fetch_release(
+        repo_root=Path(__file__).resolve().parents[3],
+        repo="odylith/odylith",
+        version="latest",
+    )
+
+    assert release.assets["release-manifest.json"].download_url == "https://api.github.com/repos/odylith/odylith/releases/assets/42"
 
 
 def test_fetch_release_with_local_base_url_exposes_manifest_and_sigstore_sidecars(monkeypatch) -> None:
@@ -253,7 +282,7 @@ def test_download_asset_uses_github_token_for_release_asset_requests(monkeypatch
     destination = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
     asset = release_assets.ReleaseAsset(
         name=destination.name,
-        download_url="https://github.com/odylith/odylith/releases/download/v1.2.3/odylith-runtime-linux-x86_64.tar.gz",
+        download_url="https://api.github.com/repos/odylith/odylith/releases/assets/42",
         sha256=hashlib.sha256(payload).hexdigest(),
     )
 
@@ -261,9 +290,35 @@ def test_download_asset_uses_github_token_for_release_asset_requests(monkeypatch
         assert timeout is not None
         assert request.full_url == asset.download_url
         assert request.headers["Authorization"] == "Bearer token-value"
+        assert request.headers["Accept"] == "application/octet-stream"
         return _Response(payload)
 
     monkeypatch.setenv("GITHUB_TOKEN", "token-value")
+    monkeypatch.setattr(release_assets.urllib.request, "urlopen", _fake_urlopen)
+
+    observed = release_assets.download_asset(repo_root=tmp_path, asset=asset, destination=destination)
+
+    assert observed == destination
+    assert destination.read_bytes() == payload
+
+
+def test_download_asset_uses_octet_stream_headers_for_github_asset_api_without_token(monkeypatch, tmp_path: Path) -> None:
+    payload = b"runtime-bundle"
+    destination = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
+    asset = release_assets.ReleaseAsset(
+        name=destination.name,
+        download_url="https://api.github.com/repos/odylith/odylith/releases/assets/42",
+        sha256=hashlib.sha256(payload).hexdigest(),
+    )
+
+    def _fake_urlopen(request, timeout: int | None = None):  # noqa: ANN001
+        assert timeout is not None
+        assert request.full_url == asset.download_url
+        assert "Authorization" not in request.headers
+        assert request.headers["Accept"] == "application/octet-stream"
+        assert dict(request.header_items())["X-github-api-version"] == "2022-11-28"
+        return _Response(payload)
+
     monkeypatch.setattr(release_assets.urllib.request, "urlopen", _fake_urlopen)
 
     observed = release_assets.download_asset(repo_root=tmp_path, asset=asset, destination=destination)

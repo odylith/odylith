@@ -241,7 +241,7 @@ def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") 
     assets = {
         str(asset["name"]): ReleaseAsset(
             name=str(asset["name"]),
-            download_url=str(asset["browser_download_url"]),
+            download_url=str(asset.get("url") or asset.get("browser_download_url") or ""),
         )
         for asset in payload.get("assets", [])
     }
@@ -605,8 +605,8 @@ def _urlopen_release_url(
 ):
     request_or_url: str | urllib.request.Request = str(url)
     auth_token = _github_auth_token()
-    if auth_token:
-        request_or_url = _github_authenticated_request(url=str(url), token=auth_token)
+    if auth_token or _github_api_request_headers(url=str(url)):
+        request_or_url = _github_request(url=str(url), token=auth_token)
     return urllib.request.urlopen(request_or_url, timeout=timeout)
 
 
@@ -618,14 +618,26 @@ def _github_auth_token() -> str:
     return ""
 
 
-def _github_authenticated_request(*, url: str, token: str) -> urllib.request.Request:
+def _github_request(*, url: str, token: str = "") -> urllib.request.Request:
     parsed = urlparse(str(url))
     hostname = str(parsed.hostname or "").strip().lower()
-    headers = {"Authorization": f"Bearer {token}"}
-    if hostname == "api.github.com":
-        headers["Accept"] = "application/vnd.github+json"
-        headers["X-GitHub-Api-Version"] = "2022-11-28"
+    headers = _github_api_request_headers(url=str(url))
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
     return urllib.request.Request(str(url), headers=headers)
+
+
+def _github_api_request_headers(*, url: str) -> dict[str, str]:
+    parsed = urlparse(str(url))
+    hostname = str(parsed.hostname or "").strip().lower()
+    if hostname != "api.github.com":
+        return {}
+    headers = {"X-GitHub-Api-Version": "2022-11-28"}
+    if "/releases/assets/" in parsed.path:
+        headers["Accept"] = "application/octet-stream"
+    else:
+        headers["Accept"] = "application/vnd.github+json"
+    return headers
 
 
 def release_cache_dir(*, repo_root: str | Path, version: str) -> Path:
