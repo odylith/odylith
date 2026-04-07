@@ -27,6 +27,7 @@ jobs:
       - name: Repair repo-local runtime bootstrap
         run: hatch run python -m odylith.cli doctor --repo-root . --repair
       - name: Show lane status
+        continue-on-error: true
         run: make lane-show
       - name: Run release candidate proof
         run: make release-candidate
