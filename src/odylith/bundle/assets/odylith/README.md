@@ -1,25 +1,26 @@
 # Odylith
 
-This directory is the bundled Odylith reference tree shipped into installed
-repos. First install bootstraps a consumer-owned `odylith/` tree, while the
-managed runtime itself lives under `.odylith/`.
+This directory is the Odylith product repo's own `odylith/` tree. Installed
+repos get a smaller consumer-owned `odylith/` tree, while the managed runtime
+itself lives under `.odylith/`.
 
-This bundled tree is consumer-facing. It ships the installed guidance, skills,
-and reference surfaces for repo-local Odylith use.
+This tree also carries maintainer-only release guidance and skills that do not
+ship into consumer repos. Those live under `odylith/maintainer/`. Shared
+consumer-safe guidance lives under `odylith/agents-guidelines/` and
+`odylith/skills/`.
 
-Odylith runs on its own managed runtime under `.odylith/`, but that does not
-change what files the agent may edit or which toolchain proves repo code. Keep
-these boundaries explicit:
+Odylith runs on its own managed runtime under `.odylith/`, but keep these
+three boundaries separate:
 
-- runtime boundary: which interpreter runs Odylith
+- runtime boundary: which interpreter runs Odylith itself
 - write boundary: which files the agent may edit
 - validation boundary: which toolchain proves the target repo still works
 
 `./.odylith/bin/odylith` uses the Odylith runtime. Repo code still validates on
 the repo's own `python`, `uv`, Poetry, Conda, or equivalent toolchain.
-Consumer installs stay on the verified managed runtime described in this
-bundle. Hosted install currently supports macOS (Apple Silicon) and Linux
-(`x86_64`, `ARM64`). For runtime and release-trust details, see
+Consumer repos stay on pinned runtime only; detached `source-local` is
+maintainer-only. Hosted install currently supports macOS (Apple Silicon) and
+Linux (`x86_64`, `ARM64`). For trust and release details, see
 `SECURITY_POSTURE.md`.
 
 ## First Run
@@ -38,7 +39,7 @@ as Codex or Claude Code. In Odylith, the agent is the execution interface and
 `odylith/index.html` is the operating surface that keeps intent, constraints,
 topology, and execution state visible.
 
-For the normal first grounded turn, run:
+For the default grounded first turn, run:
 
 ```bash
 ./.odylith/bin/odylith start --repo-root .
@@ -56,10 +57,10 @@ Once concrete nouns exist, use:
 ./.odylith/bin/odylith query --repo-root . "<text>"
 ```
 
-On a successful first local install, Odylith tries to open
-`odylith/index.html` automatically when the session is local and interactive.
-Use `ODYLITH_NO_BROWSER=1` for the hosted bootstrap or `odylith install --no-open`
-for direct CLI installs if you want to suppress that.
+On a successful local interactive install, Odylith tries to open
+`odylith/index.html` automatically. Use `ODYLITH_NO_BROWSER=1` for the hosted
+bootstrap or `odylith install --no-open` for direct CLI installs if you want
+to suppress that.
 
 > [!CAUTION]
 > **Odylith is designed to anchor to a git repo root.** If there is no
@@ -76,9 +77,7 @@ Before activation, the installer picks the install boundary like this:
   `AGENTS.md` in place.
 
 If no `.git` exists yet, install still succeeds, but Git-aware features stay
-limited until the folder is Git-backed. Today that mainly means working-tree
-intelligence, background autospawn, and git-fsmonitor watcher help stay
-reduced.
+limited until the folder is Git-backed.
 
 Starter prompt for your agent:
 
@@ -107,36 +106,44 @@ Here are some starter prompt inspirations:
 - Delete: "Delete developer note [N###]."
 
 For more prompt examples, see
-[Starter Prompt Inspirations](../docs/STARTER_PROMPT_INSPIRATIONS.md).
-
-If the local shell is already open, the Cheatsheet drawer in
-`odylith/index.html` mirrors the strongest prompt patterns.
+[Starter Prompt Inspirations](../docs/STARTER_PROMPT_INSPIRATIONS.md). If the
+local shell is already open, the Cheatsheet drawer in `odylith/index.html`
+mirrors the strongest prompt patterns.
 
 The shell refreshes itself as Odylith updates local surfaces.
 
+Keep ordinary progress updates task-first and human. When Odylith's grounded
+view changes the next move, weave that fact into the update instead of
+branding it by default; explicit `Odylith Insight:`, `Odylith History:`, or
+`Odylith Risks:` lines should feel rare and earned.
+
 If a final handoff benefits from naming Odylith directly, keep it to one short
-`Odylith assist:` line. Prefer `**Odylith assist:**` when Markdown formatting
-is available. Lead with the user win, not Odylith mechanics. When the evidence
-supports it, frame the edge against `odylith_off` or the broader unguided
-path. Keep it soulful, friendly, authentic, and factual. Use only concrete
-observed counts, measured deltas, or validation outcomes.
+`Odylith Assist:` line. Prefer `**Odylith Assist:**` when Markdown formatting
+is available. Lead with the user win, link updated governance ids inline when
+they were actually changed, and ground the line in concrete observed counts,
+measured deltas, or validation outcomes. When the evidence supports it, frame
+the edge against `odylith_off` or the broader unguided path. Keep it crisp,
+authentic, clear, simple, insightful, soulful, friendly, free-flowing, human,
+and factual. Silence is better than filler.
 
 ## What Is Here
 
 - `AGENTS.md`
   Odylith guidance entrypoint for this tree.
 - `agents-guidelines/`
-  Shared consumer-safe Odylith guidance for installed trees.
+  Shared Odylith operating guidance.
 - `skills/`
-  Bundled consumer-safe and shared Odylith skills.
+  Shared Odylith skills intended to stay consumer-safe.
+- `maintainer/`
+  Maintainer-only release guidance and skills for the Odylith product repo.
 - `FAQ.md`, `INSTALL.md`, `OPERATING_MODEL.md`, `PRODUCT_COMPONENTS.md`
-  Product-level references that apply across this tree.
+  Product-level reference docs for this tree.
 - `SECURITY_POSTURE.md`
   Runtime-trust, supply-chain, and process-lifetime contract.
 - `radar/`, `atlas/`, `compass/`, `registry/`, `casebook/`
-  Odylith governance surface roots, with surface-owned truth and specs.
+  Governance surface roots, with surface-owned truth and specs.
 - `technical-plans/`
-  Technical-plan root shipped with the product reference tree.
+  Technical-plan root for Odylith-governed work in this repo.
 - `surfaces/`
   Shell-wide surface assets and cross-surface notes.
 - `runtime/`
@@ -144,6 +151,8 @@ observed counts, measured deltas, or validation outcomes.
   source state.
 - `INSTALL_AND_UPGRADE_RUNBOOK.md`
   Install, upgrade, and repair procedure for this tree.
+- `MAINTAINER_RELEASE_RUNBOOK.md`
+  Maintainer release order and benchmark publication reference.
 
 ## Recovery
 
@@ -151,12 +160,6 @@ If this tree looks incomplete or stale, run:
 
 ```bash
 ./.odylith/bin/odylith doctor --repo-root . --repair
-```
-
-If the main launcher is missing, use:
-
-```bash
-./.odylith/bin/odylith-bootstrap doctor --repo-root . --repair
 ```
 
 If local cache or learned runtime state looks poisoned, run:
@@ -189,11 +192,10 @@ it from the compressed archive with:
 
 ## License And Attribution
 
-Odylith itself is Apache-2.0 under the product `LICENSE` and `NOTICE`
+Odylith itself is Apache-2.0 under the repo-root `LICENSE` and `NOTICE`
 materials.
 
-Maintained third-party attribution and acknowledgements live in
-`THIRD_PARTY_ATTRIBUTION.md` in the official Odylith repository and source
-distributions. Release validation in the Odylith source repo fails closed if
-the runtime dependency closure or bundled managed-runtime supplier inputs
+Maintained third-party attribution and acknowledgements live in the repo-root
+`THIRD_PARTY_ATTRIBUTION.md` file. The maintainer validation lane fails closed
+if the runtime dependency closure or bundled managed-runtime supplier inputs
 drift into unknown, commercial/proprietary, or otherwise disallowed licenses.

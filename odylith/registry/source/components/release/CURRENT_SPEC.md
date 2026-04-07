@@ -53,6 +53,11 @@ claims aligned for public publication.
 - Unpublished release tags are reusable reservations until a real GitHub
   release exists for that tag.
 - The release session is local operational state, not tracked repo truth.
+- Benchmark-proof waivers are not local shell folklore. When a release needs
+  a maintainer-only exception, it must be recorded in
+  `odylith/runtime/source/release-maintainer-overrides.v1.json` with an exact
+  version, reason, and owner so PR gating, lane status, and the final release
+  story can agree on why benchmark proof was advisory instead of blocking.
 - Preflight is the session initializer. Dispatch reuses the active session
   rather than recomputing a version.
 - The canonical release lane is authoritative only when it runs from the
@@ -67,6 +72,8 @@ claims aligned for public publication.
   the platform, selects the correct managed assets, verifies release evidence,
   and finishes activation without asking the developer to choose install-time
   options.
+  The canonical public bootstrap command is
+  `curl -fsSL https://odylith.ai/install.sh | bash`.
 - Supported public install and normal pinned upgrade remain full-stack by
   default, but release transport is split into a smaller base runtime plus a
   separately versioned managed context-engine pack so uploads, downloads, and

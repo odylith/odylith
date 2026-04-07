@@ -90,19 +90,24 @@ def test_benchmark_corpus_keeps_final_only_odylith_assist_closeout_contract() ->
     contract = dict(program.get("closeout_contract", {}))
 
     assert contract.get("odylith_brand_note") == "final_only_evidence_backed"
-    assert contract.get("allowed_label") == "Odylith assist:"
-    assert contract.get("preferred_markdown_label") == "**Odylith assist:**"
+    assert contract.get("allowed_label") == "Odylith Assist:"
+    assert contract.get("preferred_markdown_label") == "**Odylith Assist:**"
     assert contract.get("benchmark_tax_policy") == "metadata_only"
     rules = [str(item).strip() for item in contract.get("rules", []) if str(item).strip()]
 
-    assert len(rules) >= 8
-    assert any("mid-task narration task-first" in rule for rule in rules)
-    assert any("at most one short Odylith assist line" in rule for rule in rules)
+    assert len(rules) >= 9
+    assert any("mid-task narration task-first" in rule or "weave Odylith facts into normal updates" in rule for rule in rules)
+    assert any("Odylith Insight" in rule and "Odylith History" in rule and "Odylith Risks" in rule for rule in rules)
+    assert any("at most one short Odylith Assist line" in rule for rule in rules)
     assert any("bold Markdown label" in rule for rule in rules)
-    assert any("Lead with the user win" in rule for rule in rules)
+    assert any("Lead with the user win" in rule and "updated governance ids inline" in rule for rule in rules)
     assert any("broader unguided path" in rule for rule in rules)
-    assert any("soulful, friendly, authentic, and factual" in rule for rule in rules)
-    assert any("observed counts, measured deltas, or validation outcomes" in rule for rule in rules)
+    assert any("crisp, authentic, clear, simple, insightful" in rule for rule in rules)
+    assert any(
+        "observed counts, measured deltas, or validation outcomes" in rule
+        and "silence is better than filler" in rule.lower()
+        for rule in rules
+    )
     assert any("clear user-facing delta" in rule for rule in rules)
     assert any("metadata-only" in rule and "required paths" in rule for rule in rules)
 
@@ -119,6 +124,20 @@ def test_benchmark_closeout_contract_does_not_add_odylith_chatter_required_paths
 
         assert "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md" not in required_paths
         assert not any("odylith-chatter" in command for command in validation_commands)
+
+
+def test_benchmark_closeout_contract_does_not_add_delivery_artifact_required_paths() -> None:
+    corpus = _load(PUBLIC_CORPUS)
+    benchmark_scenarios = [case for case in corpus.get("scenarios", []) if isinstance(case, dict)]
+
+    assert benchmark_scenarios
+    for case in benchmark_scenarios:
+        benchmark = dict(case.get("benchmark", {}))
+        required_paths = [str(token).strip() for token in benchmark.get("required_paths", []) if str(token).strip()]
+        validation_commands = [str(token).strip() for token in benchmark.get("validation_commands", []) if str(token).strip()]
+
+        assert "odylith/runtime/delivery_intelligence.v4.json" not in required_paths
+        assert not any("delivery_intelligence.v4.json" in command for command in validation_commands)
 
 
 def test_grounded_hot_path_expectations_allow_compact_packets_for_current_runtime() -> None:

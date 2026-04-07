@@ -1,0 +1,13 @@
+{
+  "contract": "odylith_release_maintainer_overrides.v1",
+  "updated_utc": "2026-04-07T22:05:00Z",
+  "benchmark_proof_overrides": [
+    {
+      "version": "0.1.9",
+      "mode": "skip_proof_and_compare",
+      "reason": "Maintainer special request. Full benchmark audit and proof refresh move to the next release.",
+      "owner": "freedom-research",
+      "updated_utc": "2026-04-07T22:05:00Z"
+    }
+  ]
+}

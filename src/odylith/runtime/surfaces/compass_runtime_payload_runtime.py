@@ -29,6 +29,18 @@ def _scoped_brief_provider_allowed(*, refresh_profile: str) -> bool:
     return False
 
 
+def _is_default_traceability_warning(row: Mapping[str, Any]) -> bool:
+    severity = str(row.get("severity", "")).strip().lower()
+    audience = str(row.get("audience", "operator")).strip().lower() or "operator"
+    surface_visibility = str(row.get("surface_visibility", "")).strip().lower()
+    if surface_visibility not in {"default", "diagnostics"}:
+        if audience == "maintainer" or severity not in {"warning", "error"}:
+            surface_visibility = "diagnostics"
+        else:
+            surface_visibility = "default"
+    return audience != "maintainer" and surface_visibility == "default" and severity in {"warning", "error"}
+
+
 def _build_runtime_payload(
     *,
     repo_root: Path,
@@ -553,9 +565,9 @@ def _build_runtime_payload(
         for row in warnings:
             if not isinstance(row, Mapping):
                 continue
-            severity = str(row.get("severity", "")).strip().lower()
-            if severity not in {"warning", "error"}:
+            if not _is_default_traceability_warning(row):
                 continue
+            severity = str(row.get("severity", "")).strip().lower()
             entry = {
                 "idea_id": str(row.get("idea_id", "")).strip(),
                 "severity": severity,

@@ -1754,6 +1754,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       ].join(" ").toLowerCase();
     }
 
+    function normalizeSearchToken(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "");
+    }
+
     function componentExactMatch(row, needle) {
       const normalizedNeedle = String(needle || "").trim().toLowerCase();
       if (!normalizedNeedle) return false;
@@ -1761,7 +1767,13 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const name = String(row.name || "").trim().toLowerCase();
       if (componentId === normalizedNeedle || name === normalizedNeedle) return true;
       const aliases = Array.isArray(row.aliases) ? row.aliases : [];
-      return aliases.some((alias) => String(alias || "").trim().toLowerCase() === normalizedNeedle);
+      if (aliases.some((alias) => String(alias || "").trim().toLowerCase() === normalizedNeedle)) return true;
+      const compactNeedle = normalizeSearchToken(normalizedNeedle);
+      if (!compactNeedle) return false;
+      const exactTokens = [componentId, name, ...aliases.map((alias) => String(alias || "").trim().toLowerCase())]
+        .map((token) => normalizeSearchToken(token))
+        .filter(Boolean);
+      return exactTokens.includes(compactNeedle);
     }
 
     function readState() {
@@ -1900,6 +1912,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     function filteredComponents() {
       const needle = String(searchEl.value || "").trim().toLowerCase();
+      const normalizedNeedle = normalizeSearchToken(needle);
       const categoryFilterToken = String(activeCategory || "all").trim().toLowerCase();
       const qualificationFilterToken = String(activeQualification || "all").trim().toLowerCase();
       const scoped = allComponents
@@ -1919,16 +1932,25 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           return leftName.localeCompare(rightName);
         });
       if (!needle) return scoped;
-      const exactIdMatches = scoped.filter((row) => String(row.component_id || "").trim().toLowerCase() === needle);
+      const exactIdMatches = scoped.filter((row) => componentExactMatch(row, needle) && String(row.component_id || "").trim().toLowerCase() === needle);
       if (exactIdMatches.length) return exactIdMatches;
-      const exactNameMatches = scoped.filter((row) => String(row.name || "").trim().toLowerCase() === needle);
+      const exactNameMatches = scoped.filter((row) => componentExactMatch(row, needle) && String(row.name || "").trim().toLowerCase() === needle);
       if (exactNameMatches.length) return exactNameMatches;
       const exactAliasMatches = scoped.filter((row) => {
         const aliases = Array.isArray(row.aliases) ? row.aliases : [];
-        return aliases.some((alias) => String(alias || "").trim().toLowerCase() === needle);
+        return componentExactMatch(row, needle) && aliases.some((alias) => String(alias || "").trim().toLowerCase() === needle);
       });
       if (exactAliasMatches.length) return exactAliasMatches;
-      return scoped.filter((row) => componentSearchText(row).includes(needle));
+      const normalizedExactMatches = normalizedNeedle
+        ? scoped.filter((row) => componentExactMatch(row, normalizedNeedle))
+        : [];
+      if (normalizedExactMatches.length) return normalizedExactMatches;
+      return scoped.filter((row) => {
+        const searchText = componentSearchText(row);
+        if (searchText.includes(needle)) return true;
+        if (!normalizedNeedle) return false;
+        return normalizeSearchToken(searchText).includes(normalizedNeedle);
+      });
     }
 
     function groupedByCategory(items) {

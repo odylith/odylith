@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import Mapping, Sequence
 
 from odylith.install import runtime as runtime_module
 
@@ -128,3 +128,27 @@ def inspect_runtime_source(
         detail="No active Odylith runtime is currently staged.",
         trust_degraded=False,
     )
+
+
+def trust_only_runtime_failure(
+    *,
+    runtime_reasons: Sequence[str],
+    trust_reasons: Sequence[str],
+    trust_degraded: bool,
+) -> bool:
+    if not trust_degraded:
+        return False
+    normalized_trust_reasons = {str(reason).strip() for reason in trust_reasons if str(reason).strip()}
+    if not normalized_trust_reasons:
+        return False
+    observed_runtime_reasons = [str(reason).strip() for reason in runtime_reasons if str(reason).strip()]
+    if not observed_runtime_reasons:
+        return False
+    for reason in observed_runtime_reasons:
+        normalized_reason = reason.removeprefix("repo launcher ").removeprefix("bootstrap launcher ").strip()
+        if normalized_reason in normalized_trust_reasons:
+            continue
+        if normalized_reason.startswith("active runtime wrapper targets unverified managed runtime:"):
+            continue
+        return False
+    return True

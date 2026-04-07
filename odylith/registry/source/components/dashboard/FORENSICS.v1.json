@@ -28,12 +28,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 29,
+    "explicit_event_count": 31,
     "mapped_workstream_evidence_count": 2,
     "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 29
+    "timeline_event_count": 31
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -43,6 +43,56 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 52,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.8 for the current repository; repo pin is 0.1.8.",
+      "ts_iso": "2026-04-06T19:17:42-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 51,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.7 for the current repository; repo pin is 0.1.7.",
+      "ts_iso": "2026-04-06T18:12:53-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/install.json",
@@ -296,6 +346,7 @@
         "odylith-chatter",
         "odylith-context-engine",
         "odylith-memory-backend",
+        "odylith-remote-retrieval",
         "radar",
         "registry",
         "release",
@@ -913,6 +964,7 @@
   "why_tracked": "Controls the top-level surface boundary, navigation model, and installed product shell contract.",
   "workstreams": [
     "B-001",
+    "B-058",
     "B-006",
     "B-002",
     "B-005",

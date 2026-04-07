@@ -438,7 +438,8 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [
         "D-002",
-        "D-020"
+        "D-020",
+        "D-025"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
       "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
@@ -449,7 +450,7 @@
       },
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 2,
+        "linked_diagram_count": 3,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -1047,7 +1048,7 @@
     {
       "idea_id": "B-027",
       "title": "Odylith Lane Boundary, Runtime, and Toolchain Clarity",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -1069,7 +1070,7 @@
         "D-021"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -1087,7 +1088,7 @@
     {
       "idea_id": "B-028",
       "title": "Odylith Starter Launchpad UX and Visual Redesign",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -1105,7 +1106,7 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -1123,7 +1124,7 @@
     {
       "idea_id": "B-029",
       "title": "Odylith Install-Time Gitignore Bootstrap for Managed State",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -1139,7 +1140,7 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -1192,7 +1193,7 @@
     {
       "idea_id": "B-031",
       "title": "Odylith First-Turn Bootstrap and Short-Form Grounding Commands",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -1208,9 +1209,13 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-018",
+        "D-020"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -1218,7 +1223,7 @@
       },
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 3,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -1943,7 +1948,7 @@
     {
       "idea_id": "B-051",
       "title": "Odylith Runtime Posture Reporting Explains Wrapped Runtime Degradation",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-048",
       "workstream_children": [],
@@ -1963,14 +1968,14 @@
         "D-020"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -2202,6 +2207,87 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-058",
+      "title": "Odylith Memory Substrate Registry Componentization and Spec Deepening",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-001",
+        "B-010",
+        "B-045"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-018",
+        "D-020",
+        "D-025"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 4,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-059",
+      "title": "Odylith Atlas Memory Substrate and Runtime Topology Refresh",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-031",
+        "B-058"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-018",
+        "D-020",
+        "D-025"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 4,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "execution_programs": [],
@@ -2392,21 +2478,21 @@
       "id": "B-027",
       "type": "workstream",
       "label": "Odylith Lane Boundary, Runtime, and Toolchain Clarity",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
     },
     {
       "id": "B-028",
       "type": "workstream",
       "label": "Odylith Starter Launchpad UX and Visual Redesign",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md"
     },
     {
       "id": "B-029",
       "type": "workstream",
       "label": "Odylith Install-Time Gitignore Bootstrap for Managed State",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md"
     },
     {
@@ -2420,7 +2506,7 @@
       "id": "B-031",
       "type": "workstream",
       "label": "Odylith First-Turn Bootstrap and Short-Form Grounding Commands",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md"
     },
     {
@@ -2560,7 +2646,7 @@
       "id": "B-051",
       "type": "workstream",
       "label": "Odylith Runtime Posture Reporting Explains Wrapped Runtime Degradation",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md"
     },
     {
@@ -2604,6 +2690,20 @@
       "label": "Odylith Machine-Level Verified Runtime Store for Cross-Repo Reuse",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md"
+    },
+    {
+      "id": "B-058",
+      "type": "workstream",
+      "label": "Odylith Memory Substrate Registry Componentization and Spec Deepening",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md"
+    },
+    {
+      "id": "B-059",
+      "type": "workstream",
+      "label": "Odylith Atlas Memory Substrate and Runtime Topology Refresh",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
     },
     {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
@@ -2984,6 +3084,13 @@
       "file": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd"
     },
     {
+      "id": "diagram:D-025",
+      "type": "diagram",
+      "label": "Odylith Memory Substrate Compile, Retrieval, and Packet Topology",
+      "diagram_id": "D-025",
+      "file": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.mmd"
+    },
+    {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -3110,10 +3217,52 @@
       "file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md"
     },
     {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+      "file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md"
+    },
+    {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
       "file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
@@ -3132,30 +3281,6 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
       "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md"
-    },
-    {
-      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
-      "type": "plan",
-      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
-      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md"
-    },
-    {
-      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
-      "type": "plan",
-      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
-      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md"
-    },
-    {
-      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
-      "type": "plan",
-      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
-      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
-    },
-    {
-      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
-      "type": "plan",
-      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
-      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
@@ -3252,6 +3377,11 @@
     {
       "source": "B-001",
       "target": "B-035",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-001",
+      "target": "B-058",
       "edge_type": "depends_on"
     },
     {
@@ -3821,12 +3951,22 @@
     },
     {
       "source": "B-010",
+      "target": "B-058",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-010",
       "target": "diagram:D-002",
       "edge_type": "diagram_linkage"
     },
     {
       "source": "B-010",
       "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-010",
+      "target": "diagram:D-025",
       "edge_type": "diagram_linkage"
     },
     {
@@ -4246,7 +4386,7 @@
     },
     {
       "source": "B-027",
-      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -4266,7 +4406,7 @@
     },
     {
       "source": "B-028",
-      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -4276,7 +4416,7 @@
     },
     {
       "source": "B-029",
-      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -4331,7 +4471,27 @@
     },
     {
       "source": "B-031",
-      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+      "target": "B-059",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-031",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "diagram:D-018",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "plan:odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -4478,6 +4638,11 @@
       "source": "B-044",
       "target": "diagram:D-024",
       "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-045",
+      "target": "B-058",
+      "edge_type": "depends_on"
     },
     {
       "source": "B-045",
@@ -4630,6 +4795,11 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-051",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
       "source": "B-052",
       "target": "diagram:D-018",
       "edge_type": "diagram_linkage"
@@ -4698,6 +4868,61 @@
       "source": "B-057",
       "target": "diagram:D-019",
       "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "B-059",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-058",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "diagram:D-018",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "diagram:D-025",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-059",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "diagram:D-018",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "diagram:D-025",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+      "edge_type": "promoted_to_plan"
     }
   ],
   "coverage": {
@@ -4766,7 +4991,7 @@
     },
     "B-010": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 2,
+      "linked_diagram_count": 3,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -4913,7 +5138,7 @@
     },
     "B-031": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 3,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -5052,7 +5277,7 @@
       "code_reference_count": 0
     },
     "B-051": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -5099,29 +5324,56 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-058": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 4,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-059": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 4,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
     {
       "severity": "info",
+      "audience": "maintainer",
+      "surface_visibility": "diagnostics",
       "category": "topology_conflict",
-      "message": "B-022: autofix skipped `workstream_split_into` due to metadata conflict",
-      "idea_id": "B-022",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md: current='B-038,B-039' candidate='B-038,B-039,B-041,B-042,B-043,B-044'. Reason: reciprocal lineage inferred from `workstream_split_from`.",
+      "message": "B-010: autofix skipped `related_diagram_ids` due to metadata conflict",
+      "idea_id": "B-010",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md: current='D-002,D-020' candidate='D-025'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
+      "source": "odylith/radar/traceability-autofix-report.v1.json"
+    },
+    {
+      "severity": "info",
+      "audience": "maintainer",
+      "surface_visibility": "diagnostics",
+      "category": "topology_conflict",
+      "message": "B-058: autofix skipped `related_diagram_ids` due to metadata conflict",
+      "idea_id": "B-058",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md: current='D-002,D-020,D-025' candidate='D-002,D-018,D-020,D-025'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
     }
   ],
   "warnings": [
-    "B-022: autofix skipped `workstream_split_into` due to metadata conflict"
+    "B-010: autofix skipped `related_diagram_ids` due to metadata conflict",
+    "B-058: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 57,
+    "workstream_count": 59,
     "execution_program_count": 0,
     "execution_wave_count": 0,
-    "node_count": 145,
-    "edge_count": 302,
-    "warning_count": 1,
-    "warning_item_count": 1
+    "node_count": 151,
+    "edge_count": 322,
+    "warning_count": 2,
+    "warning_item_count": 2
   },
-  "generated_utc": "2026-04-07 01:03:59Z"
+  "generated_utc": "2026-04-07 20:37:03Z"
 }

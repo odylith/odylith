@@ -1,8 +1,8 @@
 # Odylith Context Engine
-Last updated: 2026-04-05
+Last updated: 2026-04-07
 
 
-Last updated (UTC): 2026-04-05
+Last updated (UTC): 2026-04-07
 
 ## Purpose
 Odylith Context Engine is the deterministic local grounding runtime for the
@@ -48,9 +48,14 @@ claims, and optionally materializes faster local and remote retrieval layers.
   `odylith/agents-guidelines/indexable-guidance-chunks.v1.json`, with legacy
   fallback only for backward compatibility and family hints flowing into packet
   finalization plus retrieval.
-- The [Odylith Memory Backend](../odylith-memory-backend/CURRENT_SPEC.md)
-  consumes compiler outputs and persists the local retrieval plus durable
-  judgment-memory substrate; it does not replace tracked repo truth.
+- Registry treats the memory substrate as a small family of governed sibling
+  components rather than one hidden blob:
+  [Odylith Projection Bundle](../odylith-projection-bundle/CURRENT_SPEC.md),
+  [Odylith Projection Snapshot](../odylith-projection-snapshot/CURRENT_SPEC.md),
+  [Odylith Memory Backend](../odylith-memory-backend/CURRENT_SPEC.md),
+  [Odylith Remote Retrieval](../odylith-remote-retrieval/CURRENT_SPEC.md), and
+  [Odylith Memory Contracts](../odylith-memory-contracts/CURRENT_SPEC.md).
+  The Context Engine orchestrates them; it does not erase their boundaries.
 
 ## Public Command Surface
 Public entrypoint: `odylith context-engine`
@@ -123,13 +128,20 @@ Operational guidance lives in
 - `tooling_guidance_catalog.py`
   Compiled guidance-catalog caching.
 - `src/odylith/runtime/memory/odylith_projection_bundle.py`
-  Compiler-owned JSONL bundle contract.
+  Compiler-owned JSONL bundle contract, governed by
+  [Odylith Projection Bundle](../odylith-projection-bundle/CURRENT_SPEC.md).
 - `src/odylith/runtime/memory/odylith_projection_snapshot.py`
-  Compiler-owned JSON snapshot contract.
+  Compiler-owned JSON snapshot contract, governed by
+  [Odylith Projection Snapshot](../odylith-projection-snapshot/CURRENT_SPEC.md).
 - `src/odylith/runtime/memory/odylith_memory_backend.py`
-  Retrieval substrate owned by Odylith Memory Backend.
+  Local retrieval substrate owned by
+  [Odylith Memory Backend](../odylith-memory-backend/CURRENT_SPEC.md).
 - `src/odylith/runtime/memory/odylith_remote_retrieval.py`
-  Optional Vespa-backed shared retrieval augmentation.
+  Optional Vespa-backed shared retrieval augmentation, governed by
+  [Odylith Remote Retrieval](../odylith-remote-retrieval/CURRENT_SPEC.md).
+- `src/odylith/runtime/memory/tooling_memory_contracts.py`
+  Shared packet and evidence-pack compaction contract, governed by
+  [Odylith Memory Contracts](../odylith-memory-contracts/CURRENT_SPEC.md).
 
 ## Guidance Catalog Contract
 
@@ -195,7 +207,7 @@ Operational guidance lives in
   Benchmark history and latest reports.
 
 ## Core Read Models
-### Projection bundle
+### [Odylith Projection Bundle](../odylith-projection-bundle/CURRENT_SPEC.md)
 `odylith_projection_bundle.py` writes a bundle manifest plus two JSONL streams:
 - `documents.v1.jsonl`
   Entity and evidence documents suitable for lexical or vector retrieval.
@@ -205,7 +217,7 @@ Operational guidance lives in
 The manifest records version, compile time, scope, input fingerprint,
 projection fingerprint, and the relative paths to the document and edge files.
 
-### Projection snapshot
+### [Odylith Projection Snapshot](../odylith-projection-snapshot/CURRENT_SPEC.md)
 `odylith_projection_snapshot.py` writes one JSON snapshot containing:
 - version and compile metadata
 - projection fingerprint and input fingerprint
@@ -218,7 +230,7 @@ This is the deterministic fallback read model when optional local memory
 dependencies are absent or when the managed context-engine pack is missing or
 unhealthy.
 
-### Local memory backend
+### [Odylith Memory Backend](../odylith-memory-backend/CURRENT_SPEC.md)
 `odylith_memory_backend.py` is optional in the code path and activates only
 when `lancedb`, `pyarrow`, and `tantivy` are available. In the supported
 managed-runtime lane, those dependencies are shipped through the managed
@@ -237,7 +249,7 @@ root now stores:
 The backend is derived from the compiler bundle plus compact runtime evidence,
 not from direct repo scans.
 
-### Remote retrieval augmentation
+### [Odylith Remote Retrieval](../odylith-remote-retrieval/CURRENT_SPEC.md)
 `odylith_remote_retrieval.py` is optional and configured via environment:
 - `ODYLITH_VESPA_URL`
 - `ODYLITH_VESPA_SCHEMA`
@@ -434,3 +446,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-26: Promoted the public repo runtime, memory, and packetization stack into Odylith's own governed component inventory so the product can ground and inspect itself without consumer-owned specs. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-03-28: Added durable judgment memory, persisted it beside the local memory backend, and promoted the memory backend into a first-class Registry component so governed slice continuity can survive across sessions without polluting hot-path packets. (Plan: [B-010](odylith/radar/radar.html?view=plan&workstream=B-010))
 - 2026-04-05: Restored canonical benchmark guidance memory, passed family hints through packet finalization into retrieval, and documented the fail-closed boundedness contract that keeps weak-family proof slices deterministic across warm and cold cache posture. (Plan: [B-038](odylith/radar/radar.html?view=plan&workstream=B-038))
+- 2026-04-07: Promoted the hidden memory-substrate seams into governed sibling components so projection bundle, projection snapshot, remote retrieval, and packet contracts become explicit Registry truth instead of broad Context Engine footnotes. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))

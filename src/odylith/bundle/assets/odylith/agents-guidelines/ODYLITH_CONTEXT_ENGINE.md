@@ -1,7 +1,7 @@
 # Odylith Context Engine
 
 ## Core Rule
-- Use Odylith packets and Odylith surfaces first for most grounded repo work.
+- Use Odylith packets and Odylith surfaces first for most grounded repo work, including in Odylith's own product repo.
 - For Codex and Claude Code, Odylith-first retrieval is the default. Do not begin substantive repo work with ad-hoc `rg` or host-native search unless Odylith lacks seeds or explicitly recommends widening.
 - Prefer fail-closed narrowing over broad prompt floods.
 - Treat packet diagnostics and retained `routing_handoff` as part of the contract, not as consumer-facing chatter. Surface only the parts that materially change the work.
@@ -24,7 +24,8 @@
 - Use raw `rg`, targeted source reads, and direct tests only when Odylith cannot seed the slice from the prompt or worktree, or a packet reports `full_scan_recommended`, `diagram_watch_gaps`, unresolved ambiguity, or another explicit widen signal.
 - After the evidence cone is grounded, stay on the smallest fitting Odylith packet by default and only widen back to focused `rg`, targeted tests, and direct source reads when the packet tells you to widen.
 - In consumer commentary, keep the packet step implicit. Describe narrowing, exact-ref lookup, or context recovery in task terms. If an earlier repo-local start attempt degraded but work can continue, keep that history out of the update unless it is still the live blocker.
-- If you mention Odylith by name in the final handoff, keep it to one short `Odylith assist:` line. Prefer `**Odylith assist:**` when Markdown formatting is available. Lead with the user win, not Odylith mechanics. When the evidence supports it, frame the edge against `odylith_off` or the broader unguided path. Back it with concrete observed counts, measured deltas, or validation outcomes. Keep it soulful, friendly, authentic, and factual; omit it when the evidence is thin or the user-facing delta is not clear.
+- Keep Odylith ambient by default during work. Weave grounded packet facts into normal commentary when they materially change the next move, and only emit explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` lines when that signal is strong enough to deserve the interruption.
+- If you mention Odylith by name in the final handoff, keep it to one short `Odylith Assist:` line. Prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance ids inline when they were actually changed, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Use only concrete observed counts, measured deltas, or validation outcomes. Silence is better than filler. Omit it when the evidence is thin or the user-facing delta is not clear.
 
 ## Packet Ladder
 - `impact` is the default grounded coding packet for explicit paths and implementation slices.
@@ -49,10 +50,10 @@
 - If `selection_state=ambiguous|none`, `working_tree_scope_degraded=true`, `diagram_watch_gaps` is present, or `full_scan_recommended=true`, widen back to raw discovery before acting.
 
 ## Runtime Contract
-- The Odylith context-engine runtime is the canonical compiler for local projections built from the component registry, knowledge-base docs, code/test structure, Codex events, and advisory local pytest/session state.
+- The Odylith context-engine runtime is the canonical compiler for local maintainer projections built from the component registry, knowledge-base docs, code/test structure, Codex events, and advisory local pytest/session state.
 - `odylith context-engine` is the only supported daemon/client surface for querying those projections.
 - Daemon request/response payloads, local projection/session schemas, and cache-backed lookup inputs must evolve additively and fail open to standalone parsing.
-- Local state under `.odylith/runtime/` and `.odylith/cache/odylith-context-engine/` is advisory local state only and must never become tracked or canonical repo truth.
+- Local state under `.odylith/runtime/` and `.odylith/cache/odylith-context-engine/` is advisory maintainer state only and must never become tracked or canonical repo truth.
 - Non-in-process daemon reuse is local-only: accept Unix/TCP transport hints
   only when the owner pid is live, the TCP host stays loopback-only, and the
   request can carry the daemon auth token.

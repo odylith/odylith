@@ -70,13 +70,18 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "never prefix commentary with control-plane receipt labels" in block
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in block
     assert "literal commands" not in block
-    assert "At closeout, you may add at most one short `Odylith assist:` line" in block
-    assert "Prefer `**Odylith assist:**` when Markdown formatting is available" in block
-    assert "Lead with the user win, not Odylith mechanics." in block
+    assert "Keep normal commentary task-first and human." in block
+    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in block
+    assert "At closeout, you may add at most one short `Odylith Assist:` line" in block
+    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in block
+    assert "Lead with the user win" in block
+    assert "link updated governance ids inline when they were actually changed" in block
     assert "frame the edge against `odylith_off` or the broader unguided path" in block
-    assert "Keep it soulful, friendly, authentic, and factual, not slogan-like." in block
-    assert "Use only concrete observed counts, measured deltas, or validation outcomes" in block
-    assert "if you cannot show a user-facing delta, omit the line." in block
+    assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in block
+    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in block
+    assert "Use only concrete observed counts, measured deltas, or validation outcomes, and ground the line in concrete observed counts, measured deltas, or validation outcomes" not in block
+    assert "Silence is better than filler." in block
+    assert "At most one supplemental closeout line may appear" in block
     assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in block
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in block
     assert "stop at diagnosis and maintainer-ready feedback" in block

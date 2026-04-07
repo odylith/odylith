@@ -117,9 +117,77 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Human Readout" not in app_js
     assert "Nearby Change Guidance" not in app_js
     assert "Inspect Next" not in app_js
+    assert "function normalizeSearchToken(value)" in app_js
+    assert "function canonicalizeBugIdToken(value)" in app_js
+    assert "function bugSearchText(row)" in app_js
+    assert "function bugExactMatch(row, term)" in app_js
+    assert "if (bugExactMatch(row, term)) return true;" in app_js
+    assert "return normalizeSearchToken(searchText).includes(normalizedNeedle);" in app_js
     assert "Evidence and references" in app_js
     assert "Direct proof links" in app_js
     assert "No bug matches the current filters." not in app_js
     assert "Loading selected bug…" not in app_js
     assert "No structured detail sections were parsed from this entry." not in app_js
     assert "No bugs match the current filters and search text." not in app_js
+
+
+def test_casebook_payload_dedupes_overlapping_proof_links_from_evidence_refs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-01-example-bug.md"
+    bug_path.parent.mkdir(parents=True, exist_ok=True)
+    bug_path.write_text("# Example bug\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_bug_snapshot",
+        lambda **kwargs: [
+            {
+                "bug_id": "CB-999",
+                "bug_key": "odylith/casebook/bugs/2026-04-01-example-bug.md",
+                "title": "Casebook proof links repeat nearby evidence",
+                "date": "2026-04-01",
+                "severity": "P1",
+                "severity_token": "p1",
+                "status": "Open",
+                "status_token": "open",
+                "components": "`src/odylith/runtime/surfaces/render_casebook_dashboard.py`",
+                "component_tokens": ["casebook"],
+                "archive_bucket": "",
+                "source_path": "odylith/casebook/bugs/2026-04-01-example-bug.md",
+                "source_exists": True,
+                "is_open": True,
+                "is_open_critical": True,
+                "workstreams": ["B-025"],
+                "summary": "Direct proof links and evidence rows were echoing the same paths.",
+                "fields": {},
+                "detail_sections": [],
+                "code_refs": ["src/odylith/runtime/surfaces/render_casebook_dashboard.py"],
+                "doc_refs": [],
+                "test_refs": ["tests/unit/runtime/test_render_casebook_dashboard.py"],
+                "contract_refs": [],
+                "component_matches": [],
+                "diagram_refs": [],
+                "related_bug_refs": [],
+                "agent_guidance": {
+                    "lessons": [],
+                    "preflight_checks": [],
+                    "proof_paths": [
+                        "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+                        "tests/unit/runtime/test_render_casebook_dashboard.py",
+                    ],
+                },
+                "intelligence_coverage": {},
+                "search_text": "casebook proof links repeat nearby evidence",
+            }
+        ],
+    )
+
+    payload = renderer._build_payload(  # noqa: SLF001
+        repo_root=tmp_path,
+        output_path=tmp_path / "odylith" / "casebook" / "casebook.html",
+        runtime_mode="standalone",
+    )
+
+    bug = payload["bugs"][0]
+    assert bug["code_ref_links"]
+    assert bug["test_ref_links"]
+    assert bug["agent_guidance"]["proof_links"] == []

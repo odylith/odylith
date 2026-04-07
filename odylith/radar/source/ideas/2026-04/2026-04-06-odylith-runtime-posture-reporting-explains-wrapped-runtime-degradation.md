@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-051
 title: Odylith Runtime Posture Reporting Explains Wrapped Runtime Degradation
 date: 2026-04-06
@@ -15,7 +15,7 @@ ordering_score: 100
 ordering_rationale: Once trust drift is bounded and repair converges, Odylith still has to explain its posture honestly. A healthy-but-wrapped result that reads like a pinned runtime is a trust bug in the operator contract.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-048
@@ -51,8 +51,9 @@ commands.
 - centralize runtime-source/status derivation
 - classify trust-degraded wrapped runtime explicitly
 - make `version` explain why wrapped runtime is shown
-- make `doctor` report “healthy but trust-degraded” rather than implying full
-  pinned health
+- make `doctor` report one aligned trust-degraded posture message rather than
+  falling through the generic unhealthy reason list or implying full pinned
+  health
 
 ## Scope
 - install status derivation
@@ -106,4 +107,13 @@ between pinned and merely runnable, Odylith is teaching the wrong repair story.
   visible subtype
 
 ## Outcome
-- Bound to `B-051` under `B-048`.
+- Landed on 2026-04-07 under `B-048`.
+- `doctor_bundle(...)` now treats trust-only managed-runtime drift as a
+  trust-degraded wrapped-runtime posture instead of falling through the
+  generic failure summary, so `odylith doctor` and `odylith version` tell the
+  same trust story.
+- Focused proof now covers the real regression shape: a verified pinned
+  runtime that later gains an unexpected managed-runtime tree entry still
+  reports `wrapped_runtime` with trust-degraded detail in `version`, while
+  `doctor` stays healthy-but-trust-degraded and explicitly marks the product
+  repo not release-eligible.

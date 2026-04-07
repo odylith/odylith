@@ -425,8 +425,7 @@ initSharedQuickTooltips();
       if (!trigger) return;
       event.preventDefault();
       const ideaId = String(trigger.getAttribute("data-link-idea") || "").trim();
-      if (!ideaId || !allIdeaIds.has(ideaId)) return;
-      state.selectedIdeaId = ideaId;
+      if (!selectIdea(ideaId, { reveal: true })) return;
       render();
       el.detail?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -460,6 +459,48 @@ initSharedQuickTooltips();
       const token = String(value || "").trim().toLowerCase();
       if (token === "queued") return "idea";
       return token || "unknown";
+    }
+
+    function isExactIdeaIdQuery(query) {
+      return Boolean(query) && all.some((row) => String(row.idea_id || "").trim().toLowerCase() === query);
+    }
+
+    function rowMatchesQuery(row, query, exactIdeaQuery) {
+      if (!query) return true;
+      const ideaId = String(row.idea_id || "").trim().toLowerCase();
+      if (exactIdeaQuery) {
+        return ideaId === query;
+      }
+      const hay = String(row.search_text || [
+        row.idea_id,
+        row.title,
+        row.ordering_rationale,
+        row.rationale_text,
+        Array.isArray(row.rationale_bullets) ? row.rationale_bullets.join(" ") : "",
+      ].join(" ")).toLowerCase();
+      return hay.includes(query);
+    }
+
+    function rowMatchesFilters(row, options = {}) {
+      const query = String(options.query ?? state.query).trim().toLowerCase();
+      const exactIdeaQuery = Boolean(options.exactIdeaQuery ?? isExactIdeaIdQuery(query));
+      if (state.section !== "all" && row.section !== state.section) return false;
+      if (state.phase !== "all") {
+        if (row.section !== "execution") return false;
+        if (stageLabel(row.status) !== state.phase) return false;
+      }
+      if (state.activity !== "all") {
+        if (row.section !== "execution") return false;
+        const stateToken = normalizeExecutionState(row.execution_state);
+        const activity = (
+          stateToken === "actively_executing"
+          || stateToken === "planning_active"
+        ) ? "active" : "quiet";
+        if (activity !== state.activity) return false;
+      }
+      if (state.lane !== "all" && row.impacted_lanes !== state.lane) return false;
+      if (state.priority !== "all" && row.priority !== state.priority) return false;
+      return rowMatchesQuery(row, query, exactIdeaQuery);
     }
 
     function prettyLabel(value) {
@@ -529,6 +570,65 @@ initSharedQuickTooltips();
 
     seedSelect(el.lane, uniqueValues("impacted_lanes"), (value) => laneLabel(value));
     seedSelect(el.priority, uniqueValues("priority"));
+
+    function syncFilterControls() {
+      el.query.value = state.query;
+      el.section.value = state.section;
+      el.phase.value = state.phase;
+      el.activity.value = state.activity;
+      el.lane.value = state.lane;
+      el.priority.value = state.priority;
+    }
+
+    // Explicit deep-link navigation must reveal the requested workstream instead of
+    // silently falling back to the first row that still matches stale filters.
+    function revealIdeaSelection(ideaId) {
+      const row = all.find((candidate) => String(candidate.idea_id || "").trim() === ideaId);
+      if (!row) return false;
+      const query = String(state.query || "").trim().toLowerCase();
+      const exactIdeaQuery = isExactIdeaIdQuery(query);
+      if (!rowMatchesQuery(row, query, exactIdeaQuery)) {
+        state.query = "";
+      }
+      if (!rowMatchesFilters(row, { query: "", exactIdeaQuery: false })) {
+        if (state.section !== "all" && row.section !== state.section) {
+          state.section = "all";
+        }
+        if (state.phase !== "all") {
+          if (row.section !== "execution" || stageLabel(row.status) !== state.phase) {
+            state.phase = "all";
+          }
+        }
+        if (state.activity !== "all") {
+          const stateToken = normalizeExecutionState(row.execution_state);
+          const activity = (
+            stateToken === "actively_executing"
+            || stateToken === "planning_active"
+          ) ? "active" : "quiet";
+          if (row.section !== "execution" || activity !== state.activity) {
+            state.activity = "all";
+          }
+        }
+        if (state.lane !== "all" && row.impacted_lanes !== state.lane) {
+          state.lane = "all";
+        }
+        if (state.priority !== "all" && row.priority !== state.priority) {
+          state.priority = "all";
+        }
+      }
+      syncFilterControls();
+      return true;
+    }
+
+    function selectIdea(ideaId, options = {}) {
+      const token = String(ideaId || "").trim();
+      if (!token || !allIdeaIds.has(token)) return false;
+      if (options.reveal) {
+        revealIdeaSelection(token);
+      }
+      state.selectedIdeaId = token;
+      return true;
+    }
 
     function escapeHtml(value) {
       return String(value || "")
@@ -1161,38 +1261,8 @@ initSharedQuickTooltips();
 
     function applyFilters() {
       const q = state.query.trim().toLowerCase();
-      const exactIdeaIdQuery = q && all.some((row) => String(row.idea_id || "").trim().toLowerCase() === q);
-      return all.filter((row) => {
-        if (state.section !== "all" && row.section !== state.section) return false;
-        if (state.phase !== "all") {
-          if (row.section !== "execution") return false;
-          if (stageLabel(row.status) !== state.phase) return false;
-        }
-        if (state.activity !== "all") {
-          if (row.section !== "execution") return false;
-          const stateToken = normalizeExecutionState(row.execution_state);
-          const activity = (
-            stateToken === "actively_executing"
-            || stateToken === "planning_active"
-          ) ? "active" : "quiet";
-          if (activity !== state.activity) return false;
-        }
-        if (state.lane !== "all" && row.impacted_lanes !== state.lane) return false;
-        if (state.priority !== "all" && row.priority !== state.priority) return false;
-        if (!q) return true;
-        const ideaId = String(row.idea_id || "").trim().toLowerCase();
-        if (exactIdeaIdQuery) {
-          return ideaId === q;
-        }
-        const hay = String(row.search_text || [
-          row.idea_id,
-          row.title,
-          row.ordering_rationale,
-          row.rationale_text,
-          Array.isArray(row.rationale_bullets) ? row.rationale_bullets.join(" ") : "",
-        ].join(" ")).toLowerCase();
-        return hay.includes(q);
-      });
+      const exactIdeaQuery = isExactIdeaIdQuery(q);
+      return all.filter((row) => rowMatchesFilters(row, { query: q, exactIdeaQuery }));
     }
 
     function sortRows(rows) {
@@ -1536,7 +1606,7 @@ initSharedQuickTooltips();
       el.list.querySelectorAll(".row").forEach((button) => {
         button.addEventListener("click", () => {
           const preserveListScroll = elementFullyVisibleWithinContainer(el.list, button);
-          state.selectedIdeaId = button.dataset.ideaId || "";
+          selectIdea(button.dataset.ideaId || "");
           render({ preserveListScroll });
         });
         const ideaId = String(button.dataset.ideaId || "").trim();
@@ -2944,7 +3014,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
 
     loadAnalyticsPreference();
     if (workstreamParam) {
-      state.selectedIdeaId = workstreamParam;
+      selectIdea(workstreamParam, { reveal: true });
     }
     if (viewParam === "graph") {
       setAnalyticsExpanded(true);

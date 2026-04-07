@@ -7,17 +7,18 @@
     "active_workstream_id": "",
     "closeout_contract": {
       "odylith_brand_note": "final_only_evidence_backed",
-      "allowed_label": "Odylith assist:",
-      "preferred_markdown_label": "**Odylith assist:**",
+      "allowed_label": "Odylith Assist:",
+      "preferred_markdown_label": "**Odylith Assist:**",
       "benchmark_tax_policy": "metadata_only",
       "rules": [
-        "Keep mid-task narration task-first and leave Odylith implicit unless a command or blocker matters.",
-        "At closeout, at most one short Odylith assist line may appear.",
-        "Prefer the bold Markdown label when formatting is available; otherwise use plain Odylith assist.",
-        "Lead with the user win, not Odylith mechanics.",
+        "Keep mid-task narration task-first and weave Odylith facts into normal updates by default.",
+        "Use explicit Odylith Insight, Odylith History, or Odylith Risks labels only when the point is strong enough to earn the interruption.",
+        "At closeout, at most one short Odylith Assist line may appear, plus at most one optional supplemental line.",
+        "Prefer the bold Markdown label when formatting is available; otherwise use plain Odylith Assist.",
+        "Lead with the user win, not Odylith mechanics, and link updated governance ids inline when they were actually changed.",
         "When the evidence supports it, frame the edge against odylith_off or the broader unguided path.",
-        "Keep the line soulful, friendly, authentic, and factual.",
-        "Use only concrete observed counts, measured deltas, or validation outcomes; otherwise omit it.",
+        "Keep the voice crisp, authentic, clear, simple, insightful, soulful, friendly, free-flowing, human, and factual.",
+        "Use only concrete observed counts, measured deltas, or validation outcomes; silence is better than filler.",
         "If there is no clear user-facing delta, omit it.",
         "Keep benchmark closeout branding metadata-only; do not add benchmark required paths, hot-path docs, or validation commands just to repeat this rubric."
       ]

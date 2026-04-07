@@ -45,13 +45,15 @@ pinned dogfood and detached `source-local` maintainer dev.
   only when the user explicitly asks for the command, a live blocker requires
   it, or a runtime boundary matters.
 - If a host chooses to name Odylith directly in the final handoff, that
-  belongs in at most one short `Odylith assist:` line grounded in concrete
+  belongs in at most one short `Odylith Assist:` line grounded in concrete
   observed counts, measured deltas, or validation outcomes. Prefer
-  `**Odylith assist:**` when Markdown formatting is available. Lead with the
-  user win, not Odylith mechanics, and frame the edge against `odylith_off` or
-  the broader unguided path when the evidence supports it. Keep it soulful,
-  friendly, authentic, and factual. It is not part of the orchestrator's
-  mid-task rationale stream.
+  `**Odylith Assist:**` when Markdown formatting is available. Lead with the
+  user win, not Odylith mechanics, link updated governance ids inline when
+  they were actually changed, and frame the edge against `odylith_off` or the
+  broader unguided path when the evidence supports it. Keep it crisp,
+  authentic, clear, simple, insightful, soulful, friendly, free-flowing,
+  human, and factual. It is not part of the orchestrator's mid-task rationale
+  stream.
 
 ## Public Command Surface
 Public entrypoint: `odylith subagent-orchestrator`

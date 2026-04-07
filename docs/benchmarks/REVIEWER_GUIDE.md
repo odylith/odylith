@@ -47,7 +47,7 @@ Keep these buckets separate:
 Do not collapse those into one judgment.
 
 If the final review needs to name Odylith directly beyond lane labels, keep it
-to one final-only `Odylith assist:` line backed by measured proof or a
+to one final-only `Odylith Assist:` line backed by measured proof or a
 measured report, and follow
 [Odylith Chatter](../../odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md)
 for the detailed closeout wording contract.

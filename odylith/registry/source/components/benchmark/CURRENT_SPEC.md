@@ -61,13 +61,17 @@ reviewer framing that explains how Odylith should be compared.
 - The README numbers, benchmark explainer, reviewer guide, and canonical SVG
   graphs are derived outputs. They must never outrun the latest validated
   published report or drift away from the benchmark priority order.
+- If maintainers explicitly waive proof for one release, that exception must
+  be tracked in `odylith/runtime/source/release-maintainer-overrides.v1.json`
+  and treated as an advisory downgrade, not as hidden benchmark success.
 - Odylith's public benchmark story is benchmark-first: memory, topology,
   governance surfaces, and orchestration are mechanisms that explain the
   execution delta, not the primary scorecard.
 - Simulation, reviewer, and closeout artifacts should suppress mid-analysis
   Odylith brand narration. If a writeup or agent handoff names Odylith
   directly beyond lane labels, reserve that for one short end-of-work
-  `Odylith assist:` line. Follow the detailed closeout contract in
+  `Odylith Assist:` line, and prefer `**Odylith Assist:**` when Markdown
+  formatting is available. Follow the detailed closeout contract in
   [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md) and keep benchmark
   storytelling anchored in measured proof rather than duplicated branding
   rubric.

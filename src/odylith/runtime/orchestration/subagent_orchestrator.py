@@ -674,10 +674,19 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
 
 def _decision_odylith_adoption(
     *,
+    repo_root: Path | None,
     request: OrchestrationRequest,
     decision: OrchestrationDecision,
+    final_changed_paths: Sequence[str] | None = None,
+    changed_path_source: str = "",
 ) -> dict[str, Any]:
-    return subagent_orchestrator_odylith_runtime._decision_odylith_adoption(request=request, decision=decision)
+    return subagent_orchestrator_odylith_runtime._decision_odylith_adoption(
+        repo_root=repo_root,
+        request=request,
+        decision=decision,
+        final_changed_paths=final_changed_paths,
+        changed_path_source=changed_path_source,
+    )
 
 
 
@@ -1008,7 +1017,14 @@ def _finalize_decision(
     request: OrchestrationRequest,
     decision: OrchestrationDecision,
 ) -> OrchestrationDecision:
-    decision.odylith_adoption = _decision_odylith_adoption(request=request, decision=decision)
+    final_changed_paths = _request_seed_paths(request)
+    decision.odylith_adoption = _decision_odylith_adoption(
+        repo_root=repo_root,
+        request=request,
+        decision=decision,
+        final_changed_paths=final_changed_paths,
+        changed_path_source="request_seed_paths",
+    )
     return _attach_inspection_artifacts(repo_root=repo_root, decision=decision)
 
 

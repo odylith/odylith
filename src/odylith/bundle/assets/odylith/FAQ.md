@@ -51,7 +51,7 @@ the hosted installer once from that repo root to refresh the launcher, then
 use `./.odylith/bin/odylith upgrade --repo-root .` normally after that:
 
 ```bash
-curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash
+curl -fsSL https://odylith.ai/install.sh | bash
 ```
 
 ## What should I use for repair?

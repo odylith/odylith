@@ -1726,6 +1726,22 @@ def build_sync_execution_plan(
                 next_command_on_failure=sync_failure_command,
             )
         )
+    steps.append(
+        _execution_step(
+            "Re-sync Registry component spec requirements after the final surface renders settle.",
+            command=(
+                "python",
+                "-m",
+                "odylith.runtime.governance.sync_component_spec_requirements",
+                "--repo-root",
+                str(repo_root),
+                *_runtime_args(runtime_mode),
+            ),
+            mutation_classes=("repo_owned_truth",),
+            paths=("odylith/registry/source/components/",),
+            next_command_on_failure=sync_failure_command,
+        )
+    )
     notes = [
         "Dry-run previews the same step graph used for real sync execution so mutation scope cannot drift from runtime behavior.",
     ]

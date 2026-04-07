@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+import pytest
+
+from odylith.runtime.orchestration import odylith_chatter_delivery_runtime
 from odylith.runtime.orchestration import odylith_chatter_runtime
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 
@@ -31,7 +35,13 @@ def _decision(*, mode: str = "local_only", delegated_leaf_count: int = 0) -> orc
     )
 
 
-def test_closeout_assist_builds_shortest_safe_path_line() -> None:
+def _write_delivery_artifact(repo_root: Path, payload: dict[str, object]) -> None:
+    artifact_path = repo_root / "odylith" / "runtime" / "delivery_intelligence.v4.json"
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+def test_closeout_assist_builds_shortest_safe_path_line_semantically() -> None:
     request = orchestrator.OrchestrationRequest(
         prompt="Fix the grounded install slice.",
         candidate_paths=[
@@ -60,14 +70,18 @@ def test_closeout_assist_builds_shortest_safe_path_line() -> None:
 
     assert assist["eligible"] is True
     assert assist["style"] == "shortest_safe_path"
-    assert assist["markdown_text"] == (
-        "**Odylith assist:** kept this on the shortest safe path instead of an "
-        "`odylith_off`-style broader repo sweep by grounding the work to 3 candidate paths, "
-        "then finishing with 2 focused checks."
-    )
+    assert assist["label"] == "Odylith Assist:"
+    assert assist["preferred_markdown_label"] == "**Odylith Assist:**"
+    assert assist["changed_path_source"] == "request_seed_paths"
+    assert assist["updated_artifacts"] == []
+    assert assist["markdown_text"].startswith("**Odylith Assist:** kept this on the shortest safe path")
+    assert "3 candidate paths" in assist["markdown_text"]
+    assert "closing with 2 focused checks" in assist["markdown_text"]
+    assert "`odylith_off`" in assist["markdown_text"]
+    assert "broader unguided repo hunt" not in assist["markdown_text"]
 
 
-def test_closeout_assist_builds_governed_lane_line() -> None:
+def test_closeout_assist_includes_linked_updated_governance_artifacts() -> None:
     request = orchestrator.OrchestrationRequest(
         prompt="Harden the chatter contract.",
         workstreams=["B-031"],
@@ -86,78 +100,496 @@ def test_closeout_assist_builds_governed_lane_line() -> None:
             "grounded_delegate": False,
             "requires_widening": False,
         },
+        repo_root=Path("/tmp"),
+        final_changed_paths=[
+            "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+            "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+            "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        ],
+        changed_path_source="final_changed_paths",
     )
 
     assert assist["eligible"] is True
     assert assist["style"] == "governed_lane"
-    assert assist["markdown_text"] == (
-        "**Odylith assist:** kept this change in the right governed lane instead of a broader "
-        "unguided repo hunt by reusing 1 workstream and 1 component, then finishing with 1 focused check."
-    )
+    assert assist["changed_path_source"] == "final_changed_paths"
+    assert [row["id"] for row in assist["updated_artifacts"]] == ["B-031", "odylith-chatter"]
+    assert [row["kind"] for row in assist["updated_artifacts"]] == ["workstream", "component"]
+    assert "[B-031](?tab=radar&workstream=B-031)" in assist["markdown_text"]
+    assert "[odylith-chatter](?tab=registry&component=odylith-chatter)" in assist["markdown_text"]
+    assert "closing with 1 focused check" in assist["markdown_text"]
+    assert "governed record" in assist["markdown_text"]
 
 
-def test_closeout_assist_builds_grounded_bounded_execution_line() -> None:
+def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> None:
     request = orchestrator.OrchestrationRequest(
-        prompt="Finish the runtime chatter pass.",
-        candidate_paths=[
-            "src/odylith/runtime/orchestration/subagent_orchestrator.py",
-            "src/odylith/runtime/orchestration/subagent_router.py",
-            "tests/unit/runtime/test_subagent_reasoning_ladder.py",
-            "tests/unit/runtime/test_odylith_assist_closeout.py",
-        ],
-        validation_commands=[
-            "pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py",
-            "pytest -q tests/unit/runtime/test_odylith_assist_closeout.py",
-        ],
+        prompt="Tighten the governed slice.",
+        workstreams=["B-031"],
+        components=["odylith-chatter"],
+        candidate_paths=["src/odylith/runtime/orchestration/odylith_chatter_runtime.py"],
         needs_write=True,
         evidence_cone_grounded=True,
-    )
-
-    assist = odylith_chatter_runtime.compose_closeout_assist(
-        request=request,
-        decision=_decision(mode="parallel_batch", delegated_leaf_count=2),
-        adoption={
-            "grounded": True,
-            "route_ready": True,
-            "grounded_delegate": True,
-            "requires_widening": False,
+        context_signals={
+            "context_packet": {
+                "governance_obligations": {
+                    "plan_binding_required": True,
+                    "validation_obligation_count": 1,
+                }
+            }
         },
     )
 
-    assert assist["eligible"] is True
-    assert assist["style"] == "grounded_bounded_execution"
-    assert assist["markdown_text"] == (
-        "**Odylith assist:** kept the work moving without the usual broader `odylith_off` hunt "
-        "by keeping the slice to 4 candidate paths, routing 2 bounded leaves, and finishing "
-        "with 2 focused checks."
-    )
-
-
-def test_closeout_assist_suppresses_when_delta_is_not_ready() -> None:
-    request = orchestrator.OrchestrationRequest(
-        prompt="Investigate the ambiguous slice.",
-        candidate_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
-        needs_write=False,
-        evidence_cone_grounded=True,
-    )
-
-    assist = odylith_chatter_runtime.compose_closeout_assist(
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={
             "grounded": True,
-            "route_ready": False,
+            "route_ready": True,
             "grounded_delegate": False,
-            "requires_widening": True,
+            "requires_widening": False,
+            "narrowing_required": False,
+        },
+        repo_root=Path("/tmp"),
+        final_changed_paths=[
+            "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+            "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        ],
+        changed_path_source="final_changed_paths",
+    )
+
+    ambient = dict(bundle["ambient_signals"])
+    closeout = dict(bundle["closeout_bundle"])
+
+    assert ambient["selected_signal"] == "risks"
+    assert ambient["risks"]["eligible"] is True
+    assert ambient["risks"]["render_hint"] == "explicit_label"
+    assert "Odylith Risks:" in ambient["risks"]["markdown_text"]
+    assert closeout["selected_supplemental"] == "risks"
+    assert closeout["risks"]["render_hint"] == "supplemental_line"
+    assert closeout["render_policy"]["max_lines"] == 2
+    assert closeout["render_policy"]["benchmark_safe"] is True
+
+
+def test_conversation_bundle_suppresses_history_when_no_strong_prior_exists() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Patch the bounded slice.",
+        workstreams=["B-031"],
+        components=["odylith-chatter"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
         },
     )
 
-    assert assist["eligible"] is False
-    assert assist["suppressed_reason"] == "requires_widening"
-    assert assist["markdown_text"] == ""
+    assert bundle["ambient_signals"]["history"]["eligible"] is False
+    assert bundle["ambient_signals"]["history"]["suppressed_reason"] == "no_strong_prior"
 
 
-def test_orchestrator_threads_closeout_assist_into_odylith_adoption(tmp_path: Path) -> None:
+def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Path) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-031",
+                    "scope_key": "workstream:B-031",
+                    "scope_label": "B-031",
+                    "case_refs": ["case-workstream-B-031"],
+                    "operator_readout": {
+                        "primary_scenario": "unsafe_closeout",
+                        "severity": "watch",
+                        "issue": "Closeout confidence is ahead of trusted proof.",
+                        "action": "Capture the final reviewed checkpoint before closeout.",
+                        "proof_refs": [{"kind": "workstream", "value": "B-031", "label": "B-031", "surface": "radar"}],
+                        "requires_approval": True,
+                    },
+                    "surface_contributions": [{"surface": "Radar"}],
+                    "evidence_bundle": {
+                        "evidence_refs": [{"kind": "component", "value": "component:odylith-chatter", "label": "odylith-chatter"}]
+                    },
+                }
+            ],
+            "case_queue": [{"id": "case-workstream-B-031", "scope_key": "workstream:B-031", "headline": "Unsafe closeout", "brief": "Proof first."}],
+            "systemic_brief": {"headline": "A few causes dominate.", "latent_causes": ["authority"], "summary": "Proof is the real bottleneck."},
+        },
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-031.",
+        workstreams=["B-031"],
+        components=["odylith-chatter"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["ambient_signals"]["selected_signal"] == "risks"
+    assert "Tribunal already has B-031 in unsafe closeout" in bundle["ambient_signals"]["risks"]["markdown_text"]
+    assert bundle["closeout_bundle"]["selected_supplemental"] == "risks"
+
+
+def test_conversation_bundle_reads_precomputed_tribunal_insight_signal(tmp_path: Path) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-031",
+                    "scope_key": "workstream:B-031",
+                    "scope_label": "B-031",
+                    "case_refs": [],
+                    "operator_readout": {"primary_scenario": "clear_path", "severity": "clear", "proof_refs": []},
+                    "surface_contributions": [{"surface": "Radar"}, {"surface": "Compass"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [],
+            "systemic_brief": {
+                "headline": "A small number of latent causes explain most of the queue.",
+                "latent_causes": ["authority", "ownership gap"],
+                "summary": "The interesting part is governance, not code spread.",
+            },
+        },
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-031.",
+        workstreams=["B-031"],
+        components=["odylith-chatter"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["ambient_signals"]["selected_signal"] == "insight"
+    assert "authority and ownership gap" in bundle["ambient_signals"]["insight"]["markdown_text"]
+    assert "one more repo lap" in bundle["ambient_signals"]["insight"]["markdown_text"]
+
+
+def test_conversation_bundle_reads_precomputed_tribunal_history_signal(tmp_path: Path) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-031",
+                    "scope_key": "workstream:B-031",
+                    "scope_label": "B-031",
+                    "case_refs": ["case-workstream-B-031"],
+                    "operator_readout": {"primary_scenario": "clear_path", "severity": "clear", "proof_refs": []},
+                    "surface_contributions": [{"surface": "Radar"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [{"id": "case-workstream-B-031", "scope_key": "workstream:B-031", "headline": "Queued"}],
+            "systemic_brief": {},
+        },
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-031.",
+        workstreams=["B-031"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["ambient_signals"]["selected_signal"] == "history"
+    assert "diagnosed queue" in bundle["ambient_signals"]["history"]["markdown_text"]
+
+
+def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artifact(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        odylith_chatter_delivery_runtime,
+        "delivery_signal_snapshot",
+        lambda repo_root: (_ for _ in ()).throw(AssertionError("explicit Tribunal signals should bypass cached artifact lookup")),
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-031.",
+        workstreams=["B-031"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+        context_signals={
+            "tribunal_delivery_signals": "ignore this malformed field",
+            "tribunal_signals": {
+                "scope_signals": [
+                    {
+                        "scope_type": "workstream",
+                        "scope_id": "B-031",
+                        "scope_label": "B-031",
+                        "operator_readout": {
+                            "primary_scenario": "unsafe_closeout",
+                            "severity": "watch",
+                            "action": "Capture the final reviewed checkpoint before closeout.",
+                        },
+                    }
+                ],
+                "systemic_brief": {"latent_causes": ["authority gap"]},
+            },
+        },
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["ambient_signals"]["selected_signal"] == "risks"
+    assert bundle["ambient_signals"]["risks"]["markdown_text"].startswith("**Odylith Risks:** Tribunal already has B-031 in unsafe closeout")
+    assert ".." not in bundle["ambient_signals"]["risks"]["markdown_text"]
+
+
+def test_conversation_bundle_sanitizes_malformed_explicit_tribunal_payload() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten the bounded slice.",
+        candidate_paths=["src/example.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+        context_signals={
+            "tribunal_delivery_signals": {
+                "scope_signals": "not-a-list",
+                "case_queue": "still-not-a-list",
+                "systemic_brief": "definitely-not-a-mapping",
+            }
+        },
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+    )
+
+    assert bundle["ambient_signals"]["selected_signal"] == ""
+    assert bundle["ambient_signals"]["insight"]["eligible"] is False
+    assert bundle["ambient_signals"]["history"]["eligible"] is False
+    assert bundle["ambient_signals"]["risks"]["eligible"] is False
+
+
+def test_conversation_bundle_normalizes_string_latent_causes_from_delivery_artifact(tmp_path: Path) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-031",
+                    "scope_key": "workstream:B-031",
+                    "scope_label": "B-031",
+                    "case_refs": [],
+                    "operator_readout": {"primary_scenario": "clear_path", "severity": "clear", "proof_refs": []},
+                    "surface_contributions": [{"surface": "Radar"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [],
+            "systemic_brief": {
+                "headline": "One cause matters.",
+                "latent_causes": "authority gap",
+            },
+        },
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-031.",
+        workstreams=["B-031"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["ambient_signals"]["selected_signal"] == "insight"
+    assert "authority gap" in bundle["ambient_signals"]["insight"]["markdown_text"]
+    assert "a, u, t" not in bundle["ambient_signals"]["insight"]["markdown_text"].lower()
+
+
+def test_conversation_bundle_skips_precomputed_tribunal_lookup_without_anchors(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        odylith_chatter_delivery_runtime,
+        "delivery_signal_snapshot",
+        lambda repo_root: (_ for _ in ()).throw(AssertionError("delivery artifact lookup should stay skipped")),
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Patch the bounded slice.",
+        candidate_paths=["src/odylith/install/agents.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["ambient_signals"]["selected_signal"] == ""
+
+
+def test_closeout_supplemental_requires_assist_even_when_ambient_risk_is_real(tmp_path: Path) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-031",
+                    "scope_key": "workstream:B-031",
+                    "scope_label": "B-031",
+                    "case_refs": [],
+                    "operator_readout": {
+                        "primary_scenario": "unsafe_closeout",
+                        "severity": "watch",
+                        "action": "Capture the final reviewed checkpoint before closeout.",
+                    },
+                    "surface_contributions": [{"surface": "Radar"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [],
+            "systemic_brief": {},
+        },
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-031.",
+        workstreams=["B-031"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": False, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["ambient_signals"]["selected_signal"] == "risks"
+    assert bundle["closeout_bundle"]["assist"]["eligible"] is False
+    assert bundle["closeout_bundle"]["selected_supplemental"] == ""
+    assert bundle["closeout_bundle"]["risks"]["eligible"] is False
+    assert bundle["closeout_bundle"]["risks"]["suppressed_reason"] == "assist_suppressed"
+
+
+def test_conversation_bundle_reuses_metrics_and_context_scan_for_closeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    counts = {"metrics": 0, "context_rows": 0}
+    original_metrics = odylith_chatter_runtime._evidence_metrics
+    original_context_rows = odylith_chatter_runtime._context_artifact_rows
+
+    def counting_metrics(*, request: object, decision: object, adoption: object) -> dict[str, object]:
+        counts["metrics"] += 1
+        return original_metrics(request=request, decision=decision, adoption=adoption)
+
+    def counting_context_rows(*, repo_root: Path | None, value: object) -> list[dict[str, object]]:
+        counts["context_rows"] += 1
+        return original_context_rows(repo_root=repo_root, value=value)
+
+    monkeypatch.setattr(odylith_chatter_runtime, "_evidence_metrics", counting_metrics)
+    monkeypatch.setattr(odylith_chatter_runtime, "_context_artifact_rows", counting_context_rows)
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten the chatter contract.",
+        workstreams=["B-031"],
+        components=["odylith-chatter"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+        context_signals={"context_packet": {"selected_id": "B-031"}},
+    )
+
+    odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=Path("/tmp"),
+        final_changed_paths=[
+            "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+            "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        ],
+        changed_path_source="final_changed_paths",
+    )
+
+    assert counts == {"metrics": 1, "context_rows": 1}
+
+
+def test_conversation_bundle_suppresses_redundant_closeout_insight_when_assist_already_covers_it() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Refine the chatter contract.",
+        workstreams=["B-031"],
+        components=["odylith-chatter"],
+        validation_commands=["pytest -q tests/unit/runtime/test_odylith_assist_closeout.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+        repo_root=Path("/tmp"),
+        final_changed_paths=[
+            "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+            "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        ],
+        changed_path_source="final_changed_paths",
+    )
+
+    assert bundle["ambient_signals"]["insight"]["eligible"] is True
+    assert bundle["closeout_bundle"]["selected_supplemental"] == ""
+    assert bundle["closeout_bundle"]["insight"]["eligible"] is False
+    assert bundle["closeout_bundle"]["insight"]["suppressed_reason"] == "overlaps_assist"
+
+
+def test_orchestrator_threads_conversation_bundle_into_odylith_adoption(tmp_path: Path) -> None:
     request = orchestrator.OrchestrationRequest(
         prompt=(
             "Patch src/odylith/install/agents.py and src/odylith/install/manager.py, "
@@ -228,7 +660,15 @@ def test_orchestrator_threads_closeout_assist_into_odylith_adoption(tmp_path: Pa
 
     decision = orchestrator.orchestrate_prompt(request, repo_root=tmp_path)
 
-    assist = dict(decision.odylith_adoption["closeout_assist"])
+    adoption = dict(decision.odylith_adoption)
+    assist = dict(adoption["closeout_assist"])
+    bundle = dict(adoption["conversation_bundle"])
+
     assert assist["eligible"] is True
-    assert assist["markdown_text"].startswith("**Odylith assist:** kept this")
+    assert assist["label"] == "Odylith Assist:"
+    assert assist["changed_path_source"] == "request_seed_paths"
+    assert assist["markdown_text"].startswith("**Odylith Assist:** kept this")
     assert "odylith_off" in assist["markdown_text"]
+    assert adoption["ambient_signals"]["selected_signal"] in {"", "insight", "history", "risks"}
+    assert bundle["closeout_bundle"]["assist"]["label"] == "Odylith Assist:"
+    assert bundle["closeout_bundle"]["render_policy"]["benchmark_safe"] is True

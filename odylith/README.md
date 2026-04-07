@@ -112,12 +112,19 @@ mirrors the strongest prompt patterns.
 
 The shell refreshes itself as Odylith updates local surfaces.
 
+Keep ordinary progress updates task-first and human. When Odylith's grounded
+view changes the next move, weave that fact into the update instead of
+branding it by default; explicit `Odylith Insight:`, `Odylith History:`, or
+`Odylith Risks:` lines should feel rare and earned.
+
 If a final handoff benefits from naming Odylith directly, keep it to one short
-`Odylith assist:` line. Prefer `**Odylith assist:**` when Markdown formatting
-is available. Lead with the user win, not Odylith mechanics. When the evidence
-supports it, frame the edge against `odylith_off` or the broader unguided
-path. Keep it soulful, friendly, authentic, and factual. Use only concrete
-observed counts, measured deltas, or validation outcomes.
+`Odylith Assist:` line. Prefer `**Odylith Assist:**` when Markdown formatting
+is available. Lead with the user win, link updated governance ids inline when
+they were actually changed, and ground the line in concrete observed counts,
+measured deltas, or validation outcomes. When the evidence supports it, frame
+the edge against `odylith_off` or the broader unguided path. Keep it crisp,
+authentic, clear, simple, insightful, soulful, friendly, free-flowing, human,
+and factual. Silence is better than filler.
 
 ## What Is Here
 

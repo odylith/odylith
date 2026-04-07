@@ -13,6 +13,10 @@ from odylith.runtime.evaluation.benchmark_snapshot_fallbacks import (
     load_release_baseline_summary,
     load_tracked_latest_summary,
 )
+from odylith.runtime.governance.release_maintainer_overrides import (
+    BenchmarkProofOverride,
+    load_benchmark_proof_override,
+)
 
 _FAIL_LATENCY_DELTA_MS = 20.0
 _WARN_LATENCY_DELTA_MS = 10.0
@@ -150,10 +154,70 @@ def _delta(candidate: Mapping[str, Any], baseline: Mapping[str, Any], key: str) 
     return round(float(candidate.get(key, 0.0) or 0.0) - float(baseline.get(key, 0.0) or 0.0), 3)
 
 
+def _override_notes(override: BenchmarkProofOverride) -> tuple[str, str]:
+    return (
+        f"Maintainer benchmark override active for v{override.version}: {override.reason}",
+        "Benchmark proof and compare are advisory for this release and return as warnings instead of blockers.",
+    )
+
+
+def _override_unavailable(
+    *,
+    override: BenchmarkProofOverride,
+    baseline_source: str,
+    candidate_report_id: str,
+    candidate_product_version: str,
+    summary: dict[str, Any],
+    notes: tuple[str, ...],
+) -> BenchmarkComparison:
+    return BenchmarkComparison(
+        status="warn",
+        candidate_report_id=candidate_report_id,
+        candidate_product_version=candidate_product_version,
+        baseline_report_id="",
+        baseline_product_version="",
+        baseline_source=baseline_source,
+        summary=summary,
+        deltas={},
+        notes=(*_override_notes(override), *notes),
+        blocking=False,
+    )
+
+
+def _downgrade_blocking_result(
+    result: BenchmarkComparison,
+    *,
+    override: BenchmarkProofOverride,
+) -> BenchmarkComparison:
+    return BenchmarkComparison(
+        status="warn",
+        candidate_report_id=result.candidate_report_id,
+        candidate_product_version=result.candidate_product_version,
+        baseline_report_id=result.baseline_report_id,
+        baseline_product_version=result.baseline_product_version,
+        baseline_source=result.baseline_source,
+        summary=result.summary,
+        deltas=result.deltas,
+        notes=(*_override_notes(override), *result.notes),
+        blocking=False,
+    )
+
+
 def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-shipped") -> BenchmarkComparison:
     root = Path(repo_root).expanduser().resolve()
+    source_version = product_source_version(repo_root=root)
+    override = load_benchmark_proof_override(repo_root=root, version=source_version)
     candidate_summary, candidate_source = _resolve_candidate_summary(repo_root=root)
     if candidate_summary is None:
+        if override is not None:
+            return _override_unavailable(
+                override=override,
+                baseline_source=candidate_source,
+                candidate_report_id="",
+                candidate_product_version=source_version,
+                summary={},
+                notes=("No latest benchmark report is available under `.odylith/runtime/odylith-benchmarks/latest.v1.json`.",),
+            )
         return BenchmarkComparison(
             status="unavailable",
             candidate_report_id="",
@@ -167,8 +231,19 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
             blocking=True,
         )
     candidate_version = str(candidate_summary.get("product_version", "")).strip()
-    source_version = product_source_version(repo_root=root)
     if source_version and candidate_version and candidate_version != source_version:
+        if override is not None:
+            return _override_unavailable(
+                override=override,
+                baseline_source=candidate_source,
+                candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
+                candidate_product_version=candidate_version,
+                summary={"candidate": candidate_summary, "baseline": {}},
+                notes=(
+                    f"Latest benchmark candidate version `{candidate_version}` does not match current source version `{source_version}`.",
+                    "Record a fresh benchmark report for the current source version before treating compare as a release gate.",
+                ),
+            )
         return BenchmarkComparison(
             status="unavailable",
             candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
@@ -207,6 +282,18 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
                 deltas={},
                 notes=notes,
                 blocking=False,
+            )
+        if override is not None:
+            return _override_unavailable(
+                override=override,
+                baseline_source=baseline_source,
+                candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
+                candidate_product_version=str(candidate_summary.get("product_version", "")).strip(),
+                summary={"candidate": candidate_summary, "baseline": {}},
+                notes=(
+                    "No eligible benchmark baseline is available for comparison.",
+                    "Record a full-corpus default-cache benchmark on the last shipped release before treating compare as a hard gate.",
+                ),
             )
         return BenchmarkComparison(
             status="unavailable",
@@ -288,7 +375,7 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
         notes.append("Benchmark compare passed against the stored release baseline.")
         status = "pass"
         blocking = False
-    return BenchmarkComparison(
+    result = BenchmarkComparison(
         status=status,
         candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
         candidate_product_version=str(candidate_summary.get("product_version", "")).strip(),
@@ -300,6 +387,9 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
         notes=tuple(notes),
         blocking=blocking,
     )
+    if override is not None and result.blocking:
+        return _downgrade_blocking_result(result, override=override)
+    return result
 
 
 def _delta_direction(*, value: float, lower_is_better: bool, tolerance: float) -> str:

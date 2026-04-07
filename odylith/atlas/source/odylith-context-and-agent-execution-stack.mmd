@@ -1,5 +1,29 @@
+%% Reviewed 2026-04-07 for B-031, B-058, and B-059 to make the governed memory substrate and ambient conversation intelligence explicit.
 flowchart LR
-    memory["Memory + Retrieval"] --> context["Context Engine"]
-    context --> router["Subagent Router"]
-    router --> orchestrator["Subagent Orchestrator"]
-    orchestrator --> cli["odylith CLI"]
+    CLI["odylith CLI + shell"] --> Context["Context Engine<br/>compiler + grounding packets"]
+    Truth["Repo truth<br/>Radar + Plans + Casebook + Registry + Atlas"] --> Context
+
+    subgraph Memory["Governed memory substrate"]
+        Bundle["Projection Bundle<br/>manifest + documents + edges"]
+        Snapshot["Projection Snapshot<br/>deterministic JSON fallback"]
+        Backend["Memory Backend<br/>LanceDB + Tantivy + judgment memory"]
+        Remote["Remote Retrieval<br/>optional Vespa augment / remote_only"]
+        Contracts["Memory Contracts<br/>allowlist + compaction + execution-profile tokens"]
+        Bundle --> Backend
+        Bundle --> Remote
+        Bundle --> Contracts
+        Snapshot --> Contracts
+        Backend --> Contracts
+        Remote --> Contracts
+    end
+
+    Context --> Bundle
+    Context --> Snapshot
+    Contracts --> Router["Subagent Router"]
+    Contracts --> Delivery["Delivery Intelligence"]
+    Router --> Orchestrator["Subagent Orchestrator"]
+    Delivery --> Tribunal["Tribunal"]
+    Delivery --> Chatter["Odylith Chatter"]
+    Tribunal --> Chatter
+    Orchestrator --> Chatter
+    Chatter --> CLI

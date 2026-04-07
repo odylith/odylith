@@ -874,7 +874,7 @@ def _launcher_script(*, fallback_python: Path, fallback_source_root: Path | None
             '  if [[ -n "$local_release_base_url" ]]; then',
             '    install_url="${local_release_base_url%/}/install.sh"',
             "  else",
-            '    install_url="https://github.com/odylith/odylith/releases/latest/download/install.sh"',
+            '    install_url="https://odylith.ai/install.sh"',
             "  fi",
             '  tmp_install="$(mktemp "${TMPDIR:-/tmp}/odylith-install.XXXXXX.sh")"',
             '  case "$install_url" in',

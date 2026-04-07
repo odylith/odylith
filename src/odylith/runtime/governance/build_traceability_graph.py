@@ -21,6 +21,9 @@ _TRACE_SECTIONS: tuple[str, ...] = ("Runbooks", "Developer Docs", "Code Referenc
 _MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)\)")
 _INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
 _CHECKBOX_RE = re.compile(r"^\[(?:x|X| )\]\s*")
+_DEFAULT_WARNING_SEVERITIES = {"warning", "error"}
+_WARNING_AUDIENCES = {"operator", "maintainer"}
+_WARNING_SURFACE_VISIBILITY = {"default", "diagnostics"}
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -87,6 +90,25 @@ def _normalize_path_token(*, repo_root: Path, token: str) -> str:
         except ValueError:
             return ""
     return canonical_truth_token(path.as_posix().lstrip("./"), repo_root=repo_root)
+
+
+def _normalize_warning_policy(
+    *,
+    severity: str,
+    audience: str = "operator",
+    surface_visibility: str = "",
+) -> tuple[str, str, str]:
+    normalized_severity = str(severity or "warning").strip().lower() or "warning"
+    normalized_audience = str(audience or "operator").strip().lower() or "operator"
+    if normalized_audience not in _WARNING_AUDIENCES:
+        normalized_audience = "operator"
+    normalized_visibility = str(surface_visibility or "").strip().lower()
+    if normalized_visibility not in _WARNING_SURFACE_VISIBILITY:
+        if normalized_audience == "maintainer" or normalized_severity not in _DEFAULT_WARNING_SEVERITIES:
+            normalized_visibility = "diagnostics"
+        else:
+            normalized_visibility = "default"
+    return normalized_severity, normalized_audience, normalized_visibility
 
 
 def _extract_sections(path: Path) -> dict[str, list[str]]:
@@ -222,7 +244,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     idea_specs, idea_errors = backlog_contract._validate_idea_specs(ideas_root)
     warnings: list[str] = []
-    warning_items: list[dict[str, str]] = []
+    warning_items: list[dict[str, Any]] = []
 
     idea_to_file: dict[str, str] = {
         idea_id: _as_repo_path(repo_root, spec.path)
@@ -235,6 +257,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         idea_id: str = "",
         category: str = "general",
         severity: str = "warning",
+        audience: str = "operator",
+        surface_visibility: str = "",
         action: str = "",
         source: str = "",
     ) -> None:
@@ -242,8 +266,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not text:
             return
         warnings.append(text)
-        item: dict[str, str] = {
-            "severity": str(severity or "warning").strip() or "warning",
+        normalized_severity, normalized_audience, normalized_visibility = _normalize_warning_policy(
+            severity=severity,
+            audience=audience,
+            surface_visibility=surface_visibility,
+        )
+        item: dict[str, Any] = {
+            "severity": normalized_severity,
+            "audience": normalized_audience,
+            "surface_visibility": normalized_visibility,
             "category": str(category or "general").strip() or "general",
             "message": text,
         }
@@ -356,6 +387,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     idea_id=idea_id,
                     category="topology_conflict",
                     severity="info",
+                    audience="maintainer",
+                    surface_visibility="diagnostics",
                     action=(
                         f"Resolve explicitly in {idea_to_file.get(idea_id, 'the idea spec')}: "
                         f"current='{current}' candidate='{candidate}'. Reason: {reason or 'conflict'}."

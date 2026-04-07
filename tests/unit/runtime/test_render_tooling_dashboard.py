@@ -578,7 +578,7 @@ def test_render_tooling_dashboard_shows_compact_legacy_upgrade_notice(tmp_path: 
     assert "Odylith needs attention in this repository" in html
     assert "Legacy upgrade path detected" in html
     assert "Copy rescue install" in html
-    assert "releases/latest/download/install.sh | bash" in html
+    assert "https://odylith.ai/install.sh | bash" in html
     assert "Odylith is live in this repository" not in html
 
 

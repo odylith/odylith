@@ -43,7 +43,7 @@ from odylith.install.runtime import (
     switch_runtime,
     write_managed_runtime_trust,
 )
-from odylith.install.runtime_status import inspect_runtime_source
+from odylith.install.runtime_status import inspect_runtime_source, trust_only_runtime_failure
 from odylith.install.state import (
     AUTHORITATIVE_RELEASE_REPO,
     DEFAULT_REPO_SCHEMA_VERSION,
@@ -95,7 +95,7 @@ _FIRST_RUN_SURFACE_TARGETS: tuple[str, ...] = (
     "odylith/casebook/casebook.html",
 )
 _HOSTED_INSTALL_COMMAND = (
-    "curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash"
+    "curl -fsSL https://odylith.ai/install.sh | bash"
 )
 _LEGACY_TEXT_FILE_SUFFIXES = frozenset(
     {
@@ -1058,7 +1058,8 @@ def _customer_bootstrap_guidance() -> str:
             "- Start substantive turns with `./.odylith/bin/odylith start --repo-root .`; it chooses the safe first lane and prints the exact next command when Odylith cannot narrow the slice yet.",
             "- When you already know the exact workstream, component, path, or id, use `./.odylith/bin/odylith context --repo-root . <ref>` before raw repo search. Use `./.odylith/bin/odylith query --repo-root . \"<terms>\"` only after concrete anchors already exist.",
             "- In Codex commentary, keep startup, fallback, routing, and packet-selection internals implicit. Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight. If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history. Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates, and never prefix commentary with control-plane receipt labels. Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters.",
-            "- At closeout, you may add at most one short `Odylith assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith assist:**` when Markdown formatting is available; otherwise use `Odylith assist:`. Lead with the user win, not Odylith mechanics. When the evidence supports it, frame the edge against `odylith_off` or the broader unguided path. Keep it soulful, friendly, authentic, and factual, not slogan-like. Use only concrete observed counts, measured deltas, or validation outcomes; if you cannot show a user-facing delta, omit the line.",
+            "- Keep normal commentary task-first and human. Weave Odylith-grounded facts into ordinary updates when they change the next move, and reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels for rare high-signal moments. Pick the strongest one or stay quiet.",
+            "- At closeout, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance ids inline when they were actually changed, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real.",
             "- For substantive tasks, follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step; identify the active workstream, component, or packet; then move into repo scan, tests, and edits.",
             "- In consumer repos, grounding Odylith is diagnosis authority, not blanket write authority: if the issue target is Odylith itself, stop at diagnosis and maintainer-ready feedback unless the operator explicitly authorizes Odylith mutation.",
             "- Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes when they change `odylith/` or `.odylith/`; do not run them autonomously as Odylith fixes in consumer repos.",
@@ -2986,6 +2987,11 @@ def doctor_bundle(
     repo_role = status.repo_role
     effective_detached = _effective_detached(state=state, active_version=status.active_version)
     runtime_root = current_runtime_root(repo_root=root)
+    trust_only_runtime_issue = trust_only_runtime_failure(
+        runtime_reasons=runtime_reasons,
+        trust_reasons=status.runtime_trust_reasons,
+        trust_degraded=status.runtime_trust_degraded,
+    )
     if (
         runtime_healthy
         and runtime_root is not None
@@ -3123,8 +3129,28 @@ def doctor_bundle(
             return True, f"Odylith repair completed for {root}{reset_clause}. Active version still diverges from the repo pin."
         return True, f"Odylith repair completed for {root}{reset_clause}."
 
+    if (
+        trust_only_runtime_issue
+        and has_customer_tree
+        and has_consumer_profile
+        and has_version_pin
+        and has_managed == integration_enabled
+        and bool(state)
+    ):
+        if status.repo_role == PRODUCT_REPO_ROLE:
+            return (
+                True,
+                f"Odylith runtime is healthy but trust-degraded and not release-eligible: {status.runtime_source_detail}",
+            )
+        return True, f"Odylith runtime is healthy but trust-degraded: {status.runtime_source_detail}"
+
     if healthy:
         if status.runtime_trust_degraded:
+            if status.repo_role == PRODUCT_REPO_ROLE:
+                return (
+                    True,
+                    f"Odylith runtime is healthy but trust-degraded and not release-eligible: {status.runtime_source_detail}",
+                )
             return True, f"Odylith runtime is healthy but trust-degraded: {status.runtime_source_detail}"
         if effective_detached and status.diverged_from_pin:
             return True, (

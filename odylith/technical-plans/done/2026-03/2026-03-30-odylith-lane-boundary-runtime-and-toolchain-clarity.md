@@ -1,8 +1,8 @@
-Status: In progress
+Status: Done
 
 Created: 2026-03-30
 
-Updated: 2026-04-02
+Updated: 2026-04-07
 
 Backlog: B-027
 
@@ -44,110 +44,112 @@ Related Bugs:
 - CB-025: product repo tooling shell hides runtime version badge after header freeze
 
 ## Context/Problem Statement
-- [ ] Runtime boundary, write boundary, and validation boundary are not yet
+- [x] Runtime boundary, write boundary, and validation boundary are not yet
       described as separate concepts.
-- [ ] Pinned dogfood versus detached `source-local` is still too easy to blur
+- [x] Pinned dogfood versus detached `source-local` is still too easy to blur
       in product-repo guidance.
-- [ ] Consumer guidance does not yet say crisply enough that Odylith-managed
+- [x] Consumer guidance does not yet say crisply enough that Odylith-managed
       runtime does not take over target-repo validation.
-- [ ] Consumer installs do not yet carry an explicit write-authority contract
+- [x] Consumer installs do not yet carry an explicit write-authority contract
       that keeps Odylith product fixes in diagnosis-and-handoff mode.
-- [ ] Bundle/install-facing copies need to stay aligned with the source-owned
+- [x] Bundle/install-facing copies need to stay aligned with the source-owned
       guidance.
-- [ ] The subagent reasoning ladder and prompt-level orchestration contract
+- [x] The subagent reasoning ladder and prompt-level orchestration contract
       still read as maintainer-shaped in some runtime, install, and Atlas
       surfaces even though the supported Codex lanes are broader.
-- [ ] Atlas search does not yet treat short diagram-id suffixes as first-class
+- [x] Atlas search does not yet treat short diagram-id suffixes as first-class
       search inputs.
 
 ## Success Criteria
-- [ ] Constitutional docs expose one explicit lane matrix across consumer,
+- [x] Constitutional docs expose one explicit lane matrix across consumer,
       maintainer mode, pinned dogfood posture, and detached `source-local`
       posture.
-- [ ] Shared guidance and key skills say clearly that interpreter choice does
+- [x] Shared guidance and key skills say clearly that interpreter choice does
       not control file-edit authority.
-- [ ] Maintainer guidance says clearly that pinned dogfood is proof posture and
+- [x] Maintainer guidance says clearly that pinned dogfood is proof posture and
       detached `source-local` is live-source execution posture.
-- [ ] Maintainer guidance says explicitly that the Git `main` branch is
+- [x] Maintainer guidance says explicitly that the Git `main` branch is
       read-only for authoring and that tracked changes must start from a
       non-`main` branch.
 - [x] Maintainer guidance says explicitly that the dashboard shell header is a
       frozen contract across pinned dogfood and detached `source-local`
       maintainer-dev posture, including one compact product-repo runtime badge.
-- [ ] Bundle assets and install-managed AGENTS text carry the same contract for
+- [x] Bundle assets and install-managed AGENTS text carry the same contract for
       new installs.
-- [ ] Consumer installs persist a machine-readable write policy that protects
+- [x] Consumer installs persist a machine-readable write policy that protects
       `odylith/` and `.odylith/` by default.
-- [ ] Atlas diagrams and catalog metadata reflect the same lane model.
-- [ ] Atlas search matches short diagram-id tokens such as `45`, `045`, and
+- [x] Atlas diagrams and catalog metadata reflect the same lane model.
+- [x] Atlas search matches short diagram-id tokens such as `45`, `045`, and
       `-045` without requiring the full canonical id.
-- [ ] Subagent Router and Subagent Orchestrator contract surfaces say the
+- [x] Subagent Router and Subagent Orchestrator contract surfaces say the
       reasoning ladder and prompt-level orchestration apply across consumer,
       pinned dogfood, and detached `source-local` maintainer-dev lanes.
-- [ ] Delivery-intelligence refresh no longer waits on opportunistic
+- [x] Delivery-intelligence refresh no longer waits on opportunistic
       provider-backed reasoning when the persisted Tribunal artifact is absent.
-- [ ] Explicit Tribunal runs degrade coherently after a provider timeout or
+- [x] Explicit Tribunal runs degrade coherently after a provider timeout or
       transport failure instead of multiplying the same stall across cases.
 
 ## Non-Goals
-- [ ] Runtime-selection code changes.
-- [ ] New CLI subcommands for graph rendering or source-lane activation.
-- [ ] Consumer support for detached local source execution.
+- [x] Runtime-selection code changes.
+- [x] New CLI subcommands for graph rendering or source-lane activation.
+- [x] Consumer support for detached local source execution.
 
 ## Impacted Areas
-- [ ] [AGENTS.md](/Users/freedom/code/odylith/AGENTS.md)
-- [ ] [odylith/AGENTS.md](/Users/freedom/code/odylith/odylith/AGENTS.md)
-- [ ] [odylith/OPERATING_MODEL.md](/Users/freedom/code/odylith/odylith/OPERATING_MODEL.md)
-- [ ] [odylith/README.md](/Users/freedom/code/odylith/odylith/README.md)
-- [ ] [odylith/INSTALL_AND_UPGRADE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
+- [x] [AGENTS.md](/Users/freedom/code/odylith/AGENTS.md)
+- [x] [odylith/AGENTS.md](/Users/freedom/code/odylith/odylith/AGENTS.md)
+- [x] [odylith/OPERATING_MODEL.md](/Users/freedom/code/odylith/odylith/OPERATING_MODEL.md)
+- [x] [odylith/README.md](/Users/freedom/code/odylith/odylith/README.md)
+- [x] [odylith/INSTALL_AND_UPGRADE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
 - [x] [odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md](/Users/freedom/code/odylith/odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md)
-- [ ] [odylith/agents-guidelines/VALIDATION_AND_TESTING.md](/Users/freedom/code/odylith/odylith/agents-guidelines/VALIDATION_AND_TESTING.md)
-- [ ] [odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md](/Users/freedom/code/odylith/odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md)
+- [x] [odylith/agents-guidelines/VALIDATION_AND_TESTING.md](/Users/freedom/code/odylith/odylith/agents-guidelines/VALIDATION_AND_TESTING.md)
+- [x] [odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md](/Users/freedom/code/odylith/odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md)
 - [x] [odylith/maintainer/AGENTS.md](/Users/freedom/code/odylith/odylith/maintainer/AGENTS.md)
-- [ ] [odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md](/Users/freedom/code/odylith/odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md)
-- [ ] [odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md)
-- [ ] [odylith/registry/source/components/subagent-router/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/subagent-router/CURRENT_SPEC.md)
-- [ ] [odylith/registry/source/components/odylith/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/odylith/CURRENT_SPEC.md)
-- [ ] [odylith/registry/source/components/release/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/release/CURRENT_SPEC.md)
+- [x] [odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md](/Users/freedom/code/odylith/odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md)
+- [x] [odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md)
+- [x] [odylith/registry/source/components/subagent-router/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/subagent-router/CURRENT_SPEC.md)
+- [x] [odylith/registry/source/components/odylith/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/odylith/CURRENT_SPEC.md)
+- [x] [odylith/registry/source/components/release/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/release/CURRENT_SPEC.md)
 - [x] [odylith/registry/source/components/dashboard/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/dashboard/CURRENT_SPEC.md)
 - [x] [src/odylith/runtime/surfaces/tooling_dashboard_frontend_contract.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_frontend_contract.py)
 - [x] [src/odylith/runtime/surfaces/tooling_dashboard_template_context.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_template_context.py)
 - [x] [src/odylith/runtime/surfaces/templates/tooling_dashboard/page.html.j2](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/templates/tooling_dashboard/page.html.j2)
 - [x] [src/odylith/runtime/surfaces/templates/tooling_dashboard/style.css](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/templates/tooling_dashboard/style.css)
-- [ ] [odylith/registry/source/components/tribunal/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/tribunal/CURRENT_SPEC.md)
-- [ ] [odylith/atlas/source/odylith-product-runtime-boundary-map.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-product-runtime-boundary-map.mmd)
-- [ ] [odylith/atlas/source/odylith-self-host-runtime-and-release-gate.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-self-host-runtime-and-release-gate.mmd)
-- [ ] [odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.mmd)
-- [ ] [odylith/atlas/source/catalog/diagrams.v1.json](/Users/freedom/code/odylith/odylith/atlas/source/catalog/diagrams.v1.json)
-- [ ] [odylith/atlas/source/odylith-delivery-intelligence-closed-loop.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-delivery-intelligence-closed-loop.mmd)
-- [ ] [odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd)
-- [ ] [src/odylith/runtime/common/consumer_profile.py](/Users/freedom/code/odylith/src/odylith/runtime/common/consumer_profile.py)
-- [ ] [src/odylith/runtime/orchestration/subagent_orchestrator.py](/Users/freedom/code/odylith/src/odylith/runtime/orchestration/subagent_orchestrator.py)
-- [ ] [src/odylith/install/agents.py](/Users/freedom/code/odylith/src/odylith/install/agents.py)
-- [ ] [src/odylith/install/manager.py](/Users/freedom/code/odylith/src/odylith/install/manager.py)
-- [ ] [src/odylith/runtime/surfaces/render_mermaid_catalog.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_mermaid_catalog.py)
-- [ ] [src/odylith/runtime/governance/delivery_intelligence_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/delivery_intelligence_engine.py)
-- [ ] [src/odylith/runtime/evaluation/tribunal_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/tribunal_engine.py)
-- [ ] [src/odylith/runtime/evaluation/odylith_reasoning.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_reasoning.py)
+- [x] [odylith/registry/source/components/tribunal/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/tribunal/CURRENT_SPEC.md)
+- [x] [odylith/atlas/source/odylith-product-runtime-boundary-map.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-product-runtime-boundary-map.mmd)
+- [x] [odylith/atlas/source/odylith-self-host-runtime-and-release-gate.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-self-host-runtime-and-release-gate.mmd)
+- [x] [odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.mmd)
+- [x] [odylith/atlas/source/catalog/diagrams.v1.json](/Users/freedom/code/odylith/odylith/atlas/source/catalog/diagrams.v1.json)
+- [x] [odylith/atlas/source/odylith-delivery-intelligence-closed-loop.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-delivery-intelligence-closed-loop.mmd)
+- [x] [odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd)
+- [x] [src/odylith/runtime/common/consumer_profile.py](/Users/freedom/code/odylith/src/odylith/runtime/common/consumer_profile.py)
+- [x] [src/odylith/runtime/orchestration/subagent_orchestrator.py](/Users/freedom/code/odylith/src/odylith/runtime/orchestration/subagent_orchestrator.py)
+- [x] [src/odylith/install/agents.py](/Users/freedom/code/odylith/src/odylith/install/agents.py)
+- [x] [src/odylith/install/manager.py](/Users/freedom/code/odylith/src/odylith/install/manager.py)
+- [x] [src/odylith/runtime/surfaces/render_mermaid_catalog.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_mermaid_catalog.py)
+- [x] [src/odylith/runtime/governance/delivery_intelligence_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/delivery_intelligence_engine.py)
+- [x] [src/odylith/runtime/evaluation/tribunal_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/tribunal_engine.py)
+- [x] [src/odylith/runtime/evaluation/odylith_reasoning.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_reasoning.py)
 - [x] [tests/unit/runtime/test_tooling_dashboard_frontend_contract.py](/Users/freedom/code/odylith/tests/unit/runtime/test_tooling_dashboard_frontend_contract.py)
 - [x] bundled consumer mirrors under [src/odylith/bundle/assets/odylith](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith)
 
 ## Risks & Mitigations
 
-- [ ] Risk: one source file and one bundled copy drift.
-  - [ ] Mitigation: patch source-owned and bundled copies in the same change.
-- [ ] Risk: the guidance still sounds like interpreter choice controls edit
+- [x] Risk: one source file and one bundled copy drift.
+  - [x] Mitigation: patch source-owned and bundled copies in the same change.
+- [x] Risk: the guidance still sounds like interpreter choice controls edit
+  - [ ] Mitigation: TODO (add explicit mitigation).
     authority.
-  - [ ] Mitigation: use one repeated three-boundary framing across docs and
+- [ ] Risk: Unspecified risk (legacy backfill).
+  - [x] Mitigation: use one repeated three-boundary framing across docs and
     skills.
-- [ ] Risk: maintainer overlay leaks into consumer bundle language.
-  - [ ] Mitigation: keep consumer bundles explicit that maintainer-only release
+- [x] Risk: maintainer overlay leaks into consumer bundle language.
+  - [x] Mitigation: keep consumer bundles explicit that maintainer-only release
     overlays remain product-repo-only.
-- [ ] Risk: making sync faster by silently removing Tribunal coverage.
-  - [ ] Mitigation: preserve deterministic Tribunal `case_queue` generation for
+- [x] Risk: making sync faster by silently removing Tribunal coverage.
+  - [x] Mitigation: preserve deterministic Tribunal `case_queue` generation for
     delivery refresh and test it directly.
-- [ ] Risk: provider timeout still multiplies across explicit Tribunal cases.
-  - [ ] Mitigation: disable provider enrichment for the rest of the run after
+- [x] Risk: provider timeout still multiplies across explicit Tribunal cases.
+  - [x] Mitigation: disable provider enrichment for the rest of the run after
     the first timeout or transport failure and record the degraded reason.
 
 ## Validation/Test Plan
@@ -168,7 +170,7 @@ Related Bugs:
       truth stay aligned.
 
 ## Current Outcome
-- [x] Bound to `B-027`; the runtime/write/validation boundary framing now lands
+- [x] `B-027` landed and the plan is now closed into `done`; the runtime/write/validation boundary framing now lands
       across root guidance, Odylith docs, maintainer overlays, bundled
       consumer assets, component specs, and Atlas.
 - [x] Maintainer-lane branch safety now states explicitly across source,

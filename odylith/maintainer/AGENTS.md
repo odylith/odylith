@@ -71,13 +71,18 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Keep maintainer and dogfood progress updates task-first. Do not narrate
   startup, routing, packet-selection, or degraded-attempt history unless a
   literal command, a live blocker, or a runtime-lane distinction matters.
-- At closeout, you may add at most one short `Odylith assist:` line if it
+- Keep Odylith ambient by default during work. If a routing or governance fact
+  materially changes the next move, weave it into the update first and reserve
+  explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels
+  for rare high-signal moments.
+- At closeout, you may add at most one short `Odylith Assist:` line if it
   helps summarize what Odylith materially contributed. Prefer
-  `**Odylith assist:**` when Markdown formatting is available; otherwise use
-  `Odylith assist:`. Lead with the user win, not Odylith mechanics. When the
-  evidence supports it, frame the edge against `odylith_off` or the broader
-  unguided path. Keep it soulful, friendly, authentic, and factual, not
-  slogan-like. Use only concrete observed counts, measured deltas, or
+  `**Odylith Assist:**` when Markdown formatting is available; otherwise use
+  `Odylith Assist:`. Lead with the user win, link updated governance ids inline
+  when they were actually changed, and frame the edge against `odylith_off` or
+  the broader unguided path when the evidence supports it. Keep it crisp,
+  authentic, clear, simple, insightful, soulful, friendly, free-flowing,
+  human, and factual. Use only concrete observed counts, measured deltas, or
   validation outcomes; if the evidence is thin or the user-facing delta is not
   clear, omit it.
 - In Codex, treat Odylith-routed native spawn as the default execution path

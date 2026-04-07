@@ -5579,6 +5579,8 @@ def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
     for path in (live_dir, codex_dir, codex_home_dir, analysis_bundle):
         path.mkdir(parents=True, exist_ok=True)
     monkeypatch.setattr(tempfile, "gettempdir", lambda: str(temp_root))
+    for env_var in ("TMPDIR", "TMP", "TEMP", "TEMPDIR"):
+        monkeypatch.setenv(env_var, str(temp_root))
     monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
     monkeypatch.setattr(
         runner,

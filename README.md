@@ -35,10 +35,14 @@ reduced-mode details, see [First Run In An Odylith Repo](odylith/README.md#first
 For more example prompts, see
 [Starter Prompt Inspirations](docs/STARTER_PROMPT_INSPIRATIONS.md).
 
-## Why "Odylith"?
+## What Does The Name "Odylith" Mean?
 
-Odylith combines movement with permanence: exploration anchored by a stable
-core.
+Odylith combines "Ody," suggesting a journey, with "lith," from the Greek
+_lithos_, meaning stone. The result is a name that suggests movement guided by
+permanence: exploration anchored by a stable core. It reflects the idea at the
+heart of the product: motion with a center, exploration with structure, and a
+path toward agentic AI swarms that replace rigid monoliths with adaptive,
+living networks.
 
 ## Intro
 

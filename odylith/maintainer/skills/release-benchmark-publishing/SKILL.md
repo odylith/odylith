@@ -84,7 +84,7 @@ Do not use this skill in consumer repos.
    approved first-pass reads unless a focused contradiction points directly
    there.
    If the closeout would benefit from naming Odylith directly, keep it to one
-   short end-of-work `Odylith assist:` line backed by measured proof, and
+   short end-of-work `Odylith Assist:` line backed by measured proof, and
    follow the detailed wording contract in
    [Odylith Chatter](../../registry/source/components/odylith-chatter/CURRENT_SPEC.md)
    instead of expanding the benchmark lane's own prompt tax.

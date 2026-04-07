@@ -8,7 +8,7 @@ commercial_value: 4
 product_impact: 5
 market_value: 4
 impacted_lanes: both
-impacted_parts: Compass runtime freshness, projection invalidation, standup-brief recovery, shell UX proof, cross-surface browser hardening, balanced live-shell freshness posture
+impacted_parts: Compass runtime freshness, projection invalidation, standup-brief recovery, shell UX proof, cross-surface browser hardening, balanced live-shell freshness posture, default-surface diagnostics curation, cross-surface filter and search semantics
 sizing: M
 complexity: High
 ordering_score: 100
@@ -40,7 +40,14 @@ is too late to be the primary freshness posture for consumer shell use: an
 operator can spend a long active session looking at stale Odylith views before
 the pre-commit hook ever gets a chance to repair anything. The current browser
 suite also proves many surface routes, but it does not yet lock the broader
-UX/UI freshness contracts tightly enough.
+UX/UI freshness contracts tightly enough. Radar and Compass also still disagree
+about which traceability diagnostics count as default operator-facing warnings,
+so info-level maintainer autofix conflicts can leak into Radar detail cards as
+scary product warnings. Search and filter behavior also still drifts across
+surfaces: Atlas already supports punctuation-insensitive diagram search, while
+Radar, Registry, and Casebook still leave more exact-id and normalized-token
+cases to luck or raw substring matching, and the browser lane does not yet
+brutalize those edge cases across every governance surface.
 
 ## Customer
 - Primary: Odylith operators using Compass as the live blended control surface.
@@ -55,8 +62,10 @@ the Odylith UX feels reactive, trustworthy, and much harder to regress.
 ## Proposed Solution
 Harden runtime freshness across Compass and related shell flows: version the
 projection contract, cap Compass runtime reuse by age for rolling windows,
-remove stale cross-packet global brief recovery, and expand Playwright proof to
-assert fresh KPIs, brief posture, timelines, and cross-surface state restore.
+remove stale cross-packet global brief recovery, curate traceability
+diagnostics once so default surfaces only show operator-facing warning/error
+rows, and expand Playwright proof to assert fresh KPIs, brief posture,
+timelines, and cross-surface state restore.
 Extend that same model into a balanced live-shell posture:
 - keep live shell views fresh earlier than commit through runtime-backed data
   and bounded shell-safe refresh while the shell is actively open
@@ -72,6 +81,9 @@ Extend that same model into a balanced live-shell posture:
   it until commit time
 - keep benchmark and release-proof lanes frozen so no hidden live-refresh path
   contaminates the evaluation contract
+- harden every governance-surface search and filter contract so exact ids,
+  normalized tokens, reset behavior, and invalid/deep-linked filter state all
+  behave predictably under headless browser proof
 
 ## Scope
 - fix Compass runtime reuse so 24h/48h windows rebuild on age as well as input
@@ -82,8 +94,13 @@ Extend that same model into a balanced live-shell posture:
   earlier than commit without forcing tracked-governance churn
 - surface mixed-worktree or drift posture clearly when shell-safe refresh is no
   longer safe
+- stop default Radar warning cards from surfacing info-level maintainer
+  traceability autofix conflicts that belong in diagnostics artifacts instead
 - add broader browser proof for shell UX/UI across Compass, Atlas, Radar,
   Registry, and Casebook
+- align search semantics across Radar, Registry, Atlas, and Casebook so exact
+  ids and punctuation-insensitive human queries do not behave differently
+  depending on which governance surface the operator happened to open first
 - rerender shipped shell and Compass assets
 
 ## Non-Goals
@@ -96,6 +113,8 @@ Extend that same model into a balanced live-shell posture:
 - aggressive brief fallback changes could reduce availability if provider reuse
   is still needed in scoped paths
 - browser assertions could become brittle if they depend on incidental layout
+- broad filter-search matching could become too fuzzy and hide real exact-match
+  intent
 
 ## Dependencies
 - `B-017`, `B-018`, and `B-023` established the browser-proof lane and shell
@@ -106,7 +125,11 @@ Extend that same model into a balanced live-shell posture:
   across changed fact packets
 - Compass critical-risk KPIs and timeline panels reflect current source truth
   after tab hops and reloads
+- default operator-facing shell surfaces agree on which traceability warnings
+  deserve primary warning treatment
 - browser proof covers broader shell UX/UI freshness paths, not just Compass
+- exact-id and normalized-token filter/search behavior is proven across Radar,
+  Registry, Atlas, Casebook, and Compass filter state
 - the shell makes the difference between live runtime freshness and tracked
   governance drift explicit instead of leaving commit-time repair as the first
   user-visible signal
@@ -114,7 +137,9 @@ Extend that same model into a balanced live-shell posture:
 
 ## Validation
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/runtime/test_surface_projection_fingerprint.py`
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_render_mermaid_catalog.py`
 - `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py`
+- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_filter_audit.py`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime tests/integration/runtime/test_surface_browser_smoke.py`
 - `PYTHONPATH=src python -m odylith.runtime.surfaces.render_compass_dashboard --repo-root . --output odylith/compass/compass.html`
 - `PYTHONPATH=src python -m odylith.runtime.surfaces.render_tooling_dashboard --repo-root . --output odylith/index.html`
@@ -143,6 +168,21 @@ Extend that same model into a balanced live-shell posture:
   deterministic fallback rewrites the same facts in plainer spoken language,
   and validation rejects overused stock openings so global and scoped briefs
   cannot quietly fall back into robotic prose after rerender
+- implemented on 2026-04-07 for cross-surface diagnostics curation:
+  traceability warning items now carry audience/visibility policy, default
+  Radar warning cards and Compass traceability risks agree on the same
+  operator-facing warning boundary, and browser proof now guards against raw
+  maintainer autofix conflicts leaking into the default workstream detail view
+- implemented on 2026-04-07 for cross-surface filter and search hardening:
+  Radar, Registry, and Casebook now honor exact canonical ids and normalized
+  punctuation-insensitive search terms more consistently, Atlas filter proof is
+  now part of the same aggressive browser lane, and the dedicated headless
+  audit makes cross-surface filter drift a release-visible failure instead of a
+  lucky manual catch
+- implemented on 2026-04-07 for Compass retained-history filter reliability:
+  the audit-day picker now clamps against real retained history dates instead
+  of a synthetic 30-day range, so historical filter changes stop inviting
+  browser-visible 404s for snapshots that were never retained
 
 ## Rollout
 Ship as a freshness-and-proof hardening slice. No data migration is required,
@@ -166,6 +206,8 @@ and the proof lane has to catch this class of regression before a user does.
 - Compass warns when the loaded runtime snapshot is stale instead of implying
   recent empty-day truth
 - browser proof covers more real UX/UI edge cases across shell surfaces
+- Radar, Registry, Atlas, and Casebook search behaves more consistently for
+  exact ids and punctuation-insensitive human queries
 - dashboard live refresh now publishes surface-specific policy and guardrail
   metadata so the shell can keep read-only tabs current without hidden writes
 
@@ -177,6 +219,7 @@ and the proof lane has to catch this class of regression before a user does.
 ## Test Strategy
 - tighten unit guards around freshness invalidation and cache recovery
 - add broader Playwright proof for shell cross-tab and reload freshness
+- add a dedicated governance-surface filter/search browser audit
 - rerun runtime/browser and benchmark lanes
 
 ## Open Questions

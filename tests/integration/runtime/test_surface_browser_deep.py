@@ -119,6 +119,30 @@ def _select_radar_row_with_cross_surface_links(radar) -> str:  # noqa: ANN001
     raise AssertionError("expected a Radar workstream with both Registry and Atlas detail links")
 
 
+def _reset_radar_filters(radar) -> None:  # noqa: ANN001
+    radar.locator("#query").fill("")
+    for selector in ("#section", "#phase", "#activity", "#lane", "#priority"):
+        radar.locator(selector).select_option("all")
+
+
+def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
+    _reset_radar_filters(radar)
+    radar.locator("#query").fill(idea_id)
+    radar.locator(f'button[data-idea-id="{idea_id}"]').wait_for(timeout=15000)
+    radar.locator(f'button[data-idea-id="{idea_id}"]').first.click()
+    radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+    radar.locator("#query").fill("")
+    radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+
+
+def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
+    panel = radar.locator("#detail details.topology-relations-panel").first
+    panel.wait_for(timeout=15000)
+    if panel.get_attribute("open") is None:
+        panel.evaluate("node => { node.open = true; }")
+    panel.locator(".topology-relations").wait_for(timeout=15000)
+
+
 def _wait_for_locator_count(page, frame_selector: str, locator_selector: str, expected: int) -> None:  # noqa: ANN001
     page.wait_for_function(
         """({ frameSelector, locatorSelector, expected }) => {
@@ -249,6 +273,58 @@ def test_registry_search_filters_reset_and_detail_actions(browser_context) -> No
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def test_registry_memory_substrate_deep_links_select_the_right_component_detail(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    registry = page.frame_locator("#frame-registry")
+    memory_components = (
+        ("odylith-projection-bundle", "Odylith Projection Bundle"),
+        ("odylith-projection-snapshot", "Odylith Projection Snapshot"),
+        ("odylith-memory-backend", "Odylith Memory Backend"),
+        ("odylith-remote-retrieval", "Odylith Remote Retrieval"),
+        ("odylith-memory-contracts", "Odylith Memory Contracts"),
+    )
+
+    for component_id, component_name in memory_components:
+        response = page.goto(
+            base_url + f"/odylith/index.html?tab=registry&component={component_id}",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
+        registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+        _wait_for_shell_query_param(page, tab="registry", key="component", value=component_id)
+        registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
+        registry.locator("#detail .component-name", has_text=component_name).wait_for(timeout=15000)
+        assert registry.locator("#detail a.detail-action-chip").count() > 0
+
+    registry.locator("#search").fill("memory")
+    filtered_components = {
+        str(component_id)
+        for component_id in registry.locator("button[data-component]").evaluate_all(
+            """nodes => nodes
+              .map((node) => String(node.getAttribute("data-component") || "").trim())
+              .filter(Boolean)
+            """
+        )
+    }
+    assert {
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts",
+    }.issubset(filtered_components)
+
+    registry.locator("#search").fill("remote retrieval")
+    registry.locator('button[data-component="odylith-remote-retrieval"]').wait_for(timeout=15000)
+    assert registry.locator("button[data-component]").count() == 1
+    registry.locator('button[data-component="odylith-remote-retrieval"]').click()
+    _wait_for_shell_query_param(page, tab="registry", key="component", value="odylith-remote-retrieval")
+    registry.locator("#detail .component-name", has_text="Odylith Remote Retrieval").wait_for(timeout=15000)
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_radar_search_selection_and_cross_surface_detail_links(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -275,6 +351,122 @@ def test_radar_search_selection_and_cross_surface_detail_links(browser_context) 
     if not phase_value:
         pytest.skip("Radar fixture does not currently expose non-default phase filters with results.")
     assert 0 < phase_count <= baseline_count
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_radar_topology_relation_chips_route_to_their_own_workstream_ids(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    radar = page.frame_locator("#frame-radar")
+    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    source_id = "B-048"
+    _select_radar_workstream(radar, source_id)
+    _wait_for_shell_query_param(page, tab="radar", key="workstream", value=source_id)
+    _open_radar_topology_relations(radar)
+    relation_ids = [
+        str(token)
+        for token in radar.locator("#detail").evaluate(
+            """(node) => Array.from(
+                new Set(
+                  Array.from(node.querySelectorAll('details.topology-relations-panel .topology-relations [data-link-idea]'))
+                    .map((chip) => String(chip.getAttribute('data-link-idea') || '').trim())
+                    .filter(Boolean)
+                )
+            )"""
+        )
+    ]
+    if not relation_ids:
+        pytest.skip("Radar fixture does not currently expose B-048 relation chips.")
+
+    for target_id in relation_ids:
+        _select_radar_workstream(radar, source_id)
+        _wait_for_shell_query_param(page, tab="radar", key="workstream", value=source_id)
+        _open_radar_topology_relations(radar)
+        chip = radar.locator(f'#detail [data-link-idea="{target_id}"]').first
+        chip.wait_for(timeout=15000)
+        chip.evaluate("node => node.click()")
+        radar.locator("#detail .detail-id", has_text=target_id).wait_for(timeout=15000)
+        radar.locator(f'button[data-idea-id="{target_id}"].active').wait_for(timeout=15000)
+        _wait_for_shell_query_param(page, tab="radar", key="workstream", value=target_id)
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_radar_topology_relation_clicks_self_heal_incompatible_filters(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    radar = page.frame_locator("#frame-radar")
+    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    source_id = "B-048"
+    source_section = "execution"
+    _select_radar_workstream(radar, source_id)
+    _wait_for_shell_query_param(page, tab="radar", key="workstream", value=source_id)
+    _open_radar_topology_relations(radar)
+    target_id = str(
+        radar.locator("#detail").evaluate(
+            """(node) => {
+                const rows = Array.from(node.querySelectorAll('details.topology-relations-panel .topology-rel-row'));
+                const childrenRow = rows.find(
+                  (row) => String(row.querySelector('.topology-rel-title')?.textContent || '').trim().toLowerCase() === 'children'
+                );
+                const chip = childrenRow?.querySelector('[data-link-idea]');
+                return chip ? String(chip.getAttribute('data-link-idea') || '').trim() : '';
+            }"""
+        )
+        or ""
+    ).strip()
+    if not target_id:
+        pytest.skip("Radar fixture does not currently expose a B-048 child relation chip.")
+
+    radar.locator("#section").select_option(source_section)
+    radar.locator("#query").fill(source_id)
+    _open_radar_topology_relations(radar)
+    radar.locator(f'#detail [data-link-idea="{target_id}"]').first.wait_for(timeout=15000)
+    assert radar.locator(f'button[data-idea-id="{target_id}"]').count() == 0
+
+    radar.locator(f'#detail [data-link-idea="{target_id}"]').first.evaluate("node => node.click()")
+    radar.locator("#detail .detail-id", has_text=target_id).wait_for(timeout=15000)
+    radar.locator(f'button[data-idea-id="{target_id}"].active').wait_for(timeout=15000)
+    _wait_for_shell_query_param(page, tab="radar", key="workstream", value=target_id)
+    assert radar.locator("#query").input_value() == ""
+    assert radar.locator("#section").input_value() == "all"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_radar_b058_memory_diagram_chip_routes_to_d025(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=radar&workstream=B-058", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    radar = page.frame_locator("#frame-radar")
+    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    radar.locator("#detail .detail-id", has_text="B-058").wait_for(timeout=15000)
+    radar.locator("#detail").evaluate(
+        """(node) => {
+            const link = Array.from(
+              node.querySelectorAll('a.chip-topology-diagram[href*="diagram=D-025"]')
+            ).find((candidate) => candidate instanceof HTMLElement && candidate.offsetParent !== null);
+            if (!link) {
+              throw new Error("missing visible D-025 topology chip");
+            }
+            link.click();
+        }"""
+    )
+
+    _wait_for_shell_tab(page, "atlas")
+    _wait_for_shell_query_param(page, tab="atlas", key="diagram", value="D-025")
+    atlas = page.frame_locator("#frame-atlas")
+    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+    atlas.locator("#diagramId", has_text="D-025").wait_for(timeout=15000)
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -495,6 +687,56 @@ def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  #
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def test_atlas_d025_memory_substrate_route_exposes_governed_registry_links(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=atlas&diagram=D-025", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    atlas = page.frame_locator("#frame-atlas")
+    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+    atlas.locator("#diagramId", has_text="D-025").wait_for(timeout=15000)
+    _wait_for_shell_query_param(page, tab="atlas", key="diagram", value="D-025")
+
+    registry_hrefs = [
+        str(href)
+        for href in atlas.locator("#registryLinks a").evaluate_all(
+            """nodes => nodes
+              .map((node) => String(node.getAttribute("href") || "").trim())
+              .filter(Boolean)
+            """
+        )
+    ]
+    assert registry_hrefs, "expected D-025 to expose Registry component links"
+    for component_id in (
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts",
+    ):
+        assert any(f"component={component_id}" in href for href in registry_hrefs), (
+            f"expected D-025 registry links to include {component_id}"
+        )
+
+    workstream_tokens = {
+        str(token)
+        for token in atlas.locator(
+            "#activeWorkstreamLinks a.workstream-pill-link, "
+            "#ownerWorkstreamLinks a.workstream-pill-link, "
+            "#historicalWorkstreamLinks a.workstream-pill-link"
+        ).evaluate_all(
+            """nodes => nodes
+              .map((node) => String(node.textContent || "").trim())
+              .filter(Boolean)
+            """
+        )
+    }
+    assert {"B-058", "B-059"}.issubset(workstream_tokens)
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_browser_context) -> None:  # noqa: ANN001
     base_url, context = compact_browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -565,6 +807,52 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     assert global_48h_meta["fingerprint"]
     assert global_48h_meta["fingerprint"] != global_24h_meta["fingerprint"]
     assert global_48h_meta["fingerprint"] != scoped_48h_meta["fingerprint"]
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_casebook_detail_stacks_cleanly_in_compact_viewport(compact_browser_context) -> None:  # noqa: ANN001
+    base_url, context = compact_browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    casebook = page.frame_locator("#frame-casebook")
+    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+
+    first_bug = casebook.locator("button.bug-row").first
+    bug_route = str(first_bug.get_attribute("data-bug") or "").strip()
+    bug_title = first_bug.locator(".bug-row-title").inner_text().strip()
+    assert bug_route
+    assert bug_title
+
+    first_bug.click()
+    _wait_for_shell_query_param(page, tab="casebook", key="bug", value=bug_route)
+    casebook.locator("#detailPane .detail-title", has_text=bug_title).wait_for(timeout=15000)
+    casebook.locator("#detailPane .detail-section-human").wait_for(timeout=15000)
+    casebook.locator("#detailPane .detail-section-agent").wait_for(timeout=15000)
+
+    layout = casebook.locator("#detailPane").evaluate(
+        """(node) => {
+            const human = node.querySelector('.detail-section-human');
+            const agent = node.querySelector('.detail-section-agent');
+            const humanBox = human ? human.getBoundingClientRect() : null;
+            const agentBox = agent ? agent.getBoundingClientRect() : null;
+            return {
+              clientWidth: node.clientWidth,
+              scrollWidth: node.scrollWidth,
+              humanTop: humanBox ? humanBox.top : 0,
+              humanBottom: humanBox ? humanBox.bottom : 0,
+              agentTop: agentBox ? agentBox.top : 0,
+              briefCardCount: node.querySelectorAll('.brief-card').length,
+              agentBlockCount: node.querySelectorAll('.agent-band-block').length,
+            };
+        }"""
+    )
+    assert layout["briefCardCount"] >= 1
+    assert layout["agentBlockCount"] >= 1
+    assert layout["scrollWidth"] - layout["clientWidth"] <= 16
+    assert layout["agentTop"] >= layout["humanBottom"] - 2
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

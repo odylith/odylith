@@ -8,7 +8,7 @@ Cloning this repository is for people developing Odylith itself. The supported
 install path for a consumer repo is the hosted installer:
 
 ```bash
-curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash
+curl -fsSL https://odylith.ai/install.sh | bash
 ```
 
 ## Happy Path

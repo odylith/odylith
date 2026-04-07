@@ -180,6 +180,23 @@ def _build_payload(
             },
         )
 
+    def _link_signature(row: Mapping[str, Any]) -> str:
+        path = str(row.get("path", "")).strip().casefold()
+        href = str(row.get("href", "")).strip()
+        return f"{path}||{href}"
+
+    def _exclude_overlapping_links(
+        rows: Sequence[Mapping[str, Any]],
+        *,
+        blocked: Sequence[Mapping[str, Any]],
+    ) -> list[dict[str, Any]]:
+        blocked_keys = {_link_signature(row) for row in blocked if isinstance(row, Mapping)}
+        return [
+            dict(row)
+            for row in rows
+            if isinstance(row, Mapping) and _link_signature(row) not in blocked_keys
+        ]
+
     def _bug_aliases(*, bug_id: str, bug_key: str, source_path: str) -> list[str]:
         aliases: list[str] = []
         for raw in (bug_id, bug_key, source_path):
@@ -300,8 +317,15 @@ def _build_payload(
                 "component_id": lambda token: str(token).strip().casefold(),
             },
         )
+        code_ref_links = _path_links(row.get("code_refs", []))
+        doc_ref_links = _path_links(row.get("doc_refs", []))
+        test_ref_links = _path_links(row.get("test_refs", []))
+        contract_ref_links = _path_links(row.get("contract_refs", []))
         agent_guidance = dict(row.get("agent_guidance", {})) if isinstance(row.get("agent_guidance"), dict) else {}
-        agent_guidance["proof_links"] = _path_links(agent_guidance.get("proof_paths", []))
+        agent_guidance["proof_links"] = _exclude_overlapping_links(
+            _path_links(agent_guidance.get("proof_paths", [])),
+            blocked=[*code_ref_links, *doc_ref_links, *test_ref_links, *contract_ref_links],
+        )
         payload_rows.append(
             {
                 "bug_id": bug_id,
@@ -356,10 +380,10 @@ def _build_payload(
                         "value": lambda token: str(token).strip(),
                     },
                 ),
-                "code_ref_links": _path_links(row.get("code_refs", [])),
-                "doc_ref_links": _path_links(row.get("doc_refs", [])),
-                "test_ref_links": _path_links(row.get("test_refs", [])),
-                "contract_ref_links": _path_links(row.get("contract_refs", [])),
+                "code_ref_links": code_ref_links,
+                "doc_ref_links": doc_ref_links,
+                "test_ref_links": test_ref_links,
+                "contract_ref_links": contract_ref_links,
                 "component_links": component_links,
                 "diagram_links": _dedupe_rows_by_signature(
                     (
@@ -1213,6 +1237,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     const kpiTotalCases = document.getElementById("kpiTotalCases");
     const kpiLatestCase = document.getElementById("kpiLatestCase");
     let detailRenderToken = 0;
+    const BUG_ID_COMPACT_RE = /^(?:CB)?-?(\\d{{1,}})$/i;
     const HUMAN_SIGNAL_FIELDS = [
       "Failure Signature",
       "Trigger Path",
@@ -1306,12 +1331,50 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return String(value || "").trim().toLowerCase();
     }}
 
+    function normalizeSearchToken(value) {{
+      return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "");
+    }}
+
+    function canonicalizeBugIdToken(value) {{
+      const raw = canonicalizeBugToken(value || "");
+      if (!raw) return "";
+      const token = raw.toUpperCase();
+      if (/^CB-\\d{{3,}}$/.test(token)) return token;
+      const compact = token.match(BUG_ID_COMPACT_RE);
+      if (!compact) return "";
+      return `CB-${{compact[1].padStart(3, "0")}}`;
+    }}
+
     function bugAliasTokens(row) {{
       const aliases = Array.isArray(row && row.bug_aliases) ? row.bug_aliases : [];
       const fallback = [row && row.bug_route, row && row.bug_id, row && row.bug_key, row && row.source_path];
       return [...aliases, ...fallback]
         .map((item) => canonicalizeBugToken(item || ""))
         .filter(Boolean);
+    }}
+
+    function bugSearchText(row) {{
+      return [
+        row && row.bug_id,
+        row && row.title,
+        row && row.summary,
+        row && row.components,
+        row && row.bug_key,
+        row && row.source_path,
+        row && row.search_text,
+        ...(Array.isArray(row && row.component_tokens) ? row.component_tokens : []),
+      ].join(" ").toLowerCase();
+    }}
+
+    function bugExactMatch(row, term) {{
+      const lowered = canonicalizeBugToken(term || "").toLowerCase();
+      const aliases = bugAliasTokens(row);
+      if (lowered && aliases.some((alias) => alias.toLowerCase() === lowered)) return true;
+      const canonicalBugId = canonicalizeBugIdToken(term || "");
+      if (!canonicalBugId) return false;
+      return aliases.some((alias) => canonicalizeBugIdToken(alias) === canonicalBugId);
     }}
 
     function resolveBugRoute(rows, token) {{
@@ -1627,7 +1690,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     function matchesSearch(row, term) {{
       if (!term) return true;
-      return String(row.search_text || "").toLowerCase().includes(term);
+      if (bugExactMatch(row, term)) return true;
+      const searchText = bugSearchText(row);
+      if (searchText.includes(term)) return true;
+      const normalizedNeedle = normalizeSearchToken(term);
+      if (!normalizedNeedle) return false;
+      return normalizeSearchToken(searchText).includes(normalizedNeedle);
     }}
 
     function matchesFilters(row, state) {{

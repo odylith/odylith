@@ -1,0 +1,45 @@
+%% Reviewed 2026-04-07 for B-058 and B-059 to make the compiler read models, retrieval lanes, and packet-safe memory contract explicit in Atlas.
+flowchart TB
+    Truth["Tracked product truth<br/>Radar + Plans + Casebook + Registry + Atlas + guidance"] --> Compiler["Context Engine compiler/store<br/>projection build + retained packet assembly"]
+
+    subgraph ReadModels["1. Compiler-owned read models"]
+        Bundle["Projection Bundle<br/>manifest + documents.v1.jsonl + edges.v1.jsonl"]
+        Snapshot["Projection Snapshot<br/>projection-snapshot.v1.json"]
+    end
+
+    subgraph Retrieval["2. Retrieval and memory lanes"]
+        Backend["Memory Backend<br/>LanceDB + Tantivy + judgment memory"]
+        Remote["Remote Retrieval<br/>optional Vespa augment / remote_only"]
+    end
+
+    subgraph Contracts["3. Packet-safe memory contract"]
+        MemoryContracts["Memory Contracts<br/>allowlist + redaction + compaction + execution-profile tokens"]
+    end
+
+    subgraph State["4. Derived runtime state"]
+        CompilerState[".odylith/runtime/odylith-compiler<br/>bundle + snapshot artifacts"]
+        MemoryState[".odylith/runtime/odylith-memory<br/>lance + tantivy + judgment memory + remote sync"]
+    end
+
+    subgraph Consumers["5. Runtime consumers"]
+        Governance["Delivery Intelligence + governed surfaces"]
+        Tribunal["Tribunal + Remediator"]
+        Conversation["Router + Orchestrator + Odylith Chatter"]
+    end
+
+    Compiler --> Bundle
+    Compiler --> Snapshot
+    Bundle --> Backend
+    Bundle --> Remote
+    Bundle --> MemoryContracts
+    Snapshot --> MemoryContracts
+    Backend --> MemoryContracts
+    Remote --> MemoryContracts
+    Bundle --> CompilerState
+    Snapshot --> CompilerState
+    Backend --> MemoryState
+    Remote --> MemoryState
+    MemoryContracts --> Governance
+    MemoryContracts --> Tribunal
+    MemoryContracts --> Conversation
+    Remote -. opt-in .-> Governance

@@ -58,6 +58,18 @@ def test_repo_has_authored_release_note_for_current_product_version() -> None:
     assert note.summary
 
 
+def test_repo_has_authored_release_note_for_v0_1_9_release_prep() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+
+    note = release_notes.load_release_notes_source(repo_root=repo_root, version="0.1.9")
+
+    assert note is not None
+    assert note.version == "0.1.9"
+    assert note.title == "Surface Truth"
+    assert note.highlights
+    assert note.summary.startswith("Trustworthy governance surfaces")
+
+
 def test_github_release_notes_url_points_at_tagged_markdown() -> None:
     assert release_notes.github_release_notes_url(version="0.1.7", release_tag="v0.1.7") == (
         "https://github.com/odylith/odylith/blob/v0.1.7/odylith/runtime/source/release-notes/v0.1.7.md"

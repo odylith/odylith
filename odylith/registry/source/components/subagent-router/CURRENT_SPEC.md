@@ -41,12 +41,14 @@ dogfood and detached `source-local` maintainer dev.
   blockers without narrating Odylith control-plane internals unless a literal
   command or runtime boundary matters.
 - If a host names Odylith directly in the final handoff, keep that outside the
-  route explanation stream and limit it to one short `Odylith assist:` line
+  route explanation stream and limit it to one short `Odylith Assist:` line
   backed by concrete observed counts, measured deltas, or validation outcomes.
-  Prefer `**Odylith assist:**` when Markdown formatting is available. Lead
-  with the user win, not Odylith mechanics, and frame the edge against
-  `odylith_off` or the broader unguided path when the evidence supports it.
-  Keep it soulful, friendly, authentic, and factual.
+  Prefer `**Odylith Assist:**` when Markdown formatting is available. Lead
+  with the user win, not Odylith mechanics, link updated governance ids inline
+  when they were actually changed, and frame the edge against `odylith_off`
+  or the broader unguided path when the evidence supports it. Keep it crisp,
+  authentic, clear, simple, insightful, soulful, friendly, free-flowing,
+  human, and factual.
 
 ## Public Command Surface
 Public entrypoint: `odylith subagent-router`

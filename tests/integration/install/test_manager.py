@@ -606,13 +606,16 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "never prefix commentary with control-plane receipt labels" in guidance_text
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in guidance_text
     assert "literal commands" not in guidance_text
-    assert "At closeout, you may add at most one short `Odylith assist:` line" in guidance_text
-    assert "Prefer `**Odylith assist:**` when Markdown formatting is available" in guidance_text
-    assert "Lead with the user win, not Odylith mechanics." in guidance_text
+    assert "Keep normal commentary task-first and human." in guidance_text
+    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
+    assert "At closeout, you may add at most one short `Odylith Assist:` line" in guidance_text
+    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
+    assert "Lead with the user win" in guidance_text
+    assert "link updated governance ids inline when they were actually changed" in guidance_text
     assert "frame the edge against `odylith_off` or the broader unguided path" in guidance_text
-    assert "Keep it soulful, friendly, authentic, and factual, not slogan-like." in guidance_text
-    assert "Use only concrete observed counts, measured deltas, or validation outcomes" in guidance_text
-    assert "if you cannot show a user-facing delta, omit the line." in guidance_text
+    assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in guidance_text
+    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
+    assert "Silence is better than filler." in guidance_text
     assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in guidance_text
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "stop at diagnosis and maintainer-ready feedback" in guidance_text
@@ -636,13 +639,16 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "never prefix commentary with control-plane receipt labels" in root_agents
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in root_agents
     assert "literal commands" not in root_agents
-    assert "At closeout, you may add at most one short `Odylith assist:` line" in root_agents
-    assert "Prefer `**Odylith assist:**` when Markdown formatting is available" in root_agents
-    assert "Lead with the user win, not Odylith mechanics." in root_agents
+    assert "Keep normal commentary task-first and human." in root_agents
+    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents
+    assert "At closeout, you may add at most one short `Odylith Assist:` line" in root_agents
+    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
+    assert "Lead with the user win" in root_agents
+    assert "link updated governance ids inline when they were actually changed" in root_agents
     assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
-    assert "Keep it soulful, friendly, authentic, and factual, not slogan-like." in root_agents
-    assert "Use only concrete observed counts, measured deltas, or validation outcomes" in root_agents
-    assert "if you cannot show a user-facing delta, omit the line." in root_agents
+    assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in root_agents
+    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
+    assert "Silence is better than filler." in root_agents
     assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in root_agents
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in root_agents
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
@@ -899,7 +905,7 @@ def test_start_preflight_uses_hosted_installer_when_odylith_is_not_installed(tmp
     preflight = evaluate_start_preflight(repo_root=repo_root)
 
     assert preflight.lane == "install"
-    assert preflight.next_command == "curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash"
+    assert preflight.next_command == "curl -fsSL https://odylith.ai/install.sh | bash"
 
 
 def test_start_preflight_prefers_repo_local_bootstrap_repair_when_available(tmp_path: Path) -> None:
@@ -1081,12 +1087,15 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
     assert "the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in guidance_text
-    assert "At closeout, you may add at most one short `Odylith assist:` line" in guidance_text
-    assert "Prefer `**Odylith assist:**` when Markdown formatting is available" in guidance_text
-    assert "Lead with the user win, not Odylith mechanics." in guidance_text
+    assert "Keep normal commentary task-first and human." in guidance_text
+    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
+    assert "At closeout, you may add at most one short `Odylith Assist:` line" in guidance_text
+    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
+    assert "Lead with the user win" in guidance_text
+    assert "link updated governance ids inline when they were actually changed" in guidance_text
     assert "frame the edge against `odylith_off` or the broader unguided path" in guidance_text
-    assert "Use only concrete observed counts, measured deltas, or validation outcomes" in guidance_text
-    assert "if you cannot show a user-facing delta, omit the line." in guidance_text
+    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
+    assert "Silence is better than filler." in guidance_text
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in guidance_text
     assert "Odylith grounding:" not in guidance_text
     assert "Odylith didn't return immediately" not in guidance_text
@@ -1112,12 +1121,15 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in root_agents
     assert "the exact file/workstream, the bug under test, or the validation in flight" in root_agents
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in root_agents
-    assert "At closeout, you may add at most one short `Odylith assist:` line" in root_agents
-    assert "Prefer `**Odylith assist:**` when Markdown formatting is available" in root_agents
-    assert "Lead with the user win, not Odylith mechanics." in root_agents
+    assert "Keep normal commentary task-first and human." in root_agents
+    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents
+    assert "At closeout, you may add at most one short `Odylith Assist:` line" in root_agents
+    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
+    assert "Lead with the user win" in root_agents
+    assert "link updated governance ids inline when they were actually changed" in root_agents
     assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
-    assert "Use only concrete observed counts, measured deltas, or validation outcomes" in root_agents
-    assert "if you cannot show a user-facing delta, omit the line." in root_agents
+    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
+    assert "Silence is better than filler." in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents
     assert "Odylith grounding:" not in root_agents
     assert "Odylith didn't return immediately" not in root_agents
@@ -1369,6 +1381,45 @@ def test_doctor_bundle_reports_unverified_wrapped_runtime_for_product_repo(tmp_p
     assert status.release_eligible is False
     assert "wrapped runtime" in message.lower()
     assert "not release-eligible" in message.lower()
+
+
+def test_doctor_bundle_reports_trust_degraded_wrapped_runtime_consistently_with_version(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    _write_product_repo_shape(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+
+    staged_root, staged_python = _seed_verified_release_runtime(repo_root, version="1.2.3")
+    runtime.switch_runtime(repo_root=repo_root, target=staged_root)
+    runtime.ensure_launcher(repo_root=repo_root, fallback_python=staged_python)
+
+    state = load_install_state(repo_root=repo_root)
+    state["active_version"] = "1.2.3"
+    state["detached"] = False
+    state["installed_versions"]["1.2.3"] = {
+        "runtime_root": str(staged_root),
+        "verification": {
+            "runtime_bundle_sha256": "runtime-1.2.3",
+            "wheel_sha256": "wheel-1.2.3",
+        },
+    }
+    write_install_state(repo_root=repo_root, payload=state)
+
+    (staged_root / "rogue.txt").write_text("oops\n", encoding="utf-8")
+
+    healthy, message = doctor_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", repair=False)
+    status = version_status(repo_root=repo_root)
+
+    assert status.runtime_source == "wrapped_runtime"
+    assert status.runtime_trust_degraded is True
+    assert "managed runtime trust is degraded" in status.runtime_source_detail.lower()
+    assert healthy is True
+    assert "healthy but trust-degraded" in message.lower()
+    assert "not release-eligible" in message.lower()
+    assert status.runtime_source_detail in message
+    assert "repo launcher managed runtime tree entry unexpected" not in message
+    assert "bootstrap launcher managed runtime tree entry unexpected" not in message
 
 
 def test_source_repo_upgrade_rejects_explicit_target_version(tmp_path: Path) -> None:
