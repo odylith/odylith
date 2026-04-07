@@ -40,8 +40,8 @@
 - Prevention: Release-lifecycle code needs characterization tests for
   interrupted staging and retry convergence, not only first-pass success.
 
-- Detected By: Real migration of `/Users/freedom/code/dentoai-orion` on
-  2026-04-06 after the first runtime trust failure.
+- Detected By: Real downstream migration rehearsal on 2026-04-06 after the
+  first runtime trust failure.
 
 - Failure Signature: `Directory not empty` under
   `.odylith/runtime/versions/.<version>.backup-*` during repeated repair or

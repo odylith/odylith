@@ -41,8 +41,8 @@
 - Prevention: Trust policy needs an explicit platform-noise allowlist instead
   of assuming every runtime tree entry is stable across local OS behavior.
 
-- Detected By: Real migration of `/Users/freedom/code/dentoai-orion` on
-  2026-04-06 during Odylith 0.1.7 macOS Apple Silicon install and repair.
+- Detected By: Real downstream migration rehearsal on 2026-04-06 during
+  Odylith 0.1.7 macOS Apple Silicon install and repair.
 
 - Failure Signature: `feature packs can only be applied to a trusted Odylith
   runtime: managed runtime tree entry unexpected: .../.DS_Store`

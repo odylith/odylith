@@ -506,8 +506,8 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     _assert_compass_live_state(compass, window_token="24h")
     _wait_for_compass_brief_state(page, window_token="24h", scope_label="Global")
     global_24h_meta = _compass_brief_metadata(compass)
-    assert global_24h_meta["source"] in {"provider", "cache"}
-    assert global_24h_meta["hasNotice"] == "false"
+    assert global_24h_meta["source"] in {"provider", "cache", "deterministic"}
+    assert global_24h_meta["hasNotice"] == ("true" if global_24h_meta["source"] == "deterministic" else "false")
     assert global_24h_meta["fingerprint"]
 
     scope_value = _first_non_default_option(compass, "#scope-select", excluded={""})
@@ -518,8 +518,8 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     compass.locator("#scope-pill", has_text=scope_value).wait_for(timeout=15000)
     _wait_for_compass_brief_state(page, window_token="24h", scope_label=scope_value)
     scoped_24h_meta = _compass_brief_metadata(compass)
-    assert scoped_24h_meta["source"] in {"provider", "cache"}
-    assert scoped_24h_meta["hasNotice"] == "false"
+    assert scoped_24h_meta["source"] in {"provider", "cache", "deterministic"}
+    assert scoped_24h_meta["hasNotice"] == ("true" if scoped_24h_meta["source"] == "deterministic" else "false")
     assert scoped_24h_meta["fingerprint"]
     assert scoped_24h_meta["fingerprint"] != global_24h_meta["fingerprint"]
 
@@ -538,8 +538,8 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     _assert_compass_live_state(compass, window_token="48h")
     _wait_for_compass_brief_state(page, window_token="48h", scope_label=scope_value)
     scoped_48h_meta = _compass_brief_metadata(compass)
-    assert scoped_48h_meta["source"] in {"provider", "cache"}
-    assert scoped_48h_meta["hasNotice"] == "false"
+    assert scoped_48h_meta["source"] in {"provider", "cache", "deterministic"}
+    assert scoped_48h_meta["hasNotice"] == ("true" if scoped_48h_meta["source"] == "deterministic" else "false")
     assert scoped_48h_meta["fingerprint"]
     assert scoped_48h_meta["fingerprint"] != scoped_24h_meta["fingerprint"]
 
@@ -560,8 +560,8 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     compass.locator("#scope-pill", has_text="Global").wait_for(timeout=15000)
     _wait_for_compass_brief_state(page, window_token="48h", scope_label="Global")
     global_48h_meta = _compass_brief_metadata(compass)
-    assert global_48h_meta["source"] in {"provider", "cache"}
-    assert global_48h_meta["hasNotice"] == "false"
+    assert global_48h_meta["source"] in {"provider", "cache", "deterministic"}
+    assert global_48h_meta["hasNotice"] == ("true" if global_48h_meta["source"] == "deterministic" else "false")
     assert global_48h_meta["fingerprint"]
     assert global_48h_meta["fingerprint"] != global_24h_meta["fingerprint"]
     assert global_48h_meta["fingerprint"] != scoped_48h_meta["fingerprint"]

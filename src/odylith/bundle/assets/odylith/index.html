@@ -6,13 +6,13 @@
   <title>Odylith</title>
   <meta name="application-name" content="Odylith" />
   <meta name="theme-color" content="#edf4ff" />
-  <link rel="manifest" href="../../../../../odylith/surfaces/brand/manifest.json" />
-  <link rel="icon" href="../../../../../odylith/surfaces/brand/favicon/favicon.ico" sizes="any" />
-  <link rel="icon" type="image/svg+xml" href="../../../../../odylith/surfaces/brand/favicon/favicon.svg" />
-  <link rel="icon" type="image/png" sizes="32x32" href="../../../../../odylith/surfaces/brand/favicon/favicon-32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="../../../../../odylith/surfaces/brand/favicon/favicon-16.png" />
-  <link rel="apple-touch-icon" sizes="256x256" href="../../../../../odylith/surfaces/brand/icon/odylith-icon-256x256.png" />
-  <link rel="mask-icon" href="../../../../../odylith/surfaces/brand/icon/odylith-icon-monochrome.svg" color="#173f83" />
+  <link rel="manifest" href="surfaces/brand/manifest.json" />
+  <link rel="icon" href="surfaces/brand/favicon/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="surfaces/brand/favicon/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="surfaces/brand/favicon/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="surfaces/brand/favicon/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="surfaces/brand/icon/odylith-icon-256x256.png" />
+  <link rel="mask-icon" href="surfaces/brand/icon/odylith-icon-monochrome.svg" color="#173f83" />
   <style>
     :root {
       --line: #bfd4f8;
@@ -171,20 +171,6 @@
       background: color-mix(in srgb, var(--toolbar-action-bg) 82%, white 18%);
       border-color: color-mix(in srgb, var(--toolbar-action-line) 78%, white 22%);
     }
-    .toolbar-version {
-      margin: 0;
-      position: absolute;
-      top: 10px;
-      right: 16px;
-      color: #6f8198;
-      font-size: 10px;
-      line-height: 1;
-      letter-spacing: 0.04em;
-      font-weight: 500;
-      white-space: nowrap;
-      pointer-events: none;
-      z-index: 2;
-    }
     .system-status-meta,
     .system-status-hero-chip,
     .telemetry-capability,
@@ -234,10 +220,6 @@
   }
   .toolbar-actions {
     justify-content: flex-start;
-  }
-  .toolbar-version {
-    top: 8px;
-    right: 12px;
   }
   .toolbar-center {
     justify-content: flex-start;
@@ -3907,16 +3889,15 @@ html, body {
       <div class="title-wrap">
         <div class="brand-banner">
           <div class="brand-banner-copy">
-            <img class="brand-lockup" src="../../../../../odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg" alt="Odylith" />
+            <img class="brand-lockup" src="surfaces/brand/lockup/odylith-lockup-horizontal.svg" alt="Odylith" />
           </div>
         </div>
       </div>
       <div class="toolbar-center" aria-label="Current repository">
-        <p class="toolbar-repo-name">odylith</p>
+        <p class="toolbar-repo-name">repo</p>
       </div>
 
       <div class="toolbar-meta">
-        <p class="toolbar-version">source-local</p>
 
         <div class="toolbar-actions">
         </div>
@@ -3931,7 +3912,7 @@ html, body {
     </header>
 
     <section class="viewport" aria-live="polite">
-
+<section id="shellWelcomeState" class="welcome-state welcome-state-launchpad" aria-label="Odylith first-run welcome state" data-welcome-dismiss-key="welcome-v2|none|backlog=1|component=1|atlas=1|notices=git-missing"><button id="welcomeDismiss" type="button" class="welcome-shell-dismiss" aria-label="Hide starter guide" title="Hide starter guide">&times;</button><div class="welcome-launchpad-shell"><section class="welcome-launchpad-hero"><div class="welcome-launchpad-main"><div class="welcome-state-head"><p class="welcome-kicker">First Run</p><h2 class="welcome-title">Start Odylith from one real code path</h2><p class="welcome-subhead">Open the cheatsheet drawer on the left and try out commands in this repo.</p></div><div class="welcome-hero-badges"><span>Starter prompt ready</span><span>Repo-native setup</span><span>Cheatsheet built in</span></div></div><section class="welcome-prompt-card"><div class="welcome-prompt-copy"><div class="welcome-prompt-head"><p class="welcome-card-kicker">Copy this into your agent</p><p class="welcome-prompt-intro">Ground one path, then let Odylith open the first governed records around it.</p></div><section class="welcome-process-card"><div class="welcome-process-head"><p class="welcome-card-kicker">Three quick steps</p><p class="welcome-process-copy">Move from prompt to grounded work without leaving the shell.</p></div><ol class="welcome-step-list welcome-step-list-process"><li class="welcome-step welcome-step-process"><span class="welcome-step-index">1</span><span class="welcome-step-copy">Copy the starter prompt.</span></li><li class="welcome-step welcome-step-process"><span class="welcome-step-index">2</span><span class="welcome-step-copy">Paste it into Codex or Claude Code.</span></li><li class="welcome-step welcome-step-process"><span class="welcome-step-index">3</span><span class="welcome-step-copy">Try commands in the cheatsheet.</span></li></ol></section><div class="welcome-prompt-block"><p class="welcome-prompt-text"><strong>"Use Odylith to start this repo from one real code path. Pick one path that matters, then create the first Radar item, first Registry boundary, and first Atlas map around that same path. First show me 5 bullets with the path you picked and why. Then create the Odylith files. Plain English. Real file paths only. No IDs. Only write under odylith/."</strong></p></div><p class="welcome-refresh-note">The shell refreshes itself as Odylith updates local surfaces.</p><p id="welcomeCopyStatus" class="welcome-copy-status" aria-live="polite"></p></div><div class="welcome-action-row"><button id="welcomeCopyPrompt" type="button" class="welcome-button" data-welcome-copy="true" data-copy-text="Use Odylith to start this repo from one real code path. Pick one path that matters, then create the first Radar item, first Registry boundary, and first Atlas map around that same path. First show me 5 bullets with the path you picked and why. Then create the Odylith files. Plain English. Real file paths only. No IDs. Only write under odylith/." data-copy-status="Starter prompt copied. Paste it into your agent.">Copy prompt</button></div></section></section><section class="welcome-launchpad-grid"><div class="welcome-launchpad-column"><section class="welcome-card welcome-card-notice welcome-card-warning"><p class="welcome-card-kicker">Git missing</p><p class="welcome-card-body">Odylith installed here, but repo intelligence stays reduced until this folder is backed by Git.</p></section></div><div class="welcome-launchpad-column"><section class="welcome-explainer-strip" aria-label="What each Odylith surface does first"><div class="welcome-explainer-head"><p class="welcome-kicker">Core Surfaces</p><h3 class="welcome-explainer-title">What the core surfaces do first</h3></div><div class="welcome-explainer-grid"><article class="welcome-explainer-card"><p class="welcome-card-kicker">Radar</p><p class="welcome-card-body">Radar keeps a clear backlog so the repo always has one governed next step.</p></article><article class="welcome-explainer-card"><p class="welcome-card-kicker">Registry</p><p class="welcome-card-body">Registry is the component ledger for boundaries, ownership, and contracts.</p></article><article class="welcome-explainer-card"><p class="welcome-card-kicker">Atlas</p><p class="welcome-card-body">Atlas keeps architecture visible with diagrams of topology and flow.</p></article><article class="welcome-explainer-card"><p class="welcome-card-kicker">Compass</p><p class="welcome-card-body">Compass keeps briefs and timelines so the next move stays clear.</p></article></div></section></div></section></div></section>
       <div id="shellRecoveryDock" class="shell-recovery-dock" hidden aria-live="polite">
         <button id="welcomeReopen" type="button" class="shell-recovery-button" hidden aria-hidden="true">Starter Guide</button>
         <button id="upgradeReopen" type="button" class="shell-recovery-button shell-recovery-button-upgrade" hidden aria-hidden="true"></button>
@@ -3965,7 +3946,7 @@ html, body {
             <button id="gridBriefClose" type="button" class="brief-close" aria-label="Collapse developer notes">Close</button>
           </div>
           <div class="brief-drawer-body">
-            <section class="maintainer-note-list" aria-label="Developer notes"><article class="maintainer-note-card" role="listitem"><div class="maintainer-note-head"><span class="maintainer-note-id">N-001</span><h3 class="maintainer-note-title">Product Self-Governance Is Live Here</h3></div><div class="maintainer-note-meta"><p><strong>Recorded</strong> 2026-03-26 13:05:00 PDT</p><p><strong>Context</strong> This repository is the public product home for Odylith, so its own Compass, Radar, Atlas, Registry, and Casebook surfaces are expected to govern this codebase directly.</p></div><div class="maintainer-note-section"><p class="maintainer-note-section-title">Watch</p><ul class="maintainer-note-bullets"><li>Keep product docs, product guidance, product skills, and product runtime behavior source-owned in this repository; host repos keep their own plans, bugs, specs, and diagrams locally.</li><li>Use the local Odylith governance surfaces in this repository to validate product changes before publishing a release.</li><li>Do not reintroduce host-repo-branded notes, repo labels, or ownership cues into the public product shell.</li></ul></div></article></section>
+            <section class="maintainer-note-list" aria-label="Developer notes"><article class="maintainer-note-card maintainer-note-card-empty" role="listitem"><div class="maintainer-note-head"><span class="maintainer-note-id">N-000</span><h3 class="maintainer-note-title">No developer notes recorded</h3></div><p class="maintainer-note-empty-copy">Add a source-owned developer note before relying on the shell drawer for platform context.</p></article></section>
           </div>
         </div>
       </aside>
@@ -3988,7 +3969,7 @@ html, body {
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
-  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=42a171a9aacb"></script>
-  <script src="tooling-app.v1.js?v=42a171a9aacb"></script>
+  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=d8080ab1c099"></script>
+  <script src="tooling-app.v1.js?v=d8080ab1c099"></script>
 </body>
 </html>

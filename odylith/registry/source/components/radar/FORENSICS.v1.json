@@ -42,28 +42,18 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-migration-stale-reference-audit.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-radar-index-normalization-before-sync-validation.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-lifecycle-plan-dirty-overlap-summary-defaults.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-macos-runtime-trust-ignores-os-metadata-noise.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-sync-failure-summary-dedup-and-next-action-routing.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-trust-bootstrap-warning-suppression-and-success-clarity.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md"
+        "src/odylith/bundle/assets/odylith/radar/source/INDEX.md"
       ],
       "confidence": "high",
-      "event_index": 56,
+      "event_index": 54,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md, src/odylith/runtime/governance/sync_workstream_artifacts.py +9 more",
-      "ts_iso": "2026-04-06T15:24:21-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
+      "ts_iso": "2026-04-06T17:58:38-07:00",
       "workstreams": []
     },
     {

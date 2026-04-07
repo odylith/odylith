@@ -134,7 +134,7 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     const DIAGRAM_ID_RE = /^D-\d{3,}$/;
     const DIAGRAM_COMPACT_RE = /^D(\d{3,})$/;
     const SIDEBAR_PREF_KEY = "mermaid.sidebar.collapsed";
-    const TOOLING_BASE_HREF = "../../../../../../odylith/index.html";
+    const TOOLING_BASE_HREF = "../index.html";
     function initSharedQuickTooltips() {
   const QUICK_TOOLTIP_BIND_KEY = null;
   if (QUICK_TOOLTIP_BIND_KEY && document.body && document.body.dataset[QUICK_TOOLTIP_BIND_KEY] === "1") {

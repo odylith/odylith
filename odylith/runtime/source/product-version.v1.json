@@ -1,6 +1,6 @@
 {
   "migration_required": false,
-  "odylith_version": "0.1.7",
+  "odylith_version": "0.1.8",
   "repo_schema_version": 1,
   "schema_version": "odylith-product.v1"
 }

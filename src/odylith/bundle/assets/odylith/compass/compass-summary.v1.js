@@ -106,7 +106,7 @@
       }
 
       if (!blocks.length) {
-        target.innerHTML = "";
+        target.innerHTML = '<p class="empty">No critical risks in this window.</p>';
         return;
       }
       target.innerHTML = blocks.join("");

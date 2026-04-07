@@ -2164,6 +2164,44 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-057",
+      "title": "Odylith Machine-Level Verified Runtime Store for Cross-Repo Reuse",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-005",
+        "B-040"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-018",
+        "D-019"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "execution_programs": [],
@@ -2559,6 +2597,13 @@
       "label": "Odylith Trust Bootstrap Warning Suppression and Success Clarity",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-trust-bootstrap-warning-suppression-and-success-clarity.md"
+    },
+    {
+      "id": "B-057",
+      "type": "workstream",
+      "label": "Odylith Machine-Level Verified Runtime Store for Cross-Repo Reuse",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md"
     },
     {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
@@ -3521,6 +3566,11 @@
     },
     {
       "source": "B-005",
+      "target": "B-057",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-005",
       "target": "artifact:github/workflows/test.yml",
       "edge_type": "plan_traceability:code_references"
     },
@@ -4371,6 +4421,11 @@
     },
     {
       "source": "B-040",
+      "target": "B-057",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-040",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
       "edge_type": "promoted_to_plan"
     },
@@ -4632,6 +4687,16 @@
     {
       "source": "B-056",
       "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-057",
+      "target": "diagram:D-018",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-057",
+      "target": "diagram:D-019",
       "edge_type": "diagram_linkage"
     }
   ],
@@ -5027,6 +5092,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-057": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -5043,13 +5115,13 @@
     "B-022: autofix skipped `workstream_split_into` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 56,
+    "workstream_count": 57,
     "execution_program_count": 0,
     "execution_wave_count": 0,
-    "node_count": 144,
-    "edge_count": 298,
+    "node_count": 145,
+    "edge_count": 302,
     "warning_count": 1,
     "warning_item_count": 1
   },
-  "generated_utc": "2026-04-06 22:26:59Z"
+  "generated_utc": "2026-04-07 01:03:59Z"
 }

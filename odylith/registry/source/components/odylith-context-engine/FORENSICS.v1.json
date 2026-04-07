@@ -44,21 +44,18 @@
   "timeline": [
     {
       "artifacts": [
-        "src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.5.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.6.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.7.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.8.md"
+        "src/odylith/bundle/assets/odylith/runtime/source/tooling_shell.v1.json"
       ],
       "confidence": "high",
-      "event_index": 55,
+      "event_index": 53,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-context-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.5.md, src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.6.md +2 more",
-      "ts_iso": "2026-04-06T14:53:28-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/runtime/source/tooling_shell.v1.json",
+      "ts_iso": "2026-04-06T18:03:24-07:00",
       "workstreams": []
     },
     {
