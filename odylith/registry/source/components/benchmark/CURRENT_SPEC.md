@@ -61,6 +61,9 @@ reviewer framing that explains how Odylith should be compared.
 - The README numbers, benchmark explainer, reviewer guide, and canonical SVG
   graphs are derived outputs. They must never outrun the latest validated
   published report or drift away from the benchmark priority order.
+- If maintainers explicitly waive proof for one release, that exception must
+  be tracked in `odylith/runtime/source/release-maintainer-overrides.v1.json`
+  and treated as an advisory downgrade, not as hidden benchmark success.
 - Odylith's public benchmark story is benchmark-first: memory, topology,
   governance surfaces, and orchestration are mechanisms that explain the
   execution delta, not the primary scorecard.

@@ -99,3 +99,19 @@ def test_lane_status_prefers_release_dispatch_for_active_session(monkeypatch, tm
     payload = maintainer_lane_status.lane_status_payload(repo_root=tmp_path)
 
     assert payload["next_command"] == "make release-dispatch"
+
+
+def test_lane_status_prefers_release_candidate_when_benchmark_is_warn(monkeypatch, tmp_path: Path) -> None:
+    _patch_common(
+        monkeypatch,
+        tmp_path,
+        branch="2026/freedom/v0.1.9",
+        clean_worktree=True,
+        session={"state": "inactive"},
+        version_errors=[],
+        benchmark_status="warn",
+    )
+
+    payload = maintainer_lane_status.lane_status_payload(repo_root=tmp_path)
+
+    assert payload["next_command"] == "make release-candidate"

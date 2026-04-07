@@ -80,6 +80,11 @@ Run the targets in this order.
    public benchmark claim. Label published latency as paired benchmark
    task-cycle time and published token cost as full-session spend, not as
    solo-user latency or initial prompt size.
+   A version-scoped maintainer override may waive this step only when it is
+   recorded in `odylith/runtime/source/release-maintainer-overrides.v1.json`;
+   that path is exceptional, must name the exact release version, and must
+   carry the reason in tracked repo truth instead of living only in shell
+   history.
 
 4. `make release-preflight [VERSION=X.Y.Z]`
    Initialize or reuse the sticky release session, reserve the release tag,

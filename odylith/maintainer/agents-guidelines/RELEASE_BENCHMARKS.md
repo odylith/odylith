@@ -12,6 +12,11 @@ execute the Odylith release benchmark publishing lane.
 - The published benchmark snapshot must come from
   `./.odylith/bin/odylith benchmark --repo-root . --profile proof`, not from
   the default quick lane, a warm-only rerun, or any other hand-picked report.
+- The only supported exception is a version-scoped maintainer override
+  recorded in `odylith/runtime/source/release-maintainer-overrides.v1.json`.
+  That override may downgrade benchmark proof and compare from blocking to
+  advisory for one named release version, but it must never become an
+  untracked shell-only exception.
 
 ## Integrity Non-Negotiable
 - Never game the eval.

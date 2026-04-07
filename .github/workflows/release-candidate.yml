@@ -26,8 +26,6 @@ jobs:
         run: hatch env create
       - name: Repair repo-local runtime bootstrap
         run: hatch run python -m odylith.cli doctor --repo-root . --repair
-      - name: Refresh proof benchmark
-        run: ./.odylith/bin/odylith benchmark --repo-root . --profile proof
       - name: Show lane status
         continue-on-error: true
         run: make lane-show

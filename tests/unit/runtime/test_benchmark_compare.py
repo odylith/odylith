@@ -16,12 +16,50 @@ def _report(report_id: str, version: str, *, latest_eligible: bool = True) -> di
     }
 
 
+def _write_override(tmp_path: Path, version: str = "0.1.9") -> None:
+    path = tmp_path / "odylith" / "runtime" / "source" / "release-maintainer-overrides.v1.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        (
+            "{\n"
+            '  "contract": "odylith_release_maintainer_overrides.v1",\n'
+            '  "benchmark_proof_overrides": [\n'
+            "    {\n"
+            f'      "version": "{version}",\n'
+            '      "mode": "skip_proof_and_compare",\n'
+            '      "reason": "Maintainer special request.",\n'
+            '      "owner": "freedom-research",\n'
+            '      "updated_utc": "2026-04-07T22:05:00Z"\n'
+            "    }\n"
+            "  ]\n"
+            "}\n"
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_compare_latest_to_baseline_returns_unavailable_without_latest_report(tmp_path: Path) -> None:
     result = benchmark_compare.compare_latest_to_baseline(repo_root=tmp_path)
 
     assert result.status == "unavailable"
     assert result.blocking is True
     assert result.baseline_source == "missing-latest"
+
+
+def test_compare_latest_to_baseline_warns_without_latest_report_when_override_is_active(monkeypatch, tmp_path: Path) -> None:
+    _write_override(tmp_path)
+    monkeypatch.setattr(
+        benchmark_compare,
+        "product_source_version",
+        lambda **kwargs: "0.1.9",
+    )
+
+    result = benchmark_compare.compare_latest_to_baseline(repo_root=tmp_path)
+
+    assert result.status == "warn"
+    assert result.blocking is False
+    assert result.baseline_source == "missing-latest"
+    assert any("Maintainer benchmark override active for v0.1.9" in item for item in result.notes)
 
 
 def test_compare_latest_to_baseline_warns_when_no_release_has_shipped(monkeypatch, tmp_path: Path) -> None:
@@ -315,6 +353,37 @@ def test_compare_latest_to_baseline_blocks_stale_candidate_version(monkeypatch, 
     assert result.candidate_product_version == "0.1.7"
     assert result.baseline_source == "latest-runtime-report"
     assert any("does not match current source version `0.1.8`" in item for item in result.notes)
+
+
+def test_compare_latest_to_baseline_downgrades_stale_candidate_version_under_override(monkeypatch, tmp_path: Path) -> None:
+    _write_override(tmp_path)
+    candidate_report = _report("candidate-1", "0.1.8")
+
+    monkeypatch.setattr(
+        benchmark_compare.runner,
+        "load_latest_benchmark_report",
+        lambda **kwargs: candidate_report,
+    )
+    monkeypatch.setattr(
+        benchmark_compare.runner,
+        "compact_report_summary",
+        lambda report: {
+            "report_id": str(report["report_id"]),
+            "product_version": str(report["product_version"]),
+            "status": "provisional_pass",
+        },
+    )
+    monkeypatch.setattr(
+        benchmark_compare,
+        "product_source_version",
+        lambda **kwargs: "0.1.9",
+    )
+
+    result = benchmark_compare.compare_latest_to_baseline(repo_root=tmp_path)
+
+    assert result.status == "warn"
+    assert result.blocking is False
+    assert any("Maintainer benchmark override active for v0.1.9" in item for item in result.notes)
 
 
 def test_build_benchmark_story_summarizes_compare_and_history(monkeypatch, tmp_path: Path) -> None:
