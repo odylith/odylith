@@ -17,8 +17,8 @@ from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 
 _PAYLOAD_GLOBAL_BOOTSTRAP = 'const payload = window["__ODYLITH_TOOLING_DATA__"] || {};'
 _INLINE_JSON_BOOTSTRAP = 'const payload = JSON.parse(document.getElementById("toolingDashboardData").textContent);'
-_FROZEN_HEADER_TEMPLATE_SHA256 = "155d203baf26674187a68ad004000de4885388ad58baa905b73df17086998a90"
-_FROZEN_HEADER_STYLE_SHA256 = "00a439c6e189c4cc8f39a00f2368c26e2b0d41673c0fa1c3f04bbecc52b8d246"
+_FROZEN_HEADER_TEMPLATE_SHA256 = "3955d604fde8797cba2101e88561e219a386228d67f7d2ec7690cd6ee71d1532"
+_FROZEN_HEADER_STYLE_SHA256 = "e707ffbe06ac51f66feaef225af8af0a2a5db93af3b0aaac4822c8b784d44c34"
 
 
 def _template_asset_path(filename: str) -> Path:

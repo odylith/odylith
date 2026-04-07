@@ -924,14 +924,14 @@ initSharedQuickTooltips();
 
     function renderLineChart(target, points, config) {
       if (!points.length) {
-        target.innerHTML = '<div class="graph-empty">No finished execution data yet.</div>';
+        target.innerHTML = "";
         return;
       }
       const finiteValues = points
         .flatMap((point) => [point[config.primaryKey], point[config.secondaryKey]])
         .filter((value) => Number.isFinite(value));
       if (!finiteValues.length) {
-        target.innerHTML = '<div class="graph-empty">No completed execution samples in this window.</div>';
+        target.innerHTML = "";
         return;
       }
       const width = 560;
@@ -1025,7 +1025,7 @@ initSharedQuickTooltips();
 
     function renderMixChart(target, mixData, byField) {
       if (!mixData.weeks.length || !mixData.categories.length) {
-        target.innerHTML = '<div class="graph-empty">No finished execution data yet.</div>';
+        target.innerHTML = "";
         return;
       }
       const width = 560;
@@ -1140,7 +1140,7 @@ initSharedQuickTooltips();
         ariaLabel: "Cycle time trend",
         summaryText: latestCycle
           ? `Weeks with samples: ${weeksWithSamples}/${cycle.length} · latest median ${latestCycle.median}d, p85 ${latestCycle.p85}d${lowSample ? " (low sample confidence)." : "."}`
-          : "No completed execution samples in this window.",
+          : "",
       });
 
       syncMixToggleUi();
@@ -1150,10 +1150,9 @@ initSharedQuickTooltips();
 
     function renderAnalytics(rows) {
       if (!el.analyticsPanel || !el.analyticsPanel.open) {
-        const message = '<div class="graph-empty">Open analytics to load trend data.</div>';
-        el.graphVelocity.innerHTML = message;
-        el.graphCycle.innerHTML = message;
-        el.graphMix.innerHTML = message;
+        el.graphVelocity.innerHTML = "";
+        el.graphCycle.innerHTML = "";
+        el.graphMix.innerHTML = "";
         syncMixToggleUi();
         return;
       }
@@ -2670,13 +2669,13 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       const selectedSummary = rows.find((row) => row.idea_id === state.selectedIdeaId);
       if (!selectedSummary) {
         el.detail.hidden = true;
-        el.detailEmpty.hidden = false;
+        el.detailEmpty.hidden = true;
         el.detail.innerHTML = "";
         return;
       }
       el.detail.hidden = false;
       el.detailEmpty.hidden = true;
-      el.detail.innerHTML = '<p class="empty">Loading workstream detail…</p>';
+      el.detail.innerHTML = "";
       const loadedDetail = await backlogDataSource.loadDetail(selectedSummary.idea_id);
       if (String(state.selectedIdeaId || "").trim() !== String(selectedSummary.idea_id || "").trim()) {
         return;
@@ -2906,13 +2905,10 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       void renderAnalytics(filtered);
       renderList(filtered, { preserveListScroll: Boolean(options.preserveListScroll) });
       void renderDetail(filtered);
-
+      el.empty.hidden = true;
       if (!filtered.length) {
-        el.empty.hidden = false;
         el.detail.hidden = true;
-        el.detailEmpty.hidden = false;
-      } else {
-        el.empty.hidden = true;
+        el.detailEmpty.hidden = true;
       }
 
       syncParentShellSelection();

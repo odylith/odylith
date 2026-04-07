@@ -529,12 +529,6 @@ initSharedQuickTooltips();
     function renderLinkList(node, links) {
       clearNode(node);
       if (!links || !links.length) {
-        const li = document.createElement("li");
-        const p = document.createElement("p");
-        p.className = "empty-note";
-        p.textContent = "No linked artifacts.";
-        li.appendChild(p);
-        node.appendChild(li);
         return;
       }
       links.forEach((item) => {
@@ -577,12 +571,6 @@ initSharedQuickTooltips();
     function renderWorkstreamList(node, ids) {
       clearNode(node);
       if (!ids.length) {
-        const li = document.createElement("li");
-        const p = document.createElement("p");
-        p.className = "empty-note";
-        p.textContent = "None.";
-        li.appendChild(p);
-        node.appendChild(li);
         return;
       }
 
@@ -675,6 +663,37 @@ initSharedQuickTooltips();
       }
     }
 
+    function clearActiveDiagram() {
+      activeDiagram = null;
+      titleEl.textContent = "";
+      idEl.textContent = "";
+      kindEl.textContent = "";
+      statusEl.textContent = "";
+      ownerEl.textContent = "";
+      reviewedEl.textContent = "";
+      freshnessEl.textContent = "";
+      freshnessEl.className = "meta-pill";
+      summaryEl.textContent = "";
+      clearNode(sourceLinksEl);
+      clearNode(componentListEl);
+      clearNode(backlogLinksEl);
+      clearNode(planLinksEl);
+      clearNode(docLinksEl);
+      clearNode(codeLinksEl);
+      clearNode(registryLinksEl);
+      clearNode(surfaceLinksEl);
+      clearNode(ownerWorkstreamLinksEl);
+      clearNode(activeWorkstreamLinksEl);
+      clearNode(historicalWorkstreamLinksEl);
+      historicalWorkstreamGroupEl.hidden = true;
+      historicalWorkstreamDisclosureEl.open = false;
+      historicalWorkstreamSummaryEl.textContent = "";
+      staleAlertEl.classList.remove("visible");
+      staleAlertEl.textContent = "";
+      imageEl.removeAttribute("src");
+      imageEl.dataset.fallbackApplied = "";
+    }
+
     function applyMeta(diagram) {
       activeDiagram = diagram;
       titleEl.textContent = diagram.title;
@@ -715,8 +734,9 @@ initSharedQuickTooltips();
 
     function setActive(index) {
       if (!activeList.length) {
-        activeDiagram = null;
         selectedDiagramId = "";
+        clearActiveDiagram();
+        syncAtlasNavigation();
         return;
       }
       activeIndex = clamp(index, 0, activeList.length - 1);
@@ -750,11 +770,9 @@ initSharedQuickTooltips();
     function renderList() {
       clearNode(listEl);
       if (!activeList.length) {
-        activeDiagram = null;
-        const li = document.createElement("li");
-        li.className = "diagram-item";
-        li.innerHTML = `<div class="diagram-btn"><p class="empty-note">No diagrams match current filters.</p></div>`;
-        listEl.appendChild(li);
+        selectedDiagramId = "";
+        clearActiveDiagram();
+        syncAtlasNavigation();
         return;
       }
 

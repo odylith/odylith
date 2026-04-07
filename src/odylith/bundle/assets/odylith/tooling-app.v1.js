@@ -54,7 +54,6 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     const runtimeStatusReopen = document.getElementById("runtimeStatusReopen");
     const upgradeSpotlight = document.getElementById("shellUpgradeSpotlight");
     const upgradeReopen = document.getElementById("upgradeReopen");
-    const versionStoryOpen = document.getElementById("versionStoryOpen");
     const upgradeSpotlightBackdrop = document.getElementById("upgradeSpotlightBackdrop");
     const upgradeSpotlightDismiss = document.getElementById("upgradeSpotlightDismiss");
     const welcomeCopyPrompt = document.getElementById("welcomeCopyPrompt");
@@ -124,9 +123,14 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     const upgradeSpotlightDismissStorageKey = upgradeSpotlightKeyToken
       ? `odylith.upgrade.spotlight.dismissed:${window.location.pathname}:${upgradeSpotlightKeyToken}`
       : "";
-    const upgradeSpotlightReopenLabel = upgradeSpotlightVersionLabel
-      ? `Show ${upgradeSpotlightVersionLabel} note`
-      : "Show release note";
+    const upgradeSpotlightReopenLabel = hasUpgradeSpotlight()
+      ? String(
+        upgradeSpotlightPayload.reopen_label
+        || upgradeSpotlightPayload.title
+        || upgradeSpotlightVersionLabel
+        || ""
+      ).trim()
+      : "";
     const shouldDeferWelcomeUntilUpgradeCloses = Boolean(
       welcomeState
       && welcomeLaunchpadActive
@@ -207,11 +211,10 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
         && !welcomeVisible
         && !upgradeVisible
       );
-      const showVersionStoryOpen = Boolean(versionStoryOpen && !showUpgradeReopen && !upgradeVisible && !welcomeVisible);
       if (welcomeReopen) {
         welcomeReopen.hidden = !showWelcomeReopen;
         welcomeReopen.setAttribute("aria-hidden", String(!showWelcomeReopen));
-        welcomeReopen.textContent = "Show starter guide";
+        welcomeReopen.textContent = "Starter Guide";
       }
       if (upgradeReopen) {
         upgradeReopen.hidden = !showUpgradeReopen;
@@ -223,12 +226,8 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
         runtimeStatusReopen.setAttribute("aria-hidden", String(!showRuntimeReopen));
         runtimeStatusReopen.textContent = "Show status";
       }
-      if (versionStoryOpen) {
-        versionStoryOpen.hidden = !showVersionStoryOpen;
-        versionStoryOpen.setAttribute("aria-hidden", String(!showVersionStoryOpen));
-      }
       if (recoveryDock) {
-        recoveryDock.hidden = !(showWelcomeReopen || showUpgradeReopen || showRuntimeReopen || showVersionStoryOpen);
+        recoveryDock.hidden = !(showWelcomeReopen || showUpgradeReopen || showRuntimeReopen);
         recoveryDock.setAttribute("aria-hidden", String(recoveryDock.hidden));
       }
     }
@@ -2537,7 +2536,6 @@ initToolingShellQuickTooltips();
   const searchInput = root.querySelector("[data-cheatsheet-search]");
   const results = document.getElementById("agentCheatsheetResults");
   const copyStatus = document.getElementById("agentCheatsheetCopyStatus");
-  const emptyState = document.getElementById("agentCheatsheetEmpty");
   const cards = Array.from(root.querySelectorAll("[data-cheatsheet-card]"));
   const filterButtons = Array.from(root.querySelectorAll("[data-cheatsheet-filter]"));
   const copyButtons = Array.from(root.querySelectorAll("[data-cheatsheet-copy-button]"));
@@ -2584,9 +2582,6 @@ initToolingShellQuickTooltips();
     });
     if (results) {
       results.textContent = visibleLabel(visibleCount, query);
-    }
-    if (emptyState) {
-      emptyState.hidden = visibleCount !== 0;
     }
   }
 

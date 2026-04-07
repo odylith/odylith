@@ -6,6 +6,29 @@ Last updated (UTC): 2026-04-06
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
+  presentation and next-action routing. | Open | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
+| CB-061 | 2026-04-06 | Successful trust bootstrap still prints scary non fatal warnings | P1 | `src/odylith/install/release_assets.py`,
+  `src/odylith/cli.py`, install and repair success messaging, release-note copy. | Open | [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md) |
+| CB-055 | 2026-04-06 | Repair and reinstall do not converge after partial runtime failure | P0 | `src/odylith/install/runtime.py`,
+  `src/odylith/install/manager.py`, runtime replacement helpers, repair
+  lifecycle, reinstall flow. | Open | [2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md](2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md) |
+| CB-054 | 2026-04-06 | Macos runtime metadata files break managed runtime trust validation | P0 | `src/odylith/install/runtime_integrity.py`,
+  `src/odylith/install/runtime.py`, managed runtime trust policy, feature-pack
+  preflight. | Open | [2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md](2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md) |
+| CB-060 | 2026-04-06 | Lifecycle plans print full dirty overlap by default | P2 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, lifecycle-plan
+  printers. | Open | [2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md](2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md) |
+| CB-058 | 2026-04-06 | Legacy radar index is not normalized before sync validation | P0 | `src/odylith/runtime/governance/validate_backlog_contract.py`,
+  `src/odylith/runtime/governance/backlog_authoring.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, Radar source
+  upgrade bridge. | Open | [2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md](2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md) |
+| CB-057 | 2026-04-06 | Legacy migration omits stale odyssey reference audit | P1 | `src/odylith/install/manager.py`, migration summary and
+  reporting, tracked-text audit policy. | Open | [2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md](2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md) |
+| CB-056 | 2026-04-06 | Doctor and version disagree on wrapped runtime trust degradation | P1 | `src/odylith/install/manager.py`,
+  `src/odylith/cli.py`, runtime-source derivation, self-host posture
+  validation. | Open | [2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md](2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md) |
 | CB-052 | 2026-04-04 | Registry live forensics miss source owned bundle mirror component activity | P1 | `src/odylith/runtime/governance/component_registry_intelligence.py`,
   Registry forensic coverage, `tribunal`, `remediator`, source-owned bundled
   runtime docs, Registry detail rendering. | Open | [2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md](2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md) |

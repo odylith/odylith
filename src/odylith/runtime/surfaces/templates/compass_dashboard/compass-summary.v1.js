@@ -106,7 +106,7 @@
       }
 
       if (!blocks.length) {
-        target.innerHTML = '<p class="empty">No critical blended risks in current payload.</p>';
+        target.innerHTML = "";
         return;
       }
       target.innerHTML = blocks.join("");
@@ -223,40 +223,7 @@
     }
 
     function renderUnavailableBrief(brief) {
-      const diagnostics = brief && brief.diagnostics && typeof brief.diagnostics === "object" ? brief.diagnostics : {};
-      const title = String(diagnostics.title || "AI standup brief unavailable").trim() || "AI standup brief unavailable";
-      const reason = String(diagnostics.reason || "unavailable").trim();
-      const message = String(diagnostics.message || "No validated AI-authored standup brief is available for this view.").trim();
-      const cardClass = reason === "provider_deferred" ? "brief-status-card brief-status-card--info" : "brief-status-card";
-      const attemptedUtc = String(diagnostics.attempted_utc || "").trim();
-      const validationErrors = Array.isArray(diagnostics.validation_errors)
-        ? diagnostics.validation_errors.map((item) => String(item || "").trim()).filter(Boolean)
-        : [];
-      const rows = [
-        ["Reason", reason.replace(/_/g, " ")],
-        ["Provider", String(diagnostics.provider || "").trim()],
-        ["Config", String(diagnostics.config_source || "").trim()],
-        ["Config Path", String(diagnostics.config_path || "").trim()],
-        ["Last Attempt", attemptedUtc ? compactTimestamp(attemptedUtc) : ""],
-      ].filter(([, value]) => String(value || "").trim());
-      if (validationErrors.length) {
-        rows.push(["Validation", validationErrors.slice(0, 2).join(" | ")]);
-      }
-      const diagnosticsHtml = rows.length
-        ? `<div class="brief-diagnostic-grid">${rows.map(([label, value]) => `
-            <div class="brief-diagnostic-row">
-              <div class="brief-diagnostic-key">${escapeHtml(label)}</div>
-              <div class="brief-diagnostic-value">${escapeHtml(value)}</div>
-            </div>
-          `).join("")}</div>`
-        : "";
-      return `
-        <div class="${cardClass}">
-          <div class="brief-status-title">${escapeHtml(title)}</div>
-          <div class="brief-status-copy">${escapeHtml(message)}</div>
-          ${diagnosticsHtml}
-        </div>
-      `;
+      return "";
     }
 
     function renderReadyBrief(brief, linkContext) {
@@ -273,13 +240,10 @@
           .map((bullet) => renderBriefBullet(bullet, brief, linkContext, voiceCount > 1))
           .filter(Boolean)
           .join("");
-        const fallbackText = !items
-          ? '<div class="empty">No validated narrative bullets available for this section.</div>'
-          : "";
         return `
           <section class="brief-section">
             <div class="brief-section-title">${escapeHtml(spec.label)}</div>
-            <div class="brief-section-body">${items ? `<ul class="brief-bullet-list">${items}</ul>` : fallbackText}</div>
+            <div class="brief-section-body">${items ? `<ul class="brief-bullet-list">${items}</ul>` : ""}</div>
           </section>
         `;
       }).join("");
@@ -325,7 +289,7 @@
       applyBriefDataset(target, brief, state);
 
       if (!brief || typeof brief !== "object") {
-        target.innerHTML = '<div class="empty">No standup brief available for this view.</div>';
+        target.innerHTML = "";
         return;
       }
       if (String(brief.status || "").trim() !== "ready") {

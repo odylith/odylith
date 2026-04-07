@@ -7,16 +7,17 @@
     "D-021",
     "D-023",
     "D-024",
-    "D-014"
+    "D-014",
+    "D-018"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 14,
+    "explicit_event_count": 15,
     "mapped_workstream_evidence_count": 1,
     "recent_path_match_count": 0,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 14
+    "timeline_event_count": 15
   },
   "name": "Release",
   "path_prefixes": [
@@ -38,6 +39,33 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 50,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-04-06T11:04:54-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "github/workflows/release.yml",
@@ -492,6 +520,10 @@
     "B-032",
     "B-033",
     "B-040",
-    "B-041"
+    "B-041",
+    "B-049",
+    "B-050",
+    "B-056",
+    "B-048"
   ]
 }

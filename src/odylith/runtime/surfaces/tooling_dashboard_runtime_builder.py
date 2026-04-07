@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -25,7 +24,6 @@ class ToolingDashboardSurfacePaths:
 @dataclass(frozen=True)
 class ToolingDashboardBuildResult:
     runtime_payload: dict[str, Any]
-    release_notes_path: Path | None
 
 
 def _shell_repo_name(*, repo_root: Path) -> str:
@@ -92,12 +90,6 @@ def validate_surface_paths(paths: ToolingDashboardSurfacePaths) -> list[str]:
     return errors
 
 
-def release_notes_output_path(*, output_path: Path, spotlight: Mapping[str, Any]) -> Path:
-    version_token = str(spotlight.get("to_version", "")).strip() or str(spotlight.get("release_tag", "")).strip() or "latest"
-    slug = re.sub(r"[^0-9A-Za-z._-]+", "-", version_token).strip("-").lower() or "latest"
-    return output_path.parent / "release-notes" / f"{slug}.html"
-
-
 def build_runtime_payload(
     *,
     repo_root: Path,
@@ -114,18 +106,6 @@ def build_runtime_payload(
 ) -> ToolingDashboardBuildResult:
     spotlight_payload = dict(release_spotlight)
     version_story_payload = dict(version_story)
-    release_notes_path: Path | None = None
-    release_story_payload = spotlight_payload if bool(spotlight_payload.get("show")) else version_story_payload
-    if bool(release_story_payload.get("show")):
-        release_notes_path = release_notes_output_path(
-            output_path=surface_paths.output_path,
-            spotlight=release_story_payload,
-        )
-        notes_href = _as_href(output_path=surface_paths.output_path, target=release_notes_path)
-        if spotlight_payload:
-            spotlight_payload["notes_href"] = notes_href
-        if version_story_payload:
-            version_story_payload["notes_href"] = notes_href
 
     runtime_payload: dict[str, Any] = {
         **dict(shell_payload),
@@ -146,16 +126,4 @@ def build_runtime_payload(
     }
     return ToolingDashboardBuildResult(
         runtime_payload=runtime_payload,
-        release_notes_path=release_notes_path,
     )
-
-
-def build_release_notes_payload(
-    *,
-    runtime_payload: Mapping[str, Any],
-    brand_payload: Mapping[str, Any],
-) -> dict[str, Any]:
-    return {
-        **dict(runtime_payload),
-        **dict(brand_payload),
-    }

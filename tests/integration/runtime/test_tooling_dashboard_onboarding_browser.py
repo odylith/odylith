@@ -260,16 +260,21 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
         assert page.locator(".welcome-title").inner_text().strip() == "Start Odylith from one real code path"
         assert page.locator(".welcome-chip").count() == 0
-        assert page.locator(".welcome-slice-path code").inner_text().strip() == "src/billing"
-        assert "Open Radar view" in page.locator("#shellWelcomeState").inner_text()
-        assert "Open Registry view" in page.locator("#shellWelcomeState").inner_text()
-        assert "Open Atlas view" in page.locator("#shellWelcomeState").inner_text()
+        assert page.locator(".welcome-card-slice").count() == 0
+        assert page.locator(".welcome-slice-path code").count() == 0
+        assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
 
         handle_box = page.locator("#gridBriefToggle").bounding_box()
         welcome_box = welcome.bounding_box()
+        launchpad_grid_box = page.locator(".welcome-launchpad-grid").bounding_box()
+        explainer_box = page.locator(".welcome-explainer-strip").bounding_box()
         assert handle_box is not None
         assert welcome_box is not None
+        assert launchpad_grid_box is not None
+        assert explainer_box is not None
         assert welcome_box["x"] >= (handle_box["x"] + handle_box["width"] - 1)
+        assert abs(explainer_box["x"] - launchpad_grid_box["x"]) < 2
+        assert abs(explainer_box["width"] - launchpad_grid_box["width"]) < 2
 
         _click_visible(page.locator("#welcomeCopyPrompt"))
         page.locator("#welcomeCopyStatus", has_text="Starter prompt copied. Paste it into your agent.").wait_for(
@@ -284,11 +289,11 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
             "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
             timeout=15000,
         )
-        page.locator("#welcomeReopen", has_text="Show starter guide").wait_for(timeout=15000)
+        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
         assert page.locator("#upgradeReopen").is_hidden()
 
         page.reload(wait_until="domcontentloaded")
-        page.locator("#welcomeReopen", has_text="Show starter guide").wait_for(timeout=15000)
+        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
         page.wait_for_function(
             "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
             timeout=15000,
@@ -298,24 +303,11 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         _click_visible(page.locator("#welcomeReopen"))
         welcome.wait_for(timeout=15000)
         page.keyboard.press("Escape")
-        page.locator("#welcomeReopen", has_text="Show starter guide").wait_for(timeout=15000)
+        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
 
         _click_visible(page.locator("#welcomeReopen"))
-        _click_visible(page.locator('[data-welcome-tab="registry"]'))
-        _wait_for_shell_tab(page, "registry")
-        page.frame_locator("#frame-registry").locator("h1", has_text="Component Registry").wait_for(timeout=15000)
-        page.locator("#welcomeReopen", has_text="Show starter guide").wait_for(timeout=15000)
-
-        _click_visible(page.locator("#welcomeReopen"))
-        _click_visible(page.locator('[data-welcome-tab="atlas"]'))
-        _wait_for_shell_tab(page, "atlas")
-        page.frame_locator("#frame-atlas").locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        page.locator("#welcomeReopen", has_text="Show starter guide").wait_for(timeout=15000)
-
-        _click_visible(page.locator("#welcomeReopen"))
-        _click_visible(page.locator('[data-welcome-tab="radar"]'))
-        _wait_for_shell_tab(page, "radar")
-        page.frame_locator("#frame-radar").locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+        welcome.wait_for(timeout=15000)
+        assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -338,11 +330,8 @@ def test_empty_repo_launchpad_stays_honest_and_never_invents_a_fake_path(tmp_pat
         assert response is not None and response.ok
 
         page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        assert page.locator(".welcome-card-slice .welcome-card-kicker", has_text="No starting path yet").count() == 1
-        assert page.locator(".welcome-slice-empty", has_text="No path detected yet").count() == 1
+        assert page.locator(".welcome-card-slice").count() == 0
         assert page.locator(".welcome-slice-path code").count() == 0
-        assert "src/app" not in page.locator(".welcome-card-slice").inner_text()
-        assert "empty-consumer" not in page.locator(".welcome-card-slice").inner_text()
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -362,13 +351,13 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
         page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
         page.locator(".cheatsheet-card-title", has_text="Create a Radar backlog item").wait_for(timeout=15000)
-        assert page.locator("#agentCheatsheetEmpty").is_hidden()
+        assert page.locator("#agentCheatsheetEmpty").count() == 0
 
         search = page.locator("#agentCheatsheetSearch")
         search.fill("developer note")
         page.locator(".cheatsheet-card-title", has_text="Add a developer note").wait_for(timeout=15000)
         assert page.locator(".cheatsheet-card", has_text="Create a Radar backlog item").first.is_hidden()
-        assert page.locator("#agentCheatsheetEmpty").is_hidden()
+        assert page.locator("#agentCheatsheetEmpty").count() == 0
 
         note_card = page.locator(".cheatsheet-card", has_text="Add a developer note").first
         _click_visible(note_card.locator("button", has_text="Copy prompt"))
@@ -392,11 +381,11 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         _click_visible(page.locator('[data-cheatsheet-filter="validate"]'))
         page.locator(".cheatsheet-card-title", has_text="Check self-host posture").wait_for(timeout=15000)
         assert page.locator(".cheatsheet-card", has_text="Create a Radar backlog item").first.is_hidden()
-        assert page.locator("#agentCheatsheetEmpty").is_hidden()
+        assert page.locator("#agentCheatsheetEmpty").count() == 0
 
         search.fill("zzzzzz-no-cheatsheet-match")
-        page.locator("#agentCheatsheetEmpty", has_text="No workflows match this search yet.").wait_for(timeout=15000)
         assert page.locator(".cheatsheet-card:visible").count() == 0
+        assert page.locator("#agentCheatsheetEmpty").count() == 0
 
         page.keyboard.press("Escape")
         page.wait_for_function(
@@ -446,11 +435,8 @@ def test_incremental_upgrade_spotlight_has_clear_exits_and_clean_reopen_path(tmp
         assert page.locator("#shellWelcomeState").count() == 0
         assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
         assert page.locator("#toolbarVersionStoryLink").count() == 0
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "Odylith v1.2.3 is ready here"
-        assert (
-            "Upgrade complete. v1.2.3 is live in this repo, and the full release note is ready on the right."
-            in page.locator("#shellUpgradeSpotlight .upgrade-spotlight-main").inner_text()
-        )
+        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
+        assert "Upgrade complete." not in page.locator("#shellUpgradeSpotlight .upgrade-spotlight-main").inner_text()
         assert (
             "The dashboard is already refreshed, so the repo is ready to use immediately."
             not in page.locator("#shellUpgradeSpotlight .upgrade-spotlight-main").inner_text()
@@ -458,24 +444,23 @@ def test_incremental_upgrade_spotlight_has_clear_exits_and_clean_reopen_path(tmp
         assert "From v1.2.2" not in page.locator("#shellUpgradeSpotlight").inner_text()
         assert "Now v1.2.3" not in page.locator("#shellUpgradeSpotlight").inner_text()
         assert (
-            page.locator("#shellUpgradeSpotlight .upgrade-spotlight-secondary-link").get_attribute("href")
-            == "https://example.com/releases/v1.2.3"
+            page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
+            == "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"
         )
-        assert (
-            "Close this note with the X, click outside the card, or press Escape."
-            in page.locator("#shellUpgradeSpotlight").inner_text()
-        )
+        assert page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("target") == "_blank"
+        assert page.locator("#shellUpgradeSpotlight .upgrade-spotlight-secondary-link").count() == 0
+        assert "Close this note with the X" not in page.locator("#shellUpgradeSpotlight").inner_text()
 
         _click_visible(page.locator("#upgradeSpotlightDismiss"))
         page.wait_for_function(
             "() => { const node = document.getElementById('shellUpgradeSpotlight'); return Boolean(node && node.hidden); }",
             timeout=15000,
         )
-        page.locator("#upgradeReopen", has_text="Show v1.2.3 note").wait_for(timeout=15000)
+        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
         assert page.locator("#welcomeReopen").is_hidden()
 
         page.reload(wait_until="domcontentloaded")
-        page.locator("#upgradeReopen", has_text="Show v1.2.3 note").wait_for(timeout=15000)
+        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
         page.wait_for_function(
             "() => { const node = document.getElementById('shellUpgradeSpotlight'); return Boolean(node && node.hidden); }",
             timeout=15000,
@@ -484,11 +469,11 @@ def test_incremental_upgrade_spotlight_has_clear_exits_and_clean_reopen_path(tmp
         _click_visible(page.locator("#upgradeReopen"))
         spotlight.wait_for(timeout=15000)
         page.keyboard.press("Escape")
-        page.locator("#upgradeReopen", has_text="Show v1.2.3 note").wait_for(timeout=15000)
+        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
 
         _click_visible(page.locator("#upgradeReopen"))
         page.locator("#shellUpgradeSpotlight").click(position={"x": 12, "y": 12})
-        page.locator("#upgradeReopen", has_text="Show v1.2.3 note").wait_for(timeout=15000)
+        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
 
         _click_visible(page.locator("#tab-registry"))
         _wait_for_shell_tab(page, "registry")
@@ -496,7 +481,7 @@ def test_incremental_upgrade_spotlight_has_clear_exits_and_clean_reopen_path(tmp
         page.reload(wait_until="domcontentloaded")
         _wait_for_shell_tab(page, "registry")
         page.frame_locator("#frame-registry").locator("h1", has_text="Component Registry").wait_for(timeout=15000)
-        page.locator("#upgradeReopen", has_text="Show v1.2.3 note").wait_for(timeout=15000)
+        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -536,8 +521,8 @@ def test_incremental_upgrade_suppresses_starter_guide_until_the_user_reopens_it(
         assert page.locator("#welcomeReopen").is_hidden()
 
         _click_visible(page.locator("#upgradeSpotlightDismiss"))
-        page.locator("#welcomeReopen", has_text="Show starter guide").wait_for(timeout=15000)
-        page.locator("#upgradeReopen", has_text="Show v1.2.3 note").wait_for(timeout=15000)
+        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
 
         _click_visible(page.locator("#welcomeReopen"))
         page.locator("#shellWelcomeState").wait_for(timeout=15000)
@@ -577,11 +562,11 @@ def test_release_spotlight_and_release_note_links_work_in_browser(tmp_path: Path
 
     with _repo_browser_context(repo_root) as (base_url, context):
         context.route(
-            "https://example.com/**",
+            "https://github.com/**",
             lambda route: route.fulfill(
                 status=200,
                 content_type="text/html",
-                body="<!doctype html><html><body><h1>Mock release page</h1></body></html>",
+                body="<!doctype html><html><body><h1>Mock GitHub release note</h1></body></html>",
             ),
         )
         page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -590,31 +575,12 @@ def test_release_spotlight_and_release_note_links_work_in_browser(tmp_path: Path
 
         page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
         with page.expect_popup() as popup_info:
-            _click_visible(page.locator("#shellUpgradeSpotlight .upgrade-spotlight-secondary-link"))
+            _click_visible(page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link"))
         popup = popup_info.value
         popup.wait_for_load_state("domcontentloaded")
-        assert popup.locator("h1").inner_text().strip() == "Mock release page"
+        assert popup.locator("h1").inner_text().strip() == "Mock GitHub release note"
+        assert popup.url.endswith("/odylith/runtime/source/release-notes/v1.2.3.md")
         popup.close()
-
-        _click_visible(page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link"))
-        page.wait_for_function(
-            "() => window.location.pathname.endsWith('/odylith/release-notes/1.2.3.html')",
-            timeout=15000,
-        )
-        page.locator(".release-title", has_text="What's new in v1.2.3").wait_for(timeout=15000)
-
-        with page.expect_popup() as popup_info:
-            _click_visible(page.locator(".release-note-link"))
-        popup = popup_info.value
-        popup.wait_for_load_state("domcontentloaded")
-        assert popup.locator("h1").inner_text().strip() == "Mock release page"
-        popup.close()
-
-        _click_visible(page.locator(".release-back"))
-        page.wait_for_function(
-            "() => window.location.pathname.endsWith('/odylith/index.html')",
-            timeout=15000,
-        )
         page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
@@ -655,10 +621,7 @@ def test_persistent_version_story_does_not_render_a_toolbar_link(tmp_path: Path,
 
         page.reload(wait_until="domcontentloaded")
         assert page.locator("#toolbarVersionStoryLink").count() == 0
-        href = "release-notes/1.2.3.html"
-        response = page.goto(base_url + "/odylith/" + href, wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        assert "Persistent version story." in page.locator("main").inner_text()
+        assert not (repo_root / "odylith" / "release-notes").exists()
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -773,7 +736,7 @@ def test_open_shell_auto_reloads_after_dashboard_refresh_and_updates_version_lab
             timeout=15000,
         )
         page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "Odylith v1.2.3 is ready here"
+        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -798,10 +761,10 @@ def test_welcome_dismiss_persists_with_session_storage_fallback_when_local_stora
 
         page.locator("#shellWelcomeState").wait_for(timeout=15000)
         _click_visible(page.locator("#welcomeDismiss"))
-        page.locator("#welcomeReopen", has_text="Show starter guide").wait_for(timeout=15000)
+        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
 
         page.reload(wait_until="domcontentloaded")
-        page.locator("#welcomeReopen", has_text="Show starter guide").wait_for(timeout=15000)
+        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
         page.wait_for_function(
             "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
             timeout=15000,
@@ -830,7 +793,7 @@ def test_welcome_dismiss_still_closes_immediately_when_all_storage_is_blocked(tm
 
         page.locator("#shellWelcomeState").wait_for(timeout=15000)
         _click_visible(page.locator("#welcomeDismiss"))
-        page.locator("#welcomeReopen", has_text="Show starter guide").wait_for(timeout=15000)
+        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
 
         page.reload(wait_until="domcontentloaded")
         page.locator("#shellWelcomeState").wait_for(timeout=15000)
@@ -879,7 +842,8 @@ def test_cli_install_renders_a_browser_valid_first_run_launchpad(tmp_path: Path,
         assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
         assert page.locator(".welcome-title").inner_text().strip() == "Start Odylith from one real code path"
         assert page.locator("#shellUpgradeSpotlight").count() == 0
-        assert page.locator(".welcome-slice-path code").inner_text().strip() == "src/billing"
+        assert page.locator(".welcome-card-slice").count() == 0
+        assert page.locator(".welcome-slice-path code").count() == 0
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
@@ -968,10 +932,10 @@ def test_cli_install_adopt_latest_renders_a_browser_valid_incremental_upgrade_no
         assert response is not None and response.ok
         page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
         assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "Odylith v1.2.3 is ready here"
+        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
         assert page.locator("#upgradeReopen").is_hidden()
         assert page.locator("#shellWelcomeState").count() == 0
-        assert (repo_root / "odylith" / "release-notes" / "1.2.3.html").is_file()
+        assert not (repo_root / "odylith" / "release-notes").exists()
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
@@ -1042,15 +1006,15 @@ def test_cli_upgrade_renders_a_browser_valid_incremental_upgrade_note(tmp_path: 
         assert response is not None and response.ok
         page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
         assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "Odylith v1.2.3 is ready here"
+        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
         assert page.locator("#upgradeReopen").is_hidden()
         assert page.locator("#shellWelcomeState").count() == 0
-        assert (repo_root / "odylith" / "release-notes" / "1.2.3.html").is_file()
+        assert not (repo_root / "odylith" / "release-notes").exists()
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_release_note_page_stays_sanitized_and_navigates_back_to_dashboard(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
-    repo_root = tmp_path / "release-note-consumer"
+def test_internal_release_note_page_is_not_rendered(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "release-note-route-removed"
     repo_root.mkdir()
     _seed_consumer_repo(
         repo_root,
@@ -1086,37 +1050,14 @@ def test_release_note_page_stays_sanitized_and_navigates_back_to_dashboard(tmp_p
         encoding="utf-8",
     )
     _render_shell(repo_root, monkeypatch)
+    assert not (repo_root / "odylith" / "release-notes").exists()
 
     with _repo_browser_context(repo_root) as (base_url, context):
         page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
         response = page.goto(base_url + "/odylith/release-notes/1.2.3.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
-
-        page.locator(".release-title", has_text="What's new in v1.2.3").wait_for(timeout=15000)
-        page_text = page.locator("body").inner_text()
-        page_html = page.content()
-        assert "alert(1) summary" in page_text
-        assert "alert(2) highlight" in page_text
-        assert "alert(3) detail paragraph." in page_text
-        assert "What Odylith already did" not in page_text
-        assert "How to use it" not in page_text
-        assert "<script>alert(1)</script> summary" not in page_html
-        assert "<script>alert(2)</script> highlight" not in page_html
-        assert "<script>alert(3)</script> detail paragraph." not in page_html
-        assert str(repo_root.resolve()) not in page_html
-
-        _click_visible(page.locator(".release-back"))
-        page.wait_for_function(
-            "() => window.location.pathname.endsWith('/odylith/index.html')",
-            timeout=15000,
-        )
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-
-        _assert_clean_page(
-            page,
-            console_errors,
-            page_errors,
-            failed_requests,
-            bad_responses,
-            screenshot_path=_failure_screenshot_path("release-note-page"),
-        )
+        assert response is not None
+        assert response.status == 404
+        assert page_errors == []
+        assert failed_requests == []
+        assert any("404" in entry for entry in console_errors)
+        assert any("/odylith/release-notes/1.2.3.html" in entry for entry in bad_responses)

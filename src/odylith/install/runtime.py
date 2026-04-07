@@ -35,6 +35,8 @@ from odylith.install.runtime_integrity import managed_runtime_integrity_reasons
 from odylith.install.runtime_integrity import managed_runtime_launcher_verifier_lines
 from odylith.install.runtime_integrity import managed_runtime_trust_matches_verification
 from odylith.install.runtime_integrity import write_managed_runtime_trust
+from odylith.install.runtime_tree_policy import cleanup_runtime_versions_residue
+from odylith.install.runtime_tree_policy import scrub_runtime_tree_metadata
 
 _FALLBACK_PYTHON_RE = re.compile(r'^\s*exec "(?P<python>/[^"]+)"(?: -I)? -m odylith\.cli "\$@"$', re.MULTILINE)
 _FALLBACK_SOURCE_ROOT_RE = re.compile(
@@ -221,6 +223,7 @@ def _managed_runtime_is_legacy_compatible(runtime_root: Path) -> bool:
 
 
 def _managed_runtime_health_reasons(*, repo_root: str | Path, runtime_root: Path) -> list[str]:
+    scrub_runtime_tree_metadata(runtime_root)
     if not (runtime_root / "runtime-metadata.json").is_file():
         return []
     reasons = [
@@ -1115,6 +1118,7 @@ def ensure_wrapped_runtime(
     if not resolved_version:
         raise ValueError("runtime wrapper version is required")
     version_root = paths.versions_dir / resolved_version
+    cleanup_runtime_versions_residue(paths.versions_dir, version=resolved_version)
     fallback = _preferred_wrapped_runtime_fallback(
         repo_root=repo_root,
         version_root=version_root,
@@ -1268,10 +1272,13 @@ def _repair_runtime(*, repo_root: str | Path, allow_host_python_fallback: bool) 
             )
             if candidates:
                 target = candidates[0]
+    if target is not None:
+        cleanup_runtime_versions_residue(paths.versions_dir, version=target.name)
     if target is None:
         if not allow_host_python_fallback:
             return False
         version = current_runtime_version(repo_root=repo_root) or "repaired-local"
+        cleanup_runtime_versions_residue(paths.versions_dir, version=version)
         target = ensure_wrapped_runtime(
             repo_root=repo_root,
             version=version,
@@ -1313,6 +1320,8 @@ def install_release_runtime(
     verified_release = download_verified_release(repo_root=repo_root, repo=repo, version=version)
     paths = repo_runtime_paths(repo_root)
     version_root = paths.versions_dir / verified_release.version
+    cleanup_runtime_versions_residue(paths.versions_dir, version=verified_release.version)
+    scrub_runtime_tree_metadata(version_root)
     version_root.parent.mkdir(parents=True, exist_ok=True)
     if version_root.exists() and _runtime_matches_verified_release(
         repo_root=repo_root,
@@ -1408,6 +1417,7 @@ def install_release_feature_pack(
         raise ValueError(f"managed runtime target missing for feature pack install: {target_root}")
     if not (target_root / "runtime-metadata.json").is_file():
         raise ValueError(f"feature packs can only be applied to a managed Odylith runtime: {target_root}")
+    scrub_runtime_tree_metadata(target_root)
     integrity_reasons = _managed_runtime_health_reasons(repo_root=repo_root, runtime_root=target_root)
     if integrity_reasons:
         raise ValueError(

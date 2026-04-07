@@ -104,3 +104,14 @@ def test_render_backlog_ui_uses_meaningful_hero_kicker() -> None:
     assert "See what is queued, active, parked, and finished, backed by repo workstream specs and delivery evidence." in html
     assert "Governed Workstream Queue" not in html
     assert "Local Generated View" not in html
+
+
+def test_render_backlog_ui_omits_empty_placeholder_copy() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert "Select a workstream from the ranked list." not in html
+    assert "No workstreams match current filters." not in html
+    assert "Loading workstream detail…" not in html
+    assert "No finished execution data yet." not in html
+    assert "No completed execution samples in this window." not in html
+    assert "Open analytics to load trend data." not in html

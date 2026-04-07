@@ -519,11 +519,12 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
 
     async function renderDetail(row) {
       if (!row) {
-        detailPane.innerHTML = `<div class="empty-state">No bug matches the current filters.</div>`;
+        detailRenderToken += 1;
+        detailPane.innerHTML = ``;
         return;
       }
       const renderToken = ++detailRenderToken;
-      detailPane.innerHTML = `<div class="empty-state">Loading selected bug…</div>`;
+      detailPane.innerHTML = ``;
       const detailKey = String(row.bug_route || row.bug_key || "").trim();
       const loadedDetail = detailKey ? await casebookDataSource.loadDetail(detailKey) : null;
       if (renderToken !== detailRenderToken) {
@@ -810,14 +811,14 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           </div>
         </section>
         <section class="section-stack">
-          ${sectionBlocks || `<div class="empty-state">No structured detail sections were parsed from this entry.</div>`}
+          ${sectionBlocks}
         </section>
       `;
     }
 
     function renderList(state, rows) {
       if (!rows.length) {
-        bugList.innerHTML = `<div class="empty-state">No bugs match the current filters and search text.</div>`;
+        bugList.innerHTML = ``;
         listMeta.textContent = "Visible: 0";
         renderDetail(null);
         return;

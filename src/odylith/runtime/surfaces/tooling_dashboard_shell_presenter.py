@@ -139,10 +139,6 @@ def _render_release_spotlight_html(payload: Mapping[str, Any]) -> str:
     return tooling_dashboard_release_presenter.render_release_spotlight_html(payload)
 
 
-def render_release_notes_html(payload: Mapping[str, Any]) -> str:
-    return tooling_dashboard_release_presenter.render_release_notes_html(payload)
-
-
 def _render_welcome_state_html(payload: Mapping[str, Any]) -> str:
     return tooling_dashboard_welcome_presenter.render_welcome_state_html(payload)
 

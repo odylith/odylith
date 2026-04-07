@@ -6,6 +6,154 @@ from odylith.runtime.governance import sync_workstream_artifacts
 from odylith.runtime.surfaces import compass_dashboard_runtime
 from odylith.runtime.surfaces import render_backlog_ui
 
+_SECTIONS = (
+    "Problem",
+    "Customer",
+    "Opportunity",
+    "Proposed Solution",
+    "Scope",
+    "Non-Goals",
+    "Risks",
+    "Dependencies",
+    "Success Metrics",
+    "Validation",
+    "Rollout",
+    "Why Now",
+    "Product View",
+    "Impacted Components",
+    "Interface Changes",
+    "Migration/Compatibility",
+    "Test Strategy",
+    "Open Questions",
+)
+
+
+def _idea_text(
+    *,
+    idea_id: str,
+    title: str,
+    date: str,
+    status: str,
+    founder_override: str,
+    promoted_to_plan: str,
+) -> str:
+    body_sections = "\n\n".join([f"## {section}\nDetails." for section in _SECTIONS])
+    return (
+        f"status: {status}\n\n"
+        f"idea_id: {idea_id}\n\n"
+        f"title: {title}\n\n"
+        f"date: {date}\n\n"
+        "priority: P1\n\n"
+        "commercial_value: 4\n\n"
+        "product_impact: 4\n\n"
+        "market_value: 4\n\n"
+        "impacted_lanes: both\n\n"
+        "impacted_parts: odylith\n\n"
+        "sizing: M\n\n"
+        "complexity: Medium\n\n"
+        "ordering_score: 100\n\n"
+        "ordering_rationale: sync fixture\n\n"
+        "confidence: high\n\n"
+        f"founder_override: {founder_override}\n\n"
+        f"promoted_to_plan: {promoted_to_plan}\n\n"
+        "workstream_type: standalone\n\n"
+        "workstream_parent:\n\n"
+        "workstream_children:\n\n"
+        "workstream_depends_on:\n\n"
+        "workstream_blocks:\n\n"
+        "related_diagram_ids:\n\n"
+        "workstream_reopens:\n\n"
+        "workstream_reopened_by:\n\n"
+        "workstream_split_from:\n\n"
+        "workstream_split_into:\n\n"
+        "workstream_merged_into:\n\n"
+        "workstream_merged_from:\n\n"
+        "supersedes:\n\n"
+        "superseded_by:\n\n"
+        f"{body_sections}\n"
+    )
+
+
+def _seed_sync_repo_with_legacy_backlog(tmp_path: Path) -> Path:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "consumer_repo.yaml").write_text("repo: odylith\n", encoding="utf-8")
+    idea_dir = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04"
+    idea_dir.mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "technical-plans" / "in-progress").mkdir(parents=True, exist_ok=True)
+
+    queued_path = idea_dir / "2026-04-06-legacy-sync-fix.md"
+    queued_path.write_text(
+        _idea_text(
+            idea_id="B-101",
+            title="Legacy Sync Fix",
+            date="2026-04-06",
+            status="queued",
+            founder_override="no",
+            promoted_to_plan="",
+        ),
+        encoding="utf-8",
+    )
+    implementation_path = idea_dir / "2026-04-06-active-plan.md"
+    implementation_path.write_text(
+        _idea_text(
+            idea_id="B-102",
+            title="Active Plan",
+            date="2026-04-06",
+            status="implementation",
+            founder_override="no",
+            promoted_to_plan="odylith/technical-plans/in-progress/2026-04-06-active-plan.md",
+        ),
+        encoding="utf-8",
+    )
+    plan_path = repo_root / "odylith" / "technical-plans" / "in-progress" / "2026-04-06-active-plan.md"
+    plan_path.write_text(
+        (
+            "Status: In progress\n\n"
+            "Created: 2026-04-06\n\n"
+            "Updated: 2026-04-06\n\n"
+            "Goal: prove sync normalization.\n\n"
+            "Assumptions: fixture is minimal but valid.\n\n"
+            "Constraints: none.\n\n"
+            "Reversibility: safe.\n\n"
+            "Boundary Conditions: local fixture only.\n\n"
+            "## Context/Problem Statement\n- [ ] exercise sync preflight\n"
+        ),
+        encoding="utf-8",
+    )
+    (repo_root / "odylith" / "radar" / "source" / "INDEX.md").write_text(
+        (
+            "# Backlog Index\n\n"
+            "Last updated (UTC): 2026-04-06\n\n"
+            "## Ranked Active Backlog\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| 1 | B-101 | Legacy Sync Fix | P1 | 100 | 4 | 4 | 4 | M | Medium | both | queued | [idea](odylith/radar/source/ideas/2026-04/2026-04-06-legacy-sync-fix.md) |\n\n"
+            "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| - | B-102 | Active Plan | P1 | 100 | 4 | 4 | 4 | M | Medium | both | implementation | [idea](odylith/radar/source/ideas/2026-04/2026-04-06-active-plan.md) |\n\n"
+            "## Finished (Linked to `odylith/technical-plans/done`)\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "## Reorder Rationale Log\n\n"
+            "### B-101 (rank 1)\n"
+            "- why now: preserve the operator-provided note.\n"
+        ),
+        encoding="utf-8",
+    )
+    (repo_root / "odylith" / "technical-plans" / "INDEX.md").write_text(
+        (
+            "# Plan Index\n\n"
+            "## Active Plans\n\n"
+            "| Plan | Status | Created | Updated | Backlog |\n"
+            "| --- | --- | --- | --- | --- |\n"
+            "| `odylith/technical-plans/in-progress/2026-04-06-active-plan.md` | In progress | 2026-04-06 | 2026-04-06 | `B-102` |\n"
+        ),
+        encoding="utf-8",
+    )
+    return repo_root
+
 
 def test_sync_parser_accepts_legacy_shape_aliases(tmp_path: Path) -> None:
     args = sync_workstream_artifacts._parse_args(  # noqa: SLF001
@@ -29,6 +177,37 @@ def test_sync_parser_accepts_legacy_shape_aliases(tmp_path: Path) -> None:
     assert args.check_only is True
     assert args.registry_policy_mode == "enforce-critical"
     assert args.compass_refresh_profile == "shell-safe"
+
+
+def test_print_execution_plan_condenses_dirty_overlap_without_verbose(capsys) -> None:  # noqa: ANN001
+    plan = sync_workstream_artifacts.ExecutionPlan(
+        headline="preview",
+        steps=(),
+        dirty_overlap=("M one", "M two", "M three", "M four", "M five"),
+        notes=(),
+    )
+
+    sync_workstream_artifacts._print_execution_plan("workstream sync", plan, dry_run=True, verbose=False)  # noqa: SLF001
+    output = capsys.readouterr().out
+
+    assert "5 local worktree entries overlap this mutation plan." in output
+    assert "M five" not in output
+    assert "hidden; rerun with --verbose to show the full set." in output
+
+
+def test_print_execution_plan_verbose_shows_full_dirty_overlap(capsys) -> None:  # noqa: ANN001
+    plan = sync_workstream_artifacts.ExecutionPlan(
+        headline="preview",
+        steps=(),
+        dirty_overlap=("M one", "M two", "M three", "M four", "M five"),
+        notes=(),
+    )
+
+    sync_workstream_artifacts._print_execution_plan("workstream sync", plan, dry_run=True, verbose=True)  # noqa: SLF001
+    output = capsys.readouterr().out
+
+    assert "M five" in output
+    assert "hidden; rerun with --verbose" not in output
 
 
 def test_context_engine_defaults_to_current_runtime_without_workspace_opt_in(tmp_path: Path, monkeypatch) -> None:
@@ -496,3 +675,82 @@ def test_sync_dry_run_prints_plan_without_running_commands(tmp_path: Path, monke
     assert rc == 0
     assert "workstream sync dry-run" in output
     assert "Render Compass before Radar" in output
+
+
+def test_sync_preflight_summarizes_backlog_contract_blockers(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(sync_workstream_artifacts, "_effective_changed_paths", lambda **_: ("odylith/radar/source/INDEX.md",))
+    monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_backlog_contract_preflight_ready", lambda _repo_root: True)
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "normalize_legacy_backlog_index",
+        lambda **_: SimpleNamespace(changed=True, normalized_sections=("B-001", "B-002")),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "collect_backlog_contract_errors",
+        lambda **_: (
+            "odylith/radar/source/INDEX.md: reorder rationale for `B-001` missing `- why now:`",
+            "odylith/radar/source/INDEX.md: reorder rationale for `B-001` missing `- why now:`",
+            "odylith/radar/source/INDEX.md: priority override idea `B-002` missing `ranking basis` bullet",
+        ),
+    )
+
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
+    output = capsys.readouterr().out
+
+    assert rc == 2
+    assert "workstream sync legacy normalization" in output
+    assert "2x odylith/radar/source/INDEX.md: reorder rationale for `B-001` missing `- why now:`" in output
+    assert "priority override idea `B-002` missing `ranking basis` bullet" in output
+    assert "Finish the normalized rationale blocks in `odylith/radar/source/INDEX.md`" in output
+
+
+def test_sync_auto_normalizes_legacy_backlog_before_continuing(monkeypatch, tmp_path: Path, capsys) -> None:
+    repo_root = _seed_sync_repo_with_legacy_backlog(tmp_path)
+
+    class _Meaningful:
+        def as_dict(self) -> dict[str, int]:
+            return {
+                "linked_meaningful_event_count": 0,
+                "unlinked_meaningful_event_count": 0,
+            }
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_effective_changed_paths", lambda **_: ("odylith/radar/source/INDEX.md",))
+    monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "build_dashboard_impact",
+        lambda **_: SimpleNamespace(
+            radar=False,
+            atlas=False,
+            compass=False,
+            registry=False,
+            casebook=False,
+            tooling_shell=False,
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_meaningful_activity_evidence",
+        lambda **_: _Meaningful(),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_run_command",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("sync should not execute commands during --dry-run")),
+    )
+
+    rc = sync_workstream_artifacts.main(["--repo-root", str(repo_root), "--force", "--dry-run"])
+    output = capsys.readouterr().out
+    backlog_index = (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+
+    assert rc == 0
+    assert "workstream sync legacy normalization" in output
+    assert "odylith sync did not complete." not in output
+    assert "workstream sync dry-run" in output
+    assert "- expected outcome: clearer product truth and faster follow-on implementation planning." in backlog_index
+    assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." in backlog_index
+    assert "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream." in backlog_index
+    assert "- ranking basis: score-based rank; no manual priority override." in backlog_index

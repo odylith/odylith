@@ -57,6 +57,11 @@ _URL_TIMEOUT_SECONDS = 30
 _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_RETRY_ATTEMPTS = 3
 _DOWNLOAD_RETRYABLE_HTTP_CODES = {408, 429, 500, 502, 503, 504}
+_BENIGN_SIGSTORE_WARNING_PATTERNS = (
+    re.compile(r"unsupported key type:\s*7", re.IGNORECASE),
+    re.compile(r"\btuf\b.*\boffline\b", re.IGNORECASE),
+    re.compile(r"\boffline\b.*\btuf\b", re.IGNORECASE),
+)
 
 
 @dataclass(frozen=True)
@@ -82,6 +87,11 @@ class ReleaseInfo:
             if compiled.fullmatch(name):
                 return asset
         raise ValueError(f"release asset matching {pattern!r} not found for {self.tag}")
+
+
+@dataclass(frozen=True)
+class SigstoreVerificationResult:
+    warnings_suppressed: bool = False
 
 
 @dataclass(frozen=True)
@@ -267,6 +277,7 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
     cache_dir = release_cache_dir(repo_root=repo_root, version=release.version)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
+    verification_results: list[SigstoreVerificationResult] = []
     manifest_path = download_asset(
         repo_root=repo_root,
         asset=release.assets["release-manifest.json"],
@@ -277,7 +288,11 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
         asset=release.assets["release-manifest.json.sigstore.json"],
         destination=cache_dir / "release-manifest.json.sigstore.json",
     )
-    verify_sigstore_asset(repo_root=repo_root, asset_path=manifest_path, bundle_path=manifest_bundle_path, repo=repo)
+    verification_results.append(
+        _normalize_sigstore_result(
+            verify_sigstore_asset(repo_root=repo_root, asset_path=manifest_path, bundle_path=manifest_bundle_path, repo=repo)
+        )
+    )
     manifest = _load_json(manifest_path)
     _validate_manifest(manifest=manifest, release=release, repo=repo)
 
@@ -293,7 +308,11 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
         asset=verified_assets.assets[f"{wheel_asset.name}.sigstore.json"],
         destination=cache_dir / f"{wheel_asset.name}.sigstore.json",
     )
-    verify_sigstore_asset(repo_root=repo_root, asset_path=wheel_path, bundle_path=wheel_bundle_path, repo=repo)
+    verification_results.append(
+        _normalize_sigstore_result(
+            verify_sigstore_asset(repo_root=repo_root, asset_path=wheel_path, bundle_path=wheel_bundle_path, repo=repo)
+        )
+    )
 
     provenance_path = download_asset(repo_root=repo_root, asset=provenance_asset, destination=cache_dir / provenance_asset.name)
     provenance_bundle_path = download_asset(
@@ -301,7 +320,11 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
         asset=verified_assets.assets[f"{provenance_asset.name}.sigstore.json"],
         destination=cache_dir / f"{provenance_asset.name}.sigstore.json",
     )
-    verify_sigstore_asset(repo_root=repo_root, asset_path=provenance_path, bundle_path=provenance_bundle_path, repo=repo)
+    verification_results.append(
+        _normalize_sigstore_result(
+            verify_sigstore_asset(repo_root=repo_root, asset_path=provenance_path, bundle_path=provenance_bundle_path, repo=repo)
+        )
+    )
     provenance = _load_json(provenance_path)
 
     sbom_path = download_asset(repo_root=repo_root, asset=sbom_asset, destination=cache_dir / sbom_asset.name)
@@ -310,7 +333,11 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
         asset=verified_assets.assets[f"{sbom_asset.name}.sigstore.json"],
         destination=cache_dir / f"{sbom_asset.name}.sigstore.json",
     )
-    verify_sigstore_asset(repo_root=repo_root, asset_path=sbom_path, bundle_path=sbom_bundle_path, repo=repo)
+    verification_results.append(
+        _normalize_sigstore_result(
+            verify_sigstore_asset(repo_root=repo_root, asset_path=sbom_path, bundle_path=sbom_bundle_path, repo=repo)
+        )
+    )
     sbom = _load_json(sbom_path)
 
     runtime_bundle_path = download_asset(repo_root=repo_root, asset=runtime_bundle_asset, destination=cache_dir / runtime_bundle_asset.name)
@@ -319,7 +346,17 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
         asset=verified_assets.assets[f"{runtime_bundle_asset.name}.sigstore.json"],
         destination=cache_dir / f"{runtime_bundle_asset.name}.sigstore.json",
     )
-    verify_sigstore_asset(repo_root=repo_root, asset_path=runtime_bundle_path, bundle_path=runtime_bundle_bundle_path, repo=repo)
+    verification_results.append(
+        _normalize_sigstore_result(
+            verify_sigstore_asset(
+                repo_root=repo_root,
+                asset_path=runtime_bundle_path,
+                bundle_path=runtime_bundle_bundle_path,
+                repo=repo,
+            )
+        )
+    )
+    _emit_sigstore_success_notice(verification_results, context="release")
 
     wheel_sha256 = _sha256_file(wheel_path)
     expected_wheel_sha = str(manifest["assets"][wheel_asset.name]["sha256"]).strip()
@@ -387,6 +424,7 @@ def download_verified_feature_pack(
     cache_dir = release_cache_dir(repo_root=repo_root, version=release.version)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
+    verification_results: list[SigstoreVerificationResult] = []
     manifest_path = download_asset(
         repo_root=repo_root,
         asset=release.assets["release-manifest.json"],
@@ -397,7 +435,11 @@ def download_verified_feature_pack(
         asset=release.assets["release-manifest.json.sigstore.json"],
         destination=cache_dir / "release-manifest.json.sigstore.json",
     )
-    verify_sigstore_asset(repo_root=repo_root, asset_path=manifest_path, bundle_path=manifest_bundle_path, repo=repo)
+    verification_results.append(
+        _normalize_sigstore_result(
+            verify_sigstore_asset(repo_root=repo_root, asset_path=manifest_path, bundle_path=manifest_bundle_path, repo=repo)
+        )
+    )
     manifest = _load_json(manifest_path)
     _validate_manifest(manifest=manifest, release=release, repo=repo)
 
@@ -417,7 +459,11 @@ def download_verified_feature_pack(
         asset=verified_assets.assets[f"{provenance_asset.name}.sigstore.json"],
         destination=cache_dir / f"{provenance_asset.name}.sigstore.json",
     )
-    verify_sigstore_asset(repo_root=repo_root, asset_path=provenance_path, bundle_path=provenance_bundle_path, repo=repo)
+    verification_results.append(
+        _normalize_sigstore_result(
+            verify_sigstore_asset(repo_root=repo_root, asset_path=provenance_path, bundle_path=provenance_bundle_path, repo=repo)
+        )
+    )
     provenance = _load_json(provenance_path)
 
     sbom_path = download_asset(repo_root=repo_root, asset=sbom_asset, destination=cache_dir / sbom_asset.name)
@@ -426,7 +472,11 @@ def download_verified_feature_pack(
         asset=verified_assets.assets[f"{sbom_asset.name}.sigstore.json"],
         destination=cache_dir / f"{sbom_asset.name}.sigstore.json",
     )
-    verify_sigstore_asset(repo_root=repo_root, asset_path=sbom_path, bundle_path=sbom_bundle_path, repo=repo)
+    verification_results.append(
+        _normalize_sigstore_result(
+            verify_sigstore_asset(repo_root=repo_root, asset_path=sbom_path, bundle_path=sbom_bundle_path, repo=repo)
+        )
+    )
 
     feature_pack_path = download_asset(repo_root=repo_root, asset=feature_pack_asset, destination=cache_dir / feature_pack_asset.name)
     feature_pack_bundle_path = download_asset(
@@ -434,7 +484,12 @@ def download_verified_feature_pack(
         asset=verified_assets.assets[f"{feature_pack_asset.name}.sigstore.json"],
         destination=cache_dir / f"{feature_pack_asset.name}.sigstore.json",
     )
-    verify_sigstore_asset(repo_root=repo_root, asset_path=feature_pack_path, bundle_path=feature_pack_bundle_path, repo=repo)
+    verification_results.append(
+        _normalize_sigstore_result(
+            verify_sigstore_asset(repo_root=repo_root, asset_path=feature_pack_path, bundle_path=feature_pack_bundle_path, repo=repo)
+        )
+    )
+    _emit_sigstore_success_notice(verification_results, context="feature-pack")
 
     feature_pack_sha256 = _sha256_file(feature_pack_path)
     expected_feature_pack_sha = str(manifest["assets"][feature_pack_asset.name]["sha256"]).strip()
@@ -478,11 +533,11 @@ def expected_signer_identity(*, repo: str) -> str:
     return f"https://github.com/{repo}/{SIGNER_WORKFLOW_PATH}@{SIGNER_WORKFLOW_REF}"
 
 
-def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_path: Path, repo: str) -> None:
+def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_path: Path, repo: str) -> SigstoreVerificationResult:
     if str(os.environ.get(_SKIP_SIGSTORE_VERIFY_ENV, "")).strip() == "1":
         if not _is_maintainer_release_lane(repo_root):
             raise ValueError("ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY is only supported in the Odylith product repo maintainer lane")
-        return
+        return SigstoreVerificationResult(warnings_suppressed=False)
     command = [
         sys.executable,
         "-I",
@@ -510,6 +565,34 @@ def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_pat
         stdout = completed.stdout.strip()
         details = stderr or stdout or "sigstore verification failed"
         raise ValueError(f"failed to verify {asset_path.name}: {details}")
+    stderr = completed.stderr.strip()
+    if not stderr:
+        return SigstoreVerificationResult(warnings_suppressed=False)
+    stderr_lines = [line.strip() for line in stderr.splitlines() if line.strip()]
+    if all(_is_benign_sigstore_warning(line) for line in stderr_lines):
+        return SigstoreVerificationResult(warnings_suppressed=True)
+    print(stderr, file=sys.stderr)
+    return SigstoreVerificationResult(warnings_suppressed=False)
+
+
+def _is_benign_sigstore_warning(line: str) -> bool:
+    normalized = str(line or "").strip()
+    return any(pattern.search(normalized) is not None for pattern in _BENIGN_SIGSTORE_WARNING_PATTERNS)
+
+
+def _normalize_sigstore_result(result: SigstoreVerificationResult | None) -> SigstoreVerificationResult:
+    if isinstance(result, SigstoreVerificationResult):
+        return result
+    return SigstoreVerificationResult(warnings_suppressed=False)
+
+
+def _emit_sigstore_success_notice(results: list[SigstoreVerificationResult], *, context: str) -> None:
+    suppressed_count = sum(1 for result in results if result.warnings_suppressed)
+    if suppressed_count <= 0:
+        return
+    print(
+        f"Sigstore verification succeeded for the {context} assets; suppressed {suppressed_count} expected non-fatal warning stream(s)."
+    )
 
 
 def download_asset(*, repo_root: str | Path, asset: ReleaseAsset, destination: Path) -> Path:

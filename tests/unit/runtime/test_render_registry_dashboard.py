@@ -383,6 +383,11 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert "registry-filters-shell" in html
     assert "Component Ownership and Evidence Map" in html
     assert "See what exists, who owns it, and which specs, workstreams, and diagrams back it." in html
+    assert "No components match current search or filters." not in html
+    assert "No component selected." not in html
+    assert "Loading component detail…" not in html
+    assert "Loading component timeline…" not in html
+    assert "No change events mapped to this component yet." not in html
     assert "Governed Component Inventory" not in html
     assert "Local Generated View" not in html
     assert "hero-controls" not in html

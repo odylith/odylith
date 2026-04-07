@@ -9,7 +9,7 @@ import tarfile
 from pathlib import Path
 from types import SimpleNamespace
 
-from odylith.install import runtime, runtime_integrity
+from odylith.install import runtime, runtime_integrity, runtime_tree_policy
 from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_SCHEMA_VERSION,
     MANAGED_RUNTIME_VERIFICATION_SCHEMA_VERSION,
@@ -454,6 +454,96 @@ def test_managed_runtime_integrity_ignores_generated_python_bytecode(tmp_path: P
     reasons = runtime_integrity.managed_runtime_integrity_reasons(repo_root=repo_root, runtime_root=version_root)
 
     assert reasons == []
+
+
+def test_managed_runtime_health_scrubs_macos_metadata_files(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    (version_root / ".DS_Store").write_text("finder\n", encoding="utf-8")
+    (version_root / "lib" / "python3.13" / "site-packages").mkdir(parents=True, exist_ok=True)
+    (version_root / "lib" / "python3.13" / "site-packages" / "._odylith").write_text("appledouble\n", encoding="utf-8")
+
+    reasons = runtime._managed_runtime_health_reasons(repo_root=repo_root, runtime_root=version_root)  # noqa: SLF001
+
+    assert reasons == []
+    assert not (version_root / ".DS_Store").exists()
+    assert not (version_root / "lib" / "python3.13" / "site-packages" / "._odylith").exists()
+
+
+def test_install_release_feature_pack_scrubs_macos_metadata_before_trust_validation(monkeypatch, tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    (version_root / ".DS_Store").write_text("finder\n", encoding="utf-8")
+    (version_root / "lib" / "python3.13" / "site-packages").mkdir(parents=True, exist_ok=True)
+    (version_root / "lib" / "python3.13" / "site-packages" / "._odylith").write_text("appledouble\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        runtime,
+        "download_verified_feature_pack",
+        lambda **_: SimpleNamespace(
+            asset_name="context-engine.tgz",
+            manifest={"repo_schema_version": 1},
+            pack_id="odylith-context-engine-memory",
+            verification={"feature_pack_sha256": "pack"},
+            version="1.2.3",
+        ),
+    )
+    monkeypatch.setattr(runtime, "_runtime_feature_pack_matches_verified_release", lambda **_: True)
+
+    staged = runtime.install_release_feature_pack(repo_root=repo_root, repo="odylith/odylith", version="1.2.3")
+
+    assert staged.root == version_root
+    assert not (version_root / ".DS_Store").exists()
+    assert not (version_root / "lib" / "python3.13" / "site-packages" / "._odylith").exists()
+
+
+def test_install_release_feature_pack_rejects_unexpected_runtime_dotfiles(monkeypatch, tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    (version_root / ".unexpected").write_text("keep failing\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        runtime,
+        "download_verified_feature_pack",
+        lambda **_: SimpleNamespace(
+            asset_name="context-engine.tgz",
+            manifest={"repo_schema_version": 1},
+            pack_id="odylith-context-engine-memory",
+            verification={"feature_pack_sha256": "pack"},
+            version="1.2.3",
+        ),
+    )
+    monkeypatch.setattr(runtime, "_runtime_feature_pack_matches_verified_release", lambda **_: True)
+
+    try:
+        runtime.install_release_feature_pack(repo_root=repo_root, repo="odylith/odylith", version="1.2.3")
+    except ValueError as exc:
+        assert "feature packs can only be applied to a trusted Odylith runtime" in str(exc)
+        assert ".unexpected" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("expected unexpected runtime dotfile to block feature-pack install")
+
+
+def test_cleanup_runtime_versions_residue_limits_scope_to_target_version(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    versions_dir = repo_root / ".odylith" / "runtime" / "versions"
+    versions_dir.mkdir(parents=True, exist_ok=True)
+    stale_target = versions_dir / ".1.2.3.backup-old"
+    stale_target.mkdir(parents=True, exist_ok=True)
+    stale_stage = versions_dir / ".1.2.3.stage-old"
+    stale_stage.mkdir(parents=True, exist_ok=True)
+    stale_other = versions_dir / ".9.9.9.backup-old"
+    stale_other.mkdir(parents=True, exist_ok=True)
+
+    removed = runtime_tree_policy.cleanup_runtime_versions_residue(versions_dir, version="1.2.3")
+
+    assert stale_target.exists() is False
+    assert stale_stage.exists() is False
+    assert stale_other.exists() is True
+    assert removed == (str(stale_target), str(stale_stage))
 
 
 def test_write_managed_runtime_trust_hashes_symlinked_python_entrypoints(tmp_path: Path) -> None:
@@ -998,6 +1088,34 @@ def test_doctor_runtime_repairs_missing_current_runtime_from_existing_version(tm
     assert (repo_root / ".odylith" / "runtime" / "current").resolve() == version_root
 
 
+def test_doctor_runtime_repair_converges_with_target_residue(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = _make_runtime(repo_root)
+    runtime.switch_runtime(repo_root=repo_root, target=version_root)
+    runtime.ensure_launcher(repo_root=repo_root, fallback_python=version_root / "bin" / "python")
+    (repo_root / ".odylith" / "bin" / "odylith").unlink()
+
+    versions_dir = repo_root / ".odylith" / "runtime" / "versions"
+    stale_backup = versions_dir / ".1.2.3.backup-stale"
+    stale_backup.mkdir(parents=True, exist_ok=True)
+    stale_stage = versions_dir / ".1.2.3.stage-stale"
+    stale_stage.mkdir(parents=True, exist_ok=True)
+    untouched_other = versions_dir / ".9.9.9.backup-stale"
+    untouched_other.mkdir(parents=True, exist_ok=True)
+
+    repaired, repaired_reasons = runtime.doctor_runtime(repo_root=repo_root, repair=True)
+    repaired_again, repaired_again_reasons = runtime.doctor_runtime(repo_root=repo_root, repair=True)
+
+    assert repaired is True
+    assert repaired_reasons == []
+    assert repaired_again is True
+    assert repaired_again_reasons == []
+    assert stale_backup.exists() is False
+    assert stale_stage.exists() is False
+    assert untouched_other.exists() is True
+    assert (repo_root / ".odylith" / "bin" / "odylith").is_file()
+
+
 def test_current_runtime_root_rejects_symlink_outside_versions(tmp_path: Path) -> None:
     repo_root = _repo_root(tmp_path)
     outside_root = tmp_path / "outside-runtime"
@@ -1066,6 +1184,48 @@ def test_install_release_runtime_reuses_existing_verified_runtime(monkeypatch, t
     assert staged.root == version_root
     assert staged.python == version_root / "bin" / "python"
     assert runtime.load_runtime_verification(version_root)["verification"] == verification
+
+
+def test_install_release_runtime_cleans_stale_backup_and_stage_residue(monkeypatch, tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    verification = {
+        "manifest_sha256": "manifest",
+        "provenance_sha256": "provenance",
+        "runtime_bundle_platform": "darwin-arm64",
+        "runtime_bundle_sha256": "runtime",
+        "sbom_sha256": "sbom",
+        "signer_identity": "signer",
+        "wheel_sha256": "wheel",
+    }
+    wheel_path = tmp_path / "odylith-1.2.3-py3-none-any.whl"
+    wheel_path.write_bytes(b"wheel")
+    _seed_managed_runtime(version_root, verification=verification)
+    stale_backup = version_root.parent / ".1.2.3.backup-stale"
+    stale_backup.mkdir(parents=True, exist_ok=True)
+    (stale_backup / "orphan.txt").write_text("old backup\n", encoding="utf-8")
+    stale_stage = version_root.parent / ".1.2.3.stage-stale"
+    stale_stage.mkdir(parents=True, exist_ok=True)
+    (stale_stage / "partial.txt").write_text("old stage\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        runtime,
+        "download_verified_release",
+        lambda **_: SimpleNamespace(
+            version="1.2.3",
+            manifest={"repo_schema_version": 1},
+            runtime_bundle_path=tmp_path / "runtime.tar.gz",
+            runtime_platform=managed_runtime_platform_by_slug("darwin-arm64"),
+            wheel_path=wheel_path,
+            verification=verification,
+        ),
+    )
+
+    staged = runtime.install_release_runtime(repo_root=repo_root, repo="odylith/odylith", version="1.2.3", activate=False)
+
+    assert staged.root == version_root
+    assert not stale_backup.exists()
+    assert not stale_stage.exists()
 
 
 def test_install_release_runtime_reextracts_untrusted_existing_runtime(monkeypatch, tmp_path: Path) -> None:

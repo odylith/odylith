@@ -23,39 +23,20 @@ def _render_welcome_steps(title: str, items: Sequence[str]) -> str:
     if not items:
         return ""
     return (
-        '<section class="welcome-card welcome-card-steps">'
+        '<section class="welcome-process-card">'
+        '<div class="welcome-process-head">'
         f'<p class="welcome-card-kicker">{html.escape(title)}</p>'
-        '<ol class="welcome-step-list">'
+        '<p class="welcome-process-copy">Move from prompt to grounded work without leaving the shell.</p>'
+        "</div>"
+        '<ol class="welcome-step-list welcome-step-list-process">'
         + "".join(
-            '<li class="welcome-step">'
+            '<li class="welcome-step welcome-step-process">'
             f'<span class="welcome-step-index">{index}</span>'
             f'<span class="welcome-step-copy">{html.escape(item)}</span>'
             "</li>"
             for index, item in enumerate(items, start=1)
         )
         + "</ol>"
-        "</section>"
-    )
-
-
-def _render_welcome_action_card(
-    *,
-    title: str,
-    reason: str,
-    path_hint: str,
-    preview_note: str,
-    cta_label: str,
-    tab: str,
-) -> str:
-    return (
-        '<section class="welcome-card welcome-card-action">'
-        '<div class="welcome-card-copy">'
-        f'<p class="welcome-card-kicker">{html.escape(title)}</p>'
-        f'<p class="welcome-card-body">{html.escape(reason)}</p>'
-        f'<p class="welcome-card-path"><code>{html.escape(path_hint)}</code></p>'
-        "</div>"
-        '<button type="button" class="welcome-button welcome-button-secondary" '
-        f'data-welcome-tab="{html.escape(tab, quote=True)}">{html.escape(cta_label)}</button>'
         "</section>"
     )
 
@@ -91,38 +72,6 @@ def _render_welcome_notice(notice: Mapping[str, Any]) -> str:
     )
 
 
-def _render_welcome_slice_card(slice_state: Mapping[str, Any]) -> str:
-    title = str(slice_state.get("title", "")).strip()
-    path = str(slice_state.get("path", "")).strip()
-    reason = str(slice_state.get("reason", "")).strip()
-    guidance_value = slice_state.get("guidance")
-    guidance: list[str] = []
-    if isinstance(guidance_value, Sequence) and not isinstance(guidance_value, (str, bytes, bytearray)):
-        guidance = [str(item).strip() for item in guidance_value if str(item).strip()]
-    if not any((title, path, reason, guidance)):
-        return ""
-    path_html = (
-        f'<p class="welcome-slice-path"><code>{html.escape(path)}</code></p>'
-        if path
-        else '<p class="welcome-slice-empty">No path detected yet</p>'
-    )
-    guidance_html = (
-        '<ul class="welcome-slice-guidance">'
-        + "".join(f"<li>{html.escape(item)}</li>" for item in guidance)
-        + "</ul>"
-        if guidance
-        else ""
-    )
-    return (
-        '<section class="welcome-card welcome-card-slice">'
-        f'<p class="welcome-card-kicker">{html.escape(title or "Start here")}</p>'
-        f"{path_html}"
-        f'<p class="welcome-card-body">{html.escape(reason)}</p>'
-        f"{guidance_html}"
-        "</section>"
-    )
-
-
 def _render_surface_explainers(explainers: Sequence[Mapping[str, Any]]) -> str:
     cards: list[str] = []
     for explainer in explainers:
@@ -141,7 +90,7 @@ def _render_surface_explainers(explainers: Sequence[Mapping[str, Any]]) -> str:
     return (
         '<section class="welcome-explainer-strip" aria-label="What each Odylith surface does first">'
         '<div class="welcome-explainer-head">'
-        '<p class="welcome-kicker">Surface Guide</p>'
+        '<p class="welcome-kicker">Core Surfaces</p>'
         '<h3 class="welcome-explainer-title">What the core surfaces do first</h3>'
         "</div>"
         '<div class="welcome-explainer-grid">'
@@ -181,7 +130,6 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
             "</section>"
         )
 
-    chosen_slice = dict(welcome_state.get("chosen_slice", {})) if isinstance(welcome_state.get("chosen_slice"), Mapping) else {}
     quick_steps = _welcome_lines(welcome_state.get("quick_steps"))
     starter_prompt = str(welcome_state.get("starter_prompt", "")).strip()
     auto_refresh_note = str(welcome_state.get("auto_refresh_note", "")).strip()
@@ -189,46 +137,7 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
     headline = str(welcome_state.get("headline", "")).strip() or "Odylith is ready in this repository"
     subhead = str(welcome_state.get("subhead", "")).strip() or "Start with one prompt and let Odylith open one real code path."
 
-    backlog = dict(welcome_state.get("backlog", {})) if isinstance(welcome_state.get("backlog"), Mapping) else {}
-    component = dict(welcome_state.get("component", {})) if isinstance(welcome_state.get("component"), Mapping) else {}
-    atlas = dict(welcome_state.get("atlas", {})) if isinstance(welcome_state.get("atlas"), Mapping) else {}
-    record_cards: list[str] = []
-    if bool(backlog.get("missing")):
-        record_cards.append(
-            _render_welcome_action_card(
-                title=str(backlog.get("title", "")).strip() or "First Radar item",
-                reason=str(backlog.get("reason", "")).strip() or "Open the first Radar item for this slice.",
-                path_hint=str(backlog.get("path_hint", "")).strip() or "odylith/radar/source/ideas/",
-                preview_note=str(backlog.get("preview_note", "")).strip(),
-                cta_label="Open Radar view",
-                tab="radar",
-            )
-        )
-    if bool(component.get("missing")):
-        record_cards.append(
-            _render_welcome_action_card(
-                title=str(component.get("title", "")).strip() or "First Registry boundary",
-                reason=str(component.get("reason", "")).strip() or "Define the first Registry component for the chosen slice.",
-                path_hint=str(component.get("path_hint", "")).strip() or "odylith/registry/source/components/<component>/CURRENT_SPEC.md",
-                preview_note=str(component.get("preview_note", "")).strip(),
-                cta_label="Open Registry view",
-                tab="registry",
-            )
-        )
-    if bool(atlas.get("missing")):
-        record_cards.append(
-            _render_welcome_action_card(
-                title=str(atlas.get("title", "")).strip() or "First Atlas map",
-                reason=str(atlas.get("reason", "")).strip() or "Draw the first Atlas diagram for the chosen slice.",
-                path_hint=str(atlas.get("path_hint", "")).strip() or "odylith/atlas/source/",
-                preview_note=str(atlas.get("preview_note", "")).strip(),
-                cta_label="Open Atlas view",
-                tab="atlas",
-            )
-        )
-
     notices_html = "".join(_render_welcome_notice(notice) for notice in notices)
-    chosen_slice_html = _render_welcome_slice_card(chosen_slice)
     steps_html = _render_welcome_steps("Three quick steps", quick_steps)
     explainers_raw = welcome_state.get("surface_explainers")
     explainers = (
@@ -237,12 +146,33 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
         else ()
     )
     explainers_html = _render_surface_explainers(explainers)
+    hero_badges_html = (
+        '<div class="welcome-hero-badges">'
+        '<span>Starter prompt ready</span>'
+        '<span>Repo-native setup</span>'
+        '<span>Cheatsheet built in</span>'
+        "</div>"
+    )
     auto_refresh_html = f'<p class="welcome-refresh-note">{html.escape(auto_refresh_note)}</p>' if auto_refresh_note else ""
+    launchpad_grid_class = "welcome-launchpad-grid welcome-launchpad-grid-single" if not notices_html else "welcome-launchpad-grid"
+    launchpad_notices_column_html = (
+        '<div class="welcome-launchpad-column">'
+        f"{notices_html}"
+        "</div>"
+        if notices_html
+        else ""
+    )
     prompt_card_html = (
         '<section class="welcome-prompt-card">'
         '<div class="welcome-prompt-copy">'
+        '<div class="welcome-prompt-head">'
         '<p class="welcome-card-kicker">Copy this into your agent</p>'
-        f'<p class="welcome-prompt-text"><strong>{html.escape(starter_prompt)}</strong></p>'
+        '<p class="welcome-prompt-intro">Ground one path, then let Odylith open the first governed records around it.</p>'
+        "</div>"
+        f"{steps_html}"
+        '<div class="welcome-prompt-block">'
+        f'<p class="welcome-prompt-text"><strong>"{html.escape(starter_prompt)}"</strong></p>'
+        "</div>"
         f"{auto_refresh_html}"
         '<p id="welcomeCopyStatus" class="welcome-copy-status" aria-live="polite"></p>'
         "</div>"
@@ -252,13 +182,6 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
         'data-copy-status="Starter prompt copied. Paste it into your agent.">Copy prompt</button>'
         "</div>"
         "</section>"
-    )
-    records_html = (
-        '<section class="welcome-record-grid">'
-        f'{"".join(record_cards)}'
-        "</section>"
-        if record_cards
-        else ""
     )
     return release_spotlight_html + (
         '<section id="shellWelcomeState" class="welcome-state welcome-state-launchpad" aria-label="Odylith first-run welcome state"'
@@ -272,16 +195,16 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
         f'<h2 class="welcome-title">{html.escape(headline)}</h2>'
         f'<p class="welcome-subhead">{html.escape(subhead)}</p>'
         "</div>"
-        f"{prompt_card_html}"
+        f"{hero_badges_html}"
         "</div>"
-        '<div class="welcome-launchpad-aside">'
-        f"{notices_html}"
-        f"{chosen_slice_html}"
-        f"{steps_html}"
+        f"{prompt_card_html}"
+        "</section>"
+        f'<section class="{launchpad_grid_class}">'
+        f"{launchpad_notices_column_html}"
+        '<div class="welcome-launchpad-column">'
+        f"{explainers_html}"
         "</div>"
         "</section>"
-        f"{explainers_html}"
-        f"{records_html}"
         "</div>"
         "</section>"
     )

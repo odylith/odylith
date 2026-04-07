@@ -14,6 +14,9 @@ def test_load_release_notes_source_parses_front_matter_and_normalizes_markdown(t
             "---\n"
             "version: 0.1.6\n"
             "published_at: 2026-03-30T14:00:00Z\n"
+            "note_link_label: Read note\n"
+            "external_link_label: example.com\n"
+            "reopen_label: v0.1.6\n"
             "summary: [Linked](https://example.com) summary\n"
             "highlights:\n"
             "  - `One` highlight\n"
@@ -32,9 +35,13 @@ def test_load_release_notes_source_parses_front_matter_and_normalizes_markdown(t
 
     assert note is not None
     assert note.version == "0.1.6"
+    assert note.title == "Heading"
     assert note.published_at == "2026-03-30T14:00:00Z"
     assert note.summary == "Linked summary"
     assert note.highlights == ("One highlight", "Two highlight")
+    assert note.note_link_label == "Read note"
+    assert note.external_link_label == "example.com"
+    assert note.reopen_label == "v0.1.6"
     assert "First paragraph with **bold** copy." in note.body
 
 
@@ -49,3 +56,9 @@ def test_repo_has_authored_release_note_for_current_product_version() -> None:
     assert note is not None
     assert note.version == version
     assert note.summary
+
+
+def test_github_release_notes_url_points_at_tagged_markdown() -> None:
+    assert release_notes.github_release_notes_url(version="0.1.7", release_tag="v0.1.7") == (
+        "https://github.com/odylith/odylith/blob/v0.1.7/odylith/runtime/source/release-notes/v0.1.7.md"
+    )

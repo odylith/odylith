@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 import re
 from typing import Any
+from urllib.parse import urlparse
 
 from odylith.install.state import load_install_state
 from odylith.install.state import load_upgrade_spotlight
@@ -163,13 +164,82 @@ def _clean_release_story_highlights(raw_highlights: Any, *, version: str) -> lis
     return cleaned
 
 
-def _default_release_story_highlights(*, version: str) -> list[str]:
-    version_label = f"v{str(version or '').strip().removeprefix('v')}"
-    return [
-        f"This repo is already running {version_label} on the pinned Odylith runtime.",
-        "The dashboard refreshed immediately after the upgrade so work can continue in place.",
-        "The bottom recovery pill keeps the upgrade note close for thirty minutes, then gets out of the way.",
-    ]
+def _format_release_story_version(value: Any) -> str:
+    token = str(value or "").strip().removeprefix("v")
+    if not token:
+        return ""
+    return f"v{token}" if token[:1].isdigit() else token
+
+
+def _release_story_title(
+    *,
+    authored_notes: release_notes.ReleaseNotesSource | None,
+    release_tag: str,
+    to_version: str,
+) -> str:
+    if authored_notes is not None and authored_notes.title:
+        return authored_notes.title
+    return _format_release_story_version(release_tag or to_version)
+
+
+def _release_story_note_link_label(
+    *,
+    authored_notes: release_notes.ReleaseNotesSource | None,
+    title: str,
+    release_tag: str,
+    to_version: str,
+) -> str:
+    if authored_notes is not None and authored_notes.note_link_label:
+        return authored_notes.note_link_label
+    return "Open release note on GitHub"
+
+
+def _release_story_external_link_label(
+    *,
+    authored_notes: release_notes.ReleaseNotesSource | None,
+    release_url: str,
+    release_tag: str,
+    to_version: str,
+) -> str:
+    if authored_notes is not None and authored_notes.external_link_label:
+        return authored_notes.external_link_label
+    host = ""
+    token = str(release_url or "").strip()
+    if token:
+        parsed = urlparse(token)
+        host = str(parsed.netloc or "").strip().removeprefix("www.")
+    return host or _format_release_story_version(release_tag or to_version)
+
+
+def _release_story_reopen_label(
+    *,
+    authored_notes: release_notes.ReleaseNotesSource | None,
+    title: str,
+    release_tag: str,
+    to_version: str,
+) -> str:
+    if authored_notes is not None and authored_notes.reopen_label:
+        return authored_notes.reopen_label
+    return _format_release_story_version(to_version or release_tag) or title
+
+
+def _release_story_notes_url(
+    *,
+    authored_notes: release_notes.ReleaseNotesSource | None,
+    release_tag: str,
+    to_version: str,
+) -> str:
+    version = (
+        authored_notes.version
+        if authored_notes is not None and str(authored_notes.version).strip()
+        else str(to_version or "").strip()
+    )
+    if not version:
+        return ""
+    return release_notes.github_release_notes_url(
+        version=version,
+        release_tag=str(release_tag or f"v{version.lstrip('v')}").strip(),
+    )
 
 
 def build_welcome_state(*, repo_root: Path) -> dict[str, Any]:
@@ -253,9 +323,7 @@ def build_welcome_state(*, repo_root: Path) -> dict[str, Any]:
     return {
         "show": True,
         "headline": "Start Odylith from one real code path",
-        "subhead": (
-            "Copy the prompt below into your agent. Odylith will create the first Radar item, Registry boundary, and Atlas map around one real code path in this repo."
-        ),
+        "subhead": "Open the cheatsheet drawer on the left and try out commands in this repo.",
         "dismiss_key": dismiss_key,
         "starter_prompt": STARTER_PROMPT,
         "auto_refresh_note": AUTO_REFRESH_NOTE,
@@ -361,6 +429,8 @@ def build_release_spotlight(*, repo_root: Path) -> dict[str, Any]:
         return {}
     if len(activation_history) < 2 or activation_history[-1] != to_version or activation_history[-2] != from_version:
         return {}
+    release_tag = str(payload.get("release_tag", "")).strip()
+    release_url = str(payload.get("release_url", "")).strip()
     release_body = _clean_release_story_body(
         release_body=str(payload.get("release_body", "")).strip(),
         version=to_version,
@@ -371,28 +441,35 @@ def build_release_spotlight(*, repo_root: Path) -> dict[str, Any]:
     highlights = _clean_release_story_highlights(payload.get("highlights"), version=to_version)
     if authored_notes is not None and authored_notes.highlights:
         highlights = [str(item).strip() for item in authored_notes.highlights if str(item).strip()][:3]
-    if not highlights:
-        highlights = _default_release_story_highlights(version=to_version)
     summary, detail = _release_spotlight_copy(
         from_version=from_version,
         to_version=to_version,
         release_body=release_body,
         highlights=highlights,
     )
-    detail_highlight = detail.removeprefix("Highlights: ").strip() if detail.startswith("Highlights: ") else ""
+    if authored_notes is not None and authored_notes.summary:
+        summary = authored_notes.summary
+    if not summary and highlights:
+        summary = highlights[0]
+    if not detail:
+        detail = next((item for item in highlights if item != summary), "")
     highlights = [
         item
         for item in highlights
-        if item not in {summary, detail, detail_highlight}
+        if item not in {summary, detail}
     ][:3]
-    if not highlights:
-        highlights = _default_release_story_highlights(version=to_version)
+    title = _release_story_title(
+        authored_notes=authored_notes,
+        release_tag=release_tag,
+        to_version=to_version,
+    )
     return {
         "show": True,
         "from_version": from_version,
         "to_version": to_version,
-        "release_tag": str(payload.get("release_tag", "")).strip(),
-        "release_url": str(payload.get("release_url", "")).strip(),
+        "title": title,
+        "release_tag": release_tag,
+        "release_url": release_url,
         "release_published_at": (
             authored_notes.published_at
             if authored_notes is not None and authored_notes.published_at
@@ -400,12 +477,31 @@ def build_release_spotlight(*, repo_root: Path) -> dict[str, Any]:
         ),
         "release_body": release_body,
         "highlights": highlights,
-        "summary": (
-            authored_notes.summary
-            if authored_notes is not None and authored_notes.summary
-            else summary
-        ),
+        "summary": summary,
         "detail": detail,
+        "notes_url": _release_story_notes_url(
+            authored_notes=authored_notes,
+            release_tag=release_tag,
+            to_version=to_version,
+        ),
+        "notes_label": _release_story_note_link_label(
+            authored_notes=authored_notes,
+            title=title,
+            release_tag=release_tag,
+            to_version=to_version,
+        ),
+        "external_label": _release_story_external_link_label(
+            authored_notes=authored_notes,
+            release_url=release_url,
+            release_tag=release_tag,
+            to_version=to_version,
+        ),
+        "reopen_label": _release_story_reopen_label(
+            authored_notes=authored_notes,
+            title=title,
+            release_tag=release_tag,
+            to_version=to_version,
+        ),
         "recorded_utc": str(payload.get("recorded_utc", "")).strip(),
         "expires_utc": _release_spotlight_expires_utc(payload),
     }
@@ -454,26 +550,33 @@ def build_version_story(*, repo_root: Path) -> dict[str, Any]:
     highlights = raw_highlights
     if authored_notes is not None and authored_notes.highlights:
         highlights = [str(item).strip() for item in authored_notes.highlights if str(item).strip()][:3]
-    if not highlights:
-        highlights = _default_release_story_highlights(version=to_version)
     summary, detail = _release_spotlight_copy(
         from_version=from_version,
         to_version=to_version,
         release_body=release_body,
         highlights=highlights,
     )
-    detail_highlight = detail.removeprefix("Highlights: ").strip() if detail.startswith("Highlights: ") else ""
+    if authored_notes is not None and authored_notes.summary:
+        summary = authored_notes.summary
+    if not summary and highlights:
+        summary = highlights[0]
+    if not detail:
+        detail = next((item for item in highlights if item != summary), "")
     highlights = [
         item
         for item in highlights
-        if item not in {summary, detail, detail_highlight}
+        if item not in {summary, detail}
     ][:3]
-    if not highlights:
-        highlights = _default_release_story_highlights(version=to_version)
+    title = _release_story_title(
+        authored_notes=authored_notes,
+        release_tag=release_tag,
+        to_version=to_version,
+    )
     return {
         "show": True,
         "from_version": from_version,
         "to_version": to_version,
+        "title": title,
         "release_tag": release_tag,
         "release_url": release_url,
         "release_published_at": (
@@ -483,15 +586,32 @@ def build_version_story(*, repo_root: Path) -> dict[str, Any]:
         ),
         "release_body": release_body,
         "highlights": highlights,
-        "summary": (
-            authored_notes.summary
-            if authored_notes is not None and authored_notes.summary
-            else summary
-        ),
+        "summary": summary,
         "detail": detail,
-        "headline": f"What changed since v{from_version}?",
-        "cta_label": f"Open v{to_version} release note",
-        "reopen_label": f"What changed since v{from_version}?",
+        "headline": title,
+        "notes_url": _release_story_notes_url(
+            authored_notes=authored_notes,
+            release_tag=release_tag,
+            to_version=to_version,
+        ),
+        "cta_label": _release_story_note_link_label(
+            authored_notes=authored_notes,
+            title=title,
+            release_tag=release_tag,
+            to_version=to_version,
+        ),
+        "external_label": _release_story_external_link_label(
+            authored_notes=authored_notes,
+            release_url=release_url,
+            release_tag=release_tag,
+            to_version=to_version,
+        ),
+        "reopen_label": _release_story_reopen_label(
+            authored_notes=authored_notes,
+            title=title,
+            release_tag=release_tag,
+            to_version=to_version,
+        ),
     }
 
 
@@ -510,14 +630,12 @@ def _release_spotlight_copy(
     highlights: list[str],
 ) -> tuple[str, str]:
     paragraphs = _release_note_paragraphs(release_body, limit=2)
-    summary = paragraphs[0] if paragraphs else (
-        f"Odylith just moved this repo from {from_version} to {to_version} and refreshed the local shell immediately."
-    )
-    detail = paragraphs[1] if len(paragraphs) > 1 else (
-        "Use the release note below as the clearest short explanation of what changed, then keep working from the refreshed dashboard."
-    )
-    if highlights and not paragraphs:
-        detail = f"Highlights: {highlights[0]}"
+    summary = paragraphs[0] if paragraphs else ""
+    detail = paragraphs[1] if len(paragraphs) > 1 else ""
+    if not summary and highlights:
+        summary = highlights[0]
+    if not detail:
+        detail = next((item for item in highlights if item != summary), "")
     return summary, detail
 
 
@@ -872,24 +990,22 @@ def _surface_flow(*, focus: _RepoFocus) -> list[str]:
 
 
 def _surface_explainers(*, focus_path: str, component_label: str) -> list[dict[str, str]]:
-    slice_label = focus_path or "the first real code path you choose"
-    boundary_label = component_label or "the first named boundary"
     return [
         {
             "surface": "Radar",
-            "sentence": f"Radar turns `{slice_label}` into the next governed workstream so the repo starts from one concrete outcome.",
+            "sentence": "Radar keeps a clear backlog so the repo always has one governed next step.",
         },
         {
             "surface": "Registry",
-            "sentence": f"Registry names the boundary around {boundary_label} so ownership and contracts stay explicit as code spreads.",
+            "sentence": "Registry is the component ledger for boundaries, ownership, and contracts.",
         },
         {
             "surface": "Atlas",
-            "sentence": f"Atlas makes `{slice_label}` visible as topology and flow so architecture does not stay trapped in chat context.",
+            "sentence": "Atlas keeps architecture visible with diagrams of topology and flow.",
         },
         {
             "surface": "Compass",
-            "sentence": "Compass shows what Odylith actually executed and what changed so the next loop starts from evidence instead of memory.",
+            "sentence": "Compass keeps briefs and timelines so the next move stays clear.",
         },
     ]
 
@@ -902,25 +1018,31 @@ def _quick_steps(
     missing_component: bool,
     missing_atlas: bool,
 ) -> list[str]:
-    records: list[str] = []
+    surfaces: list[str] = []
     if missing_backlog:
-        records.append("Radar item")
+        surfaces.append("Radar")
     if missing_component:
-        records.append("Registry boundary")
+        surfaces.append("Registry")
     if missing_atlas:
-        records.append("Atlas map")
-    missing_records = ", ".join(records) if records else "Odylith records"
+        surfaces.append("Atlas")
     if not focus_path and not component_label:
         return [
             "Copy the starter prompt.",
-            "Paste it into Codex or Claude Code in this repo.",
-            f"Create one real code path, then let Odylith seed the first {missing_records} around it.",
+            "Paste it into Codex or Claude Code.",
+            "Try commands in the cheatsheet.",
         ]
-    slice_label = focus_path or component_label or "one real code path"
+    if not surfaces:
+        surface_list = "Odylith"
+    elif len(surfaces) == 1:
+        surface_list = surfaces[0]
+    elif len(surfaces) == 2:
+        surface_list = f"{surfaces[0]} and {surfaces[1]}"
+    else:
+        surface_list = f"{surfaces[0]}, {surfaces[1]}, and {surfaces[2]}"
     return [
         "Copy the starter prompt.",
-        "Paste it into Codex or Claude Code in this repo.",
-        f"Let Odylith create the first {missing_records} around `{slice_label}`.",
+        "Paste it into Codex or Claude Code.",
+        f"Let Odylith set up {surface_list}.",
     ]
 
 
@@ -954,16 +1076,16 @@ def _chosen_slice(
             ],
         }
     return {
-        "title": "Recommended place to start",
+        "title": "Example starting path",
         "path": focus_path,
         "reason": (
-            f"Odylith can already ground `{focus_path}` from the current repo structure, so this is the fastest place to get a useful first result."
+            f"Use `{focus_path}` as the example. Odylith can already ground it from the current repo structure."
             if focus_path
             else "Odylith can ground one concrete code path immediately instead of spreading across the whole repo."
         ),
         "guidance": [
-            "Start with one small code path instead of trying to map the whole repo first.",
-            "Odylith will use this area to seed Radar, Registry, and Atlas.",
+            "Start small with one real path instead of trying to map the whole repo.",
+            "Odylith will use this same example to seed Radar, Registry, and Atlas.",
         ],
     }
 

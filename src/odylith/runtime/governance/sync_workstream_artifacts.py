@@ -25,7 +25,12 @@ from typing import Any, Callable, Mapping, Sequence
 
 from odylith.runtime.common.command_surface import display_command, ensure_repo_root_args
 from odylith.runtime.common.consumer_profile import surface_root_path, truth_root_path
+from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance.legacy_backlog_normalization import backlog_next_action
+from odylith.runtime.governance.legacy_backlog_normalization import collect_backlog_contract_errors
+from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
+from odylith.runtime.governance.legacy_backlog_normalization import summarize_backlog_contract_errors
 from odylith.runtime.governance import sync_casebook_bug_index
 
 
@@ -182,6 +187,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--dry-run",
         action="store_true",
         help="Preview the sync mutation plan and dirty-worktree overlap without writing files.",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Show the full dirty-overlap listing instead of the compact summary.",
     )
     parser.add_argument(
         "--no-traceability-autofix",
@@ -365,7 +375,15 @@ def _execution_plan(*, headline: str, steps: Sequence[ExecutionStep], notes: Seq
     )
 
 
-def _print_execution_plan(name: str, plan: ExecutionPlan, *, dry_run: bool) -> None:
+def _backlog_contract_preflight_ready(repo_root: Path) -> bool:
+    return (
+        (truth_root_path(repo_root=repo_root, key="radar_source") / "INDEX.md").is_file()
+        and (truth_root_path(repo_root=repo_root, key="radar_source") / "ideas").is_dir()
+        and (truth_root_path(repo_root=repo_root, key="technical_plans") / "INDEX.md").is_file()
+    )
+
+
+def _print_execution_plan(name: str, plan: ExecutionPlan, *, dry_run: bool, verbose: bool = False) -> None:
     print(f"{name} {'dry-run' if dry_run else 'plan'}")
     if plan.headline:
         print(f"- summary: {plan.headline}")
@@ -379,7 +397,7 @@ def _print_execution_plan(name: str, plan: ExecutionPlan, *, dry_run: bool) -> N
             print(f"  paths: {preview}{suffix}")
     if plan.dirty_overlap:
         print("- dirty_overlap:")
-        for line in plan.dirty_overlap:
+        for line in summarize_dirty_overlap(plan.dirty_overlap, verbose=verbose):
             print(f"  {line}")
     if plan.notes:
         print("- notes:")
@@ -1195,7 +1213,7 @@ def refresh_dashboard_surfaces(
         atlas_sync=atlas_sync,
         compass_refresh_profile=compass_refresh_profile,
     )
-    _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run))
+    _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run), verbose=False)
     if dry_run:
         return 0
     started_at = time.perf_counter()
@@ -1782,6 +1800,29 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("workstream sync skipped (no relevant artifact changes detected)")
         return 0
 
+    normalization = None
+    if _backlog_contract_preflight_ready(repo_root):
+        if not args.check_only:
+            normalization = normalize_legacy_backlog_index(repo_root=repo_root)
+            if normalization.changed:
+                print("workstream sync legacy normalization")
+                print(
+                    f"- radar_index: normalized {len(normalization.normalized_sections)} rationale entr"
+                    f"{'y' if len(normalization.normalized_sections) == 1 else 'ies'} before validation"
+                )
+        backlog_errors = collect_backlog_contract_errors(repo_root=repo_root)
+        if backlog_errors:
+            print("odylith sync did not complete.")
+            if normalization is not None and normalization.changed:
+                print("Legacy Radar rationale was normalized, but backlog contract blockers still remain.")
+            else:
+                print("Radar backlog contract validation is blocking sync.")
+            print("Top blockers:")
+            for line in summarize_backlog_contract_errors(backlog_errors):
+                print(f"- {line}")
+            print(f"Next: {backlog_next_action(errors=backlog_errors)}")
+            return 2
+
     impact = None
     governance_fallback_reason = ""
     if not args.check_only and _use_runtime_fast_path(effective_runtime_mode) and changed_paths:
@@ -1877,7 +1918,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         impact_tooling_shell=impact_tooling_shell,
         runtime_mode=effective_runtime_mode,
     )
-    _print_execution_plan("workstream sync", plan, dry_run=bool(args.dry_run))
+    _print_execution_plan(
+        "workstream sync",
+        plan,
+        dry_run=bool(args.dry_run),
+        verbose=bool(args.verbose),
+    )
     if args.dry_run:
         return 0
 

@@ -27,8 +27,6 @@
 {% if shell_version_label %}        <p class="toolbar-version">{{ shell_version_label }}</p>
 {% endif %}
         <div class="toolbar-actions">
-{% if version_story_href %}          <a id="toolbarVersionStoryLink" class="toolbar-link-button" href="{{ version_story_href }}">{{ version_story_label }}</a>
-{% endif %}
         </div>
         <nav class="tabs" role="tablist" aria-label="Dashboard tabs">
           <button id="tab-registry" type="button" role="tab" class="tab" data-tab="registry" aria-selected="false">Registry</button>
@@ -43,8 +41,8 @@
     <section class="viewport" aria-live="polite">
 {% if welcome_html %}{{ welcome_html | safe }}{% endif %}
       <div id="shellRecoveryDock" class="shell-recovery-dock" hidden aria-live="polite">
-        <button id="welcomeReopen" type="button" class="shell-recovery-button" hidden aria-hidden="true">Show starter guide</button>
-        <button id="upgradeReopen" type="button" class="shell-recovery-button shell-recovery-button-upgrade" hidden aria-hidden="true">Show release note</button>
+        <button id="welcomeReopen" type="button" class="shell-recovery-button" hidden aria-hidden="true">Starter Guide</button>
+        <button id="upgradeReopen" type="button" class="shell-recovery-button shell-recovery-button-upgrade" hidden aria-hidden="true"></button>
         <button id="runtimeStatusReopen" type="button" class="shell-recovery-button shell-recovery-button-runtime" hidden aria-hidden="true">Show status</button>
       </div>
       <section id="shellRuntimeStatus" class="shell-runtime-status" hidden aria-live="polite">

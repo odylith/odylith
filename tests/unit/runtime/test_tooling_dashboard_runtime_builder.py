@@ -22,7 +22,7 @@ def test_validate_surface_paths_reports_missing_htmls(tmp_path: Path) -> None:
     assert any("missing compass html" in item for item in errors)
 
 
-def test_build_runtime_payload_adds_release_notes_link_and_surface_hrefs(tmp_path: Path) -> None:
+def test_build_runtime_payload_preserves_release_note_urls_and_surface_hrefs(tmp_path: Path) -> None:
     output_path = tmp_path / "odylith" / "index.html"
     paths = builder.ToolingDashboardSurfacePaths(
         output_path=output_path,
@@ -47,8 +47,18 @@ def test_build_runtime_payload_adds_release_notes_link_and_surface_hrefs(tmp_pat
         surface_paths=paths,
         shell_payload={"window_title": "Odylith"},
         welcome_state={"show": True},
-        release_spotlight={"show": True, "to_version": "1.2.3", "release_tag": "v1.2.3"},
-        version_story={"show": True, "to_version": "1.2.3", "headline": "What changed since v1.2.2?"},
+        release_spotlight={
+            "show": True,
+            "to_version": "1.2.3",
+            "release_tag": "v1.2.3",
+            "notes_url": "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md",
+        },
+        version_story={
+            "show": True,
+            "to_version": "1.2.3",
+            "headline": "What changed since v1.2.2?",
+            "notes_url": "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md",
+        },
         benchmark_story={"show": True, "status": "pass"},
         shell_source_payload={"shell_repo_label": "Repo · Odylith"},
         self_host_payload={"repo_role": "product_repo"},
@@ -56,11 +66,14 @@ def test_build_runtime_payload_adds_release_notes_link_and_surface_hrefs(tmp_pat
         shell_version_label="v1.2.3",
     )
 
-    assert result.release_notes_path == output_path.parent / "release-notes" / "1.2.3.html"
     assert result.runtime_payload["radar_href"].startswith("radar/radar.html?v=")
     assert result.runtime_payload["compass_href"].startswith("compass/compass.html?v=")
-    assert result.runtime_payload["release_spotlight"]["notes_href"] == "release-notes/1.2.3.html"
-    assert result.runtime_payload["version_story"]["notes_href"] == "release-notes/1.2.3.html"
+    assert result.runtime_payload["release_spotlight"]["notes_url"] == (
+        "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"
+    )
+    assert result.runtime_payload["version_story"]["notes_url"] == (
+        "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"
+    )
     assert result.runtime_payload["benchmark_story"]["status"] == "pass"
     assert result.runtime_payload["shell_version_label"] == "v1.2.3"
 
@@ -91,7 +104,12 @@ def test_build_runtime_payload_uses_version_story_when_popup_payload_is_absent(t
         shell_payload={},
         welcome_state={"show": False},
         release_spotlight={},
-        version_story={"show": True, "to_version": "1.2.3", "headline": "What changed since v1.2.2?"},
+        version_story={
+            "show": True,
+            "to_version": "1.2.3",
+            "headline": "What changed since v1.2.2?",
+            "notes_url": "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md",
+        },
         benchmark_story={},
         shell_source_payload={},
         self_host_payload={},
@@ -99,9 +117,10 @@ def test_build_runtime_payload_uses_version_story_when_popup_payload_is_absent(t
         shell_version_label="v1.2.3",
     )
 
-    assert result.release_notes_path == output_path.parent / "release-notes" / "1.2.3.html"
     assert result.runtime_payload["release_spotlight"] == {}
-    assert result.runtime_payload["version_story"]["notes_href"] == "release-notes/1.2.3.html"
+    assert result.runtime_payload["version_story"]["notes_url"] == (
+        "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"
+    )
 
 
 def test_build_runtime_payload_uses_product_name_for_public_product_repo(tmp_path: Path) -> None:

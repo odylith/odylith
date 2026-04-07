@@ -8,7 +8,6 @@
   const searchInput = root.querySelector("[data-cheatsheet-search]");
   const results = document.getElementById("agentCheatsheetResults");
   const copyStatus = document.getElementById("agentCheatsheetCopyStatus");
-  const emptyState = document.getElementById("agentCheatsheetEmpty");
   const cards = Array.from(root.querySelectorAll("[data-cheatsheet-card]"));
   const filterButtons = Array.from(root.querySelectorAll("[data-cheatsheet-filter]"));
   const copyButtons = Array.from(root.querySelectorAll("[data-cheatsheet-copy-button]"));
@@ -55,9 +54,6 @@
     });
     if (results) {
       results.textContent = visibleLabel(visibleCount, query);
-    }
-    if (emptyState) {
-      emptyState.hidden = visibleCount !== 0;
     }
   }
 

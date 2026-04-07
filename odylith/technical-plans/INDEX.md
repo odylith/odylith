@@ -1,6 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-05
+Last updated (UTC): 2026-04-06
 
 ## Active Plans
 
@@ -18,6 +18,7 @@ Last updated (UTC): 2026-04-05
 | `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md` | In progress | 2026-03-30 | 2026-03-30 | `B-033` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md` | In progress | 2026-04-01 | 2026-04-01 | `B-040` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md` | In progress | 2026-04-04 | 2026-04-04 | `B-045` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md` | In progress | 2026-04-06 | 2026-04-06 | `B-048` |
 
 ## Parked Plans
 

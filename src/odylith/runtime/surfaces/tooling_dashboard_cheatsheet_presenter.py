@@ -636,9 +636,5 @@ def render_agent_cheatsheet_html(payload: Mapping[str, Any]) -> str:
         f'<div class="agent-cheatsheet-filter-row">{"".join(filter_buttons)}</div>'
         "</div>"
         f'<div id="agentCheatsheetCardList" class="agent-cheatsheet-card-list">{"".join(cards_html)}</div>'
-        '<div id="agentCheatsheetEmpty" class="agent-cheatsheet-empty" hidden>'
-        '<p class="agent-cheatsheet-empty-title">No workflows match this search yet.</p>'
-        '<p class="agent-cheatsheet-empty-copy">Try a surface name, action, or tag like Atlas, developer notes, refresh, proof, route, or risk.</p>'
-        "</div>"
         "</section>"
     )

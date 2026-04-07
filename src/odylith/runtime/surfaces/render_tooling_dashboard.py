@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -100,22 +101,13 @@ def _format_shell_version_label(value: str) -> str:
     return token
 
 
-def _release_notes_output_path(*, output_path: Path, spotlight: dict[str, Any]) -> Path:
-    return tooling_dashboard_runtime_builder.release_notes_output_path(
-        output_path=output_path,
-        spotlight=spotlight,
-    )
-
-
-def _prune_release_note_pages(*, output_path: Path, keep_path: Path | None) -> None:
+def _prune_release_note_pages(*, output_path: Path) -> None:
     release_notes_root = output_path.parent / "release-notes"
-    if not release_notes_root.is_dir():
+    if release_notes_root.is_dir():
+        shutil.rmtree(release_notes_root)
         return
-    keep_resolved = keep_path.resolve() if keep_path is not None else None
-    for candidate in release_notes_root.glob("*.html"):
-        if keep_resolved is not None and candidate.resolve() == keep_resolved:
-            continue
-        candidate.unlink()
+    if release_notes_root.exists():
+        release_notes_root.unlink()
 
 
 def _is_public_odylith_repo(repo_root: Path) -> bool:
@@ -447,20 +439,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if bool(runtime_payload["live_refresh"].get("enabled")):
         odylith_context_engine_store.ensure_state_js_probe_asset(repo_root=repo_root)
-    _prune_release_note_pages(
-        output_path=output_path,
-        keep_path=build_result.release_notes_path,
-    )
-    if build_result.release_notes_path is not None:
-        release_notes_path = build_result.release_notes_path
-        release_notes_path.parent.mkdir(parents=True, exist_ok=True)
-        release_notes_payload = tooling_dashboard_runtime_builder.build_release_notes_payload(
-            runtime_payload=runtime_payload,
-            brand_payload=brand_assets.tooling_shell_brand_payload(repo_root=repo_root, output_path=release_notes_path),
-        )
-        release_notes_html = tooling_dashboard_shell_presenter.render_release_notes_html(release_notes_payload)
-        if release_notes_html:
-            release_notes_path.write_text(release_notes_html, encoding="utf-8")
+    _prune_release_note_pages(output_path=output_path)
     runtime_payload["odylith_drawer"] = tooling_dashboard_shell_presenter.build_odylith_drawer_payload(runtime_payload)
     bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="tooling")
     runtime_payload["generated_utc"] = stable_generated_utc.resolve_for_js_assignment_file(

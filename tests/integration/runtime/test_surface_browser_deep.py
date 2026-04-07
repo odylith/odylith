@@ -340,9 +340,10 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
 
     _reset_select_to_first_option(casebook, "#statusFilter")
     casebook.locator("#searchInput").fill("zzzzzz-no-casebook-match")
-    casebook.locator("#detailPane .empty-state", has_text="No bug matches the current filters").wait_for(timeout=15000)
+    casebook.locator("#listMeta", has_text="Visible: 0").wait_for(timeout=15000)
     assert casebook.locator("button.bug-row").count() == 0
     assert casebook.locator("#listMeta").inner_text().strip() == "Visible: 0"
+    assert casebook.locator("#detailPane").inner_text().strip() == ""
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

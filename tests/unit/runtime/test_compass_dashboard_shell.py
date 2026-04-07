@@ -56,6 +56,10 @@ def test_shared_compass_asset_preserves_legacy_digest_fallback_logic() -> None:
     assert 'return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);' in shared_js
     assert 'source === "provider" || source === "cache" || source === "deterministic"' in summary_js
     assert "Deterministic local brief" in summary_js
+    assert "No critical blended risks in current payload." not in summary_js
+    assert "No validated AI-authored standup brief is available for this view." not in summary_js
+    assert "No validated narrative bullets available for this section." not in summary_js
+    assert "No standup brief available for this view." not in summary_js
     assert 'return String(value ?? "")' in shared_js
 
 

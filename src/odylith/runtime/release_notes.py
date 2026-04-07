@@ -7,15 +7,20 @@ from typing import Any
 
 _FRONT_MATTER_DELIMITER = "---"
 _FRONT_MATTER_KEY_RE = re.compile(r"^(?P<key>[A-Za-z0-9_-]+):\s*(?P<value>.*)$")
+_PUBLIC_RELEASE_NOTES_REPO = "https://github.com/odylith/odylith"
 
 
 @dataclass(frozen=True)
 class ReleaseNotesSource:
     version: str
+    title: str
     published_at: str
     summary: str
     highlights: tuple[str, ...]
     body: str
+    note_link_label: str
+    external_link_label: str
+    reopen_label: str
     source_path: Path
 
 
@@ -29,6 +34,14 @@ def release_notes_path(*, repo_root: str | Path, version: str) -> Path:
         / "release-notes"
         / f"v{token}.md"
     )
+
+
+def github_release_notes_url(*, version: str, release_tag: str = "") -> str:
+    version_token = str(version or "").strip().lstrip("v")
+    if not version_token:
+        return ""
+    ref_token = str(release_tag or f"v{version_token}").strip() or f"v{version_token}"
+    return f"{_PUBLIC_RELEASE_NOTES_REPO}/blob/{ref_token}/odylith/runtime/source/release-notes/v{version_token}.md"
 
 
 def _normalize_text(value: Any, *, limit: int = 240) -> str:
@@ -69,6 +82,21 @@ def _paragraphs(body: str, *, limit: int) -> list[str]:
         if len(paragraphs) >= limit:
             break
     return paragraphs[:limit]
+
+
+def _heading_title(body: str) -> str:
+    text = str(body or "").strip()
+    if not text:
+        return ""
+    for raw_line in text.splitlines():
+        line = str(raw_line or "").strip()
+        if not line:
+            continue
+        heading = re.match(r"^#\s+(?P<text>.+)$", line)
+        if heading is None:
+            continue
+        return _normalize_text(heading.group("text"), limit=120)
+    return ""
 
 
 def _parse_front_matter(text: str) -> tuple[dict[str, object], str]:
@@ -146,9 +174,13 @@ def load_release_notes_source(*, repo_root: str | Path, version: str) -> Release
     summary = _normalize_text(front_matter.get("summary") or "") or (paragraphs[0] if paragraphs else "")
     return ReleaseNotesSource(
         version=_normalize_text(front_matter.get("version") or version, limit=64).lstrip("v"),
+        title=_normalize_text(front_matter.get("title") or "", limit=120) or _heading_title(normalized_body),
         published_at=_normalize_text(front_matter.get("published_at") or "", limit=64),
         summary=summary,
         highlights=highlights,
         body=normalized_body,
+        note_link_label=_normalize_text(front_matter.get("note_link_label") or "", limit=120),
+        external_link_label=_normalize_text(front_matter.get("external_link_label") or "", limit=120),
+        reopen_label=_normalize_text(front_matter.get("reopen_label") or "", limit=120),
         source_path=path,
     )

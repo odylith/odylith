@@ -21,7 +21,7 @@
 Install Odylith from the Git-backed repository you want to augment:
 
 ```bash
-curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash
+curl -fsSL https://odylith.ai/install.sh | bash
 ```
 
 Run it from the repo root when you can; Odylith can also detect that root from

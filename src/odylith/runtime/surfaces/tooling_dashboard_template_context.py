@@ -20,8 +20,6 @@ class ToolingDashboardTemplateContext:
     brand_head_html: str
     shell_brand_lockup_href: str
     shell_brand_icon_href: str
-    version_story_href: str
-    version_story_label: str
     style_css: str
     welcome_html: str
     system_status_html: str
@@ -68,8 +66,6 @@ def build_template_context(
         brand_head_html=str(payload.get("brand_head_html", "")).strip(),
         shell_brand_lockup_href=str(payload.get("shell_brand_lockup_href", "")).strip(),
         shell_brand_icon_href=str(payload.get("shell_brand_icon_href", "")).strip(),
-        version_story_href="",
-        version_story_label="What changed since my version?",
         style_css=tooling_dashboard_frontend_contract.load_tooling_shell_style_css(),
         welcome_html=welcome_html,
         system_status_html=system_status_html,

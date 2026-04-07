@@ -20,6 +20,8 @@ from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_FEATURE_PACK_SCHEMA_VERSION,
 )
 from odylith.install.agents import has_managed_block, update_agents_file
+from odylith.install.migration_audit import LegacyReferenceAudit
+from odylith.install.migration_audit import audit_legacy_odyssey_references
 from odylith.install.repair import reset_local_state as reset_install_local_state
 from odylith.install.python_env import scrubbed_python_env
 from odylith.install.release_assets import ReleaseInfo, fetch_release
@@ -41,6 +43,7 @@ from odylith.install.runtime import (
     switch_runtime,
     write_managed_runtime_trust,
 )
+from odylith.install.runtime_status import inspect_runtime_source
 from odylith.install.state import (
     AUTHORITATIVE_RELEASE_REPO,
     DEFAULT_REPO_SCHEMA_VERSION,
@@ -58,6 +61,7 @@ from odylith.install.state import (
 )
 from odylith.runtime.common.consumer_profile import consumer_profile_path, write_consumer_profile
 from odylith.runtime.common.product_assets import bundled_product_root
+from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.memory import odylith_memory_backend
 
@@ -139,6 +143,7 @@ class MigrationSummary:
     consumer_profile_path: Path
     moved_paths: tuple[str, ...]
     removed_paths: tuple[str, ...]
+    stale_reference_audit: LegacyReferenceAudit | None = None
     already_migrated: bool = False
 
 
@@ -187,6 +192,9 @@ class VersionStatus:
     repo_role: str
     release_eligible: bool | None
     runtime_source: str
+    runtime_source_detail: str
+    runtime_trust_degraded: bool
+    runtime_trust_reasons: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -904,6 +912,26 @@ def evaluate_start_preflight(
             install_shape_present=True,
             status=status,
         )
+    consumer_lane_violation = (
+        _consumer_lane_violation_reason(
+            repo_role=status.repo_role,
+            posture=status.posture,
+            runtime_source=status.runtime_source,
+        )
+        if status is not None
+        else ""
+    )
+    if consumer_lane_violation:
+        return StartPreflight(
+            lane="repair",
+            reason=consumer_lane_violation,
+            next_command=_preferred_repair_command(),
+            healthy=False,
+            launcher_exists=launcher_exists,
+            bootstrap_launcher_exists=bootstrap_launcher_exists,
+            install_shape_present=True,
+            status=status,
+        )
     if status_only:
         return StartPreflight(
             lane="status",
@@ -1507,6 +1535,22 @@ def _self_host_posture(
     return PINNED_RELEASE_POSTURE
 
 
+def _consumer_lane_violation_reason(
+    *,
+    repo_role: str,
+    posture: str,
+    runtime_source: str,
+) -> str:
+    if repo_role == PRODUCT_REPO_ROLE:
+        return ""
+    if posture == DETACHED_SOURCE_LOCAL_POSTURE or runtime_source == SOURCE_CHECKOUT_RUNTIME_SOURCE:
+        return (
+            "Consumer repos cannot activate the detached source-local maintainer lane; "
+            "run `odylith doctor --repo-root . --repair` to restage the pinned release."
+        )
+    return ""
+
+
 def _release_eligible(
     *,
     repo_root: Path,
@@ -1993,6 +2037,7 @@ def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
             consumer_profile_path=consumer_profile_path(repo_root=root),
             moved_paths=(),
             removed_paths=(),
+            stale_reference_audit=None,
             already_migrated=True,
         )
 
@@ -2028,6 +2073,7 @@ def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
         new_state_root / "runtime" / "odyssey-memory",
         new_state_root / "runtime" / "odyssey-benchmarks",
         new_state_root / "runtime" / "odyssey-compiler",
+        new_state_root / "runtime" / "release-upgrade-spotlight.v1.json",
     ]
     purge_candidates.extend((new_state_root / "runtime").glob("odyssey-context-engine*"))
     purge_candidates.extend((new_state_root / "runtime").glob("odyssey-vespa-sync*.json"))
@@ -2043,7 +2089,6 @@ def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
     for path in (
         new_state_root / "install.json",
         new_state_root / "consumer-profile.json",
-        new_state_root / "runtime" / "release-upgrade-spotlight.v1.json",
         new_product_root / "runtime" / "source" / "product-version.v1.json",
     ):
         _rewrite_json_file(path)
@@ -2051,6 +2096,8 @@ def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
     _rewrite_legacy_text_tree(new_product_root)
     _rewrite_legacy_gitignore_entries(repo_root=root)
     _ensure_odylith_gitignore_entry(repo_root=root)
+    normalize_legacy_backlog_index(repo_root=root)
+    stale_reference_audit = audit_legacy_odyssey_references(repo_root=root)
 
     repo_role = product_repo_role(repo_root=root)
     runtime_root = current_runtime_root(repo_root=root)
@@ -2097,6 +2144,7 @@ def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
         consumer_profile_path=written_profile,
         moved_paths=tuple(moved_paths),
         removed_paths=tuple(removed_paths),
+        stale_reference_audit=stale_reference_audit,
     )
 
 
@@ -2863,12 +2911,14 @@ def version_status(*, repo_root: str | Path) -> VersionStatus:
     effective_detached = _effective_detached(state=state, active_version=active_version)
     repo_role = product_repo_role(repo_root=root)
     verification = _installed_version_verification(state=state, active_version=active_version)
-    runtime_source = _runtime_source(
+    runtime_status = inspect_runtime_source(
+        repo_root=root,
         active_version=active_version,
         pinned_version=pinned_version,
         runtime_root=runtime_root,
         verification=verification,
     )
+    runtime_source = runtime_status.source
     context_engine_mode, context_engine_pack_installed = _runtime_context_engine_state(
         runtime_root=runtime_root,
         runtime_source=runtime_source,
@@ -2898,6 +2948,9 @@ def version_status(*, repo_root: str | Path) -> VersionStatus:
             runtime_source=runtime_source,
         ),
         runtime_source=runtime_source,
+        runtime_source_detail=runtime_status.detail,
+        runtime_trust_degraded=runtime_status.trust_degraded,
+        runtime_trust_reasons=runtime_status.trust_reasons,
     )
 
 
@@ -2941,6 +2994,14 @@ def doctor_bundle(
     ):
         runtime_healthy = False
         runtime_reasons.append("full-stack context-engine pack missing")
+    consumer_lane_violation = _consumer_lane_violation_reason(
+        repo_role=status.repo_role,
+        posture=status.posture,
+        runtime_source=status.runtime_source,
+    )
+    if consumer_lane_violation:
+        runtime_healthy = False
+        runtime_reasons.append(consumer_lane_violation)
     healthy = runtime_healthy and has_customer_tree and has_consumer_profile and has_version_pin and has_managed == integration_enabled and bool(state)
 
     if repair:
@@ -3063,6 +3124,8 @@ def doctor_bundle(
         return True, f"Odylith repair completed for {root}{reset_clause}."
 
     if healthy:
+        if status.runtime_trust_degraded:
+            return True, f"Odylith runtime is healthy but trust-degraded: {status.runtime_source_detail}"
         if effective_detached and status.diverged_from_pin:
             return True, (
                 f"Odylith runtime is healthy, but active version {status.active_version or 'unknown'} "
@@ -3079,7 +3142,8 @@ def doctor_bundle(
             if status.runtime_source == WRAPPED_RUNTIME_SOURCE:
                 return True, (
                     f"Odylith runtime is healthy, but active version {status.active_version or 'unknown'} "
-                    "is only a local wrapped runtime and is not release-eligible until a verified staged runtime is active."
+                    f"is only a local wrapped runtime and is not release-eligible until a verified staged runtime is active. "
+                    f"{status.runtime_source_detail}"
                 )
             return True, "Odylith runtime is healthy, but the product repo is not currently release-eligible."
         return True, "Odylith runtime and local customer bootstrap are healthy."

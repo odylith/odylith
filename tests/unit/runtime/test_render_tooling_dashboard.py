@@ -202,22 +202,27 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Start Odylith from one real code path" in html
     assert "Copy prompt" in html
     assert "welcome-launchpad-hero" in html
-    assert "welcome-record-grid" in html
-    assert "First Radar item" in html
+    assert "Open the cheatsheet drawer on the left and try out commands in this repo." in html
     assert "Three quick steps" in html
+    assert "Paste it into Codex or Claude Code." in html
+    assert "Try commands in the cheatsheet." in html
+    assert "Open the cheatsheet drawer on the left side of the screen and try out commands." not in html
+    assert "Paste it into Codex or Claude Code in this repo." not in html
+    assert "Let Odylith create the first Radar item, Registry boundary, Atlas map around" not in html
+    assert "Copy this starter prompt into your agent. Odylith will create the first Radar item, Registry boundary, and Atlas map around one real code path in this repo." not in html
     assert "First governed slice" not in html
     assert "1 prompt to copy" not in html
     assert "Radar + Registry + Atlas to seed" not in html
     assert "welcome-chip-row" not in html
-    assert "No path detected yet" in html
-    assert "No starting path yet" in html
+    assert "No path detected yet" not in html
+    assert "No starting path yet" not in html
     assert "src/app" not in html
     assert "services/api" not in html
     assert "What Odylith already sees" not in html
     assert "What happens next" not in html
     assert 'aria-label="Hide starter guide"' in html
     assert "Hide for now" not in html
-    assert "Show starter guide" in html
+    assert "Starter Guide" in html
     assert "shellRecoveryDock" in html
     assert "shellRuntimeStatus" in html
     assert "shellRuntimeStatusKicker" in html
@@ -226,11 +231,16 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "runtimeStatusReopen" in html
     assert "The shell refreshes itself as Odylith updates local surfaces." in html
     assert "Add a workstream file under" not in html
-    assert "Open Radar view" in html
-    assert "Open Registry view" in html
-    assert "Open Atlas view" in html
+    assert "welcome-record-grid" not in html
+    assert "Open Radar view" not in html
+    assert "Open Registry view" not in html
+    assert "Open Atlas view" not in html
     assert "What the core surfaces do first" in html
-    assert "Radar turns" in html
+    assert "Radar keeps a clear backlog so the repo always has one governed next step." in html
+    assert "Registry is the component ledger for boundaries, ownership, and contracts." in html
+    assert "Atlas keeps architecture visible with diagrams of topology and flow." in html
+    assert "Compass keeps briefs and timelines so the next move stays clear." in html
+    assert "the first real code path you choose" not in html
     assert 'id="themeToggle"' not in html
     assert ">Telemetry<" not in html
     assert 'id="odylithToggle"' in html
@@ -588,34 +598,42 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     control_js = (tmp_path / "odylith" / "tooling-app.v1.js").read_text(encoding="utf-8")
-    release_note_html = (tmp_path / "odylith" / "release-notes" / "1.2.3.html").read_text(encoding="utf-8")
     assert "upgrade-spotlight-stage" in html
     assert "upgradeSpotlightBackdrop" in html
-    assert "Odylith v1.2.3 is ready here" in html
-    assert "Upgraded from v1.2.2." in html
-    assert "Upgrade complete. v1.2.3 is live in this repo, and the full release note is ready on the right." in html
-    assert "upgrade-spotlight-quick-list" in html
+    assert '>v1.2.3</h2>' in html
+    assert "v1.2.2 -&gt; v1.2.3" in html
+    assert "upgrade-spotlight-list" in html
+    assert "Upgrade complete. v1.2.3 is live in this repo, and the full release note is ready on the right." not in html
     assert "The shell refreshes immediately after upgrade so you stay on the current contract." not in html
     assert '<p class="toolbar-version">v1.2.3</p>' in html
     assert 'id="toolbarVersionStoryLink"' not in html
     assert "What changed since v1.2.2?" not in html
     assert 'id="themeToggle"' not in html
     assert '>v1.2.2<' not in html
-    assert "Open release note" not in html
+    assert "Open full release note" not in html
     assert "Sharper install messaging." in html
-    assert "The bottom recovery pill keeps it close for thirty minutes after the upgrade is recorded." in html
+    assert "Open release note on GitHub" in html
+    assert (
+        'href="https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"'
+        in html
+    )
+    assert 'target="_blank" rel="noreferrer"' in html
+    assert "upgrade-spotlight-secondary-link" not in html
+    assert "The bottom recovery pill keeps it close for thirty minutes after the upgrade is recorded." not in html
     assert 'id="upgradeReopen"' in html
     assert '"release_spotlight"' in payload_js
     assert '"shell_version_label": "v1.2.3"' in payload_js
+    assert '"reopen_label": "v1.2.3"' in payload_js
     assert '"to_version": "1.2.3"' in payload_js
+    assert (
+        '"notes_url": "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"'
+        in payload_js
+    )
     assert "const upgradeSpotlightDismissStorageKey =" in control_js
     assert 'upgradeReopen.textContent = upgradeSpotlightReopenLabel;' in control_js
-    assert 'welcomeReopen.textContent = "Show starter guide";' in control_js
-    assert 'const upgradeSpotlightReopenLabel = upgradeSpotlightVersionLabel' in control_js
-    assert "GitHub release" in html
-    assert "What's new in v1.2.3" in release_note_html
-    assert "Back to dashboard" in release_note_html
-    assert "data-release-theme" not in release_note_html
+    assert 'welcomeReopen.textContent = "Starter Guide";' in control_js
+    assert 'const upgradeSpotlightReopenLabel = hasUpgradeSpotlight()' in control_js
+    assert not (tmp_path / "odylith" / "release-notes" / "1.2.3.html").exists()
 
 
 def test_render_tooling_dashboard_persists_version_story_without_live_upgrade_popup(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -661,18 +679,19 @@ def test_render_tooling_dashboard_persists_version_story_without_live_upgrade_po
 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
-    release_note_html = (tmp_path / "odylith" / "release-notes" / "1.2.3.html").read_text(encoding="utf-8")
+    payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert 'id="shellUpgradeSpotlight"' not in html
     assert 'id="toolbarVersionStoryLink"' not in html
     assert "What changed since v1.2.2?" not in html
-    assert "Persistent version story." in release_note_html
-    assert "Keep the release note available after the popup moment." in release_note_html
-    assert "What Odylith already did" not in release_note_html
-    assert "How to use it" not in release_note_html
-    assert "Upgrade result in this repo" in release_note_html
+    assert '"version_story"' in payload_js
+    assert (
+        '"notes_url": "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"'
+        in payload_js
+    )
+    assert not (tmp_path / "odylith" / "release-notes").exists()
 
 
-def test_render_tooling_dashboard_release_note_keeps_full_body_paragraphs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_release_note_prefers_highlights_over_full_body_paragraphs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_existing_odylith_truth(tmp_path)
     _seed_consumer_upgrade_spotlight(tmp_path)
@@ -706,9 +725,43 @@ def test_render_tooling_dashboard_release_note_keeps_full_body_paragraphs(tmp_pa
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
-    release_note_html = (tmp_path / "odylith" / "release-notes" / "1.2.3.html").read_text(encoding="utf-8")
-    assert long_paragraph in release_note_html
-    assert "validator-backed outcomes instead of flattering prompt demos..." not in release_note_html
+    html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
+    assert "Highlight one." in html
+    assert long_paragraph not in html
+
+
+def test_render_tooling_dashboard_includes_version_in_authored_release_hero_title(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    _seed_inputs(tmp_path)
+    _seed_existing_odylith_truth(tmp_path)
+    _seed_consumer_upgrade_spotlight(tmp_path)
+    notes_root = tmp_path / "odylith" / "runtime" / "source" / "release-notes"
+    notes_root.mkdir(parents=True, exist_ok=True)
+    (notes_root / "v1.2.3.md").write_text(
+        (
+            "---\n"
+            "version: 1.2.3\n"
+            "title: Trusted In Public\n"
+            "published_at: 2026-03-30T14:00:00Z\n"
+            "summary: Authored release summary.\n"
+            "highlights:\n"
+            "  - Highlight one.\n"
+            "---\n\n"
+            "Authored release summary.\n"
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+
+    assert rc == 0
+    html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
+    assert '<span class="upgrade-spotlight-title-copy">Trusted In Public</span>' in html
+    assert '<span class="upgrade-spotlight-title-version">v1.2.3</span>' in html
 
 
 def test_render_tooling_dashboard_prunes_stale_release_note_pages(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -741,8 +794,7 @@ def test_render_tooling_dashboard_prunes_stale_release_note_pages(tmp_path: Path
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
-    assert (rendered_notes_root / "1.2.3.html").is_file()
-    assert not (rendered_notes_root / "1.2.2.html").exists()
+    assert not rendered_notes_root.exists()
 
 
 def test_render_tooling_dashboard_escapes_authored_release_note_content(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -775,15 +827,12 @@ def test_render_tooling_dashboard_escapes_authored_release_note_content(tmp_path
 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
-    release_note_html = (tmp_path / "odylith" / "release-notes" / "1.2.3.html").read_text(encoding="utf-8")
     assert "<script>alert(1)</script> summary" not in html
     assert "alert(1) summary" in html
     assert "<script>alert(2)</script> highlight" not in html
     assert "alert(2) highlight" in html
-    assert "<script>alert(3)</script> detail paragraph." not in release_note_html
-    assert "alert(3) detail paragraph." in release_note_html
     assert str(tmp_path.resolve()) not in html
-    assert str(tmp_path.resolve()) not in release_note_html
+    assert not (tmp_path / "odylith" / "release-notes").exists()
 
 
 def test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -830,11 +879,12 @@ def test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert 'id="shellUpgradeSpotlight"' not in html
-    assert "Show starter guide" in html
-    assert "Show release note" in html
+    assert "Starter Guide" in html
+    assert 'id="upgradeReopen"' in html
+    assert "Show release note" not in html
     assert '<p class="toolbar-version">v1.2.3</p>' in html
     assert '"release_spotlight": {}' in payload_js
-    assert not (rendered_notes_root / "1.2.2.html").exists()
+    assert not rendered_notes_root.exists()
 
 
 def test_render_tooling_dashboard_includes_memory_area_readout(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001

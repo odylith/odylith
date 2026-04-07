@@ -758,6 +758,51 @@ def test_verify_sigstore_asset_scrubs_python_environment(monkeypatch, tmp_path: 
     assert "PYTHONPATH" not in env
 
 
+def test_verify_sigstore_asset_suppresses_expected_non_fatal_warnings(monkeypatch, tmp_path: Path, capsys) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": "warning: TUF offline mode enabled\nwarning: unsupported key type: 7\n",
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert capsys.readouterr().err == ""
+
+
+def test_emit_sigstore_success_notice_reports_suppressed_warning_streams(capsys) -> None:  # noqa: ANN001
+    release_assets._emit_sigstore_success_notice(  # noqa: SLF001
+        [
+            release_assets.SigstoreVerificationResult(warnings_suppressed=True),
+            release_assets.SigstoreVerificationResult(warnings_suppressed=False),
+        ],
+        context="release",
+    )
+
+    assert (
+        "Sigstore verification succeeded for the release assets; suppressed 1 expected non-fatal warning stream(s)."
+        in capsys.readouterr().out
+    )
+
+
 def test_verify_sigstore_asset_rejects_skip_override_outside_product_repo(monkeypatch, tmp_path: Path) -> None:
     asset_path = tmp_path / "asset.txt"
     bundle_path = tmp_path / "asset.txt.sigstore.json"

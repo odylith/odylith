@@ -13,6 +13,7 @@ from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_FEATURE_PACK_FILENAME,
     MANAGED_RUNTIME_VERIFICATION_FILENAME,
 )
+from odylith.install.runtime_tree_policy import is_ignored_runtime_tree_entry
 
 MANAGED_RUNTIME_TRUST_SCHEMA_VERSION = "odylith-managed-runtime-trust.v1"
 MANAGED_RUNTIME_TREE_SCHEMA_VERSION = "odylith-managed-runtime-tree.v1"
@@ -397,6 +398,8 @@ def _tree_entries(version_root: Path) -> list[RuntimeEntry]:
     for candidate in sorted(version_root.rglob("*")):
         relative_path = candidate.relative_to(version_root).as_posix()
         if _is_generated_python_cache(relative_path):
+            continue
+        if is_ignored_runtime_tree_entry(version_root=version_root, candidate=candidate):
             continue
         if candidate.is_symlink():
             entries.append(

@@ -20,20 +20,22 @@ def test_build_welcome_state_suggests_components_diagrams_and_surface_flow(tmp_p
 
     assert welcome["show"] is True
     assert welcome["headline"] == "Start Odylith from one real code path"
+    assert welcome["subhead"] == "Open the cheatsheet drawer on the left and try out commands in this repo."
     assert welcome["starter_prompt"] == shell_onboarding.STARTER_PROMPT
     assert welcome["auto_refresh_note"] == shell_onboarding.AUTO_REFRESH_NOTE
     assert welcome["dismiss_key"].startswith("welcome-v2|")
     assert welcome["notices"] == []
     assert welcome["quick_steps"] == [
         "Copy the starter prompt.",
-        "Paste it into Codex or Claude Code in this repo.",
-        f"Let Odylith create the first Radar item, Registry boundary, Atlas map around `{welcome['chosen_slice']['path']}`.",
+        "Paste it into Codex or Claude Code.",
+        "Let Odylith set up Radar, Registry, and Atlas.",
     ]
     assert welcome["chosen_slice"]["path"] in {"src/payments", "src/billing"}
-    assert welcome["chosen_slice"]["title"] == "Recommended place to start"
+    assert welcome["chosen_slice"]["title"] == "Example starting path"
+    assert welcome["chosen_slice"]["reason"].startswith("Use `")
     assert welcome["chosen_slice"]["guidance"] == [
-        "Start with one small code path instead of trying to map the whole repo first.",
-        "Odylith will use this area to seed Radar, Registry, and Atlas.",
+        "Start small with one real path instead of trying to map the whole repo.",
+        "Odylith will use this same example to seed Radar, Registry, and Atlas.",
     ]
     assert [task["title"] for task in welcome["first_tasks"]] == [
         "Backlog",
@@ -58,7 +60,10 @@ def test_build_welcome_state_suggests_components_diagrams_and_surface_flow(tmp_p
         "Atlas",
         "Compass",
     ]
-    assert "one concrete outcome" in welcome["surface_explainers"][0]["sentence"]
+    assert welcome["surface_explainers"][0]["sentence"] == "Radar keeps a clear backlog so the repo always has one governed next step."
+    assert welcome["surface_explainers"][1]["sentence"] == "Registry is the component ledger for boundaries, ownership, and contracts."
+    assert welcome["surface_explainers"][2]["sentence"] == "Atlas keeps architecture visible with diagrams of topology and flow."
+    assert welcome["surface_explainers"][3]["sentence"] == "Compass keeps briefs and timelines so the next move stays clear."
 
 
 def test_build_welcome_state_hides_once_backlog_components_and_atlas_exist(tmp_path: Path) -> None:
@@ -109,8 +114,8 @@ def test_build_welcome_state_skips_fake_slice_when_only_repo_name_is_available(t
     assert "|none|" in welcome["dismiss_key"]
     assert welcome["quick_steps"] == [
         "Copy the starter prompt.",
-        "Paste it into Codex or Claude Code in this repo.",
-        "Create one real code path, then let Odylith seed the first Radar item, Registry boundary, Atlas map around it.",
+        "Paste it into Codex or Claude Code.",
+        "Try commands in the cheatsheet.",
     ]
     assert not any(item.startswith("Likely first delivery surface:") for item in welcome["repo_readout"])
     assert any("has not inferred one grounded slice yet" in item for item in welcome["repo_readout"])
@@ -208,6 +213,10 @@ def test_build_release_spotlight_for_recent_consumer_upgrade(tmp_path: Path) -> 
     assert spotlight["highlights"] == ["Sharper launchpad layout.", "Cleaner install hygiene."]
     assert spotlight["summary"].startswith("Odylith now renders a sharper first-run launchpad")
     assert spotlight["detail"].startswith("The dashboard refreshes immediately after upgrade")
+    assert spotlight["notes_label"] == "Open release note on GitHub"
+    assert spotlight["notes_url"] == (
+        "https://github.com/odylith/odylith/blob/v0.1.4/odylith/runtime/source/release-notes/v0.1.4.md"
+    )
 
 
 def test_build_release_spotlight_ignores_first_install_with_stale_payload(tmp_path: Path) -> None:
@@ -278,10 +287,15 @@ def test_build_release_spotlight_prefers_authored_release_note_source(tmp_path: 
 
     spotlight = shell_onboarding.build_release_spotlight(repo_root=tmp_path)
 
+    assert spotlight["title"] == "v0.1.5"
     assert spotlight["release_body"].startswith("Release summary from source.")
     assert spotlight["highlights"] == ["Source highlight one.", "Source highlight two."]
     assert spotlight["summary"] == "Release summary from source."
     assert spotlight["detail"] == "The authored detail should become the spotlight detail."
+    assert spotlight["notes_label"] == "Open release note on GitHub"
+    assert spotlight["notes_url"] == (
+        "https://github.com/odylith/odylith/blob/v0.1.5/odylith/runtime/source/release-notes/v0.1.5.md"
+    )
 
 
 def test_build_release_spotlight_replaces_placeholder_release_copy_with_real_fallback(tmp_path: Path) -> None:
@@ -308,10 +322,10 @@ def test_build_release_spotlight_replaces_placeholder_release_copy_with_real_fal
 
     spotlight = shell_onboarding.build_release_spotlight(repo_root=tmp_path)
 
-    assert spotlight["summary"] == "Odylith just moved this repo from 0.1.5 to 0.1.6 and refreshed the local shell immediately."
-    assert spotlight["detail"] == "Highlights: This repo is already running v0.1.6 on the pinned Odylith runtime."
-    assert spotlight["highlights"][0] == "The dashboard refreshed immediately after the upgrade so work can continue in place."
-    assert spotlight["highlights"][1] == "The bottom recovery pill keeps the upgrade note close for thirty minutes, then gets out of the way."
+    assert spotlight["title"] == "v0.1.6"
+    assert spotlight["summary"] == ""
+    assert spotlight["detail"] == ""
+    assert spotlight["highlights"] == []
 
 
 def test_build_release_spotlight_ages_out_but_version_story_remains(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -364,8 +378,12 @@ def test_build_release_spotlight_ages_out_but_version_story_remains(tmp_path: Pa
     assert shell_onboarding.build_release_spotlight(repo_root=tmp_path) == {}
     story = shell_onboarding.build_version_story(repo_root=tmp_path)
     assert story["show"] is True
-    assert story["headline"] == "What changed since v0.1.5?"
+    assert story["headline"] == "v0.1.6"
+    assert story["reopen_label"] == "v0.1.6"
     assert story["summary"] == "Authored release summary."
+    assert story["notes_url"] == (
+        "https://github.com/odylith/odylith/blob/v0.1.6/odylith/runtime/source/release-notes/v0.1.6.md"
+    )
 
 
 def test_build_version_story_persists_recent_version_delta_for_consumer_repo(tmp_path: Path) -> None:
@@ -402,10 +420,14 @@ def test_build_version_story_persists_recent_version_delta_for_consumer_repo(tmp
     assert story["show"] is True
     assert story["from_version"] == "0.1.4"
     assert story["to_version"] == "0.1.5"
-    assert story["headline"] == "What changed since v0.1.4?"
-    assert story["cta_label"] == "Open v0.1.5 release note"
+    assert story["headline"] == "v0.1.5"
+    assert story["cta_label"] == "Open release note on GitHub"
+    assert story["reopen_label"] == "v0.1.5"
     assert story["summary"] == "Odylith 0.1.5 clarified first contact."
     assert story["highlights"] == ["Release note highlight one.", "Release note highlight two."]
+    assert story["notes_url"] == (
+        "https://github.com/odylith/odylith/blob/v0.1.5/odylith/runtime/source/release-notes/v0.1.5.md"
+    )
 
 
 def test_release_spotlight_and_version_story_stay_suppressed_in_product_repo(tmp_path: Path) -> None:

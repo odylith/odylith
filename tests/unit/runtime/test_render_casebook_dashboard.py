@@ -119,3 +119,7 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Inspect Next" not in app_js
     assert "Evidence and references" in app_js
     assert "Direct proof links" in app_js
+    assert "No bug matches the current filters." not in app_js
+    assert "Loading selected bug…" not in app_js
+    assert "No structured detail sections were parsed from this entry." not in app_js
+    assert "No bugs match the current filters and search text." not in app_js

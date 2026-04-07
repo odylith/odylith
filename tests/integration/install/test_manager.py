@@ -299,11 +299,20 @@ def test_migrate_legacy_install_rewrites_roots_and_purges_volatile_state(tmp_pat
         "# Odyssey Backlog\n\nUse odyssey/index.html.\n",
         encoding="utf-8",
     )
+    (repo_root / "docs").mkdir(parents=True, exist_ok=True)
+    (repo_root / "docs" / "platform-maintainer-guide.md").write_text(
+        "Legacy operator note: see odyssey/index.html after migration.\n",
+        encoding="utf-8",
+    )
     (repo_root / ".odyssey" / "cache" / "odyssey-context-engine").mkdir(parents=True, exist_ok=True)
     (repo_root / ".odyssey" / "locks" / "odyssey-context-engine").mkdir(parents=True, exist_ok=True)
     (repo_root / ".odyssey" / "runtime" / "odyssey-memory" / "lance").mkdir(parents=True, exist_ok=True)
     (repo_root / ".odyssey" / "runtime" / "odyssey-benchmarks").mkdir(parents=True, exist_ok=True)
     (repo_root / ".odyssey" / "runtime" / "odyssey-context-engine-state.v1.json").write_text("{}\n", encoding="utf-8")
+    (repo_root / ".odyssey" / "runtime" / "release-upgrade-spotlight.v1.json").write_text(
+        json.dumps({"from_version": "1.2.2", "to_version": "1.2.3"}, indent=2) + "\n",
+        encoding="utf-8",
+    )
     (repo_root / ".odyssey" / "bin").mkdir(parents=True, exist_ok=True)
     (repo_root / ".odyssey" / "bin" / "odyssey").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
     (repo_root / ".odyssey" / "bin" / "odyssey-bootstrap").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
@@ -332,10 +341,12 @@ def test_migrate_legacy_install_rewrites_roots_and_purges_volatile_state(tmp_pat
     assert (repo_root / ".odylith" / "bin" / "odylith-bootstrap").is_file()
     assert not (repo_root / ".odylith" / "runtime" / "odylith-memory").exists()
     assert not (repo_root / ".odylith" / "runtime" / "odylith-benchmarks").exists()
+    assert not (repo_root / ".odylith" / "runtime" / "release-upgrade-spotlight.v1.json").exists()
     assert not (repo_root / ".odylith" / "cache" / "odylith-context-engine").exists()
     assert not (repo_root / ".odylith" / "locks" / "odylith-context-engine").exists()
     assert "/.odylith/" in (repo_root / ".gitignore").read_text(encoding="utf-8")
     assert "/.odyssey/" not in (repo_root / ".gitignore").read_text(encoding="utf-8")
+    assert ".odylith/runtime/release-upgrade-spotlight.v1.json" in summary.removed_paths
 
     install_payload = json.loads((repo_root / ".odylith" / "install.json").read_text(encoding="utf-8"))
     version_pin = json.loads((repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").read_text(encoding="utf-8"))
@@ -349,6 +360,13 @@ def test_migrate_legacy_install_rewrites_roots_and_purges_volatile_state(tmp_pat
     assert (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8") == (
         "# Odylith Backlog\n\nUse odylith/index.html.\n"
     )
+    assert (repo_root / "docs" / "platform-maintainer-guide.md").read_text(encoding="utf-8") == (
+        "Legacy operator note: see odyssey/index.html after migration.\n"
+    )
+    assert summary.stale_reference_audit is not None
+    assert summary.stale_reference_audit.hit_count >= 1
+    assert summary.stale_reference_audit.report_path.is_file()
+    assert "docs/platform-maintainer-guide.md" in summary.stale_reference_audit.report_path.read_text(encoding="utf-8")
 
 
 def test_migrate_legacy_install_merges_into_existing_odylith_roots(tmp_path: Path) -> None:
@@ -968,6 +986,34 @@ def test_start_preflight_accepts_product_repo_source_fallback_when_recorded_fall
     assert preflight.next_command == "./.odylith/bin/odylith start --repo-root ."
 
 
+def test_start_preflight_rejects_consumer_source_local_lane(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    source_root = _write_fake_source_checkout(tmp_path)
+
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    runtime.ensure_wrapped_runtime(
+        repo_root=repo_root,
+        version="source-local",
+        fallback_python=repo_root / ".odylith" / "runtime" / "versions" / "1.2.3" / "bin" / "python",
+        source_root=source_root,
+        allow_host_python_fallback=False,
+    )
+    state = load_install_state(repo_root=repo_root)
+    state["active_version"] = "source-local"
+    state["detached"] = True
+    state["last_known_good_version"] = "1.2.3"
+    write_install_state(repo_root=repo_root, payload=state)
+
+    preflight = evaluate_start_preflight(repo_root=repo_root)
+
+    assert preflight.lane == "repair"
+    assert preflight.healthy is False
+    assert "Consumer repos cannot activate the detached source-local maintainer lane" in preflight.reason
+    assert preflight.next_command == "./.odylith/bin/odylith doctor --repo-root . --repair"
+
+
 def test_start_preflight_treats_partial_install_shape_as_repair_when_launcher_exists(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
@@ -1318,6 +1364,8 @@ def test_doctor_bundle_reports_unverified_wrapped_runtime_for_product_repo(tmp_p
     assert healthy is True
     assert status.repo_role == "product_repo"
     assert status.runtime_source == "wrapped_runtime"
+    assert "local wrapper" in status.runtime_source_detail.lower()
+    assert status.runtime_trust_degraded is False
     assert status.release_eligible is False
     assert "wrapped runtime" in message.lower()
     assert "not release-eligible" in message.lower()
@@ -1363,6 +1411,48 @@ def test_source_repo_upgrade_is_rejected_for_consumer_repos(tmp_path: Path) -> N
         assert "--source-repo is only supported for the Odylith product repo" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("expected consumer repo source-local activation to fail")
+
+
+def test_doctor_bundle_repairs_consumer_source_local_lane_back_to_pinned_release(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    source_root = _write_fake_source_checkout(tmp_path)
+
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    runtime.ensure_wrapped_runtime(
+        repo_root=repo_root,
+        version="source-local",
+        fallback_python=repo_root / ".odylith" / "runtime" / "versions" / "1.2.3" / "bin" / "python",
+        source_root=source_root,
+        allow_host_python_fallback=False,
+    )
+    state = load_install_state(repo_root=repo_root)
+    state["active_version"] = "source-local"
+    state["detached"] = True
+    state["last_known_good_version"] = "1.2.3"
+    write_install_state(repo_root=repo_root, payload=state)
+
+    healthy, message = doctor_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", repair=False)
+
+    assert healthy is False
+    assert "Consumer repos cannot activate the detached source-local maintainer lane" in message
+
+    repaired, repaired_message = doctor_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", repair=True)
+
+    status = version_status(repo_root=repo_root)
+    repaired_state = load_install_state(repo_root=repo_root)
+    launcher_text = (repo_root / ".odylith" / "bin" / "odylith").read_text(encoding="utf-8")
+    assert repaired is True
+    assert "repair completed" in repaired_message.lower()
+    assert status.active_version == "1.2.3"
+    assert status.runtime_source == "pinned_runtime"
+    assert status.posture == "pinned_release"
+    assert status.detached is False
+    assert repaired_state["active_version"] == "1.2.3"
+    assert repaired_state["detached"] is False
+    assert (repo_root / ".odylith" / "runtime" / "current").resolve().name == "1.2.3"
+    assert "source-local" not in launcher_text
 
 
 def test_doctor_bundle_repairs_missing_bootstrap_paths_without_copying_product_payload(tmp_path: Path) -> None:
@@ -2264,6 +2354,73 @@ def test_reinstall_install_repairs_same_version_runtime_when_upgrade_requires_do
     assert summary.followed_latest is True
     assert pin is not None
     assert pin.odylith_version == "1.2.3"
+    assert (current_runtime / "runtime-feature-packs.v1.json").is_file()
+
+
+def test_reinstall_install_converges_repeatedly_with_stale_target_residue(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+
+    current_runtime = (repo_root / ".odylith" / "runtime" / "current").resolve()
+    (current_runtime / "runtime-feature-packs.v1.json").unlink()
+    versions_dir = repo_root / ".odylith" / "runtime" / "versions"
+    stale_backup = versions_dir / ".1.2.3.backup-stale"
+    stale_backup.mkdir(parents=True, exist_ok=True)
+    stale_stage = versions_dir / ".1.2.3.stage-stale"
+    stale_stage.mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.setattr(
+        install_manager_module,
+        "fetch_release",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            highlights=("Repair the pinned runtime safely.",),
+            published_at="2026-03-30T18:00:00Z",
+            tag="v1.2.3",
+            html_url="https://example.com/releases/v1.2.3",
+        ),
+    )
+    monkeypatch.setattr(
+        install_manager_module,
+        "install_release_runtime",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            manifest={"repo_schema_version": 1, "migration_required": False},
+            python=current_runtime / "bin" / "python",
+            root=current_runtime,
+            verification={"wheel_sha256": "abc123"},
+        ),
+    )
+
+    def _fake_ensure_context_pack(**kwargs):  # noqa: ANN003
+        _write_fake_context_engine_pack(
+            repo_root,
+            target_root=current_runtime,
+            version="1.2.3",
+            pack_id="odylith-context-engine",
+            asset_name="odylith-context-engine.tar.gz",
+            feature_pack_sha256="pack-1.2.3",
+            payload_relative_path="lib/python3.13/site-packages/odylith_context_engine/__init__.py",
+            payload_text="context-engine-pack\n",
+        )
+        return {"sha256": "pack-1.2.3"}
+
+    monkeypatch.setattr(install_manager_module, "_ensure_managed_context_engine_pack", _fake_ensure_context_pack)
+    monkeypatch.setattr(
+        install_manager_module.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+
+    first = reinstall_install(repo_root=repo_root, release_repo="odylith/odylith")
+    second = reinstall_install(repo_root=repo_root, release_repo="odylith/odylith")
+
+    assert first.repaired is True
+    assert second.repaired is True
+    assert stale_backup.exists() is False
+    assert stale_stage.exists() is False
     assert (current_runtime / "runtime-feature-packs.v1.json").is_file()
 
 

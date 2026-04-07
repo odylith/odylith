@@ -1318,6 +1318,77 @@ def test_version_reports_runtime_toolchain_boundary(monkeypatch, tmp_path: Path,
     assert "Repo-code validation: use the repo's own project toolchain for application tests, builds, and linting." in captured
 
 
+def test_version_prints_runtime_detail_when_present(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "version_status",
+        lambda **kwargs: SimpleNamespace(
+            repo_root=tmp_path,
+            repo_role="product_repo",
+            posture="pinned_release",
+            runtime_source="wrapped_runtime",
+            runtime_source_detail="Managed runtime trust is degraded: managed runtime tree entry unexpected: /tmp/.DS_Store",
+            release_eligible=False,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.3",
+            active_version="1.2.3",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            available_versions=["1.2.3"],
+        ),
+    )
+
+    rc = cli.main(["version", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Runtime detail: Managed runtime trust is degraded:" in captured
+
+
+def test_install_dry_run_condenses_dirty_overlap_without_verbose(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: SimpleNamespace(
+            command="install",
+            headline="preview",
+            steps=(),
+            dirty_overlap=("M one", "M two", "M three", "M four", "M five"),
+            notes=(),
+        ),
+    )
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--dry-run"])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "5 local worktree entries overlap this mutation plan." in captured
+    assert "... 1 more overlap entries hidden; rerun with --verbose to show the full set." in captured
+
+
+def test_install_dry_run_verbose_prints_full_dirty_overlap(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: SimpleNamespace(
+            command="install",
+            headline="preview",
+            steps=(),
+            dirty_overlap=("M one", "M two", "M three", "M four", "M five"),
+            notes=(),
+        ),
+    )
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--dry-run", "--verbose"])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "M five" in captured
+    assert "hidden; rerun with --verbose" not in captured
+
+
 def test_off_prints_default_behavior_guidance(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(cli, "set_agents_integration", lambda **kwargs: (True, "off"))
 
@@ -1461,6 +1532,12 @@ def test_migrate_legacy_install_dispatches_to_install_migration(monkeypatch, tmp
             launcher_path=tmp_path / ".odylith" / "bin" / "odylith",
             moved_paths=("odyssey/ -> odylith/", ".odyssey/ -> .odylith/"),
             removed_paths=(".odylith/runtime/odylith-memory",),
+            stale_reference_audit=SimpleNamespace(
+                hit_count=2,
+                file_count=2,
+                sample_paths=("AGENTS.md", "docs/platform-maintainer-guide.md"),
+                report_path=tmp_path / ".odylith" / "state" / "migration" / "stale-odyssey-reference-audit.md",
+            ),
         )
 
     monkeypatch.setattr(cli, "migrate_legacy_install", fake_migrate_legacy_install)
@@ -1474,6 +1551,8 @@ def test_migrate_legacy_install_dispatches_to_install_migration(monkeypatch, tmp
     assert "odyssey/ -> odylith/" in output
     assert ".odyssey/ -> .odylith/" in output
     assert ".odylith/runtime/odylith-memory" in output
+    assert "Stale legacy references audit: 2 match(es) across 2 tracked file(s)." in output
+    assert "docs/platform-maintainer-guide.md" in output
     assert "./.odylith/bin/odylith start --repo-root ." in output
 
 

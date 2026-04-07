@@ -107,6 +107,22 @@ def test_render_mermaid_catalog_sizes_image_box_from_diagram_dimensions() -> Non
     assert "applyImageBoxSizing(diagram);" in html
 
 
+def test_render_mermaid_catalog_omits_empty_placeholder_copy() -> None:
+    html = renderer._render_html(  # noqa: SLF001
+        diagrams=[],
+        stats={"total": 0, "fresh": 0, "stale": 0},
+        max_review_age_days=21,
+        tooltip_lookup={},
+        generated_utc="2026-03-27T05:42:32Z",
+        brand_head_html="",
+        tooling_base_href="../index.html",
+    )
+
+    assert "No linked artifacts." not in html
+    assert "None." not in html
+    assert "No diagrams match current filters." not in html
+
+
 def test_load_catalog_allows_empty_consumer_catalog(tmp_path: Path) -> None:
     repo_root = tmp_path
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")

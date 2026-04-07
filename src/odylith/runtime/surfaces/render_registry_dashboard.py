@@ -2038,7 +2038,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     function renderList(items, selectedId, options = {}) {
       latestRenderedComponents = Array.isArray(items) ? items.slice() : [];
       if (!items.length) {
-        listEl.innerHTML = '<li class="empty">No components match current search or filters.</li>';
+        listEl.innerHTML = "";
         latestListWindowKey = "empty";
         return;
       }
@@ -2531,14 +2531,14 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         <div class="context-row">
           <div class="context-title" data-tooltip="${escapeHtml(tooltip || "")}">${escapeHtml(title)}</div>
           <div class="context-count">${escapeHtml(String(count))}</div>
-          <div class="context-values${block ? " block" : ""}">${bodyHtml || '<p class="empty">None</p>'}</div>
+          <div class="context-values${block ? " block" : ""}">${bodyHtml || ""}</div>
         </div>
       `;
     }
 
     function renderDetail(row) {
       if (!row) {
-        detailEl.innerHTML = '<p class="empty">No component selected.</p>';
+        detailEl.innerHTML = "";
         return;
       }
       const workstreams = Array.isArray(row.workstreams) ? row.workstreams : [];
@@ -2637,7 +2637,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             tone: "tone-gov",
             tooltip: `Workstream ${ws}. Open Radar context.`,
           })).join("")
-        : '<p class="empty">None</p>';
+        : "";
 
       const diagramLinks = diagramDetails.length
         ? diagramDetails.map((item) => {
@@ -2656,22 +2656,22 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             href: hrefAtlas(workstreams[0] || "", dg),
             tooltip: `Diagram ${dg}. Open Atlas context.`,
           })).join("")
-        : '<p class="empty">None</p>';
+        : "";
 
       const aliasLabels = aliases.length
         ? aliases.map((token) => staticLabel(token, "Alias token used during component mapping.")).join("")
-        : '<p class="empty">None</p>';
+        : "";
 
       const sourceLabels = sources.length
         ? sources.map((token) => staticLabel(token, "Source that contributed this component linkage.")).join("")
-        : '<p class="empty">None</p>';
+        : "";
 
       const pathLabels = pathPrefixes.length
         ? pathPrefixes.map((token) => staticLabel(token, "Artifact prefix used for path-based mapping.")).join("")
-        : '<p class="empty">None</p>';
+        : "";
       const productLayerBody = productLayer
         ? `<p class="desc"><strong>${escapeHtml(productLayerLabel(productLayer))}.</strong> ${escapeHtml(productLayerDescription(productLayer))}</p>`
-        : '<p class="empty">Unspecified</p>';
+        : "";
       const subcomponentLinks = subcomponentDetails.length
         ? subcomponentDetails.map((item) => {
             const componentId = String(item && item.component_id || "").trim();
@@ -2689,7 +2689,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             href: registryComponentHref(componentId),
             tooltip: `${componentId}. Open Registry component detail.`,
           })).join("")
-        : '<p class="empty">None</p>';
+        : "";
       const emptyReasons = Array.isArray(forensicCoverage.empty_reasons)
         ? forensicCoverage.empty_reasons.map(forensicCoverageReasonLabel).filter(Boolean)
         : [];
@@ -2794,7 +2794,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
       timelineCountEl.textContent = `${events.length} events`;
       if (!events.length) {
-        timelineEl.innerHTML = `<li class="empty">${escapeHtml(forensicCoverageSummary(forensicCoverage) || "No change events mapped to this component yet.")}</li>`;
+        timelineEl.innerHTML = "";
         return;
       }
       timelineEl.innerHTML = events.map((event) => {
@@ -2838,9 +2838,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       }
       const expectedSelected = String(selectedId || "").trim().toLowerCase();
       detailEl.dataset.selectedComponent = expectedSelected;
-      detailEl.innerHTML = '<p class="empty">Loading component detail…</p>';
-      timelineCountEl.textContent = "Loading…";
-      timelineEl.innerHTML = '<li class="empty">Loading component timeline…</li>';
+      detailEl.innerHTML = "";
+      timelineCountEl.textContent = "";
+      timelineEl.innerHTML = "";
       const loadedDetail = await registryDataSource.loadDetail(selectedId);
       if (String(detailEl.dataset.selectedComponent || "") !== expectedSelected) {
         return;

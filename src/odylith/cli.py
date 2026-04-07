@@ -8,6 +8,7 @@ import subprocess
 import sys
 import webbrowser
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Sequence
 
 from odylith import __version__
@@ -19,6 +20,7 @@ from odylith.install.state import (
     install_state_path,
     write_upgrade_spotlight,
 )
+from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.common.command_surface import (
     ensure_nested_subcommand_repo_root_args,
     ensure_repo_root_args,
@@ -367,7 +369,7 @@ def _print_grounding_quickstart() -> None:
     )
 
 
-def _print_lifecycle_plan(plan: object, *, dry_run: bool) -> None:
+def _print_lifecycle_plan(plan: object, *, dry_run: bool, verbose: bool = False) -> None:
     command = str(getattr(plan, "command", "") or "").strip() or "odylith"
     headline = str(getattr(plan, "headline", "") or "").strip()
     steps = tuple(getattr(plan, "steps", ()) or ())
@@ -392,7 +394,7 @@ def _print_lifecycle_plan(plan: object, *, dry_run: bool) -> None:
             print(f"  detail: {detail}")
     if dirty_overlap:
         print("- dirty_overlap:")
-        for line in dirty_overlap:
+        for line in summarize_dirty_overlap(dirty_overlap, verbose=verbose):
             print(f"  {line}")
     if notes:
         print("- notes:")
@@ -482,6 +484,18 @@ def _print_legacy_migration_summary(summary: object) -> None:
         print("Purged legacy volatile state:")
         for item in removed_paths:
             print(f"- {item}")
+    audit = getattr(migration, "stale_reference_audit", None)
+    if audit is not None:
+        print(
+            "Stale legacy references audit:"
+            f" {int(getattr(audit, 'hit_count', 0) or 0)} match(es) across "
+            f"{int(getattr(audit, 'file_count', 0) or 0)} tracked file(s)."
+        )
+        for item in tuple(str(path).strip() for path in getattr(audit, "sample_paths", ()) if str(path).strip()):
+            print(f"- stale reference: {item}")
+        report_path = getattr(audit, "report_path", None)
+        if report_path:
+            print(f"Full report: {report_path}")
 
 
 def _cmd_install_common(
@@ -499,7 +513,11 @@ def _cmd_install_common(
         adopt_latest=adopt_latest,
         target_version=target_version,
     )
-    _print_lifecycle_plan(lifecycle_plan, dry_run=bool(getattr(args, "dry_run", False)))
+    _print_lifecycle_plan(
+        lifecycle_plan,
+        dry_run=bool(getattr(args, "dry_run", False)),
+        verbose=bool(getattr(args, "verbose", False)),
+    )
     if bool(getattr(args, "dry_run", False)):
         return 0
     summary = install_bundle(repo_root=args.repo_root, bundle_root=bundle_root(), version=args.version or __version__)
@@ -614,7 +632,11 @@ def _cmd_reinstall(args: argparse.Namespace) -> int:
         repo_root=requested_repo_root,
         target_version=target_version,
     )
-    _print_lifecycle_plan(lifecycle_plan, dry_run=bool(getattr(args, "dry_run", False)))
+    _print_lifecycle_plan(
+        lifecycle_plan,
+        dry_run=bool(getattr(args, "dry_run", False)),
+        verbose=bool(getattr(args, "verbose", False)),
+    )
     if bool(getattr(args, "dry_run", False)):
         return 0
     try:
@@ -800,6 +822,9 @@ def _cmd_version(args: argparse.Namespace) -> int:
         print("Runtime interpreter: Odylith is using a verified local runtime that is not the tracked pin.")
     else:
         print("Runtime interpreter: Odylith could not confirm a pinned managed runtime from the current posture.")
+    detail = str(getattr(status, "runtime_source_detail", "") or "").strip()
+    if detail:
+        print(f"Runtime detail: {detail}")
     print("Repo-code validation: use the repo's own project toolchain for application tests, builds, and linting.")
     print(f"Release eligible: {release_eligible}")
     print(f"Context engine mode: {status.context_engine_mode}")
@@ -837,6 +862,9 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
         print(f"Repo role: {status.repo_role}", file=stream)
         print(f"Posture: {status.posture}", file=stream)
         print(f"Runtime source: {status.runtime_source}", file=stream)
+        detail = str(getattr(status, "runtime_source_detail", "") or "").strip()
+        if detail:
+            print(f"Runtime detail: {detail}", file=stream)
         print(f"Release eligible: {release_eligible}", file=stream)
         print(f"Context engine mode: {status.context_engine_mode}", file=stream)
         print(
@@ -859,14 +887,7 @@ def _cmd_migrate_legacy_install(args: argparse.Namespace) -> int:
         print("Next: `./.odylith/bin/odylith start --repo-root .`")
         return 0
     print(f"Migrated legacy install state into `{summary.state_root}`.")
-    if summary.moved_paths:
-        print("Moved:")
-        for item in summary.moved_paths:
-            print(f"- {item}")
-    if summary.removed_paths:
-        print("Purged volatile Odylith state:")
-        for item in summary.removed_paths:
-            print(f"- {item}")
+    _print_legacy_migration_summary(SimpleNamespace(migration=summary))
     print(f"Launcher: {summary.launcher_path}")
     print("Next: `./.odylith/bin/odylith start --repo-root .`")
     return 0
@@ -1206,6 +1227,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Preview the install mutation plan without writing files.",
     )
     install.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Show the full dirty-overlap listing instead of the compact summary.",
+    )
+    install.add_argument(
         "--no-open",
         action="store_true",
         help="Do not auto-open `odylith/index.html` in a browser after a successful first local install.",
@@ -1222,6 +1248,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run",
         action="store_true",
         help="Preview the reinstall mutation plan without writing files.",
+    )
+    reinstall.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Show the full dirty-overlap listing instead of the compact summary.",
     )
     reinstall.add_argument(
         "--to",
