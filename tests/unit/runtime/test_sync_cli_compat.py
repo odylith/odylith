@@ -312,6 +312,56 @@ def test_force_sync_runs_component_spec_requirements_after_atlas_mutations(tmp_p
     assert sync_index < registry_render_index
 
 
+def test_force_sync_runs_final_component_spec_refresh_after_tooling_shell(tmp_path: Path, monkeypatch) -> None:
+    executed: list[tuple[str, ...]] = []
+
+    class _Meaningful:
+        def as_dict(self) -> dict[str, int]:
+            return {
+                "linked_meaningful_event_count": 0,
+                "unlinked_meaningful_event_count": 0,
+            }
+
+    def _fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "") -> int:  # noqa: ARG001
+        executed.append(tuple(args))
+        return 0
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_effective_changed_paths", lambda **_: ("odylith/atlas/source/workstream-dependency-map.mmd",))
+    monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(sync_workstream_artifacts.governance, "build_dashboard_impact", lambda **_: SimpleNamespace(
+        radar=False,
+        atlas=True,
+        compass=False,
+        registry=True,
+        casebook=False,
+        tooling_shell=True,
+    ))
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_meaningful_activity_evidence",
+        lambda **_: _Meaningful(),
+    )
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
+
+    assert rc == 0
+    modules = [command[2] for command in executed if len(command) >= 3 and command[0] == "python" and command[1] == "-m"]
+    sync_indexes = [
+        index
+        for index, module in enumerate(modules)
+        if module == "odylith.runtime.governance.sync_component_spec_requirements"
+    ]
+    registry_render_index = modules.index("odylith.runtime.surfaces.render_registry_dashboard")
+    tooling_render_index = modules.index("odylith.runtime.surfaces.render_tooling_dashboard")
+
+    assert len(sync_indexes) == 2
+    assert sync_indexes[0] < registry_render_index
+    assert registry_render_index < tooling_render_index
+    assert tooling_render_index < sync_indexes[1]
+
+
 def test_check_only_sync_skips_runtime_fast_path_and_warmup(tmp_path: Path, monkeypatch) -> None:
     executed: list[tuple[str, ...]] = []
 

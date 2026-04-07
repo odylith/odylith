@@ -1,8 +1,8 @@
 # Tribunal
-Last updated: 2026-03-29
+Last updated: 2026-04-07
 
 
-Last updated (UTC): 2026-03-29
+Last updated (UTC): 2026-04-07
 
 ## Purpose
 Tribunal is Odylith's diagnosis engine. It converts delivery scopes into
@@ -23,6 +23,8 @@ plus one bounded correction packet per case.
 - Executing corrective action. That belongs to the caller and Remediator.
 - Replacing deterministic grounding with unvalidated provider output.
 - Surface rendering. It produces structured payloads consumed elsewhere.
+- Live agent chatter. Chatter may consume precomputed Tribunal-backed payloads,
+  but Tribunal must not be invoked on demand just to narrate a turn.
 
 ## Developer Mental Model
 - Tribunal is the reasoning layer between delivery posture and corrective
@@ -217,6 +219,12 @@ Tribunal emits two human-facing compressed outputs:
 These are derived outputs from the full case set and should not become the only
 debugging surface for diagnosis changes.
 
+Precomputed `case_queue`, case refs, proof routes, and `systemic_brief`
+outputs may be consumed by downstream narration contracts such as
+`odylith-chatter`, but only through already-built packet or delivery payload
+truth. That consumption must never trigger a fresh Tribunal pass during normal
+agent execution.
+
 ## Guardrails
 - Provider output never bypasses grounded evidence.
 - Candidate selection is intentionally capped. Tribunal diagnoses the most
@@ -264,3 +272,4 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 - 2026-03-26: Promoted Tribunal into Odylith's own product registry and component-spec set so diagnosis no longer depends on consumer-local product documentation. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
+- 2026-04-07: Clarified and shipped the downstream contract that lets `odylith-chatter` consume precomputed Tribunal-backed case and systemic-brief truth without invoking live Tribunal during ordinary narration. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))

@@ -105,14 +105,17 @@ BENCHMARK_HONEST_BASELINE_LINES = (
     "`odylith_off` is the reviewer-facing and README-facing name for the raw Codex CLI lane",
     "`odylith_off` in README, graphs, and review framing is the raw Codex CLI lane",
 )
-ODYLITH_ASSIST_LABEL = "`Odylith assist:`"
-ODYLITH_ASSIST_MARKDOWN_LABEL = "`**Odylith assist:**`"
-ODYLITH_ASSIST_TONE = "soulful, friendly, authentic, and factual"
+ODYLITH_ASSIST_LABEL = "`Odylith Assist:`"
+ODYLITH_ASSIST_MARKDOWN_LABEL = "`**Odylith Assist:**`"
+ODYLITH_ASSIST_TONE = "crisp, authentic, clear, simple, insightful"
 ODYLITH_ASSIST_MIXED_EVIDENCE = "observed counts, measured deltas, or validation outcomes"
 ODYLITH_ASSIST_USER_WIN = "Lead with the user win"
+ODYLITH_ASSIST_UPDATED_IDS = "link updated governance ids inline when they were actually changed"
 ODYLITH_ASSIST_UNGUIDED_PATH = "broader unguided path"
 ODYLITH_CHATTER_SPEC_TOKEN = "odylith-chatter/CURRENT_SPEC.md"
 ODYLITH_ASSIST_METADATA_ONLY = "metadata-only"
+ODYLITH_AMBIENT_SIGNAL_LABELS = "`Odylith Insight:`, `Odylith History:`, or `Odylith Risks:`"
+ODYLITH_SILENCE_RULE = "Silence is better than filler"
 LEGACY_CONSUMER_CHATTER_FRAGMENTS = (
     "must ground in Odylith first",
     "Direct repo scan before Odylith grounding is a policy violation",
@@ -306,9 +309,12 @@ def test_odylith_assist_closeout_contract_stays_explicit_across_shared_and_bundl
         assert ODYLITH_ASSIST_LABEL in normalized, f"closeout Odylith assist label drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_MARKDOWN_LABEL in normalized, f"closeout assist markdown label drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_USER_WIN in normalized, f"closeout assist user-win framing drifted in {path.relative_to(ROOT)}"
+        assert ODYLITH_ASSIST_UPDATED_IDS in normalized, f"closeout assist updated-id framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_UNGUIDED_PATH in normalized, f"closeout assist delta framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_TONE in normalized, f"closeout assist tone drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_MIXED_EVIDENCE in normalized, f"closeout assist evidence rule drifted in {path.relative_to(ROOT)}"
+        assert ODYLITH_AMBIENT_SIGNAL_LABELS in normalized, f"ambient Odylith signal labels drifted in {path.relative_to(ROOT)}"
+        assert ODYLITH_SILENCE_RULE in normalized, f"silence rule drifted in {path.relative_to(ROOT)}"
 
 
 def test_odylith_assist_closeout_contract_stays_explicit_in_maintainer_and_benchmark_surfaces() -> None:
@@ -326,13 +332,14 @@ def test_odylith_assist_closeout_contract_stays_explicit_in_maintainer_and_bench
     governance_paths = (
         ROOT / "odylith" / "registry" / "source" / "components" / "subagent-orchestrator" / "CURRENT_SPEC.md",
         ROOT / "odylith" / "registry" / "source" / "components" / "subagent-router" / "CURRENT_SPEC.md",
-        ROOT / "odylith" / "technical-plans" / "in-progress" / "2026-03" / "2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        ROOT / "odylith" / "technical-plans" / "done" / "2026-03" / "2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
     )
     for path in full_contract_paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
         assert ODYLITH_ASSIST_LABEL in normalized, f"maintainer/benchmark closeout assist label drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_MARKDOWN_LABEL in normalized, f"maintainer/benchmark assist markdown label drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_USER_WIN in normalized, f"maintainer/benchmark assist user-win framing drifted in {path.relative_to(ROOT)}"
+        assert ODYLITH_ASSIST_UPDATED_IDS in normalized, f"maintainer/benchmark updated-id framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_UNGUIDED_PATH in normalized, f"maintainer/benchmark assist delta framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_TONE in normalized, f"maintainer/benchmark closeout assist tone drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_MIXED_EVIDENCE in normalized or "counts, measured deltas, or validation outcomes" in normalized, (
@@ -361,6 +368,7 @@ def test_generated_registry_detail_surface_keeps_soulful_closeout_contract() -> 
     assert ODYLITH_ASSIST_LABEL.replace("`", "") in text
     assert ODYLITH_ASSIST_MARKDOWN_LABEL.replace("`", "") in text
     assert ODYLITH_ASSIST_USER_WIN in text
+    assert ODYLITH_ASSIST_UPDATED_IDS in text
     assert ODYLITH_ASSIST_UNGUIDED_PATH in text
     assert ODYLITH_ASSIST_TONE in text
     assert ODYLITH_ASSIST_MIXED_EVIDENCE in text
@@ -385,9 +393,12 @@ def test_odylith_chatter_component_is_tracked_in_registry_source_and_generated_s
     assert ODYLITH_ASSIST_LABEL in normalized_spec
     assert ODYLITH_ASSIST_MARKDOWN_LABEL in normalized_spec
     assert ODYLITH_ASSIST_USER_WIN in normalized_spec
+    assert ODYLITH_ASSIST_UPDATED_IDS in normalized_spec
     assert ODYLITH_ASSIST_UNGUIDED_PATH in normalized_spec
     assert ODYLITH_ASSIST_TONE in normalized_spec
     assert ODYLITH_ASSIST_MIXED_EVIDENCE in normalized_spec
+    assert ODYLITH_AMBIENT_SIGNAL_LABELS in normalized_spec
+    assert ODYLITH_SILENCE_RULE in normalized_spec
     assert ODYLITH_ASSIST_METADATA_ONLY in normalized_spec
     assert "[B-031](odylith/radar/radar.html?view=plan&workstream=B-031)" in spec_text
 
@@ -401,6 +412,77 @@ def test_odylith_chatter_component_is_tracked_in_registry_source_and_generated_s
     assert '"component_id": "odylith-chatter"' in detail_text or '"component_id":"odylith-chatter"' in detail_text
     assert ODYLITH_ASSIST_LABEL.replace("`", "") in detail_text
     assert ODYLITH_ASSIST_TONE in detail_text
+
+
+def test_memory_substrate_components_are_tracked_in_registry_source_and_generated_surfaces() -> None:
+    manifest = json.loads((ROOT / "odylith" / "registry" / "source" / "component_registry.v1.json").read_text(encoding="utf-8"))
+    components = {row["component_id"]: row for row in manifest["components"]}
+    expected_specs = {
+        "odylith-projection-bundle": "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+        "odylith-projection-snapshot": "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+        "odylith-memory-backend": "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+        "odylith-remote-retrieval": "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+        "odylith-memory-contracts": "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+    }
+
+    for component_id, spec_ref in expected_specs.items():
+        assert component_id in components, f"missing memory component {component_id} from registry manifest"
+        assert components[component_id]["spec_ref"] == spec_ref
+
+    context_engine = components["odylith-context-engine"]
+    odylith = components["odylith"]
+    atlas = components["atlas"]
+    memory_backend = components["odylith-memory-backend"]
+
+    for component_id in expected_specs:
+        assert component_id in context_engine["subcomponents"], f"{component_id} missing from context-engine subcomponents"
+        assert component_id in odylith["subcomponents"], f"{component_id} missing from odylith umbrella subcomponents"
+        assert "D-025" in components[component_id]["diagrams"], f"{component_id} missing D-025 atlas coverage"
+
+    assert "src/odylith/runtime/memory" not in memory_backend["path_prefixes"]
+    assert memory_backend["path_prefixes"] == [
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+    ]
+    assert "B-059" in atlas["workstreams"]
+    assert "D-025" in atlas["diagrams"]
+    assert "D-025" in odylith["diagrams"]
+    assert "D-025" in context_engine["diagrams"]
+
+    required_headings = (
+        "## Purpose",
+        "## Scope And Non-Goals",
+        "## Developer Mental Model",
+        "## Validation Playbook",
+        "## Feature History",
+    )
+    for spec_ref in expected_specs.values():
+        spec_path = ROOT / spec_ref
+        text = spec_path.read_text(encoding="utf-8")
+        for heading in required_headings:
+            assert heading in text, f"{heading} missing from {spec_ref}"
+        assert "[B-058](odylith/radar/radar.html?view=plan&workstream=B-058)" in text
+
+    payload_js = (ROOT / "odylith" / "registry" / "registry-payload.v1.js").read_text(encoding="utf-8")
+    payload = json.loads(payload_js.split(" = ", 1)[1].rsplit(";", 1)[0])
+    payload_component_ids = {row["component_id"] for row in payload["components"]}
+    for component_id in expected_specs:
+        assert component_id in payload_component_ids, f"{component_id} missing from rendered registry payload"
+        shard_name = payload["detail_manifest"][component_id]
+        assert shard_name.startswith("registry-detail-shard-")
+        detail_text = (ROOT / "odylith" / "registry" / shard_name).read_text(encoding="utf-8")
+        assert f'"component_id": "{component_id}"' in detail_text or f'"component_id":"{component_id}"' in detail_text
+
+
+def test_runtime_refresh_diagrams_cover_conversation_and_tribunal_components() -> None:
+    manifest = json.loads((ROOT / "odylith" / "registry" / "source" / "component_registry.v1.json").read_text(encoding="utf-8"))
+    components = {row["component_id"]: row for row in manifest["components"]}
+
+    for component_id in ("odylith-chatter", "subagent-router", "subagent-orchestrator", "tribunal"):
+        diagrams = set(components[component_id]["diagrams"])
+        assert "D-002" in diagrams, f"{component_id} missing the refreshed context/runtime diagram"
+        assert "D-018" in diagrams, f"{component_id} missing the refreshed layered topology diagram"
+        assert "D-020" in diagrams, f"{component_id} missing the refreshed runtime boundary diagram"
 
 
 def test_b022_benchmark_workstream_surfaces_as_active_with_only_current_children_in_delivery() -> None:

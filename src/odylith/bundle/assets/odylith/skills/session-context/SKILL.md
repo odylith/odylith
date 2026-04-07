@@ -6,7 +6,8 @@ Use this skill when a session needs a grounded restart, a dirty-session delta, o
 - start from exact seeds when possible
 - start a grounded turn with `odylith start`; use `odylith context` when you are restarting from one exact workstream, component, or path
 - keep commentary task-first; describe narrowing, exact-ref lookup, or context recovery instead of narrating startup or retained-packet history, and skip prior degraded-start history unless it is the current blocker
-- reserve Odylith-by-name closeout text for one optional `Odylith assist:` line; prefer `**Odylith assist:**` when Markdown formatting is available. Lead with the user win, frame the edge against `odylith_off` or the broader unguided path when the evidence supports it, and back it with concrete observed counts, measured deltas, or validation outcomes while keeping it soulful, friendly, authentic, and factual
+- keep Odylith ambient by default during work; weave recovered context into ordinary updates and only break out explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` lines when the signal is genuinely worth the interruption
+- reserve Odylith-by-name closeout text for one optional `Odylith Assist:` line; prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance ids inline when they were actually changed, frame the edge against `odylith_off` or the broader unguided path when the evidence supports it, and back it with concrete observed counts, measured deltas, or validation outcomes while keeping it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Silence is better than filler.
 - prefer session-aware packets over broad lexical recall
 - recover active intent, constraints, validation obligations, linked workstreams, components, diagrams, and bugs before substantive edits
 - keep outstanding risks and validation obligations visible

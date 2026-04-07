@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-04-06
 
-Updated: 2026-04-06
+Updated: 2026-04-07
 
 Backlog: B-048
 
@@ -68,7 +68,7 @@ Related Bugs:
       AppleDouble `._*`.
 - [ ] Make runtime replacement, repair, and reinstall converge after
       partial-failure residue and `.backup-*` leftovers.
-- [ ] Unify runtime-source classification so `version` and `doctor` agree on
+- [x] Unify runtime-source classification so `version` and `doctor` agree on
       trust-degraded wrapped-runtime posture.
 - [ ] Add post-migration stale-reference audit plus repo-local report
       persistence.
@@ -82,8 +82,11 @@ Related Bugs:
       trust hardening.
 
 ## Should-Ship
-- [ ] Reuse one shared helper for runtime-status explanation across CLI and
+- [x] Reuse one shared helper for runtime-status explanation across CLI and
       install manager paths.
+- [x] Keep trust-only managed-runtime drift out of the generic doctor failure
+      list so the operator-facing message matches the shared wrapped-runtime
+      posture detail.
 - [ ] Save stale-reference audit output under `.odylith/state/migration/` in a
       deterministic text format.
 - [ ] Add direct CLI smoke coverage for `version`, `doctor`, install/reinstall,
@@ -97,7 +100,7 @@ Related Bugs:
 ## Success Criteria
 - [ ] macOS metadata noise no longer breaks trusted runtime validation.
 - [ ] repeated repair and reinstall converge after partial runtime failure.
-- [ ] `version` and `doctor` describe trust-degraded wrapped runtime
+- [x] `version` and `doctor` describe trust-degraded wrapped runtime
       consistently.
 - [ ] migration emits a stale-reference audit and saves a repo-local report.
 - [ ] sync normalizes legacy Radar rationale once before strict validation.
@@ -115,6 +118,7 @@ Related Bugs:
 
 ## Impacted Areas
 - [ ] [manager.py](/Users/freedom/code/odylith/src/odylith/install/manager.py)
+- [ ] [runtime_status.py](/Users/freedom/code/odylith/src/odylith/install/runtime_status.py)
 - [ ] [runtime.py](/Users/freedom/code/odylith/src/odylith/install/runtime.py)
 - [ ] [runtime_integrity.py](/Users/freedom/code/odylith/src/odylith/install/runtime_integrity.py)
 - [ ] [release_assets.py](/Users/freedom/code/odylith/src/odylith/install/release_assets.py)
@@ -146,6 +150,8 @@ Related Bugs:
 - [ ] `pytest -q tests/unit/install/test_release_assets.py`
 - [ ] `pytest -q tests/integration/install/test_manager.py`
 - [ ] `pytest -q tests/unit/test_cli.py`
+- [x] focused trust-drift doctor/version proof for a verified pinned runtime
+      that later gains an unexpected managed-runtime tree entry
 - [ ] `pytest -q tests/unit/runtime/test_validate_backlog_contract.py`
 - [ ] `pytest -q tests/unit/runtime/test_backlog_authoring.py tests/unit/runtime/test_sync_cli_compat.py`
 - [ ] repo-local CLI smoke for `version`, `doctor`, `install`/`reinstall`, and
@@ -164,4 +170,8 @@ Related Bugs:
       recovery wave.
 - [x] Child workstreams `B-049` through `B-056` and bugs `CB-054` through
       `CB-061` are now the explicit execution slices for this feedback set.
-- [ ] Runtime, migration, sync, and CLI hardening are in progress.
+- [x] `B-051` is landed: trust-only managed-runtime drift now stays on one
+      shared wrapped-runtime posture path, and doctor no longer degrades into
+      a generic failure summary when version reports trust-degraded detail.
+- [ ] Runtime, migration, sync, and CLI hardening are still in progress as an
+      umbrella wave.

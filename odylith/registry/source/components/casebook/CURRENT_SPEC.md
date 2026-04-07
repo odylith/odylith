@@ -1,8 +1,8 @@
 # Casebook
-Last updated: 2026-04-01
+Last updated: 2026-04-07
 
 
-Last updated (UTC): 2026-04-01
+Last updated (UTC): 2026-04-07
 
 ## Purpose
 Casebook is Odylith's bug and operational-learning surface. It preserves product
@@ -110,6 +110,8 @@ Casebook detail should keep two distinct read bands:
 
 The renderer should not echo the same field content in both bands unless the
 copy is materially transformed for a different audience.
+- It should also dedupe overlapping proof and evidence links across those
+  bands so the same path is not rendered twice under adjacent headings.
 
 ## Intent Behind Casebook
 Casebook exists so a developer can answer:
@@ -153,3 +155,4 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 - 2026-03-26: Added an Odylith-owned Casebook root so the product can keep its own bug and learning history without treating any consumer bug archive as the product source of truth. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
+- 2026-04-07: Tightened the Casebook detail contract so the human brief and Odylith agent-learning band stay distinct, and overlapping proof/evidence links are deduped instead of repeated. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

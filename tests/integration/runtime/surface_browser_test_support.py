@@ -413,10 +413,15 @@ def _assert_casebook_selection(page, bug_route: str) -> None:  # noqa: ANN001
 def _assert_compass_selection(page, *, workstream: str, window_token: str) -> None:  # noqa: ANN001
     assert page.locator("#tab-compass").get_attribute("aria-selected") == "true"
     compass = page.frame_locator("#frame-compass")
-    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    _wait_for_compass_ready(compass)
     compass.locator(f'button[data-window="{window_token}"].active').wait_for(timeout=15000)
     compass.locator("#scope-pill", has_text=workstream).wait_for(timeout=15000)
     compass.get_by_role("heading", name="Standup Brief").wait_for(timeout=15000)
+
+
+def _wait_for_compass_ready(compass) -> None:  # noqa: ANN001
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    compass.locator('body[data-surface-ready="ready"]').wait_for(timeout=15000)
 
 
 def _compass_kpi_value(compass, label: str) -> int:  # noqa: ANN001

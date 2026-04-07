@@ -2,13 +2,13 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-05
+Updated: 2026-04-07
 
 Backlog: B-025
 
 Goal: Restore trustworthy live Compass and shell behavior by hardening runtime
 freshness, removing stale brief reuse, and widening headless browser proof
-across the UX/UI.
+across the UX/UI, including cross-surface filter and search semantics.
 
 Assumptions:
 - Compass staleness is a runtime reuse and projection invalidation problem, not
@@ -39,13 +39,16 @@ Boundary Conditions:
 - Scope includes Compass runtime freshness, projection invalidation,
   standup-brief cache recovery, shell browser proof, rerendered assets, and a
   balanced live-shell freshness posture that can refresh runtime-backed views
-  earlier than commit without contaminating benchmark or release-proof lanes.
+  earlier than commit without contaminating benchmark or release-proof lanes,
+  plus consistent exact-id, normalized-token, and filter-reset behavior across
+  Radar, Registry, Atlas, Casebook, and Compass.
 - Scope excludes UI redesign and benchmark publication policy changes.
 
 Related Bugs:
 - [2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md)
 - [2026-04-02-compass-dashboard-refresh-shell-safe-keeps-timeline-audit-pinned-to-stale-snapshot.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-02-compass-dashboard-refresh-shell-safe-keeps-timeline-audit-pinned-to-stale-snapshot.md)
 - [2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md)
+- [2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md)
 - no related Casebook-specific bug record exists yet for detail-view field repetition; keep the failure mode visible in this plan and handoff until it is formalized
 
 ## Context/Problem Statement
@@ -60,12 +63,29 @@ Related Bugs:
       instead of naming the blocking diagram ids.
 - [ ] Commit-time refresh and autofix are too late to be the first user-visible
       freshness signal in consumer shells.
+- [ ] Radar still renders info-level traceability autofix conflicts as default
+      workstream warnings while Compass silently filters them out, so the same
+      shared governance diagnostics read as product warnings on one surface and
+      maintainer noise on another.
 - [ ] Current browser proof still misses some UX/UI freshness regressions.
+- [ ] Governance-surface filter/search behavior still drifts across surfaces:
+      Atlas already normalizes ids and punctuation-heavy tokens well, while
+      Radar, Registry, and Casebook still leave some exact-id and normalized
+      token queries behaving like plain substring search.
+- [ ] The release browser lane still does not brutalize filter edge cases
+      across every governance surface, so exact-id search, compact id tokens,
+      filter resets, and invalid deep-link combinations can regress quietly.
+- [x] Radar topology relation chips and disclosure-gated traceability links
+      could route to the wrong record when selected detail and visible filters
+      drifted, and the browser lane did not open that UI before release proof.
 - [x] Compass standup narration can still sound templated even when the facts
       are current, because both the provider contract and the deterministic
       fallback reuse the same stock lead-ins.
 - [ ] Casebook detail view repeats the same signals across summary, guidance,
       and inspect sections, which makes the human-facing bug readout noisy.
+- [ ] Casebook detail can also repeat the same evidence path in both "Direct
+      proof links" and "Evidence and references", which makes the agent band
+      feel busy instead of sharp.
 - [x] Shell-safe Compass dashboard refresh can keep Timeline Audit pinned to an
       old runtime snapshot instead of rebuilding current audit truth.
 - [x] Explicit `odylith dashboard refresh --surfaces compass` can still defer
@@ -113,8 +133,22 @@ Related Bugs:
 - [x] Provider and deterministic Compass briefs no longer reuse stock
       lead-ins across sections, windows, and workstreams, and validation now
       rejects those canned openings before they reach the live payload.
+- [x] Explicit Radar relation and traceability deep links resolve to the exact
+      requested target even when stale list filters would otherwise hide it.
+- [x] Release-gating browser proof opens disclosure-gated shell UI and audits
+      governed cross-surface routes across Radar, Registry, Atlas, Compass,
+      and Casebook.
 - [ ] Casebook bug detail separates a crisp human readout from deeper Odylith
       agent learnings without repeating the same field content in both bands.
+- [ ] Casebook detail dedupes overlapping proof and evidence links so the same
+      path does not appear twice just because it was captured through two
+      adjacent fields.
+- [x] Default operator-facing surfaces only show operator-facing
+      warning/error traceability diagnostics; maintainer autofix notes remain
+      available in the graph/report without leaking into primary warning cards.
+- [ ] Governance-surface filters consistently honor exact ids, normalized
+      tokens, reset behavior, and deep-link self-healing across Radar,
+      Registry, Atlas, Casebook, and Compass.
 - [ ] Benchmark proof remains green after the fix.
 
 ## Non-Goals
@@ -132,7 +166,10 @@ Related Bugs:
 - [ ] [agents.py](/Users/freedom/code/odylith/src/odylith/install/agents.py)
 - [ ] [odylith_context_engine_store.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_store.py)
 - [ ] [render_backlog_ui.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui.py)
+- [x] [build_traceability_graph.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/build_traceability_graph.py)
+- [x] [render_backlog_ui_html_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py)
 - [ ] [render_registry_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_registry_dashboard.py)
+- [ ] [render_mermaid_catalog.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_mermaid_catalog.py)
 - [ ] [render_tooling_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_tooling_dashboard.py)
 - [x] [dashboard_surface_bundle.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/dashboard_surface_bundle.py)
 - [x] [tooling_dashboard_runtime_builder.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_runtime_builder.py)
@@ -151,8 +188,13 @@ Related Bugs:
 - [ ] [test_agents.py](/Users/freedom/code/odylith/tests/unit/install/test_agents.py)
 - [ ] [render_casebook_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_casebook_dashboard.py)
 - [ ] [test_render_casebook_dashboard.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_casebook_dashboard.py)
+- [ ] [test_render_registry_dashboard.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_registry_dashboard.py)
+- [ ] [test_render_backlog_ui.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_backlog_ui.py)
+- [ ] [test_render_mermaid_catalog.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_mermaid_catalog.py)
 - [x] [test_surface_browser_smoke.py](/Users/freedom/code/odylith/tests/integration/runtime/test_surface_browser_smoke.py)
 - [x] [test_surface_browser_deep.py](/Users/freedom/code/odylith/tests/integration/runtime/test_surface_browser_deep.py)
+- [x] [test_surface_browser_ux_audit.py](/Users/freedom/code/odylith/tests/integration/runtime/test_surface_browser_ux_audit.py)
+- [ ] [test_surface_browser_filter_audit.py](/Users/freedom/code/odylith/tests/integration/runtime/test_surface_browser_filter_audit.py)
 
 ## Risks & Mitigations
 
@@ -169,6 +211,14 @@ Related Bugs:
     current fact packet.
 - [ ] Risk: browser tests become brittle.
   - [ ] Mitigation: assert stateful user-visible contracts, not layout trivia.
+- [ ] Risk: hiding info-level diagnostics masks real maintainer conflicts.
+  - [ ] Mitigation: keep those rows in the shared traceability graph/report and
+    filter only the default operator-facing warning surfaces.
+- [ ] Risk: overly fuzzy search hides exact-id intent or leaves surprising
+      cross-surface mismatches.
+  - [ ] Mitigation: prefer exact canonical-id and alias matches first, then
+        fall back to normalized token search with browser proof for compact id
+        forms and reset behavior.
 - [ ] Risk: opportunistic live refresh changes benchmark or release-proof
     behavior.
   - [ ] Mitigation: freeze benchmark and release-proof lanes to explicit clean
@@ -186,13 +236,19 @@ Related Bugs:
 - [x] `python -m pytest tests/unit/runtime/test_dashboard_surface_bundle.py tests/unit/runtime/test_tooling_dashboard_runtime_builder.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_standup_brief_deterministic.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_render_compass_dashboard.py`
 - [x] `python -m py_compile src/odylith/runtime/surfaces/render_compass_dashboard.py src/odylith/runtime/surfaces/compass_dashboard_runtime.py src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/test_cli.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_build_traceability_graph.py tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_compass_dashboard_runtime.py`
 - [x] `python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_deep.py`
+- [x] `python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_ux_audit.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_ux_audit.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_render_mermaid_catalog.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_filter_audit.py`
+- [ ] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime tests/integration/runtime/test_surface_browser_smoke.py`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_compass_dashboard --repo-root . --refresh-profile full`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_tooling_dashboard --repo-root . --output odylith/index.html`
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_compass_dashboard.py tests/integration/runtime/test_surface_browser_smoke.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/test_cli.py`
 - [ ] `odylith benchmark --repo-root .`
-- [ ] `git diff --check`
+- [x] `git diff --check`
 
 ## Rollout/Communication
 - [ ] Note the Casebook regression explicitly so future Compass or shell
@@ -201,10 +257,13 @@ Related Bugs:
       freshness work sees the exact failure mode.
 - [x] Rerender shipped shell and Compass assets before browser validation so
   the proof runs against the same artifacts users open.
+- [x] Add a dedicated cross-surface filter/search audit lane so release proof
+      fails if exact-id queries, normalized token search, or filter reset
+      behavior drifts again.
 
 ## Current Outcome
-- [ ] Bound to `B-025`; implementation in progress.
-- [ ] Product direction clarified on 2026-04-01: commit-time autofix remains a
+- [x] Bound to `B-025`; implementation in progress.
+- [x] Product direction clarified on 2026-04-01: commit-time autofix remains a
       backstop, while the desired steady-state posture is runtime-fresh earlier
       than commit, explicit about mixed-worktree drift, and benchmark-safe by
       construction.
@@ -246,3 +305,24 @@ Related Bugs:
       to avoid house phrases, deterministic fallback rewrites the same facts in
       plainer spoken language, and validation rejects overused stock openings
       so cached or regenerated briefs cannot slide back into the robotic voice.
+- [ ] April 7 follow-on keeps `B-025` active for the Casebook detail polish:
+      dedupe repeated proof/evidence links and tighten the browser/unit proof
+      so the bug surface stays concise under real multi-source records.
+- [ ] April 7 QA follow-on expands browser proof from correctness-only into
+      compact-width and repetition-aware UX proof so the live shell catches
+      noisy detail bands before release.
+- [x] April 7 diagnostics follow-on keeps maintainer autofix conflict notes in
+      shared traceability artifacts but removes them from default Radar warning
+      cards so default surfaces agree on operator-facing warning semantics.
+- [x] Radar explicit relation navigation now reveals the requested target
+      before selection, and the browser lane audits disclosure-gated deep
+      links plus cross-surface action chips across Radar, Registry, Atlas,
+      Compass, and Casebook.
+- [x] April 7 filter/search follow-on aligns exact-id and normalized-token
+      behavior across Radar, Registry, Atlas, and Casebook, and the new
+      browser audit now attacks compact ids, punctuation-free queries, reset
+      behavior, and cross-surface filter state directly.
+- [x] April 7 Compass retained-history follow-on narrows the audit-day picker
+      to real retained history dates, closing a browser-visible 404 path that
+      appeared when the old synthetic 30-day bounds offered non-existent
+      historical snapshots.

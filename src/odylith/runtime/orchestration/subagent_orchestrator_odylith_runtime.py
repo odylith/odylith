@@ -377,18 +377,33 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
 
 def _decision_odylith_adoption(
     *,
+    repo_root: Path | None,
     request: OrchestrationRequest,
     decision: OrchestrationDecision,
+    final_changed_paths: Sequence[str] | None = None,
+    changed_path_source: str = "",
 ) -> dict[str, Any]:
     summary = _request_odylith_adoption(request)
     summary["delegate"] = bool(decision.delegate)
     summary["mode"] = _normalize_token(decision.mode)
     summary["manual_review_recommended"] = bool(decision.manual_review_recommended)
     summary["grounded_delegate"] = bool(summary.get("grounded") and decision.delegate)
-    summary["closeout_assist"] = odylith_chatter_runtime.compose_closeout_assist(
+    conversation_bundle = odylith_chatter_runtime.compose_conversation_bundle(
         request=request,
         decision=decision,
         adoption=summary,
+        repo_root=repo_root,
+        final_changed_paths=final_changed_paths,
+        changed_path_source=changed_path_source,
+    )
+    closeout_bundle = dict(conversation_bundle.get("closeout_bundle", {}))
+    summary["conversation_bundle"] = conversation_bundle
+    summary["ambient_signals"] = dict(conversation_bundle.get("ambient_signals", {}))
+    summary["closeout_bundle"] = closeout_bundle
+    summary["closeout_assist"] = (
+        dict(closeout_bundle.get("assist", {}))
+        if isinstance(closeout_bundle.get("assist"), Mapping)
+        else {}
     )
     return summary
 

@@ -1,13 +1,15 @@
 {
   "component_id": "tribunal",
   "diagrams": [
+    "D-002",
     "D-003",
+    "D-018",
+    "D-020",
     "D-007",
     "D-008",
     "D-010",
     "D-011",
     "D-001",
-    "D-002",
     "D-004",
     "D-005",
     "D-006",
@@ -18,19 +20,17 @@
     "D-015",
     "D-016",
     "D-017",
-    "D-018",
     "D-019",
-    "D-020",
     "D-024"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 1,
-    "mapped_workstream_evidence_count": 1,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 1,
+    "explicit_event_count": 4,
+    "mapped_workstream_evidence_count": 4,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 1
+    "timeline_event_count": 5
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -39,6 +39,127 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 55,
+      "explicit_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Kept the change benchmark-safe and proved the focused chatter plus benchmark guard lanes stayed green.",
+      "ts_iso": "2026-04-07T09:59:30-07:00",
+      "workstreams": [
+        "B-031"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 54,
+      "explicit_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Tightened the chatter hot path so one conversation-bundle pass reuses request metrics and context-artifact scans across ambient and closeout composition.",
+      "ts_iso": "2026-04-07T09:59:30-07:00",
+      "workstreams": [
+        "B-031"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 53,
+      "explicit_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Hardened Tribunal-fed ambient chatter so malformed explicit and cached signal payloads degrade quietly, supplemental closeout lines stay suppressed without an Odylith Assist line, and closeout punctuation stays clean.",
+      "ts_iso": "2026-04-07T09:59:30-07:00",
+      "workstreams": [
+        "B-031"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 74,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-07T09:01:45-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "README.md",
@@ -72,6 +193,7 @@
         "odylith-chatter",
         "odylith-context-engine",
         "odylith-memory-backend",
+        "odylith-remote-retrieval",
         "radar",
         "registry",
         "release",

@@ -1,6 +1,6 @@
 - Bug ID: CB-056
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-06
 
@@ -26,16 +26,21 @@
 - Environment(s): Product repo and consumer repos where runtime trust is
   degraded but execution still works.
 
-- Root Cause: Runtime-source classification relies too heavily on install-state
-  metadata, while doctor-health messaging and version-status explanation are
-  derived separately.
+- Root Cause: The shared runtime-source helper already classified the live
+  runtime correctly, but `doctor_bundle(...)` still let trust-only
+  managed-runtime drift fall through a generic unhealthy summary path instead
+  of reusing the wrapped-runtime trust-degraded explanation that
+  `version_status(...)` already surfaced.
 
-- Solution: Move runtime-source classification and trust-degradation reason
-  derivation behind one shared helper, then make both `doctor` and `version`
-  explain wrapped-runtime posture consistently.
+- Solution: Keep runtime-source classification and trust-degradation reason
+  derivation behind the shared helper, then make `doctor_bundle(...)` treat
+  trust-only managed-runtime drift as a healthy-but-trust-degraded
+  wrapped-runtime posture so `doctor` and `version` explain the same live
+  state.
 
-- Verification: CLI and posture-validation tests should prove the same runtime
-  state produces aligned `doctor` and `version` output.
+- Verification: Focused install-manager and CLI tests now prove that the same
+  managed-runtime trust drift produces aligned `doctor` and `version` output,
+  including the product-repo release-ineligible branch.
 
 - Prevention: Status derivation for trust-sensitive lanes should have one
   authoritative code path, not parallel output logic.
@@ -76,10 +81,15 @@
 - Preflight Checks: Inspect runtime-source derivation, release-eligible logic,
   and wrapped-runtime tests before adding a new explanation path.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added:
+  `test_doctor_bundle_reports_trust_degraded_wrapped_runtime_consistently_with_version`
+  in `tests/integration/install/test_manager.py` and
+  `test_doctor_prints_trust_degraded_wrapped_runtime_detail` in
+  `tests/unit/test_cli.py`.
 
-- Monitoring Updates: Watch for healthy doctor output paired with non-pinned
-  runtime source in product-repo posture checks.
+- Monitoring Updates: Keep watching for healthy doctor output paired with a
+  non-pinned runtime source in product-repo posture checks; the new regressions
+  now cover the previously missed wrapped-runtime trust-drift branch directly.
 
 - Residual Risk: Additional runtime-source subtypes may still be needed later
   if more degraded states become operator-visible.
@@ -88,8 +98,8 @@
   [CB-023](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-31-product-repo-doctor-repair-rewrites-root-agents-to-stale-managed-block.md),
   [CB-026](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-01-runtime-launcher-wrapper-recursion-and-trust-boundary-hardening.md)
 
-- Version/Build: Odylith 0.1.7 observed on 2026-04-06 during downstream
-  migration analysis.
+- Version/Build: Observed during downstream 0.1.8 migration analysis on
+  2026-04-06; fixed on 2026-04-07 in the post-0.1.8 recovery wave.
 
 - Config/Flags: Default status and doctor commands.
 
@@ -104,4 +114,4 @@
 - Runbook References: `odylith/MAINTAINER_RELEASE_RUNBOOK.md`,
   `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: Pending local branch.

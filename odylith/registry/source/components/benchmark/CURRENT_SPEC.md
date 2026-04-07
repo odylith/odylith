@@ -67,7 +67,8 @@ reviewer framing that explains how Odylith should be compared.
 - Simulation, reviewer, and closeout artifacts should suppress mid-analysis
   Odylith brand narration. If a writeup or agent handoff names Odylith
   directly beyond lane labels, reserve that for one short end-of-work
-  `Odylith assist:` line. Follow the detailed closeout contract in
+  `Odylith Assist:` line, and prefer `**Odylith Assist:**` when Markdown
+  formatting is available. Follow the detailed closeout contract in
   [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md) and keep benchmark
   storytelling anchored in measured proof rather than duplicated branding
   rubric.

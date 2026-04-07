@@ -6,22 +6,29 @@
   "fields_filled": [],
   "conflicts_skipped": [
     {
-      "idea_id": "B-022",
-      "field": "workstream_split_into",
-      "current": "B-038,B-039",
-      "candidate": "B-038,B-039,B-041,B-042,B-043,B-044",
-      "reason": "reciprocal lineage inferred from `workstream_split_from`"
+      "idea_id": "B-010",
+      "field": "related_diagram_ids",
+      "current": "D-002,D-020",
+      "candidate": "D-025",
+      "reason": "inferred from Mermaid catalog related_backlog/related_workstreams"
+    },
+    {
+      "idea_id": "B-058",
+      "field": "related_diagram_ids",
+      "current": "D-002,D-020,D-025",
+      "candidate": "D-002,D-018,D-020,D-025",
+      "reason": "inferred from Mermaid catalog related_backlog/related_workstreams"
     }
   ],
   "fields_unresolved": [],
   "warnings": [],
   "summary": {
-    "ideas_seen": 44,
+    "ideas_seen": 59,
     "files_modified": 0,
     "fields_filled": 0,
-    "conflicts": 1,
+    "conflicts": 2,
     "unresolved": 0,
     "warnings": 0
   },
-  "generated_utc": "2026-04-06 03:44:34Z"
+  "generated_utc": "2026-04-07 20:45:05Z"
 }

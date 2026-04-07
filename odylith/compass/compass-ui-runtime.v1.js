@@ -1,3 +1,8 @@
+    function markCompassSurfaceReady(isReady) {
+      if (!document.body || !document.body.dataset) return;
+      document.body.dataset.surfaceReady = isReady ? "ready" : "loading";
+    }
+
     function syncControls(state, events, payload) {
       const persistAuditDay = Boolean(state && state.audit_day_pinned && DATE_RE.test(state.audit_day));
       document.querySelectorAll('[data-window]').forEach((btn) => {
@@ -149,6 +154,7 @@
       document.getElementById("current-workstreams").innerHTML = '<p class="empty">Run sync to regenerate Compass runtime snapshots.</p>';
       document.getElementById("timeline").innerHTML = '<div class="empty">No timeline data available.</div>';
       document.getElementById("risk-list").innerHTML = '<p class="empty">No risk payload available.</p>';
+      markCompassSurfaceReady(true);
     }
 
     function bindCopyBrief() {
@@ -215,6 +221,7 @@
     }
 
     async function init() {
+      markCompassSurfaceReady(false);
       if (shellRedirectInProgress()) {
         return;
       }
@@ -260,4 +267,5 @@
       renderCurrentWorkstreams(payload, summaryState, summaryEvents, summaryTransactions, state);
       renderTimeline(payload, state, timelineEvents, timelineTransactions);
       renderRisks(payload, summaryState);
+      markCompassSurfaceReady(true);
     }

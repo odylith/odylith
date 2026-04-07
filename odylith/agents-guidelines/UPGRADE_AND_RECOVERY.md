@@ -2,7 +2,7 @@
 
 - For consumer Odylith-fix requests, stay in diagnosis-only mode until the operator or maintainer explicitly authorizes a repair path.
 - Normal lifecycle:
-  - bootstrap once from the target repo root
+  - bootstrap once from the target repo root with `curl -fsSL https://odylith.ai/install.sh | bash`
   - upgrade later
   - repair only when something drifted
 - Inspection commands:

@@ -39,6 +39,9 @@ stay visually stale until a later sync and the product gives the operator no
 in-shell celebration or concise readout of what changed. Even after the first
 spotlight pass, the close contract can still feel brittle if the popup lands on
 an empty-looking fallback tab or disappears with no obvious recovery path.
+Release prep still needs an authored `v0.1.9` note and a fresh browser re-proof
+so the welcome and upgrade moments stay product-grade instead of falling back
+to generic copy.
 
 ## Customer
 - Primary: consumer-repo operators upgrading Odylith through the supported CLI.
@@ -56,6 +59,7 @@ series of special cases.
 ## Proposed Solution
 - add a consumer-lane `odylith reinstall --latest` path that safely adopts the latest verified release and repo pin in one step
 - improve missing-launcher recovery around the repo-local bootstrap launcher instead of requiring another Odylith checkout
+- standardize hosted bootstrap and rescue guidance on `curl -fsSL https://odylith.ai/install.sh | bash` across CLI, docs, and agent guidance
 - add an explicit `odylith dashboard refresh` command for shell-facing refreshes without full governance churn
 - make default dashboard refresh include Compass while printing included versus excluded surfaces and the exact Atlas follow-up when Atlas is stale but skipped
 - refresh consumer dashboard surfaces immediately after successful `odylith upgrade` or `odylith reinstall`
@@ -69,6 +73,9 @@ series of special cases.
   recovered after an accidental close
 - generate a crisp repo-local plain-English release note page for the upgraded
   version and link to it directly from the spotlight
+- author the `v0.1.9` release note before the version cut and prove that the
+  popup consumes authored title and highlight copy without regressing the
+  first-run welcome state
 - render a polished closeable shell popup with version transition, 1-3 release
   bullets, a circular `X`, outside-click dismiss, and Escape support
 - make Mermaid worker timeout/fallback behavior name the blocking diagram ids and show per-diagram progress
@@ -118,6 +125,7 @@ series of special cases.
 
 ## Validation
 - `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_sync_cli_compat.py tests/integration/install/test_manager.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py`
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_release_notes.py tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
 - headless browser screenshot proof of the upgrade spotlight
 - `git diff --check`
 
@@ -157,6 +165,7 @@ knows that immediately and recover cleanly when local state drifts.
   version-scoped `Show v<version> note` reopen affordance after the spotlight
   is closed
 - launcher recovery guidance can point at the repo-local bootstrap launcher
+- launcher-absent bootstrap and legacy rescue guidance consistently point at the hosted `odylith.ai` installer entrypoint
 
 ## Migration/Compatibility
 - backward compatible; the spotlight payload lives under `.odylith/` and can be
@@ -187,3 +196,6 @@ knows that immediately and recover cleanly when local state drifts.
 - Bound to `B-030`; implementation in progress.
 - Default dashboard refresh now includes Compass, prints included versus excluded surfaces, and points at the exact Atlas follow-up command when Atlas is stale but skipped.
 - Atlas auto-update now fails fast on invalid Mermaid source with diagram id, source path, and parse-line context before the render batch begins.
+- Release-prep on 2026-04-07 authored the `v0.1.9` note and re-proved the
+  welcome screen plus upgrade spotlight in headless Chromium so the launch
+  moment stays anchored to real release copy.

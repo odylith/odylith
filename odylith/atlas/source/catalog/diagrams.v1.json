@@ -8,7 +8,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-product-governance-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-governance-loop.svg",
       "source_png": "odylith/atlas/source/odylith-product-governance-loop.png",
@@ -84,51 +84,102 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-05",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd",
       "source_svg": "odylith/atlas/source/odylith-context-and-agent-execution-stack.svg",
       "source_png": "odylith/atlas/source/odylith-context-and-agent-execution-stack.png",
-      "summary": "The context engine, memory layer, and agent-routing/orchestration stack collaborate to ground tasks before leaf execution or escalation.",
+      "summary": "Context and execution stack showing how repo truth flows through compiler-owned memory read models, packet-safe contracts, delivery intelligence, Tribunal, and the agent-control or conversation path before Odylith speaks or delegates.",
       "change_watch_paths": [
         "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/memory/odylith_projection_bundle.py",
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py",
         "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/memory/tooling_memory_contracts.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
         "src/odylith/runtime/orchestration/subagent_router.py",
-        "src/odylith/runtime/orchestration/subagent_orchestrator.py"
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
       ],
       "related_backlog": [
-        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
       ],
       "related_plans": [
-        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
       ],
       "related_docs": [
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
       ],
       "related_code": [
         "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/memory/odylith_projection_bundle.py",
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py",
         "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/memory/tooling_memory_contracts.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
         "src/odylith/runtime/orchestration/subagent_router.py",
-        "src/odylith/runtime/orchestration/subagent_orchestrator.py"
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
       ],
       "related_workstreams": [
-        "B-001"
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059"
       ],
       "components": [
         {
           "name": "odylith-context-engine",
-          "description": "Grounding engine that builds deterministic packets from repo truth before implementation and governance actions."
+          "description": "Grounding engine that compiles repo truth into deterministic memory read models and retained packets."
         },
         {
-          "name": "subagent-router",
-          "description": "Bounded leaf-routing layer that decides whether one grounded subtask should stay local or delegate."
+          "name": "memory substrate",
+          "description": "Projection bundle, snapshot fallback, local backend, remote retrieval, and packet contracts are explicit siblings instead of one vague memory box."
         },
         {
-          "name": "subagent-orchestrator",
-          "description": "Prompt-level orchestration layer that decomposes grounded work into safe serial or parallel leaves."
+          "name": "delivery and diagnosis",
+          "description": "Delivery Intelligence and Tribunal consume compact memory truth before the product explains what it should do next."
+        },
+        {
+          "name": "agent control and chatter",
+          "description": "Router, orchestrator, and Odylith chatter turn grounded evidence into bounded execution and humane commentary."
         }
+      ],
+      "related_component_ids": [
+        "odylith",
+        "odylith-context-engine",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts",
+        "odylith-chatter",
+        "subagent-router",
+        "subagent-orchestrator",
+        "tribunal"
       ]
     },
     {
@@ -138,7 +189,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-05",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.svg",
       "source_png": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.png",
@@ -184,7 +235,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-delivery-governance-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-delivery-governance-topology.svg",
       "source_png": "odylith/atlas/source/odylith-delivery-governance-topology.png",
@@ -295,7 +346,7 @@
       "kind": "sequence",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.svg",
       "source_png": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.png",
@@ -374,7 +425,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.mmd",
       "source_svg": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.svg",
       "source_png": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.png",
@@ -455,7 +506,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.png",
@@ -522,7 +573,7 @@
       "kind": "sequence",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.png",
@@ -591,7 +642,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.mmd",
       "source_svg": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.svg",
       "source_png": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.png",
@@ -660,7 +711,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.png",
@@ -725,7 +776,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.png",
@@ -794,7 +845,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-05",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.png",
@@ -856,7 +907,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-05",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.png",
@@ -923,7 +974,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-05",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.png",
@@ -981,7 +1032,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-05",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.png",
@@ -1035,7 +1086,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-05",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.png",
@@ -1089,7 +1140,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-05",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.png",
@@ -1150,20 +1201,20 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-installable-product-layered-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-installable-product-layered-topology.svg",
       "source_png": "odylith/atlas/source/odylith-installable-product-layered-topology.png",
       "initial_view_fit_factor": 0.62,
-      "summary": "Layered topology for the Odylith product showing tracked repo truth, explicit local memory and retrieval, governance and evaluation engines, governed surfaces, and optional remote augmentation without consumer-specific product branches.",
+      "summary": "Layered topology for the installable Odylith product showing tracked truth, the governed memory family, delivery and diagnosis engines, conversation intelligence, governed surfaces, and optional remote augmentation without consumer-specific product branches.",
       "components": [
         {
           "name": "Tracked product truth and local state",
-          "description": "Keeps repo-owned Radar, Atlas, Casebook, technical plans, contracts, and docs separate from mutable `.odylith/` runtime state."
+          "description": "Keeps repo-owned Radar, Registry, Atlas, Casebook, technical plans, and docs separate from mutable `.odylith/` runtime state."
         },
         {
           "name": "Local-first product layers",
-          "description": "Shows the install/CLI, context engine, memory, governance, evaluation, agent-control, and surface-runtime layers that compose the Odylith product."
+          "description": "Shows the CLI, context engine, governed memory family, delivery or diagnosis engines, conversation intelligence, and surface-runtime layers that compose the Odylith product."
         },
         {
           "name": "Optional remote augmentation",
@@ -1172,13 +1223,25 @@
       ],
       "change_watch_paths": [
         "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
         "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
         "odylith/registry/source/components/radar/CURRENT_SPEC.md",
         "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
         "odylith/registry/source/components/compass/CURRENT_SPEC.md",
         "odylith/registry/source/components/registry/CURRENT_SPEC.md",
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
         "odylith/registry/source/component_registry.v1.json",
@@ -1190,17 +1253,31 @@
         "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
         "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
         "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/memory/odylith_projection_bundle.py",
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py",
         "src/odylith/runtime/memory/odylith_memory_backend.py",
         "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/memory/tooling_memory_contracts.py",
         "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py",
-        "src/odylith/runtime/orchestration/subagent_router.py"
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
       ],
       "related_backlog": [
-        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+        "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
       ],
       "related_plans": [
-        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
+        "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
       ],
       "related_docs": [
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
@@ -1209,6 +1286,13 @@
         "odylith/registry/source/components/compass/CURRENT_SPEC.md",
         "odylith/registry/source/components/registry/CURRENT_SPEC.md",
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
       ],
@@ -1222,14 +1306,25 @@
         "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
         "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
         "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/memory/odylith_projection_bundle.py",
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py",
         "src/odylith/runtime/memory/odylith_memory_backend.py",
         "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/memory/tooling_memory_contracts.py",
         "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/evaluation/tribunal_engine.py",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py",
-        "src/odylith/runtime/orchestration/subagent_router.py"
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
       ],
       "related_workstreams": [
-        "B-001"
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059"
       ],
       "related_component_ids": [
         "odylith",
@@ -1239,6 +1334,12 @@
         "compass",
         "registry",
         "odylith-context-engine",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts",
+        "odylith-chatter",
         "tribunal",
         "remediator",
         "subagent-orchestrator",
@@ -1252,7 +1353,7 @@
       "kind": "sequence",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.svg",
       "source_png": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.png",
@@ -1340,35 +1441,47 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-product-runtime-boundary-map.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-runtime-boundary-map.svg",
       "source_png": "odylith/atlas/source/odylith-product-runtime-boundary-map.png",
       "initial_view_fit_factor": 0.58,
-      "summary": "Runtime boundary map for Odylith showing how product truth, runtime modules, generated surfaces, `.odylith` state, and the separate runtime/write/validation boundaries fit together.",
+      "summary": "Runtime boundary map for Odylith showing how product truth, the governed memory family, conversation intelligence, generated surfaces, `.odylith` state, and the separate runtime or write or validation boundaries fit together.",
       "components": [
         {
           "name": "Product truth inputs",
           "description": "Names the product-owned source roots and contracts that drive the runtime instead of flattening them into one generic repo box."
         },
         {
-          "name": "Runtime module boundary",
-          "description": "Separates context, memory, governance, evaluation, orchestration, and surface modules as the live executable product boundary."
+          "name": "Governed memory and execution modules",
+          "description": "Separates context compilation, the governed memory family, delivery intelligence, evaluation, conversation intelligence, and surface modules as the live executable product boundary."
         },
         {
           "name": "Generated outputs and local state",
-          "description": "Shows how materialized `odylith/` surfaces and mutable `.odylith/` state differ while still feeding the same governed runtime loop."
+          "description": "Shows how materialized `odylith/` surfaces, compiler artifacts, memory state, and mutable `.odylith/` runtime state differ while still feeding the same governed runtime loop."
         }
       ],
       "change_watch_paths": [
         "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
         "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
+        "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
         "odylith/registry/source/components/radar/CURRENT_SPEC.md",
         "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
         "odylith/registry/source/components/compass/CURRENT_SPEC.md",
         "odylith/registry/source/components/registry/CURRENT_SPEC.md",
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
         "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
@@ -1385,21 +1498,33 @@
         "src/odylith/runtime/context_engine/odylith_context_engine.py",
         "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
         "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+        "src/odylith/runtime/memory/odylith_projection_bundle.py",
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py",
         "src/odylith/runtime/memory/odylith_memory_backend.py",
         "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/memory/tooling_memory_contracts.py",
         "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
         "src/odylith/runtime/evaluation/tribunal_engine.py",
         "src/odylith/runtime/evaluation/remediator.py",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py",
-        "src/odylith/runtime/orchestration/subagent_router.py"
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
       ],
       "related_backlog": [
         "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
       ],
       "related_plans": [
         "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
-        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+        "odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+        "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
       ],
       "related_docs": [
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
@@ -1408,6 +1533,12 @@
         "odylith/registry/source/components/compass/CURRENT_SPEC.md",
         "odylith/registry/source/components/registry/CURRENT_SPEC.md",
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
         "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
@@ -1426,17 +1557,26 @@
         "src/odylith/runtime/context_engine/odylith_context_engine.py",
         "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
         "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+        "src/odylith/runtime/memory/odylith_projection_bundle.py",
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py",
         "src/odylith/runtime/memory/odylith_memory_backend.py",
         "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/memory/tooling_memory_contracts.py",
         "src/odylith/runtime/governance/agent_governance_intelligence.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
         "src/odylith/runtime/evaluation/tribunal_engine.py",
         "src/odylith/runtime/evaluation/remediator.py",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py",
-        "src/odylith/runtime/orchestration/subagent_router.py"
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
       ],
       "related_workstreams": [
         "B-001",
-        "B-027"
+        "B-027",
+        "B-031",
+        "B-058",
+        "B-059"
       ],
       "related_component_ids": [
         "odylith",
@@ -1446,6 +1586,12 @@
         "compass",
         "registry",
         "odylith-context-engine",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts",
+        "odylith-chatter",
         "tribunal",
         "remediator",
         "subagent-orchestrator",
@@ -1459,7 +1605,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.mmd",
       "source_svg": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.svg",
       "source_png": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.png",
@@ -1499,7 +1645,7 @@
       ],
       "related_plans": [
         "odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
-        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+        "odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
       ],
       "related_docs": [
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
@@ -1534,7 +1680,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.mmd",
       "source_svg": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.svg",
       "source_png": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.png",
@@ -1619,7 +1765,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.svg",
       "source_png": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.png",
@@ -1692,7 +1838,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-06",
+      "last_reviewed_utc": "2026-04-07",
       "source_mmd": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
       "source_svg": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.svg",
       "source_png": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.png",
@@ -1763,6 +1909,94 @@
         "B-020",
         "B-022",
         "B-038"
+      ]
+    },
+    {
+      "diagram_id": "D-025",
+      "slug": "odylith-memory-substrate-compile-retrieval-and-packet-topology",
+      "title": "Odylith Memory Substrate Compile, Retrieval, and Packet Topology",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-07",
+      "source_mmd": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.mmd",
+      "source_svg": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.svg",
+      "source_png": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.png",
+      "initial_view_fit_factor": 0.68,
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+        "odylith/technical-plans/done/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/memory/odylith_projection_bundle.py",
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/memory/tooling_memory_contracts.py"
+      ],
+      "summary": "Shows how compiler-owned projection artifacts, local and optional remote retrieval lanes, and packet-safe memory contracts fit between tracked product truth and grounded runtime consumers.",
+      "components": [
+        {
+          "name": "Compiler read models",
+          "description": "Projection bundle and snapshot are compiler-owned read models that make downstream memory deterministic."
+        },
+        {
+          "name": "Retrieval lanes",
+          "description": "Local backend and optional remote retrieval consume compiler outputs without becoming source-of-truth writers."
+        },
+        {
+          "name": "Packet contract boundary",
+          "description": "Memory contracts sanitize, compact, and carry retained memory outputs into runtime consumers."
+        }
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/memory/odylith_projection_bundle.py",
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py",
+        "src/odylith/runtime/memory/tooling_memory_contracts.py"
+      ],
+      "related_workstreams": [
+        "B-010",
+        "B-058",
+        "B-059"
+      ],
+      "related_component_ids": [
+        "odylith-context-engine",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts"
       ]
     }
   ]

@@ -1,19 +1,19 @@
-%% Reviewed 2026-03-26 for B-001 to show the self-governed Odylith product layers, explicit local memory/retrieval, governed surfaces, and optional remote augmentation seams.
+%% Reviewed 2026-04-07 for B-031, B-058, and B-059 to show the governed memory family and current runtime or conversation flow across the local-first product layers.
 flowchart TD
     subgraph Repo["Odylith Product Repository"]
-        Truth["Tracked repo truth<br/>odylith/radar/source | odylith/technical-plans | odylith/casebook/bugs | odylith/atlas/source"]
-        Contracts["contracts/<br/>component + packet contracts"]
-        Docs["docs/<br/>product specs + runbooks + design notes"]
+        Truth["Tracked repo truth<br/>Radar | Plans | Casebook | Registry | Atlas"]
+        Contracts["Governed contracts<br/>component specs + Atlas catalog + packet policy"]
+        Docs["docs + runbooks<br/>README | INSTALL | maintainer guidance"]
         RuntimeState[".odylith/<br/>local mutable runtime state"]
     end
 
     subgraph Product["Local-First Odylith Product"]
-        CLI["odylith CLI<br/>install / upgrade / sync / doctor"]
-        Context["context engine<br/>grounding + packets + retained handoff"]
-        Memory["memory layer<br/>Lance/Tantivy + optional sparse recall seam"]
+        CLI["odylith CLI<br/>install / sync / context-engine / atlas / registry"]
+        Context["context engine<br/>compiler + grounding packets + retained handoff"]
+        Memory["memory substrate<br/>bundle + snapshot + backend + remote + contracts"]
         Governance["governance engine<br/>delivery intelligence + registry + sync"]
         Evaluation["evaluation engine<br/>tribunal + remediator + benchmark/proof"]
-        Agents["agent control<br/>router + orchestrator + host payloads"]
+        Conversation["agent control + conversation<br/>router + orchestrator + odylith chatter"]
         Surfaces["governed surfaces<br/>Dashboard + Radar + Atlas + Compass + Registry + Casebook"]
     end
 
@@ -31,21 +31,23 @@ flowchart TD
     CLI --> Memory
     CLI --> Governance
     CLI --> Evaluation
-    CLI --> Agents
+    CLI --> Conversation
     CLI --> Surfaces
 
     Context --> Memory
     Memory --> Governance
     Memory --> Evaluation
-    Memory --> Agents
+    Memory --> Conversation
+    Governance --> Conversation
+    Evaluation --> Conversation
     Governance --> Surfaces
     Evaluation --> Surfaces
-    Agents --> Surfaces
+    Conversation --> Surfaces
 
     Memory --> RuntimeState
     Governance --> RuntimeState
     Evaluation --> RuntimeState
-    Agents --> RuntimeState
+    Conversation --> RuntimeState
 
     Memory -. optional .-> Recall
     Surfaces -. optional .-> Control

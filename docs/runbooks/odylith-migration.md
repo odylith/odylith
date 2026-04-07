@@ -3,7 +3,7 @@
 Legacy installs should take one explicit migration path:
 
 1. Run the latest Odylith hosted installer from the repo root:
-   `curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash`
+   `curl -fsSL https://odylith.ai/install.sh | bash`
 2. Let that installer rename legacy repo-owned roots from `odyssey/` to `odylith/` and from `.odyssey/` to `.odylith/`.
 3. If the repo already has `./.odylith/bin/odylith`, you can run the same migration directly with `./.odylith/bin/odylith migrate-legacy-install --repo-root .`.
 4. Switch automation and local habits from `odyssey` to `odylith`.

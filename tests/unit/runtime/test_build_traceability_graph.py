@@ -87,6 +87,23 @@ def test_build_traceability_graph_outputs_expected_nodes_edges(tmp_path: Path) -
     ideas_dir = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-03"
     ideas_dir.mkdir(parents=True, exist_ok=True)
     (tmp_path / "odylith" / "radar").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "radar" / "traceability-autofix-report.v1.json").write_text(
+        json.dumps(
+            {
+                "generated_utc": "2026-03-01T00:00:00Z",
+                "conflicts_skipped": [
+                    {
+                        "idea_id": "B-033",
+                        "field": "workstream_split_into",
+                        "current": "B-038,B-039",
+                        "candidate": "B-038,B-039,B-041",
+                        "reason": "reciprocal lineage inferred from `workstream_split_from`",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
 
     idea_umbrella = ideas_dir / "2026-03-01-b-021.md"
     idea_umbrella.write_text(
@@ -189,6 +206,14 @@ def test_build_traceability_graph_outputs_expected_nodes_edges(tmp_path: Path) -
     assert "merge" in edge_types
     assert payload["coverage"]["B-033"]["runbook_count"] == 1
     assert isinstance(payload.get("warning_items"), list)
+    conflict = next(
+        row
+        for row in payload["warning_items"]
+        if row.get("idea_id") == "B-033" and row.get("category") == "topology_conflict"
+    )
+    assert conflict["severity"] == "info"
+    assert conflict["audience"] == "maintainer"
+    assert conflict["surface_visibility"] == "diagnostics"
     ws_b033 = next(row for row in payload["workstreams"] if row["idea_id"] == "B-033")
     assert ws_b033["workstream_reopens"] == "B-021"
     assert ws_b033["workstream_split_from"] == "B-021"

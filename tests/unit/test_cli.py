@@ -1226,7 +1226,7 @@ def test_start_install_lane_prints_hosted_installer(monkeypatch, tmp_path: Path,
         lambda **kwargs: SimpleNamespace(
             lane="install",
             reason="not installed",
-            next_command="curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash",
+            next_command="curl -fsSL https://odylith.ai/install.sh | bash",
             healthy=False,
             launcher_exists=False,
             bootstrap_launcher_exists=False,
@@ -1240,7 +1240,7 @@ def test_start_install_lane_prints_hosted_installer(monkeypatch, tmp_path: Path,
 
     assert rc == 1
     assert "- lane: install" in captured
-    assert "curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash" in captured
+    assert "curl -fsSL https://odylith.ai/install.sh | bash" in captured
 
 
 def test_start_bootstrap_exception_prints_repair_guidance(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -1345,6 +1345,47 @@ def test_version_prints_runtime_detail_when_present(monkeypatch, tmp_path: Path,
 
     assert rc == 0
     assert "Runtime detail: Managed runtime trust is degraded:" in captured
+
+
+def test_doctor_prints_trust_degraded_wrapped_runtime_detail(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "doctor_bundle",
+        lambda **kwargs: (
+            True,
+            "Odylith runtime is healthy but trust-degraded and not release-eligible: "
+            "Managed runtime trust is degraded: managed runtime tree entry unexpected: /tmp/rogue.txt",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "version_status",
+        lambda **kwargs: SimpleNamespace(
+            repo_root=tmp_path,
+            repo_role="product_repo",
+            posture="pinned_release",
+            runtime_source="wrapped_runtime",
+            runtime_source_detail="Managed runtime trust is degraded: managed runtime tree entry unexpected: /tmp/rogue.txt",
+            release_eligible=False,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.3",
+            active_version="1.2.3",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            available_versions=["1.2.3"],
+        ),
+    )
+
+    rc = cli.main(["doctor", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Runtime source: wrapped_runtime" in captured
+    assert "Runtime detail: Managed runtime trust is degraded:" in captured
+    assert "healthy but trust-degraded" in captured.lower()
+    assert "not release-eligible" in captured.lower()
 
 
 def test_install_dry_run_condenses_dirty_overlap_without_verbose(monkeypatch, tmp_path: Path, capsys) -> None:

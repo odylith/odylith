@@ -26,9 +26,6 @@ Last updated (UTC): 2026-04-07
   upgrade bridge. | Open | [2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md](2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md) |
 | CB-057 | 2026-04-06 | Legacy migration omits stale odyssey reference audit | P1 | `src/odylith/install/manager.py`, migration summary and
   reporting, tracked-text audit policy. | Open | [2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md](2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md) |
-| CB-056 | 2026-04-06 | Doctor and version disagree on wrapped runtime trust degradation | P1 | `src/odylith/install/manager.py`,
-  `src/odylith/cli.py`, runtime-source derivation, self-host posture
-  validation. | Open | [2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md](2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md) |
 | CB-052 | 2026-04-04 | Registry live forensics miss source owned bundle mirror component activity | P1 | `src/odylith/runtime/governance/component_registry_intelligence.py`,
   Registry forensic coverage, `tribunal`, `remediator`, source-owned bundled
   runtime docs, Registry detail rendering. | Open | [2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md](2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md) |
@@ -121,6 +118,15 @@ Last updated (UTC): 2026-04-07
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-062 | 2026-04-06 | Radar topology deep links fall through to stale filtered selection and browser proof misses disclosure gated routes | P0 | `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
+  bundled Radar `backlog-app.v1.js` mirrors, Radar explicit-selection routing,
+  and the Playwright browser proof lane in
+  `tests/integration/runtime/test_surface_browser_deep.py`,
+  `tests/integration/runtime/test_surface_browser_smoke.py`, and
+  `tests/integration/runtime/test_surface_browser_ux_audit.py`. | Closed | [2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md](2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md) |
+| CB-056 | 2026-04-06 | Doctor and version disagree on wrapped runtime trust degradation | P1 | `src/odylith/install/manager.py`,
+  `src/odylith/cli.py`, runtime-source derivation, self-host posture
+  validation. | Closed | [2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md](2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md) |
 | CB-053 | 2026-04-05 | Memory substrate stale runtime reuse and projection scope thrash | P0 | `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`, `src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py`, `src/odylith/runtime/context_engine/odylith_context_engine.py`, `src/odylith/runtime/memory/odylith_memory_backend.py`, `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, memory freshness contracts, benchmark warm-cache preparation, local LanceDB and Tantivy runtime posture. | Closed | [2026-04-05-memory-substrate-stale-runtime-reuse-and-projection-scope-thrash.md](2026-04-05-memory-substrate-stale-runtime-reuse-and-projection-scope-thrash.md) |
 | CB-047 | 2026-04-02 | Compass dashboard refresh shell safe keeps timeline audit pinned to stale snapshot | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
   `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`,

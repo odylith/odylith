@@ -224,7 +224,10 @@
 
     function rollingThirtyDayBounds(payload) {
       const maxDate = calendarMaxDateToken(payload) || toLocalDateToken(new Date());
-      const minDate = DATE_RE.test(maxDate) ? shiftDateToken(maxDate, -29) : "";
+      const historyDates = knownHistoryDateTokens(payload);
+      const minDate = historyDates.length
+        ? historyDates[historyDates.length - 1]
+        : (DATE_RE.test(maxDate) ? shiftDateToken(maxDate, -29) : "");
       return {
         min: minDate,
         max: maxDate,

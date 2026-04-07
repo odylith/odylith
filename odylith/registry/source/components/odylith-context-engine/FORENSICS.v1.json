@@ -9,6 +9,7 @@
     "D-018",
     "D-019",
     "D-020",
+    "D-025",
     "D-024",
     "D-001",
     "D-003",
@@ -28,12 +29,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 25,
-    "mapped_workstream_evidence_count": 2,
+    "explicit_event_count": 30,
+    "mapped_workstream_evidence_count": 5,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 3,
+    "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 26
+    "timeline_event_count": 31
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -44,18 +45,175 @@
   "timeline": [
     {
       "artifacts": [
-        "src/odylith/bundle/assets/odylith/runtime/source/tooling_shell.v1.json"
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.9.md"
       ],
       "confidence": "high",
-      "event_index": 53,
+      "event_index": 62,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-context-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/runtime/source/tooling_shell.v1.json",
-      "ts_iso": "2026-04-06T18:03:24-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json +1 more",
+      "ts_iso": "2026-04-07T14:18:49-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 55,
+      "explicit_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Kept the change benchmark-safe and proved the focused chatter plus benchmark guard lanes stayed green.",
+      "ts_iso": "2026-04-07T09:59:30-07:00",
+      "workstreams": [
+        "B-031"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 54,
+      "explicit_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Tightened the chatter hot path so one conversation-bundle pass reuses request metrics and context-artifact scans across ambient and closeout composition.",
+      "ts_iso": "2026-04-07T09:59:30-07:00",
+      "workstreams": [
+        "B-031"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 53,
+      "explicit_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Hardened Tribunal-fed ambient chatter so malformed explicit and cached signal payloads degrade quietly, supplemental closeout lines stay suppressed without an Odylith Assist line, and closeout punctuation stays clean.",
+      "ts_iso": "2026-04-07T09:59:30-07:00",
+      "workstreams": [
+        "B-031"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 52,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.8 for the current repository; repo pin is 0.1.8.",
+      "ts_iso": "2026-04-06T19:17:42-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 51,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.7 for the current repository; repo pin is 0.1.7.",
+      "ts_iso": "2026-04-06T18:12:53-07:00",
       "workstreams": []
     },
     {
@@ -311,6 +469,7 @@
         "odylith-chatter",
         "odylith-context-engine",
         "odylith-memory-backend",
+        "odylith-remote-retrieval",
         "radar",
         "registry",
         "release",
@@ -790,13 +949,16 @@
     ]
   },
   "version": "v1",
-  "what_it_is": "Local deterministic context, memory, retrieval, and packetization runtime.",
-  "why_tracked": "Supplies the grounding packets and local memory substrate that make Odylith more than a static surface bundle.",
+  "what_it_is": "Local deterministic grounding, projection-compilation, and packetization runtime that orchestrates Odylith's memory substrate.",
+  "why_tracked": "Supplies the grounding packets and coordinates the governed memory substrate that make Odylith more than a static surface bundle.",
   "workstreams": [
     "B-001",
     "B-008",
     "B-009",
     "B-010",
+    "B-058",
+    "B-059",
+    "B-031",
     "B-020",
     "B-022",
     "B-038",
@@ -811,7 +973,6 @@
     "B-011",
     "B-013",
     "B-015",
-    "B-031",
     "B-032",
     "B-039",
     "B-043",

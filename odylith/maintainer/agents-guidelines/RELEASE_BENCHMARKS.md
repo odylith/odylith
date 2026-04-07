@@ -149,7 +149,7 @@ The benchmark itself must also stay representative:
   validation are the hard floor, so speed or token wins do not justify
   bypassing Odylith's own narrowing and proof surfaces.
 - Release notes, benchmark writeups, and maintainer handoffs may include at
-  most one short end-of-work `Odylith assist:` line after the measured result
+  most one short end-of-work `Odylith Assist:` line after the measured result
   is already clear. Back it with measured proof and follow the canonical
   closeout contract in
   [Odylith Chatter](../../registry/source/components/odylith-chatter/CURRENT_SPEC.md)
@@ -213,9 +213,11 @@ The benchmark itself must also stay representative:
 - The primary honest benchmark comparison is `odylith_on` versus
   `odylith_off`.
 - If Odylith is named in benchmark prose beyond lane labels, keep that to one
-  end-of-work `Odylith assist:` line grounded in the measured report. Follow
+  end-of-work `Odylith Assist:` line grounded in the measured report. Follow
   [Odylith Chatter](../../registry/source/components/odylith-chatter/CURRENT_SPEC.md)
-  for the detailed wording contract and avoid mid-analysis brand narration.
+  for the detailed wording contract, avoid mid-analysis brand narration, and
+  keep the benchmark lane metadata-only instead of widening required reads just
+  to narrate Odylith.
 - The public README headline table should keep `odylith_repo_scan_baseline`
   out of the primary story; it remains a secondary scaffold control in the
   tracked report and must never be described as `Odylith off`.

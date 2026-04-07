@@ -106,6 +106,41 @@ def test_render_backlog_ui_uses_meaningful_hero_kicker() -> None:
     assert "Local Generated View" not in html
 
 
+def test_render_backlog_ui_curates_warning_cards_from_shared_traceability_policy() -> None:
+    html = render_backlog_ui._render_html(
+        payload={
+            "entries": [],
+            "warning_items": [
+                {
+                    "idea_id": "B-022",
+                    "severity": "info",
+                    "audience": "maintainer",
+                    "surface_visibility": "diagnostics",
+                    "category": "topology_conflict",
+                    "message": "B-022: autofix skipped `workstream_split_into` due to metadata conflict",
+                }
+            ],
+        }
+    )
+
+    assert "function isDefaultSurfaceWarning(entry)" in html
+    assert 'surface_visibility: String(entry.surface_visibility || "").trim()' in html
+    assert '&& isDefaultSurfaceWarning(entry)' in html
+
+
+def test_render_backlog_ui_normalizes_compact_workstream_search_queries() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert 'const WORKSTREAM_ID_COMPACT_RE = /^B?-?(\\d{1,})$/i;' in html
+    assert "function normalizeSearchToken(value)" in html
+    assert "function canonicalizeIdeaId(value)" in html
+    assert 'const normalized = `B-${compact[1].padStart(3, "0")}`;' in html
+    assert "return Boolean(canonicalizeIdeaId(query));" in html
+    assert "const canonicalIdeaQuery = exactIdeaQuery ? canonicalizeIdeaId(query) : \"\";" in html
+    assert "return normalizeSearchToken(textParts.join(\" \")).includes(normalizedQuery);" in html
+    assert "const token = canonicalizeIdeaId(ideaId);" in html
+
+
 def test_render_backlog_ui_omits_empty_placeholder_copy() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 

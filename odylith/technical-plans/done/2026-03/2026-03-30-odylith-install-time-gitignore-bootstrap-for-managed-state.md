@@ -1,8 +1,8 @@
-Status: In progress
+Status: Done
 
 Created: 2026-03-30
 
-Updated: 2026-03-30
+Updated: 2026-04-07
 
 Backlog: B-029
 
@@ -47,9 +47,9 @@ Related Bugs:
 - [x] Focused manager and CLI tests prove the new behavior.
 
 ## Non-Goals
-- [ ] Adding non-Odylith ignore entries.
-- [ ] Removing the Git-missing operator caveat.
-- [ ] Changing how install decides whether Git-aware features are available.
+- [x] Adding non-Odylith ignore entries.
+- [x] Removing the Git-missing operator caveat.
+- [x] Changing how install decides whether Git-aware features are available.
 
 ## Impacted Areas
 - [x] [manager.py](/Users/freedom/code/odylith/src/odylith/install/manager.py)
@@ -58,12 +58,14 @@ Related Bugs:
 
 ## Risks & Mitigations
 
-- [ ] Risk: creating `.gitignore` before Git exists could feel unexpected.
-  - [ ] Mitigation: keep the entry minimal and preserve the existing Git-missing
+- [x] Risk: creating `.gitignore` before Git exists could feel unexpected.
+  - [x] Mitigation: keep the entry minimal and preserve the existing Git-missing
     caveat in CLI output.
-- [ ] Risk: helper changes could regress idempotency and duplicate the ignore
+- [x] Risk: helper changes could regress idempotency and duplicate the ignore
+  - [ ] Mitigation: TODO (add explicit mitigation).
     rule.
-  - [ ] Mitigation: retain exact-pattern duplicate detection and cover it with
+- [ ] Risk: Unspecified risk (legacy backfill).
+  - [x] Mitigation: retain exact-pattern duplicate detection and cover it with
     focused integration tests.
 
 ## Validation/Test Plan
@@ -77,6 +79,6 @@ Related Bugs:
       already existing.
 
 ## Current Outcome
-- [x] Bound to `B-029`; install, upgrade, and repair now prepare the root
+- [x] `B-029` landed and the plan is now closed into `done`; install, upgrade, and repair now prepare the root
       `.gitignore` for `/.odylith/` even before `.git` exists, and focused
       manager/CLI coverage passed.

@@ -71,10 +71,12 @@ Claude-native benchmark proof.
 
 Benchmark summaries should lead with measured proof, not product narration.
 If Odylith is named directly beyond lane labels, keep it to one final-only
-`Odylith assist:` line backed by measured proof or a measured report, and
+`Odylith Assist:` line backed by measured proof or a measured report, and
 follow
 [Odylith Chatter](../../odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md)
-for the detailed closeout wording contract.
+for the detailed closeout wording contract. Keep the benchmark lane metadata-
+only: do not widen required paths, hot-path docs, or validation commands just
+to narrate Odylith.
 
 ## Run Profiles
 

@@ -1,8 +1,8 @@
 # Odylith
-Last updated: 2026-04-05
+Last updated: 2026-04-07
 
 
-Last updated (UTC): 2026-04-05
+Last updated (UTC): 2026-04-07
 
 ## Purpose
 Odylith is the installable local governance and execution agent and platform
@@ -32,6 +32,8 @@ remediation, and rendering.
 - The hosted `install.sh` contract is one-command and non-interactive. Odylith
   detects the environment, selects the right managed assets, verifies release
   evidence, and installs the full stack without install-time prompts.
+  The canonical hosted bootstrap command is
+  `curl -fsSL https://odylith.ai/install.sh | bash`.
   The install posture is explicitly tuned for robustness, speed, availability,
   security, reliability, and zero-friction operator UX.
 - In the public Odylith repo, `odylith/` is product-owned tracked truth plus
@@ -158,7 +160,11 @@ Public docs should describe these commands, not direct module entrypoints.
 - Governance engine runtime:
   [Security](../security/CURRENT_SPEC.md),
   [Odylith Context Engine](../odylith-context-engine/CURRENT_SPEC.md),
+  [Odylith Projection Bundle](../odylith-projection-bundle/CURRENT_SPEC.md),
+  [Odylith Projection Snapshot](../odylith-projection-snapshot/CURRENT_SPEC.md),
   [Odylith Memory Backend](../odylith-memory-backend/CURRENT_SPEC.md),
+  [Odylith Remote Retrieval](../odylith-remote-retrieval/CURRENT_SPEC.md),
+  [Odylith Memory Contracts](../odylith-memory-contracts/CURRENT_SPEC.md),
   [Benchmark](../benchmark/CURRENT_SPEC.md),
   [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md),
   [Subagent Router](../subagent-router/CURRENT_SPEC.md),
@@ -194,6 +200,10 @@ Public docs should describe these commands, not direct module entrypoints.
 - `odylith version` and `odylith doctor` must report:
   `Repo role`, `Posture`, `Runtime source`, `Release eligible`,
   `Context engine mode`, and `Context engine pack`.
+- When a pinned managed runtime is still runnable but trust evidence has
+  drifted, `odylith version` and `odylith doctor` must describe the same
+  trust-degraded wrapped-runtime posture instead of letting doctor fall back to
+  a generic failure summary.
 - `odylith validate self-host-posture --mode local-runtime` validates the live
   maintainer checkout posture against the active runtime pointer.
 - `odylith validate self-host-posture --mode release --expected-tag vX.Y.Z`
@@ -416,3 +426,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-31: Added Odylith Chatter as a first-class governed subsystem so mid-task narration stays task-first and any Odylith-by-name closeout stays final-only, user-win-first, soulful, friendly, authentic, factual, and evidence-backed against `odylith_off` or the broader unguided path. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-02: Clarified the core product claim as control-plane leverage around the same base coding model, explicitly tying Odylith's value to improved context quality, search, validation, and recovery rather than any claim of beating model weights. (Plan: [B-033](odylith/radar/radar.html?view=plan&workstream=B-033))
 - 2026-04-05: Promoted the canonical benchmark guidance manifest into tracked product truth so benchmark and runtime guidance memory resolve from one family-tagged source instead of an implicit zero-guidance fallback. (Plan: [B-021](odylith/radar/radar.html?view=plan&workstream=B-021))
+- 2026-04-07: Split the hidden memory substrate into explicit governed subcomponents for projection bundle, projection snapshot, remote retrieval, and packet contracts so Registry can show the real memory topology instead of one coarse silhouette. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))

@@ -1,8 +1,8 @@
 # Odylith Memory Backend
-Last updated: 2026-04-05
+Last updated: 2026-04-07
 
 
-Last updated (UTC): 2026-04-05
+Last updated (UTC): 2026-04-07
 
 ## Purpose
 Odylith Memory Backend is the local-first derived memory substrate that stores
@@ -19,12 +19,25 @@ Context Engine.
 
 ### Odylith Memory Backend does not own
 - tracked backlog, plan, bug, component, or diagram truth
+- the compiler-owned projection bundle or projection snapshot contracts
+- the optional remote retrieval sync lane
+- shared packet and evidence-pack compaction helpers
 - packet assembly, routing, or orchestration policy
 - hosted or remote memory as the primary authority
 
 ## Developer Mental Model
 - `src/odylith/runtime/memory/odylith_memory_backend.py` owns the retrieval
   backend contract and its runtime files.
+- [Odylith Projection Bundle](../odylith-projection-bundle/CURRENT_SPEC.md)
+  and [Odylith Projection Snapshot](../odylith-projection-snapshot/CURRENT_SPEC.md)
+  are sibling compiler components that feed or backstop the backend; they are
+  not owned by the backend itself.
+- [Odylith Remote Retrieval](../odylith-remote-retrieval/CURRENT_SPEC.md) is a
+  sibling opt-in augmentation layer, not part of the local backend's primary
+  authority.
+- [Odylith Memory Contracts](../odylith-memory-contracts/CURRENT_SPEC.md)
+  shapes packet-safe memory outputs and provenance, but it does not own
+  retrieval state.
 - `src/odylith/runtime/context_engine/odylith_context_engine_store.py` may
   compile judgment memory, but the resulting artifact lives inside the same
   local memory root because it is part of one local-first memory substrate.
@@ -146,3 +159,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-28: Promoted the local memory backend into a first-class Registry component and added durable judgment memory beside the retrieval substrate. (Plan: [B-010](odylith/radar/radar.html?view=plan&workstream=B-010))
 - 2026-03-29: Tightened memory coherence so open bug pressure survives multiline Casebook rows, contradiction memory retains cross-surface risk, onboarding continuity survives a hidden welcome state, and top-level memory readouts expose one coherent headline/status. (Plan: [B-011](odylith/radar/radar.html?view=plan&workstream=B-011))
 - 2026-04-05: Documented the current local-memory-first benchmark posture, making LanceDB plus Tantivy the explicit proof substrate and keeping hybrid rerank plus Vespa in the experiment lane until they show no-regression gains. (Plan: [B-021](odylith/radar/radar.html?view=plan&workstream=B-021))
+- 2026-04-07: Narrowed the backend's Registry boundary to the actual local backend plus judgment-memory contract and promoted the surrounding projection, remote, and packet-contract seams into sibling first-class components. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))

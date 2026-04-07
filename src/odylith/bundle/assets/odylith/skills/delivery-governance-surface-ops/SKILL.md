@@ -6,12 +6,16 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 - Consumer lane:
   - use `./.odylith/bin/odylith` for Odylith commands
   - validate repo code with the consumer repo's own toolchain
+- Product-repo maintainer mode:
+  - pinned dogfood posture proves the shipped runtime
+  - detached `source-local` posture is the explicit live-source dev lane
 - Interpreter choice does not control which repo files the agent may edit.
 
 ## Default Flow
 - ground the slice through Odylith packets first
 - keep commentary focused on the slice, the repo truth, and the validation plan; avoid narrating startup, routing, or degraded-attempt internals unless the user needs a command or a blocker explanation
-- when closeout would benefit from naming Odylith, use at most one short `Odylith assist:` line; prefer `**Odylith assist:**` when Markdown formatting is available. Lead with the user win, frame the edge against `odylith_off` or the broader unguided path when the evidence supports it, and back it with concrete observed counts, measured deltas, or validation outcomes while keeping it soulful, friendly, authentic, and factual
+- keep Odylith ambient by default during work; weave grounded governance facts into ordinary updates and only emit explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` lines when they materially change the next move
+- when closeout would benefit from naming Odylith, use at most one short `Odylith Assist:` line; prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance ids inline when they were actually changed, frame the edge against `odylith_off` or the broader unguided path when the evidence supports it, and back it with concrete observed counts, measured deltas, or validation outcomes while keeping it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Silence is better than filler.
 - search existing workstream, plan, bug, component, diagram, and session or Compass context before writing
 - extend, consolidate, or reopen existing truth before creating new governed records
 - create a missing workstream and bound plan before non-trivial implementation when the slice is genuinely new

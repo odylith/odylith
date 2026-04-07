@@ -25,7 +25,9 @@
         "B-001",
         "B-004",
         "B-005",
-        "B-031"
+        "B-031",
+        "B-058",
+        "B-059"
       ],
       "diagrams": [
         "D-001",
@@ -36,6 +38,7 @@
         "D-018",
         "D-019",
         "D-020",
+        "D-025",
         "D-021",
         "D-022"
       ],
@@ -57,7 +60,11 @@
         "release",
         "security",
         "odylith-context-engine",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
         "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts",
         "benchmark",
         "odylith-chatter",
         "subagent-router",
@@ -82,7 +89,8 @@
         "odylith/surfaces/README.md"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-058"
       ],
       "diagrams": [
         "D-001",
@@ -115,7 +123,8 @@
         "odylith/radar/source"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-059"
       ],
       "diagrams": [
         "D-001",
@@ -148,7 +157,8 @@
         "odylith/atlas/source/catalog/diagrams.v1.json"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-059"
       ],
       "diagrams": [
         "D-001",
@@ -156,7 +166,8 @@
         "D-003",
         "D-018",
         "D-019",
-        "D-020"
+        "D-020",
+        "D-025"
       ],
       "owner": "product",
       "status": "active",
@@ -183,7 +194,8 @@
         "odylith/compass/runtime"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-059"
       ],
       "diagrams": [
         "D-001",
@@ -364,7 +376,9 @@
         "B-001",
         "B-008",
         "B-009",
-        "B-010"
+        "B-010",
+        "B-058",
+        "B-059"
       ],
       "diagrams": [
         "D-002",
@@ -374,15 +388,23 @@
         "D-009",
         "D-018",
         "D-019",
-        "D-020"
+        "D-020",
+        "D-025"
       ],
       "owner": "product",
       "status": "active",
-      "what_it_is": "Local deterministic context, memory, retrieval, and packetization runtime.",
-      "why_tracked": "Supplies the grounding packets and local memory substrate that make Odylith more than a static surface bundle.",
+      "what_it_is": "Local deterministic grounding, projection-compilation, and packetization runtime that orchestrates Odylith's memory substrate.",
+      "why_tracked": "Supplies the grounding packets and coordinates the governed memory substrate that make Odylith more than a static surface bundle.",
       "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
       "sources": [
         "manifest"
+      ],
+      "subcomponents": [
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts"
       ],
       "product_layer": "memory_retrieval"
     },
@@ -398,21 +420,157 @@
         "judgment-memory"
       ],
       "path_prefixes": [
-        "src/odylith/runtime/memory",
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
         "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md"
       ],
       "workstreams": [
-        "B-010"
+        "B-010",
+        "B-058",
+        "B-059"
       ],
       "diagrams": [
         "D-002",
-        "D-020"
+        "D-020",
+        "D-025"
       ],
       "owner": "product",
       "status": "active",
-      "what_it_is": "Local-first retrieval and durable judgment-memory substrate for the Odylith Context Engine.",
-      "why_tracked": "Gives Odylith's memory layer an explicit product boundary so retrieval and durable judgment memory can evolve as a governed subsystem instead of an implementation footnote.",
+      "what_it_is": "Local-first LanceDB plus Tantivy retrieval backend and durable judgment-memory runtime for the Odylith Context Engine.",
+      "why_tracked": "Gives Odylith's local retrieval and durable judgment memory an explicit governed boundary apart from sibling projection, remote-retrieval, and packet-contract components.",
       "spec_ref": "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "odylith-projection-bundle",
+      "name": "Odylith Projection Bundle",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "projection-bundle",
+        "compiler-bundle",
+        "documents-and-edges-bundle"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/memory/odylith_projection_bundle.py"
+      ],
+      "workstreams": [
+        "B-058",
+        "B-059"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Compiler-owned JSONL read model that writes the projection manifest plus document and edge streams shared across memory consumers.",
+      "why_tracked": "Makes the first compiled memory read model explicit so bundle-contract drift can be tracked independently from the broader context engine and the local backend.",
+      "spec_ref": "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "odylith-projection-snapshot",
+      "name": "Odylith Projection Snapshot",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "projection-snapshot",
+        "compiler-snapshot",
+        "fallback-read-model"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py"
+      ],
+      "workstreams": [
+        "B-058",
+        "B-059"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Compiler-owned JSON snapshot fallback read model with full tables and projection-state metadata.",
+      "why_tracked": "Defines the deterministic fallback memory contract when fast local retrieval is unavailable, stale, or intentionally bypassed.",
+      "spec_ref": "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "odylith-remote-retrieval",
+      "name": "Odylith Remote Retrieval",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "remote-retrieval",
+        "vespa-sync",
+        "vespa-augment"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py"
+      ],
+      "workstreams": [
+        "B-021",
+        "B-058",
+        "B-059"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Optional Vespa-backed remote retrieval and sync contract that can augment or replace local lookup when explicitly configured.",
+      "why_tracked": "Keeps networked retrieval opt-in, fail-closed, and auditable instead of burying hosted memory behavior inside the local backend.",
+      "spec_ref": "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "odylith-memory-contracts",
+      "name": "Odylith Memory Contracts",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "memory-contracts",
+        "packet-memory-contracts",
+        "evidence-pack-contracts"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/memory/tooling_memory_contracts.py"
+      ],
+      "workstreams": [
+        "B-058",
+        "B-059"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Neutral packet and evidence-pack compaction contract that sanitizes provenance, execution-profile tokens, and memory-derived packet fields.",
+      "why_tracked": "Makes the memory-facing packet contract explicit and benchmark-safe instead of hiding redaction, allowlisting, and compaction policy inside one helper module.",
+      "spec_ref": "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
       "sources": [
         "manifest"
       ],
@@ -499,7 +657,11 @@
       "workstreams": [
         "B-031"
       ],
-      "diagrams": [],
+      "diagrams": [
+        "D-002",
+        "D-018",
+        "D-020"
+      ],
       "owner": "product",
       "status": "active",
       "what_it_is": "Cross-lane narration contract that keeps Odylith control-plane chatter implicit during active work and limits Odylith-by-name branding to one optional evidence-backed end-of-work assist line.",
@@ -528,6 +690,8 @@
       ],
       "diagrams": [
         "D-002",
+        "D-018",
+        "D-020",
         "D-014",
         "D-015",
         "D-016",
@@ -561,6 +725,8 @@
       ],
       "diagrams": [
         "D-002",
+        "D-018",
+        "D-020",
         "D-012",
         "D-013"
       ],
@@ -591,7 +757,10 @@
         "B-001"
       ],
       "diagrams": [
+        "D-002",
         "D-003",
+        "D-018",
+        "D-020",
         "D-007",
         "D-008",
         "D-010",

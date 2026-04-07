@@ -1,5 +1,5 @@
 ---
-status: implementation
+status: finished
 idea_id: B-027
 title: Odylith Lane Boundary, Runtime, and Toolchain Clarity
 date: 2026-03-30
@@ -15,7 +15,7 @@ ordering_score: 100
 ordering_rationale: Odylith now has the right runtime and self-host mechanics, but the execution model is still too easy to misread: which Python runs Odylith, which files can be edited, and which toolchain validates the target repo are distinct boundaries that need one explicit contract across maintainer and consumer lanes.
 confidence: high
 founder_override: no
-promoted_to_plan: odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md
+promoted_to_plan: odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md
 execution_model: standard
 workstream_type: standalone
 workstream_parent:
@@ -208,4 +208,10 @@ explicit contract, not a puzzle assembled from scattered notes.
   lane selection so fewer source-tree tasks need direct module invocation
 
 ## Outcome
-- Bound to `B-027`; implementation in progress.
+- Landed on 2026-04-07 and closed into `odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md`.
+- Root guidance, maintainer overlays, bundled consumer assets, Registry specs,
+  and Atlas now share one explicit runtime/write/validation boundary model
+  across consumer, pinned dogfood, and detached `source-local` lanes.
+- Consumer write-policy enforcement, Atlas short-id search, and deterministic
+  delivery-intelligence or Tribunal degradation all shipped under the same
+  owner with focused validation and rendered-surface proof.

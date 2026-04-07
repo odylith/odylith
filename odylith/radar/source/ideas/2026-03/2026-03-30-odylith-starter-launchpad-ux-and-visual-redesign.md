@@ -1,5 +1,5 @@
 ---
-status: implementation
+status: finished
 idea_id: B-028
 title: Odylith Starter Launchpad UX and Visual Redesign
 date: 2026-03-30
@@ -15,7 +15,7 @@ ordering_score: 100
 ordering_rationale: The first-run launchpad is now the literal product handshake for new installs, but the current screen buries the one action that matters, wastes space at laptop widths, and makes Odylith feel visually confused at the moment it should feel sharp and opinionated.
 confidence: high
 founder_override: yes
-promoted_to_plan: odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md
+promoted_to_plan: odylith/technical-plans/done/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md
 execution_model: standard
 workstream_type: standalone
 workstream_parent:
@@ -153,4 +153,10 @@ with a point of view, not a pile of cards around a paragraph.
   detected stack or repo shape
 
 ## Outcome
-- Bound to `B-028`; implementation in progress.
+- Landed on 2026-04-07 and closed into `odylith/technical-plans/done/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md`.
+- The first-run launchpad now renders as a prompt-dominant hero with cleaner
+  supporting cards, clearer responsive hierarchy, and explicit hide or reopen
+  recovery instead of an ambiguous dense dashboard.
+- Low-confidence consumer repos no longer fake repo-derived starter details,
+  and focused unit, browser, and real install-path launchpad proof all passed
+  before closeout.

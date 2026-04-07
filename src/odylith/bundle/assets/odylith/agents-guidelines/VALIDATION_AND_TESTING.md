@@ -23,13 +23,16 @@
 - Child-surface regressions must preserve the shell-owned redirect/access contract for Radar, Atlas, Compass, Registry, and Odylith.
 - Visual dashboard changes still need rendered review after regeneration; static HTML assertions do not replace looking at the generated surface.
 - Provider-backed reasoning changes need deterministic fallback checks and proof-route truthfulness checks in the same pass.
-- Commentary or closeout-contract changes need source, bundle, install, and benchmark-story regressions so mid-task branding stays suppressed and any `Odylith assist:` note remains final-only, preferably `**Odylith assist:**` when Markdown is available. Lead with the user win, keep it soulful, friendly, authentic, and factual, and tie concrete observed counts, measured deltas, or validation outcomes back to `odylith_off` or the broader unguided path.
+- Commentary or closeout-contract changes need source, bundle, install, and benchmark-story regressions so ambient mid-task signals stay task-first, labeled `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` beats stay rare and earned, and any final `Odylith Assist:` note remains evidence-backed. Prefer `**Odylith Assist:**` when Markdown is available. Lead with the user win, keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual, link updated governance ids inline when they were actually changed, tie concrete observed counts, measured deltas, or validation outcomes back to `odylith_off` or the broader unguided path. Silence is better than filler.
 
 ## Coverage And Harness Rules
 - Use the public Odylith repo when collecting Odylith-product coverage; the authoritative product package is `src/odylith`.
-- Pre-commit and pytest harnesses must stay hermetic to local Odylith reasoning overrides.
+- Pre-commit and pytest harnesses must stay hermetic to maintainer-local Odylith reasoning overrides.
 - Registry/component-spec fixtures must satisfy the same fail-closed feature-history plan-link contract as production specs.
 - In consumer repos, validate consumer application code with the consumer repo's own `python`, `uv`, Poetry, Conda, or equivalent project toolchain even when Odylith commands ran through `./.odylith/bin/odylith`.
+- In the Odylith product repo's maintainer mode, never make current-workspace code or tracked-file edits directly on `main`; if the current branch is `main`, create and switch to a new branch before the first edit, and if work is already on a non-`main` branch, keep using that branch.
+- In the Odylith product repo's maintainer mode, use pinned dogfood validation to prove shipped-runtime behavior and detached `source-local` validation only when the slice intentionally exercises live unreleased `src/odylith/*`.
+- In the Odylith product repo, `make dev-validate` is the explicit detached `source-local` validation lane for current unreleased workspace changes; `make release-preflight` remains the canonical clean-checkout release-proof lane.
 
 ## Odylith-Specific Regression Families
 - Odylith/Tribunal changes need explicit truthfulness regressions: provider validation, deterministic fallback, no fake ownership or semantic claims, and separation of reasoning from execution mode.
@@ -46,7 +49,7 @@
   - `./.odylith/bin/odylith validate component-registry --repo-root .`
 - When the target repo's own application code changes, add the target repo's own test/build/lint command on its native toolchain after Odylith validation narrows the slice.
 - When changing generated governance surfaces or lifecycle semantics, run a strict refresh path and review the rendered output, not only the raw payloads.
-- When changing lifecycle closeout or rendered surface truth, add `./.odylith/bin/odylith validate plan-risk-mitigation --repo-root .`, `./.odylith/bin/odylith validate plan-traceability --repo-root .`, `./.odylith/bin/odylith sync --repo-root . --force --impact-mode full --check-clean`, and `./.odylith/bin/odylith atlas render --repo-root . --fail-on-stale`.
+- When changing lifecycle closeout or rendered surface truth, add `./.odylith/bin/odylith validate plan-risk-mitigation --repo-root .`, `./.odylith/bin/odylith validate plan-traceability --repo-root .`, `./.odylith/bin/odylith sync --repo-root . --force --odylith-mode refresh --check-clean`, and `./.odylith/bin/odylith atlas render --repo-root . --fail-on-stale`.
 - If the strict sync gate is blocked only by Mermaid freshness, repair that with `./.odylith/bin/odylith atlas auto-update --repo-root . --from-git-working-tree --fail-on-stale` plus Atlas rerender, then rerun the gate.
 
 ## Useful Validation Commands
@@ -56,6 +59,6 @@
 - `./.odylith/bin/odylith validate plan-risk-mitigation --repo-root .`
 - `./.odylith/bin/odylith validate plan-traceability --repo-root .`
 - `./.odylith/bin/odylith validate component-registry --repo-root .`
-- `./.odylith/bin/odylith sync --repo-root . --force --impact-mode full --check-clean`
+- `./.odylith/bin/odylith sync --repo-root . --force --odylith-mode refresh --check-clean`
 - `./.odylith/bin/odylith sync --repo-root . --check-only --check-clean --runtime-mode standalone --registry-policy-mode enforce-critical --enforce-deep-skills`
 - `./.odylith/bin/odylith atlas render --repo-root . --fail-on-stale`

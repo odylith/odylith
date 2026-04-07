@@ -22,7 +22,7 @@ STARTER_PROMPT = (
     "paths only. No IDs. Only write under odylith/."
 )
 AUTO_REFRESH_NOTE = "The shell refreshes itself as Odylith updates local surfaces."
-LATEST_INSTALL_COMMAND = "curl -fsSL https://github.com/odylith/odylith/releases/latest/download/install.sh | bash"
+LATEST_INSTALL_COMMAND = "curl -fsSL https://odylith.ai/install.sh | bash"
 _LEGACY_CONSUMER_UPGRADE_VERSIONS = frozenset({"0.1.0", "0.1.1"})
 _LAUNCHER_BOOTSTRAP_MARKER = "odylith_launcher_bootstrap_upgrade"
 

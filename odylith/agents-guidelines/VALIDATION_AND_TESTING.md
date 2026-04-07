@@ -23,7 +23,7 @@
 - Child-surface regressions must preserve the shell-owned redirect/access contract for Radar, Atlas, Compass, Registry, and Odylith.
 - Visual dashboard changes still need rendered review after regeneration; static HTML assertions do not replace looking at the generated surface.
 - Provider-backed reasoning changes need deterministic fallback checks and proof-route truthfulness checks in the same pass.
-- Commentary or closeout-contract changes need source, bundle, install, and benchmark-story regressions so mid-task branding stays suppressed and any `Odylith assist:` note remains final-only, preferably `**Odylith assist:**` when Markdown is available. Lead with the user win, keep it soulful, friendly, authentic, and factual, and tie concrete observed counts, measured deltas, or validation outcomes back to `odylith_off` or the broader unguided path.
+- Commentary or closeout-contract changes need source, bundle, install, and benchmark-story regressions so ambient mid-task signals stay task-first, labeled `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` beats stay rare and earned, and any final `Odylith Assist:` note remains evidence-backed. Prefer `**Odylith Assist:**` when Markdown is available. Lead with the user win, keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual, link updated governance ids inline when they were actually changed, tie concrete observed counts, measured deltas, or validation outcomes back to `odylith_off` or the broader unguided path. Silence is better than filler.
 
 ## Coverage And Harness Rules
 - Use the public Odylith repo when collecting Odylith-product coverage; the authoritative product package is `src/odylith`.

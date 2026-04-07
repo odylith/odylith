@@ -1,8 +1,8 @@
 # Radar
-Last updated: 2026-03-27
+Last updated: 2026-04-07
 
 
-Last updated (UTC): 2026-03-27
+Last updated (UTC): 2026-04-07
 
 ## Purpose
 Radar is Odylith's authoritative workstream backlog and execution-governance
@@ -136,6 +136,16 @@ Radar's traceability layer is first-class, not optional garnish.
 - it does not overwrite explicit metadata unless forced
 - it emits a JSON autofix report instead of silently mutating everything
 
+### Default-surface diagnostics policy
+- `traceability-autofix-report.v1.json` is a maintainer-facing diagnostics
+  artifact, not a primary product surface.
+- `warning_items` in `traceability-graph.v1.json` may retain maintainer notes
+  for truth preservation, but default Radar warning cards must only project
+  operator-facing `warning` and `error` rows.
+- Info-level autofix conflicts and similar maintainer diagnostics should remain
+  inspectable through the graph/report without leaking into the default
+  workstream `Warnings` section.
+
 ### Why this exists
 Radar is the workstream source of truth, but workstreams must still be tied to
 plans, components, diagrams, and implementation evidence. The traceability
@@ -180,6 +190,8 @@ themselves.
 - Auto-promotion ignores generated-only churn.
 - If traceability cannot be inferred confidently, Radar should surface the gap
   or emit it in the autofix report rather than inventing a clean topology.
+- Default user-facing warnings should stay curated; maintainer-only diagnostics
+  belong in explicit diagnostics artifacts, not primary warning cards.
 
 ## Validation Playbook
 ### Radar
@@ -209,3 +221,4 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 - 2026-03-26: Created the first Odylith-owned Radar source tree so the public repo can maintain its own ranked product backlog instead of borrowing a consumer backlog as authority. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
+- 2026-04-07: Curated default workstream warnings to stay operator-facing while keeping info-level autofix conflicts in shared diagnostics artifacts for maintainers. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

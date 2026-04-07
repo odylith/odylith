@@ -3,24 +3,42 @@
   "diagrams": [
     "D-002",
     "D-020",
-    "D-024"
+    "D-025",
+    "D-024",
+    "D-018"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 2,
     "mapped_workstream_evidence_count": 2,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 3,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 2
+    "timeline_event_count": 3
   },
   "name": "Odylith Memory Backend",
   "path_prefixes": [
-    "src/odylith/runtime/memory",
+    "src/odylith/runtime/memory/odylith_memory_backend.py",
     "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md"
   ],
   "spec_ref": "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 63,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-memory-backend"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-07T11:59:30-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "README.md",
@@ -54,6 +72,7 @@
         "odylith-chatter",
         "odylith-context-engine",
         "odylith-memory-backend",
+        "odylith-remote-retrieval",
         "radar",
         "registry",
         "release",
@@ -105,10 +124,12 @@
     "runbooks": []
   },
   "version": "v1",
-  "what_it_is": "Local-first retrieval and durable judgment-memory substrate for the Odylith Context Engine.",
-  "why_tracked": "Gives Odylith's memory layer an explicit product boundary so retrieval and durable judgment memory can evolve as a governed subsystem instead of an implementation footnote.",
+  "what_it_is": "Local-first LanceDB plus Tantivy retrieval backend and durable judgment-memory runtime for the Odylith Context Engine.",
+  "why_tracked": "Gives Odylith's local retrieval and durable judgment memory an explicit governed boundary apart from sibling projection, remote-retrieval, and packet-contract components.",
   "workstreams": [
     "B-010",
+    "B-058",
+    "B-059",
     "B-021",
     "B-011",
     "B-038"

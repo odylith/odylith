@@ -5,6 +5,10 @@ Use this skill when the task is about packet choice, daemon health, warmup postu
 ## Lane Boundary
 - Consumer lane uses Odylith's managed runtime for Odylith commands, but target
   repo validation still belongs to the consumer repo's own toolchain.
+- Product-repo maintainer mode has:
+  - pinned dogfood posture for shipped-runtime proof
+  - detached `source-local` posture for live unreleased `src/odylith/*`
+    execution
 - File-edit authority follows repo scope, not interpreter choice.
 
 ## Default Flow
@@ -12,7 +16,8 @@ Use this skill when the task is about packet choice, daemon health, warmup postu
 - use `start` as the default first-turn entrypoint, then choose the smallest Odylith packet that matches the slice and stay on Odylith for most grounded work
 - use `bootstrap`, `context`, `query`, `session-brief`, and `governance-slice` when you need grounded start-up, exact-ref lookup, or governed-surface context instead of rediscovering them manually
 - keep consumer commentary task-first; keep startup, fallback, and retained-packet history implicit, and skip prior degraded-start history unless it remains the current blocker
-- if the final handoff benefits from naming Odylith, use at most one short `Odylith assist:` line; prefer `**Odylith assist:**` when Markdown formatting is available. Lead with the user win, frame the edge against `odylith_off` or the broader unguided path when the evidence supports it, and back it with concrete observed counts, measured deltas, or validation outcomes while keeping it soulful, friendly, authentic, and factual
+- keep Odylith ambient by default during work; weave packet facts into ordinary updates and only emit explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` lines when that signal is strong enough to matter
+- if the final handoff benefits from naming Odylith, use at most one short `Odylith Assist:` line; prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance ids inline when they were actually changed, frame the edge against `odylith_off` or the broader unguided path when the evidence supports it, and back it with concrete observed counts, measured deltas, or validation outcomes while keeping it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Silence is better than filler.
 - keep widening fail-closed when `selection_state` is weak or `full_scan_recommended=true`
 - preserve retained routing data when handing off to orchestration
 - reserve explicit `serve` for intentionally warm repeated loops

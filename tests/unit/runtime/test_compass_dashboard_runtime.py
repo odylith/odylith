@@ -28,6 +28,28 @@ def _payload(*, generated_utc: str) -> dict[str, object]:
     }
 
 
+def test_default_traceability_warning_filter_accepts_operator_warning() -> None:
+    assert compass_runtime_payload_runtime._is_default_traceability_warning(  # noqa: SLF001
+        {
+            "severity": "warning",
+            "audience": "operator",
+            "surface_visibility": "default",
+            "message": "Topology is incomplete.",
+        }
+    )
+
+
+def test_default_traceability_warning_filter_rejects_maintainer_diagnostic() -> None:
+    assert not compass_runtime_payload_runtime._is_default_traceability_warning(  # noqa: SLF001
+        {
+            "severity": "info",
+            "audience": "maintainer",
+            "surface_visibility": "diagnostics",
+            "message": "Autofix skipped due to metadata conflict.",
+        }
+    )
+
+
 def test_write_runtime_snapshots_archives_days_older_than_retention(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _fixed_now(monkeypatch, year=2026, month=3, day=20)
     runtime_dir = tmp_path / "odylith" / "compass" / "runtime"

@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 import threading
 from typing import Iterator
-from urllib.parse import parse_qs, quote, urljoin, urlparse
+from urllib.parse import parse_qs, quote, urlparse
 
 import pytest
 
@@ -598,8 +598,8 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
         key="workstream",
         value=idea_id,
     )
-    response = page.goto(urljoin(page.url, diagram_href), wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    radar.locator("#detail details.topology-relations-panel").first.evaluate("node => { node.open = true; }")
+    radar.locator(f'#detail a.chip-topology-diagram[href="{diagram_href}"]').first.evaluate("node => node.click()")
     page.wait_for_url(
         re.compile(rf".*/odylith/index\.html\?tab=atlas(&.*)?diagram={re.escape(diagram_id)}(&.*|$)"),
         timeout=15000,

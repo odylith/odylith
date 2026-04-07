@@ -1,8 +1,8 @@
-Status: In progress
+Status: Done
 
 Created: 2026-03-30
 
-Updated: 2026-03-30
+Updated: 2026-04-07
 
 Backlog: B-028
 
@@ -61,9 +61,9 @@ Related Bugs:
 - [x] Headless-browser screenshots show a materially improved first-run shell.
 
 ## Non-Goals
-- [ ] Broad shell-wide visual redesign.
-- [ ] Changing the governed-slice inference logic.
-- [ ] Rewriting the starter prompt semantics.
+- [x] Broad shell-wide visual redesign.
+- [x] Changing the governed-slice inference logic.
+- [x] Rewriting the starter prompt semantics.
 
 ## Impacted Areas
 - [x] [shell_onboarding.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/shell_onboarding.py)
@@ -77,22 +77,26 @@ Related Bugs:
 
 ## Risks & Mitigations
 
-- [ ] Risk: the new hero styling becomes louder but less legible.
-  - [ ] Mitigation: keep typography and spacing crisp, and make the prompt
+- [x] Risk: the new hero styling becomes louder but less legible.
+  - [x] Mitigation: keep typography and spacing crisp, and make the prompt
     card serve the action instead of ornament.
-- [ ] Risk: responsive layout breaks at the exact narrow desktop widths users
+- [x] Risk: responsive layout breaks at the exact narrow desktop widths users
+  - [ ] Mitigation: TODO (add explicit mitigation).
     actually hit.
-  - [ ] Mitigation: prove the rendered shell in a headless browser at realistic
+- [ ] Risk: Unspecified risk (legacy backfill).
+  - [x] Mitigation: prove the rendered shell in a headless browser at realistic
     viewport sizes.
-- [ ] Risk: layout changes accidentally regress copy-to-agent affordances.
-  - [ ] Mitigation: preserve the existing copy button semantics and status
+- [x] Risk: layout changes accidentally regress copy-to-agent affordances.
+  - [x] Mitigation: preserve the existing copy button semantics and status
     feedback.
-- [ ] Risk: persisted dismissal makes the welcome state feel stuck or lost.
+- [x] Risk: persisted dismissal makes the welcome state feel stuck or lost.
   - [x] Mitigation: use a keyed dismissal token that changes when the
     onboarding shape changes, and keep a visible `Resume setup` recovery
     affordance in the shell header.
-- [ ] Risk: stricter browser storage rules make dismissal persistence feel
+- [x] Risk: stricter browser storage rules make dismissal persistence feel
+  - [ ] Mitigation: TODO (add explicit mitigation).
     flaky.
+- [ ] Risk: Unspecified risk (legacy backfill).
   - [x] Mitigation: fall back from `localStorage` to `sessionStorage`, and
     still hide the welcome state immediately even if browser storage is
     unavailable.
@@ -112,12 +116,15 @@ Related Bugs:
       described.
 
 ## Current Outcome
-- [x] Bound to `B-028`; the welcome state now renders as a centered launchpad
+- [x] `B-028` landed and the plan is now closed into `done`; the welcome state now renders as a centered launchpad
       hero with a prompt-dominant primary card, a chosen-slice/notice sidebar,
       and a cleaner action grid for backlog, Registry, and Atlas.
 - [x] Low-confidence consumer repos no longer render fake repo-name-derived
       starter-slice details; they now fall back to honest generic guidance
       until a real repo path can be inferred.
+- [x] Focused unit coverage, first-run browser proof, and install-path launchpad
+      proof all passed before closeout, so the redesign is governed as shipped
+      behavior rather than unverified surface polish.
 - [x] The welcome state now closes via `Hide for now`, reopens from
       `Show starter guide` in the shell viewport, persists per onboarding
       shape, and resets

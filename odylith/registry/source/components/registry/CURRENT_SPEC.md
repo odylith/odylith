@@ -1,8 +1,8 @@
 # Registry
-Last updated: 2026-03-27
+Last updated: 2026-04-07
 
 
-Last updated (UTC): 2026-03-27
+Last updated (UTC): 2026-04-07
 
 ## Purpose
 Registry is Odylith's authoritative component-inventory and component-centric
@@ -181,3 +181,4 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 - 2026-03-26: Moved the authoritative Odylith product component inventory into the public repo so product components stop depending on consumer-local registry truth. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
+- 2026-04-07: Promoted the hidden memory-substrate seams into first-class Registry components so projection bundle, projection snapshot, remote retrieval, and memory contracts have explicit governed ownership and rendered detail instead of one coarse backend silhouette. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))

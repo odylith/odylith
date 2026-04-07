@@ -44,6 +44,7 @@ def test_render_shell_references_split_compass_assets_and_inline_bootstrap() -> 
 def test_shared_compass_asset_preserves_legacy_digest_fallback_logic() -> None:
     shared_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-shared.v1.js")
     summary_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-summary.v1.js")
+    state_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-state.v1.js")
 
     assert 'const hasScopedSelection = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim());' in shared_js
     assert 'if (hasScopedSelection && scopedReady) return scopedReady;' in shared_js
@@ -54,6 +55,9 @@ def test_shared_compass_asset_preserves_legacy_digest_fallback_logic() -> None:
     assert 'if (scopedReady) return scopedReady;' in shared_js
     assert 'if (legacyLines.length) {' in shared_js
     assert 'return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);' in shared_js
+    assert "const historyDates = knownHistoryDateTokens(payload);" in state_js
+    assert "const minDate = historyDates.length" in state_js
+    assert "? historyDates[historyDates.length - 1]" in state_js
     assert 'source === "provider" || source === "cache" || source === "deterministic"' in summary_js
     assert "Deterministic local brief" in summary_js
     assert "No critical blended risks in current payload." not in summary_js

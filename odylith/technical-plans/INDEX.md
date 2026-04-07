@@ -1,6 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-06
+Last updated (UTC): 2026-04-07
 
 ## Active Plans
 
@@ -10,20 +10,28 @@ Last updated (UTC): 2026-04-06
 | `odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md` | In progress | 2026-03-31 | 2026-04-05 | `B-022` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md` | In progress | 2026-03-31 | 2026-04-05 | `B-038` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md` | In progress | 2026-03-29 | 2026-03-29 | `B-025` |
-| `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md` | In progress | 2026-03-30 | 2026-03-30 | `B-027` |
-| `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md` | In progress | 2026-03-30 | 2026-03-30 | `B-028` |
-| `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md` | In progress | 2026-03-30 | 2026-03-30 | `B-029` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md` | In progress | 2026-03-30 | 2026-03-30 | `B-030` |
-| `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md` | In progress | 2026-03-30 | 2026-03-30 | `B-031` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md` | In progress | 2026-03-30 | 2026-03-30 | `B-033` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md` | In progress | 2026-04-01 | 2026-04-01 | `B-040` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md` | In progress | 2026-04-04 | 2026-04-04 | `B-045` |
-| `odylith/technical-plans/in-progress/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md` | In progress | 2026-04-06 | 2026-04-06 | `B-048` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md` | In progress | 2026-04-06 | 2026-04-07 | `B-048` |
 
 ## Parked Plans
 
 | Plan | Status | Created | Updated | Backlog |
 | --- | --- | --- | --- | --- |
+
+## Recently Completed (2026-04-07)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md` | Done | 2026-03-30 | 2026-04-07 | `B-027` |
+| `odylith/technical-plans/done/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md` | Done | 2026-03-30 | 2026-04-07 | `B-028` |
+| `odylith/technical-plans/done/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md` | Done | 2026-03-30 | 2026-04-07 | `B-029` |
+| `odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md` | Done | 2026-03-30 | 2026-04-07 | `B-031` |
+| `odylith/technical-plans/done/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md` | Done | 2026-04-06 | 2026-04-07 | `B-051` |
+| `odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md` | Done | 2026-04-07 | 2026-04-07 | `B-058` |
+| `odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md` | Done | 2026-04-07 | 2026-04-07 | `B-059` |
 
 ## Recently Completed (2026-03-30)
 

@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-03-30
 
-Updated: 2026-04-03
+Updated: 2026-04-07
 
 Backlog: B-030
 
@@ -29,6 +29,9 @@ Assumptions:
   public consumer lane.
 - A narrow dashboard refresh command is safer than changing full `odylith sync`
   semantics right before release.
+- The canonical hosted bootstrap and rescue command is
+  `curl -fsSL https://odylith.ai/install.sh | bash`, and the install/upgrade
+  docs plus agent guidance should all name that same entrypoint.
 
 Constraints:
 - Keep the feature consumer-lane only.
@@ -96,6 +99,8 @@ Related Bugs:
 - [x] First install and launchpad flows do not show the upgrade spotlight.
 - [x] The dashboard generates a crisp repo-local release note for
       the upgraded version.
+- [x] Release prep carries an authored `v0.1.9` note and the shell consumes
+      that authored title and highlight copy in the upgrade moment.
 - [x] Consumer upgrades keep only the current release note and remove older
       release-note artifacts from the repo.
 - [x] Atlas sync fails fast on invalid Mermaid with diagram id, source path,
@@ -125,6 +130,8 @@ Related Bugs:
 - [x] [INSTALL_AND_UPGRADE_RUNBOOK.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
 - [ ] [FAQ.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/FAQ.md)
 - [ ] [README.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/README.md)
+- [ ] [AGENTS.md](/Users/freedom/code/odylith/odylith/AGENTS.md)
+- [ ] [UPGRADE_AND_RECOVERY.md](/Users/freedom/code/odylith/odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md)
 - [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/delivery-governance-surface-ops/SKILL.md)
 - [x] [SKILL.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/skills/delivery-governance-surface-ops/SKILL.md)
 - [x] [test_cli.py](/Users/freedom/code/odylith/tests/unit/test_cli.py)
@@ -132,6 +139,7 @@ Related Bugs:
 - [x] [test_shell_onboarding.py](/Users/freedom/code/odylith/tests/unit/runtime/test_shell_onboarding.py)
 - [x] [test_render_tooling_dashboard.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_tooling_dashboard.py)
 - [x] [test_tooling_dashboard_onboarding_browser.py](/Users/freedom/code/odylith/tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py)
+- [x] [test_release_notes.py](/Users/freedom/code/odylith/tests/unit/runtime/test_release_notes.py)
 - [x] [test_sync_cli_compat.py](/Users/freedom/code/odylith/tests/unit/runtime/test_sync_cli_compat.py)
 - [x] [test_auto_update_mermaid_diagrams.py](/Users/freedom/code/odylith/tests/unit/runtime/test_auto_update_mermaid_diagrams.py)
 
@@ -166,6 +174,7 @@ Related Bugs:
 ## Validation/Test Plan
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/integration/install/test_manager.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/test_cli.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_release_notes.py tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
 - [x] `pytest -q tests/unit/test_cli.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py`
 - [x] `pytest -q tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_install_adopt_latest_renders_a_browser_valid_incremental_upgrade_note tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_upgrade_renders_a_browser_valid_incremental_upgrade_note`
@@ -200,6 +209,10 @@ Related Bugs:
 - [x] Browser proof now covers the actual `odylith upgrade` CLI path: CLI
       activation, spotlight payload write, shell refresh, and Chromium-visible
       release note are all exercised together.
+- [x] Hosted install and rescue guidance now converges on the canonical
+      `odylith.ai` installer entrypoint across CLI bootstrap guidance, bundled
+      docs, and agent guidance instead of pointing at the raw release-download
+      URL.
 - [ ] Release-prep validation on 2026-04-03 exposed a remaining browser
       regression where shell auto-refresh can advance the version badge while
       leaving the upgrade spotlight hidden; tracked in
@@ -210,6 +223,9 @@ Related Bugs:
 - [x] Release hardening extension now includes explicit dashboard surface
       selection, default Compass refresh, fast Atlas parse diagnostics, and
       doc/help alignment for that operator path.
+- [x] Release prep on 2026-04-07 added the authored `v0.1.9` note and re-proved
+      the welcome screen plus upgrade spotlight in headless Chromium so the
+      launch moment stays anchored to real release copy.
 - [ ] This plan now owns the install and upgrade moment only; the broader
       steady-state "fresh earlier than commit, benchmark-safe by default"
       posture is tracked with `B-025`.

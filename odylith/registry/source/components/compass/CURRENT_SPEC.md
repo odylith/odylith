@@ -1,8 +1,8 @@
 # Compass
-Last updated: 2026-04-05
+Last updated: 2026-04-07
 
 
-Last updated (UTC): 2026-04-05
+Last updated (UTC): 2026-04-07
 
 ## Purpose
 Compass is Odylith's execution, decision, and runtime-posture surface. It turns
@@ -160,6 +160,13 @@ churn does not drown out meaningful implementation evidence.
   bounded. Local timeline, workstream, risk, and KPI readouts must remain
   understandable without spending provider credits.
 
+## Traceability Risk Projection
+- Compass consumes shared Radar `warning_items`, but default risk rows are
+  reserved for operator-facing `warning` and `error` diagnostics.
+- Maintainer-facing info diagnostics, including autofix conflict notes, should
+  remain visible in the underlying traceability artifacts without showing up as
+  primary Compass risk rows.
+
 ## Self-Host Readout Contract
 - Compass runtime payload now carries `self_host` with:
   `repo_role`, `posture`, `runtime_source`, `release_eligible`,
@@ -235,4 +242,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-27: Changed Compass history to a 15-day active window with compressed archived daily snapshots and an explicit restore-history command for older dates. (Plan: [B-003](odylith/radar/radar.html?view=plan&workstream=B-003))
 - 2026-03-27: Added self-host posture payload, product-runtime risk surfacing, and posture-transition evidence for the public Odylith repo. (Plan: [B-004](odylith/radar/radar.html?view=plan&workstream=B-004))
 - 2026-04-02: Anchored rolling windows and audit timelines to the loaded runtime snapshot time and added explicit stale-runtime warnings so old snapshots no longer masquerade as empty recent days. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-07: Aligned Compass traceability risk rows with Radar's shared operator-facing warning policy so maintainer autofix diagnostics stay in the artifacts instead of primary risk cards. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-05: Documented the bounded `compass_brief_freshness` benchmark slice so proof stays on Compass runtime, narrator, focused tests, and product-surface guidance instead of widening into unrelated install or repair surfaces. (Plan: [B-038](odylith/radar/radar.html?view=plan&workstream=B-038))

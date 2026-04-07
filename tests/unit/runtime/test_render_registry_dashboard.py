@@ -350,14 +350,22 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert "ensureRegistrySelectionVisible(renderItems, selectedId);" in html
     assert "const preserveListScroll = elementFullyVisibleWithinContainer(listEl, node);" in html
     assert "applyState(id, { push: true, preserveListScroll });" in html
+    assert "function normalizeSearchToken(value)" in html
     assert "function componentExactMatch(row, needle)" in html
-    assert 'const exactIdMatches = scoped.filter((row) => String(row.component_id || "").trim().toLowerCase() === needle);' in html
+    assert "const compactNeedle = normalizeSearchToken(normalizedNeedle);" in html
+    assert "const exactTokens = [componentId, name, ...aliases.map((alias) => String(alias || \"\").trim().toLowerCase())]" in html
+    assert "return exactTokens.includes(compactNeedle);" in html
+    assert 'const normalizedNeedle = normalizeSearchToken(needle);' in html
+    assert 'const exactIdMatches = scoped.filter((row) => componentExactMatch(row, needle) && String(row.component_id || "").trim().toLowerCase() === needle);' in html
     assert "if (exactIdMatches.length) return exactIdMatches;" in html
-    assert 'const exactNameMatches = scoped.filter((row) => String(row.name || "").trim().toLowerCase() === needle);' in html
+    assert 'const exactNameMatches = scoped.filter((row) => componentExactMatch(row, needle) && String(row.name || "").trim().toLowerCase() === needle);' in html
     assert "if (exactNameMatches.length) return exactNameMatches;" in html
     assert "const exactAliasMatches = scoped.filter((row) => {" in html
     assert "if (exactAliasMatches.length) return exactAliasMatches;" in html
-    assert "return scoped.filter((row) => componentSearchText(row).includes(needle));" in html
+    assert "const normalizedExactMatches = normalizedNeedle" in html
+    assert "if (normalizedExactMatches.length) return normalizedExactMatches;" in html
+    assert "const searchText = componentSearchText(row);" in html
+    assert "return normalizeSearchToken(searchText).includes(normalizedNeedle);" in html
     assert ".list-spacer" in html
     assert 'function enforceShellOwnedSurfaceAccess() {' in html
     assert 'const expectedFrameId = "frame-registry";' in html
@@ -698,12 +706,15 @@ def test_render_registry_dashboard_supports_odylith_chatter_component_contract(t
         (
             "# Odylith Chatter Component Spec\n\n"
             "Last updated: 2026-03-31\n\n"
+            "## Ambient Signal Policy\n"
+            "- Use explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels only when the point is strong enough to earn the interruption.\n\n"
             "## Closeout Policy\n"
-            "- `Odylith assist:` stays final-only.\n"
-            "- Prefer `**Odylith assist:**` when Markdown formatting is available.\n"
+            "- `Odylith Assist:` stays final-only.\n"
+            "- Prefer `**Odylith Assist:**` when Markdown formatting is available.\n"
             "- Lead with the user win, not Odylith mechanics.\n"
+            "- Link updated governance ids inline when they were actually changed.\n"
             "- Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it.\n"
-            "- Keep it soulful, friendly, authentic, and factual.\n"
+            "- Keep it crisp, authentic, clear, simple, insightful, soulful, friendly, free-flowing, human, and factual.\n"
             "- Use observed counts, measured deltas, or validation outcomes.\n\n"
             "## Feature History\n"
             "- 2026-03-31: Added the chatter contract component. "
@@ -748,11 +759,13 @@ def test_render_registry_dashboard_supports_odylith_chatter_component_contract(t
     chatter_detail = _extract_window_merge_payload(
         tmp_path / "odylith" / "registry" / payload["detail_manifest"]["odylith-chatter"]
     )["odylith-chatter"]
-    assert "Odylith assist:" in chatter_detail["spec_markdown"]
-    assert "**Odylith assist:**" in chatter_detail["spec_markdown"]
+    assert "Odylith Assist:" in chatter_detail["spec_markdown"]
+    assert "**Odylith Assist:**" in chatter_detail["spec_markdown"]
+    assert "Odylith Insight:" in chatter_detail["spec_markdown"]
     assert "Lead with the user win" in chatter_detail["spec_markdown"]
+    assert "Link updated governance ids inline when they were actually changed." in chatter_detail["spec_markdown"]
     assert "broader unguided path" in chatter_detail["spec_markdown"]
-    assert "soulful, friendly, authentic, and factual" in chatter_detail["spec_markdown"]
+    assert "crisp, authentic, clear, simple, insightful" in chatter_detail["spec_markdown"]
 
     odylith_detail = _extract_window_merge_payload(
         tmp_path / "odylith" / "registry" / payload["detail_manifest"]["odylith"]

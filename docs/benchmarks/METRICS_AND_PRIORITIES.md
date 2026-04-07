@@ -81,7 +81,7 @@ The inverse is also true:
 
 Benchmark writeups should state measured results first. If Odylith is named
 directly beyond lane labels, keep it brief and secondary to the evidence.
-Keep that to one final-only `Odylith assist:` line backed by measured proof or
+Keep that to one final-only `Odylith Assist:` line backed by measured proof or
 a measured report, and follow
 [Odylith Chatter](../../odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md)
 for the detailed closeout wording contract.
