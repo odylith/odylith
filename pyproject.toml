@@ -1,6 +1,6 @@
 [project]
 name = "odylith"
-version = "0.1.8"
+version = "0.1.9"
 description = "Odylith public product"
 readme = "README.md"
 requires-python = ">=3.13"
