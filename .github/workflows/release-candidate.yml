@@ -21,7 +21,7 @@ jobs:
       - name: Validate commit identities
         run: python scripts/validate_git_identity.py history --repo-root . HEAD
       - name: Install Hatch
-        run: python -m pip install --upgrade hatch==1.14.1
+        run: python -m pip install --upgrade virtualenv==20.31.1 hatch==1.14.1
       - name: Sync Hatch environment
         run: hatch env create
       - name: Repair repo-local runtime bootstrap
