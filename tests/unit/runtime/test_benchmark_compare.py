@@ -28,6 +28,11 @@ def test_compare_latest_to_baseline_warns_when_no_release_has_shipped(monkeypatc
     candidate_report = _report("candidate-1", "0.1.6")
 
     monkeypatch.setattr(
+        benchmark_compare,
+        "product_source_version",
+        lambda **kwargs: "0.1.6",
+    )
+    monkeypatch.setattr(
         benchmark_compare.runner,
         "load_latest_benchmark_report",
         lambda **kwargs: candidate_report,
@@ -152,6 +157,11 @@ def test_compare_latest_to_baseline_flags_blocking_regressions(monkeypatch, tmp_
     }
 
     monkeypatch.setattr(
+        benchmark_compare,
+        "product_source_version",
+        lambda **kwargs: "0.1.6",
+    )
+    monkeypatch.setattr(
         benchmark_compare.runner,
         "load_latest_benchmark_report",
         lambda **kwargs: candidate_report,
@@ -203,6 +213,11 @@ def test_compare_latest_to_baseline_passes_when_metrics_hold(monkeypatch, tmp_pa
     }
 
     monkeypatch.setattr(
+        benchmark_compare,
+        "product_source_version",
+        lambda **kwargs: "0.1.6",
+    )
+    monkeypatch.setattr(
         benchmark_compare.runner,
         "load_latest_benchmark_report",
         lambda **kwargs: candidate_report,
@@ -243,6 +258,11 @@ def test_compare_latest_to_baseline_stays_blocking_when_release_exists_but_basel
     candidate_report = _report("candidate-1", "0.1.6")
 
     monkeypatch.setattr(
+        benchmark_compare,
+        "product_source_version",
+        lambda **kwargs: "0.1.6",
+    )
+    monkeypatch.setattr(
         benchmark_compare.runner,
         "load_latest_benchmark_report",
         lambda **kwargs: candidate_report,
@@ -263,6 +283,38 @@ def test_compare_latest_to_baseline_stays_blocking_when_release_exists_but_basel
     assert result.status == "unavailable"
     assert result.blocking is True
     assert result.baseline_source == "missing-last-shipped"
+
+
+def test_compare_latest_to_baseline_blocks_stale_candidate_version(monkeypatch, tmp_path: Path) -> None:
+    candidate_report = _report("candidate-1", "0.1.7")
+
+    monkeypatch.setattr(
+        benchmark_compare.runner,
+        "load_latest_benchmark_report",
+        lambda **kwargs: candidate_report,
+    )
+    monkeypatch.setattr(
+        benchmark_compare.runner,
+        "compact_report_summary",
+        lambda report: {
+            "report_id": str(report["report_id"]),
+            "product_version": str(report["product_version"]),
+            "status": "provisional_pass",
+        },
+    )
+    monkeypatch.setattr(
+        benchmark_compare,
+        "product_source_version",
+        lambda **kwargs: "0.1.8",
+    )
+
+    result = benchmark_compare.compare_latest_to_baseline(repo_root=tmp_path)
+
+    assert result.status == "unavailable"
+    assert result.blocking is True
+    assert result.candidate_product_version == "0.1.7"
+    assert result.baseline_source == "latest-runtime-report"
+    assert any("does not match current source version `0.1.8`" in item for item in result.notes)
 
 
 def test_build_benchmark_story_summarizes_compare_and_history(monkeypatch, tmp_path: Path) -> None:

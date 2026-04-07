@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.install.manager import product_source_version
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
@@ -163,6 +164,24 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
             summary={},
             deltas={},
             notes=("No latest benchmark report is available under `.odylith/runtime/odylith-benchmarks/latest.v1.json`.",),
+            blocking=True,
+        )
+    candidate_version = str(candidate_summary.get("product_version", "")).strip()
+    source_version = product_source_version(repo_root=root)
+    if source_version and candidate_version and candidate_version != source_version:
+        return BenchmarkComparison(
+            status="unavailable",
+            candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
+            candidate_product_version=candidate_version,
+            baseline_report_id="",
+            baseline_product_version="",
+            baseline_source=candidate_source,
+            summary={"candidate": candidate_summary, "baseline": {}},
+            deltas={},
+            notes=(
+                f"Latest benchmark candidate version `{candidate_version}` does not match current source version `{source_version}`.",
+                "Record a fresh benchmark report for the current source version before treating compare as a release gate.",
+            ),
             blocking=True,
         )
     baseline_summary, baseline_source = _resolve_baseline_report(
