@@ -1,8 +1,8 @@
 # Release
-Last updated: 2026-04-03
+Last updated: 2026-04-07
 
 
-Last updated (UTC): 2026-04-03
+Last updated (UTC): 2026-04-07
 
 ## Purpose
 Release is Odylith's canonical maintainer publication lane. It owns the
@@ -228,6 +228,16 @@ claims aligned for public publication.
   - the workflow ref is `refs/heads/main`
   - the requested `tag` resolves to the session `expected_sha`
   - `GITHUB_SHA` equals that same `expected_sha`
+- Release identity validation accepts two commit-history shapes only:
+  - direct maintainer-authored commits with `freedom-research` local identity
+  - the currently observed GitHub-generated squash-merge shape on canonical
+    `main`, where maintainer authorship still uses
+    `freedom@freedompreetham.org` and only the committer is
+    `GitHub <noreply@github.com>`
+- This GitHub-committer path is a release-path compatibility exception, not
+  the desired long-term publication posture. A follow-on release slice should
+  remove the dependency on GitHub-generated merge committer metadata and
+  restore canonical maintainer identity end to end.
 - Release, release-candidate, and test workflows should pin first-party GitHub
   Actions to immutable SHAs, pin the runner image, and pin the build frontend
   version instead of relying on floating CI inputs.

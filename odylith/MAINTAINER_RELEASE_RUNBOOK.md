@@ -209,6 +209,16 @@ Run the targets in this order.
   before dispatch.
 - The GitHub workflow will refuse to publish unless the requested `tag`, the
   session `expected_sha`, and `GITHUB_SHA` all match.
+- Maintainer identity proof still expects `freedom-research` local authorship
+  for authored commits, but `v0.1.9` release prep must also tolerate the
+  currently observed GitHub squash-merge shape on canonical `main`: maintainer
+  author email `freedom@freedompreetham.org` with GitHub-generated committer
+  `GitHub <noreply@github.com>`. Treat that as a narrow release-path
+  compatibility exception, not a new canonical identity policy.
+- Post-`v0.1.9` follow-up: stop depending on GitHub-generated squash-merge
+  committer metadata in release ancestry. The long-term cleaner path is to use
+  a merge policy or release-bound integration path that preserves canonical
+  maintainer identity end to end.
 - Public install and upgrade must preserve strict interpreter isolation:
   `./.odylith/bin/odylith` runs Odylith inside `.odylith/`, while the consumer
   repo's own toolchain remains untouched.
