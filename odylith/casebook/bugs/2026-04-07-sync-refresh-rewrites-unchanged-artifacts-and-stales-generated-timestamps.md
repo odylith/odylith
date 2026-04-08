@@ -47,7 +47,7 @@
   path only reserialized an unchanged payload.
 
 - Detected By: Real downstream `odylith sync --repo-root .` feedback on
-  2026-04-07 from `/Users/freedom/code/dentoai-orion`, specifically
+  2026-04-07 from a consumer repo, specifically
   `traceability-autofix-report.v1.json` and
   `delivery_intelligence.v4.json`.
 

@@ -283,7 +283,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--refresh-profile",
         choices=("full", "shell-safe"),
         default=_DEFAULT_REFRESH_PROFILE,
-        help="`shell-safe` rebuilds Compass in bounded mode by deferring live provider narration during refresh.",
+        help=(
+            "`shell-safe` rebuilds Compass in bounded mode, keeps scoped provider warming deferred, "
+            "and lets global 24h/48h narration use the live provider opportunistically."
+        ),
     )
     return parser.parse_args(argv)
 

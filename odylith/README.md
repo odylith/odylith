@@ -200,3 +200,8 @@ Maintained third-party attribution and acknowledgements live in the repo-root
 `THIRD_PARTY_ATTRIBUTION.md` file. The maintainer validation lane fails closed
 if the runtime dependency closure or bundled managed-runtime supplier inputs
 drift into unknown, commercial/proprietary, or otherwise disallowed licenses.
+Redistributed third-party components keep their own upstream licenses; Odylith's
+MIT license does not relicense those upstream packages.
+Strict redistribution rule: Odylith can stay MIT, but any redistributed
+LanceDB or Vespa code stays Apache-2.0, and any redistributed Tantivy code
+stays MIT.

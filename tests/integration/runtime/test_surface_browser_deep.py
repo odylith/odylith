@@ -8,6 +8,8 @@ import shutil
 from zoneinfo import ZoneInfo
 
 import pytest
+from odylith.runtime.reasoning import odylith_reasoning
+from odylith.runtime.surfaces import render_compass_dashboard
 from odylith.runtime.surfaces import render_tooling_dashboard as tooling_dashboard_renderer
 from tests.integration.runtime.surface_browser_test_support import (
     _REPO_ROOT,
@@ -26,6 +28,121 @@ from tests.integration.runtime.surface_browser_test_support import (
     browser_context,
     compact_browser_context,
 )
+
+
+class _CompassProvider:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    @staticmethod
+    def _pick_fact_id(section: dict[str, object], *, preferred_kinds: tuple[str, ...]) -> str:
+        facts = section.get("facts")
+        if isinstance(facts, list):
+            for fact in facts:
+                if not isinstance(fact, dict):
+                    continue
+                kind = str(fact.get("kind", "")).strip().lower()
+                fact_id = str(fact.get("id", "")).strip()
+                if fact_id and kind in preferred_kinds:
+                    return fact_id
+            for fact in facts:
+                if isinstance(fact, dict):
+                    fact_id = str(fact.get("id", "")).strip()
+                    if fact_id:
+                        return fact_id
+        return ""
+
+    def generate_structured(self, *, request):  # noqa: ANN001
+        self.calls += 1
+        prompt_payload = request.prompt_payload if isinstance(request.prompt_payload, dict) else {}
+        fact_packet = prompt_payload.get("fact_packet") if isinstance(prompt_payload.get("fact_packet"), dict) else {}
+        sections = fact_packet.get("sections") if isinstance(fact_packet.get("sections"), list) else []
+        section_map = {
+            str(section.get("key", "")).strip(): section
+            for section in sections
+            if isinstance(section, dict) and str(section.get("key", "")).strip()
+        }
+
+        completed_id = self._pick_fact_id(section_map.get("completed", {}), preferred_kinds=("plan_completion", "execution_highlight"))
+        direction_id = self._pick_fact_id(section_map.get("current_execution", {}), preferred_kinds=("direction",))
+        operator_id = self._pick_fact_id(section_map.get("current_execution", {}), preferred_kinds=("signal", "timeline", "freshness"))
+        forcing_id = self._pick_fact_id(section_map.get("next_planned", {}), preferred_kinds=("forcing_function", "fallback_next"))
+        impact_id = self._pick_fact_id(section_map.get("why_this_matters", {}), preferred_kinds=("executive_impact",))
+        leverage_id = self._pick_fact_id(section_map.get("why_this_matters", {}), preferred_kinds=("operator_leverage",))
+        risk_id = self._pick_fact_id(section_map.get("risks_to_watch", {}), preferred_kinds=("risk_posture",))
+
+        return {
+            "sections": [
+                {
+                    "key": "completed",
+                    "label": "Completed in this window",
+                    "bullets": [
+                        {
+                            "voice": "operator",
+                            "text": "Verified movement landed in this window, so Compass should read as current work instead of recycled fallback.",
+                            "fact_ids": [completed_id],
+                        }
+                    ],
+                },
+                {
+                    "key": "current_execution",
+                    "label": "Current execution",
+                    "bullets": [
+                        {
+                            "voice": "executive",
+                            "text": "Execution direction stays on the live Compass contract rather than a deterministic shell-safe placeholder.",
+                            "fact_ids": [direction_id],
+                        },
+                        {
+                            "voice": "operator",
+                            "text": "The current packet still carries enough signal to justify provider-backed global narration in the bounded path.",
+                            "fact_ids": [operator_id],
+                        },
+                    ],
+                },
+                {
+                    "key": "next_planned",
+                    "label": "Next planned",
+                    "bullets": [
+                        {
+                            "voice": "operator",
+                            "text": "Next work keeps shell-safe bounded while preserving a live global brief when the provider is reachable.",
+                            "fact_ids": [forcing_id],
+                        }
+                    ],
+                },
+                {
+                    "key": "why_this_matters",
+                    "label": "Why this matters",
+                    "bullets": [
+                        {
+                            "voice": "executive",
+                            "text": "Compass trust breaks quickly when maintainers reopen it and see deterministic fallback despite an available local provider.",
+                            "fact_ids": [impact_id],
+                        },
+                        {
+                            "voice": "operator",
+                            "text": "The operator consequence is less time second-guessing whether the brief is current and less need to rerun refresh blindly.",
+                            "fact_ids": [leverage_id],
+                        },
+                    ],
+                },
+                {
+                    "key": "risks_to_watch",
+                    "label": "Risks to watch",
+                    "bullets": [
+                        {
+                            "voice": "operator",
+                            "text": "No blocking Compass risk is surfaced in this synthetic proof run.",
+                            "fact_ids": [risk_id],
+                        }
+                    ],
+                },
+            ]
+        }
+
+    def generate_finding(self, *, prompt_payload):  # noqa: ANN001, ARG002
+        raise AssertionError("Compass browser proof should use structured generation only.")
 
 
 def _pane_hidden(page, frame_selector: str) -> bool:  # noqa: ANN001
@@ -1073,6 +1190,79 @@ def test_explicit_full_compass_refresh_artifacts_do_not_show_deterministic_brief
                     assert scoped_meta["source"] in {"provider", "cache"}
                     assert scoped_meta["hasNotice"] == "false"
                     assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_shell_safe_compass_refresh_artifacts_use_provider_backed_global_briefs_when_available(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    shutil.rmtree(runtime_dir / "history", ignore_errors=True)
+    for path in (runtime_dir / "current.v1.json", runtime_dir / "current.v1.js"):
+        path.unlink(missing_ok=True)
+
+    provider = _CompassProvider()
+
+    def _provider_from_config(  # noqa: ANN001
+        config: odylith_reasoning.ReasoningConfig,
+        *,
+        repo_root=None,
+        require_auto_mode=True,
+        allow_implicit_local_provider=False,
+    ):
+        assert repo_root == fixture_root
+        assert require_auto_mode is False
+        assert allow_implicit_local_provider is True
+        return provider
+
+    monkeypatch.setattr(odylith_reasoning, "provider_from_config", _provider_from_config)
+
+    rc = render_compass_dashboard.main(
+        [
+            "--repo-root",
+            str(fixture_root),
+            "--output",
+            "odylith/compass/compass.html",
+            "--refresh-profile",
+            "shell-safe",
+        ]
+    )
+    assert rc == 0
+    assert provider.calls >= 2
+    _render_tooling_shell_fixture(fixture_root)
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _assert_compass_live_state(compass, window_token="24h")
+                _wait_for_compass_brief_state(page, window_token="24h", scope_label="Global")
+                meta_24h = _compass_brief_metadata(compass)
+                assert meta_24h["source"] == "provider"
+                assert meta_24h["hasNotice"] == "false"
+                assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
+
+                compass.locator('button[data-window="48h"]').click()
+                _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
+                _assert_compass_live_state(compass, window_token="48h")
+                _wait_for_compass_brief_state(page, window_token="48h", scope_label="Global")
+                meta_48h = _compass_brief_metadata(compass)
+                assert meta_48h["source"] == "provider"
+                assert meta_48h["hasNotice"] == "false"
+                assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:

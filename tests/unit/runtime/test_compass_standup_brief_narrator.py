@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 
 
 class _FakeProvider:

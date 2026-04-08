@@ -24,25 +24,39 @@
     "D-024"
   ],
   "forensic_coverage": {
-    "empty_reasons": [
-      "no_explicit_event",
-      "no_recent_path_match",
-      "no_mapped_workstream_evidence"
-    ],
+    "empty_reasons": [],
     "explicit_event_count": 0,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 1,
-    "status": "baseline_forensic_only",
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 2,
+    "status": "forensic_coverage_present",
     "timeline_event_count": 1
   },
   "name": "Remediator",
   "path_prefixes": [
-    "src/odylith/runtime/evaluation/remediator.py",
+    "src/odylith/runtime/reasoning/remediator.py",
     "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
   ],
   "spec_ref": "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
-  "timeline": [],
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
+        "src/odylith/runtime/reasoning/remediator.py"
+      ],
+      "confidence": "high",
+      "event_index": 67,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "remediator"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/remediator/CURRENT_SPEC.md, src/odylith/runtime/reasoning/remediator.py",
+      "ts_iso": "2026-04-08T01:12:10-07:00",
+      "workstreams": []
+    }
+  ],
   "traceability": {
     "code_references": [
       "src/odylith/cli.py",
@@ -65,6 +79,7 @@
     "B-001",
     "B-045",
     "B-046",
-    "B-047"
+    "B-047",
+    "B-061"
   ]
 }

@@ -38,7 +38,7 @@ from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_isolation
 from odylith.runtime.evaluation import odylith_benchmark_live_process
 from odylith.runtime.evaluation import odylith_benchmark_live_prompt
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 
 
 _STATUS_VALUES = {"completed", "blocked", "failed"}

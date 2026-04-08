@@ -159,6 +159,10 @@ churn does not drown out meaningful implementation evidence.
 - Provider-backed standup narration stays opportunistic and manual-refresh
   bounded. Local timeline, workstream, risk, and KPI readouts must remain
   understandable without spending provider credits.
+- `shell-safe` may reuse exact global brief cache or request provider-backed
+  global `24h`/`48h` narration opportunistically, but it keeps scoped provider
+  warming disabled and must still degrade cleanly to deterministic narration if
+  the provider is unavailable or invalid.
 - Explicit `odylith dashboard refresh --repo-root . --surfaces compass
   --compass-refresh-profile full` is the deeper refresh contract. That path
   keeps the five-minute runtime reuse clamp, but any reused payload must
@@ -265,13 +269,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-07: Aligned Compass traceability risk rows with Radar's shared operator-facing warning policy so maintainer autofix diagnostics stay in the artifacts instead of primary risk cards. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-05: Documented the bounded `compass_brief_freshness` benchmark slice so proof stays on Compass runtime, narrator, focused tests, and product-surface guidance instead of widening into unrelated install or repair surfaces. (Plan: [B-038](odylith/radar/radar.html?view=plan&workstream=B-038))
 - 2026-04-08: Clarified that shell-host refresh truth must distinguish wrapper freshness from Compass child-runtime freshness so stale or failed deeper-refresh snapshots stay explicit on the Compass tab. (Plan: [B-060](odylith/radar/radar.html?view=plan&workstream=B-060))
-- 2026-04-08: Locked explicit Compass `full` refresh to a fail-closed
-  contract: the valid five-minute reuse clamp stays, but a passing rerender
-  can reuse only deep-refresh-clean payloads and must never land on
-  deterministic local brief output or stale fallback truth. (Plan:
-  [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
-- 2026-04-08: Finalized stale-runtime disclosure to a single in-frame Compass
-  warning for ordinary stale snapshots and bounded live-history backfill to
-  retained or restored days so stale windows no longer spray 404 history
-  fetches into the shell browser lane. (Plan:
-  [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-08: Locked explicit Compass `full` refresh to a fail-closed contract: the valid five-minute reuse clamp stays, but a passing rerender can reuse only deep-refresh-clean payloads and must never land on deterministic local brief output or stale fallback truth. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-08: Finalized stale-runtime disclosure to a single in-frame Compass warning for ordinary stale snapshots and bounded live-history backfill to retained or restored days so stale windows no longer spray 404 history fetches into the shell browser lane. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

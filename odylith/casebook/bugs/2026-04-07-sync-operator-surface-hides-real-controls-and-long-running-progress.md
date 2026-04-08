@@ -54,7 +54,7 @@
   safety controls or leave long-running steps silent enough to feel hung.
 
 - Detected By: Real downstream `odylith sync --repo-root .` feedback on
-  2026-04-07 from `/Users/freedom/code/dentoai-orion`.
+  2026-04-07 from a consumer repo.
 
 - Failure Signature: `odylith sync --help` only showing `--repo-root`,
   successful syncs sitting quiet during long action phases, and large warning

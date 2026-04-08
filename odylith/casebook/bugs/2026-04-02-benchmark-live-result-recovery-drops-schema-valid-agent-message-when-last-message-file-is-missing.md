@@ -41,6 +41,14 @@
   when the last-message file is missing and still fails closed when neither
   transport contains a valid structured result.
 
+- Verification Update: A 2026-04-08 detached `source-local` quick
+  architecture rerun during `B-061` hardening still reproduced one
+  `missing_schema_output` `hold` (`report_id` `4a6a673d8e01c578`) before an
+  immediate same-slice rerun returned `provisional_pass`
+  (`report_id` `44c05c52c2551121`), confirming the transport failure mode
+  remains intermittently observable even though the package-boundary work
+  itself is healthy.
+
 - Prevention: Any benchmark transport that duplicates the final result across
   multiple channels must reconcile those channels before declaring product
   failure. Harness I/O loss is not benchmark truth.
@@ -95,8 +103,10 @@
 - Monitoring Updates: Treat `missing_schema_output` as benchmark-invalid until
   both the last-message file and event-stream fallback paths have been checked.
 
-- Residual Risk: Medium until a fresh weak-family proof rerun confirms that
-  event-stream recovery flips real proof cases instead of only test fixtures.
+- Residual Risk: Medium. Event-stream recovery is fixed, but the
+  `missing_schema_output` failure mode is still intermittently observable in
+  live source-local benchmark runs and remains open until repeated proof reruns
+  stop reproducing it.
 
 - Related Incidents/Bugs:
   `2026-04-02-benchmark-live-prompt-surfaced-routing-metadata-instead-of-concrete-focus.md`,

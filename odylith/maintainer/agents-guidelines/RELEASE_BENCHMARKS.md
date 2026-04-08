@@ -66,7 +66,7 @@ Status semantics are explicit:
   - any regression here keeps the benchmark on `hold`
 - `Secondary guardrails`
   - tiers `5-7`
-  - live-proof tighter-budget behavior remains status-blocking
+  - packet-backed live-proof tighter-budget behavior remains status-blocking
   - time to valid outcome and full-session token spend stay published as
     diagnostics on the live proof lane because they are not solo-user latency
     or initial prompt size
@@ -76,7 +76,7 @@ Status semantics are explicit:
     outcome gate by themselves
 
 Current live-proof secondary guardrail:
-- `within_budget_rate` must stay at or above `0.80`
+- `within_budget_rate` must stay at or above `0.80` on packet-backed sampled slices
 
 Current diagnostic-lane efficiency guardrails:
 - median prompt-bundle delta must stay at or below `+64 tokens`

@@ -827,7 +827,7 @@ def test_render_registry_dashboard_maps_source_owned_bundle_mirror_activity_to_c
             "qualification": "curated",
             "aliases": ["diagnosis-engine"],
             "path_prefixes": [
-                "src/odylith/runtime/evaluation/tribunal_engine.py",
+                "src/odylith/runtime/reasoning/tribunal_engine.py",
                 "odylith/runtime/odylith-tribunal-and-remediation-design.md",
             ],
             "workstreams": ["B-901"],

@@ -21,10 +21,9 @@
   plus `doctor` read like the repo still needs one more lifecycle command after
   a supposedly successful hosted install.
 
-- Components Affected: hosted installer generation in
-  `scripts/release/publish_release_assets.py`, install CLI flow in
+- Components Affected: hosted installer publication flow,
   `src/odylith/cli.py`, install manager pin-alignment semantics in
-  `src/odylith/install/manager.py`, public install and upgrade guidance.
+  `src/odylith/install/manager.py`, and public install and upgrade guidance.
 
 - Environment(s): Consumer repos with an existing Odylith install upgraded via
   `curl -fsSL https://odylith.ai/install.sh | bash`.
@@ -112,7 +111,7 @@
   repo pin behind. The fix makes the hosted path converge both in one go and
   say so plainly.
 
-- Code References: `scripts/release/publish_release_assets.py`,
+- Code References: `src/odylith/install/release_assets.py`,
   `src/odylith/cli.py`, `src/odylith/install/manager.py`,
   `tests/unit/install/test_release_bootstrap.py`, `tests/unit/test_cli.py`
 

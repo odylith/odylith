@@ -80,8 +80,10 @@ Extend that same model into a balanced live-shell posture:
   Atlas truth is stale but excluded
 - avoid ambient background mutation of tracked `odylith/` governance outputs in
   mixed worktrees
-- avoid provider-backed Compass brief refresh in passive live-refresh paths so
-  the steady-state shell does not inflate CODEX/provider spend
+- avoid shell-safe scoped provider fan-out and unnecessary repeated Compass
+  provider churn in passive live-refresh paths, while still allowing
+  opportunistic global `24h`/`48h` narration when that path is explicitly
+  rendered and the provider is available
 - make stale or mixed-worktree posture explicit in the shell instead of hiding
   it until commit time
 - keep benchmark and release-proof lanes frozen so no hidden live-refresh path
@@ -210,6 +212,12 @@ Extend that same model into a balanced live-shell posture:
   the resumed shell-and-Compass browser sweep now runs against rerendered
   checked-in shell and Casebook surfaces after source/governance changes, so
   stale generated artifacts stop masquerading as Compass freshness regressions
+- implemented on 2026-04-08 for the shell-safe global-brief regression:
+  shell-safe no longer hard-disables provider for global `24h`/`48h` briefs,
+  the bounded contract is now stated as "scoped deferred, global
+  opportunistic," and browser proof rerenders a real shell-safe Compass
+  snapshot so deterministic global fallback cannot slip through again while a
+  provider is available
 - implemented on 2026-04-08 for Compass closeout governance:
   Compass-specific freshness, fail-closed refresh, stale-disclosure, and
   retained-history claims are now closed; the remaining open workstream scope

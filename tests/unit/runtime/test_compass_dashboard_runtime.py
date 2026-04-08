@@ -438,14 +438,14 @@ def test_global_brief_should_use_provider_for_48h_cache_miss(monkeypatch) -> Non
     )
 
 
-def test_global_brief_provider_allowed_disables_provider_for_shell_safe(monkeypatch) -> None:  # noqa: ANN001
+def test_global_brief_provider_allowed_uses_default_policy_for_shell_safe(monkeypatch) -> None:  # noqa: ANN001
     monkeypatch.setattr(
         runtime,
         "_global_brief_should_use_provider",
         lambda **_kwargs: True,
     )
 
-    assert not runtime._global_brief_provider_allowed(
+    assert runtime._global_brief_provider_allowed(
         repo_root=Path("/tmp/repo"),
         fact_packet={"window": "24h"},
         window_hours=24,

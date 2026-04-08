@@ -62,7 +62,6 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
     const kpiTotalCases = document.getElementById("kpiTotalCases");
     const kpiLatestCase = document.getElementById("kpiLatestCase");
     let detailRenderToken = 0;
-    const BUG_ID_COMPACT_RE = /^(?:CB)?-?(\d{1,})$/i;
     const HUMAN_SIGNAL_FIELDS = [
       "Failure Signature",
       "Trigger Path",
@@ -156,50 +155,12 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       return String(value || "").trim().toLowerCase();
     }
 
-    function normalizeSearchToken(value) {
-      return String(value || "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "");
-    }
-
-    function canonicalizeBugIdToken(value) {
-      const raw = canonicalizeBugToken(value || "");
-      if (!raw) return "";
-      const token = raw.toUpperCase();
-      if (/^CB-\d{3,}$/.test(token)) return token;
-      const compact = token.match(BUG_ID_COMPACT_RE);
-      if (!compact) return "";
-      return `CB-${compact[1].padStart(3, "0")}`;
-    }
-
     function bugAliasTokens(row) {
       const aliases = Array.isArray(row && row.bug_aliases) ? row.bug_aliases : [];
       const fallback = [row && row.bug_route, row && row.bug_id, row && row.bug_key, row && row.source_path];
       return [...aliases, ...fallback]
         .map((item) => canonicalizeBugToken(item || ""))
         .filter(Boolean);
-    }
-
-    function bugSearchText(row) {
-      return [
-        row && row.bug_id,
-        row && row.title,
-        row && row.summary,
-        row && row.components,
-        row && row.bug_key,
-        row && row.source_path,
-        row && row.search_text,
-        ...(Array.isArray(row && row.component_tokens) ? row.component_tokens : []),
-      ].join(" ").toLowerCase();
-    }
-
-    function bugExactMatch(row, term) {
-      const lowered = canonicalizeBugToken(term || "").toLowerCase();
-      const aliases = bugAliasTokens(row);
-      if (lowered && aliases.some((alias) => alias.toLowerCase() === lowered)) return true;
-      const canonicalBugId = canonicalizeBugIdToken(term || "");
-      if (!canonicalBugId) return false;
-      return aliases.some((alias) => canonicalizeBugIdToken(alias) === canonicalBugId);
     }
 
     function resolveBugRoute(rows, token) {
@@ -515,12 +476,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
 
     function matchesSearch(row, term) {
       if (!term) return true;
-      if (bugExactMatch(row, term)) return true;
-      const searchText = bugSearchText(row);
-      if (searchText.includes(term)) return true;
-      const normalizedNeedle = normalizeSearchToken(term);
-      if (!normalizedNeedle) return false;
-      return normalizeSearchToken(searchText).includes(normalizedNeedle);
+      return String(row.search_text || "").toLowerCase().includes(term);
     }
 
     function matchesFilters(row, state) {
@@ -679,10 +635,10 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       const summary = summaryText ? `<p class="detail-summary">${escapeHtml(summaryText)}</p>` : "";
       const summaryFacts = [...detailCoreRows(detail), ...detailSupportingRows(detail)]
         .map(([label, value]) => `
-          <div class="summary-fact" data-summary-field="${escapeHtml(label)}" role="listitem">
-            <p class="summary-fact-label">${escapeHtml(label)}</p>
-            <p class="summary-fact-value">${escapeHtml(value)}</p>
-          </div>
+          <span class="summary-fact">
+            <span class="summary-fact-label">${escapeHtml(label)}</span>
+            <span class="summary-fact-value">${inlineCodeHtml(value)}</span>
+          </span>
         `)
         .join("");
       const componentNarrative = detail.components && String(detail.components).trim() && String(detail.components).trim() !== "-"
@@ -845,10 +801,10 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           <div class="detail-headline">
             ${detail.bug_id ? `<p class="detail-kicker">${escapeHtml(detail.bug_id)}</p>` : ""}
             <h1 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h1>
+            ${summary}
           </div>
-          ${summaryFacts ? `<div class="summary-facts" role="list">${summaryFacts}</div>` : ""}
-          ${summary}
           <div class="detail-meta">${chips.join("")}</div>
+          ${summaryFacts ? `<div class="summary-facts">${summaryFacts}</div>` : ""}
           <div class="detail-links">
             ${sourceLink}
             ${workstreamLinks.length ? renderActionChipGroup(workstreamLinks) : ""}

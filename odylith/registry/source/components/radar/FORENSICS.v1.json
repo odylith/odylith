@@ -43,27 +43,18 @@
     {
       "artifacts": [
         "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md",
-        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md"
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md"
       ],
       "confidence": "high",
-      "event_index": 68,
+      "event_index": 64,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md, odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md +9 more",
-      "ts_iso": "2026-04-07T14:18:11-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md, odylith/radar/source/ideas/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "ts_iso": "2026-04-08T01:20:29-07:00",
       "workstreams": []
     },
     {

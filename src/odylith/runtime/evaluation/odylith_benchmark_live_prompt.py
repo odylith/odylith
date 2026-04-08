@@ -426,6 +426,16 @@ def build_agent_prompt(
             task_lines.append(
                 "On agent-activation slices, if the focused install validators already pass on the grounded tree, stop with no file changes instead of rewriting install or AGENTS guidance wording."
             )
+        elif family == "architecture":
+            task_lines.append(
+                "On architecture review slices, treat the listed anchors and listed supporting docs as the complete dossier unless an exact required path or concrete contradiction forces one adjacent read."
+            )
+            task_lines.append(
+                "Once that bounded dossier supports the contract, stop and emit the schema-valid JSON response instead of reopening the same files for extra corroboration."
+            )
+            task_lines.append(
+                "Do not inspect release runbooks, Atlas or other component specs, benchmark skills, or broader benchmark helper sources unless one of those exact files is an explicit required path or a concrete contradiction points there."
+            )
         elif family == "browser_surface_reliability":
             task_lines.append(
                 "On browser reliability slices, prefer the smallest source-of-truth repair on the listed renderer, onboarding, CLI, and browser-test anchors before adding new onboarding-state assertions."

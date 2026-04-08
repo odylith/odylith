@@ -17,10 +17,9 @@ Last updated (UTC): 2026-04-08
 | CB-063 | 2026-04-07 | Runtime retention prune fails on read only stale runtime trees | P1 | `src/odylith/install/manager.py`, retention cleanup for
   `.odylith/runtime/versions/` and `.odylith/cache/releases/`, hosted installer
   finish path, upgrade and reinstall lifecycle closeout. | Open | [2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md](2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md) |
-| CB-064 | 2026-04-07 | Hosted installer upgrades runtime without advancing repo pin | P1 | hosted installer generation in
-  `scripts/release/publish_release_assets.py`, install CLI flow in
+| CB-064 | 2026-04-07 | Hosted installer upgrades runtime without advancing repo pin | P1 | hosted installer publication flow,
   `src/odylith/cli.py`, install manager pin-alignment semantics in
-  `src/odylith/install/manager.py`, public install and upgrade guidance. | Open | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
+  `src/odylith/install/manager.py`, and public install and upgrade guidance. | Open | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
 | CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
   presentation and next-action routing. | Open | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |

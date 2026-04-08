@@ -173,12 +173,12 @@ def namespace_to_argv(args: argparse.Namespace, *, include_repo_root: bool = Tru
         argv.append("--force")
     if str(getattr(args, "impact_mode", "selective")).strip() != "selective":
         argv.extend(["--impact-mode", str(args.impact_mode)])
+    if bool(getattr(args, "check_only", False)):
+        argv.append("--check-only")
     if bool(getattr(args, "check_clean", False)):
         argv.append("--check-clean")
     if bool(getattr(args, "check_commit_ready", False)):
         argv.append("--check-commit-ready")
-    if bool(getattr(args, "check_only", False)):
-        argv.append("--check-only")
     if bool(getattr(args, "dry_run", False)):
         argv.append("--dry-run")
     if bool(getattr(args, "verbose", False)):

@@ -167,7 +167,7 @@
   became slow enough to be user-visible, and a canceled run left the prior
   deterministic artifact in place. On 2026-04-05, follow-up fixes restored
   scoped provider warming and voice quality. On 2026-04-07, downstream proof in
-  `/Users/freedom/code/dentoai-orion` showed the wrapper still treated bounded
+  a consumer repo showed the wrapper still treated bounded
   and deep refresh as if they shared the same timeout and failure posture, so
   the deeper `full` path remained operator-misleading even though the default
   bounded path stayed healthy.

@@ -11,7 +11,7 @@ import time
 
 import pytest
 from odylith.runtime.evaluation import odylith_benchmark_live_execution as live_execution
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 
 
 def test_resolved_live_execution_contract_prefers_env_over_repo_and_ignores_user_defaults(tmp_path: Path) -> None:
@@ -696,6 +696,46 @@ def test_agent_prompt_treats_harness_validator_as_authoritative() -> None:
     assert "stop with no file changes" in prompt
     assert "Keep the evidence cone tight and avoid broad repo scans" in prompt
     assert 'Emit exactly one JSON object with keys: "status", "summary", "changed_files"' in prompt
+
+
+def test_agent_prompt_keeps_architecture_reviews_as_bounded_dossiers() -> None:
+    prompt = live_execution._agent_prompt(  # noqa: SLF001
+        scenario={
+            "family": "architecture",
+            "prompt": "Audit the Odylith benchmark honest-baseline contract.",
+            "needs_write": False,
+            "changed_paths": [
+                "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+                "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+            ],
+            "required_paths": [
+                "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+                "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+                "README.md",
+                "docs/benchmarks/README.md",
+                "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+            ],
+        },
+        mode="odylith_on",
+        prompt_payload={
+            "architecture_audit": {
+                "changed_paths": [
+                    "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+                    "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+                ],
+                "required_reads": [
+                    "README.md",
+                    "docs/benchmarks/README.md",
+                    "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+                ],
+            }
+        },
+        validation_commands=[],
+    )
+
+    assert "complete dossier unless an exact required path or concrete contradiction forces one adjacent read" in prompt
+    assert "stop and emit the schema-valid JSON response instead of reopening the same files for extra corroboration" in prompt
+    assert "Do not inspect release runbooks, Atlas or other component specs, benchmark skills, or broader benchmark helper sources" in prompt
 
 
 def test_agent_prompt_surfaces_contract_code_paths_and_activation_no_op_guardrail() -> None:

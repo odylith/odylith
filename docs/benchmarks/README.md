@@ -218,14 +218,14 @@ Status is decided in three layers:
    correctness and non-regression, grounding recall and precision, validation
    success and execution fit, robustness and consistency
 2. `Secondary guardrails`
-   tighter-budget behavior on the live proof lane
+   tighter-budget behavior on packet-backed live proof slices
 3. `Advisory mechanism checks`
    packet coverage, widening frequency, route posture, and similar
    explanatory signals
 
 Current live-proof secondary guardrail:
 
-- `within_budget_rate >= 0.80`
+- `within_budget_rate >= 0.80` on packet-backed sampled slices
 
 See [Metrics And Priorities](METRICS_AND_PRIORITIES.md) for the full ordering.
 

@@ -28,10 +28,10 @@
     "empty_reasons": [],
     "explicit_event_count": 19,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 20
+    "timeline_event_count": 19
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -41,22 +41,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/registry/source/components/atlas/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 56,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "atlas"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/atlas/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-07T12:27:49-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/radar/source/INDEX.md",

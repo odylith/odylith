@@ -51,6 +51,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     const runtimeStatusDismiss = document.getElementById("shellRuntimeStatusDismiss");
     const runtimeStatusReload = document.getElementById("shellRuntimeStatusReload");
     const welcomeReopen = document.getElementById("welcomeReopen");
+    const runtimeStatusReopen = document.getElementById("runtimeStatusReopen");
     const upgradeSpotlight = document.getElementById("shellUpgradeSpotlight");
     const upgradeReopen = document.getElementById("upgradeReopen");
     const upgradeSpotlightBackdrop = document.getElementById("upgradeSpotlightBackdrop");
@@ -149,19 +150,15 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     const liveRefreshPayload = payload && payload.live_refresh && typeof payload.live_refresh === "object"
       ? payload.live_refresh
       : null;
-    const initialSurfaceRuntimeStatus = payload && payload.surface_runtime_status && typeof payload.surface_runtime_status === "object"
-      ? payload.surface_runtime_status
-      : {};
     const runtimeProbeStateGlobalName = liveRefreshPayload
       ? String(liveRefreshPayload.state_global_name || "__ODYLITH_CONTEXT_ENGINE_STATE__").trim()
       : "__ODYLITH_CONTEXT_ENGINE_STATE__";
     let runtimeProbeTimer = 0;
     let runtimeProbeInFlight = false;
     let runtimeProbeFingerprint = "";
-    let latestRuntimeStatusState = payload && typeof payload === "object"
-      ? { ...payload, surface_runtime_status: initialSurfaceRuntimeStatus }
-      : { surface_runtime_status: initialSurfaceRuntimeStatus };
+    let latestRuntimeStatusState = null;
     let runtimeStatusFingerprint = "";
+    let runtimeStatusVisiblePosture = false;
     let runtimeStatusLayoutFrame = 0;
     let lastUserInteractionAtMs = Date.now();
     const runtimeAutoReloadAtByTab = Object.create(null);
@@ -207,6 +204,13 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       const upgradeVisible = Boolean(upgradeSpotlight && !upgradeSpotlight.hidden);
       const showWelcomeReopen = Boolean(welcomeReopen && welcomeLaunchpadActive && !welcomeVisible && !upgradeVisible);
       const showUpgradeReopen = Boolean(upgradeReopen && hasUpgradeSpotlight() && !upgradeVisible && !welcomeVisible);
+      const showRuntimeReopen = Boolean(
+        runtimeStatusReopen
+        && runtimeStatusVisiblePosture
+        && runtimeStatusDismissed()
+        && !welcomeVisible
+        && !upgradeVisible
+      );
       if (welcomeReopen) {
         welcomeReopen.hidden = !showWelcomeReopen;
         welcomeReopen.setAttribute("aria-hidden", String(!showWelcomeReopen));
@@ -217,8 +221,13 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
         upgradeReopen.setAttribute("aria-hidden", String(!showUpgradeReopen));
         upgradeReopen.textContent = upgradeSpotlightReopenLabel;
       }
+      if (runtimeStatusReopen) {
+        runtimeStatusReopen.hidden = !showRuntimeReopen;
+        runtimeStatusReopen.setAttribute("aria-hidden", String(!showRuntimeReopen));
+        runtimeStatusReopen.textContent = "Show status";
+      }
       if (recoveryDock) {
-        recoveryDock.hidden = !(showWelcomeReopen || showUpgradeReopen);
+        recoveryDock.hidden = !(showWelcomeReopen || showUpgradeReopen || showRuntimeReopen);
         recoveryDock.setAttribute("aria-hidden", String(recoveryDock.hidden));
       }
     }
@@ -612,7 +621,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     }
 
     function buildRuntimeStatusPosture(runtimeState) {
-      const fallbackPosture = {
+      return {
         visible: false,
         tone: "",
         kicker: "",
@@ -622,47 +631,16 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
         showReload: false,
         reloadLabel: "",
       };
-      const current = readStateFromUrl();
-      const currentTab = current && typeof current === "object"
-        ? String(current.tab || "").trim().toLowerCase()
-        : "";
-      if (!currentTab) return fallbackPosture;
-      const surfaceRuntimeStatus = runtimeState && runtimeState.surface_runtime_status && typeof runtimeState.surface_runtime_status === "object"
-        ? runtimeState.surface_runtime_status
-        : initialSurfaceRuntimeStatus;
-      const rawPosture = surfaceRuntimeStatus[currentTab];
-      if (!rawPosture || typeof rawPosture !== "object") {
-        return fallbackPosture;
-      }
-      return {
-        visible: Boolean(rawPosture.visible),
-        tone: String(rawPosture.tone || "").trim(),
-        kicker: String(rawPosture.kicker || "").trim(),
-        title: String(rawPosture.title || "").trim(),
-        body: String(rawPosture.body || "").trim(),
-        meta: String(rawPosture.meta || "").trim(),
-        showReload: Boolean(rawPosture.showReload),
-        reloadLabel: String(rawPosture.reloadLabel || "").trim(),
-      };
-    }
-
-    function mergeRuntimeStatusState(runtimeState) {
-      const baseState = runtimeState && typeof runtimeState === "object"
-        ? { ...runtimeState }
-        : {};
-      if (!baseState.surface_runtime_status || typeof baseState.surface_runtime_status !== "object") {
-        baseState.surface_runtime_status = initialSurfaceRuntimeStatus;
-      }
-      return baseState;
     }
 
     function applyRuntimeStatus(runtimeState) {
       if (!runtimeStatus || !runtimeStatusTitle || !runtimeStatusBody || !runtimeStatusMeta || !runtimeStatusReload || !runtimeStatusDismiss) {
         return;
       }
-      latestRuntimeStatusState = mergeRuntimeStatusState(runtimeState);
+      latestRuntimeStatusState = runtimeState && typeof runtimeState === "object" ? runtimeState : {};
       const posture = buildRuntimeStatusPosture(runtimeState);
       runtimeStatusFingerprint = posture.visible ? buildRuntimeStatusFingerprint(posture) : "";
+      runtimeStatusVisiblePosture = Boolean(posture.visible);
       const dismissed = runtimeStatusDismissed();
       const visible = Boolean(posture.visible && !dismissed);
       runtimeStatus.hidden = !visible;
@@ -711,7 +689,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       refreshProbe.src = `${sourceHref}${separator}refresh=${Date.now()}`;
       refreshProbe.onload = () => {
         runtimeProbeInFlight = false;
-        const nextPayload = mergeRuntimeStatusState(window[runtimeProbeStateGlobalName]);
+        const nextPayload = window[runtimeProbeStateGlobalName];
         const nextFingerprint = buildRuntimeStateFingerprint(nextPayload);
         const priorFingerprint = runtimeProbeFingerprint;
         const hadFingerprint = Boolean(runtimeProbeFingerprint);
@@ -2150,7 +2128,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     syncRecoveryDock();
     scheduleUpgradeSpotlightExpiry();
     initializeWelcomeTaskState();
-    applyRuntimeStatus(mergeRuntimeStatusState(payload));
+    applyRuntimeStatus(null);
     scheduleShellRefreshPoll(4000);
     scheduleRuntimeProbe(1200);
     document.addEventListener("visibilitychange", () => {
@@ -2196,6 +2174,12 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     if (runtimeStatusDismiss) {
       runtimeStatusDismiss.addEventListener("click", () => {
         setRuntimeStatusDismissed(true);
+        applyRuntimeStatus(latestRuntimeStatusState || {});
+      });
+    }
+    if (runtimeStatusReopen) {
+      runtimeStatusReopen.addEventListener("click", () => {
+        setRuntimeStatusDismissed(false);
         applyRuntimeStatus(latestRuntimeStatusState || {});
       });
     }

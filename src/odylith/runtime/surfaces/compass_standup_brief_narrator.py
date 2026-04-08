@@ -20,7 +20,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.surfaces import compass_standup_brief_deterministic
 

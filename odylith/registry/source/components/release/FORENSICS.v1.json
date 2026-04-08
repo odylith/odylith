@@ -12,12 +12,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 15,
-    "mapped_workstream_evidence_count": 1,
+    "explicit_event_count": 17,
+    "mapped_workstream_evidence_count": 3,
     "recent_path_match_count": 1,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 16
+    "timeline_event_count": 18
   },
   "name": "Release",
   "path_prefixes": [
@@ -44,7 +44,7 @@
         "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 70,
+      "event_index": 66,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -52,8 +52,60 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-07T13:57:46-07:00",
+      "ts_iso": "2026-04-07T20:20:10-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 58,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Bound B-060 to the next release hardening plan covering benchmark re-proof, GitHub merge-identity cleanup, first-install shell refresh robustness, CI pin refresh, and clean post-publish dogfood.",
+      "ts_iso": "2026-04-07T17:08:28-07:00",
+      "workstreams": [
+        "B-060"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 57,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Captured v0.1.10 release feedback under B-060 and moved the post-v0.1.9 dirty maintainer state onto branch 2026/freedom/v0.1.10.",
+      "ts_iso": "2026-04-07T17:08:28-07:00",
+      "workstreams": [
+        "B-060"
+      ]
     },
     {
       "artifacts": [
@@ -542,6 +594,7 @@
     "B-049",
     "B-050",
     "B-056",
-    "B-048"
+    "B-048",
+    "B-060"
   ]
 }

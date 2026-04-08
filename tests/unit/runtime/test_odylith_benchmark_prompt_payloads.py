@@ -240,11 +240,10 @@ def test_supplement_live_prompt_payload_keeps_doc_only_architecture_reviews_free
 
     audit = payload["architecture_audit"]
     assert "implementation_anchors" not in audit
-    assert audit["required_reads"][:4] == [
+    assert audit["required_reads"] == [
         "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
         "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
         "README.md",
-        "docs/benchmarks/README.md",
     ]
 
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from odylith.runtime.governance import operator_readout
-from odylith.runtime.evaluation import tribunal_engine
+from odylith.runtime.reasoning import tribunal_engine
 
 
 def _scope(
@@ -140,7 +140,7 @@ def test_build_tribunal_payload_assigns_expected_special_case_headlines(tmp_path
                 _scope(
                     scope_id="B-061",
                     status="implementation",
-                    code_references=["src/odylith/runtime/evaluation/odylith_reasoning.py"],
+                    code_references=["src/odylith/runtime/reasoning/odylith_reasoning.py"],
                 ),
             ]
         ),
@@ -248,7 +248,7 @@ def test_build_tribunal_payload_editor_brief_avoids_raw_paths(tmp_path: Path) ->
                 _scope(
                     scope_id="B-061",
                     status="implementation",
-                    code_references=["src/odylith/runtime/evaluation/odylith_reasoning.py"],
+                    code_references=["src/odylith/runtime/reasoning/odylith_reasoning.py"],
                 ),
             ]
         ),

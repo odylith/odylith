@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-07
+Updated: 2026-04-08
 
 Backlog: B-025
 
@@ -46,6 +46,7 @@ Boundary Conditions:
 
 Related Bugs:
 - [2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md)
+- [2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md)
 - [2026-04-02-compass-dashboard-refresh-shell-safe-keeps-timeline-audit-pinned-to-stale-snapshot.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-02-compass-dashboard-refresh-shell-safe-keeps-timeline-audit-pinned-to-stale-snapshot.md)
 - [2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md)
 - [2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md)
@@ -123,6 +124,9 @@ Related Bugs:
 - [x] Playwright proves broader UX/UI freshness paths across shell surfaces.
 - [x] Explicit shell-safe Compass dashboard refresh rebuilds the runtime
       snapshot in bounded mode instead of reusing stale `current.v1.json`.
+- [x] Shell-safe Compass global `24h` and `48h` briefs opportunistically use
+      the provider when it is available, while scoped shell-safe briefs stay
+      bounded.
 - [x] Explicit `odylith dashboard refresh --surfaces compass` uses the full
       provider-backed global and scoped refresh path without leaving selected
       workstreams pinned to deterministic local briefs after a completed
@@ -312,14 +316,16 @@ Related Bugs:
       (`radar`, `registry`, `compass`, `casebook`) after an idle debounce and
       keeps Atlas explicit with a next-command hint.
 - [x] Live refresh now carries explicit guardrails: no background `odylith
-      sync`, no background tracked-truth mutation, and no provider-backed
-      Compass brief refresh.
+      sync`, no background tracked-truth mutation, and no shell-safe scoped
+      provider warming; the global shell-safe brief may still reuse exact
+      cache or request the live provider opportunistically.
 - [x] Browser proof covers the stale-snapshot Compass path so old runtime
       payloads stay visibly stale instead of looking empty.
 - [x] `odylith dashboard refresh --surfaces compass` now rebuilds stale Compass
       runtime snapshots in shell-safe mode instead of replaying the old
-      `current.v1.json`, and the bounded path still keeps provider-backed
-      global brief generation deferred.
+      `current.v1.json`, and shell-safe now keeps scoped provider warming
+      deferred while letting global `24h`/`48h` narration use the provider
+      opportunistically when it is available.
 - [x] Shell bundle assets and child-surface frame hrefs now carry cache-busting
       version tokens, and the shell preserves those tokens when query state is
       merged so a rerender cannot stay hidden behind browser cache.
@@ -404,6 +410,13 @@ Related Bugs:
       retained history days only, so stale live snapshots still disclose their
       age inside Compass without spraying 404 history fetches into the shell
       browser lane; the resumed stale-warning browser proof now passes cleanly.
+- [x] April 8 shell-safe global-brief follow-on fixes the over-closed provider
+      gate: shell-safe no longer hard-disables provider for global `24h`/`48h`
+      briefs, the Compass contract now says explicitly that shell-safe keeps
+      scoped warming deferred rather than all live narration deferred, and a
+      headless browser regression now rerenders a real shell-safe Compass
+      snapshot and fails if the global brief falls back to deterministic while
+      a provider is available.
 - [x] Compass closeout is complete on this plan. Remaining unchecked items
       belong to broader cross-surface or benchmark follow-on work, not to
       unresolved Compass freshness, narrator, or shell-disclosure claims.

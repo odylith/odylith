@@ -1532,15 +1532,15 @@ def test_live_workspace_snapshot_paths_include_imported_validator_runtime_depend
     validator = repo_root / "tests" / "unit" / "runtime" / "test_render_mermaid_catalog.py"
     render_catalog = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "render_mermaid_catalog.py"
     delivery_intelligence = repo_root / "src" / "odylith" / "runtime" / "governance" / "delivery_intelligence_engine.py"
-    evaluation_init = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "__init__.py"
-    evaluation_reasoning = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_reasoning.py"
+    reasoning_init = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "__init__.py"
+    reasoning_reasoning = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "odylith_reasoning.py"
     surfaces_init = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "__init__.py"
     for path in (
         validator,
         render_catalog,
         delivery_intelligence,
-        evaluation_init,
-        evaluation_reasoning,
+        reasoning_init,
+        reasoning_reasoning,
         surfaces_init,
     ):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -1553,11 +1553,11 @@ def test_live_workspace_snapshot_paths_include_imported_validator_runtime_depend
         encoding="utf-8",
     )
     delivery_intelligence.write_text(
-        "from odylith.runtime.evaluation import odylith_reasoning\n",
+        "from odylith.runtime.reasoning import odylith_reasoning\n",
         encoding="utf-8",
     )
-    evaluation_init.write_text('"""evaluation package"""\n', encoding="utf-8")
-    evaluation_reasoning.write_text("def judge():\n    return True\n", encoding="utf-8")
+    reasoning_init.write_text('"""reasoning package"""\n', encoding="utf-8")
+    reasoning_reasoning.write_text("def judge():\n    return True\n", encoding="utf-8")
     surfaces_init.write_text('"""surfaces package"""\n', encoding="utf-8")
 
     def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
@@ -1571,8 +1571,8 @@ def test_live_workspace_snapshot_paths_include_imported_validator_runtime_depend
                     "tests/unit/runtime/test_render_mermaid_catalog.py",
                     "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
                     "src/odylith/runtime/governance/delivery_intelligence_engine.py",
-                    "src/odylith/runtime/evaluation/__init__.py",
-                    "src/odylith/runtime/evaluation/odylith_reasoning.py",
+                    "src/odylith/runtime/reasoning/__init__.py",
+                    "src/odylith/runtime/reasoning/odylith_reasoning.py",
                     "src/odylith/runtime/surfaces/__init__.py",
                 ]
             )
@@ -1589,12 +1589,12 @@ def test_live_workspace_snapshot_paths_include_imported_validator_runtime_depend
                 ],
             },
             prompt_payload={},
-        )
+    )
 
     assert "src/odylith/runtime/surfaces/render_mermaid_catalog.py" in paths
     assert "src/odylith/runtime/governance/delivery_intelligence_engine.py" in paths
-    assert "src/odylith/runtime/evaluation/__init__.py" in paths
-    assert "src/odylith/runtime/evaluation/odylith_reasoning.py" in paths
+    assert "src/odylith/runtime/reasoning/__init__.py" in paths
+    assert "src/odylith/runtime/reasoning/odylith_reasoning.py" in paths
 
 
 def test_live_workspace_snapshot_paths_include_benchmark_corpus_for_runner_and_graph_validator_tests(
@@ -2867,12 +2867,14 @@ def test_acceptance_holds_when_secondary_guardrails_breach_thresholds() -> None:
     acceptance = runner._acceptance(  # noqa: SLF001
         mode_summaries={
             "odylith_on": {
+                "packet_scenario_count": 1,
                 "within_budget_rate": 0.7,
                 "critical_required_path_recall_rate": 1.0,
                 "critical_validation_success_rate": 1.0,
                 "expectation_success_rate": 1.0,
             },
             "raw_agent_baseline": {
+                "packet_scenario_count": 1,
                 "within_budget_rate": 1.0,
                 "validation_success_rate": 1.0,
                 "critical_required_path_recall_rate": 0.0,
@@ -2988,6 +2990,76 @@ def test_acceptance_skips_relative_efficiency_guardrails_when_baseline_has_no_su
     assert acceptance["checks"]["prompt_delta_within_guardrail"] is True
     assert acceptance["checks"]["total_payload_delta_within_guardrail"] is True
     assert "Relative latency and token-efficiency guardrails were not applied because `odylith_off` produced no successful outcomes on the sampled corpus." in acceptance["notes"]
+
+
+def test_acceptance_skips_packet_budget_guardrail_for_architecture_only_samples() -> None:
+    acceptance = runner._acceptance(  # noqa: SLF001
+        mode_summaries={
+            "odylith_on": {
+                "packet_scenario_count": 0,
+                "architecture_scenario_count": 1,
+                "within_budget_rate": 0.0,
+                "validation_success_rate": 1.0,
+                "expectation_success_rate": 1.0,
+                "critical_required_path_recall_rate": 0.0,
+                "critical_validation_success_rate": 0.0,
+            },
+            "raw_agent_baseline": {
+                "packet_scenario_count": 0,
+                "architecture_scenario_count": 1,
+                "within_budget_rate": 0.0,
+                "validation_success_rate": 0.0,
+                "expectation_success_rate": 0.0,
+                "critical_required_path_recall_rate": 0.0,
+                "critical_validation_success_rate": 0.0,
+            },
+        },
+        primary_comparison={
+            "required_path_recall_delta": 0.6,
+            "required_path_precision_delta": 0.0,
+            "hallucinated_surface_rate_delta": 0.0,
+            "validation_success_delta": 0.0,
+            "critical_required_path_recall_delta": 0.0,
+            "critical_validation_success_delta": 0.0,
+            "expectation_success_delta": 1.0,
+            "median_latency_delta_ms": 20.0,
+            "median_prompt_token_delta": 120.0,
+            "median_total_payload_token_delta": 140.0,
+        },
+        family_summaries={
+            "architecture": {
+                "odylith_on": {
+                    "required_path_recall_rate": 1.0,
+                    "required_path_precision_rate": 1.0,
+                    "hallucinated_surface_rate": 0.0,
+                    "validation_success_rate": 0.0,
+                    "expectation_success_rate": 1.0,
+                    "scenario_count": 1,
+                },
+                "raw_agent_baseline": {
+                    "required_path_recall_rate": 0.4,
+                    "required_path_precision_rate": 1.0,
+                    "hallucinated_surface_rate": 0.0,
+                    "validation_success_rate": 0.0,
+                    "expectation_success_rate": 0.0,
+                    "scenario_count": 1,
+                },
+            }
+        },
+        corpus_summary={
+            "correctness_critical_scenario_count": 0,
+            "critical_required_path_backed_scenario_count": 0,
+            "critical_validation_backed_scenario_count": 0,
+        },
+        comparison_contract="live_end_to_end",
+    )
+
+    assert acceptance["status"] == "provisional_pass"
+    assert acceptance["hard_quality_gate_cleared"] is True
+    assert acceptance["secondary_guardrails_cleared"] is True
+    assert acceptance["packet_budget_guardrail_applicable"] is False
+    assert acceptance["checks"]["tight_budget_behavior_healthy"] is True
+    assert "Tighter-budget behavior was not applied because the sampled corpus contains no packet-backed scenarios." in acceptance["notes"]
 
 
 def test_robustness_summary_uses_hard_quality_gate_for_profile_consistency() -> None:
@@ -5487,6 +5559,29 @@ def test_prepare_live_scenario_request_adds_architecture_component_anchors() -> 
     assert audit["strict_boundary"] is True
     assert "implementation_anchors" not in audit
     assert "required_reads" not in audit
+
+
+def test_prepare_live_scenario_request_keeps_architecture_honest_baseline_support_docs_fail_closed() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "architecture-benchmark-honest-baseline-contract")
+
+    prepared = runner._prepare_live_scenario_request(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
+    )
+
+    prompt_payload = prepared["prompt_payload"]
+    assert isinstance(prompt_payload, dict)
+    audit = dict(prompt_payload["architecture_audit"])
+    assert audit["required_reads"] == [
+        "docs/benchmarks/README.md",
+        "README.md",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+    ]
+    assert "odylith/MAINTAINER_RELEASE_RUNBOOK.md" not in audit["required_reads"]
+    assert "odylith/registry/source/components/atlas/CURRENT_SPEC.md" not in audit["required_reads"]
 
 
 def test_run_scenario_mode_uses_local_packet_path_on_diagnostic_profile() -> None:

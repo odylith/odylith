@@ -59,7 +59,7 @@ _GLOBAL_IMPACT_PREFIXES: tuple[str, ...] = (
     "src/odylith/runtime/governance/agent_governance_intelligence.py",
     "src/odylith/runtime/governance/delivery_intelligence_engine.py",
     "src/odylith/runtime/governance/operator_readout.py",
-    "src/odylith/runtime/evaluation/odylith_reasoning.py",
+    "src/odylith/runtime/reasoning/odylith_reasoning.py",
     "src/odylith/runtime/governance/validate_plan_workstream_binding.py",
     "src/odylith/runtime/governance/reconcile_plan_workstream_binding.py",
     "odylith/runtime/contracts/",

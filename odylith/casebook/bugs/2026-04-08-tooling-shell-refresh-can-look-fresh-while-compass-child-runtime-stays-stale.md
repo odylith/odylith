@@ -86,8 +86,8 @@
   sections unless the Compass child-runtime snapshot was actually refreshed, or
   the shell explicitly says it was not.
 
-- Detected By: Downstream maintainer packet on 2026-04-08 based on
-  `/Users/freedom/code/dentoai-orion` shell and Compass artifact timestamps.
+- Detected By: Downstream maintainer packet on 2026-04-08 based on shell and
+  Compass artifact timestamps in a real consumer repo.
 
 - Failure Signature: `odylith dashboard refresh --repo-root . --surfaces
   tooling_shell` passes, `odylith/index.html` has a newer write time than

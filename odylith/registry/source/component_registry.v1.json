@@ -750,7 +750,7 @@
         "diagnosis-engine"
       ],
       "path_prefixes": [
-        "src/odylith/runtime/evaluation/tribunal_engine.py",
+        "src/odylith/runtime/reasoning/tribunal_engine.py",
         "odylith/runtime/odylith-tribunal-and-remediation-design.md"
       ],
       "workstreams": [
@@ -786,7 +786,7 @@
         "correction-packet"
       ],
       "path_prefixes": [
-        "src/odylith/runtime/evaluation/remediator.py",
+        "src/odylith/runtime/reasoning/remediator.py",
         "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
       ],
       "workstreams": [

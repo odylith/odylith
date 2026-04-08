@@ -2288,6 +2288,79 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-060",
+      "title": "Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-030",
+        "B-039"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-061",
+      "title": "Odylith Reasoning Package Boundary and Benchmark Separation",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-022",
+        "B-046"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-007",
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "execution_programs": [],
@@ -2704,6 +2777,20 @@
       "label": "Odylith Atlas Memory Substrate and Runtime Topology Refresh",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
+    },
+    {
+      "id": "B-060",
+      "type": "workstream",
+      "label": "Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+    },
+    {
+      "id": "B-061",
+      "type": "workstream",
+      "label": "Odylith Reasoning Package Boundary and Benchmark Separation",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md"
     },
     {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
@@ -3311,6 +3398,18 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
     }
   ],
   "edges": [
@@ -4311,6 +4410,11 @@
     },
     {
       "source": "B-022",
+      "target": "B-061",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
       "target": "diagram:D-024",
       "edge_type": "diagram_linkage"
     },
@@ -4461,6 +4565,11 @@
     },
     {
       "source": "B-030",
+      "target": "B-060",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-030",
       "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
       "edge_type": "promoted_to_plan"
     },
@@ -4547,6 +4656,11 @@
     {
       "source": "B-039",
       "target": "B-046",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-039",
+      "target": "B-060",
       "edge_type": "depends_on"
     },
     {
@@ -4663,6 +4777,11 @@
       "source": "B-045",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-046",
+      "target": "B-061",
+      "edge_type": "depends_on"
     },
     {
       "source": "B-046",
@@ -4922,6 +5041,26 @@
     {
       "source": "B-059",
       "target": "plan:odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-060",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-061",
+      "target": "diagram:D-007",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-061",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-061",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
       "edge_type": "promoted_to_plan"
     }
   ],
@@ -5338,6 +5477,20 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-060": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-061": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -5367,13 +5520,13 @@
     "B-058: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 59,
+    "workstream_count": 61,
     "execution_program_count": 0,
     "execution_wave_count": 0,
-    "node_count": 151,
-    "edge_count": 322,
+    "node_count": 155,
+    "edge_count": 330,
     "warning_count": 2,
     "warning_item_count": 2
   },
-  "generated_utc": "2026-04-07 20:37:03Z"
+  "generated_utc": "2026-04-08 07:50:53Z"
 }

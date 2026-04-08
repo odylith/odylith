@@ -1,16 +1,17 @@
 {
   "component_id": "benchmark",
   "diagrams": [
-    "D-024"
+    "D-024",
+    "D-007"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 4,
-    "mapped_workstream_evidence_count": 4,
+    "explicit_event_count": 6,
+    "mapped_workstream_evidence_count": 6,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 8,
+    "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 5
+    "timeline_event_count": 7
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -23,6 +24,78 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+        "docs/benchmarks/README.md",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
+      ],
+      "confidence": "high",
+      "event_index": 59,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "benchmark"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/METRICS_AND_PRIORITIES.md, docs/benchmarks/README.md +3 more",
+      "ts_iso": "2026-04-08T01:12:10-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 58,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Bound B-060 to the next release hardening plan covering benchmark re-proof, GitHub merge-identity cleanup, first-install shell refresh robustness, CI pin refresh, and clean post-publish dogfood.",
+      "ts_iso": "2026-04-07T17:08:28-07:00",
+      "workstreams": [
+        "B-060"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 57,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Captured v0.1.10 release feedback under B-060 and moved the post-v0.1.9 dirty maintainer state onto branch 2026/freedom/v0.1.10.",
+      "ts_iso": "2026-04-07T17:08:28-07:00",
+      "workstreams": [
+        "B-060"
+      ]
+    },
     {
       "artifacts": [
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
@@ -130,28 +203,6 @@
     },
     {
       "artifacts": [
-        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
-        "docs/benchmarks/README.md",
-        "docs/benchmarks/REVIEWER_GUIDE.md",
-        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
-        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
-        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json"
-      ],
-      "confidence": "high",
-      "event_index": 57,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "benchmark"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/METRICS_AND_PRIORITIES.md, docs/benchmarks/README.md +5 more",
-      "ts_iso": "2026-04-07T00:11:56-07:00",
-      "workstreams": []
-    },
-    {
-      "artifacts": [
         "README.md",
         "docs/benchmarks/README.md",
         "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
@@ -221,6 +272,8 @@
     "B-044",
     "B-041",
     "B-042",
-    "B-046"
+    "B-046",
+    "B-061",
+    "B-060"
   ]
 }

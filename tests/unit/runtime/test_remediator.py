@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from odylith.runtime.evaluation import remediator
+from odylith.runtime.reasoning import remediator
 
 
 def _dossier(
@@ -62,7 +62,7 @@ def test_compile_correction_packet_returns_ai_engine_for_evaluator_changes(tmp_p
         dossier=_dossier(
             case_id="case-b061",
             scenario="unsafe_closeout",
-            code_references=["src/odylith/runtime/evaluation/odylith_reasoning.py"],
+            code_references=["src/odylith/runtime/reasoning/odylith_reasoning.py"],
             changed_artifacts=["odylith/runtime/odylith-reasoning.v4.json"],
         ),
         adjudication=_adjudication("case-b061"),

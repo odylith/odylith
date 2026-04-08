@@ -411,7 +411,7 @@ initSharedQuickTooltips();
 
     const loadedList = await backlogDataSource.loadList({});
     const all = Array.isArray(loadedList) ? loadedList : [];
-    const allIdeaIds = new Set(all.map((row) => String(row.idea_id || "").trim().toUpperCase()).filter(Boolean));
+    const allIdeaIds = new Set(all.map((row) => String(row.idea_id || "").trim()).filter(Boolean));
     const BACKLOG_LIST_WINDOW_THRESHOLD = 180;
     const BACKLOG_LIST_OVERSCAN = 24;
     const BACKLOG_LIST_ROW_HEIGHT = 88;
@@ -419,7 +419,6 @@ initSharedQuickTooltips();
     let latestRenderedRows = [];
     let latestListWindowKey = "";
     let listScrollFrame = 0;
-    const WORKSTREAM_ID_COMPACT_RE = /^B?-?(\d{1,})$/i;
 
     function handleLinkedWorkstreamClick(event) {
       const trigger = event.target.closest("[data-link-idea]");
@@ -462,45 +461,24 @@ initSharedQuickTooltips();
       return token || "unknown";
     }
 
-    function normalizeSearchToken(value) {
-      return String(value || "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "");
-    }
-
-    function canonicalizeIdeaId(value) {
-      const token = String(value || "").trim().toUpperCase();
-      if (!token) return "";
-      if (allIdeaIds.has(token)) return token;
-      const compact = token.match(WORKSTREAM_ID_COMPACT_RE);
-      if (!compact) return "";
-      const normalized = `B-${compact[1].padStart(3, "0")}`;
-      return allIdeaIds.has(normalized) ? normalized : "";
-    }
-
     function isExactIdeaIdQuery(query) {
-      return Boolean(canonicalizeIdeaId(query));
+      return Boolean(query) && all.some((row) => String(row.idea_id || "").trim().toLowerCase() === query);
     }
 
     function rowMatchesQuery(row, query, exactIdeaQuery) {
       if (!query) return true;
-      const canonicalIdeaQuery = exactIdeaQuery ? canonicalizeIdeaId(query) : "";
-      const ideaId = String(row.idea_id || "").trim().toUpperCase();
-      if (canonicalIdeaQuery) {
-        return ideaId === canonicalIdeaQuery;
+      const ideaId = String(row.idea_id || "").trim().toLowerCase();
+      if (exactIdeaQuery) {
+        return ideaId === query;
       }
-      const textParts = [
+      const hay = String(row.search_text || [
         row.idea_id,
         row.title,
         row.ordering_rationale,
         row.rationale_text,
         Array.isArray(row.rationale_bullets) ? row.rationale_bullets.join(" ") : "",
-      ];
-      const hay = String(row.search_text || textParts.join(" ")).toLowerCase();
-      if (hay.includes(query)) return true;
-      const normalizedQuery = normalizeSearchToken(query);
-      if (!normalizedQuery) return false;
-      return normalizeSearchToken(textParts.join(" ")).includes(normalizedQuery);
+      ].join(" ")).toLowerCase();
+      return hay.includes(query);
     }
 
     function rowMatchesFilters(row, options = {}) {
@@ -643,7 +621,7 @@ initSharedQuickTooltips();
     }
 
     function selectIdea(ideaId, options = {}) {
-      const token = canonicalizeIdeaId(ideaId);
+      const token = String(ideaId || "").trim();
       if (!token || !allIdeaIds.has(token)) return false;
       if (options.reveal) {
         revealIdeaSelection(token);
@@ -2308,8 +2286,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         return rich.map((entry) => ({
           idea_id: String(entry.idea_id || "").trim(),
           severity: String(entry.severity || "warning").trim() || "warning",
-          audience: String(entry.audience || "operator").trim() || "operator",
-          surface_visibility: String(entry.surface_visibility || "").trim(),
           category: String(entry.category || "general").trim() || "general",
           message: String(entry.message || "").trim(),
           action: String(entry.action || "").trim(),
@@ -2323,8 +2299,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         .map((message) => ({
           idea_id: "",
           severity: "warning",
-          audience: "operator",
-          surface_visibility: "default",
           category: "legacy",
           message,
           action: "Inspect traceability graph diagnostics and corresponding source files.",
@@ -2332,26 +2306,9 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         }));
     }
 
-    function isDefaultSurfaceWarning(entry) {
-      const severity = String(entry && entry.severity || "warning").trim().toLowerCase();
-      const audience = String(entry && entry.audience || "operator").trim().toLowerCase() || "operator";
-      let visibility = String(entry && entry.surface_visibility || "").trim().toLowerCase();
-      if (!visibility) {
-        visibility = audience === "maintainer" || !["warning", "error"].includes(severity)
-          ? "diagnostics"
-          : "default";
-      }
-      return visibility === "default"
-        && audience !== "maintainer"
-        && ["warning", "error"].includes(severity);
-    }
-
     function warningItemsForIdea(ideaId) {
       const rows = warningItems();
-      return rows.filter(
-        (entry) => String(entry.idea_id || "") === String(ideaId || "")
-          && isDefaultSurfaceWarning(entry)
-      );
+      return rows.filter((entry) => String(entry.idea_id || "") === String(ideaId || ""));
     }
 
     function workstreamLinkChip(ideaId, tone = "") {
@@ -2905,8 +2862,16 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         <header class="detail-header">
           <span class="rank-chip ${escapeHtml(rankChipClass)}">${escapeHtml(rankLabel)}</span>
           <h2 class="detail-title">${escapeHtml(selected.title)}</h2>
+          <p class="detail-id">${escapeHtml(selected.idea_id)}</p>
+          <div class="chips">
+            <span class="chip chip-priority">${escapeHtml(selected.priority)}</span>
+            <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
+            ${executionSignalChip}
+            <span class="chip chip-lane">${escapeHtml(laneLabel(selected.impacted_lanes))}</span>
+            <span class="chip chip-sizing">${escapeHtml(selected.sizing)} / ${escapeHtml(selected.complexity)}</span>
+            <span class="chip ${rankingClass}">${rankingText}</span>
+          </div>
           <div class="kpis">
-            <div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>
             <div class="kpi"><div class="k">Ordering Score</div><div class="v">${escapeHtml(selected.ordering_score)}</div></div>
             <div class="kpi"><div class="k">Created Date</div><div class="v">${escapeHtml(selected.idea_date_display || selected.idea_date || "-")}</div></div>
             <div class="kpi"><div class="k">Age (days)</div><div class="v">${escapeHtml(selected.idea_age_days || "-")}</div></div>
@@ -2915,14 +2880,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             <div class="kpi"><div class="k">Execution Days</div><div class="v">${escapeHtml(selected.execution_duration_days || selected.execution_age_days || "-")}</div></div>
             <div class="kpi"><div class="k">Live Signal At</div><div class="v v-compact" title="${escapeHtml(executionSignalAt || "-")}">${escapeHtml(executionSignalLabel)}</div></div>
             <div class="kpi"><div class="k">Confidence</div><div class="v">${escapeHtml(selected.confidence || "-")}</div></div>
-          </div>
-          <div class="chips">
-            <span class="chip chip-priority">${escapeHtml(selected.priority)}</span>
-            <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
-            ${executionSignalChip}
-            <span class="chip chip-lane">${escapeHtml(laneLabel(selected.impacted_lanes))}</span>
-            <span class="chip chip-sizing">${escapeHtml(selected.sizing)} / ${escapeHtml(selected.complexity)}</span>
-            <span class="chip ${rankingClass}">${rankingText}</span>
           </div>
           <div class="meter">
             <div class="meter-head">

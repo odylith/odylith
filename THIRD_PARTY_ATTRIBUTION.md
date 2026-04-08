@@ -90,9 +90,13 @@ Do not hand-edit it; rerun the generator when the runtime dependency closure or 
 
 ## Acknowledgements
 
+- Odylith's MIT license applies to Odylith-authored code and materials; redistributed third-party components remain available under their own upstream licenses.
+- Strict redistribution rule: Odylith can stay MIT, but any redistributed LanceDB or Vespa code stays Apache-2.0, and any redistributed Tantivy code stays MIT. This is a compliance engineering read, not legal advice.
+- Apache-, MIT-, BSD-, MPL-, and similar permissive/runtime-accepted dependencies may be redistributed alongside Odylith only under their own license terms and required notices; inclusion in Odylith does not relicense them as MIT.
 - Odylith depends on the open-source projects listed above and preserves their required attribution and license materials in source and redistribution artifacts where applicable.
 - The managed-runtime lane is built on upstream `python-build-standalone` inputs and redistributes CPython inside Odylith-managed runtime bundles.
 - Where upstream wheels expose license trees or notice files, Odylith preserves those files inside the built runtime bundles rather than flattening them into one synthetic notice blob.
+- Optional remote-service integrations are not treated as shipped runtime dependencies unless Odylith bundles their software artifacts into redistributed release outputs.
 
 ## Observed License Expressions
 

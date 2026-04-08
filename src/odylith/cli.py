@@ -1587,8 +1587,11 @@ def main(argv: list[str] | None = None) -> int:
                 forwarded=forwarded,
             )
         if tokens[0] == "sync":
+            repo_root, forwarded = _extract_repo_root(tokens[1:])
             parser = build_parser()
             args = parser.parse_args(tokens)
+            args.repo_root = repo_root
+            args.forwarded = forwarded
             return _cmd_sync(args)
         if tokens[0] == "governance" and len(tokens) >= 2:
             repo_root, forwarded = _extract_repo_root(tokens[2:])

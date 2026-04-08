@@ -27,7 +27,7 @@ from odylith.runtime.surfaces import compass_transaction_runtime
 from odylith.runtime.surfaces import compass_execution_focus_runtime
 from odylith.runtime.surfaces import compass_runtime_payload_runtime
 from odylith.runtime.governance import execution_wave_view_model
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.context_engine import odylith_runtime_surface_summary
@@ -62,7 +62,7 @@ def _global_brief_provider_allowed(
     window_hours: int,
     refresh_profile: str,
 ) -> bool:
-    if not compass_refresh_contract.full_refresh_requested(refresh_profile):
+    if compass_refresh_contract.normalize_refresh_profile(refresh_profile) not in {"full", "shell-safe"}:
         return False
     return _global_brief_should_use_provider(
         repo_root=repo_root,

@@ -5750,6 +5750,7 @@ def _acceptance(
     candidate_critical_validation_backed_scenario_count = int(
         candidate.get("critical_validation_backed_scenario_count", 0) or 0
     )
+    packet_budget_guardrail_applicable = int(candidate.get("packet_scenario_count", 0) or 0) > 0
     comparative_efficiency_guardrails = odylith_benchmark_guardrails.comparative_efficiency_guardrails_applicability(
         candidate_summary=candidate,
         baseline_summary=baseline,
@@ -5830,8 +5831,8 @@ def _acceptance(
             or not bootstrap_baseline
             or bootstrap_payload_delta <= _SECONDARY_TOTAL_PAYLOAD_TOKEN_GUARDRAIL_MAX_DELTA
         ),
-        "tight_budget_behavior_healthy": float(candidate.get("within_budget_rate", 0.0) or 0.0)
-        >= _SECONDARY_WITHIN_BUDGET_RATE_MIN,
+        "tight_budget_behavior_healthy": (not packet_budget_guardrail_applicable)
+        or float(candidate.get("within_budget_rate", 0.0) or 0.0) >= _SECONDARY_WITHIN_BUDGET_RATE_MIN,
         "architecture_latency_within_guardrail": (
             not comparative_latency_and_token_status_blocking
             or not architecture_candidate
@@ -5957,6 +5958,10 @@ def _acceptance(
             notes.append(
                 "Relative latency and token-efficiency guardrails were not applied because the sampled corpus did not produce successful outcomes on both compared lanes."
             )
+    if not packet_budget_guardrail_applicable:
+        notes.append(
+            "Tighter-budget behavior was not applied because the sampled corpus contains no packet-backed scenarios."
+        )
     if secondary_guardrails_cleared:
         notes.append("Secondary latency, efficiency, and tighter-budget guardrails are within threshold on this sampled corpus.")
     elif secondary_guardrail_failure_labels:
@@ -6030,6 +6035,7 @@ def _acceptance(
         "comparative_efficiency_guardrails_applicable": comparative_efficiency_applicable,
         "comparative_latency_and_token_status_blocking": comparative_latency_and_token_status_blocking,
         "comparative_efficiency_guardrail_reason": str(comparative_efficiency_guardrails.get("reason", "")).strip(),
+        "packet_budget_guardrail_applicable": packet_budget_guardrail_applicable,
         "hard_quality_checks": hard_quality_checks,
         "secondary_guardrail_checks": secondary_guardrail_checks,
         "advisory_checks": advisory_checks,

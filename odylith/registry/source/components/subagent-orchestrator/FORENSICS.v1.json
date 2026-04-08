@@ -27,10 +27,10 @@
     "empty_reasons": [],
     "explicit_event_count": 7,
     "mapped_workstream_evidence_count": 4,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 8
+    "timeline_event_count": 7
   },
   "name": "Subagent Orchestrator",
   "path_prefixes": [
@@ -143,25 +143,6 @@
       "workstreams": [
         "B-031"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/subagent-orchestrator/SKILL.md",
-        "src/odylith/runtime/orchestration/subagent_orchestrator.py"
-      ],
-      "confidence": "high",
-      "event_index": 72,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "subagent-orchestrator"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md, odylith/skills/subagent-orchestrator/SKILL.md +2 more",
-      "ts_iso": "2026-04-07T00:19:12-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [
