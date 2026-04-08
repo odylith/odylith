@@ -568,7 +568,7 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
         "  fi",
         "}",
         "detect_repo_root() {",
-        "  local candidate git_candidate start_dir",
+        '  local candidate git_candidate="" start_dir',
         "  start_dir=\"$(pwd)\"",
         "  candidate=\"$start_dir\"",
         "  repo_root=''",

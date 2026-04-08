@@ -96,6 +96,11 @@ claims aligned for public publication.
   state using stable commands such as `install --version` and
   `upgrade --to ... --write-pin` instead of assuming a newly introduced hidden
   flag exists in older shipped CLIs.
+- Generated hosted installer shell helpers must stay strict-mode safe. Under
+  `set -euo pipefail`, repo-root detection and other optional shell locals must
+  be initialized before guard checks, and local release smoke must continue to
+  prove the nested first-install shape before ancestor repo markers are
+  discovered.
 - When the hosted installer upgrades an already-installed consumer repo, it
   must leave one truthful closeout posture: the verified runtime is active, the
   tracked repo pin matches that runtime, and any stale-retention cleanup that

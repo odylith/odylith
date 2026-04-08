@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import subprocess
 import tarfile
 import zipfile
 from pathlib import Path
@@ -19,6 +20,38 @@ def _load_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _extract_shell_function(script_text: str, name: str, next_name: str) -> str:
+    start = script_text.index(f"{name}() {{")
+    end = script_text.index(f"{next_name}() {{")
+    return script_text[start:end].strip()
+
+
+def _run_detect_repo_root(*, tmp_path: Path, install_script_text: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+    helper = tmp_path / "detect_repo_root.sh"
+    detect_repo_root = _extract_shell_function(install_script_text, "detect_repo_root", "describe_repo_root_choice")
+    helper.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                detect_repo_root,
+                'cd "$1"',
+                "detect_repo_root",
+                'printf \'%s\\n%s\\n\' \"$repo_root\" \"$repo_root_reason\"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    helper.chmod(0o755)
+    return subprocess.run(
+        ["bash", str(helper), str(cwd)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
 
 
 def test_generated_install_script_verifies_signed_release_assets_before_activation(tmp_path: Path) -> None:
@@ -48,6 +81,7 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "banner() {" in text
     assert "require_command() {" in text
     assert "detect_repo_root() {" in text
+    assert 'local candidate git_candidate="" start_dir' in text
     assert "describe_repo_root_choice() {" in text
     assert "platform_display_name() {" in text
     assert "allow_local_http_asset() {" in text
@@ -128,6 +162,49 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert text.index("unset VIRTUAL_ENV") < text.index("bootstrap_python=\"$bootstrap_runtime/bin/python\"")
     assert text.index("detect_repo_root") < text.index("fetch_asset \"$release_base_url/$runtime_asset_name\"")
     assert "AGENTS.md not found" not in text
+
+
+def test_generated_install_script_detect_repo_root_is_strict_mode_safe_from_nested_agents_path(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    repo_root = tmp_path / "fresh-install"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    nested = repo_root / "workspace" / "nested"
+    nested.mkdir(parents=True)
+
+    completed = _run_detect_repo_root(tmp_path=tmp_path, install_script_text=output_path.read_text(encoding="utf-8"), cwd=nested)
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout.splitlines() == [str(repo_root), "agents"]
+
+
+def test_generated_install_script_detect_repo_root_falls_back_to_current_folder_without_markers(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    nested = tmp_path / "plain" / "nested"
+    nested.mkdir(parents=True)
+
+    completed = _run_detect_repo_root(tmp_path=tmp_path, install_script_text=output_path.read_text(encoding="utf-8"), cwd=nested)
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout.splitlines() == [str(nested), "folder"]
 
 
 def test_publish_release_assets_rejects_non_canonical_release_context() -> None:

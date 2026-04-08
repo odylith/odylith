@@ -89,6 +89,12 @@ Related Bugs:
   `candidate-proof` still carried unit tests that depended on ambient Codex
   host-runtime markers or a real local `codex` binary instead of making those
   assumptions explicit.
+- [CB-075](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md)
+  tracks the follow-on hosted-installer release blocker: after the hidden-flag
+  compatibility fix landed, GitHub-hosted candidate proof still failed because
+  the generated strict-mode installer tested an uninitialized `git_candidate`
+  shell local on the nested fresh-install path before ancestor repo markers
+  were discovered.
 
 ## Learnings
 - [x] `v0.1.9` published on 2026-04-07, but canonical release proof still
@@ -144,6 +150,11 @@ Related Bugs:
       runtime or a local `codex` binary, so `pytest` and `candidate-proof`
       failed in Actions even though the non-Codex runner was exercising the
       correct fail-closed payload shape.
+- [x] Canonical candidate proof on 2026-04-08 surfaced one more hosted
+      installer template bug after the hidden-flag fix merged: the generated
+      strict-mode `install.sh` still aborted on the nested fresh-install path
+      because `detect_repo_root()` referenced `git_candidate` before
+      initializing it.
 
 ## Must-Ship
 - [x] Remove dependency on GitHub-generated committer metadata from the
@@ -158,6 +169,9 @@ Related Bugs:
 - [x] Make hosted-install closeout converge on one truthful posture: healthy
       activation, best-effort stale cleanup, and matching active-plus-pinned
       versions when the public installer upgrades an existing consumer repo.
+- [ ] Keep the hosted installer strict-mode safe on the nested first-install
+      path by initializing optional repo-root detection locals and proving that
+      shape in canonical release smoke.
 - [x] Make `odylith sync` operator proof honest and discoverable: visible help
       for supported controls, heartbeat progress for long action-backed steps,
       explicit acknowledgement past large dirty-overlap thresholds, structured
@@ -213,6 +227,9 @@ Related Bugs:
 - [ ] Hosted installer upgrades on already-installed consumer repos finish with
       zero retention-cleanup hard failures from read-only stale runtimes and
       zero silent active-versus-pin divergence.
+- [ ] Hosted installer fresh-install proof from a nested folder with no
+      ancestor repo marker discovered yet passes under the shipped strict
+      shell contract with zero unbound-variable aborts.
 - [ ] Release CI no longer emits the Node 20 deprecation warning on pinned
       first-party actions.
 - [x] PR `pytest` and `candidate-proof` pass on GitHub-hosted runners without
@@ -262,6 +279,7 @@ Related Bugs:
 - [ ] [delivery_intelligence_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/delivery_intelligence_engine.py)
 - [ ] [render_tooling_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_tooling_dashboard.py)
 - [ ] [test_release_bootstrap.py](/Users/freedom/code/odylith/tests/unit/install/test_release_bootstrap.py)
+- [ ] [publish_release_assets.py](/Users/freedom/code/odylith/scripts/release/publish_release_assets.py)
 - [ ] [test_cli.py](/Users/freedom/code/odylith/tests/unit/test_cli.py)
 - [ ] [test_manager.py](/Users/freedom/code/odylith/tests/integration/install/test_manager.py)
 - [ ] [test_sync_cli_compat.py](/Users/freedom/code/odylith/tests/unit/runtime/test_sync_cli_compat.py)
