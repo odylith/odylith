@@ -192,8 +192,9 @@ it from the compressed archive with:
 
 ## License And Attribution
 
-Odylith itself is Apache-2.0 under the repo-root `LICENSE` and `NOTICE`
-materials.
+Odylith itself is MIT-licensed under the repo-root `LICENSE`. The repo-root
+`NOTICE` file carries the canonical project attribution identity for
+redistributions that preserve an Odylith notice alongside the license.
 
 Maintained third-party attribution and acknowledgements live in the repo-root
 `THIRD_PARTY_ATTRIBUTION.md` file. The maintainer validation lane fails closed

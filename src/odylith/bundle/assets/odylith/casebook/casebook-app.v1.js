@@ -845,10 +845,10 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           <div class="detail-headline">
             ${detail.bug_id ? `<p class="detail-kicker">${escapeHtml(detail.bug_id)}</p>` : ""}
             <h1 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h1>
-            ${summary}
           </div>
-          <div class="detail-meta">${chips.join("")}</div>
           ${summaryFacts ? `<div class="summary-facts" role="list">${summaryFacts}</div>` : ""}
+          ${summary}
+          <div class="detail-meta">${chips.join("")}</div>
           <div class="detail-links">
             ${sourceLink}
             ${workstreamLinks.length ? renderActionChipGroup(workstreamLinks) : ""}

@@ -4,6 +4,7 @@ import importlib.util
 import io
 import json
 import tarfile
+import zipfile
 from pathlib import Path
 
 from odylith.install.managed_runtime import managed_runtime_platform_by_slug, supported_managed_runtime_feature_packs
@@ -306,6 +307,25 @@ def test_runtime_wrapper_writer_creates_bin_directory(tmp_path: Path) -> None:
     wrapper = runtime_root / "bin" / "odylith"
     assert wrapper.is_file()
     assert 'exec "$script_dir/python" -m odylith.cli "$@"' in wrapper.read_text(encoding="utf-8")
+
+
+def test_extract_wheel_into_site_packages_preserves_extra_metadata(tmp_path: Path) -> None:
+    module = _load_module()
+    wheel_path = tmp_path / "odylith-1.2.3-py3-none-any.whl"
+    site_packages = tmp_path / "site-packages"
+    attribution_path = (
+        "odylith-1.2.3.dist-info/extra_metadata/THIRD_PARTY_ATTRIBUTION.md"
+    )
+
+    with zipfile.ZipFile(wheel_path, "w") as archive:
+        archive.writestr(attribution_path, "# attribution\n")
+
+    module._extract_wheel_into_site_packages(  # noqa: SLF001
+        wheel_path=wheel_path,
+        site_packages=site_packages,
+    )
+
+    assert (site_packages / attribution_path).read_text(encoding="utf-8") == "# attribution\n"
 
 
 def test_release_upload_artifacts_include_raw_runtime_bundles_and_attribution(tmp_path: Path) -> None:

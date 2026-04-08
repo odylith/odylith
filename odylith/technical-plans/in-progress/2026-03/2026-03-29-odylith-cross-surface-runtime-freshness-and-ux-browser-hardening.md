@@ -269,6 +269,17 @@ Related Bugs:
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output odylith/casebook/casebook.html`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output src/odylith/bundle/assets/odylith/casebook/casebook.html`
 - [x] `python -m py_compile src/odylith/runtime/surfaces/render_casebook_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/integration/runtime/test_surface_browser_layout_audit.py`
+- [x] `python -m py_compile src/odylith/runtime/surfaces/render_mermaid_catalog.py src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_render_backlog_ui.py tests/integration/runtime/test_surface_browser_layout_audit.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_render_backlog_ui.py`
+- [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_mermaid_catalog --repo-root . --output odylith/atlas/atlas.html`
+- [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_mermaid_catalog --repo-root . --output src/odylith/bundle/assets/odylith/atlas/atlas.html`
+- [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_backlog_ui --repo-root . --output odylith/radar/radar.html --standalone-pages odylith/radar/standalone-pages.v1.js`
+- [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_backlog_ui --repo-root . --output src/odylith/bundle/assets/odylith/radar/radar.html --standalone-pages src/odylith/bundle/assets/odylith/radar/standalone-pages.v1.js`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py -k 'radar_search_selection_and_cross_surface_detail_links or radar_topology_relation_chips_route_to_their_own_workstream_ids or atlas_navigation_filters_and_context_links or atlas_d025_memory_substrate_route_exposes_governed_registry_links'`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py -k atlas`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py -k atlas`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py -k 'casebook or radar'`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py -k 'casebook or radar'`
 - [ ] `odylith benchmark --repo-root .`
 - [x] `git diff --check`
 
@@ -336,6 +347,20 @@ Related Bugs:
       compact-width and repetition-aware UX proof so the live shell catches
       noisy detail bands before release, including desktop and compact
       geometry audits for Casebook detail headers.
+- [x] April 7 Atlas/Radar detail-header follow-on makes Atlas mirror the
+      Casebook fact-card treatment, promotes Radar workstream ids into the KPI
+      grid as the first box, and extends the browser layout audit so desktop
+      and compact views fail on header overlap, inline-collapsed facts, or id
+      cards drifting out of first position.
+- [x] Atlas header now also drops the old right-side control lane so the fact
+      cards use the full detail width instead of leaving empty space beside the
+      first card rows; the layout audit now proves the controls stack below the
+      facts instead of reserving a desktop-side gutter.
+- [x] Dashboard detail-header ordering is now explicit shared governance: the
+      primary fact/KPI grid must be the first block under the headline across
+      Casebook, Atlas, and Radar, while supporting prose, chips, links, and
+      controls render below that grid; the Dashboard spec now carries that
+      contract and the layout/browser proof enforces it.
 - [x] April 7 diagnostics follow-on keeps maintainer autofix conflict notes in
       shared traceability artifacts but removes them from default Radar warning
       cards so default surfaces agree on operator-facing warning semantics.

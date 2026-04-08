@@ -107,6 +107,13 @@ def test_render_mermaid_catalog_uses_casebook_style_detail_fact_cards() -> None:
     assert "Diagram ID" in html
     assert "Reviewed" in html
     assert 'id="diagramFreshnessCard"' in html
+    assert 'button.setAttribute("data-diagram", diagram.diagram_id);' in html
+    assert ".hero {" in html
+    assert "display: grid;" in html
+    assert "justify-content: flex-start;" in html
+    assert "width: 100%;" in html
+    assert html.index('data-fact="diagram-id"') < html.index('data-fact="kind"')
+    assert html.index('data-fact="diagram-id"') < html.index('data-fact="status"')
 
 
 def test_render_mermaid_catalog_sizes_image_box_from_diagram_dimensions() -> None:

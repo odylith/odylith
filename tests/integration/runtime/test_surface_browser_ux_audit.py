@@ -215,7 +215,7 @@ def test_radar_b048_brutal_topology_and_surface_link_audit(browser_context) -> N
 
     radar = page.frame_locator("#frame-radar")
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar.locator("#detail .detail-id", has_text=source_id).wait_for(timeout=15000)
+    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
     _open_radar_topology_relations(radar)
 
     relation_ids = radar.locator("#detail").evaluate(
@@ -232,7 +232,7 @@ def test_radar_b048_brutal_topology_and_surface_link_audit(browser_context) -> N
     for target_id in relation_ids:
         response = page.goto(source_url, wait_until="domcontentloaded")
         assert response is not None and response.ok
-        radar.locator("#detail .detail-id", has_text=source_id).wait_for(timeout=15000)
+        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
         _open_radar_topology_relations(radar)
         radar.locator(f'#detail [data-link-idea="{target_id}"]').first.evaluate("node => node.click()")
         _assert_radar_selection(page, str(target_id))
@@ -240,14 +240,14 @@ def test_radar_b048_brutal_topology_and_surface_link_audit(browser_context) -> N
 
     response = page.goto(source_url, wait_until="domcontentloaded")
     assert response is not None and response.ok
-    radar.locator("#detail .detail-id", has_text=source_id).wait_for(timeout=15000)
+    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
     _open_radar_topology_relations(radar)
     surface_actions = _frame_anchor_actions(radar, "#detail a.chip-topology-diagram, #detail a.chip-registry-component")
     assert surface_actions, "expected B-048 cross-surface shell links"
     for href in dict.fromkeys(str(action["href"]) for action in surface_actions):
         response = page.goto(source_url, wait_until="domcontentloaded")
         assert response is not None and response.ok
-        radar.locator("#detail .detail-id", has_text=source_id).wait_for(timeout=15000)
+        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
         _open_radar_topology_relations(radar)
         selector = "a.chip-topology-diagram" if "tab=atlas" in href else "a.chip-registry-component"
         _click_frame_anchor_by_href(radar, "#detail", selector, href)
@@ -291,7 +291,7 @@ def test_radar_default_warning_cards_hide_maintainer_traceability_diagnostics(br
         wait_until="domcontentloaded",
     )
     assert response is not None and response.ok
-    radar.locator("#detail .detail-id", has_text=source_id).wait_for(timeout=15000)
+    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
 
     warning_text = " ".join(radar.locator("#detail .warning-item").all_inner_texts())
     assert str(diagnostic["message"]) not in warning_text

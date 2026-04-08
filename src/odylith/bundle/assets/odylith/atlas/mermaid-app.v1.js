@@ -85,6 +85,7 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     const ownerEl = document.getElementById("diagramOwner");
     const reviewedEl = document.getElementById("diagramReviewed");
     const freshnessEl = document.getElementById("diagramFreshness");
+    const freshnessCardEl = document.getElementById("diagramFreshnessCard");
 
     const sourceLinksEl = document.getElementById("sourceLinks");
     const sidebarToggleEl = document.getElementById("sidebarToggle");
@@ -134,7 +135,7 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     const DIAGRAM_ID_RE = /^D-\d{3,}$/;
     const DIAGRAM_COMPACT_RE = /^D(\d{3,})$/;
     const SIDEBAR_PREF_KEY = "mermaid.sidebar.collapsed";
-    const TOOLING_BASE_HREF = "../index.html";
+    const TOOLING_BASE_HREF = "../../../../../../odylith/index.html";
     function initSharedQuickTooltips() {
   const QUICK_TOOLTIP_BIND_KEY = null;
   if (QUICK_TOOLTIP_BIND_KEY && document.body && document.body.dataset[QUICK_TOOLTIP_BIND_KEY] === "1") {
@@ -672,7 +673,7 @@ initSharedQuickTooltips();
       ownerEl.textContent = "";
       reviewedEl.textContent = "";
       freshnessEl.textContent = "";
-      freshnessEl.className = "meta-pill";
+      freshnessCardEl?.classList.remove("ok", "warn");
       summaryEl.textContent = "";
       clearNode(sourceLinksEl);
       clearNode(componentListEl);
@@ -700,10 +701,11 @@ initSharedQuickTooltips();
       idEl.textContent = diagram.diagram_id;
       kindEl.textContent = diagram.kind;
       statusEl.textContent = diagram.status;
-      ownerEl.textContent = `Owner: ${diagram.owner}`;
-      reviewedEl.textContent = `Reviewed: ${diagram.last_reviewed_utc}`;
+      ownerEl.textContent = diagram.owner;
+      reviewedEl.textContent = diagram.last_reviewed_utc;
       freshnessEl.textContent = diagram.freshness === "stale" ? "Needs Update" : "Fresh";
-      freshnessEl.className = diagram.freshness === "stale" ? "meta-pill warn" : "meta-pill ok";
+      freshnessCardEl?.classList.toggle("warn", diagram.freshness === "stale");
+      freshnessCardEl?.classList.toggle("ok", diagram.freshness !== "stale");
 
       summaryEl.textContent = diagram.summary;
 
@@ -783,6 +785,7 @@ initSharedQuickTooltips();
         const button = document.createElement("button");
         button.className = "diagram-btn";
         button.type = "button";
+        button.setAttribute("data-diagram", diagram.diagram_id);
         const tooltip = diagramButtonTooltip(diagram);
         button.setAttribute("data-tooltip", tooltip);
         button.setAttribute("aria-label", tooltip);

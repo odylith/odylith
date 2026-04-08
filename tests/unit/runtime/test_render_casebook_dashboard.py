@@ -122,6 +122,7 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Inspect Next" not in app_js
     assert 'data-summary-field="${escapeHtml(label)}"' in app_js
     assert '<div class="summary-facts" role="list">${summaryFacts}</div>' in app_js
+    assert app_js.index('<div class="summary-facts" role="list">${summaryFacts}</div>') < app_js.index("${summary}")
     assert "function normalizeSearchToken(value)" in app_js
     assert "function canonicalizeBugIdToken(value)" in app_js
     assert "function bugSearchText(row)" in app_js

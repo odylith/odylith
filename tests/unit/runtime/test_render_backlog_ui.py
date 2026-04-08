@@ -157,3 +157,6 @@ def test_render_backlog_ui_promotes_workstream_id_into_detail_kpi_grid() -> None
 
     assert 'data-kpi="workstream-id"' in html
     assert "Workstream ID" in html
+    assert 'class="detail-id"' not in html
+    assert html.index('data-kpi="workstream-id"') < html.index('<div class="chips">')
+    assert html.index('data-kpi="workstream-id"') < html.index("Ordering Score")

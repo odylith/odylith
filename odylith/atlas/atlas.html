@@ -376,11 +376,9 @@
     }
 
     .hero {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      flex-wrap: wrap;
+      display: grid;
+      gap: 10px;
+      min-width: 0;
     }
 
     .hero-title {
@@ -412,12 +410,69 @@
   }
 }
 
-    .hero-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 9px;
+    .hero-copy {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      width: 100%;
     }
+
+    .diagram-facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .diagram-fact {
+      display: grid;
+      gap: 4px;
+      align-content: start;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .diagram-fact.ok {
+      border-color: rgba(2, 122, 72, 0.22);
+      background: linear-gradient(180deg, #ffffff, #f3fbf6);
+    }
+
+    .diagram-fact.warn {
+      border-color: rgba(181, 71, 8, 0.24);
+      background: linear-gradient(180deg, #ffffff, #fff7ed);
+    }
+
+    .diagram-fact-label,
+    .diagram-fact-value {
+      min-width: 0;
+    }
+
+    .diagram-fact-value {
+      overflow-wrap: anywhere;
+    }
+
+    .diagram-fact-label {
+  margin: 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.diagram-fact-value {
+  margin: 0;
+  color: #16324f;
+  font-size: 13px;
+  line-height: 1.3;
+  letter-spacing: 0em;
+  font-weight: 700;
+}
 
     .meta-pill {
       --label-bg: rgba(255, 255, 255, 0.9);
@@ -462,7 +517,9 @@
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: flex-start;
+      width: 100%;
+      min-width: 0;
     }
 
     .source-link {
@@ -891,6 +948,12 @@
         grid-template-columns: 1fr;
       }
     }
+
+    @media (max-width: 760px) {
+      .diagram-facts {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -939,15 +1002,33 @@
 
     <main class="panel main">
       <section class="hero">
-        <div>
+        <div class="hero-copy">
           <h2 id="diagramTitle" class="hero-title"></h2>
-          <div class="hero-meta">
-            <span id="diagramId" class="meta-pill"></span>
-            <span id="diagramKind" class="meta-pill"></span>
-            <span id="diagramStatus" class="meta-pill"></span>
-            <span id="diagramOwner" class="meta-pill"></span>
-            <span id="diagramReviewed" class="meta-pill"></span>
-            <span id="diagramFreshness" class="meta-pill"></span>
+          <div class="diagram-facts" role="list">
+            <div class="diagram-fact" data-fact="diagram-id" role="listitem">
+              <p class="diagram-fact-label">Diagram ID</p>
+              <p id="diagramId" class="diagram-fact-value"></p>
+            </div>
+            <div class="diagram-fact" data-fact="kind" role="listitem">
+              <p class="diagram-fact-label">Kind</p>
+              <p id="diagramKind" class="diagram-fact-value"></p>
+            </div>
+            <div class="diagram-fact" data-fact="status" role="listitem">
+              <p class="diagram-fact-label">Status</p>
+              <p id="diagramStatus" class="diagram-fact-value"></p>
+            </div>
+            <div class="diagram-fact" data-fact="owner" role="listitem">
+              <p class="diagram-fact-label">Owner</p>
+              <p id="diagramOwner" class="diagram-fact-value"></p>
+            </div>
+            <div class="diagram-fact" data-fact="reviewed" role="listitem">
+              <p class="diagram-fact-label">Reviewed</p>
+              <p id="diagramReviewed" class="diagram-fact-value"></p>
+            </div>
+            <div id="diagramFreshnessCard" class="diagram-fact" data-fact="freshness" role="listitem">
+              <p class="diagram-fact-label">Freshness</p>
+              <p id="diagramFreshness" class="diagram-fact-value"></p>
+            </div>
           </div>
         </div>
         <div class="source-links-wrap">
@@ -1086,7 +1167,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=11f8de77cc23"></script>
-  <script src="mermaid-app.v1.js?v=11f8de77cc23"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=a6776e8573b4"></script>
+  <script src="mermaid-app.v1.js?v=a6776e8573b4"></script>
 </body>
 </html>

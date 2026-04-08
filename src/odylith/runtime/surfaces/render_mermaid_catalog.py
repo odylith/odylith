@@ -1317,11 +1317,9 @@ def _render_html(
     }
 
     .hero {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      flex-wrap: wrap;
+      display: grid;
+      gap: 10px;
+      min-width: 0;
     }
 
     __ODYLITH_ATLAS_DISPLAY_TITLE__
@@ -1329,8 +1327,8 @@ def _render_html(
     .hero-copy {
       display: grid;
       gap: 10px;
-      flex: 1 1 680px;
       min-width: 0;
+      width: 100%;
     }
 
     .diagram-facts {
@@ -1409,7 +1407,9 @@ def _render_html(
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: flex-start;
+      width: 100%;
+      min-width: 0;
     }
 
     .source-link {
@@ -2481,6 +2481,7 @@ def _render_html(
         const button = document.createElement("button");
         button.className = "diagram-btn";
         button.type = "button";
+        button.setAttribute("data-diagram", diagram.diagram_id);
         const tooltip = diagramButtonTooltip(diagram);
         button.setAttribute("data-tooltip", tooltip);
         button.setAttribute("aria-label", tooltip);

@@ -54,7 +54,7 @@ from odylith.runtime import release_notes  # noqa: E402
 DEFAULT_REPO_SCHEMA_VERSION = 1
 MANIFEST_SCHEMA_VERSION = "odylith-release-manifest.v1"
 PROVENANCE_SCHEMA_VERSION = "odylith-release-provenance.v1"
-SBOM_LICENSE = "Apache-2.0"
+SBOM_LICENSE = "MIT"
 AUTHORITATIVE_RELEASE_REPO = "odylith/odylith"
 AUTHORITATIVE_RELEASE_ACTOR = "freedom-research"
 WORKFLOW_PATH = ".github/workflows/release.yml"

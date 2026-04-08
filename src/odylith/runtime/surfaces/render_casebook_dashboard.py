@@ -871,6 +871,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       gap: 6px;
       max-width: 80ch;
     }}
+    .detail-summary {{
+      max-width: 80ch;
+    }}
     .section-stack {{
       display: grid;
       gap: 0;
@@ -2019,10 +2022,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           <div class="detail-headline">
             ${{detail.bug_id ? `<p class="detail-kicker">${{escapeHtml(detail.bug_id)}}</p>` : ""}}
             <h1 class="detail-title">${{escapeHtml(detail.title || detail.bug_key || "Bug detail")}}</h1>
-            ${{summary}}
           </div>
-          <div class="detail-meta">${{chips.join("")}}</div>
           ${{summaryFacts ? `<div class="summary-facts" role="list">${{summaryFacts}}</div>` : ""}}
+          ${{summary}}
+          <div class="detail-meta">${{chips.join("")}}</div>
           <div class="detail-links">
             ${{sourceLink}}
             ${{workstreamLinks.length ? renderActionChipGroup(workstreamLinks) : ""}}

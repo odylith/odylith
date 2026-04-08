@@ -185,6 +185,24 @@ The shell is meant to answer:
 The shell should not duplicate detailed business panels that already exist in
 the child surfaces.
 
+### Shared Detail-Header Layout Contract
+Dashboard owns the shared layout contract for child surfaces that use
+Dashboard-owned header and card primitives.
+
+- Detail headers must render their primary fact-card or KPI grid immediately
+  after the headline block.
+- The headline block means the identifier/kicker plus the title. Supporting
+  prose, chips, action links, controls, and meters are secondary content and
+  must render below the primary fact/KPI grid rather than between the title and
+  that grid.
+- Child surfaces must not reserve a desktop side gutter beside the primary
+  fact/KPI grid for controls or links. If controls exist, they stack below the
+  primary grid or move into another clearly secondary row.
+- Shared changes to this ordering contract belong in
+  `src/odylith/runtime/surfaces/dashboard_ui_primitives.py`, the governed
+  child-surface renderers, and the cross-surface browser layout audits
+  together.
+
 The shell header is a frozen contract. The only version/status readout allowed
 there is the existing compact `shell_version_label` string. Do not add
 onboarding, release-note, maintainer-note, shell-polish, or other new UI
