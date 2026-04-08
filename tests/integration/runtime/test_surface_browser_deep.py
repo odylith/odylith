@@ -225,14 +225,15 @@ def test_shell_runtime_status_stays_hidden_across_tab_switches(browser_context) 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_shell_compass_tab_surfaces_stale_runtime_status_when_shell_is_newer(tmp_path) -> None:  # noqa: ANN001
+def test_shell_compass_tab_dedupes_stale_runtime_status_to_compass_notice(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
-    payload["generated_utc"] = "2026-04-07T17:06:12Z"
+    payload["generated_utc"] = "2020-01-02T17:06:12Z"
+    payload["now_local_iso"] = "2020-01-02T09:06:12-08:00"
     runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     runtime_js_path.write_text(
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
@@ -248,10 +249,31 @@ def test_shell_compass_tab_surfaces_stale_runtime_status_when_shell_is_newer(tmp
                 response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
                 assert response is not None and response.ok
 
-                page.locator("#shellRuntimeStatus").wait_for(timeout=15000)
-                assert page.locator("#shellRuntimeStatus").get_attribute("aria-hidden") == "false"
-                assert page.locator("#shellRuntimeStatusTitle").inner_text().strip() == "Shell refresh updated wrapper assets only"
-                assert "2026-04-07T17:06:12Z" in page.locator("#shellRuntimeStatusBody").inner_text()
+                assert page.locator("#runtimeStatusReopen").count() == 0
+                page.wait_for_function(
+                    """() => {
+                        const status = document.querySelector("#shellRuntimeStatus");
+                        return Boolean(status && status.hidden && status.getAttribute("aria-hidden") === "true");
+                    }""",
+                    timeout=15000,
+                )
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                page.wait_for_function(
+                    """() => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const banner = doc && doc.querySelector("#status-banner");
+                        return Boolean(
+                          banner
+                          && !banner.classList.contains("hidden")
+                          && (banner.textContent || "").includes("Compass snapshot")
+                        );
+                    }""",
+                    timeout=15000,
+                )
+                assert "ask agent `Refresh Compass runtime for this repo.`" in compass.locator("#status-banner").inner_text()
 
                 page.locator("#tab-radar").click()
                 _wait_for_shell_tab(page, "radar")

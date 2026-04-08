@@ -126,6 +126,10 @@
       ]);
     }
 
+    function knownHistoryDateSet(payload) {
+      return new Set(knownHistoryDateTokens(payload));
+    }
+
     function choosePreferredLiveRuntimePayload(primaryPayload, secondaryPayload) {
       const primary = primaryPayload && typeof primaryPayload === "object"
         ? applyLiveHistoryMeta(primaryPayload)
@@ -659,9 +663,10 @@
       if (!dayTokens.length) return payload;
 
       const todayToken = calendarMaxDateToken(payload) || toLocalDateToken(new Date());
+      const knownHistoryDays = knownHistoryDateSet(payload);
       const targetDays = dayTokens
         .map((token) => String(token || "").trim())
-        .filter((token) => DATE_RE.test(token) && token !== todayToken);
+        .filter((token) => DATE_RE.test(token) && token !== todayToken && knownHistoryDays.has(token));
       if (!targetDays.length) return payload;
 
       const mergedEvents = Array.isArray(payload.timeline_events) ? [...payload.timeline_events] : [];

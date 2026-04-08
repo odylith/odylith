@@ -1,6 +1,6 @@
 - Bug ID: CB-019
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-03-29
 
@@ -41,7 +41,21 @@
   shell surfaces so stale counts, stale briefs, and empty timeline regressions
   are caught end to end.
 
-- Verification: pending implementation
+- Verification: Closed after reconciling the full B-025 Compass hardening
+  stack. `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_compass_standup_brief_narrator.py
+  tests/unit/runtime/test_compass_dashboard_runtime.py
+  tests/unit/runtime/test_render_tooling_dashboard.py` passed with `84 passed`;
+  `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_surface_browser_deep.py -k
+  'shell_compass_tab_dedupes_stale_runtime_status_to_compass_notice or
+  shell_compass_tab_surfaces_failed_full_refresh_warning'` passed with
+  `2 passed, 21 deselected`; `python -m py_compile
+  src/odylith/runtime/surfaces/compass_standup_brief_narrator.py
+  src/odylith/runtime/surfaces/tooling_dashboard_surface_status.py
+  tests/unit/runtime/test_compass_standup_brief_narrator.py
+  tests/integration/runtime/test_surface_browser_deep.py` passed; and
+  `git diff --check` passed.
 
 - Prevention: Compass and other rolling-window shell surfaces must treat time
   passage as a first-class invalidation input, and browser proof should assert
@@ -61,7 +75,9 @@
 - Ownership: Compass runtime freshness, projection invalidation, standup-brief
   recovery policy, and UX/browser hardening.
 
-- Timeline: reported on 2026-03-29; fix in progress the same day.
+- Timeline: reported on 2026-03-29; the runtime reuse, cache, narrator,
+  refresh-contract, and browser-proof fixes landed across the B-025 hardening
+  follow-ons and this umbrella bug was closed after final proof reconciliation.
 
 - Blast Radius: Compass directly, plus the broader shell trust model because
   Compass is the only surface that blends live bugs, plans, delivery, and
@@ -96,9 +112,19 @@
   and [test_surface_browser_smoke.py](../../../tests/integration/runtime/test_surface_browser_smoke.py)
   before changing Compass freshness or shell browser proof again.
 
-- Regression Tests Added: pending implementation
+- Regression Tests Added:
+  `tests/unit/runtime/test_compass_standup_brief_narrator.py`
+  now proves global changed packets do not reuse stale cache and that
+  self-host/install posture drift changes the standup fingerprint and forces
+  current narration instead of cached reuse; shell/Compass browser proof in
+  `tests/integration/runtime/test_surface_browser_deep.py` also covers stale
+  versus failed-refresh disclosure on the Compass tab without leaking
+  out-of-retention Compass history fetch 404s into the shell page.
 
-- Monitoring Updates: pending implementation
+- Monitoring Updates: Keep watching Compass brief source/notice state and
+  self-host posture facts for any case where global changed-packet renders
+  regress back to cache reuse, wrapper-only stale disclosure, or retained
+  history-range violations from stale live snapshots.
 
 - Related Incidents/Bugs: [2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md](2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md)
 
@@ -123,4 +149,4 @@
 - Runbook References: `odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md`,
   `odylith/agents-guidelines/VALIDATION_AND_TESTING.md`
 
-- Fix Commit/PR: pending
+- Fix Commit/PR: `2026/freedom/v0.1.10` Compass closeout series.

@@ -7,23 +7,25 @@ Last updated (UTC): 2026-04-08
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
 | CB-066 | 2026-04-07 | Sync refresh rewrites unchanged artifacts and stales generated timestamps | P1 | `src/odylith/runtime/governance/backfill_workstream_traceability.py`,
-  `src/odylith/runtime/governance/delivery_intelligence_engine.py`, stable
-  generated-timestamp handling, sync-owned generated JSON artifacts. | Open | [2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md](2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md) |
+  `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
+  stable generated-timestamp handling, and sync-owned generated JSON artifacts. | Open | [2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md](2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md) |
 | CB-065 | 2026-04-07 | Sync operator surface hides real controls and long running progress | P1 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
   `src/odylith/runtime/governance/validate_component_registry_contract.py`,
-  sync operator help, progress, overlap guardrails, and warning summaries. | Open | [2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md](2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md) |
+  sync CLI help and forwarding, sync execution-plan UX, operator warning
+  summaries, overlap guardrails, and legacy-normalization reporting. | Open | [2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md](2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md) |
+| CB-063 | 2026-04-07 | Runtime retention prune fails on read only stale runtime trees | P1 | `src/odylith/install/manager.py`, retention cleanup for
+  `.odylith/runtime/versions/` and `.odylith/cache/releases/`, hosted installer
+  finish path, upgrade and reinstall lifecycle closeout. | Open | [2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md](2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md) |
+| CB-064 | 2026-04-07 | Hosted installer upgrades runtime without advancing repo pin | P1 | hosted installer generation in
+  `scripts/release/publish_release_assets.py`, install CLI flow in
+  `src/odylith/cli.py`, install manager pin-alignment semantics in
+  `src/odylith/install/manager.py`, public install and upgrade guidance. | Open | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
 | CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
   presentation and next-action routing. | Open | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
 | CB-061 | 2026-04-06 | Successful trust bootstrap still prints scary non fatal warnings | P1 | `src/odylith/install/release_assets.py`,
   `src/odylith/cli.py`, install and repair success messaging, release-note copy. | Open | [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md) |
-| CB-064 | 2026-04-07 | Hosted installer upgrades runtime without advancing repo pin | P1 | `scripts/release/publish_release_assets.py`,
-  `src/odylith/cli.py`, `src/odylith/install/manager.py`, hosted installer
-  closeout and repo-pin convergence. | Open | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
-| CB-063 | 2026-04-07 | Runtime retention prune fails on read only stale runtime trees | P1 | `src/odylith/install/manager.py`,
-  retention cleanup for `.odylith/runtime/versions/` and
-  `.odylith/cache/releases/`, hosted installer finish path. | Open | [2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md](2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md) |
 | CB-055 | 2026-04-06 | Repair and reinstall do not converge after partial runtime failure | P0 | `src/odylith/install/runtime.py`,
   `src/odylith/install/manager.py`, runtime replacement helpers, repair
   lifecycle, reinstall flow. | Open | [2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md](2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md) |
@@ -80,11 +82,6 @@ Last updated (UTC): 2026-04-08
 | CB-023 | 2026-03-31 | Product repo doctor repair rewrites root agents to stale managed block | P1 | `src/odylith/install/agents.py`,
   `src/odylith/install/manager.py`, root `AGENTS.md`, maintainer
   `release-candidate` workflow, product-repo repair contract. | Open | [2026-03-31-product-repo-doctor-repair-rewrites-root-agents-to-stale-managed-block.md](2026-03-31-product-repo-doctor-repair-rewrites-root-agents-to-stale-managed-block.md) |
-| CB-019 | 2026-03-29 | Compass runtime freshness regressed brief risk and timeline trust | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
-  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
-  `src/odylith/runtime/context_engine/odylith_context_engine_store.py`,
-  `src/odylith/runtime/context_engine/surface_projection_fingerprint.py`,
-  Compass runtime freshness contract, shell UX/browser proof lane. | Open | [2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md](2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md) |
 | CB-016 | 2026-03-28 | Release preflight fails when dist contains stale wheel | P1 | `bin/release-preflight`, release asset publisher,
   maintainer release proof lane, release asset staging contract. | Open | [2026-03-28-release-preflight-fails-when-dist-contains-stale-wheel.md](2026-03-28-release-preflight-fails-when-dist-contains-stale-wheel.md) |
 | CB-015 | 2026-03-28 | Release download cache and runtime restage lose atomicity on failure | P1 | `src/odylith/install/release_assets.py`,
@@ -126,19 +123,17 @@ Last updated (UTC): 2026-04-08
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-068 | 2026-04-08 | Explicit Compass full refresh can pass with deterministic or stale runtime state | P0 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
-  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
-  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
-  Compass full-refresh contract and shell/browser proof. | Closed | [2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md](2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md) |
-| CB-067 | 2026-04-08 | Tooling shell refresh can look fresh while Compass child runtime stays stale | P1 | `src/odylith/runtime/surfaces/render_tooling_dashboard.py`,
+| CB-067 | 2026-04-08 | Tooling shell refresh can look fresh while compass child runtime stays stale | P1 | `src/odylith/runtime/surfaces/render_tooling_dashboard.py`,
   `src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js`,
-  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, shell
-  refresh/operator truth, Compass child-runtime freshness projection. | Closed | [2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md](2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md) |
-| CB-050 | 2026-04-03 | Compass explicit refresh fans into slow live scoped narration and leaves old deterministic brief visible on interrupt | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, tooling shell
+  refresh contract, Compass child-runtime freshness projection, shell runtime
+  status messaging. | Closed | [2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md](2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md) |
+| CB-068 | 2026-04-08 | Explicit compass full refresh can pass with deterministic or stale runtime state | P0 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
   `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
-  `src/odylith/runtime/surfaces/render_compass_dashboard.py`, Compass standup
-  refresh contract, shell-facing refresh UX. | Closed | [2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md](2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md) |
+  `src/odylith/runtime/governance/dashboard_refresh_contract.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  Compass full-refresh contract, shell/browser freshness proof. | Closed | [2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md](2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md) |
 | CB-062 | 2026-04-06 | Radar topology deep links fall through to stale filtered selection and browser proof misses disclosure gated routes | P0 | `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
   bundled Radar `backlog-app.v1.js` mirrors, Radar explicit-selection routing,
   and the Playwright browser proof lane in
@@ -149,6 +144,11 @@ Last updated (UTC): 2026-04-08
   `src/odylith/cli.py`, runtime-source derivation, self-host posture
   validation. | Closed | [2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md](2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md) |
 | CB-053 | 2026-04-05 | Memory substrate stale runtime reuse and projection scope thrash | P0 | `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`, `src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py`, `src/odylith/runtime/context_engine/odylith_context_engine.py`, `src/odylith/runtime/memory/odylith_memory_backend.py`, `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, memory freshness contracts, benchmark warm-cache preparation, local LanceDB and Tantivy runtime posture. | Closed | [2026-04-05-memory-substrate-stale-runtime-reuse-and-projection-scope-thrash.md](2026-04-05-memory-substrate-stale-runtime-reuse-and-projection-scope-thrash.md) |
+| CB-050 | 2026-04-03 | Compass explicit refresh fans into slow live scoped narration and leaves old deterministic brief visible on interrupt | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
+  `src/odylith/runtime/surfaces/render_compass_dashboard.py`, Compass standup
+  refresh contract, shell-facing refresh UX. | Closed | [2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md](2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md) |
 | CB-047 | 2026-04-02 | Compass dashboard refresh shell safe keeps timeline audit pinned to stale snapshot | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
   `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
@@ -226,6 +226,11 @@ Last updated (UTC): 2026-04-08
   `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`,
   `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`, Compass
   standup-brief cache contract, shared local-provider selection path. | Closed | [2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md](2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md) |
+| CB-019 | 2026-03-29 | Compass runtime freshness regressed brief risk and timeline trust | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
+  `src/odylith/runtime/context_engine/odylith_context_engine_store.py`,
+  `src/odylith/runtime/context_engine/surface_projection_fingerprint.py`,
+  Compass runtime freshness contract, shell UX/browser proof lane. | Closed | [2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md](2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md) |
 | CB-018 | 2026-03-29 | Compass live self host risk was hidden by utc date and kpi omission | P1 | `src/odylith/runtime/surfaces/compass_dashboard_shell.py`,
   `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`, Compass live KPI
   render path, self-host posture risk rows, browser smoke coverage. | Closed | [2026-03-29-compass-live-self-host-risk-was-hidden-by-utc-date-and-kpi-omission.md](2026-03-29-compass-live-self-host-risk-was-hidden-by-utc-date-and-kpi-omission.md) |

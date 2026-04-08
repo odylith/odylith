@@ -184,4 +184,4 @@
   `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`,
   `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md`
 
-- Fix Commit/PR: pending
+- Fix Commit/PR: `2026/freedom/v0.1.10` Compass closeout series.

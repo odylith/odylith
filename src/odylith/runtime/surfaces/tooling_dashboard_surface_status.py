@@ -6,10 +6,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.governance import dashboard_refresh_contract
-
-_COMPASS_STALE_THRESHOLD_SECONDS = 60.0
 
 
 def now_utc() -> str:
@@ -35,6 +32,7 @@ def _build_compass_surface_status(
     repo_root: Path,
     shell_rendered_utc: str,
 ) -> dict[str, Any]:
+    del shell_rendered_utc
     payload = _read_json_object(repo_root / "odylith" / "compass" / "runtime" / "current.v1.json")
     if not payload:
         return {}
@@ -42,9 +40,6 @@ def _build_compass_surface_status(
     generated_utc = str(payload.get("generated_utc", "")).strip()
     runtime_contract = payload.get("runtime_contract")
     contract = dict(runtime_contract) if isinstance(runtime_contract, Mapping) else {}
-    refresh_profile = dashboard_refresh_contract.normalize_compass_refresh_profile(
-        str(contract.get("refresh_profile", dashboard_refresh_contract.DEFAULT_COMPASS_REFRESH_PROFILE))
-    )
     last_refresh_attempt = contract.get("last_refresh_attempt")
     attempt = dict(last_refresh_attempt) if isinstance(last_refresh_attempt, Mapping) else {}
     failure_status = _failed_full_refresh_posture(
@@ -54,30 +49,7 @@ def _build_compass_surface_status(
     )
     if failure_status:
         return failure_status
-
-    shell_rendered_at = _parse_utc(shell_rendered_utc)
-    generated_at = _parse_utc(generated_utc)
-    if shell_rendered_at is None or generated_at is None:
-        return {}
-    if (shell_rendered_at - generated_at).total_seconds() < _COMPASS_STALE_THRESHOLD_SECONDS:
-        return {}
-    return {
-        "visible": True,
-        "tone": "info",
-        "kicker": "Compass snapshot older than shell",
-        "title": "Shell refresh updated wrapper assets only",
-        "body": (
-            "The visible Compass brief still comes from the "
-            f"{refresh_profile} runtime snapshot generated {generated_utc}. "
-            "Refresh Compass separately if you need newer brief data."
-        ),
-        "meta": (
-            "Next: "
-            + display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", "compass")
-        ),
-        "showReload": False,
-        "reloadLabel": "",
-    }
+    return {}
 
 
 def _failed_full_refresh_posture(
@@ -129,19 +101,3 @@ def _read_json_object(path: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError):
         return {}
     return dict(payload) if isinstance(payload, dict) else {}
-
-
-def _parse_utc(value: object) -> dt.datetime | None:
-    token = str(value or "").strip()
-    if not token:
-        return None
-    normalized = token.replace(" ", "T")
-    if normalized.endswith("Z"):
-        normalized = normalized[:-1] + "+00:00"
-    try:
-        parsed = dt.datetime.fromisoformat(normalized)
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=dt.UTC)
-    return parsed.astimezone(dt.UTC)

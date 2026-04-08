@@ -52,11 +52,11 @@ Related Bugs:
 - no related Casebook-specific bug record exists yet for detail-view field repetition or header-collapse regressions; keep the failure mode visible in this plan and handoff until it is formalized
 
 ## Context/Problem Statement
-- [ ] Compass can reuse stale runtime snapshots for rolling 24h/48h windows.
+- [x] Compass can reuse stale runtime snapshots for rolling 24h/48h windows.
 - [ ] Warmed bug projection state can stay stale after parser-contract changes.
-- [ ] Standup-brief recovery can reuse stale global AI cache across changed
+- [x] Standup-brief recovery can reuse stale global AI cache across changed
       fact packets.
-- [ ] Install and upgrade-oriented narration can keep stale self-host or
+- [x] Install and upgrade-oriented narration can keep stale self-host or
       launcher assumptions after live runtime posture changes.
 - [ ] Operators still need the full governance sync to express a narrow
       dashboard refresh, and Atlas Mermaid worker failures can look hung
@@ -107,9 +107,9 @@ Related Bugs:
 - [x] Compass runtime reuse is bounded by both input change and age.
 - [x] Current bug/risk/timeline truth is reflected in Compass after rerender,
       cross-tab hops, and reload.
-- [ ] Changed global fact packets do not reuse stale last-known-good brief
+- [x] Changed global fact packets do not reuse stale last-known-good brief
       content.
-- [ ] Live self-host/install posture changes invalidate stale Compass
+- [x] Live self-host/install posture changes invalidate stale Compass
       narration before it leaks into operator guidance.
 - [x] A render-only dashboard refresh path exists for shell surfaces without
       unrelated Registry or forensic churn.
@@ -390,3 +390,20 @@ Related Bugs:
       surfaces before the broader Compass/browser sweep, eliminating stale
       generated-artifact false positives and closing the resumed `compass or
       shell` browser lane cleanly.
+- [x] April 7 shell-warning dedupe follow-on removes the redundant
+      shell-level "snapshot older than shell" banner, keeps Compass stale
+      disclosure in the Compass frame itself, drops the `Show status` recovery
+      dock button, and centralizes that one-warning shell contract in the
+      Dashboard spec.
+- [x] April 7 Compass closeout follow-on reconciles the remaining open Compass
+      claims with code-level proof: global changed-packet cache recovery stays
+      disabled, self-host/install posture remains part of the standup-brief
+      fingerprint and provider contract, narrator regression proof now covers
+      self-host posture drift explicitly, and umbrella bug `CB-019` closes.
+- [x] April 7 final Compass browser cleanup bounds live history augmentation to
+      retained history days only, so stale live snapshots still disclose their
+      age inside Compass without spraying 404 history fetches into the shell
+      browser lane; the resumed stale-warning browser proof now passes cleanly.
+- [x] Compass closeout is complete on this plan. Remaining unchecked items
+      belong to broader cross-surface or benchmark follow-on work, not to
+      unresolved Compass freshness, narrator, or shell-disclosure claims.

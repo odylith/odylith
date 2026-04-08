@@ -210,6 +210,10 @@ Extend that same model into a balanced live-shell posture:
   the resumed shell-and-Compass browser sweep now runs against rerendered
   checked-in shell and Casebook surfaces after source/governance changes, so
   stale generated artifacts stop masquerading as Compass freshness regressions
+- implemented on 2026-04-08 for Compass closeout governance:
+  Compass-specific freshness, fail-closed refresh, stale-disclosure, and
+  retained-history claims are now closed; the remaining open workstream scope
+  is broader cross-surface hardening, not unresolved Compass behavior
 
 ## Rollout
 Ship as a freshness-and-proof hardening slice. No data migration is required,

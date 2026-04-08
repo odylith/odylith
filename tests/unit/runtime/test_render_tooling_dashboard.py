@@ -258,7 +258,7 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "shellRuntimeStatusKicker" in html
     assert "shellRuntimeStatusReload" in html
     assert "shellRuntimeStatusDismiss" in html
-    assert "runtimeStatusReopen" in html
+    assert "runtimeStatusReopen" not in html
     assert "The shell refreshes itself as Odylith updates local surfaces." in html
     assert "Add a workstream file under" not in html
     assert "welcome-record-grid" not in html
@@ -383,7 +383,7 @@ def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo
     assert live_refresh["worktree"]["generated_changed_count"] == 1
 
 
-def test_render_tooling_dashboard_projects_stale_compass_runtime_into_shell_status(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_dedupes_stale_compass_runtime_from_shell_status(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
     monkeypatch.setattr(
@@ -401,17 +401,7 @@ def test_render_tooling_dashboard_projects_stale_compass_runtime_into_shell_stat
 
     assert rc == 0
     payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
-    compass_status = dict(payload_js["surface_runtime_status"]["compass"])
-    assert compass_status["tone"] == "info"
-    assert compass_status["title"] == "Shell refresh updated wrapper assets only"
-    assert (
-        compass_status["body"]
-        == "The visible Compass brief still comes from the shell-safe runtime snapshot generated 2026-04-07T17:06:12Z. Refresh Compass separately if you need newer brief data."
-    )
-    assert (
-        compass_status["meta"]
-        == "Next: odylith dashboard refresh --repo-root . --surfaces compass"
-    )
+    assert payload_js["surface_runtime_status"] == {}
 
 
 def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_status(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -587,7 +577,7 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "const recoveryDock = document.getElementById(\"shellRecoveryDock\");" in control_js
     assert "const viewport = document.querySelector(\".viewport\");" in control_js
     assert "const welcomeReopen = document.getElementById(\"welcomeReopen\");" in control_js
-    assert "const runtimeStatusReopen = document.getElementById(\"runtimeStatusReopen\");" in control_js
+    assert "const runtimeStatusReopen = document.getElementById(\"runtimeStatusReopen\");" not in control_js
     assert "const runtimeStatusKicker = document.getElementById(\"shellRuntimeStatusKicker\");" in control_js
     assert "const runtimeStatusDismiss = document.getElementById(\"shellRuntimeStatusDismiss\");" in control_js
     assert "const upgradeReopen = document.getElementById(\"upgradeReopen\");" in control_js
@@ -627,7 +617,7 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "function syncRuntimeStatusLayout() {" in control_js
     assert "function scheduleRuntimeStatusLayoutSync() {" in control_js
     assert "setRuntimeStatusDismissed(true);" in control_js
-    assert "runtimeStatusReopen.addEventListener(\"click\"" in control_js
+    assert "runtimeStatusReopen.addEventListener(\"click\"" not in control_js
     assert "function buildRuntimeStatusPosture(runtimeState) {" in control_js
     assert "visible: false," in control_js
     assert "applyRuntimeStatus(latestRuntimeStatusState || {});" in control_js
@@ -636,7 +626,7 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert 'applyTab(buildTabActivationState("radar"), { pushHistory: true });' in control_js
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert 'id="upgradeReopen"' in html
-    assert 'id="runtimeStatusReopen"' in html
+    assert 'id="runtimeStatusReopen"' not in html
     assert 'id="shellRuntimeStatusKicker"' in html
     assert 'id="shellRuntimeStatusDismiss"' in html
     assert 'id="shellRecoveryDock"' in html

@@ -100,8 +100,6 @@ _CACHE_TTL_SECONDS_BY_FRESHNESS = {
     "stale": 4 * 60 * 60,
     "unknown": 60 * 60,
 }
-_STALE_GLOBAL_CACHE_MAX_AGE_SECONDS = 6 * 60 * 60
-
 
 def standup_brief_cache_path(*, repo_root: Path) -> Path:
     """Return the local-only cache path for validated Compass AI briefs."""
@@ -264,78 +262,6 @@ def _cache_entry_matches_context(
     if target_context["scope_mode"] == "scoped":
         return str(cached_context.get("scope_id", "")).strip() == target_context["scope_id"]
     return True
-
-
-def _fallback_cache_entry(
-    *,
-    cache_entries: Mapping[str, Any],
-    fact_packet: Mapping[str, Any],
-    exclude_fingerprint: str,
-    now_utc: dt.datetime,
-) -> tuple[str, Mapping[str, Any]] | None:
-    candidates: list[tuple[dt.datetime, str, Mapping[str, Any]]] = []
-    for fingerprint, raw_entry in cache_entries.items():
-        fingerprint_token = str(fingerprint).strip()
-        if not fingerprint_token or fingerprint_token == exclude_fingerprint:
-            continue
-        if not isinstance(raw_entry, Mapping):
-            continue
-        if not _cache_entry_matches_context(cached_entry=raw_entry, fact_packet=fact_packet):
-            continue
-        if not _cache_entry_is_reusable(
-            cached_entry=raw_entry,
-            fact_packet=fact_packet,
-            now_utc=now_utc,
-        ):
-            continue
-        sections = raw_entry.get("sections")
-        generated_utc = _parse_iso_datetime(str(raw_entry.get("generated_utc", "")).strip())
-        if not isinstance(sections, Sequence) or not sections or generated_utc is None:
-            continue
-        candidates.append((generated_utc, fingerprint_token, raw_entry))
-    if not candidates:
-        return None
-    candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
-    _generated_utc, cached_fingerprint, cached_entry = candidates[0]
-    return cached_fingerprint, cached_entry
-
-
-def _stale_global_cache_entry(
-    *,
-    cache_entries: Mapping[str, Any],
-    fact_packet: Mapping[str, Any],
-    exclude_fingerprint: str,
-    now_utc: dt.datetime,
-) -> tuple[str, Mapping[str, Any]] | None:
-    target_context = _cache_context(fact_packet=fact_packet)
-    if target_context["scope_mode"] != "global":
-        return None
-    candidates: list[tuple[dt.datetime, str, Mapping[str, Any]]] = []
-    for fingerprint, raw_entry in cache_entries.items():
-        fingerprint_token = str(fingerprint).strip()
-        if not fingerprint_token or fingerprint_token == exclude_fingerprint:
-            continue
-        if not isinstance(raw_entry, Mapping):
-            continue
-        if not _cache_entry_matches_context(cached_entry=raw_entry, fact_packet=fact_packet):
-            continue
-        sections = raw_entry.get("sections")
-        generated_utc = _parse_iso_datetime(str(raw_entry.get("generated_utc", "")).strip())
-        age_seconds = _cache_entry_age_seconds(cached_entry=raw_entry, now_utc=now_utc)
-        if (
-            not isinstance(sections, Sequence)
-            or not sections
-            or generated_utc is None
-            or age_seconds is None
-            or age_seconds > float(_STALE_GLOBAL_CACHE_MAX_AGE_SECONDS)
-        ):
-            continue
-        candidates.append((generated_utc, fingerprint_token, raw_entry))
-    if not candidates:
-        return None
-    candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
-    _generated_utc, cached_fingerprint, cached_entry = candidates[0]
-    return cached_fingerprint, cached_entry
 
 
 def _provider_system_prompt() -> str:

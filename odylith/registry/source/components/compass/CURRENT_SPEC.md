@@ -1,8 +1,8 @@
 # Compass
-Last updated: 2026-04-07
+Last updated: 2026-04-08
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-08
 
 ## Purpose
 Compass is Odylith's execution, decision, and runtime-posture surface. It turns
@@ -166,10 +166,17 @@ churn does not drown out meaningful implementation evidence.
   reuse exact current-packet validated AI brief cache as a bounded recovery
   path, and must fail render rather than writing deterministic or stale
   fallback brief state on a passing run.
-- When the top-level shell refreshes without rerendering Compass, the shell may
-  project Compass staleness or failed deeper-refresh state, but it must do so
-  from the current Compass runtime snapshot rather than pretending the shell
-  wrapper refresh updated Compass data.
+- When the top-level shell refreshes without rerendering Compass, ordinary
+  stale-snapshot disclosure belongs inside Compass itself.
+- The shell should reserve runtime-status cards for failed deeper-refresh
+  state or other cross-surface posture the Compass frame cannot already
+  explain.
+- Any shell-facing Compass freshness status must still derive from the current
+  Compass runtime snapshot rather than pretending the shell wrapper refresh
+  updated Compass data.
+- Live history augmentation for stale rolling windows may fetch only retained
+  or explicitly restored history dates. Off-retention days must stay absent
+  rather than triggering browser-visible 404 requests.
 
 ## Traceability Risk Projection
 - Compass consumes shared Radar `warning_items`, but default risk rows are
@@ -262,4 +269,9 @@ This section captures synchronized requirement and contract signals derived from
   contract: the valid five-minute reuse clamp stays, but a passing rerender
   can reuse only deep-refresh-clean payloads and must never land on
   deterministic local brief output or stale fallback truth. (Plan:
+  [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-08: Finalized stale-runtime disclosure to a single in-frame Compass
+  warning for ordinary stale snapshots and bounded live-history backfill to
+  retained or restored days so stale windows no longer spray 404 history
+  fetches into the shell browser lane. (Plan:
   [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

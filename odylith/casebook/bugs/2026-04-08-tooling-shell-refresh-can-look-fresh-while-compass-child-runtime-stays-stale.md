@@ -52,10 +52,12 @@
   snapshot and project a shell-facing child-surface freshness status into the
   shell payload. If the shell wrapper is newer than the current Compass runtime
   by a meaningful gap, or if the latest explicit Compass full refresh failed,
-  the shell must surface that state explicitly when the Compass tab is active
-  instead of implying the visible brief is current. The shell refresh plan
-  should also say that shell-only refresh updates the wrapper, not Compass
-  child-runtime truth.
+  the product must say so instead of implying the visible brief is current.
+  Ordinary stale-snapshot age now stays disclosed once inside the Compass
+  frame itself, while shell runtime-status cards are reserved for failed
+  deeper-refresh or cross-surface posture the child frame cannot already
+  explain. The shell refresh plan should also say that shell-only refresh
+  updates the wrapper, not Compass child-runtime truth.
 
 - Verification: Fixed on 2026-04-08. `PYTHONPATH=src python3 -m pytest -q
   tests/unit/runtime/test_render_tooling_dashboard.py
@@ -70,7 +72,15 @@
   (`15 passed, 34 deselected`). That resumed browser lane also proved the
   shell-bootstrap follow-on fix in `control.js`: precomputed Compass stale or
   failed-full-refresh status now stays visible on first load and after runtime
-  probes instead of being cleared by an empty probe payload.
+  probes instead of being cleared by an empty probe payload. The final
+  closeout proof then passed with `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_surface_browser_deep.py -k
+  'shell_compass_tab_dedupes_stale_runtime_status_to_compass_notice or
+  shell_compass_tab_surfaces_failed_full_refresh_warning'` (`2 passed,
+  21 deselected`) and `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_surface_browser_deep.py -k compass`
+  (`10 passed, 13 deselected`), confirming one stale warning and no retained-
+  history 404 leakage in the shell lane.
 
 - Prevention: Shell refresh must not claim freshness for Compass-derived
   sections unless the Compass child-runtime snapshot was actually refreshed, or
@@ -93,8 +103,9 @@
 
 - Timeline: This surfaced immediately after the prior Compass refresh hardening
   slice closed. The Compass child runtime now marks failed full refreshes
-  truthfully, but the shell host still fails to project that truth when only
-  the wrapper is refreshed.
+  truthfully, and the final closeout on 2026-04-08 also removed the redundant
+  wrapper-level stale banner so ordinary stale age is disclosed once, inside
+  Compass, instead of twice across shell and child frame.
 
 - Blast Radius: Any lane where operators use the shell as the parent entrypoint
   and assume a successful shell refresh means the visible Compass brief is also
@@ -131,7 +142,7 @@
   tests/unit/runtime/test_sync_cli_compat.py
   tests/unit/runtime/test_render_compass_dashboard.py`
   plus the browser regressions in
-  `tests/integration/runtime/test_surface_browser_deep.py::test_shell_compass_tab_surfaces_stale_runtime_status_when_shell_is_newer`
+  `tests/integration/runtime/test_surface_browser_deep.py::test_shell_compass_tab_dedupes_stale_runtime_status_to_compass_notice`
   and
   `tests/integration/runtime/test_surface_browser_deep.py::test_shell_compass_tab_surfaces_failed_full_refresh_warning`
   plus the resumed shell/Compass browser sweep
@@ -144,10 +155,11 @@
 
 - Monitoring Updates: Watch shell refresh proof for cases where
   `odylith/index.html` advances while `odylith/compass/runtime/current.v1.json`
-  does not, ensure the shell status card reflects that gap on the Compass tab,
-  and keep browser proof watching the first-load/runtime-probe handoff so
-  shell-computed child-runtime status cannot be cleared by a later probe that
-  lacks shell-facing posture fields.
+  does not, ensure failure-only shell status remains available when Compass
+  cannot explain the problem itself, keep the Compass in-frame stale notice as
+  the only ordinary stale-age warning, and keep browser proof watching the
+  first-load/runtime-probe handoff so shell-computed child-runtime status
+  cannot be cleared by a later probe that lacks shell-facing posture fields.
 
 - Residual Risk: Even after the shell truth fix, shell-only refresh still does
   not rerender Compass. That is acceptable only if the shell keeps admitting
@@ -175,4 +187,4 @@
   `odylith/registry/source/components/compass/CURRENT_SPEC.md`,
   `odylith/maintainer/AGENTS.md`
 
-- Fix Commit/PR: Working tree fix on `2026/freedom/v0.1.10`; commit pending.
+- Fix Commit/PR: `2026/freedom/v0.1.10` Compass closeout series.

@@ -51,7 +51,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const runtimeStatusDismiss = document.getElementById("shellRuntimeStatusDismiss");
     const runtimeStatusReload = document.getElementById("shellRuntimeStatusReload");
     const welcomeReopen = document.getElementById("welcomeReopen");
-    const runtimeStatusReopen = document.getElementById("runtimeStatusReopen");
     const upgradeSpotlight = document.getElementById("shellUpgradeSpotlight");
     const upgradeReopen = document.getElementById("upgradeReopen");
     const upgradeSpotlightBackdrop = document.getElementById("upgradeSpotlightBackdrop");
@@ -163,7 +162,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       ? { ...payload, surface_runtime_status: initialSurfaceRuntimeStatus }
       : { surface_runtime_status: initialSurfaceRuntimeStatus };
     let runtimeStatusFingerprint = "";
-    let runtimeStatusVisiblePosture = false;
     let runtimeStatusLayoutFrame = 0;
     let lastUserInteractionAtMs = Date.now();
     const runtimeAutoReloadAtByTab = Object.create(null);
@@ -209,13 +207,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       const upgradeVisible = Boolean(upgradeSpotlight && !upgradeSpotlight.hidden);
       const showWelcomeReopen = Boolean(welcomeReopen && welcomeLaunchpadActive && !welcomeVisible && !upgradeVisible);
       const showUpgradeReopen = Boolean(upgradeReopen && hasUpgradeSpotlight() && !upgradeVisible && !welcomeVisible);
-      const showRuntimeReopen = Boolean(
-        runtimeStatusReopen
-        && runtimeStatusVisiblePosture
-        && runtimeStatusDismissed()
-        && !welcomeVisible
-        && !upgradeVisible
-      );
       if (welcomeReopen) {
         welcomeReopen.hidden = !showWelcomeReopen;
         welcomeReopen.setAttribute("aria-hidden", String(!showWelcomeReopen));
@@ -226,13 +217,8 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         upgradeReopen.setAttribute("aria-hidden", String(!showUpgradeReopen));
         upgradeReopen.textContent = upgradeSpotlightReopenLabel;
       }
-      if (runtimeStatusReopen) {
-        runtimeStatusReopen.hidden = !showRuntimeReopen;
-        runtimeStatusReopen.setAttribute("aria-hidden", String(!showRuntimeReopen));
-        runtimeStatusReopen.textContent = "Show status";
-      }
       if (recoveryDock) {
-        recoveryDock.hidden = !(showWelcomeReopen || showUpgradeReopen || showRuntimeReopen);
+        recoveryDock.hidden = !(showWelcomeReopen || showUpgradeReopen);
         recoveryDock.setAttribute("aria-hidden", String(recoveryDock.hidden));
       }
     }
@@ -677,7 +663,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       latestRuntimeStatusState = mergeRuntimeStatusState(runtimeState);
       const posture = buildRuntimeStatusPosture(runtimeState);
       runtimeStatusFingerprint = posture.visible ? buildRuntimeStatusFingerprint(posture) : "";
-      runtimeStatusVisiblePosture = Boolean(posture.visible);
       const dismissed = runtimeStatusDismissed();
       const visible = Boolean(posture.visible && !dismissed);
       runtimeStatus.hidden = !visible;
@@ -2211,12 +2196,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     if (runtimeStatusDismiss) {
       runtimeStatusDismiss.addEventListener("click", () => {
         setRuntimeStatusDismissed(true);
-        applyRuntimeStatus(latestRuntimeStatusState || {});
-      });
-    }
-    if (runtimeStatusReopen) {
-      runtimeStatusReopen.addEventListener("click", () => {
-        setRuntimeStatusDismissed(false);
         applyRuntimeStatus(latestRuntimeStatusState || {});
       });
     }

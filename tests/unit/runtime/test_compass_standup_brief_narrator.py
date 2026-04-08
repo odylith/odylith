@@ -1077,6 +1077,58 @@ def test_build_standup_brief_uses_current_deterministic_brief_when_live_provider
     assert deferred_provider.calls == 0
 
 
+def test_build_standup_brief_does_not_reuse_cached_brief_when_global_self_host_posture_changes(
+    tmp_path: Path,
+) -> None:
+    baseline_packet = _fact_packet(
+        scope_mode="global",
+        idea_id="",
+        window="24h",
+        self_host={
+            "repo_role": "product_repo",
+            "posture": "pinned_release",
+            "runtime_source": "pinned_runtime",
+            "pinned_version": "0.1.4",
+            "active_version": "0.1.4",
+            "launcher_present": True,
+            "release_eligible": True,
+        },
+    )
+    seeded_provider = _FakeProvider(_valid_provider_result())
+    seeded = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=baseline_packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=seeded_provider,
+    )
+    assert seeded["status"] == "ready"
+    assert seeded["source"] == "provider"
+
+    changed_packet = json.loads(json.dumps(baseline_packet))
+    changed_packet["summary"]["self_host"]["active_version"] = "0.1.3"
+    changed_packet["summary"]["self_host"]["posture"] = "diverged_verified_version"
+    changed_packet["summary"]["self_host"]["release_eligible"] = False
+
+    assert narrator.standup_brief_fingerprint(fact_packet=baseline_packet) != narrator.standup_brief_fingerprint(
+        fact_packet=changed_packet
+    )
+
+    fallback = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=changed_packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=None,
+        allow_provider=False,
+    )
+
+    assert fallback["status"] == "ready"
+    assert fallback["source"] == "deterministic"
+    assert fallback["notice"]["reason"] == "provider_deferred"
+    assert fallback["notice"]["title"] == "Showing deterministic local brief"
+
+
 def test_build_standup_brief_does_not_reuse_cache_for_different_scope_or_window(tmp_path: Path) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
     seeded = narrator.build_standup_brief(

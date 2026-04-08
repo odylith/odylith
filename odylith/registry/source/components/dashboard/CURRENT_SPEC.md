@@ -185,6 +185,15 @@ The shell is meant to answer:
 The shell should not duplicate detailed business panels that already exist in
 the child surfaces.
 
+- When a child surface already explains its own stale-runtime or freshness
+  posture in-frame, the shell must not add a second banner that repeats the
+  same issue in wrapper language. Shell runtime-status cards are reserved for
+  failure or cross-surface posture the child surface cannot already disclose
+  itself.
+- The bottom-right recovery dock is for global shell reopen actions such as the
+  starter guide or upgrade spotlight. Do not add per-surface status reopen
+  buttons there.
+
 ### Shared Detail-Header Layout Contract
 Dashboard owns the shared layout contract for child surfaces that use
 Dashboard-owned header and card primitives.
@@ -258,6 +267,7 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Bound the shell host to Odylith's own product-governance records so the public repo can render and audit its own surface boundary. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-03-27: Added self-host posture payload fields so the shell can expose product-repo dogfood and release posture without inventing a second status model. (Plan: [B-004](odylith/radar/radar.html?view=plan&workstream=B-004))
+- 2026-04-07: Clarified the shell freshness contract so Compass owns its normal stale-runtime disclosure in-frame, the shell reserves status cards for failure-only or cross-surface posture, and the recovery dock no longer carries per-surface `Show status` reopen buttons. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-03-31: Froze the dashboard header contract and made shell render fail closed if the source-owned header template or header CSS drifts. (Plan: [B-027](odylith/radar/radar.html?view=plan&workstream=B-027))
 - 2026-04-01: Restored the compact runtime/version string inside the frozen header contract so pinned and detached maintainer lanes stay visibly distinguishable. (Plan: [B-027](odylith/radar/radar.html?view=plan&workstream=B-027))
 - 2026-04-02: Added balanced, proof-frozen, and full-dev live-refresh policies so read-only runtime-backed tabs can stay current without background sync, provider-credit spend, or benchmark skew. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
