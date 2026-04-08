@@ -21,9 +21,9 @@
   `install -> upgrade-cycle -> doctor -> sync` smoke proof for `v0.1.10`,
   blocking release dispatch on an installer-template compatibility regression.
 
-- Components Affected: `scripts/release/publish_release_assets.py`,
-  `scripts/release/local_release_smoke.py`, generated `install.sh`, hosted
-  installer upgrade compatibility, release component contract.
+- Components Affected: release asset publisher, local release smoke harness,
+  generated `install.sh`, hosted installer upgrade compatibility, release
+  component contract.
 
 - Environment(s): Odylith product repo maintainer mode, canonical `main`,
   local hosted release smoke during `make release-preflight VERSION=0.1.10`,
@@ -110,8 +110,7 @@
 
 - Customer Comms: internal maintainer-only release-lane hosted-installer fix.
 
-- Code References: `scripts/release/publish_release_assets.py`,
-  `scripts/release/local_release_smoke.py`,
+- Code References: release asset publisher, local release smoke harness,
   `tests/unit/install/test_release_bootstrap.py`
 
 - Runbook References: `odylith/MAINTAINER_RELEASE_RUNBOOK.md`,

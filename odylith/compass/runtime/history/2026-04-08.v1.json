@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-08T15:57:51Z",
-  "now_local_iso": "2026-04-08T08:57:51-07:00",
+  "generated_utc": "2026-04-08T16:06:19Z",
+  "now_local_iso": "2026-04-08T09:06:19-07:00",
   "time_context": {
     "timezone": "America/Los_Angeles",
     "label": "San Francisco"
@@ -21,8 +21,8 @@
   },
   "kpis": {
     "24h": {
-      "commits": 4,
-      "local_changes": 7,
+      "commits": 5,
+      "local_changes": 1,
       "touched_workstreams": 11,
       "active_workstreams": 11,
       "critical_risks": 2,
@@ -30,8 +30,8 @@
       "active_touched_workstreams": 5
     },
     "48h": {
-      "commits": 8,
-      "local_changes": 7,
+      "commits": 9,
+      "local_changes": 1,
       "touched_workstreams": 11,
       "active_workstreams": 11,
       "critical_risks": 7,
@@ -48,12 +48,11 @@
       "Risks to watch: Operator: The open P0 remains the benchmark proof wedging mid-corpus, which can block release proof outright and leave the hardest evidence lane stalled at the wrong moment. | Operator: Runtime divergence is still a live integrity risk: the product repo runs `0.1.9` against a `0.1.10` pin, so proof can drift from the version operators think they are validating."
     ],
     "48h": [
-      "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because the AI provider response did not validate against the standup contract.",
-      "Completed in this window: Operator: Over the last 48 hours, two lingering obligations finally cleared: `B-027` finished lane boundary, runtime, and toolchain clarity; `B-028` finished starter launchpad ux and visual redesign. | Operator: Over the last 48 hours, the clearest move was Prepare v0.1.8 release proof. It gave the rest of the work something concrete to steer against.",
-      "Current execution: Executive: Over the last 48 hours, `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`. | Operator: `B-025` is moving beside it and gives the portfolio a second place where plan intent is turning into something operators can actually trust. | Operator: The schedule still matters here: projected at roughly 3 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
-      "Next planned: Operator: Next up is `B-021`: bring Registry and the other benchmark truth surfaces back into line with the README so the public benchmark story is backed by governed source again. | Operator: After that, the corpus needs more developer-core local coding slices. The benchmark only gets more believable if the workload gets closer to the hard work we actually care about.",
-      "Why this matters: Executive: What matters here is For Odylith maintainers cutting, proving, and recovering canonical releases from the product repo, `v0.1.9` reached GA on 2026-04-07, but the release lane still carried several truths that should not become permanent operating posture. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-      "Risks to watch: Operator: Primary blocker is an open P0 bug: Pinned dogfood proof benchmark can wedge mid corpus and block release proof. | Operator: Odylith product repo active runtime `0.1.9` diverges from repo pin `0.1.10`."
+      "Completed in this window: Operator: Lane-boundary and starter-launchpad plan closeouts landed, which clears two lingering sources of ambiguity before more release-facing work piles on. | Operator: Release proof and v0.1.10 hardening both moved from planning into execution, so the window produced real release work instead of more setup.",
+      "Current execution: Executive: B-060 is the live release lane because release feedback is still fresh enough to fix now, before temporary workarounds harden into operating policy. | Operator: The live posture is split: verified runtime is still on 0.1.9 while the repo pin is 0.1.10, so release eligibility remains off. | Operator: Release proof is still the clearest execution signal, with GA hardening and cross-surface runtime freshness work carrying the operator burden underneath it.",
+      "Next planned: Operator: Next is B-021, because benchmark truth still lags the public story and that gap keeps weakening proof until the neighboring surfaces agree. | Operator: After that, the corpus needs more developer-core local coding slices so frontier claims rest on harder evidence instead of a thin benchmark set.",
+      "Why this matters: Executive: Maintainers got v0.1.9 to GA on April 7, 2026, but the release path still carries truths that should not become the normal way releases are cut or recovered. | Operator: The architecture issue is release ancestry: if canonical proof depends on GitHub merge-committer metadata, operators inherit avoidable coordination risk and a weaker maintainer contract.",
+      "Risks to watch: Operator: A P0 benchmark wedge can still stall pinned dogfood proof mid-corpus, which means release proof can stop before it proves anything decisive. | Operator: Runtime divergence between active 0.1.9 and pinned 0.1.10 is still live, so readiness claims can drift from what the launcher actually proves."
     ]
   },
   "digest_scoped": {
@@ -258,7 +257,7 @@
     "24h": {
       "schema_version": "v13",
       "status": "ready",
-      "source": "provider",
+      "source": "cache",
       "fingerprint": "f1fbecc416cfb031a5b3f3cd3c7b5ea24aee3f2bda82ed622a2c860a696dab3c",
       "generated_utc": "2026-04-08T15:57:51Z",
       "sections": [
@@ -446,14 +445,15 @@
           "section_key": "risks_to_watch",
           "kind": "self_host_posture"
         }
-      }
+      },
+      "cache_mode": "exact"
     },
     "48h": {
       "schema_version": "v13",
       "status": "ready",
-      "source": "deterministic",
+      "source": "provider",
       "fingerprint": "db92d9aa10576b9d89e152e6e399cb3a42148eec06081e6e37d74f3c75b736b8",
-      "generated_utc": "2026-04-08T15:57:51Z",
+      "generated_utc": "2026-04-08T16:06:19Z",
       "sections": [
         {
           "key": "completed",
@@ -461,16 +461,17 @@
           "bullets": [
             {
               "voice": "operator",
-              "text": "Over the last 48 hours, two lingering obligations finally cleared: `B-027` finished lane boundary, runtime, and toolchain clarity; `B-028` finished starter launchpad ux and visual redesign.",
+              "text": "Lane-boundary and starter-launchpad plan closeouts landed, which clears two lingering sources of ambiguity before more release-facing work piles on.",
               "fact_ids": [
                 "F-001"
               ]
             },
             {
               "voice": "operator",
-              "text": "Over the last 48 hours, the clearest move was Prepare v0.1.8 release proof. It gave the rest of the work something concrete to steer against.",
+              "text": "Release proof and v0.1.10 hardening both moved from planning into execution, so the window produced real release work instead of more setup.",
               "fact_ids": [
-                "F-002"
+                "F-002",
+                "F-003"
               ]
             }
           ]
@@ -481,30 +482,24 @@
           "bullets": [
             {
               "voice": "executive",
-              "text": "Over the last 48 hours, `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore.",
+              "text": "B-060 is the live release lane because release feedback is still fresh enough to fix now, before temporary workarounds harden into operating policy.",
               "fact_ids": [
                 "F-004"
               ]
             },
             {
               "voice": "operator",
-              "text": "Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`.",
+              "text": "The live posture is split: verified runtime is still on 0.1.9 while the repo pin is 0.1.10, so release eligibility remains off.",
               "fact_ids": [
                 "F-006"
               ]
             },
             {
               "voice": "operator",
-              "text": "`B-025` is moving beside it and gives the portfolio a second place where plan intent is turning into something operators can actually trust.",
+              "text": "Release proof is still the clearest execution signal, with GA hardening and cross-surface runtime freshness work carrying the operator burden underneath it.",
               "fact_ids": [
+                "F-005",
                 "F-007"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "The schedule still matters here: projected at roughly 3 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
-              "fact_ids": [
-                "F-008"
               ]
             }
           ]
@@ -515,14 +510,14 @@
           "bullets": [
             {
               "voice": "operator",
-              "text": "Next up is `B-021`: bring Registry and the other benchmark truth surfaces back into line with the README so the public benchmark story is backed by governed source again.",
+              "text": "Next is B-021, because benchmark truth still lags the public story and that gap keeps weakening proof until the neighboring surfaces agree.",
               "fact_ids": [
                 "F-009"
               ]
             },
             {
               "voice": "operator",
-              "text": "After that, the corpus needs more developer-core local coding slices. The benchmark only gets more believable if the workload gets closer to the hard work we actually care about.",
+              "text": "After that, the corpus needs more developer-core local coding slices so frontier claims rest on harder evidence instead of a thin benchmark set.",
               "fact_ids": [
                 "F-010"
               ]
@@ -535,14 +530,14 @@
           "bullets": [
             {
               "voice": "executive",
-              "text": "What matters here is For Odylith maintainers cutting, proving, and recovering canonical releases from the product repo, `v0.1.9` reached GA on 2026-04-07, but the release lane still carried several truths that should not become permanent operating posture.",
+              "text": "Maintainers got v0.1.9 to GA on April 7, 2026, but the release path still carries truths that should not become the normal way releases are cut or recovered.",
               "fact_ids": [
                 "F-011"
               ]
             },
             {
               "voice": "operator",
-              "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
+              "text": "The architecture issue is release ancestry: if canonical proof depends on GitHub merge-committer metadata, operators inherit avoidable coordination risk and a weaker maintainer contract.",
               "fact_ids": [
                 "F-012"
               ]
@@ -555,14 +550,14 @@
           "bullets": [
             {
               "voice": "operator",
-              "text": "Primary blocker is an open P0 bug: Pinned dogfood proof benchmark can wedge mid corpus and block release proof.",
+              "text": "A P0 benchmark wedge can still stall pinned dogfood proof mid-corpus, which means release proof can stop before it proves anything decisive.",
               "fact_ids": [
                 "F-013"
               ]
             },
             {
               "voice": "operator",
-              "text": "Odylith product repo active runtime `0.1.9` diverges from repo pin `0.1.10`.",
+              "text": "Runtime divergence between active 0.1.9 and pinned 0.1.10 is still live, so readiness claims can drift from what the launcher actually proves.",
               "fact_ids": [
                 "F-014"
               ]
@@ -650,11 +645,6 @@
           "section_key": "risks_to_watch",
           "kind": "self_host_posture"
         }
-      },
-      "notice": {
-        "title": "Showing deterministic local brief",
-        "message": "Compass rendered a deterministic local brief from the current fact packet because the AI provider response did not validate against the standup contract.",
-        "reason": "validation_failed"
       }
     }
   },
@@ -665,7 +655,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "fa72935ac102d013b8a8015568996fdae4c66e6502a71bb5ad99d27a1f745a38",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -854,7 +844,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "fc7219178c81dd42f0717d73263a5036ac21fe8e9a43ff84a16b78d731abf7d8",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -1074,7 +1064,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "58354dd27d4824fe88c0b3f05cda5a9f9d2385cccaf87b6d0967ddf7602a2fa3",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -1276,7 +1266,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "1171acfd362df34e6b49c9562fc7b3d837665196d36b17253467780203c87f90",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -1486,7 +1476,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "e276e0f3f6b059963cc355475ef1749608cd9831d5293ac67eb1d564e401a185",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -1660,7 +1650,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "c8ac18096c65d025ef5ac152096fe91b2ffc5f1de8ca2ba696b1e00c0253b4a1",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -1870,7 +1860,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "d14317a237ceddb0600b651b3efa28dd0c93321efe5f639ebfb2747a6223b6b2",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -2056,7 +2046,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "997b247484128efe962dc90321ab5cdecafa28f863590f883c20c4f2b047f38b",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -2230,7 +2220,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "119a66c566e3fb46de4e1f3dd61001037cabfe251306678c14bdcc7ffa021a05",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -2439,8 +2429,8 @@
         "schema_version": "v13",
         "status": "ready",
         "source": "deterministic",
-        "fingerprint": "f0580bd9653cbe28d908deca405a385fc866931b5fb2c83e10c59af2a0f87c92",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "fingerprint": "9ce6b3f471edb56095c1cbbe62980ba6323d973db8cc557139c8d9674bc1099d",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -2546,7 +2536,7 @@
             ]
           },
           "F-002": {
-            "text": "Most concrete movement: Advance v0.1.10 canonical release truth (#4).",
+            "text": "Most concrete movement: Keep hosted install smoke compatible with shipped runtimes.",
             "section_key": "completed",
             "kind": "execution_highlight",
             "workstreams": [
@@ -2637,7 +2627,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "bf563a7d4f61bf417f8c8f89b4887fdf3c3a9a2764e0a7861bb563622fc07461",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -2839,7 +2829,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "d26d38ed57536ec5c69a69d1b7332934ba3408f105ee03d8493cdf2cb9136109",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -3043,7 +3033,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "d714d72d0aef368efe478d77ce778ca8d48ec63c35654520d1b4e13d4e3364d0",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -3232,7 +3222,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "8e9b2baaedbdbd8bcb78bafe3527b5eda13090164628923351ce33a431a8f0f3",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -3452,7 +3442,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "9036ef5a36720b9ee836113da7c69e6b0e736c594f9cb4fe3d5b69cc763b2134",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -3654,7 +3644,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "6dee1323be40f22bed75deaf167ca78c1c5b925976b91f7c8c458f8d7302eac8",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -3864,7 +3854,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "9efb5f2608c9ef2f43186a4f42e8fce0569c8805c8e222ba8d9a4c312517b38a",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -4061,7 +4051,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "666c78e11b2b119843d1956576e43daef9191c9fd031800f26ae1f24334844f8",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -4271,7 +4261,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "2c7e74d461871903745cce4732317ff1aa8c2b96dd476b48f77bf8937450b68c",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -4457,7 +4447,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "bf9dd3f7a717011a7683a44b247b837d456c046f7c138014ff6e6a0dccf27cbf",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -4631,7 +4621,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "f46cb75e48aeb00085d742dc0d60195cf514a7947a86f5e622641bd83c2e6a44",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -4840,8 +4830,8 @@
         "schema_version": "v13",
         "status": "ready",
         "source": "deterministic",
-        "fingerprint": "0fb40f6cb81844ead1c220acef376d4f8c71b11e616ae6d82672c0bac354c7e3",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "fingerprint": "40d0a34ed2a84cdd8e96965dc4235c562e77ec584fa9568143f3f9373cb7cc46",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -4947,7 +4937,7 @@
             ]
           },
           "F-002": {
-            "text": "Most concrete movement: Advance v0.1.10 canonical release truth (#4).",
+            "text": "Most concrete movement: Keep hosted install smoke compatible with shipped runtimes.",
             "section_key": "completed",
             "kind": "execution_highlight",
             "workstreams": [
@@ -5038,7 +5028,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "fd63b0a5d76f752b75118d0802d6b552561b32abca77967fee76012ba2907d36",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -5240,7 +5230,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "38dba36fe521cb54d6bbcfed15630534fd5b19f56f63233509db9da27de45c71",
-        "generated_utc": "2026-04-08T15:57:51Z",
+        "generated_utc": "2026-04-08T16:06:19Z",
         "sections": [
           {
             "key": "completed",
@@ -5531,7 +5521,7 @@
     "advisory_retrieval_focus": "expand_coverage",
     "advisory_speed_mode": "balanced",
     "advisory_freshness_bucket": "fresh",
-    "advisory_freshness_age_hours": 0.77,
+    "advisory_freshness_age_hours": 0.9,
     "advisory_evidence_strength_score": 2,
     "advisory_evidence_strength_level": "medium",
     "advisory_sample_balance": "thin",
@@ -5592,34 +5582,18 @@
   "governance": {
     "impact": {
       "radar": true,
-      "atlas": true,
-      "compass": true,
-      "registry": true,
+      "atlas": false,
+      "compass": false,
+      "registry": false,
       "casebook": true,
       "reasons": {
         "radar": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py",
-          "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+          "odylith/radar/source/INDEX.md"
         ],
-        "atlas": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py"
-        ],
-        "compass": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py"
-        ],
-        "registry": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md"
-        ],
+        "atlas": [],
+        "compass": [],
+        "registry": [],
         "casebook": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py",
           "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
           "odylith/casebook/bugs/INDEX.md"
         ]
@@ -5638,9 +5612,9 @@
     },
     "component_registry": {
       "component_count": 21,
-      "event_count": 62,
-      "meaningful_event_count": 56,
-      "mapped_meaningful_event_count": 56,
+      "event_count": 59,
+      "meaningful_event_count": 53,
+      "mapped_meaningful_event_count": 53,
       "unmapped_meaningful_event_count": 0,
       "diagnostic_count": 2
     },
@@ -6660,19 +6634,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
-          "local_change_count": 2,
-          "file_touch_count": 197
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 198
         },
         "48h": {
-          "commit_count": 2,
-          "local_change_count": 2,
-          "file_touch_count": 197
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 198
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-08T08:57:26-07:00",
+        "last_activity_iso": "2026-04-08T08:59:46-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -7237,19 +7211,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 3,
-          "file_touch_count": 324
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 325
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 3,
-          "file_touch_count": 395
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 396
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T08:57:26-07:00",
+        "last_activity_iso": "2026-04-08T08:59:46-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -7265,7 +7239,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 73,
+          "index": 72,
           "band": "High"
         },
         "48h": {
@@ -7419,19 +7393,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 324
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 325
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 2,
-          "file_touch_count": 394
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 395
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T08:57:26-07:00",
+        "last_activity_iso": "2026-04-08T08:59:46-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -12150,19 +12124,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
-          "local_change_count": 2,
-          "file_touch_count": 197
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 198
         },
         "48h": {
-          "commit_count": 2,
-          "local_change_count": 2,
-          "file_touch_count": 197
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 198
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-08T08:57:26-07:00",
+        "last_activity_iso": "2026-04-08T08:59:46-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -12335,19 +12309,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 3,
-          "file_touch_count": 324
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 325
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 3,
-          "file_touch_count": 395
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 396
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T08:57:26-07:00",
+        "last_activity_iso": "2026-04-08T08:59:46-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -12363,7 +12337,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 73,
+          "index": 72,
           "band": "High"
         },
         "48h": {
@@ -12464,7 +12438,7 @@
     {
       "id": "local:M:odylith/casebook/bugs/INDEX.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:57:51-07:00",
+      "ts_iso": "2026-04-08T09:06:19-07:00",
       "summary": "Modified odylith/casebook/bugs/INDEX.md",
       "author": "local",
       "sha": "",
@@ -12483,7 +12457,7 @@
     {
       "id": "local:M:odylith/radar/source/INDEX.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:57:48-07:00",
+      "ts_iso": "2026-04-08T09:06:16-07:00",
       "summary": "Modified odylith/radar/source/INDEX.md",
       "author": "local",
       "sha": "",
@@ -12500,36 +12474,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:tests/unit/install/test_release_bootstrap.py",
+      "id": "local:M:odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:57:26-07:00",
-      "summary": "Modified tests/unit/install/test_release_bootstrap.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-005"
-      ],
-      "files": [
-        "tests/unit/install/test_release_bootstrap.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:odylith/maintainer/AGENTS.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T08:57:26-07:00",
-      "summary": "Modified odylith/maintainer/AGENTS.md",
+      "ts_iso": "2026-04-08T09:06:11-07:00",
+      "summary": "Modified odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "odylith/maintainer/AGENTS.md"
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
       ],
       "source": "local",
       "session_id": "",
@@ -12540,20 +12493,17 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T08:57:26-07:00",
-      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "author": "local",
+      "id": "bug:bug_resolved:3:P0",
+      "kind": "bug_resolved",
+      "ts_iso": "2026-04-08T09:06:11-07:00",
+      "summary": "Critical bug resolved (P0): Hosted install script uses hidden pin alignment flag that older shipped runtimes do not understand.",
+      "author": "bugs",
       "sha": "",
-      "workstreams": [
-        "B-005",
-        "B-007"
-      ],
+      "workstreams": [],
       "files": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
       ],
-      "source": "local",
+      "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -12562,20 +12512,53 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T08:57:26-07:00",
-      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "author": "local",
-      "sha": "",
+      "id": "commit:7a3219a88d461ca2a78e83e9edf15212a4e12eac",
+      "kind": "commit",
+      "ts_iso": "2026-04-08T08:59:46-07:00",
+      "summary": "Keep hosted install smoke compatible with shipped runtimes",
+      "author": "freedom-research",
+      "sha": "7a3219a88d461ca2a78e83e9edf15212a4e12eac",
       "workstreams": [
         "B-005",
-        "B-007"
+        "B-007",
+        "B-060"
       ],
       "files": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-04-08.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/tooling-payload.v1.js",
+        "tests/unit/install/test_release_bootstrap.py"
       ],
-      "source": "local",
+      "source": "git",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -12618,86 +12601,6 @@
         "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
       ],
       "source": "plan_file",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T08:57:26-07:00",
-      "summary": "Modified odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-060"
-      ],
-      "files": [
-        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T08:57:26-07:00",
-      "summary": "Modified odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-060"
-      ],
-      "files": [
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:??:odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T08:57:26-07:00",
-      "summary": "Added odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "bug:bug_resolved:3:P0",
-      "kind": "bug_resolved",
-      "ts_iso": "2026-04-08T08:57:26-07:00",
-      "summary": "Critical bug resolved (P0): Hosted install script uses hidden pin-alignment flag that older shipped runtimes do not understand.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
-      ],
-      "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -15137,29 +15040,20 @@
   ],
   "timeline_transactions": [
     {
-      "id": "txn:global:auto-global-0029:0029",
-      "transaction_id": "txn:global:auto-global-0029:0029",
+      "id": "txn:global:auto-global-0031:0031",
+      "transaction_id": "txn:global:auto-global-0031:0031",
       "session_id": "",
-      "start_ts_iso": "2026-04-08T08:57:26-07:00",
-      "end_ts_iso": "2026-04-08T08:57:51-07:00",
-      "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
+      "start_ts_iso": "2026-04-08T09:06:11-07:00",
+      "end_ts_iso": "2026-04-08T09:06:19-07:00",
+      "headline": "Updated bugs index and 2 other areas",
       "context": "",
-      "event_count": 12,
-      "files_count": 8,
-      "workstreams": [
-        "B-005",
-        "B-007",
-        "B-060"
-      ],
+      "event_count": 4,
+      "files_count": 3,
+      "workstreams": [],
       "files": [
         "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
         "odylith/casebook/bugs/INDEX.md",
-        "odylith/maintainer/AGENTS.md",
-        "odylith/radar/source/INDEX.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-        "tests/unit/install/test_release_bootstrap.py"
+        "odylith/radar/source/INDEX.md"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -15167,7 +15061,7 @@
         {
           "id": "local:M:odylith/casebook/bugs/INDEX.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:57:51-07:00",
+          "ts_iso": "2026-04-08T09:06:19-07:00",
           "summary": "Modified odylith/casebook/bugs/INDEX.md",
           "author": "local",
           "sha": "",
@@ -15186,7 +15080,7 @@
         {
           "id": "local:M:odylith/radar/source/INDEX.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:57:48-07:00",
+          "ts_iso": "2026-04-08T09:06:16-07:00",
           "summary": "Modified odylith/radar/source/INDEX.md",
           "author": "local",
           "sha": "",
@@ -15203,36 +15097,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:tests/unit/install/test_release_bootstrap.py",
+          "id": "local:M:odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:57:26-07:00",
-          "summary": "Modified tests/unit/install/test_release_bootstrap.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-005"
-          ],
-          "files": [
-            "tests/unit/install/test_release_bootstrap.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:odylith/maintainer/AGENTS.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T08:57:26-07:00",
-          "summary": "Modified odylith/maintainer/AGENTS.md",
+          "ts_iso": "2026-04-08T09:06:11-07:00",
+          "summary": "Modified odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "odylith/maintainer/AGENTS.md"
+            "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
           ],
           "source": "local",
           "session_id": "",
@@ -15243,49 +15116,155 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T08:57:26-07:00",
-          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "author": "local",
+          "id": "bug:bug_resolved:3:P0",
+          "kind": "bug_resolved",
+          "ts_iso": "2026-04-08T09:06:11-07:00",
+          "summary": "Critical bug resolved (P0): Hosted install script uses hidden pin alignment flag that older shipped runtimes do not understand.",
+          "author": "bugs",
           "sha": "",
-          "workstreams": [
-            "B-005",
-            "B-007"
-          ],
+          "workstreams": [],
           "files": [
-            "odylith/registry/source/components/release/CURRENT_SPEC.md"
+            "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
           ],
-          "source": "local",
+          "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
           "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": ""
-        },
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0030:0030",
+      "transaction_id": "txn:global:auto-global-0030:0030",
+      "session_id": "",
+      "start_ts_iso": "2026-04-08T08:59:46-07:00",
+      "end_ts_iso": "2026-04-08T08:59:46-07:00",
+      "headline": "Keep hosted install smoke compatible with shipped runtimes",
+      "context": "",
+      "event_count": 1,
+      "files_count": 33,
+      "workstreams": [
+        "B-005",
+        "B-007",
+        "B-060"
+      ],
+      "files": [
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-04-08.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/tooling-payload.v1.js",
+        "tests/unit/install/test_release_bootstrap.py"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
         {
-          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T08:57:26-07:00",
-          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "author": "local",
-          "sha": "",
+          "id": "commit:7a3219a88d461ca2a78e83e9edf15212a4e12eac",
+          "kind": "commit",
+          "ts_iso": "2026-04-08T08:59:46-07:00",
+          "summary": "Keep hosted install smoke compatible with shipped runtimes",
+          "author": "freedom-research",
+          "sha": "7a3219a88d461ca2a78e83e9edf15212a4e12eac",
           "workstreams": [
             "B-005",
-            "B-007"
+            "B-007",
+            "B-060"
           ],
           "files": [
-            "odylith/registry/source/components/release/CURRENT_SPEC.md"
+            "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
+            "odylith/casebook/bugs/INDEX.md",
+            "odylith/casebook/casebook-detail-shard-003.v1.js",
+            "odylith/casebook/casebook-payload.v1.js",
+            "odylith/casebook/casebook.html",
+            "odylith/compass/compass-payload.v1.js",
+            "odylith/compass/compass.html",
+            "odylith/compass/runtime/current.v1.js",
+            "odylith/compass/runtime/current.v1.json",
+            "odylith/compass/runtime/history/2026-04-08.v1.json",
+            "odylith/compass/runtime/history/embedded.v1.js",
+            "odylith/compass/runtime/history/index.v1.json",
+            "odylith/index.html",
+            "odylith/maintainer/AGENTS.md",
+            "odylith/radar/backlog-detail-shard-001.v1.js",
+            "odylith/radar/backlog-detail-shard-002.v1.js",
+            "odylith/radar/backlog-document-shard-002.v1.js",
+            "odylith/radar/backlog-document-shard-004.v1.js",
+            "odylith/radar/backlog-payload.v1.js",
+            "odylith/radar/radar.html",
+            "odylith/radar/source/INDEX.md",
+            "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+            "odylith/registry/registry-detail-shard-001.v1.js",
+            "odylith/registry/registry-payload.v1.js",
+            "odylith/registry/registry.html",
+            "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+            "odylith/registry/source/components/radar/FORENSICS.v1.json",
+            "odylith/registry/source/components/release/CURRENT_SPEC.md",
+            "odylith/registry/source/components/release/FORENSICS.v1.json",
+            "odylith/runtime/delivery_intelligence.v4.json",
+            "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+            "odylith/tooling-payload.v1.js",
+            "tests/unit/install/test_release_bootstrap.py"
           ],
-          "source": "local",
+          "source": "git",
           "session_id": "",
           "transaction_id": "",
           "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": ""
-        },
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0029:0029",
+      "transaction_id": "txn:global:auto-global-0029:0029",
+      "session_id": "",
+      "start_ts_iso": "2026-04-08T08:57:26-07:00",
+      "end_ts_iso": "2026-04-08T08:57:26-07:00",
+      "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
+      "context": "",
+      "event_count": 2,
+      "files_count": 1,
+      "workstreams": [
+        "B-060"
+      ],
+      "files": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
         {
           "id": "plan:update:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "plan_update",
@@ -15321,86 +15300,6 @@
             "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
           ],
           "source": "plan_file",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T08:57:26-07:00",
-          "summary": "Modified odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-060"
-          ],
-          "files": [
-            "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T08:57:26-07:00",
-          "summary": "Modified odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-060"
-          ],
-          "files": [
-            "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:??:odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T08:57:26-07:00",
-          "summary": "Added odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "bug:bug_resolved:3:P0",
-          "kind": "bug_resolved",
-          "ts_iso": "2026-04-08T08:57:26-07:00",
-          "summary": "Critical bug resolved (P0): Hosted install script uses hidden pin-alignment flag that older shipped runtimes do not understand.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
-          ],
-          "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
           "transaction_seq": null,
@@ -19342,29 +19241,27 @@
     "recent_window_minutes": 90,
     "global": {
       "is_active": true,
-      "transaction_id": "txn:global:auto-global-0028:0028",
+      "transaction_id": "txn:global:auto-global-0030:0030",
       "session_id": "",
       "context": "",
-      "headline": "Advance v0.1.10 canonical release truth (#4)",
-      "last_event_iso": "2026-04-08T08:45:31-07:00",
-      "start_ts_iso": "2026-04-08T08:45:18-07:00",
+      "headline": "Keep hosted install smoke compatible with shipped runtimes",
+      "last_event_iso": "2026-04-08T08:59:46-07:00",
+      "start_ts_iso": "2026-04-08T08:59:46-07:00",
       "workstreams": [
         "B-005",
         "B-007",
         "B-060"
       ],
-      "event_count": 2,
-      "files_count": 35,
+      "event_count": 1,
+      "files_count": 33,
       "kind_counts": {
-        "bug_resolved": 1,
         "commit": 1
       },
       "source_counts": {
-        "bugs_index": 1,
         "git": 1
       },
       "activity_signal_count": 1,
-      "risk_signal_count": 1,
+      "risk_signal_count": 0,
       "top_files": [
         "odylith/compass/compass-payload.v1.js",
         "odylith/maintainer/AGENTS.md",
@@ -19375,44 +19272,42 @@
         "odylith/radar/source/INDEX.md",
         "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
       ],
-      "source_files_count": 21,
+      "source_files_count": 19,
       "generated_files_count": 14,
       "generated_only_batch": false,
-      "latest_event_kind": "bug_resolved",
-      "latest_event_summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
+      "latest_event_kind": "commit",
+      "latest_event_summary": "Keep hosted install smoke compatible with shipped runtimes",
       "has_implementation_signal": true,
       "focus_reason": "recent_activity_signal",
       "selection_mode": "active_implementation",
       "has_live_implementation": true,
       "has_recent_implementation": true,
-      "latest_implementation_iso": "2026-04-08T08:57:51-07:00"
+      "latest_implementation_iso": "2026-04-08T09:06:19-07:00"
     },
     "by_workstream": {
       "B-005": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0028:0028",
+        "transaction_id": "txn:global:auto-global-0030:0030",
         "session_id": "",
         "context": "",
-        "headline": "Advance v0.1.10 canonical release truth (#4)",
-        "last_event_iso": "2026-04-08T08:45:31-07:00",
-        "start_ts_iso": "2026-04-08T08:45:18-07:00",
+        "headline": "Keep hosted install smoke compatible with shipped runtimes",
+        "last_event_iso": "2026-04-08T08:59:46-07:00",
+        "start_ts_iso": "2026-04-08T08:59:46-07:00",
         "workstreams": [
           "B-005",
           "B-007",
           "B-060"
         ],
-        "event_count": 2,
-        "files_count": 35,
+        "event_count": 1,
+        "files_count": 33,
         "kind_counts": {
-          "bug_resolved": 1,
           "commit": 1
         },
         "source_counts": {
-          "bugs_index": 1,
           "git": 1
         },
         "activity_signal_count": 1,
-        "risk_signal_count": 1,
+        "risk_signal_count": 0,
         "top_files": [
           "odylith/compass/compass-payload.v1.js",
           "odylith/maintainer/AGENTS.md",
@@ -19423,43 +19318,41 @@
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
         ],
-        "source_files_count": 21,
+        "source_files_count": 19,
         "generated_files_count": 14,
         "generated_only_batch": false,
-        "latest_event_kind": "bug_resolved",
-        "latest_event_summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Keep hosted install smoke compatible with shipped runtimes",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T08:57:51-07:00"
+        "latest_implementation_iso": "2026-04-08T08:59:46-07:00"
       },
       "B-007": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0028:0028",
+        "transaction_id": "txn:global:auto-global-0030:0030",
         "session_id": "",
         "context": "",
-        "headline": "Advance v0.1.10 canonical release truth (#4)",
-        "last_event_iso": "2026-04-08T08:45:31-07:00",
-        "start_ts_iso": "2026-04-08T08:45:18-07:00",
+        "headline": "Keep hosted install smoke compatible with shipped runtimes",
+        "last_event_iso": "2026-04-08T08:59:46-07:00",
+        "start_ts_iso": "2026-04-08T08:59:46-07:00",
         "workstreams": [
           "B-005",
           "B-007",
           "B-060"
         ],
-        "event_count": 2,
-        "files_count": 35,
+        "event_count": 1,
+        "files_count": 33,
         "kind_counts": {
-          "bug_resolved": 1,
           "commit": 1
         },
         "source_counts": {
-          "bugs_index": 1,
           "git": 1
         },
         "activity_signal_count": 1,
-        "risk_signal_count": 1,
+        "risk_signal_count": 0,
         "top_files": [
           "odylith/compass/compass-payload.v1.js",
           "odylith/maintainer/AGENTS.md",
@@ -19470,43 +19363,41 @@
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
         ],
-        "source_files_count": 21,
+        "source_files_count": 19,
         "generated_files_count": 14,
         "generated_only_batch": false,
-        "latest_event_kind": "bug_resolved",
-        "latest_event_summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Keep hosted install smoke compatible with shipped runtimes",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T08:57:51-07:00"
+        "latest_implementation_iso": "2026-04-08T08:59:46-07:00"
       },
       "B-060": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0028:0028",
+        "transaction_id": "txn:global:auto-global-0030:0030",
         "session_id": "",
         "context": "",
-        "headline": "Advance v0.1.10 canonical release truth (#4)",
-        "last_event_iso": "2026-04-08T08:45:31-07:00",
-        "start_ts_iso": "2026-04-08T08:45:18-07:00",
+        "headline": "Keep hosted install smoke compatible with shipped runtimes",
+        "last_event_iso": "2026-04-08T08:59:46-07:00",
+        "start_ts_iso": "2026-04-08T08:59:46-07:00",
         "workstreams": [
           "B-005",
           "B-007",
           "B-060"
         ],
-        "event_count": 2,
-        "files_count": 35,
+        "event_count": 1,
+        "files_count": 33,
         "kind_counts": {
-          "bug_resolved": 1,
           "commit": 1
         },
         "source_counts": {
-          "bugs_index": 1,
           "git": 1
         },
         "activity_signal_count": 1,
-        "risk_signal_count": 1,
+        "risk_signal_count": 0,
         "top_files": [
           "odylith/compass/compass-payload.v1.js",
           "odylith/maintainer/AGENTS.md",
@@ -19517,17 +19408,17 @@
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
         ],
-        "source_files_count": 21,
+        "source_files_count": 19,
         "generated_files_count": 14,
         "generated_only_batch": false,
-        "latest_event_kind": "bug_resolved",
-        "latest_event_summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Keep hosted install smoke compatible with shipped runtimes",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T08:57:51-07:00"
+        "latest_implementation_iso": "2026-04-08T08:59:46-07:00"
       },
       "B-001": {
         "is_active": false,
@@ -21447,7 +21338,7 @@
       },
       {
         "date": "2026-04-08",
-        "title": "Hosted install script uses hidden pin-alignment flag that older shipped runtimes do not understand",
+        "title": "Hosted install script uses hidden pin alignment flag that older shipped runtimes do not understand",
         "severity": "P0",
         "status": "Closed",
         "link": "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
@@ -22253,7 +22144,7 @@
   "runtime_contract": {
     "version": "v1",
     "standup_brief_schema_version": "v13",
-    "input_fingerprint": "5d3615a8b4f98863e02e7a5ff230bc03be2ca552623035f664c1753a822b5a6a",
+    "input_fingerprint": "35e752de8ca6cf906d5c54ecfcdee511a56e3232649b9ec8d32774bc0d7b91be",
     "retention_days": 15,
     "active_window_minutes": 15,
     "max_review_age_days": 21,
@@ -22265,7 +22156,7 @@
       "applied_profile": "shell-safe",
       "runtime_mode": "auto",
       "reason": "",
-      "attempted_utc": "2026-04-08T15:57:51Z",
+      "attempted_utc": "2026-04-08T16:06:19Z",
       "fallback_used": false
     }
   }
