@@ -621,7 +621,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     }
 
     function buildRuntimeStatusPosture(runtimeState) {
-      return {
+      const fallbackPosture = {
         visible: false,
         tone: "",
         kicker: "",
@@ -630,6 +630,28 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         meta: "",
         showReload: false,
         reloadLabel: "",
+      };
+      const current = readStateFromUrl();
+      const currentTab = current && typeof current === "object"
+        ? String(current.tab || "").trim().toLowerCase()
+        : "";
+      if (!currentTab) return fallbackPosture;
+      const surfaceRuntimeStatus = runtimeState && runtimeState.surface_runtime_status && typeof runtimeState.surface_runtime_status === "object"
+        ? runtimeState.surface_runtime_status
+        : {};
+      const rawPosture = surfaceRuntimeStatus[currentTab];
+      if (!rawPosture || typeof rawPosture !== "object") {
+        return fallbackPosture;
+      }
+      return {
+        visible: Boolean(rawPosture.visible),
+        tone: String(rawPosture.tone || "").trim(),
+        kicker: String(rawPosture.kicker || "").trim(),
+        title: String(rawPosture.title || "").trim(),
+        body: String(rawPosture.body || "").trim(),
+        meta: String(rawPosture.meta || "").trim(),
+        showReload: Boolean(rawPosture.showReload),
+        reloadLabel: String(rawPosture.reloadLabel || "").trim(),
       };
     }
 

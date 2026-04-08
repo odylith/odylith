@@ -101,14 +101,29 @@ def main(argv: Sequence[str] | None = None) -> int:
         if manifest_token == registry.DEFAULT_MANIFEST_PATH
         else _resolve(repo_root, manifest_token)
     )
+    catalog_path = _resolve(repo_root, str(args.catalog))
+    ideas_root = _resolve(repo_root, str(args.ideas_root))
+    stream_path = _resolve(repo_root, str(args.stream))
 
     report = registry.build_component_registry_report(
         repo_root=repo_root,
         manifest_path=manifest_path,
-        catalog_path=_resolve(repo_root, str(args.catalog)),
-        ideas_root=_resolve(repo_root, str(args.ideas_root)),
-        stream_path=_resolve(repo_root, str(args.stream)),
+        catalog_path=catalog_path,
+        ideas_root=ideas_root,
+        stream_path=stream_path,
     )
+    report_cache_path, _fingerprint = registry._cached_component_registry_report_payload(  # noqa: SLF001
+        repo_root=repo_root,
+        manifest_path=manifest_path,
+        catalog_path=catalog_path,
+        ideas_root=ideas_root,
+        stream_path=stream_path,
+        workspace_activity_window_hours=registry.DEFAULT_WORKSPACE_ACTIVITY_WINDOW_HOURS,
+    )
+    try:
+        report_cache_display = str(report_cache_path.relative_to(repo_root))
+    except ValueError:
+        report_cache_display = str(report_cache_path)
 
     warnings: list[str] = []
     errors: list[str] = []
@@ -177,10 +192,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("component registry contract warnings")
         for token in warnings[:32]:
             print(f"- {token}")
+        print(f"- report: {report_cache_display}")
     if policy_warnings:
         print("component policy warnings")
         for token in policy_warnings[:32]:
             print(f"- {token}")
+        if not warnings:
+            print(f"- report: {report_cache_display}")
 
     if unmapped:
         print("unmapped meaningful events")

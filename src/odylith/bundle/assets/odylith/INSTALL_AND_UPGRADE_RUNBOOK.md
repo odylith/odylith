@@ -28,6 +28,11 @@
 - Use `./.odylith/bin/odylith upgrade --repo-root .` later to move a consumer repo to the latest verified release and advance the local repo pin.
 - Use `./.odylith/bin/odylith reinstall --repo-root . --latest` to rematerialize the local install and align the active runtime plus repo pin in one step. `./.odylith/bin/odylith install --repo-root . --adopt-latest` is the equivalent explicit install-form spelling.
 - Use `--dry-run` on `install`, `reinstall`, `upgrade`, `sync`, `dashboard refresh`, and `atlas auto-update` when you want the exact mutation plan and dirty-worktree overlap before Odylith writes files.
+- Add `--verbose` to `odylith sync` when you want the full dirty-overlap list.
+  If a write-mode sync reports a large overlap block, rerun with
+  `--proceed-with-overlap` only after you accept that mutation scope.
+  Structured sync evidence lives in generated report artifacts today; there is
+  not a terminal `--json` sync mode yet.
 - Consumer repos still carrying a legacy install, including repo-owned truth under `odyssey/` and runtime state under `.odyssey/`, should rerun the latest hosted installer from the repo root. That rescue path renames the legacy roots into `odylith/` and `.odylith/`, preserves repo-owned truth, and purges old volatile state before normal Odylith upgrade continues:
   `curl -fsSL https://odylith.ai/install.sh | bash`
 - If the repo already has `./.odylith/bin/odylith`, `./.odylith/bin/odylith migrate-legacy-install --repo-root .` performs the same legacy-root migration directly.

@@ -1,3 +1,4 @@
+import argparse
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -39,7 +40,7 @@ def _seed_first_run_surfaces_without_shell(repo_root: Path) -> None:
 
 def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
-    refresh_capture: dict[str, object] = {}
+    sync_capture: dict[str, object] = {}
 
     monkeypatch.setattr(
         cli,
@@ -54,23 +55,30 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
         ),
     )
 
-    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
-        refresh_capture.update(kwargs)
-        _seed_first_run_surfaces_without_shell(tmp_path)
-        (tmp_path / "odylith" / "index.html").write_text("<!doctype html>\n", encoding="utf-8")
+    def fail_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        raise AssertionError(f"shell-only refresh should not run while sibling surfaces are missing: {kwargs}")
+
+    def fake_full_sync(argv: list[str]) -> int:
+        sync_capture["argv"] = argv
+        _seed_first_run_surfaces(tmp_path)
         return 0
 
-    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", fake_refresh_dashboard_surfaces)
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", fail_refresh_dashboard_surfaces)
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "main", fake_full_sync)
 
     rc = cli.main(["install", "--repo-root", str(tmp_path)])
     output = capsys.readouterr()
 
     assert rc == 0
-    assert refresh_capture["repo_root"] == tmp_path.resolve()
-    assert refresh_capture["surfaces"] == ("tooling_shell",)
-    assert refresh_capture["runtime_mode"] == "auto"
-    assert refresh_capture["atlas_sync"] is False
-    assert refresh_capture["compass_refresh_profile"] == "shell-safe"
+    assert sync_capture["argv"] == [
+        "--repo-root",
+        str(tmp_path.resolve()),
+        "--force",
+        "--impact-mode",
+        "full",
+        "--compass-refresh-profile",
+        "shell-safe",
+    ]
     assert "Odylith 1.2.3 is ready" in output.out
     assert "Rendering first-run Odylith surfaces" in output.out
     assert "Dashboard:" in output.out
@@ -89,6 +97,8 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
 def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     opened: dict[str, object] = {}
+    refresh_capture: dict[str, object] = {}
+    _seed_first_run_surfaces_without_shell(tmp_path)
 
     monkeypatch.setattr(
         cli,
@@ -101,10 +111,17 @@ def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch
             git_repo_present=True,
         ),
     )
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        refresh_capture.update(kwargs)
+        (tmp_path / "odylith" / "index.html").write_text("<!doctype html>\n", encoding="utf-8")
+        return 0
+
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", fake_refresh_dashboard_surfaces)
     monkeypatch.setattr(
         cli.sync_workstream_artifacts,
-        "refresh_dashboard_surfaces",
-        lambda **kwargs: (_seed_first_run_surfaces_without_shell(tmp_path), (tmp_path / "odylith" / "index.html").write_text("<!doctype html>\n", encoding="utf-8"), 0)[2],
+        "main",
+        lambda argv: (_ for _ in ()).throw(AssertionError(f"full sync should not run when only shell is missing: {argv}")),
     )
     monkeypatch.setattr(cli, "_interactive_browser_launch_possible", lambda: True)
     monkeypatch.setattr(
@@ -117,6 +134,11 @@ def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch
     output = capsys.readouterr()
 
     assert rc == 0
+    assert refresh_capture["repo_root"] == tmp_path.resolve()
+    assert refresh_capture["surfaces"] == ("tooling_shell",)
+    assert refresh_capture["runtime_mode"] == "auto"
+    assert refresh_capture["atlas_sync"] is False
+    assert refresh_capture["compass_refresh_profile"] == "shell-safe"
     assert opened["url"] == (tmp_path / "odylith" / "index.html").resolve().as_uri()
     assert opened["new"] == 2
     assert "Opened `odylith/index.html` in your browser." in output.out
@@ -124,6 +146,7 @@ def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch
 
 def test_install_no_open_flag_suppresses_browser_launch(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_first_run_surfaces_without_shell(tmp_path)
 
     monkeypatch.setattr(
         cli,
@@ -160,6 +183,7 @@ def test_install_does_not_open_browser_when_not_first_install(monkeypatch, tmp_p
     install_state = tmp_path / ".odylith" / "install.json"
     install_state.parent.mkdir(parents=True, exist_ok=True)
     install_state.write_text("{}\n", encoding="utf-8")
+    _seed_first_run_surfaces_without_shell(tmp_path)
 
     monkeypatch.setattr(
         cli,
@@ -375,6 +399,52 @@ def test_install_adopt_latest_clears_stale_upgrade_spotlight_when_no_version_cha
     assert not (tmp_path / ".odylith" / "runtime" / "release-upgrade-spotlight.v1.json").exists()
     assert "Odylith was reinstalled on the latest verified release: 1.2.3. Repo pin updated to match." in output
     assert "Dashboard refreshed." in output
+
+
+def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, capsys) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    install_state = tmp_path / ".odylith" / "install.json"
+    install_state.parent.mkdir(parents=True, exist_ok=True)
+    install_state.write_text("{}\n", encoding="utf-8")
+    _seed_first_run_surfaces(tmp_path)
+    captured: dict[str, object] = {}
+
+    def fake_plan_install_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured["plan_kwargs"] = kwargs
+        return SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=())
+
+    def fake_install_bundle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured["install_kwargs"] = kwargs
+        return SimpleNamespace(
+            version="1.2.4",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+            pinned_version="1.2.4",
+            pin_changed=True,
+        )
+
+    monkeypatch.setattr(cli, "plan_install_lifecycle", fake_plan_install_lifecycle)
+    monkeypatch.setattr(cli, "install_bundle", fake_install_bundle)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--align-pin", "--no-open"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured["plan_kwargs"] == {
+        "repo_root": tmp_path.resolve(),
+        "adopt_latest": False,
+        "align_pin": True,
+        "target_version": "1.2.4",
+    }
+    assert captured["install_kwargs"] == {
+        "repo_root": str(tmp_path),
+        "bundle_root": cli.bundle_root(),
+        "version": "1.2.4",
+        "align_pin": True,
+    }
+    assert "Repo pin updated to 1.2.4." in output
 
 
 def test_reinstall_defaults_to_latest_verified_release(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -645,6 +715,7 @@ def test_format_bold_uses_ansi_in_tty(monkeypatch) -> None:
 
 def test_install_reports_created_guidance_and_non_git_caveat(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_first_run_surfaces_without_shell(tmp_path)
 
     monkeypatch.setattr(
         cli,
@@ -702,7 +773,7 @@ def test_install_skips_surface_bootstrap_when_shell_already_exists(monkeypatch, 
     assert "Rendering first-run Odylith surfaces" not in captured.out
 
 
-def test_install_fails_when_first_run_shell_bootstrap_fails(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_install_fails_when_first_run_full_sync_fails(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     sync_capture: dict[str, object] = {}
 
@@ -719,9 +790,10 @@ def test_install_fails_when_first_run_shell_bootstrap_fails(monkeypatch, tmp_pat
     )
 
     def fail_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
-        return 17
+        raise AssertionError(f"shell-only refresh should not run while sibling surfaces are missing: {kwargs}")
 
     monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", fail_refresh_dashboard_surfaces)
+
     def fail_full_sync(argv: list[str]) -> int:
         sync_capture["argv"] = argv
         return 17
@@ -756,6 +828,21 @@ def test_sync_dispatch_accepts_plain_forwarded_flags(monkeypatch, tmp_path: Path
     rc = cli.main(["sync", "--repo-root", str(tmp_path), "--force", "--check-only"])
     assert rc == 17
     assert captured["argv"] == ["--repo-root", str(tmp_path), "--force", "--check-only"]
+
+
+def test_sync_help_exposes_runtime_controls() -> None:
+    parser = cli.build_parser()
+    subparsers = next(
+        action for action in parser._actions if isinstance(action, argparse._SubParsersAction)  # noqa: SLF001
+    )
+    sync_parser = subparsers.choices["sync"]
+
+    output = sync_parser.format_help()
+
+    assert "--dry-run" in output
+    assert "--verbose" in output
+    assert "--proceed-with-overlap" in output
+    assert "does not yet expose a pure terminal `--json` mode" in output
 
 
 def test_validate_backlog_dispatch_accepts_plain_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
@@ -1406,6 +1493,7 @@ def test_install_dry_run_condenses_dirty_overlap_without_verbose(monkeypatch, tm
 
     assert rc == 0
     assert "5 local worktree entries overlap this mutation plan." in captured
+    assert "By area: other=5." in captured
     assert "... 1 more overlap entries hidden; rerun with --verbose to show the full set." in captured
 
 

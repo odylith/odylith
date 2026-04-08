@@ -2354,7 +2354,7 @@ def _build_runtime_payload(
     max_review_age_days: int,
     active_window_minutes: int,
     runtime_mode: str,
-    refresh_profile: str = "full",
+    refresh_profile: str = "shell-safe",
 ) -> dict[str, Any]:
     return compass_runtime_payload_runtime._build_runtime_payload(
         repo_root=repo_root,

@@ -1,16 +1,29 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-08
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-066 | 2026-04-07 | Sync refresh rewrites unchanged artifacts and stales generated timestamps | P1 | `src/odylith/runtime/governance/backfill_workstream_traceability.py`,
+  `src/odylith/runtime/governance/delivery_intelligence_engine.py`, stable
+  generated-timestamp handling, sync-owned generated JSON artifacts. | Open | [2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md](2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md) |
+| CB-065 | 2026-04-07 | Sync operator surface hides real controls and long running progress | P1 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  `src/odylith/runtime/governance/validate_component_registry_contract.py`,
+  sync operator help, progress, overlap guardrails, and warning summaries. | Open | [2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md](2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md) |
 | CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
   presentation and next-action routing. | Open | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
 | CB-061 | 2026-04-06 | Successful trust bootstrap still prints scary non fatal warnings | P1 | `src/odylith/install/release_assets.py`,
   `src/odylith/cli.py`, install and repair success messaging, release-note copy. | Open | [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md) |
+| CB-064 | 2026-04-07 | Hosted installer upgrades runtime without advancing repo pin | P1 | `scripts/release/publish_release_assets.py`,
+  `src/odylith/cli.py`, `src/odylith/install/manager.py`, hosted installer
+  closeout and repo-pin convergence. | Open | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
+| CB-063 | 2026-04-07 | Runtime retention prune fails on read only stale runtime trees | P1 | `src/odylith/install/manager.py`,
+  retention cleanup for `.odylith/runtime/versions/` and
+  `.odylith/cache/releases/`, hosted installer finish path. | Open | [2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md](2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md) |
 | CB-055 | 2026-04-06 | Repair and reinstall do not converge after partial runtime failure | P0 | `src/odylith/install/runtime.py`,
   `src/odylith/install/manager.py`, runtime replacement helpers, repair
   lifecycle, reinstall flow. | Open | [2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md](2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md) |
@@ -33,11 +46,6 @@ Last updated (UTC): 2026-04-07
   `src/odylith/runtime/surfaces/shell_onboarding.py`, upgrade spotlight
   dismissal/reopen contract, shell live-refresh browser path,
   `tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`. | Open | [2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md](2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md) |
-| CB-050 | 2026-04-03 | Compass explicit refresh fans into slow live scoped narration and leaves old deterministic brief visible on interrupt | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
-  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
-  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
-  `src/odylith/runtime/surfaces/render_compass_dashboard.py`, Compass standup
-  refresh contract, shell-facing refresh UX. | Open | [2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md](2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md) |
 | CB-049 | 2026-04-03 | Benchmark repair style live cases penalize validator backed no op completion | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`, live
@@ -118,6 +126,15 @@ Last updated (UTC): 2026-04-07
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-067 | 2026-04-08 | Tooling shell refresh can look fresh while Compass child runtime stays stale | P1 | `src/odylith/runtime/surfaces/render_tooling_dashboard.py`,
+  `src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, shell
+  refresh/operator truth, Compass child-runtime freshness projection. | Closed | [2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md](2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md) |
+| CB-050 | 2026-04-03 | Compass explicit refresh fans into slow live scoped narration and leaves old deterministic brief visible on interrupt | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
+  `src/odylith/runtime/surfaces/render_compass_dashboard.py`, Compass standup
+  refresh contract, shell-facing refresh UX. | Closed | [2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md](2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md) |
 | CB-062 | 2026-04-06 | Radar topology deep links fall through to stale filtered selection and browser proof misses disclosure gated routes | P0 | `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
   bundled Radar `backlog-app.v1.js` mirrors, Radar explicit-selection routing,
   and the Playwright browser proof lane in

@@ -15,6 +15,7 @@ Last updated (UTC): 2026-04-07
 | `odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md` | In progress | 2026-04-01 | 2026-04-01 | `B-040` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md` | In progress | 2026-04-04 | 2026-04-04 | `B-045` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md` | In progress | 2026-04-06 | 2026-04-07 | `B-048` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md` | In progress | 2026-04-07 | 2026-04-07 | `B-060` |
 
 ## Parked Plans
 

@@ -74,6 +74,11 @@ claims aligned for public publication.
   options.
   The canonical public bootstrap command is
   `curl -fsSL https://odylith.ai/install.sh | bash`.
+- When the hosted installer upgrades an already-installed consumer repo, it
+  must leave one truthful closeout posture: the verified runtime is active, the
+  tracked repo pin matches that runtime, and any stale-retention cleanup that
+  still cannot finish is reported as exact remediation instead of a false
+  activation failure.
 - Supported public install and normal pinned upgrade remain full-stack by
   default, but release transport is split into a smaller base runtime plus a
   separately versioned managed context-engine pack so uploads, downloads, and
@@ -120,6 +125,9 @@ claims aligned for public publication.
   trust anchor.
 - Fresh consumer install must not make a runtime live until the full-stack
   managed runtime and managed context-engine pack pass activation smoke.
+- Hosted-installer retention cleanup for stale non-active runtime and release
+  cache trees is best-effort only after healthy activation. Read-only leftovers
+  must surface exact remediation and must not overturn the active runtime.
 - Verified release downloads must stream into repo-local cache files
   atomically and retry bounded transient network failures instead of leaving
   half-written assets in place.
@@ -237,7 +245,9 @@ claims aligned for public publication.
 - This GitHub-committer path is a release-path compatibility exception, not
   the desired long-term publication posture. A follow-on release slice should
   remove the dependency on GitHub-generated merge committer metadata and
-  restore canonical maintainer identity end to end.
+  restore canonical maintainer identity end to end. The concrete `v0.1.10`
+  follow-up record is
+  [B-060](/Users/freedom/code/odylith/odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md).
 - Release, release-candidate, and test workflows should pin first-party GitHub
   Actions to immutable SHAs, pin the runner image, and pin the build frontend
   version instead of relying on floating CI inputs.

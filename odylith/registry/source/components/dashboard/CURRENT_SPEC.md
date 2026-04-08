@@ -1,8 +1,8 @@
 # Dashboard
-Last updated: 2026-04-02
+Last updated: 2026-04-08
 
 
-Last updated (UTC): 2026-04-02
+Last updated (UTC): 2026-04-08
 
 ## Purpose
 Dashboard is the shell host for Odylith. It provides the top-level tabbed,
@@ -97,6 +97,12 @@ out. If Atlas is excluded while stale, the command must print the exact
 follow-up Atlas refresh command instead of assuming the operator will discover
 that gap from `--help`.
 
+Shell-only refresh is wrapper-scoped, not a hidden child-surface rerender. If
+`tooling_shell` runs without Compass, the operator contract must say that the
+wrapper assets refreshed but Compass runtime truth did not. The shell must also
+project current Compass freshness or failure posture when the Compass tab is
+active so parent-surface success does not masquerade as a fresh child brief.
+
 ### Live-refresh policy contract
 Dashboard owns the shell-side policy that decides when a currently open tab may
 reload against fresher local runtime state without mutating tracked Odylith
@@ -121,6 +127,10 @@ Across all policies, the shell must keep three guardrails:
 - no background `odylith sync`
 - no background tracked-truth mutation under `odylith/`
 - no background provider-backed Compass brief generation
+
+The same truth rule applies to explicit refresh: the shell may read Compass
+runtime state and surface stale/failure posture, but it must not imply that
+Compass rerendered unless the Compass child-runtime snapshot actually changed.
 
 These policies are posture switches over one shell/runtime implementation. They
 must not fork Odylith into lane-specific codebases; source templates, generated

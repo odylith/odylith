@@ -4,6 +4,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tomllib
@@ -131,6 +132,9 @@ class InstallSummary:
     git_repo_present: bool
     repo_guidance_created: bool
     gitignore_updated: bool = False
+    pin_changed: bool = False
+    pinned_version: str = ""
+    retention_warnings: tuple[str, ...] = ()
     migration: MigrationSummary | None = None
 
 
@@ -164,6 +168,7 @@ class UpgradeSummary:
     release_url: str
     verification: dict[str, object]
     repaired: bool = False
+    retention_warnings: tuple[str, ...] = ()
     migration: MigrationSummary | None = None
 
 
@@ -175,6 +180,7 @@ class RollbackSummary:
     pinned_version: str
     previous_version: str
     repo_root: Path
+    retention_warnings: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -569,6 +575,7 @@ def plan_install_lifecycle(
     *,
     repo_root: str | Path,
     adopt_latest: bool = False,
+    align_pin: bool = False,
     target_version: str = "",
 ) -> LifecyclePlan:
     root = _repo_root(repo_root, require_agents=False)
@@ -642,6 +649,15 @@ def plan_install_lifecycle(
                 ),
             )
         )
+    elif align_pin and not first_install:
+        steps.append(
+            _lifecycle_step(
+                "Align the tracked repo pin to the verified runtime already activated by the hosted installer.",
+                "repo_pin",
+                paths=("odylith/runtime/source/product-version.v1.json",),
+                detail="This keeps existing consumer installs from landing in an active-versus-pinned split posture after hosted install closeout.",
+            )
+        )
     if first_install or missing_surfaces:
         steps.append(
             _lifecycle_step(
@@ -655,6 +671,8 @@ def plan_install_lifecycle(
     ]
     if adopt_latest:
         notes.append("`install --adopt-latest` keeps the active managed runtime and tracked repo pin aligned in one command.")
+    elif align_pin:
+        notes.append("Hosted-install closeout can realign an existing repo pin to the verified runtime it just activated.")
     return _lifecycle_plan(
         command="install",
         headline="Preview the Odylith install/rematerialize lifecycle.",
@@ -1664,39 +1682,103 @@ def _retained_version_pair(*, state: Mapping[str, object], active_version: str) 
     return active_version, rollback_target
 
 
+def _retention_remediation(*, candidate: Path) -> str:
+    resolved = Path(candidate).resolve()
+    if candidate.is_dir() and not candidate.is_symlink():
+        return f"chmod -R u+w {resolved} && rm -rf {resolved}"
+    return f"chmod u+w {resolved} && rm -f {resolved}"
+
+
+def _ensure_retention_path_writable(path: Path) -> None:
+    target = Path(path)
+    if not target.exists() and not target.is_symlink():
+        return
+    try:
+        mode = target.stat(follow_symlinks=False).st_mode
+    except (OSError, NotImplementedError):
+        return
+    writable_mode = mode | stat.S_IWUSR
+    if target.is_dir():
+        writable_mode |= stat.S_IXUSR | stat.S_IRUSR
+    try:
+        target.chmod(writable_mode, follow_symlinks=False)
+    except TypeError:
+        target.chmod(writable_mode)
+    except (OSError, NotImplementedError):
+        return
+
+
+def _make_retention_tree_writable(root: Path) -> None:
+    target = Path(root)
+    if target.is_dir() and not target.is_symlink():
+        for candidate in sorted(target.rglob("*"), key=lambda path: len(path.parts), reverse=True):
+            _ensure_retention_path_writable(candidate)
+    _ensure_retention_path_writable(target)
+    _ensure_retention_path_writable(target.parent)
+
+
+def _retry_retention_remove_after_permission_fix(function, path, excinfo):  # noqa: ANN001
+    exc = excinfo if isinstance(excinfo, BaseException) else excinfo[1]
+    if not isinstance(exc, PermissionError):
+        raise exc
+    target = Path(path)
+    _make_retention_tree_writable(target if target.exists() else target.parent)
+    function(path)
+
+
+def _remove_retention_candidate(candidate: Path) -> str | None:
+    target = Path(candidate)
+    try:
+        if target.is_symlink() or target.is_file():
+            try:
+                target.unlink()
+            except PermissionError:
+                _ensure_retention_path_writable(target)
+                _ensure_retention_path_writable(target.parent)
+                target.unlink()
+        elif target.is_dir():
+            _make_retention_tree_writable(target)
+            shutil.rmtree(target, onerror=_retry_retention_remove_after_permission_fix)
+    except OSError as exc:
+        return (
+            f"could not prune retained path {target}: {exc.__class__.__name__}: {exc}. "
+            f"Active runtime stayed healthy. Remediation: `{_retention_remediation(candidate=target)}`"
+        )
+    return None
+
+
 def _prune_runtime_retention(
     *,
     repo_root: Path,
     state: Mapping[str, object],
     active_version: str,
-) -> dict[str, object]:
+) -> tuple[dict[str, object], tuple[str, ...]]:
     if not active_version or _is_source_local_version(active_version):
-        return dict(state)
+        return dict(state), ()
 
     keep_active, keep_rollback = _retained_version_pair(state=state, active_version=active_version)
     keep_versions = {keep_active}
     if keep_rollback:
         keep_versions.add(keep_rollback)
+    warnings: list[str] = []
 
     paths = repo_root / ".odylith" / "runtime" / "versions"
     if paths.is_dir():
         for candidate in paths.iterdir():
             if candidate.name in keep_versions:
                 continue
-            if candidate.is_symlink() or candidate.is_file():
-                candidate.unlink()
-            elif candidate.is_dir():
-                shutil.rmtree(candidate)
+            warning = _remove_retention_candidate(candidate)
+            if warning:
+                warnings.append(warning)
 
     releases_cache_root = repo_root / ".odylith" / "cache" / "releases"
     if releases_cache_root.is_dir():
         for candidate in releases_cache_root.iterdir():
             if candidate.name in keep_versions:
                 continue
-            if candidate.is_symlink() or candidate.is_file():
-                candidate.unlink()
-            elif candidate.is_dir():
-                shutil.rmtree(candidate)
+            warning = _remove_retention_candidate(candidate)
+            if warning:
+                warnings.append(warning)
 
     normalized = dict(state)
     installed_versions_payload = normalized.get("installed_versions")
@@ -1711,7 +1793,7 @@ def _prune_runtime_retention(
         history.append(keep_rollback)
     history.append(keep_active)
     normalized["activation_history"] = history
-    return normalized
+    return normalized, tuple(warnings)
 
 
 def _runtime_context_engine_state(*, runtime_root: Path | None, runtime_source: str) -> tuple[str, bool | None]:
@@ -1903,7 +1985,7 @@ def _persist_runtime_state(
     detached: bool,
     integration_enabled: bool,
     mark_last_known_good: bool = True,
-) -> dict[str, object]:
+) -> tuple[dict[str, object], tuple[str, ...]]:
     normalized = _register_installed_version(
         state=state,
         version=active_version,
@@ -1925,13 +2007,13 @@ def _persist_runtime_state(
     normalized["installed_utc"] = datetime.now(UTC).isoformat()
     normalized["integration_enabled"] = bool(integration_enabled)
     normalized["launcher_path"] = str(launcher_path)
-    normalized = _prune_runtime_retention(
+    normalized, retention_warnings = _prune_runtime_retention(
         repo_root=repo_root,
         state=normalized,
         active_version=active_version,
     )
     write_install_state(repo_root=repo_root, payload=normalized)
-    return normalized
+    return normalized, retention_warnings
 
 
 def _version_sort_key(version: str) -> tuple[int, int, int, str]:
@@ -2149,7 +2231,13 @@ def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
     )
 
 
-def install_bundle(*, repo_root: str | Path, bundle_root: Path, version: str | None = None) -> InstallSummary:
+def install_bundle(
+    *,
+    repo_root: str | Path,
+    bundle_root: Path,
+    version: str | None = None,
+    align_pin: bool = False,
+) -> InstallSummary:
     del bundle_root
     root = _repo_root(repo_root, require_agents=False)
     migration = _migrate_legacy_install_if_needed(repo_root=root)
@@ -2158,6 +2246,7 @@ def install_bundle(*, repo_root: str | Path, bundle_root: Path, version: str | N
         git_repo_present = _git_repo_present(repo_root=root)
         gitignore_updated = _ensure_odylith_gitignore_entry(repo_root=root, git_repo_present=git_repo_present)
         previous_state = load_install_state(repo_root=root)
+        pin_before = load_version_pin(repo_root=root, fallback_version=None)
         integration_enabled = install_integration_enabled(previous_state)
         resolved_version = str(version or previous_state.get("active_version") or __version__).strip() or __version__
         repo_role = product_repo_role(repo_root=root)
@@ -2249,7 +2338,16 @@ def install_bundle(*, repo_root: str | Path, bundle_root: Path, version: str | N
         active_version = current_runtime_version(repo_root=root) or resolved_version
         if runtime_root is not None and not runtime_verification:
             runtime_verification = runtime_verification_evidence(runtime_root)
-        _persist_runtime_state(
+        if align_pin and repo_role != PRODUCT_REPO_ROLE:
+            current_pin = load_version_pin(repo_root=root, fallback_version=None)
+            if current_pin is None or current_pin.odylith_version != active_version:
+                write_version_pin(
+                    repo_root=root,
+                    version=active_version,
+                    repo_schema_version=current_pin.repo_schema_version if current_pin is not None else DEFAULT_REPO_SCHEMA_VERSION,
+                    migration_required=False,
+                )
+        _, retention_warnings = _persist_runtime_state(
             repo_root=root,
             state=previous_state,
             active_version=active_version,
@@ -2260,6 +2358,9 @@ def install_bundle(*, repo_root: str | Path, bundle_root: Path, version: str | N
             detached=False,
             integration_enabled=integration_enabled,
         )
+        pin_after = load_version_pin(repo_root=root, fallback_version=active_version)
+        pinned_version = pin_after.odylith_version if pin_after is not None else active_version
+        pin_changed = bool(pin_before is not None and pin_before.odylith_version != pinned_version)
         _refresh_consumer_managed_guidance(
             repo_root=root,
             repo_role=repo_role,
@@ -2294,6 +2395,9 @@ def install_bundle(*, repo_root: str | Path, bundle_root: Path, version: str | N
             git_repo_present=git_repo_present,
             repo_guidance_created=repo_guidance_created,
             gitignore_updated=gitignore_updated,
+            pin_changed=pin_changed,
+            pinned_version=pinned_version,
+            retention_warnings=retention_warnings,
             migration=migration,
         )
 
@@ -2351,7 +2455,7 @@ def upgrade_install(
                 allow_host_python_fallback=True,
             )
             active_version = "source-local"
-            _persist_runtime_state(
+            _, retention_warnings = _persist_runtime_state(
                 repo_root=root,
                 state=previous_state,
                 active_version=active_version,
@@ -2446,7 +2550,7 @@ def upgrade_install(
                 pin_changed = True
                 pin = load_version_pin(repo_root=root, fallback_version=current_version)
             launcher_path = ensure_launcher(repo_root=root, fallback_python=current_python)
-            _persist_runtime_state(
+            _, retention_warnings = _persist_runtime_state(
                 repo_root=root,
                 state=previous_state,
                 active_version=current_version,
@@ -2487,6 +2591,7 @@ def upgrade_install(
                 followed_latest=request_token == "latest",
                 **_release_summary_fields(resolved_release),
                 verification=current_verification,
+                retention_warnings=retention_warnings,
                 migration=migration,
             )
 
@@ -2567,7 +2672,7 @@ def upgrade_install(
             if realigning_to_existing_pin
             else previous_state
         )
-        _persist_runtime_state(
+        _, retention_warnings = _persist_runtime_state(
             repo_root=root,
             state=state_for_persist,
             active_version=staged.version,
@@ -2619,6 +2724,7 @@ def upgrade_install(
             followed_latest=request_token == "latest",
             **_release_summary_fields(resolved_release),
             verification=dict(staged.verification),
+            retention_warnings=retention_warnings,
             migration=migration,
         )
 
@@ -2757,7 +2863,7 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
             entry = installed_versions_payload.get(target_version)
             if isinstance(entry, Mapping) and isinstance(entry.get("verification"), Mapping):
                 verification = dict(entry["verification"])
-        _persist_runtime_state(
+        _, retention_warnings = _persist_runtime_state(
             repo_root=root,
             state=state,
             active_version=target_version,
@@ -2809,6 +2915,7 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
             pinned_version=pin.odylith_version if pin else "",
             previous_version=active_version,
             repo_root=root,
+            retention_warnings=retention_warnings,
         )
 
 
@@ -3091,7 +3198,7 @@ def doctor_bundle(
             fallback_python=fallback_python,
             allow_host_python_fallback=repo_role == PRODUCT_REPO_ROLE,
         )
-        _persist_runtime_state(
+        _, _retention_warnings = _persist_runtime_state(
             repo_root=root,
             state=state,
             active_version=repaired_active_version,

@@ -637,10 +637,14 @@
       // preloaded runtime JS global cannot pin Compass to an older render.
       const runtime = choosePreferredLiveRuntimePayload(fetchedRuntime, embeddedRuntime);
       if (runtime.payload) {
+        const payloadWarning = runtime.payload && typeof runtime.payload.warning === "string"
+          ? String(runtime.payload.warning || "").trim()
+          : "";
+        const combinedWarning = [warning, payloadWarning].filter(Boolean).join(" ");
         return {
           payload: runtime.payload,
           source: runtime.source === "primary" && fetchedRuntime ? "runtime-json" : "runtime-js",
-          warning,
+          warning: combinedWarning,
         };
       }
 

@@ -45,6 +45,36 @@ def _seed_inputs(tmp_path: Path) -> None:
     )
 
 
+def _seed_compass_runtime_snapshot(
+    tmp_path: Path,
+    *,
+    generated_utc: str,
+    refresh_profile: str = "shell-safe",
+    last_refresh_attempt: dict[str, object] | None = None,
+    warning: str = "",
+) -> None:
+    runtime_root = tmp_path / "odylith" / "compass" / "runtime"
+    runtime_root.mkdir(parents=True, exist_ok=True)
+    payload: dict[str, object] = {
+        "generated_utc": generated_utc,
+        "runtime_contract": {
+            "version": "v1",
+            "refresh_profile": refresh_profile,
+        },
+    }
+    if last_refresh_attempt is not None:
+        runtime_contract = dict(payload["runtime_contract"])  # type: ignore[arg-type]
+        runtime_contract["last_refresh_attempt"] = dict(last_refresh_attempt)
+        payload["runtime_contract"] = runtime_contract
+    if warning:
+        payload["warning"] = warning
+    (runtime_root / "current.v1.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    (runtime_root / "current.v1.js").write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+
 def _seed_product_repo_posture(tmp_path: Path) -> None:
     (tmp_path / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
     (tmp_path / "pyproject.toml").write_text("[project]\nname='odylith'\nversion='0.1.0'\n", encoding="utf-8")
@@ -353,6 +383,77 @@ def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo
     assert live_refresh["worktree"]["generated_changed_count"] == 1
 
 
+def test_render_tooling_dashboard_projects_stale_compass_runtime_into_shell_status(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+    monkeypatch.setattr(
+        renderer.tooling_dashboard_surface_status,
+        "now_utc",
+        lambda: "2026-04-07T17:17:57Z",
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+
+    assert rc == 0
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    compass_status = dict(payload_js["surface_runtime_status"]["compass"])
+    assert compass_status["tone"] == "info"
+    assert compass_status["title"] == "Shell refresh updated wrapper assets only"
+    assert (
+        compass_status["body"]
+        == "The visible Compass brief still comes from the shell-safe runtime snapshot generated 2026-04-07T17:06:12Z. Refresh Compass separately if you need newer brief data."
+    )
+    assert (
+        compass_status["meta"]
+        == "Next: odylith dashboard refresh --repo-root . --surfaces compass"
+    )
+
+
+def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_status(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    _seed_inputs(tmp_path)
+    warning = (
+        "Requested Compass full refresh did not finish before the dashboard timeout. "
+        "Showing the last successful shell-safe runtime snapshot from 2026-04-07T17:06:12Z."
+    )
+    _seed_compass_runtime_snapshot(
+        tmp_path,
+        generated_utc="2026-04-07T17:06:12Z",
+        last_refresh_attempt={
+            "status": "failed",
+            "requested_profile": "full",
+            "applied_profile": "shell-safe",
+            "attempted_utc": "2026-04-07T17:17:57Z",
+            "reason": "timeout",
+        },
+        warning=warning,
+    )
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+
+    assert rc == 0
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    compass_status = dict(payload_js["surface_runtime_status"]["compass"])
+    assert compass_status["tone"] == "warning"
+    assert compass_status["title"] == "Showing prior Compass snapshot"
+    assert compass_status["body"] == warning
+    assert "Snapshot: 2026-04-07T17:06:12Z" in compass_status["meta"]
+    assert "Attempted: 2026-04-07T17:17:57Z" in compass_status["meta"]
+    assert (
+        "Next: odylith dashboard refresh --repo-root . --surfaces compass --compass-refresh-profile full"
+        in compass_status["meta"]
+    )
+
+
 def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_product_repo_posture(tmp_path)
@@ -518,6 +619,8 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "function runtimeStateAffectsTab(tab, runtimeState)" in control_js
     assert "function runtimeAutoReloadReadyForTab(tab)" in control_js
     assert "function buildRuntimeStatusFingerprint(posture) {" in control_js
+    assert "const surfaceRuntimeStatus = runtimeState && runtimeState.surface_runtime_status" in control_js
+    assert "const rawPosture = surfaceRuntimeStatus[currentTab];" in control_js
     assert "function runtimeStatusDismissed() {" in control_js
     assert "function syncRuntimeStatusLayout() {" in control_js
     assert "function scheduleRuntimeStatusLayoutSync() {" in control_js

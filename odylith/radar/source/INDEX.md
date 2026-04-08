@@ -40,6 +40,7 @@ Last updated (UTC): 2026-04-07
 | - | B-040 | Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture | P0 | 100 | 5 | 5 | 4 | L | High | both | implementation | [odylith-runtime-integrity-supply-chain-hardening-and-security-posture](odylith/radar/source/ideas/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md) |
 | - | B-045 | Odylith Registry Source-Mirror Forensic Coverage Alignment | P1 | 100 | 3 | 4 | 3 | S | Medium | both | implementation | [odylith-registry-source-mirror-forensic-coverage-alignment](odylith/radar/source/ideas/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md) |
 | - | B-048 | Odylith v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock | P0 | 100 | 5 | 5 | 4 | L | High | both | implementation | [odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md) |
+| - | B-060 | Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening | P0 | 100 | 5 | 5 | 4 | M | High | both | implementation | [odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening](odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md) |
 
 ## Parked (No Active Plan)
 
@@ -795,3 +796,16 @@ Last updated (UTC): 2026-04-07
 - tradeoff: this adds one new diagram and refreshes a few broad maps, but it avoids a repo-wide diagram sweep and stays focused on the surfaces that materially drifted this session.
 - deferred for now: renderer feature work and deeper visual redesign stay deferred because the immediate need is truthful architecture coverage.
 - ranking basis: implementation-bound Atlas refresh launched and finished on 2026-04-07 so the architecture surface stopped lagging the product on the same day the memory componentization landed.
+
+
+
+
+
+
+
+### B-060 (rank -)
+- why now: `v0.1.9` shipped, but the release itself exposed the next truthful hardening scope: a narrow GitHub merge-identity exception, a transient first-install shell wobble, a skipped benchmark proof lane, CI runtime warnings, and dirty post-publish maintainer drift.
+- expected outcome: turns those exact release learnings into bounded `v0.1.10` engineering scope instead of letting them become normal release folklore.
+- tradeoff: this keeps real release discipline in front of net-new feature appetite right after a successful ship, which is useful but not emotionally convenient.
+- deferred for now: reopening `v0.1.9` or treating its already-shipped compatibility exception as a retroactive blocker.
+- ranking basis: implementation workstream; no queued rank.

@@ -44,6 +44,10 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   related bugs, related components, related diagrams, and recent Compass or
   session context first; extend or reopen those records before creating new
   ones.
+- When downstream feedback becomes maintainer implementation scope, capture it
+  in Casebook first, then update the bound Radar workstream, active plan, and
+  impacted Registry component specs before code changes. Do not leave a
+  maintainer fix half-governed.
 - Queued Radar items, case queues, and shell or Compass queue previews are not
   automatic implementation picks in the maintainer lane. Unless the user
   explicitly asks to work a queued item, do not start implementing it just
@@ -64,6 +68,11 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   the same change whenever maintainer work reveals a new failure mode, a stale
   diagram, a changed benchmark story, or a boundary that needs a first-class
   component spec.
+- Treat parent-shell freshness and child-surface freshness as separate truths.
+  A successful wrapper refresh is never enough evidence to imply Compass,
+  Radar, Atlas, Registry, or Casebook data is current unless the child
+  runtime/surface contract says it was rerendered or the shell explicitly
+  projects the gap.
 - Use direct `rg`, source reads, generator inspection, or targeted shell
   inspection only when Odylith explicitly signals fallback or ambiguity, or
   when you are verifying tracked source truth behind a runtime-generated

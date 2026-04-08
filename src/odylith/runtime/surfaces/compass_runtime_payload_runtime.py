@@ -53,7 +53,7 @@ def _build_runtime_payload(
     max_review_age_days: int,
     active_window_minutes: int,
     runtime_mode: str,
-    refresh_profile: str = "full",
+    refresh_profile: str = "shell-safe",
 ) -> dict[str, Any]:
     host = _host()
     _load_json = host._load_json

@@ -218,7 +218,9 @@ Run the targets in this order.
 - Post-`v0.1.9` follow-up: stop depending on GitHub-generated squash-merge
   committer metadata in release ancestry. The long-term cleaner path is to use
   a merge policy or release-bound integration path that preserves canonical
-  maintainer identity end to end.
+  maintainer identity end to end. Track that cleanup, the skipped `v0.1.9`
+  benchmark proof, and the first-install shell wobble under
+  [B-060](/Users/freedom/code/odylith/odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md).
 - Public install and upgrade must preserve strict interpreter isolation:
   `./.odylith/bin/odylith` runs Odylith inside `.odylith/`, while the consumer
   repo's own toolchain remains untouched.

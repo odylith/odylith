@@ -159,6 +159,10 @@ churn does not drown out meaningful implementation evidence.
 - Provider-backed standup narration stays opportunistic and manual-refresh
   bounded. Local timeline, workstream, risk, and KPI readouts must remain
   understandable without spending provider credits.
+- When the top-level shell refreshes without rerendering Compass, the shell may
+  project Compass staleness or failed deeper-refresh state, but it must do so
+  from the current Compass runtime snapshot rather than pretending the shell
+  wrapper refresh updated Compass data.
 
 ## Traceability Risk Projection
 - Compass consumes shared Radar `warning_items`, but default risk rows are
@@ -244,3 +248,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-02: Anchored rolling windows and audit timelines to the loaded runtime snapshot time and added explicit stale-runtime warnings so old snapshots no longer masquerade as empty recent days. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-07: Aligned Compass traceability risk rows with Radar's shared operator-facing warning policy so maintainer autofix diagnostics stay in the artifacts instead of primary risk cards. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-05: Documented the bounded `compass_brief_freshness` benchmark slice so proof stays on Compass runtime, narrator, focused tests, and product-surface guidance instead of widening into unrelated install or repair surfaces. (Plan: [B-038](odylith/radar/radar.html?view=plan&workstream=B-038))
+- 2026-04-08: Clarified that shell-host refresh truth must distinguish wrapper freshness from Compass child-runtime freshness so stale or failed deeper-refresh snapshots stay explicit on the Compass tab. (Plan: [B-060](odylith/radar/radar.html?view=plan&workstream=B-060))

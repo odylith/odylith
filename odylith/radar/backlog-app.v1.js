@@ -411,7 +411,7 @@ initSharedQuickTooltips();
 
     const loadedList = await backlogDataSource.loadList({});
     const all = Array.isArray(loadedList) ? loadedList : [];
-    const allIdeaIds = new Set(all.map((row) => String(row.idea_id || "").trim().toUpperCase()).filter(Boolean));
+    const allIdeaIds = new Set(all.map((row) => String(row.idea_id || "").trim()).filter(Boolean));
     const BACKLOG_LIST_WINDOW_THRESHOLD = 180;
     const BACKLOG_LIST_OVERSCAN = 24;
     const BACKLOG_LIST_ROW_HEIGHT = 88;
@@ -419,14 +419,14 @@ initSharedQuickTooltips();
     let latestRenderedRows = [];
     let latestListWindowKey = "";
     let listScrollFrame = 0;
-    const WORKSTREAM_ID_COMPACT_RE = /^B?-?(\d{1,})$/i;
 
     function handleLinkedWorkstreamClick(event) {
       const trigger = event.target.closest("[data-link-idea]");
       if (!trigger) return;
       event.preventDefault();
       const ideaId = String(trigger.getAttribute("data-link-idea") || "").trim();
-      if (!selectIdea(ideaId, { reveal: true })) return;
+      if (!ideaId || !allIdeaIds.has(ideaId)) return;
+      state.selectedIdeaId = ideaId;
       render();
       el.detail?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -460,69 +460,6 @@ initSharedQuickTooltips();
       const token = String(value || "").trim().toLowerCase();
       if (token === "queued") return "idea";
       return token || "unknown";
-    }
-
-    function normalizeSearchToken(value) {
-      return String(value || "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "");
-    }
-
-    function canonicalizeIdeaId(value) {
-      const token = String(value || "").trim().toUpperCase();
-      if (!token) return "";
-      if (allIdeaIds.has(token)) return token;
-      const compact = token.match(WORKSTREAM_ID_COMPACT_RE);
-      if (!compact) return "";
-      const normalized = `B-${compact[1].padStart(3, "0")}`;
-      return allIdeaIds.has(normalized) ? normalized : "";
-    }
-
-    function isExactIdeaIdQuery(query) {
-      return Boolean(canonicalizeIdeaId(query));
-    }
-
-    function rowMatchesQuery(row, query, exactIdeaQuery) {
-      if (!query) return true;
-      const canonicalIdeaQuery = exactIdeaQuery ? canonicalizeIdeaId(query) : "";
-      const ideaId = String(row.idea_id || "").trim().toUpperCase();
-      if (canonicalIdeaQuery) {
-        return ideaId === canonicalIdeaQuery;
-      }
-      const textParts = [
-        row.idea_id,
-        row.title,
-        row.ordering_rationale,
-        row.rationale_text,
-        Array.isArray(row.rationale_bullets) ? row.rationale_bullets.join(" ") : "",
-      ];
-      const hay = String(row.search_text || textParts.join(" ")).toLowerCase();
-      if (hay.includes(query)) return true;
-      const normalizedQuery = normalizeSearchToken(query);
-      if (!normalizedQuery) return false;
-      return normalizeSearchToken(textParts.join(" ")).includes(normalizedQuery);
-    }
-
-    function rowMatchesFilters(row, options = {}) {
-      const query = String(options.query ?? state.query).trim().toLowerCase();
-      const exactIdeaQuery = Boolean(options.exactIdeaQuery ?? isExactIdeaIdQuery(query));
-      if (state.section !== "all" && row.section !== state.section) return false;
-      if (state.phase !== "all") {
-        if (row.section !== "execution") return false;
-        if (stageLabel(row.status) !== state.phase) return false;
-      }
-      if (state.activity !== "all") {
-        if (row.section !== "execution") return false;
-        const stateToken = normalizeExecutionState(row.execution_state);
-        const activity = (
-          stateToken === "actively_executing"
-          || stateToken === "planning_active"
-        ) ? "active" : "quiet";
-        if (activity !== state.activity) return false;
-      }
-      if (state.lane !== "all" && row.impacted_lanes !== state.lane) return false;
-      if (state.priority !== "all" && row.priority !== state.priority) return false;
-      return rowMatchesQuery(row, query, exactIdeaQuery);
     }
 
     function prettyLabel(value) {
@@ -592,65 +529,6 @@ initSharedQuickTooltips();
 
     seedSelect(el.lane, uniqueValues("impacted_lanes"), (value) => laneLabel(value));
     seedSelect(el.priority, uniqueValues("priority"));
-
-    function syncFilterControls() {
-      el.query.value = state.query;
-      el.section.value = state.section;
-      el.phase.value = state.phase;
-      el.activity.value = state.activity;
-      el.lane.value = state.lane;
-      el.priority.value = state.priority;
-    }
-
-    // Explicit deep-link navigation must reveal the requested workstream instead of
-    // silently falling back to the first row that still matches stale filters.
-    function revealIdeaSelection(ideaId) {
-      const row = all.find((candidate) => String(candidate.idea_id || "").trim() === ideaId);
-      if (!row) return false;
-      const query = String(state.query || "").trim().toLowerCase();
-      const exactIdeaQuery = isExactIdeaIdQuery(query);
-      if (!rowMatchesQuery(row, query, exactIdeaQuery)) {
-        state.query = "";
-      }
-      if (!rowMatchesFilters(row, { query: "", exactIdeaQuery: false })) {
-        if (state.section !== "all" && row.section !== state.section) {
-          state.section = "all";
-        }
-        if (state.phase !== "all") {
-          if (row.section !== "execution" || stageLabel(row.status) !== state.phase) {
-            state.phase = "all";
-          }
-        }
-        if (state.activity !== "all") {
-          const stateToken = normalizeExecutionState(row.execution_state);
-          const activity = (
-            stateToken === "actively_executing"
-            || stateToken === "planning_active"
-          ) ? "active" : "quiet";
-          if (row.section !== "execution" || activity !== state.activity) {
-            state.activity = "all";
-          }
-        }
-        if (state.lane !== "all" && row.impacted_lanes !== state.lane) {
-          state.lane = "all";
-        }
-        if (state.priority !== "all" && row.priority !== state.priority) {
-          state.priority = "all";
-        }
-      }
-      syncFilterControls();
-      return true;
-    }
-
-    function selectIdea(ideaId, options = {}) {
-      const token = canonicalizeIdeaId(ideaId);
-      if (!token || !allIdeaIds.has(token)) return false;
-      if (options.reveal) {
-        revealIdeaSelection(token);
-      }
-      state.selectedIdeaId = token;
-      return true;
-    }
 
     function escapeHtml(value) {
       return String(value || "")
@@ -1283,8 +1161,38 @@ initSharedQuickTooltips();
 
     function applyFilters() {
       const q = state.query.trim().toLowerCase();
-      const exactIdeaQuery = isExactIdeaIdQuery(q);
-      return all.filter((row) => rowMatchesFilters(row, { query: q, exactIdeaQuery }));
+      const exactIdeaIdQuery = q && all.some((row) => String(row.idea_id || "").trim().toLowerCase() === q);
+      return all.filter((row) => {
+        if (state.section !== "all" && row.section !== state.section) return false;
+        if (state.phase !== "all") {
+          if (row.section !== "execution") return false;
+          if (stageLabel(row.status) !== state.phase) return false;
+        }
+        if (state.activity !== "all") {
+          if (row.section !== "execution") return false;
+          const stateToken = normalizeExecutionState(row.execution_state);
+          const activity = (
+            stateToken === "actively_executing"
+            || stateToken === "planning_active"
+          ) ? "active" : "quiet";
+          if (activity !== state.activity) return false;
+        }
+        if (state.lane !== "all" && row.impacted_lanes !== state.lane) return false;
+        if (state.priority !== "all" && row.priority !== state.priority) return false;
+        if (!q) return true;
+        const ideaId = String(row.idea_id || "").trim().toLowerCase();
+        if (exactIdeaIdQuery) {
+          return ideaId === q;
+        }
+        const hay = String(row.search_text || [
+          row.idea_id,
+          row.title,
+          row.ordering_rationale,
+          row.rationale_text,
+          Array.isArray(row.rationale_bullets) ? row.rationale_bullets.join(" ") : "",
+        ].join(" ")).toLowerCase();
+        return hay.includes(q);
+      });
     }
 
     function sortRows(rows) {
@@ -1628,7 +1536,7 @@ initSharedQuickTooltips();
       el.list.querySelectorAll(".row").forEach((button) => {
         button.addEventListener("click", () => {
           const preserveListScroll = elementFullyVisibleWithinContainer(el.list, button);
-          selectIdea(button.dataset.ideaId || "");
+          state.selectedIdeaId = button.dataset.ideaId || "";
           render({ preserveListScroll });
         });
         const ideaId = String(button.dataset.ideaId || "").trim();
@@ -2308,8 +2216,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         return rich.map((entry) => ({
           idea_id: String(entry.idea_id || "").trim(),
           severity: String(entry.severity || "warning").trim() || "warning",
-          audience: String(entry.audience || "operator").trim() || "operator",
-          surface_visibility: String(entry.surface_visibility || "").trim(),
           category: String(entry.category || "general").trim() || "general",
           message: String(entry.message || "").trim(),
           action: String(entry.action || "").trim(),
@@ -2323,8 +2229,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         .map((message) => ({
           idea_id: "",
           severity: "warning",
-          audience: "operator",
-          surface_visibility: "default",
           category: "legacy",
           message,
           action: "Inspect traceability graph diagnostics and corresponding source files.",
@@ -2332,26 +2236,9 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         }));
     }
 
-    function isDefaultSurfaceWarning(entry) {
-      const severity = String(entry && entry.severity || "warning").trim().toLowerCase();
-      const audience = String(entry && entry.audience || "operator").trim().toLowerCase() || "operator";
-      let visibility = String(entry && entry.surface_visibility || "").trim().toLowerCase();
-      if (!visibility) {
-        visibility = audience === "maintainer" || !["warning", "error"].includes(severity)
-          ? "diagnostics"
-          : "default";
-      }
-      return visibility === "default"
-        && audience !== "maintainer"
-        && ["warning", "error"].includes(severity);
-    }
-
     function warningItemsForIdea(ideaId) {
       const rows = warningItems();
-      return rows.filter(
-        (entry) => String(entry.idea_id || "") === String(ideaId || "")
-          && isDefaultSurfaceWarning(entry)
-      );
+      return rows.filter((entry) => String(entry.idea_id || "") === String(ideaId || ""));
     }
 
     function workstreamLinkChip(ideaId, tone = "") {
@@ -3057,7 +2944,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
 
     loadAnalyticsPreference();
     if (workstreamParam) {
-      selectIdea(workstreamParam, { reveal: true });
+      state.selectedIdeaId = workstreamParam;
     }
     if (viewParam === "graph") {
       setAnalyticsExpanded(true);

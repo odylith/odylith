@@ -46,3 +46,42 @@ def test_delivery_reasoning_config_disables_provider_for_delivery_refresh(
     assert config.scope_cap == 7
     assert config.timeout_seconds == 11.0
     assert config.config_source == "delivery-deterministic-fallback"
+
+
+def test_delivery_intelligence_main_preserves_mtime_for_semantic_noop(monkeypatch, tmp_path: Path) -> None:
+    output_path = tmp_path / "odylith" / "runtime" / "delivery_intelligence.v4.json"
+
+    monkeypatch.setattr(
+        engine,
+        "build_delivery_intelligence_artifact",
+        lambda **_: {"version": "v4", "summary": {"state": "steady"}},
+    )
+    monkeypatch.setattr(engine, "validate_delivery_intelligence_artifact", lambda _payload: [])
+
+    rc = engine.main(["--repo-root", str(tmp_path)])
+    assert rc == 0
+    first_mtime_ns = output_path.stat().st_mtime_ns
+
+    rc = engine.main(["--repo-root", str(tmp_path)])
+    assert rc == 0
+    second_mtime_ns = output_path.stat().st_mtime_ns
+
+    assert first_mtime_ns == second_mtime_ns
+
+
+def test_delivery_intelligence_main_reports_current_for_semantic_noop(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        engine,
+        "build_delivery_intelligence_artifact",
+        lambda **_: {"version": "v4", "summary": {"state": "steady"}},
+    )
+    monkeypatch.setattr(engine, "validate_delivery_intelligence_artifact", lambda _payload: [])
+
+    rc = engine.main(["--repo-root", str(tmp_path)])
+    assert rc == 0
+
+    rc = engine.main(["--repo-root", str(tmp_path)])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "delivery intelligence artifact is current" in output

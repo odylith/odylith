@@ -898,6 +898,36 @@ def test_install_bundle_bootstrap_supports_first_consumer_sync(tmp_path: Path) -
     assert cli.main(["sync", "--repo-root", str(repo_root), "--force"]) == 0
 
 
+def test_install_bundle_align_pin_advances_existing_repo_pin_to_active_runtime(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    staged_root, staged_python = _seed_verified_release_runtime(repo_root, version="1.2.4")
+    runtime.switch_runtime(repo_root=repo_root, target=staged_root)
+    runtime.ensure_launcher(repo_root=repo_root, fallback_python=staged_python)
+    monkeypatch.setattr(install_manager_module, "_ensure_managed_context_engine_pack", lambda **kwargs: {})
+
+    summary = install_bundle(
+        repo_root=repo_root,
+        bundle_root=tmp_path / "unused-bundle",
+        version="1.2.4",
+        align_pin=True,
+    )
+
+    pin = load_version_pin(repo_root=repo_root)
+    state = load_install_state(repo_root=repo_root)
+
+    assert summary.version == "1.2.4"
+    assert summary.pin_changed is True
+    assert summary.pinned_version == "1.2.4"
+    assert pin is not None
+    assert pin.odylith_version == "1.2.4"
+    assert state["active_version"] == "1.2.4"
+    assert (repo_root / ".odylith" / "runtime" / "current").resolve().name == "1.2.4"
+
+
 def test_start_preflight_uses_hosted_installer_when_odylith_is_not_installed(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
@@ -2847,6 +2877,81 @@ def test_upgrade_prunes_runtime_and_release_cache_retention(tmp_path: Path, monk
     assert sorted(updated_state["installed_versions"]) == ["1.2.2", "1.2.3"]
     assert updated_state["activation_history"] == ["1.2.2", "1.2.3"]
     assert status.available_versions == ["1.2.2", "1.2.3"]
+
+
+def test_upgrade_warns_and_continues_when_retention_prune_stays_permission_denied(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.2")
+
+    legacy_runtime, _ = _seed_verified_release_runtime(repo_root, version="1.2.1")
+    releases_cache_root = repo_root / ".odylith" / "cache" / "releases"
+    for version in ("1.2.1", "1.2.2", "1.2.3"):
+        cache_dir = releases_cache_root / version
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        (cache_dir / "marker.txt").write_text(f"{version}\n", encoding="utf-8")
+
+    state = load_install_state(repo_root=repo_root)
+    state["installed_versions"]["1.2.1"] = {
+        "installed_utc": "2026-03-27T00:00:00+00:00",
+        "runtime_root": str(legacy_runtime),
+        "verification": {"wheel_sha256": "wheel-1.2.1"},
+        "feature_packs": {},
+    }
+    state["activation_history"] = ["1.2.1", "1.2.2"]
+    write_install_state(repo_root=repo_root, payload=state)
+
+    staged_root, staged_python = _seed_verified_release_runtime(repo_root, version="1.2.3")
+    monkeypatch.setattr(
+        install_manager_module,
+        "install_release_runtime",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            manifest={"repo_schema_version": 1, "migration_required": False},
+            python=staged_python,
+            root=staged_root,
+            verification={"runtime_bundle_sha256": "runtime-1.2.3", "wheel_sha256": "wheel-1.2.3"},
+        ),
+    )
+    monkeypatch.setattr(
+        install_manager_module.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(
+        install_manager_module,
+        "fetch_release",
+        lambda **kwargs: SimpleNamespace(version="1.2.3"),
+    )
+
+    original_rmtree = shutil.rmtree
+
+    def _fake_rmtree(path, *args, **kwargs):  # noqa: ANN001, ANN003
+        target = Path(path)
+        if target.name == "1.2.1":
+            raise PermissionError("read-only directory")
+        return original_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(install_manager_module.shutil, "rmtree", _fake_rmtree)
+
+    summary = upgrade_install(
+        repo_root=repo_root,
+        release_repo="odylith/odylith",
+        version="1.2.3",
+        write_pin=True,
+    )
+
+    updated_state = load_install_state(repo_root=repo_root)
+
+    assert summary.active_version == "1.2.3"
+    assert legacy_runtime.exists()
+    assert (releases_cache_root / "1.2.1").exists()
+    assert summary.retention_warnings
+    assert "could not prune retained path" in summary.retention_warnings[0]
+    assert "Active runtime stayed healthy." in summary.retention_warnings[0]
+    assert "chmod -R u+w" in summary.retention_warnings[0]
+    assert sorted(updated_state["installed_versions"]) == ["1.2.2", "1.2.3"]
 
 
 def test_install_and_uninstall_preserve_existing_customer_truth(tmp_path: Path) -> None:
