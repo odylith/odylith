@@ -266,6 +266,10 @@ claims aligned for public publication.
 - Those first-party Action pins must also stay on a currently supported
   GitHub-hosted runtime major. A release-lane Node-runtime deprecation warning
   from pinned first-party Actions is a release blocker, not benign CI noise.
+- Release-proof tests must not depend on ambient maintainer workstation
+  capabilities. If a unit or candidate-proof assertion needs Codex host-native
+  spawn semantics or a discovered `codex` binary, the test must force or mock
+  that contract explicitly so GitHub-hosted runners prove the same truth.
 - Release assets are authoritative only when the signed manifest, provenance,
   and SBOM all verify for the canonical signer identity.
 - Consumer posture must reject maintainer-only localhost asset overrides and

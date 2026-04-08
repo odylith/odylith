@@ -23,6 +23,12 @@ from odylith.runtime.orchestration import subagent_router
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
+def _force_codex_host_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("CLAUDE_CODE", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "benchmark-test-thread")
+    monkeypatch.delenv("CODEX_SHELL", raising=False)
+
+
 def _write_corpus(tmp_path: Path, payload: dict[str, object]) -> None:
     corpus_path = tmp_path / "odylith" / "runtime" / "source" / "optimization-evaluation-corpus.v1.json"
     corpus_path.parent.mkdir(parents=True, exist_ok=True)
@@ -4493,7 +4499,11 @@ def test_select_impacted_diagrams_prefers_direct_benchmark_proof_lane() -> None:
     assert diagrams[0]["source_mmd"] == "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd"
 
 
-def test_component_governance_hot_path_keeps_exact_governed_slice_grounded() -> None:
+def test_component_governance_hot_path_keeps_exact_governed_slice_grounded(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _force_codex_host_runtime(monkeypatch)
+
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "benchmark-component-governance-truth")
 
@@ -4601,7 +4611,11 @@ def test_component_governance_hot_path_stays_grounded_for_orchestration_adoption
     assert adoption["requires_widening"] is False
 
 
-def test_component_honesty_governance_hot_path_stays_route_ready() -> None:
+def test_component_honesty_governance_hot_path_stays_route_ready(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _force_codex_host_runtime(monkeypatch)
+
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "benchmark-component-honesty-governance")
 
@@ -5477,6 +5491,8 @@ def test_benchmark_runner_gate_hot_path_allows_noop_after_focused_runner_check()
 
 
 def test_run_scenario_mode_passes_selected_docs_to_live_prompt_payload(monkeypatch) -> None:  # noqa: ANN001
+    _force_codex_host_runtime(monkeypatch)
+
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "benchmark-raw-baseline-runner-gate")
     captured: dict[str, object] = {}
@@ -5743,7 +5759,11 @@ def test_release_publication_hot_path_docs_keep_graph_renderer_without_leaking_i
     assert "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md" not in component_docs
 
 
-def test_route_ready_hot_path_payload_drops_redundant_prompt_metadata() -> None:
+def test_route_ready_hot_path_payload_drops_redundant_prompt_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _force_codex_host_runtime(monkeypatch)
+
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "validation-heavy-router-fix")
 
@@ -6181,7 +6201,11 @@ def test_architecture_hot_path_drops_ambiguous_count_scaffolding() -> None:
     assert context_packet["route"] == {"narrowing_required": True}
 
 
-def test_route_ready_hot_path_packet_skips_packet_metrics_and_handoff_scaffolding() -> None:
+def test_route_ready_hot_path_packet_skips_packet_metrics_and_handoff_scaffolding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _force_codex_host_runtime(monkeypatch)
+
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "orchestrator-ledger-closeout")
 

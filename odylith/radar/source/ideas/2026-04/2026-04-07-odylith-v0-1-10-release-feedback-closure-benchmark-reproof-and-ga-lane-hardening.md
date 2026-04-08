@@ -63,7 +63,11 @@ dogfood release proof exposed a fresh benchmark truth: the full
 `--profile proof` benchmark lane can wedge mid-corpus and block release prep
 without persisting a fresh release-safe report, so `v0.1.10` now needs an
 explicit tracked benchmark override instead of pretending benchmark re-proof
-landed cleanly.
+landed cleanly. Release prep on 2026-04-08 exposed one more maintainer truth:
+PR `pytest` and `candidate-proof` still carried unit tests that silently
+depended on a live Codex host runtime or a local `codex` binary, so GitHub
+Actions could fail release proof even when the underlying routing contract was
+correct for a non-Codex runner.
 
 ## Customer
 - Primary: Odylith maintainers cutting, proving, and recovering canonical
@@ -89,6 +93,9 @@ identity exceptions, or hand-waved benchmark deferrals.
   surfaces before full sync completes
 - refresh pinned first-party GitHub Actions inputs so release CI does not drag
   an upcoming Node 20 deprecation into the next release cut
+- make release-candidate proof portable across GitHub-hosted runners by
+  removing ambient Codex-host and local-binary assumptions from unit tests that
+  are meant to prove explicit routing or benchmark contracts
 - make hosted-installer closeout converge on one truthful posture: the new
   runtime stays live, stale retention cleanup is best-effort with exact
   remediation, and existing consumer installs do not land in a silent
@@ -174,6 +181,9 @@ identity exceptions, or hand-waved benchmark deferrals.
   update --repo-root .` as if that were a rerender command
 - release CI no longer emits the Node 20 deprecation warning on pinned
   first-party actions
+- PR `pytest` and `candidate-proof` stay green on GitHub-hosted runners that do
+  not expose a local Codex host runtime or `codex` binary unless the tested
+  contract explicitly mocks or requests one
 - post-publish maintainer checkout stays clean or uses an isolated proof path
   that keeps generated surface drift out of the active branch
 
@@ -264,6 +274,10 @@ Node 20 deprecation warning into GA.
   test now pin `actions/checkout v5.0.1` and `actions/setup-python v6.1.0` at
   immutable SHAs so the canonical release lane stops carrying the Node 20
   workflow-runtime warning in configured truth.
+- Release-proof portability hardening is now part of the same closeout:
+  GitHub-hosted runner proof no longer gets to inherit ambient maintainer
+  workstation Codex availability just to prove routing or benchmark packet
+  contracts.
 - Compass explicit-refresh hardening is now part of the landed `v0.1.10`
   release-feedback slice: explicit `full` refresh no longer shares the old
   shell-safe timeout budget, the failure hint points back to a real Compass

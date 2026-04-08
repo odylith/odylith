@@ -84,6 +84,11 @@ Related Bugs:
   tracks the remaining CI pin gap: first-party GitHub Actions revisions were
   still on the Node 20 runtime and emitting deprecation warnings in release
   proof.
+- [CB-072](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-release-proof-tests-assume-local-codex-host-and-break-in-github-actions.md)
+  tracks the final release-proof portability blocker: PR `pytest` and
+  `candidate-proof` still carried unit tests that depended on ambient Codex
+  host-runtime markers or a real local `codex` binary instead of making those
+  assumptions explicit.
 
 ## Learnings
 - [x] `v0.1.9` published on 2026-04-07, but canonical release proof still
@@ -134,6 +139,11 @@ Related Bugs:
       in-progress ledger and no fresh release-safe report. The release owner
       chose a tracked one-release benchmark override for `v0.1.10` rather than
       hold the release on benchmark runner tuning in the same cut.
+- [x] GitHub-hosted PR proof on 2026-04-08 surfaced a final portability gap:
+      several benchmark and routing unit tests still assumed a live Codex host
+      runtime or a local `codex` binary, so `pytest` and `candidate-proof`
+      failed in Actions even though the non-Codex runner was exercising the
+      correct fail-closed payload shape.
 
 ## Must-Ship
 - [x] Remove dependency on GitHub-generated committer metadata from the
@@ -169,6 +179,9 @@ Related Bugs:
 - [ ] Keep post-publish `dogfood-activate` and surface refresh from dirtying
       the active maintainer checkout, or move that generated refresh into an
       isolated proof workspace by design.
+- [x] Keep release-proof unit lanes portable across maintainer machines and
+      GitHub-hosted runners by forcing host-runtime assumptions explicitly in
+      tests instead of inheriting ambient Codex availability.
 
 ## Should-Ship
 - [ ] Thread the `v0.1.10` release feedback into one reusable maintainer-facing
@@ -202,6 +215,8 @@ Related Bugs:
       zero silent active-versus-pin divergence.
 - [ ] Release CI no longer emits the Node 20 deprecation warning on pinned
       first-party actions.
+- [x] PR `pytest` and `candidate-proof` pass on GitHub-hosted runners without
+      requiring an ambient Codex host runtime or a real local `codex` binary.
 - [ ] Post-publish maintainer checkout either remains clean or uses an isolated
       refresh path that keeps generated drift out of the active branch.
 - [ ] Welcome-screen and upgrade-popup browser proof stay green while the above
@@ -257,6 +272,8 @@ Related Bugs:
 - [ ] [test_tooling_dashboard_onboarding_browser.py](/Users/freedom/code/odylith/tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py)
 - [ ] [test_odylith_benchmark_corpus.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_corpus.py)
 - [ ] [test_odylith_benchmark_runner.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_runner.py)
+- [x] [test_odylith_benchmark_live_execution.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_live_execution.py)
+- [x] [test_subagent_reasoning_ladder.py](/Users/freedom/code/odylith/tests/unit/runtime/test_subagent_reasoning_ladder.py)
 
 ## Risks & Mitigations
 - [ ] Risk: the GitHub committer exception stays convenient enough that nobody
@@ -308,6 +325,9 @@ Related Bugs:
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_surface_browser_layout_audit.py -k 'compass or shell or casebook'`
       (`33 passed, 18 deselected`)
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_validate_git_identity.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_odylith_benchmark_runner.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_subagent_reasoning_ladder.py -k "route_request_spawn_payloads_never_inherit_parent_defaults or lifecycle_and_native_spawn_payloads_match_for_every_profile or codex_exec_command_disables_plugins_multi_agent_and_personality"`
+      plus `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py -k "component_governance_hot_path_keeps_exact_governed_slice_grounded or component_honesty_governance_hot_path_stays_route_ready or run_scenario_mode_passes_selected_docs_to_live_prompt_payload or route_ready_hot_path_payload_drops_redundant_prompt_metadata or route_ready_hot_path_packet_skips_packet_metrics_and_handoff_scaffolding"`
+      (`14 passed`)
 - [ ] `git diff --check`
 
 ## Rollout/Communication
@@ -378,6 +398,15 @@ Related Bugs:
       test now pin `actions/checkout v5.0.1` and
       `actions/setup-python v6.1.0` at immutable SHAs, and workflow YAML parse
       validation passed across all three files.
+- [x] Release-proof portability hardening landed: benchmark live-exec,
+      routing-ladder, and benchmark-runner tests now force Codex host or mock
+      CLI discovery explicitly, so GitHub-hosted proof matches the real
+      contract instead of maintainer-machine ambient state.
+- [x] Repo-wide validation passed at the product level:
+      `make validate` reached `1449 passed, 1 skipped` plus compile and
+      non-mutating sync proof; the only terminal stop was the expected
+      clean-worktree guard because refreshed governed surface outputs were still
+      intentionally dirty pending commit.
 - [x] Focused shell-host proof passed:
       `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_render_compass_dashboard.py`
       (`54 passed`) plus `python3 -m py_compile src/odylith/runtime/surfaces/tooling_dashboard_surface_status.py src/odylith/runtime/surfaces/render_tooling_dashboard.py src/odylith/runtime/governance/sync_workstream_artifacts.py src/odylith/runtime/surfaces/render_compass_dashboard.py`.

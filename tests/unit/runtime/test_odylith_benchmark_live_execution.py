@@ -1351,7 +1351,12 @@ def test_sandbox_process_env_uses_local_cache_and_temp_roots(tmp_path: Path, mon
     assert "GH_CONFIG_DIR" not in env
 
 
-def test_codex_exec_command_disables_plugins_multi_agent_and_personality(tmp_path: Path) -> None:
+def test_codex_exec_command_disables_plugins_multi_agent_and_personality(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(live_execution.shutil, "which", lambda binary: f"/usr/bin/{binary}")
+
     command = live_execution._codex_exec_command(  # noqa: SLF001
         execution_contract={"codex_bin": "codex", "model": "gpt-5.4", "reasoning_effort": "high"},
         workspace_root=tmp_path,

@@ -542,7 +542,7 @@ def test_route_request_spawn_payloads_never_inherit_parent_defaults(tmp_path: Pa
             profile=router.RouterProfile.CODEX_HIGH.value,
             model=router.RouterProfile.CODEX_HIGH.model,
             reasoning_effort=router.RouterProfile.CODEX_HIGH.reasoning_effort,
-            host_runtime="",
+            host_runtime="codex_cli",
             selection_mode="bounded_write",
         ),
     )
@@ -862,7 +862,11 @@ def test_apply_odylith_execution_alignment_can_lower_support_lane_spend() -> Non
     ],
 )
 def test_lifecycle_and_native_spawn_payloads_match_for_every_profile(profile: router.RouterProfile) -> None:
-    assessment = _assessment(needs_write=True, task_family="bounded_bugfix", context_signal_summary={})
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        context_signal_summary={"host_runtime": "codex_cli"},
+    )
 
     lifecycle = router._delegated_leaf_lifecycle_payload(profile=profile, assessment=assessment)  # noqa: SLF001
     native_payload = router._native_spawn_payload(  # noqa: SLF001

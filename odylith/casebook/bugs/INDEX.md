@@ -118,6 +118,10 @@ Last updated (UTC): 2026-04-08
 | CB-071 | 2026-04-08 | Release workflows still pin first party actions on node 20 runtime | P1 | `.github/workflows/release.yml`,
   `.github/workflows/release-candidate.yml`, `.github/workflows/test.yml`,
   maintainer release workflow pin policy, release component contract. | Closed | [2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md](2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md) |
+| CB-072 | 2026-04-08 | Release proof tests assume local codex host and break in github actions | P0 | `tests/unit/runtime/test_odylith_benchmark_live_execution.py`,
+  `tests/unit/runtime/test_subagent_reasoning_ladder.py`,
+  `tests/unit/runtime/test_odylith_benchmark_runner.py`, release-candidate CI
+  proof portability, release component contract. | Closed | [2026-04-08-release-proof-tests-assume-local-codex-host-and-break-in-github-actions.md](2026-04-08-release-proof-tests-assume-local-codex-host-and-break-in-github-actions.md) |
 | CB-070 | 2026-04-08 | Release identity guard still depends on github generated committer metadata | P0 | maintainer release identity validator,
   `tests/unit/test_validate_git_identity.py`, release workflow identity guard,
   maintainer release contract. | Closed | [2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md](2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md) |

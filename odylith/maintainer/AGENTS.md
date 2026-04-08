@@ -77,6 +77,10 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Before GA, keep first-party GitHub Actions pins in release, release-candidate,
   and test workflows on current immutable SHAs that no longer carry scheduled
   runtime deprecation warnings into the release lane.
+- Before GA, keep release-proof unit lanes environment-portable. If a test is
+  supposed to prove Codex host-native spawn behavior or Codex CLI execution,
+  force or mock that contract inside the test instead of inheriting the
+  maintainer machine's ambient host/runtime state.
 - Treat parent-shell freshness and child-surface freshness as separate truths.
   A successful wrapper refresh is never enough evidence to imply Compass,
   Radar, Atlas, Registry, or Casebook data is current unless the child
