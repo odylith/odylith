@@ -279,7 +279,7 @@ Related Bugs:
 - [ ] [delivery_intelligence_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/delivery_intelligence_engine.py)
 - [ ] [render_tooling_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_tooling_dashboard.py)
 - [ ] [test_release_bootstrap.py](/Users/freedom/code/odylith/tests/unit/install/test_release_bootstrap.py)
-- [ ] [publish_release_assets.py](/Users/freedom/code/odylith/scripts/release/publish_release_assets.py)
+- [ ] release asset publisher
 - [ ] [test_cli.py](/Users/freedom/code/odylith/tests/unit/test_cli.py)
 - [ ] [test_manager.py](/Users/freedom/code/odylith/tests/integration/install/test_manager.py)
 - [ ] [test_sync_cli_compat.py](/Users/freedom/code/odylith/tests/unit/runtime/test_sync_cli_compat.py)

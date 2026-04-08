@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-08T16:24:10Z",
-  "now_local_iso": "2026-04-08T09:24:10-07:00",
+  "generated_utc": "2026-04-08T16:30:41Z",
+  "now_local_iso": "2026-04-08T09:30:41-07:00",
   "time_context": {
     "timezone": "America/Los_Angeles",
     "label": "San Francisco"
@@ -21,8 +21,8 @@
   },
   "kpis": {
     "24h": {
-      "commits": 5,
-      "local_changes": 7,
+      "commits": 6,
+      "local_changes": 2,
       "touched_workstreams": 11,
       "active_workstreams": 11,
       "critical_risks": 2,
@@ -30,8 +30,8 @@
       "active_touched_workstreams": 5
     },
     "48h": {
-      "commits": 9,
-      "local_changes": 7,
+      "commits": 10,
+      "local_changes": 2,
       "touched_workstreams": 11,
       "active_workstreams": 11,
       "critical_risks": 7,
@@ -257,7 +257,7 @@
     "24h": {
       "schema_version": "v13",
       "status": "ready",
-      "source": "provider",
+      "source": "cache",
       "fingerprint": "c5c70b0f999e8d559899115cc64cdbbfc82c0894a37b94c16e046d9e0e97a7df",
       "generated_utc": "2026-04-08T16:24:10Z",
       "sections": [
@@ -451,12 +451,13 @@
           "section_key": "risks_to_watch",
           "kind": "self_host_posture"
         }
-      }
+      },
+      "cache_mode": "exact"
     },
     "48h": {
       "schema_version": "v13",
       "status": "ready",
-      "source": "provider",
+      "source": "cache",
       "fingerprint": "faade7ab8f692e5fee224f7956eb5d6b585c7972efc2a354812c4e448fc893a7",
       "generated_utc": "2026-04-08T16:24:10Z",
       "sections": [
@@ -656,7 +657,8 @@
           "section_key": "risks_to_watch",
           "kind": "self_host_posture"
         }
-      }
+      },
+      "cache_mode": "exact"
     }
   },
   "standup_brief_scoped": {
@@ -666,7 +668,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "fa72935ac102d013b8a8015568996fdae4c66e6502a71bb5ad99d27a1f745a38",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -855,7 +857,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "fc7219178c81dd42f0717d73263a5036ac21fe8e9a43ff84a16b78d731abf7d8",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -1075,7 +1077,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "58354dd27d4824fe88c0b3f05cda5a9f9d2385cccaf87b6d0967ddf7602a2fa3",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -1277,7 +1279,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "1171acfd362df34e6b49c9562fc7b3d837665196d36b17253467780203c87f90",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -1487,7 +1489,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "e276e0f3f6b059963cc355475ef1749608cd9831d5293ac67eb1d564e401a185",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -1661,7 +1663,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "c8ac18096c65d025ef5ac152096fe91b2ffc5f1de8ca2ba696b1e00c0253b4a1",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -1871,7 +1873,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "d14317a237ceddb0600b651b3efa28dd0c93321efe5f639ebfb2747a6223b6b2",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -2057,7 +2059,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "997b247484128efe962dc90321ab5cdecafa28f863590f883c20c4f2b047f38b",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -2231,7 +2233,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "119a66c566e3fb46de4e1f3dd61001037cabfe251306678c14bdcc7ffa021a05",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -2441,7 +2443,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "b46efec90753db0c83252b71e528109f6ac3074c2403fd3d35bc92cce4aa9900",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -2638,7 +2640,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "bf563a7d4f61bf417f8c8f89b4887fdf3c3a9a2764e0a7861bb563622fc07461",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -2840,7 +2842,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "d26d38ed57536ec5c69a69d1b7332934ba3408f105ee03d8493cdf2cb9136109",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -3044,7 +3046,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "d714d72d0aef368efe478d77ce778ca8d48ec63c35654520d1b4e13d4e3364d0",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -3233,7 +3235,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "8e9b2baaedbdbd8bcb78bafe3527b5eda13090164628923351ce33a431a8f0f3",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -3453,7 +3455,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "9036ef5a36720b9ee836113da7c69e6b0e736c594f9cb4fe3d5b69cc763b2134",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -3655,7 +3657,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "6dee1323be40f22bed75deaf167ca78c1c5b925976b91f7c8c458f8d7302eac8",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -3865,7 +3867,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "9efb5f2608c9ef2f43186a4f42e8fce0569c8805c8e222ba8d9a4c312517b38a",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -4062,7 +4064,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "666c78e11b2b119843d1956576e43daef9191c9fd031800f26ae1f24334844f8",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -4272,7 +4274,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "2c7e74d461871903745cce4732317ff1aa8c2b96dd476b48f77bf8937450b68c",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -4458,7 +4460,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "bf9dd3f7a717011a7683a44b247b837d456c046f7c138014ff6e6a0dccf27cbf",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -4632,7 +4634,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "f46cb75e48aeb00085d742dc0d60195cf514a7947a86f5e622641bd83c2e6a44",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -4842,7 +4844,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "2ce8ce17cbff1357b6f2c6f8b40505ba35cc12d72a66c2d3976c453576e448d5",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -5039,7 +5041,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "fd63b0a5d76f752b75118d0802d6b552561b32abca77967fee76012ba2907d36",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -5241,7 +5243,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "38dba36fe521cb54d6bbcfed15630534fd5b19f56f63233509db9da27de45c71",
-        "generated_utc": "2026-04-08T16:24:10Z",
+        "generated_utc": "2026-04-08T16:30:41Z",
         "sections": [
           {
             "key": "completed",
@@ -5532,7 +5534,7 @@
     "advisory_retrieval_focus": "expand_coverage",
     "advisory_speed_mode": "balanced",
     "advisory_freshness_bucket": "fresh",
-    "advisory_freshness_age_hours": 1.21,
+    "advisory_freshness_age_hours": 1.29,
     "advisory_evidence_strength_score": 2,
     "advisory_evidence_strength_level": "medium",
     "advisory_sample_balance": "thin",
@@ -5593,37 +5595,19 @@
   "governance": {
     "impact": {
       "radar": true,
-      "atlas": true,
-      "compass": true,
-      "registry": true,
-      "casebook": true,
+      "atlas": false,
+      "compass": false,
+      "registry": false,
+      "casebook": false,
       "reasons": {
         "radar": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py",
           "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
         ],
-        "atlas": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py"
-        ],
-        "compass": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py"
-        ],
-        "registry": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md"
-        ],
-        "casebook": [
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:tests/unit/install/test_release_bootstrap.py",
-          "odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
-          "odylith/casebook/bugs/INDEX.md"
-        ]
+        "atlas": [],
+        "compass": [],
+        "registry": [],
+        "casebook": []
       },
       "tooling_shell": true
     },
@@ -5639,9 +5623,9 @@
     },
     "component_registry": {
       "component_count": 21,
-      "event_count": 62,
-      "meaningful_event_count": 56,
-      "mapped_meaningful_event_count": 56,
+      "event_count": 59,
+      "meaningful_event_count": 53,
+      "mapped_meaningful_event_count": 53,
       "unmapped_meaningful_event_count": 0,
       "diagnostic_count": 2
     },
@@ -6661,19 +6645,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 198
+          "commit_count": 4,
+          "local_change_count": 1,
+          "file_touch_count": 199
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 198
+          "commit_count": 4,
+          "local_change_count": 1,
+          "file_touch_count": 199
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-08T09:22:42-07:00",
+        "last_activity_iso": "2026-04-08T09:30:19-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -6689,11 +6673,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 48,
+          "index": 50,
           "band": "Medium"
         },
         "48h": {
-          "index": 48,
+          "index": 50,
           "band": "Medium"
         }
       }
@@ -7238,19 +7222,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 3,
-          "file_touch_count": 325
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 326
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 3,
-          "file_touch_count": 396
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 397
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T09:23:17-07:00",
+        "last_activity_iso": "2026-04-08T09:26:26-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -7420,19 +7404,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 2,
-          "file_touch_count": 325
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 326
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 2,
-          "file_touch_count": 395
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 396
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T09:22:42-07:00",
+        "last_activity_iso": "2026-04-08T09:26:26-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -12151,19 +12135,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 198
+          "commit_count": 4,
+          "local_change_count": 1,
+          "file_touch_count": 199
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 198
+          "commit_count": 4,
+          "local_change_count": 1,
+          "file_touch_count": 199
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-08T09:22:42-07:00",
+        "last_activity_iso": "2026-04-08T09:30:19-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -12179,11 +12163,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 48,
+          "index": 50,
           "band": "Medium"
         },
         "48h": {
-          "index": 48,
+          "index": 50,
           "band": "Medium"
         }
       }
@@ -12336,19 +12320,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 3,
-          "file_touch_count": 325
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 326
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 3,
-          "file_touch_count": 396
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 397
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T09:23:17-07:00",
+        "last_activity_iso": "2026-04-08T09:26:26-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -12463,28 +12447,9 @@
   ],
   "timeline_events": [
     {
-      "id": "local:M:odylith/casebook/bugs/INDEX.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T09:24:10-07:00",
-      "summary": "Modified odylith/casebook/bugs/INDEX.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/INDEX.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
       "id": "local:M:odylith/radar/source/INDEX.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T09:24:05-07:00",
+      "ts_iso": "2026-04-08T09:30:37-07:00",
       "summary": "Modified odylith/radar/source/INDEX.md",
       "author": "local",
       "sha": "",
@@ -12501,93 +12466,9 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:tests/unit/install/test_release_bootstrap.py",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T09:23:17-07:00",
-      "summary": "Modified tests/unit/install/test_release_bootstrap.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-005"
-      ],
-      "files": [
-        "tests/unit/install/test_release_bootstrap.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:odylith/maintainer/AGENTS.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T09:22:42-07:00",
-      "summary": "Modified odylith/maintainer/AGENTS.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/maintainer/AGENTS.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T09:22:42-07:00",
-      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-005",
-        "B-007"
-      ],
-      "files": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T09:22:42-07:00",
-      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-005",
-        "B-007"
-      ],
-      "files": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
       "id": "plan:update:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "plan_update",
-      "ts_iso": "2026-04-08T09:22:42-07:00",
+      "ts_iso": "2026-04-08T09:30:19-07:00",
       "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 67/136 complete.",
       "author": "plan",
       "sha": "",
@@ -12608,7 +12489,7 @@
     {
       "id": "plan:implementation:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "implementation",
-      "ts_iso": "2026-04-08T09:22:42-07:00",
+      "ts_iso": "2026-04-08T09:30:19-07:00",
       "summary": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed `v0.1.9` published on 2026-04-07, but canonical release proof still.",
       "author": "plan",
       "sha": "",
@@ -12629,7 +12510,7 @@
     {
       "id": "local:M:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T09:22:42-07:00",
+      "ts_iso": "2026-04-08T09:30:19-07:00",
       "summary": "Modified odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "author": "local",
       "sha": "",
@@ -12648,38 +12529,53 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T09:22:42-07:00",
-      "summary": "Modified odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-      "author": "local",
-      "sha": "",
+      "id": "commit:a9bc2b30f0a0e2816acbf6e32554216eae3bc12a",
+      "kind": "commit",
+      "ts_iso": "2026-04-08T09:26:26-07:00",
+      "summary": "Keep hosted install repo detection strict-mode safe",
+      "author": "freedom-research",
+      "sha": "a9bc2b30f0a0e2816acbf6e32554216eae3bc12a",
       "workstreams": [
+        "B-005",
+        "B-007",
         "B-060"
       ],
       "files": [
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-04-08.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/tooling-payload.v1.js",
+        "tests/unit/install/test_release_bootstrap.py"
       ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:??:odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T09:22:42-07:00",
-      "summary": "Added odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md"
-      ],
-      "source": "local",
+      "source": "git",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -12691,7 +12587,7 @@
       "id": "bug:bug_resolved:3:P0",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T09:22:42-07:00",
-      "summary": "Critical bug resolved (P0): Hosted install script repo-root detection crashes under strict shell mode before fresh-install proof.",
+      "summary": "Critical bug resolved (P0): Hosted install script repo root detection crashes under strict shell mode before fresh install proof.",
       "author": "bugs",
       "sha": "",
       "workstreams": [],
@@ -15212,56 +15108,29 @@
   ],
   "timeline_transactions": [
     {
-      "id": "txn:global:auto-global-0030:0030",
-      "transaction_id": "txn:global:auto-global-0030:0030",
+      "id": "txn:global:auto-global-0032:0032",
+      "transaction_id": "txn:global:auto-global-0032:0032",
       "session_id": "",
-      "start_ts_iso": "2026-04-08T09:22:42-07:00",
-      "end_ts_iso": "2026-04-08T09:24:10-07:00",
+      "start_ts_iso": "2026-04-08T09:30:19-07:00",
+      "end_ts_iso": "2026-04-08T09:30:37-07:00",
       "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
       "context": "",
-      "event_count": 12,
-      "files_count": 8,
+      "event_count": 4,
+      "files_count": 2,
       "workstreams": [
-        "B-005",
-        "B-007",
         "B-060"
       ],
       "files": [
-        "odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
-        "odylith/casebook/bugs/INDEX.md",
-        "odylith/maintainer/AGENTS.md",
         "odylith/radar/source/INDEX.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-        "tests/unit/install/test_release_bootstrap.py"
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
       ],
       "explicit_open": false,
       "explicit_closed": false,
       "events": [
         {
-          "id": "local:M:odylith/casebook/bugs/INDEX.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T09:24:10-07:00",
-          "summary": "Modified odylith/casebook/bugs/INDEX.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/INDEX.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
           "id": "local:M:odylith/radar/source/INDEX.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T09:24:05-07:00",
+          "ts_iso": "2026-04-08T09:30:37-07:00",
           "summary": "Modified odylith/radar/source/INDEX.md",
           "author": "local",
           "sha": "",
@@ -15278,93 +15147,9 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:tests/unit/install/test_release_bootstrap.py",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T09:23:17-07:00",
-          "summary": "Modified tests/unit/install/test_release_bootstrap.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-005"
-          ],
-          "files": [
-            "tests/unit/install/test_release_bootstrap.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:odylith/maintainer/AGENTS.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T09:22:42-07:00",
-          "summary": "Modified odylith/maintainer/AGENTS.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/maintainer/AGENTS.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T09:22:42-07:00",
-          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-005",
-            "B-007"
-          ],
-          "files": [
-            "odylith/registry/source/components/release/CURRENT_SPEC.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T09:22:42-07:00",
-          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-005",
-            "B-007"
-          ],
-          "files": [
-            "odylith/registry/source/components/release/CURRENT_SPEC.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
           "id": "plan:update:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "plan_update",
-          "ts_iso": "2026-04-08T09:22:42-07:00",
+          "ts_iso": "2026-04-08T09:30:19-07:00",
           "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 67/136 complete.",
           "author": "plan",
           "sha": "",
@@ -15385,7 +15170,7 @@
         {
           "id": "plan:implementation:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "implementation",
-          "ts_iso": "2026-04-08T09:22:42-07:00",
+          "ts_iso": "2026-04-08T09:30:19-07:00",
           "summary": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed `v0.1.9` published on 2026-04-07, but canonical release proof still.",
           "author": "plan",
           "sha": "",
@@ -15406,7 +15191,7 @@
         {
           "id": "local:M:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T09:22:42-07:00",
+          "ts_iso": "2026-04-08T09:30:19-07:00",
           "summary": "Modified odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "author": "local",
           "sha": "",
@@ -15423,52 +15208,141 @@
           "transaction_boundary": "",
           "context": "",
           "headline_hint": ""
-        },
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0031:0031",
+      "transaction_id": "txn:global:auto-global-0031:0031",
+      "session_id": "",
+      "start_ts_iso": "2026-04-08T09:26:26-07:00",
+      "end_ts_iso": "2026-04-08T09:26:26-07:00",
+      "headline": "Keep hosted install repo detection strict-mode safe",
+      "context": "",
+      "event_count": 1,
+      "files_count": 33,
+      "workstreams": [
+        "B-005",
+        "B-007",
+        "B-060"
+      ],
+      "files": [
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-04-08.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/tooling-payload.v1.js",
+        "tests/unit/install/test_release_bootstrap.py"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
         {
-          "id": "local:M:odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T09:22:42-07:00",
-          "summary": "Modified odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "author": "local",
-          "sha": "",
+          "id": "commit:a9bc2b30f0a0e2816acbf6e32554216eae3bc12a",
+          "kind": "commit",
+          "ts_iso": "2026-04-08T09:26:26-07:00",
+          "summary": "Keep hosted install repo detection strict-mode safe",
+          "author": "freedom-research",
+          "sha": "a9bc2b30f0a0e2816acbf6e32554216eae3bc12a",
           "workstreams": [
+            "B-005",
+            "B-007",
             "B-060"
           ],
           "files": [
-            "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+            "odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
+            "odylith/casebook/bugs/INDEX.md",
+            "odylith/casebook/casebook-detail-shard-003.v1.js",
+            "odylith/casebook/casebook-payload.v1.js",
+            "odylith/casebook/casebook.html",
+            "odylith/compass/compass-payload.v1.js",
+            "odylith/compass/compass.html",
+            "odylith/compass/runtime/current.v1.js",
+            "odylith/compass/runtime/current.v1.json",
+            "odylith/compass/runtime/history/2026-04-08.v1.json",
+            "odylith/compass/runtime/history/embedded.v1.js",
+            "odylith/compass/runtime/history/index.v1.json",
+            "odylith/index.html",
+            "odylith/maintainer/AGENTS.md",
+            "odylith/radar/backlog-detail-shard-001.v1.js",
+            "odylith/radar/backlog-detail-shard-002.v1.js",
+            "odylith/radar/backlog-document-shard-002.v1.js",
+            "odylith/radar/backlog-document-shard-004.v1.js",
+            "odylith/radar/backlog-payload.v1.js",
+            "odylith/radar/radar.html",
+            "odylith/radar/source/INDEX.md",
+            "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+            "odylith/registry/registry-detail-shard-001.v1.js",
+            "odylith/registry/registry-payload.v1.js",
+            "odylith/registry/registry.html",
+            "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+            "odylith/registry/source/components/radar/FORENSICS.v1.json",
+            "odylith/registry/source/components/release/CURRENT_SPEC.md",
+            "odylith/registry/source/components/release/FORENSICS.v1.json",
+            "odylith/runtime/delivery_intelligence.v4.json",
+            "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+            "odylith/tooling-payload.v1.js",
+            "tests/unit/install/test_release_bootstrap.py"
           ],
-          "source": "local",
+          "source": "git",
           "session_id": "",
           "transaction_id": "",
           "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": ""
-        },
-        {
-          "id": "local:??:odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T09:22:42-07:00",
-          "summary": "Added odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0030:0030",
+      "transaction_id": "txn:global:auto-global-0030:0030",
+      "session_id": "",
+      "start_ts_iso": "2026-04-08T09:22:42-07:00",
+      "end_ts_iso": "2026-04-08T09:22:42-07:00",
+      "headline": "Critical bug resolved",
+      "context": "",
+      "event_count": 1,
+      "files_count": 1,
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
         {
           "id": "bug:bug_resolved:3:P0",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T09:22:42-07:00",
-          "summary": "Critical bug resolved (P0): Hosted install script repo-root detection crashes under strict shell mode before fresh-install proof.",
+          "summary": "Critical bug resolved (P0): Hosted install script repo root detection crashes under strict shell mode before fresh install proof.",
           "author": "bugs",
           "sha": "",
           "workstreams": [],
@@ -19589,7 +19463,7 @@
       "selection_mode": "active_implementation",
       "has_live_implementation": true,
       "has_recent_implementation": true,
-      "latest_implementation_iso": "2026-04-08T09:24:10-07:00"
+      "latest_implementation_iso": "2026-04-08T09:30:37-07:00"
     },
     "by_workstream": {
       "B-005": {
@@ -19637,7 +19511,7 @@
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T09:24:10-07:00"
+        "latest_implementation_iso": "2026-04-08T09:26:26-07:00"
       },
       "B-007": {
         "is_active": true,
@@ -19684,7 +19558,7 @@
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T09:24:10-07:00"
+        "latest_implementation_iso": "2026-04-08T09:26:26-07:00"
       },
       "B-060": {
         "is_active": true,
@@ -19731,7 +19605,7 @@
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T09:24:10-07:00"
+        "latest_implementation_iso": "2026-04-08T09:30:37-07:00"
       },
       "B-001": {
         "is_active": false,
@@ -21651,7 +21525,7 @@
       },
       {
         "date": "2026-04-08",
-        "title": "Hosted install script repo-root detection crashes under strict shell mode before fresh-install proof",
+        "title": "Hosted install script repo root detection crashes under strict shell mode before fresh install proof",
         "severity": "P0",
         "status": "Closed",
         "link": "odylith/casebook/bugs/2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md",
@@ -22466,7 +22340,7 @@
   "runtime_contract": {
     "version": "v1",
     "standup_brief_schema_version": "v13",
-    "input_fingerprint": "54644eb7b9e5f33aa173592ce55eea435866e71ae5c6d55515ae95ca1b99c92b",
+    "input_fingerprint": "c3c5525842534290eaba8bd2acd2d29bfd5fe2df60b4b3713ca8e70b68a95440",
     "retention_days": 15,
     "active_window_minutes": 15,
     "max_review_age_days": 21,
@@ -22478,7 +22352,7 @@
       "applied_profile": "shell-safe",
       "runtime_mode": "auto",
       "reason": "",
-      "attempted_utc": "2026-04-08T16:24:10Z",
+      "attempted_utc": "2026-04-08T16:30:41Z",
       "fallback_used": false
     }
   }
