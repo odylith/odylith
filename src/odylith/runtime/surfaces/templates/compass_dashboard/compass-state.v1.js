@@ -114,16 +114,24 @@
         : {};
     }
 
-    function knownHistoryDateTokens(payload) {
-      const history = historyMeta(payload);
+    function normalizeHistoryIndexDates(historyLike) {
+      const history = historyLike && typeof historyLike === "object" ? historyLike : {};
       const archive = history && history.archive && typeof history.archive === "object"
         ? history.archive
         : {};
+      const snapshots = history && history.snapshots && typeof history.snapshots === "object"
+        ? Object.keys(history.snapshots)
+        : [];
       return normalizeHistoryDateTokens([
         ...(Array.isArray(history.dates) ? history.dates : []),
         ...(Array.isArray(history.restored_dates) ? history.restored_dates : []),
         ...(Array.isArray(archive.dates) ? archive.dates : []),
+        ...snapshots,
       ]);
+    }
+
+    function knownHistoryDateTokens(payload) {
+      return normalizeHistoryIndexDates(historyMeta(payload));
     }
 
     function knownHistoryDateSet(payload) {
@@ -583,12 +591,44 @@
       return __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ === true || window.__ODYLITH_SHELL_REDIRECTING__ === true;
     }
 
-    async function loadHistorySnapshot(dayToken, { warnOnFailure = false } = {}) {
+    let historyAvailabilityDates = null;
+    let historyAvailabilityLoad = null;
+
+    async function loadAvailableHistoryDates() {
+      if (Array.isArray(historyAvailabilityDates)) return historyAvailabilityDates;
+      if (historyAvailabilityLoad) return historyAvailabilityLoad;
+      historyAvailabilityLoad = (async () => {
+        let dates = [];
+        const isFileProtocol = String(window.location.protocol || "").toLowerCase() === "file:";
+        const indexHref = String(compassShell().history_index_href || "").trim();
+        if (!isFileProtocol && indexHref) {
+          try {
+            const response = await fetch(indexHref, { cache: "no-store" });
+            if (response.ok) {
+              const payload = await response.json();
+              dates = normalizeHistoryIndexDates(payload);
+            }
+          } catch (_error) {}
+        }
+        if (!dates.length) {
+          await ensureEmbeddedHistoryLoaded();
+          dates = normalizeHistoryIndexDates(window.__ODYLITH_COMPASS_HISTORY__);
+        }
+        historyAvailabilityDates = dates;
+        historyAvailabilityLoad = null;
+        return dates;
+      })();
+      return historyAvailabilityLoad;
+    }
+
+    async function loadHistorySnapshot(dayToken, { warnOnFailure = false, allowUnknownDirectFetch = true } = {}) {
       if (shellRedirectInProgress()) return { payload: null, warning: "" };
       const token = String(dayToken || "").trim();
       if (!DATE_RE.test(token)) return { payload: null, warning: "" };
       const isFileProtocol = String(window.location.protocol || "").toLowerCase() === "file:";
-      if (!isFileProtocol) {
+      const availableDates = new Set(await loadAvailableHistoryDates());
+      const shouldTryDirectFetch = availableDates.has(token) || (allowUnknownDirectFetch && availableDates.size === 0);
+      if (!isFileProtocol && shouldTryDirectFetch) {
         const href = `${compassShell().runtime_history_base_href}/${token}.v1.json`;
         try {
           const response = await fetch(href, { cache: "no-store" });
@@ -679,7 +719,7 @@
       );
 
       for (const dayToken of targetDays) {
-        const history = await loadHistorySnapshot(dayToken);
+        const history = await loadHistorySnapshot(dayToken, { allowUnknownDirectFetch: false });
         const historyPayload = history.payload;
         if (!historyPayload) continue;
 

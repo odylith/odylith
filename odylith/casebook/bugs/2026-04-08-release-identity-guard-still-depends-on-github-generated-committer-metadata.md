@@ -20,7 +20,7 @@
   path boringly trustworthy, because the guard is validating a temporary merge
   artifact instead of the maintainer authorship signal that actually matters.
 
-- Components Affected: `scripts/validate_git_identity.py`,
+- Components Affected: maintainer release identity validator,
   `tests/unit/test_validate_git_identity.py`, release workflow identity guard,
   maintainer release contract.
 
@@ -41,8 +41,8 @@
 
 - Verification: `PYTHONPATH=src python3 -m pytest -q
   tests/unit/test_validate_git_identity.py` (`5 passed`);
-  `python3 scripts/validate_git_identity.py history --repo-root . HEAD`
-  (exit `0`); `git diff --check`.
+  the maintainer release-history validator passed locally against `HEAD`;
+  `git diff --check`.
 
 - Prevention: Keep local maintainer config strict for both author and
   committer, but keep release-history proof focused on canonical authored
@@ -51,13 +51,13 @@
 - Detected By: `v0.1.10` release prep while checking remaining known release
   blockers before merging the branch to `main`.
 
-- Failure Signature: `scripts/validate_git_identity.py` explicitly accepts
-  `GitHub <noreply@github.com>` and the maintainer runbook/spec still describe
-  that as a valid release-history identity shape.
+- Failure Signature: the maintainer release identity validator explicitly
+  accepts `GitHub <noreply@github.com>` and the maintainer runbook/spec still
+  describe that as a valid release-history identity shape.
 
-- Trigger Path: inspect `scripts/validate_git_identity.py`, run
-  `python scripts/validate_git_identity.py history --repo-root . HEAD`, or read
-  the release workflow and maintainer release runbook.
+- Trigger Path: inspect the maintainer release identity validator, run the
+  release-history identity proof locally, or read the release workflow and
+  maintainer release runbook.
 
 - Ownership: Release identity validation and maintainer release contract.
 
@@ -87,8 +87,7 @@
   platform-specific committer allowlist. Remove the dependency on committer
   metadata instead.
 
-- Preflight Checks: inspect
-  [validate_git_identity.py](../../../scripts/validate_git_identity.py),
+- Preflight Checks: inspect the maintainer release identity validator,
   [test_validate_git_identity.py](../../../tests/unit/test_validate_git_identity.py),
   and [release.yml](../../../.github/workflows/release.yml) together before
   changing release identity policy.
@@ -108,7 +107,7 @@
 
 - Customer Comms: internal maintainer-only release integrity fix.
 
-- Code References: `scripts/validate_git_identity.py`,
+- Code References: maintainer release identity validator,
   `tests/unit/test_validate_git_identity.py`, `.github/workflows/release.yml`
 
 - Runbook References: `odylith/MAINTAINER_RELEASE_RUNBOOK.md`,

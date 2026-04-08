@@ -233,7 +233,7 @@ def _select_radar_row_with_cross_surface_links(radar) -> str:  # noqa: ANN001
         if not idea_id:
             continue
         button.click()
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, idea_id)
         registry_links = radar.locator("#detail a.chip-registry-component")
         diagram_links = radar.locator("#detail a.chip-topology-diagram")
         if registry_links.count() and diagram_links.count():
@@ -252,9 +252,15 @@ def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
     radar.locator("#query").fill(idea_id)
     radar.locator(f'button[data-idea-id="{idea_id}"]').wait_for(timeout=15000)
     radar.locator(f'button[data-idea-id="{idea_id}"]').first.click()
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, idea_id)
     radar.locator("#query").fill("")
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, idea_id)
+
+
+def _wait_for_radar_detail_id(radar, idea_id: str) -> None:  # noqa: ANN001
+    radar.locator(f'button[data-idea-id="{idea_id}"].active').wait_for(timeout=15000)
+    radar.locator("#detail .detail-title").wait_for(timeout=15000)
+    radar.locator("#detail").filter(has_text=idea_id).wait_for(timeout=15000)
 
 
 def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
@@ -586,7 +592,7 @@ def test_radar_search_selection_and_cross_surface_detail_links(browser_context) 
 
     radar.locator("#query").fill(idea_id)
     _wait_for_locator_count(page, "#frame-radar", "button[data-idea-id]", 1)
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, idea_id)
 
     radar.locator("#query").fill("")
     phase_value, phase_count = _first_filter_value_with_results(radar, "#phase", "button[data-idea-id]")
@@ -631,7 +637,7 @@ def test_radar_topology_relation_chips_route_to_their_own_workstream_ids(browser
         chip = radar.locator(f'#detail [data-link-idea="{target_id}"]').first
         chip.wait_for(timeout=15000)
         chip.evaluate("node => node.click()")
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=target_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, target_id)
         radar.locator(f'button[data-idea-id="{target_id}"].active').wait_for(timeout=15000)
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=target_id)
 
@@ -674,7 +680,7 @@ def test_radar_topology_relation_clicks_self_heal_incompatible_filters(browser_c
     assert radar.locator(f'button[data-idea-id="{target_id}"]').count() == 0
 
     radar.locator(f'#detail [data-link-idea="{target_id}"]').first.evaluate("node => node.click()")
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=target_id).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, target_id)
     radar.locator(f'button[data-idea-id="{target_id}"].active').wait_for(timeout=15000)
     _wait_for_shell_query_param(page, tab="radar", key="workstream", value=target_id)
     assert radar.locator("#query").input_value() == ""
@@ -691,7 +697,7 @@ def test_radar_b058_memory_diagram_chip_routes_to_d025(browser_context) -> None:
 
     radar = page.frame_locator("#frame-radar")
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text="B-058").wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, "B-058")
     radar.locator("#detail").evaluate(
         """(node) => {
             const link = Array.from(
