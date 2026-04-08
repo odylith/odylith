@@ -1,6 +1,6 @@
 # Support
 
-Last updated: 2026-03-27
+Last updated: 2026-04-07
 
 ## Support Model
 
@@ -8,7 +8,8 @@ Odylith is an open-source project with best-effort maintainer support.
 
 - There is no paid support offering.
 - There is no guaranteed response-time SLA.
-- The repo is still in public preview / pre-GA as of 2026-03-27.
+- Odylith is GA on supported public install platforms as of 2026-04-07.
+- The latest public GitHub release is `v0.1.9`, published on 2026-04-07.
 
 ## Where To Ask For Help
 

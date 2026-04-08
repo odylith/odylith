@@ -15,6 +15,8 @@
 > agent is the execution interface and `odylith/index.html` is the operating
 > surface that keeps intent, constraints, topology, and execution state
 > visible.
+>
+> Odylith is GA on its supported public install platforms as of `2026-04-07`.
 
 ## Quick Start
 
@@ -25,15 +27,36 @@ curl -fsSL https://odylith.ai/install.sh | bash
 ```
 
 Run it from the repo root when you can; Odylith can also detect that root from
-any subdirectory inside the same repo. Supported public install platforms today
-are macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). Intel macOS and
-Windows are out of scope for the current preview contract.
+any subdirectory inside the same repo. The current GA platform contract covers
+macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). Intel macOS and Windows
+are not part of the current GA platform set.
 
 After install, open the repo in Codex or Claude Code. For first-run behavior,
 the first prompt to use, browser-shell behavior, and repo-root selection or
 reduced-mode details, see [First Run In An Odylith Repo](odylith/README.md#first-run).
 For more example prompts, see
 [Starter Prompt Inspirations](docs/STARTER_PROMPT_INSPIRATIONS.md).
+
+## Prove It In 2 Minutes
+
+From the repo you just installed into, run:
+
+```bash
+./.odylith/bin/odylith start --repo-root .
+```
+
+Then paste this into Codex or Claude Code:
+
+> Use Odylith to define this repo's first governed slice. Pick one path to own, one seam to guard, one component to define, one diagram to draw, and one backlog to open, all tied to the same slice. First show me 5 bullets. Then create the Odylith files. Plain English. Real file paths only. No IDs. No hedging. Only write under `odylith/`.
+
+What you should see within the first turn:
+
+- a narrowed, grounded slice instead of a blind repo scan
+- `odylith/index.html` reflecting the repo's live execution state
+- durable repo-local records under `odylith/` for the chosen slice
+
+**If Odylith makes your coding agent materially sharper in real repo work, star
+the repo so other operators can find it.**
 
 ## What Does The Name "Odylith" Mean?
 
