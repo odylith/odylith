@@ -125,6 +125,9 @@ Last updated (UTC): 2026-04-08
 | CB-070 | 2026-04-08 | Release identity guard still depends on github generated committer metadata | P0 | maintainer release identity validator,
   `tests/unit/test_validate_git_identity.py`, release workflow identity guard,
   maintainer release contract. | Closed | [2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md](2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md) |
+| CB-074 | 2026-04-08 | Hosted install script uses hidden pin alignment flag that older shipped runtimes do not understand | P0 | `scripts/release/publish_release_assets.py`,
+  `scripts/release/local_release_smoke.py`, generated `install.sh`, hosted
+  installer upgrade compatibility, release component contract. | Closed | [2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md](2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md) |
 | CB-068 | 2026-04-08 | Explicit compass full refresh can pass with deterministic or stale runtime state | P0 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
   `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,

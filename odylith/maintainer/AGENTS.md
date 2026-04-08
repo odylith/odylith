@@ -108,6 +108,11 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   `src/odylith/__init__.py` plus
   `odylith/runtime/source/product-version.v1.json` on the release branch, then
   return to `main` for canonical proof.
+- Keep hosted installer generation compatible with the last shipped runtime
+  exercised by release smoke. When installer behavior differs between fresh and
+  existing repos, branch on repo state using stable commands instead of
+  assuming a newly added hidden CLI flag already exists in older shipped
+  versions.
 - Use direct `rg`, source reads, generator inspection, or targeted shell
   inspection only when Odylith explicitly signals fallback or ambiguity, or
   when you are verifying tracked source truth behind a runtime-generated

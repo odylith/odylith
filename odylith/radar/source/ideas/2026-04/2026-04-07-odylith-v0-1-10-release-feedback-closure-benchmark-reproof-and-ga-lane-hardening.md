@@ -299,3 +299,8 @@ Node 20 deprecation warning into GA.
 - `v0.1.10` now also has authored release-note source ready for release prep,
   and the upgrade-spotlight browser proof is tied to that exact note so the
   popup ships from the same markdown truth that will be tagged on GitHub.
+- Hosted-installer release-smoke compatibility is now part of the same closeout
+  too: generated `install.sh` no longer assumes older shipped runtimes
+  understand the hidden `install --align-pin` path, and instead branches
+  between first-install `install --version` and existing-repo
+  `upgrade --to ... --write-pin` using stable cross-version commands.

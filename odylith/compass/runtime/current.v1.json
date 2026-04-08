@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-08T15:41:50Z",
-  "now_local_iso": "2026-04-08T08:41:50-07:00",
+  "generated_utc": "2026-04-08T15:57:51Z",
+  "now_local_iso": "2026-04-08T08:57:51-07:00",
   "time_context": {
     "timezone": "America/Los_Angeles",
     "label": "San Francisco"
@@ -21,8 +21,8 @@
   },
   "kpis": {
     "24h": {
-      "commits": 3,
-      "local_changes": 8,
+      "commits": 4,
+      "local_changes": 7,
       "touched_workstreams": 11,
       "active_workstreams": 11,
       "critical_risks": 2,
@@ -30,8 +30,8 @@
       "active_touched_workstreams": 5
     },
     "48h": {
-      "commits": 7,
-      "local_changes": 8,
+      "commits": 8,
+      "local_changes": 7,
       "touched_workstreams": 11,
       "active_workstreams": 11,
       "critical_risks": 7,
@@ -41,18 +41,19 @@
   },
   "digest": {
     "24h": [
-      "Completed in this window: Operator: Two lingering plan closeouts landed, which clears old ambiguity out of the release story and leaves room for v0.1.10 hardening to be judged on current execution instead of cleanup debt. | Operator: The repo is now running on activated 0.1.9, so the latest release is proving itself in the product repo rather than sitting as a paper milestone.",
-      "Current execution: Executive: v0.1.10 feedback closure and GA hardening is the work to watch because release exceptions are easiest to fix now, before they calcify into normal operating behavior. | Operator: Release hardening and GA prep is the clearest execution signal, with runtime freshness and browser hardening supporting it so proof and operator experience move together. | Operator: The live posture still matters: the product repo is running verified runtime 0.1.9 while pinned to 0.1.10, and that mismatch keeps release eligibility at no.",
-      "Next planned: Operator: Benchmark corpus expansion comes next because nearby truth surfaces still lag the README, and closing that gap is what makes benchmark claims hold up under inspection. | Operator: After that, the corpus needs more developer-core local coding slices so frontier improvement is grounded in work that actually resembles product-repo use.",
-      "Why this matters: Executive: Maintainers already have a GA release in 0.1.9, but the lane still carries temporary release truths that would erode trust if they become the permanent way to ship and recover. | Operator: Removing dependence on GitHub merge-committer metadata gives operators a cleaner release ancestry contract, which lowers coordination risk when proving, auditing, or recovering a canonical release.",
-      "Risks to watch: Operator: A P0 benchmark wedge can still stop pinned dogfood proof mid-corpus, which means release confidence can fail in the exact lane meant to certify it. | Operator: Runtime 0.1.9 still diverges from the 0.1.10 repo pin, so any claim of GA readiness can get ahead of the posture the product repo is actually running."
+      "Completed in this window: Two closeout lanes cleared, and release hardening moved into shipped posture with the repo still on verified runtime `0.1.9`, which reduces ambiguity before the GA cleanup push.",
+      "Current execution: Executive: Release feedback closure and GA lane hardening is the live job now, because this is the short window where release exceptions can still be turned into durable rules instead of inherited operator folklore. | Operator: Proof is coming from concrete hardening work, not narration: the active lanes are the v0.1.10 cleanup path and cross-surface runtime freshness work, and both are converting plans into implementation. | Operator: The product repo is not release-eligible yet because active runtime `0.1.9` still diverges from repo pin `0.1.10`; that mismatch has to close before the release story can be called coherent.",
+      "Next planned: Operator: Next up is benchmark corpus expansion, because nearby truth surfaces still lag the README and that weakens the benchmark story right where maintainers need aligned proof. | Operator: After that, the corpus needs more developer-core local coding slices, which turns benchmark breadth into a harder frontier and gives the proof lane more representative failure modes.",
+      "Why this matters: Executive: Maintainers got `v0.1.9` to GA on April 7, 2026, but the release lane still carried temporary truths; cleaning those up is how release trust survives the next cut and recovery cycle. | Operator: Release ancestry still needs to stop depending on GitHub merge-committer metadata, because operators need a contract that preserves canonical maintainer identity without coordination traps.",
+      "Risks to watch: Operator: The open P0 remains the benchmark proof wedging mid-corpus, which can block release proof outright and leave the hardest evidence lane stalled at the wrong moment. | Operator: Runtime divergence is still a live integrity risk: the product repo runs `0.1.9` against a `0.1.10` pin, so proof can drift from the version operators think they are validating."
     ],
     "48h": [
-      "Completed in this window: Operator: Lane-boundary and launchpad closeouts landed, which strips old cleanup debt out of the path for v0.1.10 hardening and GA prep. | Operator: Release proof work moved into concrete execution, so the shipped story is being tested against fresh evidence instead of carried by assumption.",
-      "Current execution: Executive: v0.1.10 feedback closure and GA hardening is the live call now, because this is when release exceptions are still clear enough to fix before they become normal practice. | Operator: The product repo is still running verified runtime 0.1.9 while pinned at 0.1.10, and release eligibility remains off, so proof and posture are not aligned yet. | Operator: Release proof is still the clearest execution signal, keeping the work anchored in something operators can verify. | Operator: Cross-surface runtime freshness and browser hardening is moving beside the flagship lane, because release trust breaks if operator-facing surfaces drift.",
-      "Next planned: Operator: Benchmark corpus expansion comes next, because neighboring truth surfaces still lag the README and weaken the benchmark story operators are asked to trust. | Operator: After that, the corpus needs more developer-core local coding slices so frontier claims are tested on work that actually looks like maintainer use.",
-      "Why this matters: Executive: v0.1.9 reached GA on April 7, 2026, but the lane still carries release truths that should not become standard posture for maintainers cutting and recovering releases. | Operator: Release ancestry still depends too much on GitHub merge-committer metadata; removing that gives operators a cleaner contract and less coordination risk.",
-      "Risks to watch: Operator: The open P0 benchmark wedge can still stall proof mid-corpus, which would leave the release story blocked by infrastructure behavior instead of product readiness. | Operator: Active runtime 0.1.9 still diverges from the 0.1.10 pin, so any proof taken in this state is easier to question later."
+      "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because the AI provider response did not validate against the standup contract.",
+      "Completed in this window: Operator: Over the last 48 hours, two lingering obligations finally cleared: `B-027` finished lane boundary, runtime, and toolchain clarity; `B-028` finished starter launchpad ux and visual redesign. | Operator: Over the last 48 hours, the clearest move was Prepare v0.1.8 release proof. It gave the rest of the work something concrete to steer against.",
+      "Current execution: Executive: Over the last 48 hours, `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`. | Operator: `B-025` is moving beside it and gives the portfolio a second place where plan intent is turning into something operators can actually trust. | Operator: The schedule still matters here: projected at roughly 3 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
+      "Next planned: Operator: Next up is `B-021`: bring Registry and the other benchmark truth surfaces back into line with the README so the public benchmark story is backed by governed source again. | Operator: After that, the corpus needs more developer-core local coding slices. The benchmark only gets more believable if the workload gets closer to the hard work we actually care about.",
+      "Why this matters: Executive: What matters here is For Odylith maintainers cutting, proving, and recovering canonical releases from the product repo, `v0.1.9` reached GA on 2026-04-07, but the release lane still carried several truths that should not become permanent operating posture. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
+      "Risks to watch: Operator: Primary blocker is an open P0 bug: Pinned dogfood proof benchmark can wedge mid corpus and block release proof. | Operator: Odylith product repo active runtime `0.1.9` diverges from repo pin `0.1.10`."
     ]
   },
   "digest_scoped": {
@@ -132,7 +133,7 @@
       "B-060": [
         "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
         "Completed in this window: The clearest move this window was v0.1.10 release hardening and GA prep (#3). It gave the rest of the work something concrete to steer against.",
-        "Current execution: Executive: `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Right now the clearest signal is v0.1.10 release hardening and GA prep (#3). | Operator: This lane is still carrying real weight. 66 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 4 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
+        "Current execution: Executive: `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Right now the clearest signal is v0.1.10 release hardening and GA prep (#3). | Operator: This lane is still carrying real weight. 66 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 3 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
         "Why this matters: Executive: What matters here is For Odylith maintainers cutting, proving, and recovering canonical releases from the product repo, `v0.1.9` reached GA on 2026-04-07, but the release lane still carried several truths that should not become permanent operating posture. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 66 plan items are open on `B-060`, so the next checkpoint needs to land cleanly."
@@ -145,13 +146,13 @@
         "Why this matters: Executive: What matters here is For Odylith maintainers changing benchmark proof or diagnosis behavior who need a cleaner package contract and lower regression risk, tribunal, Remediator, and shared reasoning-provider code currently live under the same `src/odylith/runtime/evaluation/` package as the benchmark harness. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 26 plan items are open on `B-061`, so the next checkpoint needs to land cleanly."
       ],
-      "B-031": [
+      "B-005": [
         "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
-        "Completed in this window: Operator: This window finally cleared two lingering obligations: `B-031` finished verified milestone closure landed for odylith first-turn bootstrap and short-form grounding commands. | Operator: The clearest move this window was v0.1.10 release hardening and GA prep (#3). It gave the rest of the work something concrete to steer against.",
-        "Current execution: Executive: `B-031` is still carrying the main decision load. Odylith is already far enough along that the remaining miss is productization, not capability. | Operator: Right now the clearest signal is v0.1.10 release hardening and GA prep (#3). | Operator: This lane is still carrying real weight. 8 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 1 days (high confidence), so nobody should mistake this for cleanup.",
-        "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-        "Risks to watch: The lane can still sprawl: 8 plan items are open on `B-031`, so the next checkpoint needs to land cleanly."
+        "Completed in this window: The clearest move this window was v0.1.10 release hardening and GA prep (#3). It gave the rest of the work something concrete to steer against.",
+        "Current execution: Executive: `B-005` is still carrying the main decision load. The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete. | Operator: Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`. | Operator: Right now the clearest signal is v0.1.10 release hardening and GA prep (#3). | Operator: The scoped checklist is fully closed, so the remaining work is proving the lane cleanly.",
+        "Next planned: Next up is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+        "Why this matters: Executive: What matters here is For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
+        "Risks to watch: No critical blockers are currently surfaced."
       ]
     },
     "48h": {
@@ -230,7 +231,7 @@
       "B-060": [
         "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
         "Completed in this window: Over the last 48 hours, the clearest move was v0.1.10 release hardening and GA prep (#3). It gave the rest of the work something concrete to steer against.",
-        "Current execution: Executive: Over the last 48 hours, `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Over the last 48 hours, the clearest signal has been v0.1.10 release hardening and GA prep (#3). | Operator: This lane is still carrying real weight. 66 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 4 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
+        "Current execution: Executive: Over the last 48 hours, `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Over the last 48 hours, the clearest signal has been v0.1.10 release hardening and GA prep (#3). | Operator: This lane is still carrying real weight. 66 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 3 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
         "Why this matters: Executive: What matters here is For Odylith maintainers cutting, proving, and recovering canonical releases from the product repo, `v0.1.9` reached GA on 2026-04-07, but the release lane still carried several truths that should not become permanent operating posture. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 66 plan items are open on `B-060`, so the next checkpoint needs to land cleanly."
@@ -243,13 +244,13 @@
         "Why this matters: Executive: What matters here is For Odylith maintainers changing benchmark proof or diagnosis behavior who need a cleaner package contract and lower regression risk, tribunal, Remediator, and shared reasoning-provider code currently live under the same `src/odylith/runtime/evaluation/` package as the benchmark harness. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 26 plan items are open on `B-061`, so the next checkpoint needs to land cleanly."
       ],
-      "B-031": [
+      "B-005": [
         "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
-        "Completed in this window: Operator: Over the last 48 hours, two lingering obligations finally cleared: `B-031` finished verified milestone closure landed for odylith first-turn bootstrap and short-form grounding commands. | Operator: Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
-        "Current execution: Executive: Over the last 48 hours, `B-031` is still carrying the main decision load. Odylith is already far enough along that the remaining miss is productization, not capability. | Operator: Over the last 48 hours, the clearest signal has been Ship v0.1.8 migration recovery and shell updates. | Operator: This lane is still carrying real weight. 8 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 1 days (high confidence), so nobody should mistake this for cleanup.",
-        "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-        "Risks to watch: The lane can still sprawl: 8 plan items are open on `B-031`, so the next checkpoint needs to land cleanly."
+        "Completed in this window: Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
+        "Current execution: Executive: Over the last 48 hours, `B-005` is still carrying the main decision load. The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete. | Operator: Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`. | Operator: Over the last 48 hours, the clearest signal has been Ship v0.1.8 migration recovery and shell updates. | Operator: The scoped checklist is fully closed, so the remaining work is proving the lane cleanly.",
+        "Next planned: Next up is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+        "Why this matters: Executive: What matters here is For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
+        "Risks to watch: No critical blockers are currently surfaced."
       ]
     }
   },
@@ -258,8 +259,8 @@
       "schema_version": "v13",
       "status": "ready",
       "source": "provider",
-      "fingerprint": "c5c70b0f999e8d559899115cc64cdbbfc82c0894a37b94c16e046d9e0e97a7df",
-      "generated_utc": "2026-04-08T15:41:50Z",
+      "fingerprint": "f1fbecc416cfb031a5b3f3cd3c7b5ea24aee3f2bda82ed622a2c860a696dab3c",
+      "generated_utc": "2026-04-08T15:57:51Z",
       "sections": [
         {
           "key": "completed",
@@ -267,16 +268,10 @@
           "bullets": [
             {
               "voice": "operator",
-              "text": "Two lingering plan closeouts landed, which clears old ambiguity out of the release story and leaves room for v0.1.10 hardening to be judged on current execution instead of cleanup debt.",
+              "text": "Two closeout lanes cleared, and release hardening moved into shipped posture with the repo still on verified runtime `0.1.9`, which reduces ambiguity before the GA cleanup push.",
               "fact_ids": [
                 "F-001",
-                "F-002"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "The repo is now running on activated 0.1.9, so the latest release is proving itself in the product repo rather than sitting as a paper milestone.",
-              "fact_ids": [
+                "F-002",
                 "F-003"
               ]
             }
@@ -288,14 +283,14 @@
           "bullets": [
             {
               "voice": "executive",
-              "text": "v0.1.10 feedback closure and GA hardening is the work to watch because release exceptions are easiest to fix now, before they calcify into normal operating behavior.",
+              "text": "Release feedback closure and GA lane hardening is the live job now, because this is the short window where release exceptions can still be turned into durable rules instead of inherited operator folklore.",
               "fact_ids": [
                 "F-004"
               ]
             },
             {
               "voice": "operator",
-              "text": "Release hardening and GA prep is the clearest execution signal, with runtime freshness and browser hardening supporting it so proof and operator experience move together.",
+              "text": "Proof is coming from concrete hardening work, not narration: the active lanes are the v0.1.10 cleanup path and cross-surface runtime freshness work, and both are converting plans into implementation.",
               "fact_ids": [
                 "F-005",
                 "F-007"
@@ -303,7 +298,7 @@
             },
             {
               "voice": "operator",
-              "text": "The live posture still matters: the product repo is running verified runtime 0.1.9 while pinned to 0.1.10, and that mismatch keeps release eligibility at no.",
+              "text": "The product repo is not release-eligible yet because active runtime `0.1.9` still diverges from repo pin `0.1.10`; that mismatch has to close before the release story can be called coherent.",
               "fact_ids": [
                 "F-006"
               ]
@@ -316,14 +311,14 @@
           "bullets": [
             {
               "voice": "operator",
-              "text": "Benchmark corpus expansion comes next because nearby truth surfaces still lag the README, and closing that gap is what makes benchmark claims hold up under inspection.",
+              "text": "Next up is benchmark corpus expansion, because nearby truth surfaces still lag the README and that weakens the benchmark story right where maintainers need aligned proof.",
               "fact_ids": [
                 "F-009"
               ]
             },
             {
               "voice": "operator",
-              "text": "After that, the corpus needs more developer-core local coding slices so frontier improvement is grounded in work that actually resembles product-repo use.",
+              "text": "After that, the corpus needs more developer-core local coding slices, which turns benchmark breadth into a harder frontier and gives the proof lane more representative failure modes.",
               "fact_ids": [
                 "F-010"
               ]
@@ -336,14 +331,14 @@
           "bullets": [
             {
               "voice": "executive",
-              "text": "Maintainers already have a GA release in 0.1.9, but the lane still carries temporary release truths that would erode trust if they become the permanent way to ship and recover.",
+              "text": "Maintainers got `v0.1.9` to GA on April 7, 2026, but the release lane still carried temporary truths; cleaning those up is how release trust survives the next cut and recovery cycle.",
               "fact_ids": [
                 "F-011"
               ]
             },
             {
               "voice": "operator",
-              "text": "Removing dependence on GitHub merge-committer metadata gives operators a cleaner release ancestry contract, which lowers coordination risk when proving, auditing, or recovering a canonical release.",
+              "text": "Release ancestry still needs to stop depending on GitHub merge-committer metadata, because operators need a contract that preserves canonical maintainer identity without coordination traps.",
               "fact_ids": [
                 "F-012"
               ]
@@ -356,14 +351,14 @@
           "bullets": [
             {
               "voice": "operator",
-              "text": "A P0 benchmark wedge can still stop pinned dogfood proof mid-corpus, which means release confidence can fail in the exact lane meant to certify it.",
+              "text": "The open P0 remains the benchmark proof wedging mid-corpus, which can block release proof outright and leave the hardest evidence lane stalled at the wrong moment.",
               "fact_ids": [
                 "F-013"
               ]
             },
             {
               "voice": "operator",
-              "text": "Runtime 0.1.9 still diverges from the 0.1.10 repo pin, so any claim of GA readiness can get ahead of the posture the product repo is actually running.",
+              "text": "Runtime divergence is still a live integrity risk: the product repo runs `0.1.9` against a `0.1.10` pin, so proof can drift from the version operators think they are validating.",
               "fact_ids": [
                 "F-014"
               ]
@@ -411,7 +406,7 @@
           "kind": "portfolio_posture"
         },
         "F-008": {
-          "text": "Timeline signal on the primary lane: projected at roughly 4 days and expected to tighten as execution closes checklist items.",
+          "text": "Timeline signal on the primary lane: projected at roughly 3 days and expected to tighten as execution closes checklist items.",
           "section_key": "current_execution",
           "kind": "timeline"
         },
@@ -456,9 +451,9 @@
     "48h": {
       "schema_version": "v13",
       "status": "ready",
-      "source": "provider",
-      "fingerprint": "faade7ab8f692e5fee224f7956eb5d6b585c7972efc2a354812c4e448fc893a7",
-      "generated_utc": "2026-04-08T15:41:50Z",
+      "source": "deterministic",
+      "fingerprint": "db92d9aa10576b9d89e152e6e399cb3a42148eec06081e6e37d74f3c75b736b8",
+      "generated_utc": "2026-04-08T15:57:51Z",
       "sections": [
         {
           "key": "completed",
@@ -466,15 +461,14 @@
           "bullets": [
             {
               "voice": "operator",
-              "text": "Lane-boundary and launchpad closeouts landed, which strips old cleanup debt out of the path for v0.1.10 hardening and GA prep.",
+              "text": "Over the last 48 hours, two lingering obligations finally cleared: `B-027` finished lane boundary, runtime, and toolchain clarity; `B-028` finished starter launchpad ux and visual redesign.",
               "fact_ids": [
-                "F-001",
-                "F-003"
+                "F-001"
               ]
             },
             {
               "voice": "operator",
-              "text": "Release proof work moved into concrete execution, so the shipped story is being tested against fresh evidence instead of carried by assumption.",
+              "text": "Over the last 48 hours, the clearest move was Prepare v0.1.8 release proof. It gave the rest of the work something concrete to steer against.",
               "fact_ids": [
                 "F-002"
               ]
@@ -487,30 +481,30 @@
           "bullets": [
             {
               "voice": "executive",
-              "text": "v0.1.10 feedback closure and GA hardening is the live call now, because this is when release exceptions are still clear enough to fix before they become normal practice.",
+              "text": "Over the last 48 hours, `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore.",
               "fact_ids": [
                 "F-004"
               ]
             },
             {
               "voice": "operator",
-              "text": "The product repo is still running verified runtime 0.1.9 while pinned at 0.1.10, and release eligibility remains off, so proof and posture are not aligned yet.",
+              "text": "Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`.",
               "fact_ids": [
                 "F-006"
               ]
             },
             {
               "voice": "operator",
-              "text": "Release proof is still the clearest execution signal, keeping the work anchored in something operators can verify.",
+              "text": "`B-025` is moving beside it and gives the portfolio a second place where plan intent is turning into something operators can actually trust.",
               "fact_ids": [
-                "F-005"
+                "F-007"
               ]
             },
             {
               "voice": "operator",
-              "text": "Cross-surface runtime freshness and browser hardening is moving beside the flagship lane, because release trust breaks if operator-facing surfaces drift.",
+              "text": "The schedule still matters here: projected at roughly 3 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
               "fact_ids": [
-                "F-007"
+                "F-008"
               ]
             }
           ]
@@ -521,14 +515,14 @@
           "bullets": [
             {
               "voice": "operator",
-              "text": "Benchmark corpus expansion comes next, because neighboring truth surfaces still lag the README and weaken the benchmark story operators are asked to trust.",
+              "text": "Next up is `B-021`: bring Registry and the other benchmark truth surfaces back into line with the README so the public benchmark story is backed by governed source again.",
               "fact_ids": [
                 "F-009"
               ]
             },
             {
               "voice": "operator",
-              "text": "After that, the corpus needs more developer-core local coding slices so frontier claims are tested on work that actually looks like maintainer use.",
+              "text": "After that, the corpus needs more developer-core local coding slices. The benchmark only gets more believable if the workload gets closer to the hard work we actually care about.",
               "fact_ids": [
                 "F-010"
               ]
@@ -541,14 +535,14 @@
           "bullets": [
             {
               "voice": "executive",
-              "text": "v0.1.9 reached GA on April 7, 2026, but the lane still carries release truths that should not become standard posture for maintainers cutting and recovering releases.",
+              "text": "What matters here is For Odylith maintainers cutting, proving, and recovering canonical releases from the product repo, `v0.1.9` reached GA on 2026-04-07, but the release lane still carried several truths that should not become permanent operating posture.",
               "fact_ids": [
                 "F-011"
               ]
             },
             {
               "voice": "operator",
-              "text": "Release ancestry still depends too much on GitHub merge-committer metadata; removing that gives operators a cleaner contract and less coordination risk.",
+              "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
               "fact_ids": [
                 "F-012"
               ]
@@ -561,14 +555,14 @@
           "bullets": [
             {
               "voice": "operator",
-              "text": "The open P0 benchmark wedge can still stall proof mid-corpus, which would leave the release story blocked by infrastructure behavior instead of product readiness.",
+              "text": "Primary blocker is an open P0 bug: Pinned dogfood proof benchmark can wedge mid corpus and block release proof.",
               "fact_ids": [
                 "F-013"
               ]
             },
             {
               "voice": "operator",
-              "text": "Active runtime 0.1.9 still diverges from the 0.1.10 pin, so any proof taken in this state is easier to question later.",
+              "text": "Odylith product repo active runtime `0.1.9` diverges from repo pin `0.1.10`.",
               "fact_ids": [
                 "F-014"
               ]
@@ -616,7 +610,7 @@
           "kind": "portfolio_posture"
         },
         "F-008": {
-          "text": "Timeline signal on the primary lane: projected at roughly 4 days and expected to tighten as execution closes checklist items.",
+          "text": "Timeline signal on the primary lane: projected at roughly 3 days and expected to tighten as execution closes checklist items.",
           "section_key": "current_execution",
           "kind": "timeline"
         },
@@ -656,6 +650,11 @@
           "section_key": "risks_to_watch",
           "kind": "self_host_posture"
         }
+      },
+      "notice": {
+        "title": "Showing deterministic local brief",
+        "message": "Compass rendered a deterministic local brief from the current fact packet because the AI provider response did not validate against the standup contract.",
+        "reason": "validation_failed"
       }
     }
   },
@@ -666,7 +665,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "fa72935ac102d013b8a8015568996fdae4c66e6502a71bb5ad99d27a1f745a38",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -855,7 +854,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "fc7219178c81dd42f0717d73263a5036ac21fe8e9a43ff84a16b78d731abf7d8",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -1075,7 +1074,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "58354dd27d4824fe88c0b3f05cda5a9f9d2385cccaf87b6d0967ddf7602a2fa3",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -1277,7 +1276,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "1171acfd362df34e6b49c9562fc7b3d837665196d36b17253467780203c87f90",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -1487,7 +1486,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "e276e0f3f6b059963cc355475ef1749608cd9831d5293ac67eb1d564e401a185",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -1661,7 +1660,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "c8ac18096c65d025ef5ac152096fe91b2ffc5f1de8ca2ba696b1e00c0253b4a1",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -1871,7 +1870,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "d14317a237ceddb0600b651b3efa28dd0c93321efe5f639ebfb2747a6223b6b2",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -2057,7 +2056,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "997b247484128efe962dc90321ab5cdecafa28f863590f883c20c4f2b047f38b",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -2231,7 +2230,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "119a66c566e3fb46de4e1f3dd61001037cabfe251306678c14bdcc7ffa021a05",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -2440,8 +2439,8 @@
         "schema_version": "v13",
         "status": "ready",
         "source": "deterministic",
-        "fingerprint": "e8f655ca95a8f0637f5d0b438d46d193d16ed739bc244c1a00266e9e7d50ae23",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "fingerprint": "f0580bd9653cbe28d908deca405a385fc866931b5fb2c83e10c59af2a0f87c92",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -2483,7 +2482,7 @@
               },
               {
                 "voice": "operator",
-                "text": "The schedule still matters here: projected at roughly 4 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
+                "text": "The schedule still matters here: projected at roughly 3 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
                 "fact_ids": [
                   "F-007"
                 ]
@@ -2547,7 +2546,7 @@
             ]
           },
           "F-002": {
-            "text": "Most concrete movement: Workstream lineage split update for B-060.",
+            "text": "Most concrete movement: Advance v0.1.10 canonical release truth (#4).",
             "section_key": "completed",
             "kind": "execution_highlight",
             "workstreams": [
@@ -2579,7 +2578,7 @@
             ]
           },
           "F-006": {
-            "text": "Plan posture: checklist progress is 65/131; execution checklist closure is underway while implementation execution remains active.",
+            "text": "Plan posture: checklist progress is 66/132; execution checklist closure is underway while implementation execution remains active.",
             "section_key": "current_execution",
             "kind": "checklist",
             "workstreams": [
@@ -2587,7 +2586,7 @@
             ]
           },
           "F-007": {
-            "text": "Timeline signal: projected at roughly 4 days and expected to tighten as execution closes checklist items.",
+            "text": "Timeline signal: projected at roughly 3 days and expected to tighten as execution closes checklist items.",
             "section_key": "current_execution",
             "kind": "timeline",
             "workstreams": [
@@ -2638,7 +2637,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "bf563a7d4f61bf417f8c8f89b4887fdf3c3a9a2764e0a7861bb563622fc07461",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -2835,12 +2834,12 @@
           "reason": "provider_deferred"
         }
       },
-      "B-031": {
+      "B-005": {
         "schema_version": "v13",
         "status": "ready",
         "source": "deterministic",
-        "fingerprint": "c2e16d658973df03c79f313fe77a433aedcea545af48865a896800ccf46a62da",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "fingerprint": "d26d38ed57536ec5c69a69d1b7332934ba3408f105ee03d8493cdf2cb9136109",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -2848,16 +2847,9 @@
             "bullets": [
               {
                 "voice": "operator",
-                "text": "This window finally cleared two lingering obligations: `B-031` finished verified milestone closure landed for odylith first-turn bootstrap and short-form grounding commands.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              },
-              {
-                "voice": "operator",
                 "text": "The clearest move this window was v0.1.10 release hardening and GA prep (#3). It gave the rest of the work something concrete to steer against.",
                 "fact_ids": [
-                  "F-002"
+                  "F-001"
                 ]
               }
             ]
@@ -2868,9 +2860,16 @@
             "bullets": [
               {
                 "voice": "executive",
-                "text": "`B-031` is still carrying the main decision load. Odylith is already far enough along that the remaining miss is productization, not capability.",
+                "text": "`B-005` is still carrying the main decision load. The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete.",
                 "fact_ids": [
                   "F-004"
+                ]
+              },
+              {
+                "voice": "operator",
+                "text": "Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`.",
+                "fact_ids": [
+                  "F-006"
                 ]
               },
               {
@@ -2882,14 +2881,7 @@
               },
               {
                 "voice": "operator",
-                "text": "This lane is still carrying real weight. 8 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
-                "fact_ids": [
-                  "F-006"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The schedule still matters here: projected at roughly 1 days (high confidence), so nobody should mistake this for cleanup.",
+                "text": "The scoped checklist is fully closed, so the remaining work is proving the lane cleanly.",
                 "fact_ids": [
                   "F-007"
                 ]
@@ -2902,9 +2894,9 @@
             "bullets": [
               {
                 "voice": "operator",
-                "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
+                "text": "Next up is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
                 "fact_ids": [
-                  "F-008"
+                  "F-009"
                 ]
               }
             ]
@@ -2915,16 +2907,16 @@
             "bullets": [
               {
                 "voice": "executive",
-                "text": "What matters here is For Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish.",
+                "text": "What matters here is For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch.",
                 "fact_ids": [
-                  "F-009"
+                  "F-010"
                 ]
               },
               {
                 "voice": "operator",
                 "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
                 "fact_ids": [
-                  "F-010"
+                  "F-011"
                 ]
               }
             ]
@@ -2935,9 +2927,9 @@
             "bullets": [
               {
                 "voice": "operator",
-                "text": "The lane can still sprawl: 8 plan items are open on `B-031`, so the next checkpoint needs to land cleanly.",
+                "text": "No critical blockers are currently surfaced.",
                 "fact_ids": [
-                  "F-011"
+                  "F-012"
                 ]
               }
             ]
@@ -2945,35 +2937,35 @@
         ],
         "evidence_lookup": {
           "F-001": {
-            "text": "Verified milestone closure landed for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031): odylith first turn bootstrap and short form grounding commands.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-031"
-            ]
-          },
-          "F-002": {
             "text": "Most concrete movement: v0.1.10 release hardening and GA prep (#3).",
             "section_key": "completed",
             "kind": "execution_highlight",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
-          "F-003": {
+          "F-002": {
             "text": "Most concrete movement: Prepare v0.1.9 GA release (#1).",
             "section_key": "completed",
             "kind": "execution_highlight",
             "workstreams": [
-              "B-031"
+              "B-005"
+            ]
+          },
+          "F-003": {
+            "text": "No verified milestone closeout landed for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) in the last 24 hours.",
+            "section_key": "completed",
+            "kind": "window_summary",
+            "workstreams": [
+              "B-005"
             ]
           },
           "F-004": {
-            "text": "Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) is completed because odylith is already far enough along that the remaining miss is productization, not capability.",
+            "text": "Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed because the release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete.",
             "section_key": "current_execution",
             "kind": "direction",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-005": {
@@ -2981,55 +2973,60 @@
             "section_key": "current_execution",
             "kind": "signal",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-006": {
-            "text": "Plan posture: checklist progress is 100/108; execution checklist closure is underway while implementation execution remains active.",
+            "text": "Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`.",
+            "section_key": "current_execution",
+            "kind": "self_host_status"
+          },
+          "F-007": {
+            "text": "Plan posture: checklist progress is 94/94; execution checklist closure is complete for the scoped plan.",
             "section_key": "current_execution",
             "kind": "checklist",
             "workstreams": [
-              "B-031"
-            ]
-          },
-          "F-007": {
-            "text": "Timeline signal: projected at roughly 1 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-008": {
-            "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) so odylith is already far enough along that the remaining miss is productization, not capability.",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
+            "text": "Timeline signal: projected at roughly 0 days (high confidence).",
+            "section_key": "current_execution",
+            "kind": "timeline",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-009": {
-            "text": "For Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish.",
-            "section_key": "why_this_matters",
-            "kind": "executive_impact",
+            "text": "Immediate forcing function is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+            "section_key": "next_planned",
+            "kind": "fallback_next",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-010": {
-            "text": "The architecture move is to add first-class short-form top-level grounding commands backed by the existing Context Engine, starting with `odylith bootstrap` and related top-level grounding verbs, then tighten repo-root managed AGENTS, shared and, which gives operators a clearer contract and lower coordination risk.",
+            "text": "For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch.",
             "section_key": "why_this_matters",
-            "kind": "operator_leverage",
+            "kind": "executive_impact",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-011": {
-            "text": "Primary watch item is closure discipline: 8 plan items remain open for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031).",
+            "text": "The architecture move is to restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller, which gives operators a clearer contract and lower coordination risk.",
+            "section_key": "why_this_matters",
+            "kind": "operator_leverage",
+            "workstreams": [
+              "B-005"
+            ]
+          },
+          "F-012": {
+            "text": "No critical blockers are currently surfaced.",
             "section_key": "risks_to_watch",
             "kind": "risk_posture",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           }
         },
@@ -3046,7 +3043,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "d714d72d0aef368efe478d77ce778ca8d48ec63c35654520d1b4e13d4e3364d0",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -3235,7 +3232,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "8e9b2baaedbdbd8bcb78bafe3527b5eda13090164628923351ce33a431a8f0f3",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -3455,7 +3452,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "9036ef5a36720b9ee836113da7c69e6b0e736c594f9cb4fe3d5b69cc763b2134",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -3657,7 +3654,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "6dee1323be40f22bed75deaf167ca78c1c5b925976b91f7c8c458f8d7302eac8",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -3867,7 +3864,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "9efb5f2608c9ef2f43186a4f42e8fce0569c8805c8e222ba8d9a4c312517b38a",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -4064,7 +4061,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "666c78e11b2b119843d1956576e43daef9191c9fd031800f26ae1f24334844f8",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -4274,7 +4271,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "2c7e74d461871903745cce4732317ff1aa8c2b96dd476b48f77bf8937450b68c",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -4460,7 +4457,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "bf9dd3f7a717011a7683a44b247b837d456c046f7c138014ff6e6a0dccf27cbf",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -4634,7 +4631,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "f46cb75e48aeb00085d742dc0d60195cf514a7947a86f5e622641bd83c2e6a44",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -4843,8 +4840,8 @@
         "schema_version": "v13",
         "status": "ready",
         "source": "deterministic",
-        "fingerprint": "93e0d1865ca5c419c16b5300e2013b21370f612d625cca1da9992b1255d549ae",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "fingerprint": "0fb40f6cb81844ead1c220acef376d4f8c71b11e616ae6d82672c0bac354c7e3",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -4886,7 +4883,7 @@
               },
               {
                 "voice": "operator",
-                "text": "The schedule still matters here: projected at roughly 4 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
+                "text": "The schedule still matters here: projected at roughly 3 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
                 "fact_ids": [
                   "F-007"
                 ]
@@ -4950,7 +4947,7 @@
             ]
           },
           "F-002": {
-            "text": "Most concrete movement: Workstream lineage split update for B-060.",
+            "text": "Most concrete movement: Advance v0.1.10 canonical release truth (#4).",
             "section_key": "completed",
             "kind": "execution_highlight",
             "workstreams": [
@@ -4982,7 +4979,7 @@
             ]
           },
           "F-006": {
-            "text": "Plan posture: checklist progress is 65/131; execution checklist closure is underway while implementation execution remains active.",
+            "text": "Plan posture: checklist progress is 66/132; execution checklist closure is underway while implementation execution remains active.",
             "section_key": "current_execution",
             "kind": "checklist",
             "workstreams": [
@@ -4990,7 +4987,7 @@
             ]
           },
           "F-007": {
-            "text": "Timeline signal: projected at roughly 4 days and expected to tighten as execution closes checklist items.",
+            "text": "Timeline signal: projected at roughly 3 days and expected to tighten as execution closes checklist items.",
             "section_key": "current_execution",
             "kind": "timeline",
             "workstreams": [
@@ -5041,7 +5038,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "fd63b0a5d76f752b75118d0802d6b552561b32abca77967fee76012ba2907d36",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -5238,12 +5235,12 @@
           "reason": "provider_deferred"
         }
       },
-      "B-031": {
+      "B-005": {
         "schema_version": "v13",
         "status": "ready",
         "source": "deterministic",
-        "fingerprint": "df54a7b9ff0f844aea68018b13756096c12bc7664303d8736164fe37119123be",
-        "generated_utc": "2026-04-08T15:41:50Z",
+        "fingerprint": "38dba36fe521cb54d6bbcfed15630534fd5b19f56f63233509db9da27de45c71",
+        "generated_utc": "2026-04-08T15:57:51Z",
         "sections": [
           {
             "key": "completed",
@@ -5251,16 +5248,9 @@
             "bullets": [
               {
                 "voice": "operator",
-                "text": "Over the last 48 hours, two lingering obligations finally cleared: `B-031` finished verified milestone closure landed for odylith first-turn bootstrap and short-form grounding commands.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              },
-              {
-                "voice": "operator",
                 "text": "Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
                 "fact_ids": [
-                  "F-002"
+                  "F-001"
                 ]
               }
             ]
@@ -5271,9 +5261,16 @@
             "bullets": [
               {
                 "voice": "executive",
-                "text": "Over the last 48 hours, `B-031` is still carrying the main decision load. Odylith is already far enough along that the remaining miss is productization, not capability.",
+                "text": "Over the last 48 hours, `B-005` is still carrying the main decision load. The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete.",
                 "fact_ids": [
                   "F-004"
+                ]
+              },
+              {
+                "voice": "operator",
+                "text": "Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`.",
+                "fact_ids": [
+                  "F-006"
                 ]
               },
               {
@@ -5285,14 +5282,7 @@
               },
               {
                 "voice": "operator",
-                "text": "This lane is still carrying real weight. 8 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
-                "fact_ids": [
-                  "F-006"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The schedule still matters here: projected at roughly 1 days (high confidence), so nobody should mistake this for cleanup.",
+                "text": "The scoped checklist is fully closed, so the remaining work is proving the lane cleanly.",
                 "fact_ids": [
                   "F-007"
                 ]
@@ -5305,9 +5295,9 @@
             "bullets": [
               {
                 "voice": "operator",
-                "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
+                "text": "Next up is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
                 "fact_ids": [
-                  "F-008"
+                  "F-009"
                 ]
               }
             ]
@@ -5318,16 +5308,16 @@
             "bullets": [
               {
                 "voice": "executive",
-                "text": "What matters here is For Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish.",
+                "text": "What matters here is For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch.",
                 "fact_ids": [
-                  "F-009"
+                  "F-010"
                 ]
               },
               {
                 "voice": "operator",
                 "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
                 "fact_ids": [
-                  "F-010"
+                  "F-011"
                 ]
               }
             ]
@@ -5338,9 +5328,9 @@
             "bullets": [
               {
                 "voice": "operator",
-                "text": "The lane can still sprawl: 8 plan items are open on `B-031`, so the next checkpoint needs to land cleanly.",
+                "text": "No critical blockers are currently surfaced.",
                 "fact_ids": [
-                  "F-011"
+                  "F-012"
                 ]
               }
             ]
@@ -5348,35 +5338,35 @@
         ],
         "evidence_lookup": {
           "F-001": {
-            "text": "Verified milestone closure landed for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031): odylith first turn bootstrap and short form grounding commands.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-031"
-            ]
-          },
-          "F-002": {
             "text": "Most concrete movement: Ship v0.1.8 migration recovery and shell updates.",
             "section_key": "completed",
             "kind": "execution_highlight",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
-          "F-003": {
+          "F-002": {
             "text": "Most concrete movement: v0.1.10 release hardening and GA prep (#3).",
             "section_key": "completed",
             "kind": "execution_highlight",
             "workstreams": [
-              "B-031"
+              "B-005"
+            ]
+          },
+          "F-003": {
+            "text": "No verified milestone closeout landed for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) in the last 48 hours.",
+            "section_key": "completed",
+            "kind": "window_summary",
+            "workstreams": [
+              "B-005"
             ]
           },
           "F-004": {
-            "text": "Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) is completed because odylith is already far enough along that the remaining miss is productization, not capability.",
+            "text": "Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed because the release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete.",
             "section_key": "current_execution",
             "kind": "direction",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-005": {
@@ -5384,55 +5374,60 @@
             "section_key": "current_execution",
             "kind": "signal",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-006": {
-            "text": "Plan posture: checklist progress is 100/108; execution checklist closure is underway while implementation execution remains active.",
+            "text": "Live install posture check: Odylith product repo reports repo role `product_repo`, posture `diverged_verified_version`, runtime source `verified_runtime`, active `0.1.9`, repo pin `0.1.10`, launcher present, and release eligibility `no`.",
+            "section_key": "current_execution",
+            "kind": "self_host_status"
+          },
+          "F-007": {
+            "text": "Plan posture: checklist progress is 94/94; execution checklist closure is complete for the scoped plan.",
             "section_key": "current_execution",
             "kind": "checklist",
             "workstreams": [
-              "B-031"
-            ]
-          },
-          "F-007": {
-            "text": "Timeline signal: projected at roughly 1 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-008": {
-            "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) so odylith is already far enough along that the remaining miss is productization, not capability.",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
+            "text": "Timeline signal: projected at roughly 0 days (high confidence).",
+            "section_key": "current_execution",
+            "kind": "timeline",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-009": {
-            "text": "For Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish.",
-            "section_key": "why_this_matters",
-            "kind": "executive_impact",
+            "text": "Immediate forcing function is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+            "section_key": "next_planned",
+            "kind": "fallback_next",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-010": {
-            "text": "The architecture move is to add first-class short-form top-level grounding commands backed by the existing Context Engine, starting with `odylith bootstrap` and related top-level grounding verbs, then tighten repo-root managed AGENTS, shared and, which gives operators a clearer contract and lower coordination risk.",
+            "text": "For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch.",
             "section_key": "why_this_matters",
-            "kind": "operator_leverage",
+            "kind": "executive_impact",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           },
           "F-011": {
-            "text": "Primary watch item is closure discipline: 8 plan items remain open for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031).",
+            "text": "The architecture move is to restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller, which gives operators a clearer contract and lower coordination risk.",
+            "section_key": "why_this_matters",
+            "kind": "operator_leverage",
+            "workstreams": [
+              "B-005"
+            ]
+          },
+          "F-012": {
+            "text": "No critical blockers are currently surfaced.",
             "section_key": "risks_to_watch",
             "kind": "risk_posture",
             "workstreams": [
-              "B-031"
+              "B-005"
             ]
           }
         },
@@ -5536,7 +5531,7 @@
     "advisory_retrieval_focus": "expand_coverage",
     "advisory_speed_mode": "balanced",
     "advisory_freshness_bucket": "fresh",
-    "advisory_freshness_age_hours": 0.49,
+    "advisory_freshness_age_hours": 0.77,
     "advisory_evidence_strength_score": 2,
     "advisory_evidence_strength_level": "medium",
     "advisory_sample_balance": "thin",
@@ -5604,39 +5599,29 @@
       "reasons": {
         "radar": [
           "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:pyproject.toml",
-          "fallback:src/odylith/__init__.py",
+          "fallback:tests/unit/install/test_release_bootstrap.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/runtime/source/product-version.v1.json",
           "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
         ],
         "atlas": [
           "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:pyproject.toml",
-          "fallback:src/odylith/__init__.py",
-          "odylith/runtime/source/product-version.v1.json"
+          "fallback:tests/unit/install/test_release_bootstrap.py"
         ],
         "compass": [
           "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:pyproject.toml",
-          "fallback:src/odylith/__init__.py",
-          "odylith/runtime/source/product-version.v1.json"
+          "fallback:tests/unit/install/test_release_bootstrap.py"
         ],
         "registry": [
           "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:pyproject.toml",
-          "fallback:src/odylith/__init__.py",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/runtime/source/product-version.v1.json"
+          "fallback:tests/unit/install/test_release_bootstrap.py",
+          "odylith/registry/source/components/release/CURRENT_SPEC.md"
         ],
         "casebook": [
           "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:pyproject.toml",
-          "fallback:src/odylith/__init__.py",
-          "odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md",
-          "odylith/casebook/bugs/INDEX.md",
-          "odylith/runtime/source/product-version.v1.json"
+          "fallback:tests/unit/install/test_release_bootstrap.py",
+          "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
+          "odylith/casebook/bugs/INDEX.md"
         ]
       },
       "tooling_shell": true
@@ -6661,9 +6646,9 @@
       "plan": {
         "created": "2026-04-07",
         "updated": "2026-04-08",
-        "total_tasks": 131,
-        "done_tasks": 65,
-        "progress_ratio": 0.4962,
+        "total_tasks": 132,
+        "done_tasks": 66,
+        "progress_ratio": 0.5,
         "next_tasks": [
           "Keep post-publish `dogfood-activate` and surface refresh from dirtying",
           "Thread the `v0.1.10` release feedback into one reusable maintainer-facing",
@@ -6675,19 +6660,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
+          "commit_count": 2,
           "local_change_count": 2,
-          "file_touch_count": 194
+          "file_touch_count": 197
         },
         "48h": {
-          "commit_count": 1,
+          "commit_count": 2,
           "local_change_count": 2,
-          "file_touch_count": 194
+          "file_touch_count": 197
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-08T08:40:55-07:00",
+        "last_activity_iso": "2026-04-08T08:57:26-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -6703,11 +6688,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 42,
+          "index": 45,
           "band": "Medium"
         },
         "48h": {
-          "index": 42,
+          "index": 45,
           "band": "Medium"
         }
       }
@@ -7252,19 +7237,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 323
+          "commit_count": 4,
+          "local_change_count": 3,
+          "file_touch_count": 324
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 394
+          "commit_count": 6,
+          "local_change_count": 3,
+          "file_touch_count": 395
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T08:40:55-07:00",
+        "last_activity_iso": "2026-04-08T08:57:26-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -7280,11 +7265,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 67,
-          "band": "Medium"
+          "index": 73,
+          "band": "High"
         },
         "48h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         }
       }
@@ -7434,19 +7419,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 323
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 324
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 393
+          "commit_count": 6,
+          "local_change_count": 2,
+          "file_touch_count": 394
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T08:40:55-07:00",
+        "last_activity_iso": "2026-04-08T08:57:26-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -7462,11 +7447,11 @@
       "cost": {
         "base_index": 18,
         "24h": {
-          "index": 30,
+          "index": 35,
           "band": "Low"
         },
         "48h": {
-          "index": 36,
+          "index": 38,
           "band": "Low"
         }
       }
@@ -12151,9 +12136,9 @@
       "plan": {
         "created": "2026-04-07",
         "updated": "2026-04-08",
-        "total_tasks": 131,
-        "done_tasks": 65,
-        "progress_ratio": 0.4962,
+        "total_tasks": 132,
+        "done_tasks": 66,
+        "progress_ratio": 0.5,
         "next_tasks": [
           "Keep post-publish `dogfood-activate` and surface refresh from dirtying",
           "Thread the `v0.1.10` release feedback into one reusable maintainer-facing",
@@ -12165,19 +12150,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
+          "commit_count": 2,
           "local_change_count": 2,
-          "file_touch_count": 194
+          "file_touch_count": 197
         },
         "48h": {
-          "commit_count": 1,
+          "commit_count": 2,
           "local_change_count": 2,
-          "file_touch_count": 194
+          "file_touch_count": 197
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-08T08:40:55-07:00",
+        "last_activity_iso": "2026-04-08T08:57:26-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -12193,11 +12178,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 42,
+          "index": 45,
           "band": "Medium"
         },
         "48h": {
-          "index": 42,
+          "index": 45,
           "band": "Medium"
         }
       }
@@ -12293,74 +12278,78 @@
       }
     },
     {
-      "idea_id": "B-031",
-      "title": "Odylith First-Turn Bootstrap and Short-Form Grounding Commands",
+      "idea_id": "B-005",
+      "title": "Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
       "status": "finished",
       "priority": "P0",
-      "sizing": "M",
-      "complexity": "Medium",
+      "sizing": "L",
+      "complexity": "High",
       "ordering_score": "100",
       "implemented_summary": "",
       "why": {
-        "problem": "Odylith already has the right grounding packets, but the operator path is still too insiderish. A new turn still asks Codex to know that the first useful commands live under `odylith context-engine ...`, while install/on guidance points at Odylith-first behavior in prose more than in one concrete command. That makes the product easier to bypass than it should be.",
-        "customer": "- Primary: Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow. - Secondary: Odylith maintainers dogfooding in the product repo and wanting the same short-form bootstrap path instead of teaching the nested command tree by memory.",
-        "proposed_solution": "Add first-class short-form top-level grounding commands backed by the existing Context Engine, starting with `odylith bootstrap` and related top-level grounding verbs, then tighten repo-root managed AGENTS, shared and bundled skills, and install/on/off quickstart messaging so they all point to the same first-turn contract and the same explicit fallback contract when Odylith is intentionally disabled. Expand the same workstream into Odylith's ambient conversation contract: mid-task narration stays task-first and human, Odylith-grounded facts get woven into ordinary progress updates by default, and explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels only appear when the signal is sharp enough to earn the interruption. Final closeout keeps one optional `Odylith Assist:` line with linked updated governance ids inline, plus at most one supplemental closeout line when the evidence is strong enough and the assist line is actually present.",
-        "opportunity": "If Odylith exposes one short top-level bootstrap path and keeps AGENTS, skills, help text, and install guidance aligned around it, then Codex can start from Odylith more consistently without extra product knowledge. That should improve first-turn grounding, reduce ad hoc repo scans, and make the product feel more opinionated immediately after install.",
-        "why_now": "Odylith is already far enough along that the remaining miss is productization, not capability. Leaving the first useful command hidden behind a nested runtime namespace weakens the exact adoption story the product is trying to prove.",
-        "founder_pov": "Odylith should not require a maintainer to remember the command tree in order to use Odylith first. The product should hand Codex one obvious first move."
+        "problem": "Odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. Install and upgrade need to stay full-stack by default, but the asset transport and retention model must become lighter and more deterministic.",
+        "customer": "- Primary: Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on stale or oversized payload assumptions. - Secondary: downstream repo maintainers who need full Odylith on first install without stalled downloads, repeated large upgrade churn, or hidden dependence on machine Python.",
+        "proposed_solution": "Restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller managed assets. ### Wave 1: Reset the source-of-truth narrative - lower the product source version floor and repo pin back to `0.1.0` - clear sticky local release-session state - rewrite README, backlog, plans, bugs, and component specs so they no longer describe `0.1.x` rehearsal tags as the canonical published product history ### Wave 2: Split transport, keep full-stack install - keep the consumer contract full-stack by default for `odylith install` and normal `odylith upgrade` - keep the hosted installer one-command and non-interactive so Odylith, not the developer, figures out the environment and the right managed assets - preserve a zero-friction install UX by letting the installer find the repo root automatically and by avoiding setup choices or branching install flows - package the runtime as a smaller base managed runtime plus a separately versioned managed context-engine pack so release uploads/downloads stop stalling on one monolithic artifact - reuse an unchanged context-engine pack across upgrades when its asset digest matches, and prune older staged runtimes plus release caches after each successful install, upgrade, or rollback - keep the maintainer wheel-build path explicitly Hatch-based so the canonical publication contract is consistent between local preflight and GitHub Actions ### Wave 3: Block on local hosted-asset proof - make `make release-preflight` build the full local release asset set before dispatch - prove `install -> version -> doctor -> sync` against the generated installer and local hosted-style assets - prove `previous -> target -> rollback -> re-upgrade` whenever a prior hosted preview exists for the relaunch line - keep cache writes, runtime restaging, and activation handoff crash-safe by committing files atomically, syncing swap directories, and validating nested repo-root installer execution before dispatch - keep first install fail-closed until the full stack passes activation smoke, and treat same-version upgrade as a no-op or repair case instead of restaging the live runtime in place",
+        "opportunity": "By resetting the release line locally, splitting the runtime into smaller managed assets while keeping install full-stack by default, and proving the generated installer against local hosted-style assets before dispatch, Odylith can relaunch on a much tighter operator contract.",
+        "why_now": "The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete.",
+        "founder_pov": "Users should get the full power of Odylith by default. The right fix is not to ship a weaker install, but to ship full Odylith through smaller, faster, reusable managed assets."
       },
       "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
-        "plan_file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md"
+        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
+        "plan_file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md"
       },
       "registry_components": [
         {
-          "component_id": "odylith",
-          "name": "Odylith"
+          "component_id": "compass",
+          "name": "Compass"
         },
         {
-          "component_id": "odylith-chatter",
-          "name": "Odylith Chatter"
+          "component_id": "dashboard",
+          "name": "Dashboard"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
         },
         {
           "component_id": "odylith-context-engine",
           "name": "Odylith Context Engine"
         },
         {
-          "component_id": "subagent-orchestrator",
-          "name": "Subagent Orchestrator"
+          "component_id": "registry",
+          "name": "Registry"
         },
         {
-          "component_id": "subagent-router",
-          "name": "Subagent Router"
+          "component_id": "release",
+          "name": "Release"
         }
       ],
       "execution_wave_programs": [],
       "plan": {
-        "created": "2026-03-30",
-        "updated": "2026-04-07",
-        "total_tasks": 108,
-        "done_tasks": 100,
-        "progress_ratio": 0.9259,
+        "created": "2026-03-28",
+        "updated": "2026-03-28",
+        "total_tasks": 94,
+        "done_tasks": 94,
+        "progress_ratio": 1.0,
         "next_tasks": []
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
-          "local_change_count": 0,
-          "file_touch_count": 323
+          "commit_count": 4,
+          "local_change_count": 3,
+          "file_touch_count": 324
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 0,
-          "file_touch_count": 398
+          "commit_count": 6,
+          "local_change_count": 3,
+          "file_touch_count": 395
         }
       },
       "timeline": {
-        "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-08T08:31:59-07:00",
-        "age_days": 9,
-        "eta_days": 1,
+        "start_date": "2026-03-28",
+        "last_activity_iso": "2026-04-08T08:57:26-07:00",
+        "age_days": 11,
+        "eta_days": 0,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -12372,14 +12361,14 @@
         "merged_from": []
       },
       "cost": {
-        "base_index": 27,
+        "base_index": 55,
         "24h": {
-          "index": 34,
-          "band": "Low"
+          "index": 73,
+          "band": "High"
         },
         "48h": {
-          "index": 37,
-          "band": "Low"
+          "index": 75,
+          "band": "High"
         }
       }
     }
@@ -12475,7 +12464,7 @@
     {
       "id": "local:M:odylith/casebook/bugs/INDEX.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:41:50-07:00",
+      "ts_iso": "2026-04-08T08:57:51-07:00",
       "summary": "Modified odylith/casebook/bugs/INDEX.md",
       "author": "local",
       "sha": "",
@@ -12494,7 +12483,7 @@
     {
       "id": "local:M:odylith/radar/source/INDEX.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:41:47-07:00",
+      "ts_iso": "2026-04-08T08:57:48-07:00",
       "summary": "Modified odylith/radar/source/INDEX.md",
       "author": "local",
       "sha": "",
@@ -12511,34 +12500,17 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:odylith/runtime/source/product-version.v1.json",
+      "id": "local:M:tests/unit/install/test_release_bootstrap.py",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:41:17-07:00",
-      "summary": "Modified odylith/runtime/source/product-version.v1.json",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
+      "summary": "Modified tests/unit/install/test_release_bootstrap.py",
       "author": "local",
       "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/runtime/source/product-version.v1.json"
+      "workstreams": [
+        "B-005"
       ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:src/odylith/__init__.py",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T08:41:17-07:00",
-      "summary": "Modified src/odylith/__init__.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
       "files": [
-        "src/odylith/__init__.py"
+        "tests/unit/install/test_release_bootstrap.py"
       ],
       "source": "local",
       "session_id": "",
@@ -12551,7 +12523,7 @@
     {
       "id": "local:M:odylith/maintainer/AGENTS.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:40:55-07:00",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
       "summary": "Modified odylith/maintainer/AGENTS.md",
       "author": "local",
       "sha": "",
@@ -12570,7 +12542,29 @@
     {
       "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:40:55-07:00",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
+      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [
+        "B-005",
+        "B-007"
+      ],
+      "files": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
       "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
       "author": "local",
       "sha": "",
@@ -12592,8 +12586,8 @@
     {
       "id": "plan:update:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "plan_update",
-      "ts_iso": "2026-04-08T08:40:55-07:00",
-      "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 65/131 complete.",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
+      "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 66/132 complete.",
       "author": "plan",
       "sha": "",
       "workstreams": [
@@ -12613,7 +12607,7 @@
     {
       "id": "plan:implementation:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "implementation",
-      "ts_iso": "2026-04-08T08:40:55-07:00",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
       "summary": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed `v0.1.9` published on 2026-04-07, but canonical release proof still.",
       "author": "plan",
       "sha": "",
@@ -12634,7 +12628,7 @@
     {
       "id": "local:M:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:40:55-07:00",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
       "summary": "Modified odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "author": "local",
       "sha": "",
@@ -12655,7 +12649,7 @@
     {
       "id": "local:M:odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:40:55-07:00",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
       "summary": "Modified odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "author": "local",
       "sha": "",
@@ -12674,15 +12668,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md",
+      "id": "local:??:odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T08:40:55-07:00",
-      "summary": "Added odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
+      "summary": "Added odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md"
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
       ],
       "source": "local",
       "session_id": "",
@@ -12693,9 +12687,28 @@
       "headline_hint": ""
     },
     {
+      "id": "bug:bug_resolved:3:P0",
+      "kind": "bug_resolved",
+      "ts_iso": "2026-04-08T08:57:26-07:00",
+      "summary": "Critical bug resolved (P0): Hosted install script uses hidden pin-alignment flag that older shipped runtimes do not understand.",
+      "author": "bugs",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
+      ],
+      "source": "bugs_index",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
       "id": "bug:bug_resolved:1:P0",
       "kind": "bug_resolved",
-      "ts_iso": "2026-04-08T08:40:55-07:00",
+      "ts_iso": "2026-04-08T08:45:31-07:00",
       "summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
       "author": "bugs",
       "sha": "",
@@ -12712,17 +12725,55 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:pyproject.toml",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T08:40:55-07:00",
-      "summary": "Modified pyproject.toml",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "pyproject.toml"
+      "id": "commit:fa36f409fcc53b8943b1ad9ade86e070ab148bf6",
+      "kind": "commit",
+      "ts_iso": "2026-04-08T08:45:18-07:00",
+      "summary": "Advance v0.1.10 canonical release truth (#4)",
+      "author": "freedom-research",
+      "sha": "fa36f409fcc53b8943b1ad9ade86e070ab148bf6",
+      "workstreams": [
+        "B-005",
+        "B-007",
+        "B-060"
       ],
-      "source": "local",
+      "files": [
+        "odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md",
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-04-08.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/runtime/source/product-version.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/tooling-payload.v1.js",
+        "pyproject.toml",
+        "src/odylith/__init__.py"
+      ],
+      "source": "git",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -12815,7 +12866,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:7:P1",
+      "id": "bug:bug_resolved:8:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Tooling shell refresh can look fresh while compass child runtime stays stale.",
@@ -12834,7 +12885,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:6:P1",
+      "id": "bug:bug_resolved:7:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Release workflows still pin first party actions on node 20 runtime.",
@@ -12853,7 +12904,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:5:P0",
+      "id": "bug:bug_resolved:6:P0",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P0): Release proof tests assume local codex host and break in github actions.",
@@ -12872,7 +12923,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:4:P0",
+      "id": "bug:bug_resolved:5:P0",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P0): Release identity guard still depends on github generated committer metadata.",
@@ -12891,7 +12942,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:3:P0",
+      "id": "bug:watch:4:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug remains open (P0): Pinned dogfood proof benchmark can wedge mid corpus and block release proof.",
@@ -12929,7 +12980,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:11:P1",
+      "id": "bug:bug_resolved:12:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Sync refresh rewrites unchanged artifacts and stales generated timestamps.",
@@ -12948,7 +12999,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:10:P1",
+      "id": "bug:bug_resolved:11:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Sync operator surface hides real controls and long running progress.",
@@ -12967,7 +13018,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:9:P1",
+      "id": "bug:bug_resolved:10:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Runtime retention prune fails on read only stale runtime trees.",
@@ -12986,7 +13037,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:8:P1",
+      "id": "bug:bug_resolved:9:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Hosted installer upgrades runtime without advancing repo pin.",
@@ -13005,7 +13056,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:19:P1",
+      "id": "bug:bug_resolved:20:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Successful trust bootstrap still prints scary non fatal warnings.",
@@ -13024,7 +13075,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:25:P1",
+      "id": "bug:bug_resolved:26:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Compass explicit refresh fans into slow live scoped narration and leaves old deterministic brief visible on interrupt.",
@@ -13043,7 +13094,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:41:P1",
+      "id": "bug:bug_resolved:42:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Compass dashboard refresh shell safe keeps timeline audit pinned to stale snapshot.",
@@ -13062,7 +13113,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:35:P0",
+      "id": "bug:watch:36:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug remains open (P0): Benchmark live result recovery drops schema valid agent message when last message file is missing.",
@@ -13081,7 +13132,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:55:P1",
+      "id": "bug:bug_resolved:56:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Compass standup brief fails to use local provider and stays deterministic.",
@@ -13100,7 +13151,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:54:P1",
+      "id": "bug:bug_resolved:55:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T08:32:42-07:00",
       "summary": "Critical bug resolved (P1): Compass runtime freshness regressed brief risk and timeline trust.",
@@ -13634,7 +13685,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:12:P1",
+      "id": "bug:bug_resolved:13:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-07T11:47:37-07:00",
       "summary": "Critical bug resolved (P1): Doctor and version disagree on wrapped runtime trust degradation.",
@@ -13767,7 +13818,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_resolved:17:P0",
+      "id": "bug:bug_resolved:18:P0",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-06T23:05:09-07:00",
       "summary": "Critical bug resolved (P0): Radar topology deep links fall through to stale filtered selection and browser proof misses disclosure gated routes.",
@@ -13929,7 +13980,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:18:P0",
+      "id": "bug:watch:19:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-06T17:58:15-07:00",
       "summary": "Critical bug remains open (P0): Repair and reinstall do not converge after partial runtime failure.",
@@ -13948,7 +13999,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:16:P0",
+      "id": "bug:watch:17:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-06T17:58:15-07:00",
       "summary": "Critical bug remains open (P0): Macos runtime metadata files break managed runtime trust validation.",
@@ -14073,7 +14124,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:bug_update:15:P2",
+      "id": "bug:bug_update:16:P2",
       "kind": "bug_update",
       "ts_iso": "2026-04-06T14:34:39-07:00",
       "summary": "Bug status update (P2, Open): Lifecycle plans print full dirty overlap by default.",
@@ -14092,7 +14143,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:20:P1",
+      "id": "bug:watch:21:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-06T14:34:39-07:00",
       "summary": "Critical bug remains open (P1): Sync failure summary repeats verbose output and stale next action.",
@@ -14111,7 +14162,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:14:P0",
+      "id": "bug:watch:15:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-06T14:34:39-07:00",
       "summary": "Critical bug remains open (P0): Legacy radar index is not normalized before sync validation.",
@@ -14130,7 +14181,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:13:P1",
+      "id": "bug:watch:14:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-06T14:34:39-07:00",
       "summary": "Critical bug remains open (P1): Legacy migration omits stale odyssey reference audit.",
@@ -14537,7 +14588,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:22:P1",
+      "id": "bug:watch:23:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Registry live forensics miss source owned bundle mirror component activity.",
@@ -14556,7 +14607,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:26:P1",
+      "id": "bug:watch:27:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Upgrade spotlight live refresh updates version badge but keeps release note hidden.",
@@ -14575,7 +14626,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:24:P0",
+      "id": "bug:watch:25:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Benchmark repair style live cases penalize validator backed no op completion.",
@@ -14594,7 +14645,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:23:P0",
+      "id": "bug:watch:24:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Benchmark live agent activation prefers speculative install guidance rewrites over validator backed no op.",
@@ -14613,7 +14664,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:40:P0",
+      "id": "bug:watch:41:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Benchmark warm cold proof instability flips narrow slice winners.",
@@ -14632,7 +14683,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:39:P0",
+      "id": "bug:watch:40:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Benchmark validator truth restore rehydrates ambient repo state outside scoped snapshot.",
@@ -14651,7 +14702,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:38:P0",
+      "id": "bug:watch:39:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Benchmark support doc selector overweights generic guidance on proof slices.",
@@ -14670,7 +14721,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:37:P0",
+      "id": "bug:watch:38:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Benchmark scoped workspace snapshot omits dirty same package python dependencies.",
@@ -14689,7 +14740,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:44:P0",
+      "id": "bug:watch:45:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Benchmark live runner inherits ambient user state and breaks raw codex isolation.",
@@ -14708,7 +14759,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:50:P1",
+      "id": "bug:watch:51:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Product repo doctor repair rewrites root agents to stale managed block.",
@@ -14727,7 +14778,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:71:P1",
+      "id": "bug:watch:72:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Release preflight fails when dist contains stale wheel.",
@@ -14746,7 +14797,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:70:P1",
+      "id": "bug:watch:71:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Release download cache and runtime restage lose atomicity on failure.",
@@ -14765,7 +14816,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:69:P0",
+      "id": "bug:watch:70:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Public consumer rollback to legacy preview runtime fails.",
@@ -14784,7 +14835,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:68:P0",
+      "id": "bug:watch:69:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Public consumer install depends on machine python.",
@@ -14803,7 +14854,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:67:P1",
+      "id": "bug:watch:68:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Local release smoke installer rejects localhost assets with port.",
@@ -14822,7 +14873,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:66:P1",
+      "id": "bug:watch:67:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Local release adapter omits manifest and sigstore assets.",
@@ -14841,7 +14892,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:65:P1",
+      "id": "bug:watch:66:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Local macos release build fails when linux runtime archive is expanded on case insensitive fs.",
@@ -14860,7 +14911,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:64:P0",
+      "id": "bug:watch:65:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Linux arm64 context engine pack build fails without watchdog wheel.",
@@ -14879,7 +14930,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:63:P1",
+      "id": "bug:watch:64:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Github test workflow bypasses hatch managed environment.",
@@ -14898,7 +14949,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:62:P1",
+      "id": "bug:watch:63:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Generated installer validator over escapes wheel regex.",
@@ -14917,7 +14968,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:61:P1",
+      "id": "bug:watch:62:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): Generated installer misses runtime versions directory before activation.",
@@ -14936,7 +14987,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:60:P0",
+      "id": "bug:watch:61:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Full stack managed runtime payloads are too large for install and upgrade.",
@@ -14955,7 +15006,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:59:P0",
+      "id": "bug:watch:60:P0",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P0): Fresh consumer bootstrap misses backlog and plan starter contract.",
@@ -14974,7 +15025,7 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:58:P1",
+      "id": "bug:watch:59:P1",
       "kind": "bug_watch",
       "ts_iso": "2026-04-05T22:15:26-07:00",
       "summary": "Critical bug remains open (P1): First install and same version upgrade mutate live runtime before fail closed proof.",
@@ -15086,31 +15137,29 @@
   ],
   "timeline_transactions": [
     {
-      "id": "txn:global:auto-global-0028:0028",
-      "transaction_id": "txn:global:auto-global-0028:0028",
+      "id": "txn:global:auto-global-0029:0029",
+      "transaction_id": "txn:global:auto-global-0029:0029",
       "session_id": "",
-      "start_ts_iso": "2026-04-08T08:40:55-07:00",
-      "end_ts_iso": "2026-04-08T08:41:50-07:00",
+      "start_ts_iso": "2026-04-08T08:57:26-07:00",
+      "end_ts_iso": "2026-04-08T08:57:51-07:00",
       "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
       "context": "",
-      "event_count": 13,
-      "files_count": 10,
+      "event_count": 12,
+      "files_count": 8,
       "workstreams": [
         "B-005",
         "B-007",
         "B-060"
       ],
       "files": [
-        "odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md",
+        "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
         "odylith/casebook/bugs/INDEX.md",
         "odylith/maintainer/AGENTS.md",
         "odylith/radar/source/INDEX.md",
         "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "odylith/runtime/source/product-version.v1.json",
         "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-        "pyproject.toml",
-        "src/odylith/__init__.py"
+        "tests/unit/install/test_release_bootstrap.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -15118,7 +15167,7 @@
         {
           "id": "local:M:odylith/casebook/bugs/INDEX.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:41:50-07:00",
+          "ts_iso": "2026-04-08T08:57:51-07:00",
           "summary": "Modified odylith/casebook/bugs/INDEX.md",
           "author": "local",
           "sha": "",
@@ -15137,7 +15186,7 @@
         {
           "id": "local:M:odylith/radar/source/INDEX.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:41:47-07:00",
+          "ts_iso": "2026-04-08T08:57:48-07:00",
           "summary": "Modified odylith/radar/source/INDEX.md",
           "author": "local",
           "sha": "",
@@ -15154,34 +15203,17 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:odylith/runtime/source/product-version.v1.json",
+          "id": "local:M:tests/unit/install/test_release_bootstrap.py",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:41:17-07:00",
-          "summary": "Modified odylith/runtime/source/product-version.v1.json",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
+          "summary": "Modified tests/unit/install/test_release_bootstrap.py",
           "author": "local",
           "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/runtime/source/product-version.v1.json"
+          "workstreams": [
+            "B-005"
           ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:src/odylith/__init__.py",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T08:41:17-07:00",
-          "summary": "Modified src/odylith/__init__.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
           "files": [
-            "src/odylith/__init__.py"
+            "tests/unit/install/test_release_bootstrap.py"
           ],
           "source": "local",
           "session_id": "",
@@ -15194,7 +15226,7 @@
         {
           "id": "local:M:odylith/maintainer/AGENTS.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:40:55-07:00",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
           "summary": "Modified odylith/maintainer/AGENTS.md",
           "author": "local",
           "sha": "",
@@ -15213,7 +15245,29 @@
         {
           "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:40:55-07:00",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
+          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [
+            "B-005",
+            "B-007"
+          ],
+          "files": [
+            "odylith/registry/source/components/release/CURRENT_SPEC.md"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
           "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
           "author": "local",
           "sha": "",
@@ -15235,8 +15289,8 @@
         {
           "id": "plan:update:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "plan_update",
-          "ts_iso": "2026-04-08T08:40:55-07:00",
-          "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 65/131 complete.",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
+          "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 66/132 complete.",
           "author": "plan",
           "sha": "",
           "workstreams": [
@@ -15256,7 +15310,7 @@
         {
           "id": "plan:implementation:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "implementation",
-          "ts_iso": "2026-04-08T08:40:55-07:00",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
           "summary": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed `v0.1.9` published on 2026-04-07, but canonical release proof still.",
           "author": "plan",
           "sha": "",
@@ -15277,7 +15331,7 @@
         {
           "id": "local:M:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:40:55-07:00",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
           "summary": "Modified odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "author": "local",
           "sha": "",
@@ -15298,7 +15352,7 @@
         {
           "id": "local:M:odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:40:55-07:00",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
           "summary": "Modified odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "author": "local",
           "sha": "",
@@ -15317,15 +15371,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md",
+          "id": "local:??:odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T08:40:55-07:00",
-          "summary": "Added odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
+          "summary": "Added odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md"
+            "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
           ],
           "source": "local",
           "session_id": "",
@@ -15336,9 +15390,85 @@
           "headline_hint": ""
         },
         {
+          "id": "bug:bug_resolved:3:P0",
+          "kind": "bug_resolved",
+          "ts_iso": "2026-04-08T08:57:26-07:00",
+          "summary": "Critical bug resolved (P0): Hosted install script uses hidden pin-alignment flag that older shipped runtimes do not understand.",
+          "author": "bugs",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md"
+          ],
+          "source": "bugs_index",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0028:0028",
+      "transaction_id": "txn:global:auto-global-0028:0028",
+      "session_id": "",
+      "start_ts_iso": "2026-04-08T08:45:18-07:00",
+      "end_ts_iso": "2026-04-08T08:45:31-07:00",
+      "headline": "Advance v0.1.10 canonical release truth (#4)",
+      "context": "",
+      "event_count": 2,
+      "files_count": 35,
+      "workstreams": [
+        "B-005",
+        "B-007",
+        "B-060"
+      ],
+      "files": [
+        "odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md",
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-04-08.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/runtime/source/product-version.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/tooling-payload.v1.js",
+        "pyproject.toml",
+        "src/odylith/__init__.py"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
           "id": "bug:bug_resolved:1:P0",
           "kind": "bug_resolved",
-          "ts_iso": "2026-04-08T08:40:55-07:00",
+          "ts_iso": "2026-04-08T08:45:31-07:00",
           "summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
           "author": "bugs",
           "sha": "",
@@ -15355,17 +15485,55 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:pyproject.toml",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T08:40:55-07:00",
-          "summary": "Modified pyproject.toml",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "pyproject.toml"
+          "id": "commit:fa36f409fcc53b8943b1ad9ade86e070ab148bf6",
+          "kind": "commit",
+          "ts_iso": "2026-04-08T08:45:18-07:00",
+          "summary": "Advance v0.1.10 canonical release truth (#4)",
+          "author": "freedom-research",
+          "sha": "fa36f409fcc53b8943b1ad9ade86e070ab148bf6",
+          "workstreams": [
+            "B-005",
+            "B-007",
+            "B-060"
           ],
-          "source": "local",
+          "files": [
+            "odylith/casebook/bugs/2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md",
+            "odylith/casebook/bugs/INDEX.md",
+            "odylith/casebook/casebook-detail-shard-003.v1.js",
+            "odylith/casebook/casebook-payload.v1.js",
+            "odylith/casebook/casebook.html",
+            "odylith/compass/compass-payload.v1.js",
+            "odylith/compass/compass.html",
+            "odylith/compass/runtime/current.v1.js",
+            "odylith/compass/runtime/current.v1.json",
+            "odylith/compass/runtime/history/2026-04-08.v1.json",
+            "odylith/compass/runtime/history/embedded.v1.js",
+            "odylith/compass/runtime/history/index.v1.json",
+            "odylith/index.html",
+            "odylith/maintainer/AGENTS.md",
+            "odylith/radar/backlog-detail-shard-001.v1.js",
+            "odylith/radar/backlog-detail-shard-002.v1.js",
+            "odylith/radar/backlog-document-shard-002.v1.js",
+            "odylith/radar/backlog-document-shard-004.v1.js",
+            "odylith/radar/backlog-payload.v1.js",
+            "odylith/radar/radar.html",
+            "odylith/radar/source/INDEX.md",
+            "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+            "odylith/registry/registry-detail-shard-001.v1.js",
+            "odylith/registry/registry-payload.v1.js",
+            "odylith/registry/registry.html",
+            "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+            "odylith/registry/source/components/radar/FORENSICS.v1.json",
+            "odylith/registry/source/components/release/CURRENT_SPEC.md",
+            "odylith/registry/source/components/release/FORENSICS.v1.json",
+            "odylith/runtime/delivery_intelligence.v4.json",
+            "odylith/runtime/source/product-version.v1.json",
+            "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+            "odylith/tooling-payload.v1.js",
+            "pyproject.toml",
+            "src/odylith/__init__.py"
+          ],
+          "source": "git",
           "session_id": "",
           "transaction_id": "",
           "transaction_seq": null,
@@ -15687,7 +15855,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:7:P1",
+          "id": "bug:bug_resolved:8:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Tooling shell refresh can look fresh while compass child runtime stays stale.",
@@ -15706,7 +15874,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:6:P1",
+          "id": "bug:bug_resolved:7:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Release workflows still pin first party actions on node 20 runtime.",
@@ -15725,7 +15893,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:5:P0",
+          "id": "bug:bug_resolved:6:P0",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P0): Release proof tests assume local codex host and break in github actions.",
@@ -15744,7 +15912,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:4:P0",
+          "id": "bug:bug_resolved:5:P0",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P0): Release identity guard still depends on github generated committer metadata.",
@@ -15763,7 +15931,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:3:P0",
+          "id": "bug:watch:4:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug remains open (P0): Pinned dogfood proof benchmark can wedge mid corpus and block release proof.",
@@ -15801,7 +15969,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:11:P1",
+          "id": "bug:bug_resolved:12:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Sync refresh rewrites unchanged artifacts and stales generated timestamps.",
@@ -15820,7 +15988,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:10:P1",
+          "id": "bug:bug_resolved:11:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Sync operator surface hides real controls and long running progress.",
@@ -15839,7 +16007,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:9:P1",
+          "id": "bug:bug_resolved:10:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Runtime retention prune fails on read only stale runtime trees.",
@@ -15858,7 +16026,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:8:P1",
+          "id": "bug:bug_resolved:9:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Hosted installer upgrades runtime without advancing repo pin.",
@@ -15877,7 +16045,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:19:P1",
+          "id": "bug:bug_resolved:20:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Successful trust bootstrap still prints scary non fatal warnings.",
@@ -15896,7 +16064,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:25:P1",
+          "id": "bug:bug_resolved:26:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Compass explicit refresh fans into slow live scoped narration and leaves old deterministic brief visible on interrupt.",
@@ -15915,7 +16083,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:41:P1",
+          "id": "bug:bug_resolved:42:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Compass dashboard refresh shell safe keeps timeline audit pinned to stale snapshot.",
@@ -15934,7 +16102,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:35:P0",
+          "id": "bug:watch:36:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug remains open (P0): Benchmark live result recovery drops schema valid agent message when last message file is missing.",
@@ -15953,7 +16121,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:55:P1",
+          "id": "bug:bug_resolved:56:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Compass standup brief fails to use local provider and stays deterministic.",
@@ -15972,7 +16140,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:54:P1",
+          "id": "bug:bug_resolved:55:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-08T08:32:42-07:00",
           "summary": "Critical bug resolved (P1): Compass runtime freshness regressed brief risk and timeline trust.",
@@ -17072,7 +17240,7 @@
       "explicit_closed": false,
       "events": [
         {
-          "id": "bug:bug_resolved:12:P1",
+          "id": "bug:bug_resolved:13:P1",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-07T11:47:37-07:00",
           "summary": "Critical bug resolved (P1): Doctor and version disagree on wrapped runtime trust degradation.",
@@ -17248,7 +17416,7 @@
       "explicit_closed": false,
       "events": [
         {
-          "id": "bug:bug_resolved:17:P0",
+          "id": "bug:bug_resolved:18:P0",
           "kind": "bug_resolved",
           "ts_iso": "2026-04-06T23:05:09-07:00",
           "summary": "Critical bug resolved (P0): Radar topology deep links fall through to stale filtered selection and browser proof misses disclosure gated routes.",
@@ -17581,7 +17749,7 @@
       "explicit_closed": false,
       "events": [
         {
-          "id": "bug:watch:18:P0",
+          "id": "bug:watch:19:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-06T17:58:15-07:00",
           "summary": "Critical bug remains open (P0): Repair and reinstall do not converge after partial runtime failure.",
@@ -17600,7 +17768,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:16:P0",
+          "id": "bug:watch:17:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-06T17:58:15-07:00",
           "summary": "Critical bug remains open (P0): Macos runtime metadata files break managed runtime trust validation.",
@@ -17942,7 +18110,7 @@
       "explicit_closed": false,
       "events": [
         {
-          "id": "bug:bug_update:15:P2",
+          "id": "bug:bug_update:16:P2",
           "kind": "bug_update",
           "ts_iso": "2026-04-06T14:34:39-07:00",
           "summary": "Bug status update (P2, Open): Lifecycle plans print full dirty overlap by default.",
@@ -17961,7 +18129,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:20:P1",
+          "id": "bug:watch:21:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-06T14:34:39-07:00",
           "summary": "Critical bug remains open (P1): Sync failure summary repeats verbose output and stale next action.",
@@ -17980,7 +18148,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:14:P0",
+          "id": "bug:watch:15:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-06T14:34:39-07:00",
           "summary": "Critical bug remains open (P0): Legacy radar index is not normalized before sync validation.",
@@ -17999,7 +18167,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:13:P1",
+          "id": "bug:watch:14:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-06T14:34:39-07:00",
           "summary": "Critical bug remains open (P1): Legacy migration omits stale odyssey reference audit.",
@@ -18549,7 +18717,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:22:P1",
+          "id": "bug:watch:23:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Registry live forensics miss source owned bundle mirror component activity.",
@@ -18568,7 +18736,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:26:P1",
+          "id": "bug:watch:27:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Upgrade spotlight live refresh updates version badge but keeps release note hidden.",
@@ -18587,7 +18755,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:24:P0",
+          "id": "bug:watch:25:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Benchmark repair style live cases penalize validator backed no op completion.",
@@ -18606,7 +18774,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:23:P0",
+          "id": "bug:watch:24:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Benchmark live agent activation prefers speculative install guidance rewrites over validator backed no op.",
@@ -18625,7 +18793,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:40:P0",
+          "id": "bug:watch:41:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Benchmark warm cold proof instability flips narrow slice winners.",
@@ -18644,7 +18812,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:39:P0",
+          "id": "bug:watch:40:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Benchmark validator truth restore rehydrates ambient repo state outside scoped snapshot.",
@@ -18663,7 +18831,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:38:P0",
+          "id": "bug:watch:39:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Benchmark support doc selector overweights generic guidance on proof slices.",
@@ -18682,7 +18850,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:37:P0",
+          "id": "bug:watch:38:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Benchmark scoped workspace snapshot omits dirty same package python dependencies.",
@@ -18701,7 +18869,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:44:P0",
+          "id": "bug:watch:45:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Benchmark live runner inherits ambient user state and breaks raw codex isolation.",
@@ -18720,7 +18888,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:50:P1",
+          "id": "bug:watch:51:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Product repo doctor repair rewrites root agents to stale managed block.",
@@ -18739,7 +18907,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:71:P1",
+          "id": "bug:watch:72:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Release preflight fails when dist contains stale wheel.",
@@ -18758,7 +18926,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:70:P1",
+          "id": "bug:watch:71:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Release download cache and runtime restage lose atomicity on failure.",
@@ -18777,7 +18945,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:69:P0",
+          "id": "bug:watch:70:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Public consumer rollback to legacy preview runtime fails.",
@@ -18796,7 +18964,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:68:P0",
+          "id": "bug:watch:69:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Public consumer install depends on machine python.",
@@ -18815,7 +18983,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:67:P1",
+          "id": "bug:watch:68:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Local release smoke installer rejects localhost assets with port.",
@@ -18834,7 +19002,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:66:P1",
+          "id": "bug:watch:67:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Local release adapter omits manifest and sigstore assets.",
@@ -18853,7 +19021,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:65:P1",
+          "id": "bug:watch:66:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Local macos release build fails when linux runtime archive is expanded on case insensitive fs.",
@@ -18872,7 +19040,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:64:P0",
+          "id": "bug:watch:65:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Linux arm64 context engine pack build fails without watchdog wheel.",
@@ -18891,7 +19059,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:63:P1",
+          "id": "bug:watch:64:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Github test workflow bypasses hatch managed environment.",
@@ -18910,7 +19078,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:62:P1",
+          "id": "bug:watch:63:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Generated installer validator over escapes wheel regex.",
@@ -18929,7 +19097,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:61:P1",
+          "id": "bug:watch:62:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): Generated installer misses runtime versions directory before activation.",
@@ -18948,7 +19116,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:60:P0",
+          "id": "bug:watch:61:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Full stack managed runtime payloads are too large for install and upgrade.",
@@ -18967,7 +19135,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:59:P0",
+          "id": "bug:watch:60:P0",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P0): Fresh consumer bootstrap misses backlog and plan starter contract.",
@@ -18986,7 +19154,7 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:watch:58:P1",
+          "id": "bug:watch:59:P1",
           "kind": "bug_watch",
           "ts_iso": "2026-04-05T22:15:26-07:00",
           "summary": "Critical bug remains open (P1): First install and same version upgrade mutate live runtime before fail closed proof.",
@@ -19174,72 +19342,195 @@
     "recent_window_minutes": 90,
     "global": {
       "is_active": true,
-      "transaction_id": "txn:global:auto-global-0027:0027",
+      "transaction_id": "txn:global:auto-global-0028:0028",
       "session_id": "",
       "context": "",
-      "headline": "Implementation checkpoint in odylith reasoning package boundary and benchmark separation: completed Reasoning and benchmark code are now physically separated, with Tribunal,",
-      "last_event_iso": "2026-04-08T08:32:42-07:00",
-      "start_ts_iso": "2026-04-08T08:31:59-07:00",
+      "headline": "Advance v0.1.10 canonical release truth (#4)",
+      "last_event_iso": "2026-04-08T08:45:31-07:00",
+      "start_ts_iso": "2026-04-08T08:45:18-07:00",
       "workstreams": [
-        "B-001",
-        "B-003",
-        "B-004",
         "B-005",
         "B-007",
-        "B-010",
-        "B-020",
-        "B-022",
-        "B-025",
-        "B-027",
-        "B-031",
-        "B-038",
-        "B-058",
-        "B-059",
-        "B-060",
-        "B-061"
+        "B-060"
       ],
-      "event_count": 21,
-      "files_count": 194,
+      "event_count": 2,
+      "files_count": 35,
       "kind_counts": {
-        "plan_update": 2,
-        "implementation": 2,
-        "bug_resolved": 14,
-        "bug_watch": 2,
+        "bug_resolved": 1,
         "commit": 1
       },
       "source_counts": {
-        "plan_index": 2,
-        "plan_file": 2,
-        "bugs_index": 16,
+        "bugs_index": 1,
         "git": 1
       },
-      "activity_signal_count": 5,
-      "risk_signal_count": 16,
+      "activity_signal_count": 1,
+      "risk_signal_count": 1,
       "top_files": [
-        "LICENSE",
-        "NOTICE",
-        "README.md",
-        "SECURITY.md",
-        "SUPPORT.md",
-        "THIRD_PARTY_ATTRIBUTION.md",
-        "docs/LICENSE_AND_ATTRIBUTION.md",
-        "docs/STATUS_AND_DISCLOSURES.md"
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
       ],
-      "source_files_count": 151,
-      "generated_files_count": 43,
+      "source_files_count": 21,
+      "generated_files_count": 14,
       "generated_only_batch": false,
-      "latest_event_kind": "plan_update",
-      "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
+      "latest_event_kind": "bug_resolved",
+      "latest_event_summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
       "has_implementation_signal": true,
       "focus_reason": "recent_activity_signal",
       "selection_mode": "active_implementation",
       "has_live_implementation": true,
       "has_recent_implementation": true,
-      "latest_implementation_iso": "2026-04-08T08:41:50-07:00"
+      "latest_implementation_iso": "2026-04-08T08:57:51-07:00"
     },
     "by_workstream": {
-      "B-001": {
+      "B-005": {
         "is_active": true,
+        "transaction_id": "txn:global:auto-global-0028:0028",
+        "session_id": "",
+        "context": "",
+        "headline": "Advance v0.1.10 canonical release truth (#4)",
+        "last_event_iso": "2026-04-08T08:45:31-07:00",
+        "start_ts_iso": "2026-04-08T08:45:18-07:00",
+        "workstreams": [
+          "B-005",
+          "B-007",
+          "B-060"
+        ],
+        "event_count": 2,
+        "files_count": 35,
+        "kind_counts": {
+          "bug_resolved": 1,
+          "commit": 1
+        },
+        "source_counts": {
+          "bugs_index": 1,
+          "git": 1
+        },
+        "activity_signal_count": 1,
+        "risk_signal_count": 1,
+        "top_files": [
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js",
+          "odylith/radar/backlog-document-shard-002.v1.js",
+          "odylith/radar/backlog-document-shard-004.v1.js",
+          "odylith/radar/source/INDEX.md",
+          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+        ],
+        "source_files_count": 21,
+        "generated_files_count": 14,
+        "generated_only_batch": false,
+        "latest_event_kind": "bug_resolved",
+        "latest_event_summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
+        "has_implementation_signal": true,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
+        "has_recent_implementation": true,
+        "latest_implementation_iso": "2026-04-08T08:57:51-07:00"
+      },
+      "B-007": {
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0028:0028",
+        "session_id": "",
+        "context": "",
+        "headline": "Advance v0.1.10 canonical release truth (#4)",
+        "last_event_iso": "2026-04-08T08:45:31-07:00",
+        "start_ts_iso": "2026-04-08T08:45:18-07:00",
+        "workstreams": [
+          "B-005",
+          "B-007",
+          "B-060"
+        ],
+        "event_count": 2,
+        "files_count": 35,
+        "kind_counts": {
+          "bug_resolved": 1,
+          "commit": 1
+        },
+        "source_counts": {
+          "bugs_index": 1,
+          "git": 1
+        },
+        "activity_signal_count": 1,
+        "risk_signal_count": 1,
+        "top_files": [
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js",
+          "odylith/radar/backlog-document-shard-002.v1.js",
+          "odylith/radar/backlog-document-shard-004.v1.js",
+          "odylith/radar/source/INDEX.md",
+          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+        ],
+        "source_files_count": 21,
+        "generated_files_count": 14,
+        "generated_only_batch": false,
+        "latest_event_kind": "bug_resolved",
+        "latest_event_summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
+        "has_implementation_signal": true,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
+        "has_recent_implementation": true,
+        "latest_implementation_iso": "2026-04-08T08:57:51-07:00"
+      },
+      "B-060": {
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0028:0028",
+        "session_id": "",
+        "context": "",
+        "headline": "Advance v0.1.10 canonical release truth (#4)",
+        "last_event_iso": "2026-04-08T08:45:31-07:00",
+        "start_ts_iso": "2026-04-08T08:45:18-07:00",
+        "workstreams": [
+          "B-005",
+          "B-007",
+          "B-060"
+        ],
+        "event_count": 2,
+        "files_count": 35,
+        "kind_counts": {
+          "bug_resolved": 1,
+          "commit": 1
+        },
+        "source_counts": {
+          "bugs_index": 1,
+          "git": 1
+        },
+        "activity_signal_count": 1,
+        "risk_signal_count": 1,
+        "top_files": [
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js",
+          "odylith/radar/backlog-document-shard-002.v1.js",
+          "odylith/radar/backlog-document-shard-004.v1.js",
+          "odylith/radar/source/INDEX.md",
+          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+        ],
+        "source_files_count": 21,
+        "generated_files_count": 14,
+        "generated_only_batch": false,
+        "latest_event_kind": "bug_resolved",
+        "latest_event_summary": "Critical bug resolved (P0): Canonical release preflight stops when product version truth still points at the prior shipped tag.",
+        "has_implementation_signal": true,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
+        "has_recent_implementation": true,
+        "latest_implementation_iso": "2026-04-08T08:57:51-07:00"
+      },
+      "B-001": {
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -19297,14 +19588,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-003": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -19362,14 +19653,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-004": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -19427,144 +19718,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
-      "B-005": {
-        "is_active": true,
-        "transaction_id": "txn:global:auto-global-0027:0027",
-        "session_id": "",
-        "context": "",
-        "headline": "Implementation checkpoint in odylith reasoning package boundary and benchmark separation: completed Reasoning and benchmark code are now physically separated, with Tribunal,",
-        "last_event_iso": "2026-04-08T08:32:42-07:00",
-        "start_ts_iso": "2026-04-08T08:31:59-07:00",
-        "workstreams": [
-          "B-001",
-          "B-003",
-          "B-004",
-          "B-005",
-          "B-007",
-          "B-010",
-          "B-020",
-          "B-022",
-          "B-025",
-          "B-027",
-          "B-031",
-          "B-038",
-          "B-058",
-          "B-059",
-          "B-060",
-          "B-061"
-        ],
-        "event_count": 21,
-        "files_count": 194,
-        "kind_counts": {
-          "plan_update": 2,
-          "implementation": 2,
-          "bug_resolved": 14,
-          "bug_watch": 2,
-          "commit": 1
-        },
-        "source_counts": {
-          "plan_index": 2,
-          "plan_file": 2,
-          "bugs_index": 16,
-          "git": 1
-        },
-        "activity_signal_count": 5,
-        "risk_signal_count": 16,
-        "top_files": [
-          "LICENSE",
-          "NOTICE",
-          "README.md",
-          "SECURITY.md",
-          "SUPPORT.md",
-          "THIRD_PARTY_ATTRIBUTION.md",
-          "docs/LICENSE_AND_ATTRIBUTION.md",
-          "docs/STATUS_AND_DISCLOSURES.md"
-        ],
-        "source_files_count": 151,
-        "generated_files_count": 43,
-        "generated_only_batch": false,
-        "latest_event_kind": "plan_update",
-        "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
-        "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
-        "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T08:41:50-07:00"
-      },
-      "B-007": {
-        "is_active": true,
-        "transaction_id": "txn:global:auto-global-0027:0027",
-        "session_id": "",
-        "context": "",
-        "headline": "Implementation checkpoint in odylith reasoning package boundary and benchmark separation: completed Reasoning and benchmark code are now physically separated, with Tribunal,",
-        "last_event_iso": "2026-04-08T08:32:42-07:00",
-        "start_ts_iso": "2026-04-08T08:31:59-07:00",
-        "workstreams": [
-          "B-001",
-          "B-003",
-          "B-004",
-          "B-005",
-          "B-007",
-          "B-010",
-          "B-020",
-          "B-022",
-          "B-025",
-          "B-027",
-          "B-031",
-          "B-038",
-          "B-058",
-          "B-059",
-          "B-060",
-          "B-061"
-        ],
-        "event_count": 21,
-        "files_count": 194,
-        "kind_counts": {
-          "plan_update": 2,
-          "implementation": 2,
-          "bug_resolved": 14,
-          "bug_watch": 2,
-          "commit": 1
-        },
-        "source_counts": {
-          "plan_index": 2,
-          "plan_file": 2,
-          "bugs_index": 16,
-          "git": 1
-        },
-        "activity_signal_count": 5,
-        "risk_signal_count": 16,
-        "top_files": [
-          "LICENSE",
-          "NOTICE",
-          "README.md",
-          "SECURITY.md",
-          "SUPPORT.md",
-          "THIRD_PARTY_ATTRIBUTION.md",
-          "docs/LICENSE_AND_ATTRIBUTION.md",
-          "docs/STATUS_AND_DISCLOSURES.md"
-        ],
-        "source_files_count": 151,
-        "generated_files_count": 43,
-        "generated_only_batch": false,
-        "latest_event_kind": "plan_update",
-        "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
-        "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
-        "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T08:41:50-07:00"
-      },
       "B-010": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -19622,14 +19783,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-020": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -19687,14 +19848,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-022": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -19752,14 +19913,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-025": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -19817,14 +19978,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-027": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -19882,14 +20043,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-031": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -19947,14 +20108,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-038": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -20012,14 +20173,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-058": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -20077,14 +20238,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
       "B-059": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -20142,79 +20303,14 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
-      "B-060": {
-        "is_active": true,
-        "transaction_id": "txn:global:auto-global-0027:0027",
-        "session_id": "",
-        "context": "",
-        "headline": "Implementation checkpoint in odylith reasoning package boundary and benchmark separation: completed Reasoning and benchmark code are now physically separated, with Tribunal,",
-        "last_event_iso": "2026-04-08T08:32:42-07:00",
-        "start_ts_iso": "2026-04-08T08:31:59-07:00",
-        "workstreams": [
-          "B-001",
-          "B-003",
-          "B-004",
-          "B-005",
-          "B-007",
-          "B-010",
-          "B-020",
-          "B-022",
-          "B-025",
-          "B-027",
-          "B-031",
-          "B-038",
-          "B-058",
-          "B-059",
-          "B-060",
-          "B-061"
-        ],
-        "event_count": 21,
-        "files_count": 194,
-        "kind_counts": {
-          "plan_update": 2,
-          "implementation": 2,
-          "bug_resolved": 14,
-          "bug_watch": 2,
-          "commit": 1
-        },
-        "source_counts": {
-          "plan_index": 2,
-          "plan_file": 2,
-          "bugs_index": 16,
-          "git": 1
-        },
-        "activity_signal_count": 5,
-        "risk_signal_count": 16,
-        "top_files": [
-          "LICENSE",
-          "NOTICE",
-          "README.md",
-          "SECURITY.md",
-          "SUPPORT.md",
-          "THIRD_PARTY_ATTRIBUTION.md",
-          "docs/LICENSE_AND_ATTRIBUTION.md",
-          "docs/STATUS_AND_DISCLOSURES.md"
-        ],
-        "source_files_count": 151,
-        "generated_files_count": 43,
-        "generated_only_batch": false,
-        "latest_event_kind": "plan_update",
-        "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
-        "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
-        "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T08:41:50-07:00"
-      },
       "B-061": {
-        "is_active": true,
+        "is_active": false,
         "transaction_id": "txn:global:auto-global-0027:0027",
         "session_id": "",
         "context": "",
@@ -20272,9 +20368,9 @@
         "latest_event_kind": "plan_update",
         "latest_event_summary": "Plan updated: odylith reasoning package boundary and benchmark separation (B-061) is In progress; checklist 25/51 complete.",
         "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
+        "focus_reason": "recent_implementation_fallback",
+        "selection_mode": "recent_implementation_fallback",
+        "has_live_implementation": false,
         "has_recent_implementation": true,
         "latest_implementation_iso": "2026-04-08T08:32:42-07:00"
       },
@@ -21351,6 +21447,15 @@
       },
       {
         "date": "2026-04-08",
+        "title": "Hosted install script uses hidden pin-alignment flag that older shipped runtimes do not understand",
+        "severity": "P0",
+        "status": "Closed",
+        "link": "odylith/casebook/bugs/2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md",
+        "is_open_critical": false,
+        "workstreams": []
+      },
+      {
+        "date": "2026-04-08",
         "title": "Pinned dogfood proof benchmark can wedge mid corpus and block release proof",
         "severity": "P0",
         "status": "Open",
@@ -22148,7 +22253,7 @@
   "runtime_contract": {
     "version": "v1",
     "standup_brief_schema_version": "v13",
-    "input_fingerprint": "c4633cdc03a659a9eba6264542e5d2f598a8ac136a0728edaa4991a2396ca7d0",
+    "input_fingerprint": "5d3615a8b4f98863e02e7a5ff230bc03be2ca552623035f664c1753a822b5a6a",
     "retention_days": 15,
     "active_window_minutes": 15,
     "max_review_age_days": 21,
@@ -22160,7 +22265,7 @@
       "applied_profile": "shell-safe",
       "runtime_mode": "auto",
       "reason": "",
-      "attempted_utc": "2026-04-08T15:41:50Z",
+      "attempted_utc": "2026-04-08T15:57:51Z",
       "fallback_used": false
     }
   }

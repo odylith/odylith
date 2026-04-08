@@ -3247,7 +3247,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-04-08 15:43:44Z",
+  "generated_utc": "2026-04-08 15:59:32Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -5871,7 +5871,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -6266,7 +6266,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -7382,7 +7382,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -7755,7 +7755,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -8128,7 +8128,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -10197,7 +10197,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -11595,7 +11595,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -11963,7 +11963,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -12964,7 +12964,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-05T19:43:45-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -13967,7 +13967,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -14664,7 +14664,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-07T17:08:28-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -14981,7 +14981,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -15969,7 +15969,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -16325,7 +16325,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-07T09:59:30-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -16663,7 +16663,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -17026,7 +17026,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -18099,7 +18099,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -18449,7 +18449,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -19433,7 +19433,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -19782,7 +19782,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -20407,7 +20407,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -21634,7 +21634,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -21966,7 +21966,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -22288,7 +22288,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -22584,7 +22584,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -23179,7 +23179,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -23476,7 +23476,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -23773,7 +23773,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -24354,7 +24354,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -24656,7 +24656,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -25330,7 +25330,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -25683,7 +25683,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-07T17:08:28-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-08T01:46:37-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -28183,7 +28183,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-07T09:59:30-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -30046,7 +30046,7 @@
         "basis": "mixed",
         "blast_radius_class": "contract-level",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-05T19:43:45-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -30684,7 +30684,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-04-07T17:08:28-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -32432,7 +32432,7 @@
         "basis": "mixed",
         "blast_radius_class": "contract-level",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -33250,7 +33250,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -37694,7 +37694,7 @@
         "basis": "mixed",
         "blast_radius_class": "contract-level",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-04-08T08:40:55-07:00",
+        "latest_event_ts_iso": "2026-04-08T08:57:26-07:00",
         "latest_explicit_ts_iso": "2026-03-27T16:07:04-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
