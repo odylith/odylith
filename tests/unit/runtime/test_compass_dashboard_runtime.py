@@ -5,6 +5,8 @@ import gzip
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.surfaces import compass_dashboard_runtime as runtime
 from odylith.runtime.surfaces import compass_runtime_payload_runtime
 
@@ -436,14 +438,14 @@ def test_global_brief_should_use_provider_for_48h_cache_miss(monkeypatch) -> Non
     )
 
 
-def test_global_brief_provider_allowed_disables_provider_for_shell_safe(monkeypatch) -> None:  # noqa: ANN001
+def test_global_brief_provider_allowed_uses_default_policy_for_shell_safe(monkeypatch) -> None:  # noqa: ANN001
     monkeypatch.setattr(
         runtime,
         "_global_brief_should_use_provider",
         lambda **_kwargs: True,
     )
 
-    assert not runtime._global_brief_provider_allowed(
+    assert runtime._global_brief_provider_allowed(
         repo_root=Path("/tmp/repo"),
         fact_packet={"window": "24h"},
         window_hours=24,
@@ -485,6 +487,34 @@ def test_scoped_brief_provider_allowed_disables_provider_for_shell_safe() -> Non
 
 def test_scoped_brief_provider_allowed_uses_provider_for_full_refresh() -> None:
     assert compass_runtime_payload_runtime._scoped_brief_provider_allowed(refresh_profile="full")  # noqa: SLF001
+
+
+def test_assert_full_refresh_brief_ready_accepts_ready_cache_without_notice() -> None:
+    compass_runtime_payload_runtime._assert_full_refresh_brief_ready(  # noqa: SLF001
+        brief={"status": "ready", "source": "cache"},
+        window_hours=24,
+        scope_label="global",
+    )
+
+
+def test_assert_full_refresh_brief_ready_rejects_non_clean_briefs() -> None:
+    with pytest.raises(RuntimeError, match="global 24h window; got status=ready, source=deterministic"):
+        compass_runtime_payload_runtime._assert_full_refresh_brief_ready(  # noqa: SLF001
+            brief={"status": "ready", "source": "deterministic"},
+            window_hours=24,
+            scope_label="global",
+        )
+
+    with pytest.raises(RuntimeError, match="B-025 48h window; got status=ready, source=cache"):
+        compass_runtime_payload_runtime._assert_full_refresh_brief_ready(  # noqa: SLF001
+            brief={
+                "status": "ready",
+                "source": "cache",
+                "notice": {"reason": "provider_timeout"},
+            },
+            window_hours=48,
+            scope_label="B-025",
+        )
 
 
 def test_generated_only_transaction_detection_keeps_source_mixed_rows() -> None:

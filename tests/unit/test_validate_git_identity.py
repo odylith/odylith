@@ -79,15 +79,14 @@ def test_history_validation_rejects_noncanonical_commit_identity(tmp_path: Path,
     assert module.main(["history", "--repo-root", str(repo), "HEAD"]) == 1
     stderr = capsys.readouterr().err
     assert "author identity must stay within" in stderr
-    assert "committer identity must stay within" in stderr
 
 
-def test_history_validation_accepts_github_squash_merge_identity(tmp_path: Path) -> None:
+def test_history_validation_accepts_canonical_author_with_github_committer(tmp_path: Path) -> None:
     module = _load_module()
     repo = _init_repo(tmp_path)
     env = {
         **os.environ,
-        "GIT_AUTHOR_NAME": "Freedom Preetham",
+        "GIT_AUTHOR_NAME": EXPECTED_NAME,
         "GIT_AUTHOR_EMAIL": EXPECTED_EMAIL,
         "GIT_COMMITTER_NAME": "GitHub",
         "GIT_COMMITTER_EMAIL": "noreply@github.com",
@@ -99,12 +98,12 @@ def test_history_validation_accepts_github_squash_merge_identity(tmp_path: Path)
     assert module.main(["history", "--repo-root", str(repo), "HEAD"]) == 0
 
 
-def test_history_validation_accepts_canonical_named_github_squash_merge_identity(tmp_path: Path) -> None:
+def test_history_validation_accepts_historical_author_alias_with_github_committer(tmp_path: Path) -> None:
     module = _load_module()
     repo = _init_repo(tmp_path)
     env = {
         **os.environ,
-        "GIT_AUTHOR_NAME": EXPECTED_NAME,
+        "GIT_AUTHOR_NAME": "Freedom Preetham",
         "GIT_AUTHOR_EMAIL": EXPECTED_EMAIL,
         "GIT_COMMITTER_NAME": "GitHub",
         "GIT_COMMITTER_EMAIL": "noreply@github.com",

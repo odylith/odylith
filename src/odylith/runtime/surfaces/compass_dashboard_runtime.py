@@ -19,6 +19,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.surfaces import compass_outcome_digest_runtime
 from odylith.runtime.surfaces import compass_narrative_runtime
+from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_fact_packets
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import compass_self_host_runtime
@@ -26,7 +27,7 @@ from odylith.runtime.surfaces import compass_transaction_runtime
 from odylith.runtime.surfaces import compass_execution_focus_runtime
 from odylith.runtime.surfaces import compass_runtime_payload_runtime
 from odylith.runtime.governance import execution_wave_view_model
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.context_engine import odylith_runtime_surface_summary
@@ -61,8 +62,7 @@ def _global_brief_provider_allowed(
     window_hours: int,
     refresh_profile: str,
 ) -> bool:
-    profile = str(refresh_profile or "full").strip().lower() or "full"
-    if profile == "shell-safe":
+    if compass_refresh_contract.normalize_refresh_profile(refresh_profile) not in {"full", "shell-safe"}:
         return False
     return _global_brief_should_use_provider(
         repo_root=repo_root,
@@ -2354,7 +2354,7 @@ def _build_runtime_payload(
     max_review_age_days: int,
     active_window_minutes: int,
     runtime_mode: str,
-    refresh_profile: str = "full",
+    refresh_profile: str = "shell-safe",
 ) -> dict[str, Any]:
     return compass_runtime_payload_runtime._build_runtime_payload(
         repo_root=repo_root,

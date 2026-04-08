@@ -53,3 +53,13 @@ def test_checked_in_attribution_file_is_current() -> None:
     tracked = (REPO_ROOT / "THIRD_PARTY_ATTRIBUTION.md").read_text(encoding="utf-8")
 
     assert tracked == rendered
+
+
+def test_current_inventory_matches_lancedb_tantivy_and_vespa_distribution_posture() -> None:
+    module = _load_module()
+    entries = module._load_runtime_inventory_fallback()  # noqa: SLF001
+    by_name = {entry.name.lower(): entry for entry in entries}
+
+    assert by_name["lancedb"].license_expression == "Apache-2.0"
+    assert by_name["tantivy"].license_expression == "MIT"
+    assert "vespa" not in by_name

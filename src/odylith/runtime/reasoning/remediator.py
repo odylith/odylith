@@ -24,7 +24,7 @@ DEFAULT_DECISION_LEDGER_PATH = "odylith/runtime/odylith-decisions.v1.jsonl"
 EXECUTION_MODES: frozenset[str] = frozenset({"deterministic", "ai_engine", "hybrid", "manual"})
 _EVALUATOR_PATH_PREFIXES: tuple[str, ...] = (
     "src/odylith/runtime/governance/delivery_intelligence_engine.py",
-    "src/odylith/runtime/evaluation/odylith_reasoning.py",
+    "src/odylith/runtime/reasoning/odylith_reasoning.py",
     "src/odylith/runtime/governance/sync_workstream_artifacts.py",
     "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
     "src/odylith/runtime/context_engine/odylith_context_engine.py",

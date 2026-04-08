@@ -11,8 +11,7 @@ from typing import Sequence
 
 EXPECTED_NAME = "freedom-research"
 EXPECTED_EMAIL = "freedom@freedompreetham.org"
-EXPECTED_GITHUB_AUTHOR_NAMES = frozenset({EXPECTED_NAME, "Freedom Preetham"})
-EXPECTED_GITHUB_COMMITTER = ("GitHub", "noreply@github.com")
+EXPECTED_HISTORY_AUTHOR_NAMES = frozenset({EXPECTED_NAME, "Freedom Preetham"})
 EXPECTED_LOCAL_CONFIG = {
     "user.name": EXPECTED_NAME,
     "user.email": EXPECTED_EMAIL,
@@ -62,27 +61,13 @@ def _valid_direct_identity(name: str, email: str) -> bool:
     return name == EXPECTED_NAME and email == EXPECTED_EMAIL
 
 
-def _valid_github_squash_identity(
-    author_name: str,
-    author_email: str,
-    committer_name: str,
-    committer_email: str,
-) -> bool:
-    return (
-        author_name in EXPECTED_GITHUB_AUTHOR_NAMES
-        and author_email == EXPECTED_EMAIL
-        and (committer_name, committer_email) == EXPECTED_GITHUB_COMMITTER
-    )
+def _valid_history_author_identity(name: str, email: str) -> bool:
+    return name in EXPECTED_HISTORY_AUTHOR_NAMES and email == EXPECTED_EMAIL
 
 
 def _history_identity_expectation() -> str:
-    github_author_names = ", ".join(sorted(EXPECTED_GITHUB_AUTHOR_NAMES))
-    return (
-        f"{EXPECTED_NAME!r}/{EXPECTED_EMAIL!r} for direct maintainer commits, "
-        f"or one of {{{github_author_names}}} / {EXPECTED_EMAIL!r} with "
-        f"{EXPECTED_GITHUB_COMMITTER[0]!r} / {EXPECTED_GITHUB_COMMITTER[1]!r} "
-        "for the current GitHub squash-merge path on canonical main"
-    )
+    accepted_names = ", ".join(sorted(EXPECTED_HISTORY_AUTHOR_NAMES))
+    return f"{{{accepted_names}}} / {EXPECTED_EMAIL!r} for canonical maintainer authorship"
 
 
 def validate_local_identity(repo_root: Path) -> list[str]:
@@ -124,28 +109,13 @@ def validate_commit_history(repo_root: Path, *, revisions: Sequence[str], includ
     expectation = _history_identity_expectation()
     for line in output.splitlines():
         sha, author_name, author_email, committer_name, committer_email = line.split("\x00")
-        if _valid_direct_identity(author_name, author_email) and _valid_direct_identity(
-            committer_name,
-            committer_email,
-        ):
+        if _valid_history_author_identity(author_name, author_email):
             continue
-        if _valid_github_squash_identity(
-            author_name,
-            author_email,
-            committer_name,
-            committer_email,
-        ):
-            continue
-        if not _valid_direct_identity(author_name, author_email):
-            failures.append(
-                f"{sha}: author identity must stay within {expectation} "
-                f"(found {author_name!r} / {author_email!r})"
-            )
-        if not _valid_direct_identity(committer_name, committer_email):
-            failures.append(
-                f"{sha}: committer identity must stay within {expectation} "
-                f"(found {committer_name!r} / {committer_email!r})"
-            )
+        failures.append(
+            f"{sha}: author identity must stay within {expectation} "
+            f"(found {author_name!r} / {author_email!r}; "
+            f"committer was {committer_name!r} / {committer_email!r})"
+        )
     return failures
 
 

@@ -586,31 +586,31 @@ def test_release_spotlight_and_release_note_links_work_in_browser(tmp_path: Path
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_authored_v0_1_9_release_note_drives_upgrade_popup_copy(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
-    repo_root = tmp_path / "upgrade-v0-1-9"
+def test_authored_v0_1_10_release_note_drives_upgrade_popup_copy(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "upgrade-v0-1-10"
     repo_root.mkdir()
     _seed_consumer_repo(
         repo_root,
         focus_path="src/billing",
         existing_truth=True,
-        active_version="0.1.9",
-        activation_history=["0.1.8", "0.1.9"],
+        active_version="0.1.10",
+        activation_history=["0.1.9", "0.1.10"],
     )
     write_upgrade_spotlight(
         repo_root=repo_root,
-        from_version="0.1.8",
-        to_version="0.1.9",
-        release_tag="v0.1.9",
-        release_url="https://example.com/releases/v0.1.9",
-        release_published_at="2026-04-07T21:30:00Z",
+        from_version="0.1.9",
+        to_version="0.1.10",
+        release_tag="v0.1.10",
+        release_url="https://example.com/releases/v0.1.10",
+        release_published_at="2026-04-08T01:30:00Z",
         release_body="Fallback body should be replaced by the authored note.",
         highlights=("Fallback highlight.",),
     )
     notes_root = repo_root / "odylith" / "runtime" / "source" / "release-notes"
     notes_root.mkdir(parents=True, exist_ok=True)
     shutil.copy2(
-        REPO_ROOT / "odylith" / "runtime" / "source" / "release-notes" / "v0.1.9.md",
-        notes_root / "v0.1.9.md",
+        REPO_ROOT / "odylith" / "runtime" / "source" / "release-notes" / "v0.1.10.md",
+        notes_root / "v0.1.10.md",
     )
     _render_shell(repo_root, monkeypatch)
 
@@ -621,15 +621,15 @@ def test_authored_v0_1_9_release_note_drives_upgrade_popup_copy(tmp_path: Path, 
 
         page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
         assert page.locator("#shellWelcomeState").count() == 0
-        assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.9"
-        assert page.locator(".upgrade-spotlight-title-copy").inner_text().strip() == "Surface Truth"
-        assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.9"
-        assert "Fix Radar deep links, cross-surface filters, and warning severity" in page.locator(
+        assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.10"
+        assert page.locator(".upgrade-spotlight-title-copy").inner_text().strip() == "Boringly Trustworthy"
+        assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.10"
+        assert "Explicit Compass full refresh now fails closed" in page.locator(
             "#shellUpgradeSpotlight"
         ).inner_text()
         assert (
             page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
-            == "https://github.com/odylith/odylith/blob/v0.1.9/odylith/runtime/source/release-notes/v0.1.9.md"
+            == "https://github.com/odylith/odylith/blob/v0.1.10/odylith/runtime/source/release-notes/v0.1.10.md"
         )
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

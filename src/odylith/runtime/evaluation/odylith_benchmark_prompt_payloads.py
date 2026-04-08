@@ -744,19 +744,9 @@ def _supplement_architecture_live_prompt_payload(
         limit=support_doc_limit,
     )
     if required_support_docs:
-        explicit_required_reads = [
-            token
-            for token in _dedupe_strings(
-                [
-                    *_normalized_string_list(raw_audit.get("required_reads")),
-                    *_normalized_string_list(architecture_audit.get("required_reads")),
-                ]
-            )
-            if token not in set(required_support_docs)
-            and token not in {str(path).strip() for path in changed_paths if str(path).strip()}
-            and not _looks_like_code_anchor(token)
-        ]
-        support_docs = _dedupe_strings([*required_support_docs, *explicit_required_reads])[:support_doc_limit]
+        # When the scenario already names the supporting docs, fail closed to that
+        # contract instead of widening the live prompt with extra audit reads.
+        support_docs = list(required_support_docs)
     else:
         support_docs = select_live_prompt_support_docs(
             docs=[

@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from typing import Mapping, Sequence
 
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 
 
 def _copy_tree_if_exists(*, source: Path, target: Path) -> None:
@@ -106,7 +106,7 @@ _BENCHMARK_SELF_REFERENCE_GLOBS: tuple[str, ...] = (
     "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
     "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
     "src/odylith/runtime/evaluation/odylith_benchmark*.py",
-    "src/odylith/runtime/evaluation/odylith_reasoning.py",
+    "src/odylith/runtime/reasoning/*.py",
     "tests/unit/runtime/test_odylith_benchmark*.py",
 )
 

@@ -28,7 +28,9 @@ def test_scenario_workspace_self_reference_strip_paths_hide_benchmark_scaffold_b
     )
     _write(repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py")
     _write(repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_graphs.py")
-    _write(repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_reasoning.py")
+    _write(repo_root / "src" / "odylith" / "runtime" / "reasoning" / "odylith_reasoning.py")
+    _write(repo_root / "src" / "odylith" / "runtime" / "reasoning" / "tribunal_engine.py")
+    _write(repo_root / "src" / "odylith" / "runtime" / "reasoning" / "remediator.py")
     _write(repo_root / "tests" / "unit" / "runtime" / "test_odylith_benchmark_runner.py")
 
     rows = isolation.scenario_workspace_self_reference_strip_paths(
@@ -44,7 +46,9 @@ def test_scenario_workspace_self_reference_strip_paths_hide_benchmark_scaffold_b
     assert Path("src/odylith/runtime/evaluation/odylith_benchmark_runner.py") not in rows
     assert Path("docs/benchmarks/REVIEWER_GUIDE.md") in rows
     assert Path("src/odylith/runtime/evaluation/odylith_benchmark_graphs.py") in rows
-    assert Path("src/odylith/runtime/evaluation/odylith_reasoning.py") in rows
+    assert Path("src/odylith/runtime/reasoning/odylith_reasoning.py") in rows
+    assert Path("src/odylith/runtime/reasoning/tribunal_engine.py") in rows
+    assert Path("src/odylith/runtime/reasoning/remediator.py") in rows
     assert Path("odylith/runtime/source/optimization-evaluation-corpus.v1.json") in rows
     assert Path("tests/unit/runtime/test_odylith_benchmark_runner.py") in rows
     assert Path(".odylith/runtime/odylith-benchmarks/latest-proof.v1.json") in rows

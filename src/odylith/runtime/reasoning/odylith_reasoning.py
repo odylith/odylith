@@ -27,7 +27,7 @@ import urllib.error
 import urllib.request
 from typing import Any, Mapping, Protocol, Sequence
 
-from odylith.runtime.evaluation import tribunal_engine
+from odylith.runtime.reasoning import tribunal_engine
 
 
 DEFAULT_REASONING_PATH = tribunal_engine.DEFAULT_REASONING_PATH

@@ -44,6 +44,10 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   related bugs, related components, related diagrams, and recent Compass or
   session context first; extend or reopen those records before creating new
   ones.
+- When downstream feedback becomes maintainer implementation scope, capture it
+  in Casebook first, then update the bound Radar workstream, active plan, and
+  impacted Registry component specs before code changes. Do not leave a
+  maintainer fix half-governed.
 - Queued Radar items, case queues, and shell or Compass queue previews are not
   automatic implementation picks in the maintainer lane. Unless the user
   explicitly asks to work a queued item, do not start implementing it just
@@ -64,6 +68,40 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   the same change whenever maintainer work reveals a new failure mode, a stale
   diagram, a changed benchmark story, or a boundary that needs a first-class
   component spec.
+- Local maintainer release identity is also non-negotiable in this lane:
+  authored maintainer work uses `freedom-research
+  <freedom@freedompreetham.org>` for both author and committer config. If
+  canonical release-history proof needs to survive platform merge machinery,
+  keep the history gate focused on canonical maintainer authorship instead of
+  widening local identity policy.
+- Before GA, keep first-party GitHub Actions pins in release, release-candidate,
+  and test workflows on current immutable SHAs that no longer carry scheduled
+  runtime deprecation warnings into the release lane.
+- Before GA, keep release-proof unit lanes environment-portable. If a test is
+  supposed to prove Codex host-native spawn behavior or Codex CLI execution,
+  force or mock that contract inside the test instead of inheriting the
+  maintainer machine's ambient host/runtime state.
+- Treat parent-shell freshness and child-surface freshness as separate truths.
+  A successful wrapper refresh is never enough evidence to imply Compass,
+  Radar, Atlas, Registry, or Casebook data is current unless the child
+  runtime/surface contract says it was rerendered or the shell explicitly
+  projects the gap.
+- Explicit operator-requested Compass `full` refresh is a non-negotiable proof
+  contract in this maintainer lane: do not accept a passing result that reused
+  the wrong recent runtime payload, landed on deterministic local brief
+  output, or skipped browser proof across global 24h/48h plus
+  current-workstream scoped views. The five-minute reuse clamp itself is valid;
+  after changing shell, Compass, Casebook, or other checked-in governed
+  surface source truth, rerender the affected tracked surfaces before
+  interpreting browser failures. Stale generated artifacts are not evidence
+  that the live product contract is still broken.
+  the bar is that any reused payload must already satisfy the requested
+  full-refresh truth contract.
+- Treat authored release-note markdown as the single source of truth for the
+  consumer upgrade spotlight. For release-facing shell copy, land or update
+  `odylith/runtime/source/release-notes/vX.Y.Z.md` first, mirror it into the
+  bundle assets, and prove the popup from that exact note instead of patching
+  shell-only spotlight text in parallel.
 - Use direct `rg`, source reads, generator inspection, or targeted shell
   inspection only when Odylith explicitly signals fallback or ambiguity, or
   when you are verifying tracked source truth behind a runtime-generated
@@ -98,6 +136,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   preserves or improves proof on the same metric ladder.
 - A diagnostic-only gain that harms proof is a regression, not a benchmark
   win.
+- If a maintainer explicitly waives benchmark proof for one exact release
+  version, stop any in-flight proof run, record the override in
+  `odylith/runtime/source/release-maintainer-overrides.v1.json`, bind the
+  blocker into Casebook plus the active workstream/plan and the impacted
+  Registry specs, and describe that release as benchmark-advisory rather than
+  benchmark-proved.
 - Use pinned dogfood whenever the question is "does the shipped Odylith
   runtime behave correctly?". Use detached `source-local` only when the
   question is "do these unreleased `src/odylith/*` changes execute

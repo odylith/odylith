@@ -199,7 +199,7 @@ def _select_radar_row_with_link(
         if not idea_id:
             continue
         button.click()
-        radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
         links = radar.locator(f"#detail {link_selector}")
         if links.count():
             href = str(links.first.get_attribute("href") or "").strip()
@@ -340,7 +340,7 @@ def _assert_radar_selection(page, workstream: str) -> None:  # noqa: ANN001
     assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
     radar = page.frame_locator("#frame-radar")
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar.locator("#detail .detail-id", has_text=workstream).wait_for(timeout=15000)
+    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=workstream).wait_for(timeout=15000)
 
 
 def _assert_registry_selection(page, component_id: str) -> None:  # noqa: ANN001

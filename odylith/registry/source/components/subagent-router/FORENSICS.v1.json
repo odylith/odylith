@@ -27,10 +27,10 @@
     "empty_reasons": [],
     "explicit_event_count": 12,
     "mapped_workstream_evidence_count": 3,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 13
+    "timeline_event_count": 12
   },
   "name": "Subagent Router",
   "path_prefixes": [
@@ -143,24 +143,6 @@
       "workstreams": [
         "B-031"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
-        "odylith/skills/subagent-router/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/subagent-router/SKILL.md"
-      ],
-      "confidence": "high",
-      "event_index": 73,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "subagent-router"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/subagent-router/CURRENT_SPEC.md, odylith/skills/subagent-router/SKILL.md +1 more",
-      "ts_iso": "2026-04-07T00:19:12-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [

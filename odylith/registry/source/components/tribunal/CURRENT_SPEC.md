@@ -1,8 +1,8 @@
 # Tribunal
-Last updated: 2026-04-07
+Last updated: 2026-04-08
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-08
 
 ## Purpose
 Tribunal is Odylith's diagnosis engine. It converts delivery scopes into
@@ -40,7 +40,7 @@ plus one bounded correction packet per case.
 
 ## Runtime Contract
 - Main implementation:
-  `src/odylith/runtime/evaluation/tribunal_engine.py`
+  `src/odylith/runtime/reasoning/tribunal_engine.py`
 - Reasoning configuration:
   `odylith/runtime/odylith-reasoning.v4.json`
 - Supporting design notes:
@@ -273,3 +273,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Promoted Tribunal into Odylith's own product registry and component-spec set so diagnosis no longer depends on consumer-local product documentation. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Clarified and shipped the downstream contract that lets `odylith-chatter` consume precomputed Tribunal-backed case and systemic-brief truth without invoking live Tribunal during ordinary narration. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
+- 2026-04-08: Moved Tribunal fully out of `runtime/evaluation` into `src/odylith/runtime/reasoning/`, removed the legacy eval-path module, and hardened sync-owned Atlas and delivery-intelligence references plus regression guards so governed surfaces track the new package boundary without compatibility shims. (Plan: [B-061](odylith/radar/radar.html?view=plan&workstream=B-061))

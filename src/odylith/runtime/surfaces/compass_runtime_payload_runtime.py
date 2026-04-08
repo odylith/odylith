@@ -7,6 +7,7 @@ import datetime as dt
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_execution_focus_runtime
 
 
@@ -17,16 +18,27 @@ def _host():
 
 
 def _scoped_brief_provider_allowed(*, refresh_profile: str) -> bool:
-    profile = str(refresh_profile or "full").strip().lower() or "full"
-    if profile == "shell-safe":
-        return False
-    # Full refresh now regenerates scoped standup briefs too so the selected
-    # workstream view does not stay pinned to deterministic local narration
-    # after a completed refresh. Reusable exact-cache hits still keep repeated
-    # refreshes bounded inside the narrator.
-    if profile == "full":
-        return True
-    return False
+    return compass_refresh_contract.full_refresh_requested(refresh_profile)
+
+
+def _assert_full_refresh_brief_ready(
+    *,
+    brief: Mapping[str, Any],
+    window_hours: int,
+    scope_label: str,
+) -> None:
+    if compass_refresh_contract.brief_satisfies_full_refresh(brief):
+        return
+    status = str(brief.get("status", "")).strip().lower() or "unknown"
+    source = str(brief.get("source", "")).strip().lower() or "unknown"
+    diagnostics = brief.get("diagnostics")
+    reason = str(diagnostics.get("reason", "")).strip().lower() if isinstance(diagnostics, Mapping) else ""
+    detail = f"status={status}, source={source}"
+    if reason:
+        detail += f", reason={reason}"
+    raise RuntimeError(
+        f"Compass full refresh requires current brief truth for {scope_label} {int(window_hours)}h window; got {detail}."
+    )
 
 
 def _is_default_traceability_warning(row: Mapping[str, Any]) -> bool:
@@ -53,7 +65,7 @@ def _build_runtime_payload(
     max_review_age_days: int,
     active_window_minutes: int,
     runtime_mode: str,
-    refresh_profile: str = "full",
+    refresh_profile: str = "shell-safe",
 ) -> dict[str, Any]:
     host = _host()
     _load_json = host._load_json
@@ -769,8 +781,12 @@ def _build_runtime_payload(
             config=reasoning_config,
             provider=reasoning_provider,
             allow_provider=global_allow_provider,
-            prefer_provider=global_allow_provider,
+            prefer_provider=compass_refresh_contract.prefer_live_provider(refresh_profile),
+            allow_cache_recovery=compass_refresh_contract.allow_stale_cache_recovery(refresh_profile),
+            allow_deterministic_fallback=compass_refresh_contract.allow_deterministic_fallback(refresh_profile),
         )
+        if compass_refresh_contract.full_refresh_requested(refresh_profile):
+            _assert_full_refresh_brief_ready(brief=standup_global, window_hours=hours, scope_label="global")
         standup_scoped: dict[str, dict[str, Any]] = {}
         scoped_packets: list[tuple[str, dict[str, Any]]] = []
         # Scoped dashboard refresh stays bounded in shell-safe mode. Full
@@ -809,16 +825,25 @@ def _build_runtime_payload(
 
         def _build_scoped_brief(entry: tuple[str, dict[str, Any]]) -> tuple[str, dict[str, Any]]:
             ws_id, scoped_fact_packet = entry
-            return ws_id, compass_standup_brief_narrator.build_standup_brief(
+            brief = compass_standup_brief_narrator.build_standup_brief(
                 repo_root=repo_root,
                 fact_packet=scoped_fact_packet,
                 generated_utc=generated_utc,
                 config=reasoning_config,
                 provider=None,
                 allow_provider=scoped_allow_provider,
+                prefer_provider=compass_refresh_contract.prefer_live_provider(refresh_profile),
+                allow_cache_recovery=compass_refresh_contract.allow_stale_cache_recovery(refresh_profile),
+                allow_deterministic_fallback=compass_refresh_contract.allow_deterministic_fallback(refresh_profile),
             )
+            if compass_refresh_contract.full_refresh_requested(refresh_profile):
+                _assert_full_refresh_brief_ready(brief=brief, window_hours=hours, scope_label=ws_id)
+            return ws_id, brief
         if scoped_allow_provider and len(scoped_packets) > 1:
-            max_workers = min(4, len(scoped_packets))
+            max_workers = compass_refresh_contract.scoped_provider_max_workers(
+                refresh_profile,
+                scoped_packets=len(scoped_packets),
+            )
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 for ws_id, brief in executor.map(_build_scoped_brief, scoped_packets):
                     standup_scoped[ws_id] = brief

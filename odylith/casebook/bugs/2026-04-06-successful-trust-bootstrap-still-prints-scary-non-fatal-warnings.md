@@ -1,6 +1,6 @@
 - Bug ID: CB-061
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-06
 
@@ -27,12 +27,23 @@
 - Root Cause: Successful verifier stderr is surfaced too literally and not
   classified into fatal-versus-benign output paths.
 
-- Solution: Capture verifier stderr, suppress or translate only allowlisted
-  benign warnings on success, keep fatal details intact on failure, and print
-  one explicit verification-success line.
+- Solution: Hosted install and repair now classify allowlisted benign
+  verifier chatter separately from fatal stderr. Successful verification keeps
+  one explicit success line, filters the known offline-mode and unsupported
+  key-type warning spill from the happy path, and still preserves fatal stderr
+  when verification actually fails.
 
-- Verification: Release-asset and CLI tests should prove success-path warning
-  suppression and failure-path stderr preservation.
+- Verification: Fixed on 2026-04-08. `PYTHONPATH=src python3 -m pytest -q
+  tests/unit/install/test_release_assets.py tests/unit/install/test_release_bootstrap.py
+  tests/unit/test_cli.py tests/unit/runtime/test_sync_cli_compat.py
+  tests/unit/runtime/test_backfill_workstream_traceability.py
+  tests/unit/runtime/test_delivery_intelligence_engine.py
+  tests/unit/runtime/test_validate_component_registry_contract.py
+  tests/integration/install/test_manager.py::test_install_bundle_align_pin_advances_existing_repo_pin_to_active_runtime
+  tests/integration/install/test_manager.py::test_upgrade_prunes_runtime_and_release_cache_retention
+  tests/integration/install/test_manager.py::test_upgrade_warns_and_continues_when_retention_prune_stays_permission_denied`
+  passed with `176 passed in 1.75s`, covering the release-asset and CLI
+  verification messaging path alongside the adjacent hosted-install fixes.
 
 - Prevention: Security messaging should differentiate successful strict
   verification from real verifier failure instead of printing both as equally
@@ -74,7 +85,9 @@
 - Preflight Checks: Inspect verifier subprocess handling and current stderr
   payloads before designing the allowlist.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added:
+  `tests/unit/install/test_release_assets.py`,
+  `tests/unit/test_cli.py`
 
 - Monitoring Updates: Watch install and repair logs for allowlisted benign
   warning classes after the success-path cleanup lands.
@@ -101,4 +114,4 @@
 - Runbook References: `odylith/SECURITY_POSTURE.md`,
   `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: `2026/freedom/v0.1.10` release-hardening closeout series.

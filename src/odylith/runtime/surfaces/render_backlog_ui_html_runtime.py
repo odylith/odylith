@@ -3236,16 +3236,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
         <header class="detail-header">
           <span class="rank-chip ${escapeHtml(rankChipClass)}">${escapeHtml(rankLabel)}</span>
           <h2 class="detail-title">${escapeHtml(selected.title)}</h2>
-          <p class="detail-id">${escapeHtml(selected.idea_id)}</p>
-          <div class="chips">
-            <span class="chip chip-priority">${escapeHtml(selected.priority)}</span>
-            <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
-            ${executionSignalChip}
-            <span class="chip chip-lane">${escapeHtml(laneLabel(selected.impacted_lanes))}</span>
-            <span class="chip chip-sizing">${escapeHtml(selected.sizing)} / ${escapeHtml(selected.complexity)}</span>
-            <span class="chip ${rankingClass}">${rankingText}</span>
-          </div>
           <div class="kpis">
+            <div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>
             <div class="kpi"><div class="k">Ordering Score</div><div class="v">${escapeHtml(selected.ordering_score)}</div></div>
             <div class="kpi"><div class="k">Created Date</div><div class="v">${escapeHtml(selected.idea_date_display || selected.idea_date || "-")}</div></div>
             <div class="kpi"><div class="k">Age (days)</div><div class="v">${escapeHtml(selected.idea_age_days || "-")}</div></div>
@@ -3254,6 +3246,14 @@ def _render_html(*, payload: dict[str, object]) -> str:
             <div class="kpi"><div class="k">Execution Days</div><div class="v">${escapeHtml(selected.execution_duration_days || selected.execution_age_days || "-")}</div></div>
             <div class="kpi"><div class="k">Live Signal At</div><div class="v v-compact" title="${escapeHtml(executionSignalAt || "-")}">${escapeHtml(executionSignalLabel)}</div></div>
             <div class="kpi"><div class="k">Confidence</div><div class="v">${escapeHtml(selected.confidence || "-")}</div></div>
+          </div>
+          <div class="chips">
+            <span class="chip chip-priority">${escapeHtml(selected.priority)}</span>
+            <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
+            ${executionSignalChip}
+            <span class="chip chip-lane">${escapeHtml(laneLabel(selected.impacted_lanes))}</span>
+            <span class="chip chip-sizing">${escapeHtml(selected.sizing)} / ${escapeHtml(selected.complexity)}</span>
+            <span class="chip ${rankingClass}">${rankingText}</span>
           </div>
           <div class="meter">
             <div class="meter-head">
@@ -3435,7 +3435,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
     )
     detail_identity_css = dashboard_ui_primitives.detail_identity_typography_css(
         title_selector=".detail-title",
-        subtitle_selector=".detail-id",
+        subtitle_selector=".detail-header .detail-subtitle",
         title_size_px=24,
         medium_title_size_px=22,
         small_title_size_px=19,

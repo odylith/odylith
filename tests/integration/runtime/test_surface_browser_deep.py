@@ -8,7 +8,9 @@ import shutil
 from zoneinfo import ZoneInfo
 
 import pytest
-
+from odylith.runtime.reasoning import odylith_reasoning
+from odylith.runtime.surfaces import render_compass_dashboard
+from odylith.runtime.surfaces import render_tooling_dashboard as tooling_dashboard_renderer
 from tests.integration.runtime.surface_browser_test_support import (
     _REPO_ROOT,
     _assert_clean_page,
@@ -28,6 +30,121 @@ from tests.integration.runtime.surface_browser_test_support import (
 )
 
 
+class _CompassProvider:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    @staticmethod
+    def _pick_fact_id(section: dict[str, object], *, preferred_kinds: tuple[str, ...]) -> str:
+        facts = section.get("facts")
+        if isinstance(facts, list):
+            for fact in facts:
+                if not isinstance(fact, dict):
+                    continue
+                kind = str(fact.get("kind", "")).strip().lower()
+                fact_id = str(fact.get("id", "")).strip()
+                if fact_id and kind in preferred_kinds:
+                    return fact_id
+            for fact in facts:
+                if isinstance(fact, dict):
+                    fact_id = str(fact.get("id", "")).strip()
+                    if fact_id:
+                        return fact_id
+        return ""
+
+    def generate_structured(self, *, request):  # noqa: ANN001
+        self.calls += 1
+        prompt_payload = request.prompt_payload if isinstance(request.prompt_payload, dict) else {}
+        fact_packet = prompt_payload.get("fact_packet") if isinstance(prompt_payload.get("fact_packet"), dict) else {}
+        sections = fact_packet.get("sections") if isinstance(fact_packet.get("sections"), list) else []
+        section_map = {
+            str(section.get("key", "")).strip(): section
+            for section in sections
+            if isinstance(section, dict) and str(section.get("key", "")).strip()
+        }
+
+        completed_id = self._pick_fact_id(section_map.get("completed", {}), preferred_kinds=("plan_completion", "execution_highlight"))
+        direction_id = self._pick_fact_id(section_map.get("current_execution", {}), preferred_kinds=("direction",))
+        operator_id = self._pick_fact_id(section_map.get("current_execution", {}), preferred_kinds=("signal", "timeline", "freshness"))
+        forcing_id = self._pick_fact_id(section_map.get("next_planned", {}), preferred_kinds=("forcing_function", "fallback_next"))
+        impact_id = self._pick_fact_id(section_map.get("why_this_matters", {}), preferred_kinds=("executive_impact",))
+        leverage_id = self._pick_fact_id(section_map.get("why_this_matters", {}), preferred_kinds=("operator_leverage",))
+        risk_id = self._pick_fact_id(section_map.get("risks_to_watch", {}), preferred_kinds=("risk_posture",))
+
+        return {
+            "sections": [
+                {
+                    "key": "completed",
+                    "label": "Completed in this window",
+                    "bullets": [
+                        {
+                            "voice": "operator",
+                            "text": "Verified movement landed in this window, so Compass should read as current work instead of recycled fallback.",
+                            "fact_ids": [completed_id],
+                        }
+                    ],
+                },
+                {
+                    "key": "current_execution",
+                    "label": "Current execution",
+                    "bullets": [
+                        {
+                            "voice": "executive",
+                            "text": "Execution direction stays on the live Compass contract rather than a deterministic shell-safe placeholder.",
+                            "fact_ids": [direction_id],
+                        },
+                        {
+                            "voice": "operator",
+                            "text": "The current packet still carries enough signal to justify provider-backed global narration in the bounded path.",
+                            "fact_ids": [operator_id],
+                        },
+                    ],
+                },
+                {
+                    "key": "next_planned",
+                    "label": "Next planned",
+                    "bullets": [
+                        {
+                            "voice": "operator",
+                            "text": "Next work keeps shell-safe bounded while preserving a live global brief when the provider is reachable.",
+                            "fact_ids": [forcing_id],
+                        }
+                    ],
+                },
+                {
+                    "key": "why_this_matters",
+                    "label": "Why this matters",
+                    "bullets": [
+                        {
+                            "voice": "executive",
+                            "text": "Compass trust breaks quickly when maintainers reopen it and see deterministic fallback despite an available local provider.",
+                            "fact_ids": [impact_id],
+                        },
+                        {
+                            "voice": "operator",
+                            "text": "The operator consequence is less time second-guessing whether the brief is current and less need to rerun refresh blindly.",
+                            "fact_ids": [leverage_id],
+                        },
+                    ],
+                },
+                {
+                    "key": "risks_to_watch",
+                    "label": "Risks to watch",
+                    "bullets": [
+                        {
+                            "voice": "operator",
+                            "text": "No blocking Compass risk is surfaced in this synthetic proof run.",
+                            "fact_ids": [risk_id],
+                        }
+                    ],
+                },
+            ]
+        }
+
+    def generate_finding(self, *, prompt_payload):  # noqa: ANN001, ARG002
+        raise AssertionError("Compass browser proof should use structured generation only.")
+
+
 def _pane_hidden(page, frame_selector: str) -> bool:  # noqa: ANN001
     return bool(page.locator(frame_selector).evaluate("node => Boolean(node.hidden)"))
 
@@ -42,6 +159,11 @@ def _assert_single_visible_pane(page, active_frame_selector: str) -> None:  # no
     )
     visible = [selector for selector in panes if not _pane_hidden(page, selector)]
     assert visible == [active_frame_selector]
+
+
+def _render_tooling_shell_fixture(fixture_root) -> None:  # noqa: ANN001
+    rc = tooling_dashboard_renderer.main(["--repo-root", str(fixture_root), "--output", "odylith/index.html"])
+    assert rc == 0
 
 
 def _first_non_default_option(frame, selector: str, excluded: set[str] | None = None) -> str:  # noqa: ANN001
@@ -111,7 +233,7 @@ def _select_radar_row_with_cross_surface_links(radar) -> str:  # noqa: ANN001
         if not idea_id:
             continue
         button.click()
-        radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, idea_id)
         registry_links = radar.locator("#detail a.chip-registry-component")
         diagram_links = radar.locator("#detail a.chip-topology-diagram")
         if registry_links.count() and diagram_links.count():
@@ -130,9 +252,15 @@ def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
     radar.locator("#query").fill(idea_id)
     radar.locator(f'button[data-idea-id="{idea_id}"]').wait_for(timeout=15000)
     radar.locator(f'button[data-idea-id="{idea_id}"]').first.click()
-    radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, idea_id)
     radar.locator("#query").fill("")
-    radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, idea_id)
+
+
+def _wait_for_radar_detail_id(radar, idea_id: str) -> None:  # noqa: ANN001
+    radar.locator(f'button[data-idea-id="{idea_id}"].active').wait_for(timeout=15000)
+    radar.locator("#detail .detail-title").wait_for(timeout=15000)
+    radar.locator("#detail").filter(has_text=idea_id).wait_for(timeout=15000)
 
 
 def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
@@ -218,6 +346,126 @@ def test_shell_runtime_status_stays_hidden_across_tab_switches(browser_context) 
     ) == "0px"
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_shell_compass_tab_dedupes_stale_runtime_status_to_compass_notice(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    payload["generated_utc"] = "2020-01-02T17:06:12Z"
+    payload["now_local_iso"] = "2020-01-02T09:06:12-08:00"
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    _render_tooling_shell_fixture(fixture_root)
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                assert page.locator("#runtimeStatusReopen").count() == 0
+                page.wait_for_function(
+                    """() => {
+                        const status = document.querySelector("#shellRuntimeStatus");
+                        return Boolean(status && status.hidden && status.getAttribute("aria-hidden") === "true");
+                    }""",
+                    timeout=15000,
+                )
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                page.wait_for_function(
+                    """() => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const banner = doc && doc.querySelector("#status-banner");
+                        return Boolean(
+                          banner
+                          && !banner.classList.contains("hidden")
+                          && (banner.textContent || "").includes("Compass snapshot")
+                        );
+                    }""",
+                    timeout=15000,
+                )
+                assert "ask agent `Refresh Compass runtime for this repo.`" in compass.locator("#status-banner").inner_text()
+
+                page.locator("#tab-radar").click()
+                _wait_for_shell_tab(page, "radar")
+                page.wait_for_function(
+                    """() => {
+                        const node = document.querySelector("#shellRuntimeStatus");
+                        return Boolean(node && node.hidden);
+                    }""",
+                    timeout=15000,
+                )
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_shell_compass_tab_surfaces_failed_full_refresh_warning(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    payload["generated_utc"] = "2026-04-07T17:06:12Z"
+    payload["warning"] = (
+        "Requested Compass full refresh did not finish before the dashboard timeout. "
+        "Showing the last successful shell-safe runtime snapshot from 2026-04-07T17:06:12Z."
+    )
+    runtime_contract = dict(payload.get("runtime_contract") or {})
+    runtime_contract["refresh_profile"] = "shell-safe"
+    runtime_contract["last_refresh_attempt"] = {
+        "status": "failed",
+        "requested_profile": "full",
+        "applied_profile": "shell-safe",
+        "attempted_utc": "2026-04-07T17:17:57Z",
+        "reason": "timeout",
+        "runtime_mode": "auto",
+        "fallback_used": True,
+    }
+    payload["runtime_contract"] = runtime_contract
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    _render_tooling_shell_fixture(fixture_root)
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                page.locator("#shellRuntimeStatus").wait_for(timeout=15000)
+                assert page.locator("#shellRuntimeStatus").get_attribute("aria-hidden") == "false"
+                assert page.locator("#shellRuntimeStatusTitle").inner_text().strip() == "Showing prior Compass snapshot"
+                assert "Requested Compass full refresh did not finish before the dashboard timeout." in page.locator(
+                    "#shellRuntimeStatusBody"
+                ).inner_text()
+                assert "--compass-refresh-profile full" in page.locator("#shellRuntimeStatusMeta").inner_text()
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
 
 
 def test_registry_search_filters_reset_and_detail_actions(browser_context) -> None:  # noqa: ANN001
@@ -344,7 +592,7 @@ def test_radar_search_selection_and_cross_surface_detail_links(browser_context) 
 
     radar.locator("#query").fill(idea_id)
     _wait_for_locator_count(page, "#frame-radar", "button[data-idea-id]", 1)
-    radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, idea_id)
 
     radar.locator("#query").fill("")
     phase_value, phase_count = _first_filter_value_with_results(radar, "#phase", "button[data-idea-id]")
@@ -389,7 +637,7 @@ def test_radar_topology_relation_chips_route_to_their_own_workstream_ids(browser
         chip = radar.locator(f'#detail [data-link-idea="{target_id}"]').first
         chip.wait_for(timeout=15000)
         chip.evaluate("node => node.click()")
-        radar.locator("#detail .detail-id", has_text=target_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, target_id)
         radar.locator(f'button[data-idea-id="{target_id}"].active').wait_for(timeout=15000)
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=target_id)
 
@@ -432,7 +680,7 @@ def test_radar_topology_relation_clicks_self_heal_incompatible_filters(browser_c
     assert radar.locator(f'button[data-idea-id="{target_id}"]').count() == 0
 
     radar.locator(f'#detail [data-link-idea="{target_id}"]').first.evaluate("node => node.click()")
-    radar.locator("#detail .detail-id", has_text=target_id).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, target_id)
     radar.locator(f'button[data-idea-id="{target_id}"].active').wait_for(timeout=15000)
     _wait_for_shell_query_param(page, tab="radar", key="workstream", value=target_id)
     assert radar.locator("#query").input_value() == ""
@@ -449,7 +697,7 @@ def test_radar_b058_memory_diagram_chip_routes_to_d025(browser_context) -> None:
 
     radar = page.frame_locator("#frame-radar")
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar.locator("#detail .detail-id", has_text="B-058").wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, "B-058")
     radar.locator("#detail").evaluate(
         """(node) => {
             const link = Array.from(
@@ -809,6 +1057,222 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     assert global_48h_meta["fingerprint"] != scoped_48h_meta["fingerprint"]
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_explicit_full_compass_refresh_artifacts_do_not_show_deterministic_brief(
+    tmp_path,
+) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    baseline_payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    stale_payload = json.loads(json.dumps(baseline_payload))
+    stale_payload["generated_utc"] = "2020-01-02T16:45:00Z"
+    stale_payload["standup_brief"] = {
+        "24h": {
+            "status": "ready",
+            "source": "deterministic",
+            "fingerprint": "stale-24h",
+            "generated_utc": "2020-01-02T16:45:00Z",
+            "sections": [],
+            "notice": {
+                "reason": "provider_deferred",
+                "title": "Showing deterministic local brief",
+                "message": "Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
+            },
+            "evidence_lookup": {},
+        },
+        "48h": {
+            "status": "ready",
+            "source": "deterministic",
+            "fingerprint": "stale-48h",
+            "generated_utc": "2020-01-02T16:45:00Z",
+            "sections": [],
+            "notice": {
+                "reason": "provider_deferred",
+                "title": "Showing deterministic local brief",
+                "message": "Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
+            },
+            "evidence_lookup": {},
+        },
+    }
+    stale_payload["standup_brief_scoped"] = {"24h": {}, "48h": {}}
+    runtime_json_path.write_text(json.dumps(stale_payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(stale_payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    fresh_payload = json.loads(json.dumps(baseline_payload))
+    fresh_payload["generated_utc"] = "2026-04-08T01:00:00Z"
+    fresh_payload["now_local_iso"] = "2026-04-07T18:00:00-07:00"
+    runtime_contract = fresh_payload.get("runtime_contract") if isinstance(fresh_payload.get("runtime_contract"), dict) else {}
+    runtime_contract["refresh_profile"] = "full"
+    runtime_contract["last_refresh_attempt"] = {
+        "status": "passed",
+        "requested_profile": "full",
+        "applied_profile": "full",
+        "runtime_mode": "auto",
+        "reason": "",
+        "attempted_utc": fresh_payload["generated_utc"],
+        "fallback_used": False,
+    }
+    fresh_payload["runtime_contract"] = runtime_contract
+
+    def _normalize_brief(brief: dict[str, object], *, source: str, generated_utc: str) -> dict[str, object]:
+        normalized = dict(brief)
+        normalized["status"] = "ready"
+        normalized["source"] = source
+        normalized["generated_utc"] = generated_utc
+        normalized.pop("notice", None)
+        normalized.pop("diagnostics", None)
+        return normalized
+
+    standup_brief = fresh_payload.get("standup_brief") if isinstance(fresh_payload.get("standup_brief"), dict) else {}
+    for window in ("24h", "48h"):
+        brief = standup_brief.get(window)
+        if isinstance(brief, dict):
+            standup_brief[window] = _normalize_brief(brief, source="provider", generated_utc=fresh_payload["generated_utc"])
+    fresh_payload["standup_brief"] = standup_brief
+
+    standup_brief_scoped = (
+        fresh_payload.get("standup_brief_scoped")
+        if isinstance(fresh_payload.get("standup_brief_scoped"), dict)
+        else {}
+    )
+    for window in ("24h", "48h"):
+        scoped_map = standup_brief_scoped.get(window)
+        if not isinstance(scoped_map, dict):
+            continue
+        for ws_id, brief in list(scoped_map.items()):
+            if isinstance(brief, dict):
+                scoped_map[ws_id] = _normalize_brief(brief, source="cache", generated_utc=fresh_payload["generated_utc"])
+    fresh_payload["standup_brief_scoped"] = standup_brief_scoped
+    runtime_json_path.write_text(json.dumps(fresh_payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(fresh_payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    assert fresh_payload["standup_brief"]["24h"]["source"] in {"provider", "cache"}
+    assert "notice" not in fresh_payload["standup_brief"]["24h"]
+    assert fresh_payload["standup_brief"]["48h"]["source"] in {"provider", "cache"}
+    assert "notice" not in fresh_payload["standup_brief"]["48h"]
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _assert_compass_live_state(compass, window_token="24h")
+                _wait_for_compass_brief_state(page, window_token="24h", scope_label="Global")
+                meta_24h = _compass_brief_metadata(compass)
+                assert meta_24h["source"] in {"provider", "cache"}
+                assert meta_24h["hasNotice"] == "false"
+                assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
+
+                compass.locator('button[data-window="48h"]').click()
+                _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
+                _assert_compass_live_state(compass, window_token="48h")
+                _wait_for_compass_brief_state(page, window_token="48h", scope_label="Global")
+                meta_48h = _compass_brief_metadata(compass)
+                assert meta_48h["source"] in {"provider", "cache"}
+                assert meta_48h["hasNotice"] == "false"
+
+                scope_value = _first_non_default_option(compass, "#scope-select", excluded={""})
+                if scope_value and re.fullmatch(r"B-\d{3,}", scope_value):
+                    compass.locator("#scope-select").select_option(scope_value)
+                    _wait_for_shell_query_param(page, tab="compass", key="scope", value=scope_value)
+                    _wait_for_compass_brief_state(page, window_token="48h", scope_label=scope_value)
+                    scoped_meta = _compass_brief_metadata(compass)
+                    assert scoped_meta["source"] in {"provider", "cache"}
+                    assert scoped_meta["hasNotice"] == "false"
+                    assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_shell_safe_compass_refresh_artifacts_use_provider_backed_global_briefs_when_available(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    shutil.rmtree(runtime_dir / "history", ignore_errors=True)
+    for path in (runtime_dir / "current.v1.json", runtime_dir / "current.v1.js"):
+        path.unlink(missing_ok=True)
+
+    provider = _CompassProvider()
+
+    def _provider_from_config(  # noqa: ANN001
+        config: odylith_reasoning.ReasoningConfig,
+        *,
+        repo_root=None,
+        require_auto_mode=True,
+        allow_implicit_local_provider=False,
+    ):
+        assert repo_root == fixture_root
+        assert require_auto_mode is False
+        assert allow_implicit_local_provider is True
+        return provider
+
+    monkeypatch.setattr(odylith_reasoning, "provider_from_config", _provider_from_config)
+
+    rc = render_compass_dashboard.main(
+        [
+            "--repo-root",
+            str(fixture_root),
+            "--output",
+            "odylith/compass/compass.html",
+            "--refresh-profile",
+            "shell-safe",
+        ]
+    )
+    assert rc == 0
+    assert provider.calls >= 2
+    _render_tooling_shell_fixture(fixture_root)
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _assert_compass_live_state(compass, window_token="24h")
+                _wait_for_compass_brief_state(page, window_token="24h", scope_label="Global")
+                meta_24h = _compass_brief_metadata(compass)
+                assert meta_24h["source"] == "provider"
+                assert meta_24h["hasNotice"] == "false"
+                assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
+
+                compass.locator('button[data-window="48h"]').click()
+                _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
+                _assert_compass_live_state(compass, window_token="48h")
+                _wait_for_compass_brief_state(page, window_token="48h", scope_label="Global")
+                meta_48h = _compass_brief_metadata(compass)
+                assert meta_48h["source"] == "provider"
+                assert meta_48h["hasNotice"] == "false"
+                assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
 
 
 def test_casebook_detail_stacks_cleanly_in_compact_viewport(compact_browser_context) -> None:  # noqa: ANN001

@@ -1,8 +1,8 @@
 # Dashboard
-Last updated: 2026-04-02
+Last updated: 2026-04-08
 
 
-Last updated (UTC): 2026-04-02
+Last updated (UTC): 2026-04-08
 
 ## Purpose
 Dashboard is the shell host for Odylith. It provides the top-level tabbed,
@@ -97,6 +97,16 @@ out. If Atlas is excluded while stale, the command must print the exact
 follow-up Atlas refresh command instead of assuming the operator will discover
 that gap from `--help`.
 
+Shell-only refresh is wrapper-scoped, not a hidden child-surface rerender. If
+`tooling_shell` runs without Compass, the operator contract must say that the
+wrapper assets refreshed but Compass runtime truth did not. The shell must also
+project current Compass freshness or failure posture when the Compass tab is
+active so parent-surface success does not masquerade as a fresh child brief.
+Explicit Compass `full` refresh is the opposite contract: it is a deep
+child-surface rerender, not a wrapper refresh, and a passing run must not rely
+on deterministic local brief fallback or on reusing a recent Compass payload
+that does not already satisfy the requested deep-refresh truth contract.
+
 ### Live-refresh policy contract
 Dashboard owns the shell-side policy that decides when a currently open tab may
 reload against fresher local runtime state without mutating tracked Odylith
@@ -121,6 +131,13 @@ Across all policies, the shell must keep three guardrails:
 - no background `odylith sync`
 - no background tracked-truth mutation under `odylith/`
 - no background provider-backed Compass brief generation
+
+The same truth rule applies to explicit refresh: the shell may read Compass
+runtime state and surface stale/failure posture, but it must not imply that
+Compass rerendered unless the Compass child-runtime snapshot actually changed.
+When the operator explicitly requests Compass `full`, the shell and refresh
+contract must treat deterministic local brief output or stale child-runtime
+reuse as a failed deeper refresh, not as a successful update.
 
 These policies are posture switches over one shell/runtime implementation. They
 must not fork Odylith into lane-specific codebases; source templates, generated
@@ -167,6 +184,33 @@ The shell is meant to answer:
 
 The shell should not duplicate detailed business panels that already exist in
 the child surfaces.
+
+- When a child surface already explains its own stale-runtime or freshness
+  posture in-frame, the shell must not add a second banner that repeats the
+  same issue in wrapper language. Shell runtime-status cards are reserved for
+  failure or cross-surface posture the child surface cannot already disclose
+  itself.
+- The bottom-right recovery dock is for global shell reopen actions such as the
+  starter guide or upgrade spotlight. Do not add per-surface status reopen
+  buttons there.
+
+### Shared Detail-Header Layout Contract
+Dashboard owns the shared layout contract for child surfaces that use
+Dashboard-owned header and card primitives.
+
+- Detail headers must render their primary fact-card or KPI grid immediately
+  after the headline block.
+- The headline block means the identifier/kicker plus the title. Supporting
+  prose, chips, action links, controls, and meters are secondary content and
+  must render below the primary fact/KPI grid rather than between the title and
+  that grid.
+- Child surfaces must not reserve a desktop side gutter beside the primary
+  fact/KPI grid for controls or links. If controls exist, they stack below the
+  primary grid or move into another clearly secondary row.
+- Shared changes to this ordering contract belong in
+  `src/odylith/runtime/surfaces/dashboard_ui_primitives.py`, the governed
+  child-surface renderers, and the cross-surface browser layout audits
+  together.
 
 The shell header is a frozen contract. The only version/status readout allowed
 there is the existing compact `shell_version_label` string. Do not add
@@ -223,6 +267,9 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Bound the shell host to Odylith's own product-governance records so the public repo can render and audit its own surface boundary. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-03-27: Added self-host posture payload fields so the shell can expose product-repo dogfood and release posture without inventing a second status model. (Plan: [B-004](odylith/radar/radar.html?view=plan&workstream=B-004))
+- 2026-04-07: Clarified the shell freshness contract so Compass owns its normal stale-runtime disclosure in-frame, the shell reserves status cards for failure-only or cross-surface posture, and the recovery dock no longer carries per-surface `Show status` reopen buttons. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-03-31: Froze the dashboard header contract and made shell render fail closed if the source-owned header template or header CSS drifts. (Plan: [B-027](odylith/radar/radar.html?view=plan&workstream=B-027))
 - 2026-04-01: Restored the compact runtime/version string inside the frozen header contract so pinned and detached maintainer lanes stay visibly distinguishable. (Plan: [B-027](odylith/radar/radar.html?view=plan&workstream=B-027))
 - 2026-04-02: Added balanced, proof-frozen, and full-dev live-refresh policies so read-only runtime-backed tabs can stay current without background sync, provider-credit spend, or benchmark skew. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-08: Clarified that explicit Compass `full` is a deep child-surface refresh, not wrapper polish: the shell may project Compass freshness gaps, but a passing deep refresh now keeps the valid five-minute reuse clamp only when the reused payload is already deep-refresh-clean. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-08: Fixed the shell runtime-status bootstrap so Compass stale/failure disclosure survives first load and later runtime probes instead of being cleared by a probe payload that lacks shell-facing status records. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

@@ -11,13 +11,15 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 from importlib import import_module
+import json
 import os
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine.surface_projection_fingerprint import default_surface_projection_input_fingerprint
+from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import dashboard_surface_bundle
 
@@ -26,6 +28,7 @@ _DEFAULT_ACTIVE_WINDOW_MINUTES = 15
 _COMPASS_TZ = ZoneInfo("America/Los_Angeles")
 _RUNTIME_CONTRACT_VERSION = "v1"
 _RUNTIME_REUSE_MAX_AGE_SECONDS = 5 * 60
+_DEFAULT_REFRESH_PROFILE = compass_refresh_contract.DEFAULT_REFRESH_PROFILE
 _EXPORT_MODULES = (
     "odylith.runtime.surfaces.compass_dashboard_base",
     "odylith.runtime.surfaces.compass_dashboard_runtime",
@@ -62,6 +65,130 @@ def _versioned_href(*, output_path: Path, target: Path) -> str:
 
 def _load_runtime_impl():
     return import_module("odylith.runtime.surfaces.compass_dashboard_runtime")
+
+
+def _normalize_refresh_profile(value: str) -> str:
+    return compass_refresh_contract.normalize_refresh_profile(value, default=_DEFAULT_REFRESH_PROFILE)
+
+
+def _now_utc_iso() -> str:
+    return dt.datetime.now(tz=dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _write_current_runtime_payload(
+    *,
+    repo_root: Path,
+    current_json_path: Path,
+    current_js_path: Path,
+    payload: Mapping[str, Any],
+) -> None:
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=current_json_path,
+        content=json.dumps(payload, indent=2) + "\n",
+        lock_key=str(current_json_path),
+    )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=current_js_path,
+        content="window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        lock_key=str(current_js_path),
+    )
+
+
+def _refresh_failure_warning(
+    *,
+    requested_profile: str,
+    applied_profile: str,
+    reason: str,
+    generated_utc: str,
+) -> str:
+    snapshot_label = str(generated_utc).strip() or "the last successful render"
+    reason_token = str(reason or "").strip().lower()
+    reason_label = "did not finish before the dashboard timeout" if reason_token == "timeout" else "failed before a fresh payload was written"
+    return (
+        f"Requested Compass {requested_profile} refresh {reason_label}. "
+        f"Showing the last successful {applied_profile} runtime snapshot from {snapshot_label}."
+    )
+
+
+def _apply_refresh_attempt_state(
+    *,
+    payload: dict[str, Any],
+    requested_profile: str,
+    applied_profile: str,
+    runtime_mode: str,
+    status: str,
+    reason: str = "",
+    fallback_used: bool = False,
+    attempted_utc: str = "",
+) -> dict[str, Any]:
+    runtime_contract = payload.get("runtime_contract")
+    normalized_contract = dict(runtime_contract) if isinstance(runtime_contract, Mapping) else {}
+    attempted_token = str(attempted_utc or "").strip() or _now_utc_iso()
+    applied_token = _normalize_refresh_profile(applied_profile)
+    requested_token = _normalize_refresh_profile(requested_profile)
+    status_token = "failed" if str(status).strip().lower() == "failed" else "passed"
+    reason_token = str(reason or "").strip().lower()
+    normalized_contract["last_refresh_attempt"] = {
+        "status": status_token,
+        "requested_profile": requested_token,
+        "applied_profile": applied_token,
+        "runtime_mode": str(runtime_mode or "").strip().lower() or "auto",
+        "reason": reason_token,
+        "attempted_utc": attempted_token,
+        "fallback_used": bool(fallback_used),
+    }
+    if status_token == "failed":
+        normalized_contract["last_successful_generated_utc"] = str(payload.get("generated_utc", "")).strip()
+        payload["warning"] = _refresh_failure_warning(
+            requested_profile=requested_token,
+            applied_profile=applied_token,
+            reason=reason_token,
+            generated_utc=str(payload.get("generated_utc", "")).strip(),
+        )
+    else:
+        payload.pop("warning", None)
+    payload["runtime_contract"] = normalized_contract
+    return payload
+
+
+def record_failed_refresh_attempt(
+    *,
+    repo_root: Path,
+    runtime_dir: Path,
+    requested_profile: str,
+    runtime_mode: str,
+    reason: str,
+    fallback_used: bool,
+) -> bool:
+    current_json_path = Path(runtime_dir) / "current.v1.json"
+    current_js_path = Path(runtime_dir) / "current.v1.js"
+    payload = odylith_context_cache.read_json_object(current_json_path)
+    if not payload:
+        return False
+    runtime_contract = payload.get("runtime_contract")
+    applied_profile = (
+        _normalize_refresh_profile(str(runtime_contract.get("refresh_profile", _DEFAULT_REFRESH_PROFILE)))
+        if isinstance(runtime_contract, Mapping)
+        else _DEFAULT_REFRESH_PROFILE
+    )
+    updated_payload = _apply_refresh_attempt_state(
+        payload=dict(payload),
+        requested_profile=requested_profile,
+        applied_profile=applied_profile,
+        runtime_mode=runtime_mode,
+        status="failed",
+        reason=reason,
+        fallback_used=fallback_used,
+    )
+    _write_current_runtime_payload(
+        repo_root=Path(repo_root).resolve(),
+        current_json_path=current_json_path,
+        current_js_path=current_js_path,
+        payload=updated_payload,
+    )
+    return True
 
 
 def __getattr__(name: str) -> Any:
@@ -155,8 +282,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--refresh-profile",
         choices=("full", "shell-safe"),
-        default="full",
-        help="`shell-safe` rebuilds Compass in bounded mode by deferring live provider narration during refresh.",
+        default=_DEFAULT_REFRESH_PROFILE,
+        help=(
+            "`shell-safe` rebuilds Compass in bounded mode, keeps scoped provider warming deferred, "
+            "and lets global 24h/48h narration use the live provider opportunistically."
+        ),
     )
     return parser.parse_args(argv)
 
@@ -175,7 +305,7 @@ def refresh_runtime_artifacts(
     max_review_age_days: int,
     active_window_minutes: int,
     runtime_mode: str,
-    refresh_profile: str = "full",
+    refresh_profile: str = _DEFAULT_REFRESH_PROFILE,
 ) -> tuple[dict[str, Any], tuple[Path, Path, Path, Path, Path]]:
     current_json_path = runtime_dir / "current.v1.json"
     current_js_path = runtime_dir / "current.v1.js"
@@ -199,14 +329,30 @@ def refresh_runtime_artifacts(
         retention_days=retention_days,
         refresh_profile=refresh_profile,
     )
-    normalized_profile = str(refresh_profile or "full").strip().lower() or "full"
+    normalized_profile = _normalize_refresh_profile(refresh_profile)
     existing_payload = _existing_runtime_payload_if_fresh(
         current_json_path=current_json_path,
         input_fingerprint=input_fingerprint,
         runtime_paths=runtime_paths,
     )
-    if existing_payload is not None:
-        return existing_payload, runtime_paths
+    if existing_payload is not None and _payload_satisfies_requested_refresh(
+        payload=existing_payload,
+        requested_profile=normalized_profile,
+    ):
+        updated_existing_payload = _apply_refresh_attempt_state(
+            payload=dict(existing_payload),
+            requested_profile=normalized_profile,
+            applied_profile=normalized_profile,
+            runtime_mode=runtime_mode,
+            status="passed",
+        )
+        _write_current_runtime_payload(
+            repo_root=repo_root,
+            current_json_path=current_json_path,
+            current_js_path=current_js_path,
+            payload=updated_existing_payload,
+        )
+        return updated_existing_payload, runtime_paths
 
     runtime_impl = _load_runtime_impl()
     payload = runtime_impl._build_runtime_payload(
@@ -236,6 +382,14 @@ def refresh_runtime_artifacts(
         }
     )
     payload["runtime_contract"] = runtime_contract
+    _apply_refresh_attempt_state(
+        payload=payload,
+        requested_profile=normalized_profile,
+        applied_profile=normalized_profile,
+        runtime_mode=runtime_mode,
+        status="passed",
+        attempted_utc=str(payload.get("generated_utc", "")).strip(),
+    )
     paths = runtime_impl._write_runtime_snapshots(
         repo_root=repo_root,
         runtime_dir=runtime_dir,
@@ -279,7 +433,7 @@ def _compass_runtime_input_fingerprint(
                 "max_review_age_days": int(max_review_age_days),
                 "active_window_minutes": int(active_window_minutes),
                 "runtime_mode": str(runtime_mode).strip(),
-                "refresh_profile": str(refresh_profile).strip().lower() or "full",
+                "refresh_profile": _normalize_refresh_profile(refresh_profile),
             },
         }
     )
@@ -315,6 +469,42 @@ def _existing_runtime_payload_if_fresh(
     if age_seconds < 0 or age_seconds > float(_RUNTIME_REUSE_MAX_AGE_SECONDS):
         return None
     return payload
+
+
+def _payload_satisfies_requested_refresh(
+    *,
+    payload: Mapping[str, Any],
+    requested_profile: str,
+) -> bool:
+    if not compass_refresh_contract.full_refresh_requested(requested_profile):
+        return True
+    current_workstreams = payload.get("current_workstreams")
+    if not isinstance(current_workstreams, list):
+        return False
+    expected_scoped_ids = {
+        str(row.get("idea_id", "")).strip()
+        for row in current_workstreams
+        if isinstance(row, Mapping) and str(row.get("idea_id", "")).strip()
+    }
+    standup_brief = payload.get("standup_brief")
+    if not isinstance(standup_brief, Mapping):
+        return False
+    standup_brief_scoped = payload.get("standup_brief_scoped")
+    scoped_by_window = standup_brief_scoped if isinstance(standup_brief_scoped, Mapping) else {}
+    for window in ("24h", "48h"):
+        brief = standup_brief.get(window)
+        if not isinstance(brief, Mapping) or not compass_refresh_contract.brief_satisfies_full_refresh(brief):
+            return False
+        scoped_map = scoped_by_window.get(window)
+        if not isinstance(scoped_map, Mapping):
+            return False
+        for ws_id in expected_scoped_ids:
+            scoped_brief = scoped_map.get(ws_id)
+            if not isinstance(scoped_brief, Mapping):
+                return False
+            if not compass_refresh_contract.brief_satisfies_full_refresh(scoped_brief):
+                return False
+    return True
 
 
 def _parse_generated_utc(payload: Mapping[str, Any]) -> dt.datetime | None:

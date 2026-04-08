@@ -20,6 +20,9 @@ def test_wheel_build_configuration_excludes_test_and_simulator_content() -> None
         pattern in {"LICENSE", "NOTICE", "THIRD_PARTY_ATTRIBUTION.md"} or pattern.startswith("src/odylith/")
         for pattern in include_patterns
     )
+    assert wheel_target["extra-metadata"] == {
+        "THIRD_PARTY_ATTRIBUTION.md": "THIRD_PARTY_ATTRIBUTION.md",
+    }
 
     sdist_patterns = [str(token) for token in sdist_target["include"]]
     assert "tests/**" in sdist_patterns

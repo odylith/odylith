@@ -1,8 +1,8 @@
 # Release
-Last updated: 2026-04-07
+Last updated: 2026-04-08
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-08
 
 ## Purpose
 Release is Odylith's canonical maintainer publication lane. It owns the
@@ -58,6 +58,11 @@ claims aligned for public publication.
   `odylith/runtime/source/release-maintainer-overrides.v1.json` with an exact
   version, reason, and owner so PR gating, lane status, and the final release
   story can agree on why benchmark proof was advisory instead of blocking.
+- The current `v0.1.10` release uses that exact exception path because the
+  pinned-dogfood proof benchmark wedged mid-corpus on report
+  `0047192366d8bf1c`. This release must not be narrated as benchmark
+  re-proved; the override is exact-version only and the runner fix moves to the
+  next release.
 - Preflight is the session initializer. Dispatch reuses the active session
   rather than recomputing a version.
 - The canonical release lane is authoritative only when it runs from the
@@ -74,6 +79,16 @@ claims aligned for public publication.
   options.
   The canonical public bootstrap command is
   `curl -fsSL https://odylith.ai/install.sh | bash`.
+- Release prep for the next version must land an authored note under
+  `odylith/runtime/source/release-notes/vX.Y.Z.md` before the lane is treated
+  as launch-ready. That note is the source of truth for the consumer upgrade
+  spotlight copy, so release-facing popup claims must be proved from the same
+  authored markdown rather than one-off shell text.
+- When the hosted installer upgrades an already-installed consumer repo, it
+  must leave one truthful closeout posture: the verified runtime is active, the
+  tracked repo pin matches that runtime, and any stale-retention cleanup that
+  still cannot finish is reported as exact remediation instead of a false
+  activation failure.
 - Supported public install and normal pinned upgrade remain full-stack by
   default, but release transport is split into a smaller base runtime plus a
   separately versioned managed context-engine pack so uploads, downloads, and
@@ -120,6 +135,9 @@ claims aligned for public publication.
   trust anchor.
 - Fresh consumer install must not make a runtime live until the full-stack
   managed runtime and managed context-engine pack pass activation smoke.
+- Hosted-installer retention cleanup for stale non-active runtime and release
+  cache trees is best-effort only after healthy activation. Read-only leftovers
+  must surface exact remediation and must not overturn the active runtime.
 - Verified release downloads must stream into repo-local cache files
   atomically and retry bounded transient network failures instead of leaving
   half-written assets in place.
@@ -182,6 +200,9 @@ claims aligned for public publication.
 - `odylith/MAINTAINER_RELEASE_RUNBOOK.md` and
   `odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md`
   Canonical release-order and launch-readiness operator guidance.
+- `odylith/runtime/source/release-notes/vX.Y.Z.md`
+  Authored release-note source that drives the consumer upgrade spotlight and
+  the tagged GitHub note URL for the released version.
 - `bin/_odylith.sh`
   Shared maintainer release-lane authority checks, local session-file
   location, and wrapper plumbing.
@@ -228,19 +249,27 @@ claims aligned for public publication.
   - the workflow ref is `refs/heads/main`
   - the requested `tag` resolves to the session `expected_sha`
   - `GITHUB_SHA` equals that same `expected_sha`
-- Release identity validation accepts two commit-history shapes only:
-  - direct maintainer-authored commits with `freedom-research` local identity
-  - the currently observed GitHub-generated squash-merge shape on canonical
-    `main`, where maintainer authorship still uses
-    `freedom@freedompreetham.org` and only the committer is
-    `GitHub <noreply@github.com>`
-- This GitHub-committer path is a release-path compatibility exception, not
-  the desired long-term publication posture. A follow-on release slice should
-  remove the dependency on GitHub-generated merge committer metadata and
-  restore canonical maintainer identity end to end.
-- Release, release-candidate, and test workflows should pin first-party GitHub
-  Actions to immutable SHAs, pin the runner image, and pin the build frontend
-  version instead of relying on floating CI inputs.
+- Release identity validation now pins canonical maintainer authorship for
+  commit-history proof and no longer depends on a GitHub-generated committer
+  exception in canonical `main` ancestry.
+- Local maintainer config still remains strict on both author and committer
+  identity. The history gate is intentionally narrower: it validates the
+  canonical authored identity that must survive platform merge machinery while
+  tolerating the immutable historical maintainer author alias already present
+  in older canonical commits.
+- The concrete `v0.1.10` follow-up record is
+  [B-060](/Users/freedom/code/odylith/odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md).
+- Release, release-candidate, and test workflows now pin
+  `actions/checkout v5.0.1` and `actions/setup-python v6.1.0` to immutable
+  SHAs, keep the runner image pinned, and keep the build frontend version
+  pinned instead of relying on floating CI inputs.
+- Those first-party Action pins must also stay on a currently supported
+  GitHub-hosted runtime major. A release-lane Node-runtime deprecation warning
+  from pinned first-party Actions is a release blocker, not benign CI noise.
+- Release-proof tests must not depend on ambient maintainer workstation
+  capabilities. If a unit or candidate-proof assertion needs Codex host-native
+  spawn semantics or a discovered `codex` binary, the test must force or mock
+  that contract explicitly so GitHub-hosted runners prove the same truth.
 - Release assets are authoritative only when the signed manifest, provenance,
   and SBOM all verify for the canonical signer identity.
 - Consumer posture must reject maintainer-only localhost asset overrides and

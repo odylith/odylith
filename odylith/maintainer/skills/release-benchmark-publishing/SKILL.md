@@ -59,7 +59,11 @@ Do not use this skill in consumer repos.
    packet or prompt measurements, run `--profile diagnostic` separately and do
    not publish that as the product comparison. If the proof run needs to be
    split operationally, use deterministic `--family` or shard flags and
-   publish only from the completed full proof report.
+   publish only from the completed full proof report. If maintainers activate a
+   version-scoped benchmark override instead, stop the in-flight proof run,
+   record the override in `odylith/runtime/source/release-maintainer-overrides.v1.json`,
+   and update Casebook plus the bound release workstream and plan before
+   continuing the release lane.
 4. Regenerate the graph assets from the latest report:
    `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --report .odylith/runtime/odylith-benchmarks/latest.v1.json --out-dir docs/benchmarks`
 5. Update the repo-root `README.md` benchmark snapshot from that same report.

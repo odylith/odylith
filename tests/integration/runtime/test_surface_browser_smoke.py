@@ -184,7 +184,7 @@ def _select_radar_row_with_link(
         if not idea_id:
             continue
         button.click()
-        radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
         links = radar.locator(f"#detail {link_selector}")
         if links.count():
             href = str(links.first.get_attribute("href") or "").strip()
@@ -287,7 +287,7 @@ def _assert_radar_selection(page, workstream: str) -> None:  # noqa: ANN001
     assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
     radar = page.frame_locator("#frame-radar")
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar.locator("#detail .detail-id", has_text=workstream).wait_for(timeout=15000)
+    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=workstream).wait_for(timeout=15000)
 
 
 def _assert_registry_selection(page, component_id: str) -> None:  # noqa: ANN001
@@ -584,7 +584,7 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
         key="workstream",
         value=idea_id,
     )
-    radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
 
     idea_id, diagram_id, diagram_href = _select_radar_row_with_link(
         radar,
@@ -616,7 +616,7 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
         key="workstream",
         value=idea_id,
     )
-    radar.locator("#detail .detail-id", has_text=idea_id).wait_for(timeout=15000)
+    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
     page.go_back(wait_until="domcontentloaded")
     _wait_for_shell_tab(page, "compass")
     assert page.locator("#tab-compass").get_attribute("aria-selected") == "true"
@@ -916,7 +916,7 @@ def test_atlas_tab_switch_restores_atlas_state_instead_of_leaking_radar_scope(br
     if radar_row.count() == 0:
         pytest.skip(f"Radar fixture does not currently expose workstream {mismatched_workstream}.")
     radar_row.first.click()
-    radar.locator("#detail .detail-id", has_text=mismatched_workstream).wait_for(timeout=15000)
+    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=mismatched_workstream).wait_for(timeout=15000)
     _wait_for_shell_query_param(page, tab="radar", key="workstream", value=mismatched_workstream)
 
     page.locator("#tab-atlas").click()

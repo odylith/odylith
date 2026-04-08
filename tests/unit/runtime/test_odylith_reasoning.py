@@ -8,7 +8,7 @@ import urllib.error
 import pytest
 
 from odylith.runtime.governance import operator_readout
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 
 
 class _StubProvider:
@@ -51,11 +51,11 @@ class _PathLeakingProvider:
         ]
         return {
             "leading_explanation": {
-                "text": "Validated provider read: src/odylith/runtime/evaluation/odylith_reasoning.py is still changing the evaluator path.",
+                "text": "Validated provider read: src/odylith/runtime/reasoning/odylith_reasoning.py is still changing the evaluator path.",
                 "evidence_ids": evidence_ids[:2],
             },
             "strongest_rival": {
-                "text": "The rival is that src/odylith/runtime/evaluation/odylith_reasoning.py only changed presentation.",
+                "text": "The rival is that src/odylith/runtime/reasoning/odylith_reasoning.py only changed presentation.",
                 "evidence_ids": [evidence_ids[2]],
             },
             "risk_if_wrong": {
@@ -63,11 +63,11 @@ class _PathLeakingProvider:
                 "evidence_ids": [evidence_ids[1]],
             },
             "discriminating_next_check": {
-                "text": "Classify the latest diff in src/odylith/runtime/evaluation/odylith_reasoning.py before trusting the queue.",
+                "text": "Classify the latest diff in src/odylith/runtime/reasoning/odylith_reasoning.py before trusting the queue.",
                 "evidence_ids": [evidence_ids[3]],
             },
             "maintainer_brief": {
-                "text": "Validated provider read: src/odylith/runtime/evaluation/odylith_reasoning.py is still changing the evaluator path. The rival is that src/odylith/runtime/evaluation/odylith_reasoning.py only changed presentation. Do now: classify the latest diff in src/odylith/runtime/evaluation/odylith_reasoning.py before trusting the queue.",
+                "text": "Validated provider read: src/odylith/runtime/reasoning/odylith_reasoning.py is still changing the evaluator path. The rival is that src/odylith/runtime/reasoning/odylith_reasoning.py only changed presentation. Do now: classify the latest diff in src/odylith/runtime/reasoning/odylith_reasoning.py before trusting the queue.",
                 "evidence_ids": evidence_ids[:4],
             },
         }
@@ -218,7 +218,7 @@ def test_build_reasoning_payload_defaults_to_tribunal_v5_without_provider(tmp_pa
 def test_build_reasoning_payload_uses_validated_provider_output_when_evidence_checks_pass(tmp_path: Path) -> None:
     payload = odylith_reasoning.build_reasoning_payload(
         repo_root=tmp_path,
-        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/evaluation/odylith_reasoning.py"])]},
+        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/reasoning/odylith_reasoning.py"])]},
         posture=_posture(),
         config=odylith_reasoning.ReasoningConfig(
             mode="auto",
@@ -244,7 +244,7 @@ def test_build_reasoning_payload_uses_validated_provider_output_when_evidence_ch
 def test_build_reasoning_payload_falls_back_when_provider_output_fails_validation(tmp_path: Path) -> None:
     payload = odylith_reasoning.build_reasoning_payload(
         repo_root=tmp_path,
-        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/evaluation/odylith_reasoning.py"])]},
+        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/reasoning/odylith_reasoning.py"])]},
         posture=_posture(),
         config=odylith_reasoning.ReasoningConfig(
             mode="auto",
@@ -269,7 +269,7 @@ def test_build_reasoning_payload_falls_back_when_provider_output_fails_validatio
 def test_build_reasoning_payload_sanitizes_provider_raw_paths_into_artifact_labels(tmp_path: Path) -> None:
     payload = odylith_reasoning.build_reasoning_payload(
         repo_root=tmp_path,
-        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/evaluation/odylith_reasoning.py"])]},
+        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/reasoning/odylith_reasoning.py"])]},
         posture=_posture(),
         config=odylith_reasoning.ReasoningConfig(
             mode="auto",
@@ -325,7 +325,7 @@ def test_build_reasoning_payload_retries_cached_failed_provider_case(tmp_path: P
     )
     delivery_payload = {
         "version": "v4",
-        "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/evaluation/odylith_reasoning.py"])],
+        "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/reasoning/odylith_reasoning.py"])],
     }
 
     first = odylith_reasoning.build_reasoning_payload(
@@ -353,7 +353,7 @@ def test_build_reasoning_payload_retries_cached_failed_provider_case(tmp_path: P
 def test_build_reasoning_payload_regenerates_when_provider_contract_changes(tmp_path: Path) -> None:
     first = odylith_reasoning.build_reasoning_payload(
         repo_root=tmp_path,
-        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/evaluation/odylith_reasoning.py"])]},
+        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/reasoning/odylith_reasoning.py"])]},
         posture=_posture(),
         config=odylith_reasoning.ReasoningConfig(
             mode="auto",
@@ -369,7 +369,7 @@ def test_build_reasoning_payload_regenerates_when_provider_contract_changes(tmp_
 
     second = odylith_reasoning.build_reasoning_payload(
         repo_root=tmp_path,
-        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/evaluation/odylith_reasoning.py"])]},
+        delivery_payload={"version": "v4", "scopes": [_scope(scope_id="B-061", scope_label="Scope B-061", status="implementation", code_references=["src/odylith/runtime/reasoning/odylith_reasoning.py"])]},
         posture=_posture(),
         previous_payload=first,
         config=odylith_reasoning.ReasoningConfig(

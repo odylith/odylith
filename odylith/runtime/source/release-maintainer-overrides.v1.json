@@ -1,6 +1,6 @@
 {
   "contract": "odylith_release_maintainer_overrides.v1",
-  "updated_utc": "2026-04-07T22:05:00Z",
+  "updated_utc": "2026-04-08T08:59:56Z",
   "benchmark_proof_overrides": [
     {
       "version": "0.1.9",
@@ -8,6 +8,13 @@
       "reason": "Maintainer special request. Full benchmark audit and proof refresh move to the next release.",
       "owner": "freedom-research",
       "updated_utc": "2026-04-07T22:05:00Z"
+    },
+    {
+      "version": "0.1.10",
+      "mode": "skip_proof_and_compare",
+      "reason": "Pinned-dogfood proof benchmark wedged mid-corpus during release prep. Track the blocker in Casebook and restore full proof next release.",
+      "owner": "freedom-research",
+      "updated_utc": "2026-04-08T08:59:56Z"
     }
   ]
 }

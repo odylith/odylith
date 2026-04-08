@@ -24,10 +24,11 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as registry
 from odylith.runtime.governance import operator_readout
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.command_surface import display_command
-from odylith.runtime.evaluation import tribunal_engine
+from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.reasoning import tribunal_engine
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference
 
@@ -2797,9 +2798,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("delivery intelligence artifact is current")
         return 0
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(rendered, encoding="utf-8")
-    print(f"wrote delivery intelligence artifact: {output_path.relative_to(repo_root)}")
+    wrote_output = odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=output_path,
+        content=rendered,
+        lock_key=str(output_path),
+    )
+    if wrote_output:
+        print(f"wrote delivery intelligence artifact: {output_path.relative_to(repo_root)}")
+    else:
+        print("delivery intelligence artifact is current")
     return 0
 
 

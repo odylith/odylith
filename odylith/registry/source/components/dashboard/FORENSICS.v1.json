@@ -28,12 +28,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 31,
-    "mapped_workstream_evidence_count": 2,
+    "explicit_event_count": 35,
+    "mapped_workstream_evidence_count": 4,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 5,
+    "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 31
+    "timeline_event_count": 35
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -43,6 +43,108 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 59,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.9 for the current repository; repo pin is 0.1.9.",
+      "ts_iso": "2026-04-08T01:46:37-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 58,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Bound B-060 to the next release hardening plan covering benchmark re-proof, GitHub merge-identity cleanup, first-install shell refresh robustness, CI pin refresh, and clean post-publish dogfood.",
+      "ts_iso": "2026-04-07T17:08:28-07:00",
+      "workstreams": [
+        "B-060"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 57,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Captured v0.1.10 release feedback under B-060 and moved the post-v0.1.9 dirty maintainer state onto branch 2026/freedom/v0.1.10.",
+      "ts_iso": "2026-04-07T17:08:28-07:00",
+      "workstreams": [
+        "B-060"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 56,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.9 for the current repository; repo pin is 0.1.9.",
+      "ts_iso": "2026-04-07T15:49:31-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/install.json",
@@ -996,6 +1098,7 @@
     "B-055",
     "B-057",
     "B-051",
-    "B-048"
+    "B-048",
+    "B-060"
   ]
 }

@@ -1288,6 +1288,25 @@ def _contract_touchpoints(
             return "runbook"
         return "developer_doc"
 
+    normalized_changed_paths = [str(path).strip() for path in changed_paths if str(path).strip()]
+    doc_only_changed_paths = bool(normalized_changed_paths) and all(
+        path == "README.md"
+        or path == "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+        or path.startswith(
+            (
+                "odylith/atlas/source/",
+                "odylith/registry/source/components/",
+                "docs/benchmarks/",
+            )
+        )
+        for path in normalized_changed_paths
+    )
+    has_direct_diagram_match = any(
+        any(str(path).strip() for path in diagram.get("matched_paths", []))
+        for diagram in diagrams
+        if isinstance(diagram, Mapping)
+    )
+
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
     for domain in topology_domains:
@@ -1334,6 +1353,12 @@ def _contract_touchpoints(
                 }
             )
     for diagram in diagrams:
+        if (
+            doc_only_changed_paths
+            and has_direct_diagram_match
+            and not any(str(path).strip() for path in diagram.get("matched_paths", []))
+        ):
+            continue
         for path in diagram.get("related_docs", []):
             token = _normalize_repo_path(repo_root=repo_root, value=path)
             if not token or token in seen:
@@ -1404,6 +1429,17 @@ def _prune_secondary_diagram_required_reads(
     if not diagram_only_slice:
         return _dedupe_strings(required_reads)
     normalized_required_reads = _dedupe_strings(required_reads)
+    secondary_diagram_paths = {
+        str(diagram.get("path", "")).strip()
+        for diagram in linked_diagrams
+        if isinstance(diagram, Mapping)
+        and not any(str(path).strip() for path in diagram.get("matched_paths", []))
+        and str(diagram.get("path", "")).strip()
+    }
+    if secondary_diagram_paths:
+        normalized_required_reads = [
+            token for token in normalized_required_reads if token not in secondary_diagram_paths
+        ]
     has_public_release_contract = any(
         token in normalized_required_reads
         for token in ("README.md", "odylith/MAINTAINER_RELEASE_RUNBOOK.md")
@@ -1416,6 +1452,16 @@ def _prune_secondary_diagram_required_reads(
         for token in normalized_required_reads
         if not token.startswith("odylith/maintainer/agents-guidelines/")
     ]
+    component_specs = [token for token in filtered_required_reads if token.endswith("CURRENT_SPEC.md")]
+    umbrella_component_specs = {
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+    }
+    has_specific_component_spec = any(token not in umbrella_component_specs for token in component_specs)
+    if has_specific_component_spec:
+        filtered_required_reads = [
+            token for token in filtered_required_reads if token not in umbrella_component_specs
+        ]
     return filtered_required_reads or normalized_required_reads
 
 

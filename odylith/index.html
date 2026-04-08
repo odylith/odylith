@@ -452,11 +452,13 @@
   appearance: none;
   border: 1px solid #bfd8f8;
   border-radius: 999px;
-  padding: 10px 6.5px;
+  padding: 9px 12px;
   background: rgba(255, 255, 255, 0.96);
   color: #173f83;
-  font: inherit;
+  font-family: inherit;
+  font-size: 0.875rem;
   font-weight: 700;
+  line-height: 1.1;
   white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 12px 26px rgba(23, 63, 131, 0.14);
@@ -476,16 +478,6 @@
 .shell-recovery-button-upgrade:hover,
 .shell-recovery-button-upgrade:focus-visible {
   background: rgba(22, 60, 118, 0.14);
-}
-
-.shell-recovery-button-runtime {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(191, 212, 248, 0.92);
-}
-
-.shell-recovery-button-runtime:hover,
-.shell-recovery-button-runtime:focus-visible {
-  background: #f6faff;
 }
 
 .welcome-explainer-strip {
@@ -3916,7 +3908,7 @@ html, body {
       </div>
 
       <div class="toolbar-meta">
-        <p class="toolbar-version">v0.1.8</p>
+        <p class="toolbar-version">v0.1.9</p>
 
         <div class="toolbar-actions">
         </div>
@@ -3935,7 +3927,6 @@ html, body {
       <div id="shellRecoveryDock" class="shell-recovery-dock" hidden aria-live="polite">
         <button id="welcomeReopen" type="button" class="shell-recovery-button" hidden aria-hidden="true">Starter Guide</button>
         <button id="upgradeReopen" type="button" class="shell-recovery-button shell-recovery-button-upgrade" hidden aria-hidden="true"></button>
-        <button id="runtimeStatusReopen" type="button" class="shell-recovery-button shell-recovery-button-runtime" hidden aria-hidden="true">Show status</button>
       </div>
       <section id="shellRuntimeStatus" class="shell-runtime-status" hidden aria-live="polite">
         <div class="shell-runtime-status-copy">
@@ -3988,7 +3979,7 @@ html, body {
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
-  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=27b21c4a6029"></script>
-  <script src="tooling-app.v1.js?v=27b21c4a6029"></script>
+  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=3c116f4972f2"></script>
+  <script src="tooling-app.v1.js?v=3c116f4972f2"></script>
 </body>
 </html>

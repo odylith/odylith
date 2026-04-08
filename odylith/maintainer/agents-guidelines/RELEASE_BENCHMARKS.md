@@ -16,7 +16,10 @@ execute the Odylith release benchmark publishing lane.
   recorded in `odylith/runtime/source/release-maintainer-overrides.v1.json`.
   That override may downgrade benchmark proof and compare from blocking to
   advisory for one named release version, but it must never become an
-  untracked shell-only exception.
+  untracked shell-only exception. If the override decision happens after a
+  proof run already started, stop the run, capture the blocker in Casebook,
+  and keep the release narrative explicit that the version is benchmark
+  advisory rather than benchmark re-proved.
 
 ## Integrity Non-Negotiable
 - Never game the eval.
@@ -66,7 +69,7 @@ Status semantics are explicit:
   - any regression here keeps the benchmark on `hold`
 - `Secondary guardrails`
   - tiers `5-7`
-  - live-proof tighter-budget behavior remains status-blocking
+  - packet-backed live-proof tighter-budget behavior remains status-blocking
   - time to valid outcome and full-session token spend stay published as
     diagnostics on the live proof lane because they are not solo-user latency
     or initial prompt size
@@ -76,7 +79,7 @@ Status semantics are explicit:
     outcome gate by themselves
 
 Current live-proof secondary guardrail:
-- `within_budget_rate` must stay at or above `0.80`
+- `within_budget_rate` must stay at or above `0.80` on packet-backed sampled slices
 
 Current diagnostic-lane efficiency guardrails:
 - median prompt-bundle delta must stay at or below `+64 tokens`

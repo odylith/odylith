@@ -30,10 +30,12 @@ The benchmark uses three layers:
   Tiers `1-4` are status blockers. If Odylith gets less correct, less
   grounded, less valid, or less consistent, the status stays `hold`.
 - `Secondary guardrails`
-  Live-proof tighter-budget behavior remains status-blocking. Time to valid
-  outcome and full-session token spend stay published, but they are not
-  primary status gates because they are not measured on the same basis as
-  solo-user latency or initial prompt size.
+  Packet-backed live-proof tighter-budget behavior remains status-blocking.
+  Architecture-only or other non-packet sampled slices do not fail this
+  guardrail just because no packet rows are present. Time to valid outcome and
+  full-session token spend stay published, but they are not primary status
+  gates because they are not measured on the same basis as solo-user latency
+  or initial prompt size.
 - `Advisory mechanism checks`
   Packet coverage, widening frequency, route posture, and similar signals stay
   visible for diagnosis, but they are explanatory signals unless they show up
@@ -41,7 +43,7 @@ The benchmark uses three layers:
 
 Current live-proof secondary guardrail:
 
-- `within_budget_rate >= 0.80`
+- `within_budget_rate >= 0.80` on packet-backed sampled slices
 
 Current diagnostic-lane efficiency guardrails:
 

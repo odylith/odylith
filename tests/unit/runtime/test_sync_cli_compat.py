@@ -1,4 +1,5 @@
 from pathlib import Path
+import time
 from types import SimpleNamespace
 
 from odylith.runtime.context_engine import odylith_context_engine
@@ -191,6 +192,7 @@ def test_print_execution_plan_condenses_dirty_overlap_without_verbose(capsys) ->
     output = capsys.readouterr().out
 
     assert "5 local worktree entries overlap this mutation plan." in output
+    assert "By area: other=5." in output
     assert "M five" not in output
     assert "hidden; rerun with --verbose to show the full set." in output
 
@@ -544,6 +546,29 @@ def test_dashboard_refresh_plan_reports_included_excluded_surfaces_and_atlas_fol
     )
 
 
+def test_dashboard_refresh_plan_says_tooling_shell_does_not_rerender_compass(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(sync_workstream_artifacts, "_atlas_stale_diagram_count", lambda **kwargs: 0)
+
+    plan = sync_workstream_artifacts.build_dashboard_refresh_plan(
+        repo_root=tmp_path,
+        surfaces=("tooling_shell",),
+        runtime_mode="auto",
+        atlas_sync=False,
+    )
+
+    assert any(
+        note
+        == (
+            "`tooling_shell` refresh rerenders the parent shell wrapper only. "
+            "It does not rewrite `odylith/compass/runtime/current.v1.json`; if the visible Compass brief is stale, run "
+            "odylith dashboard refresh --repo-root . --surfaces compass"
+        )
+        for note in plan.notes
+    )
+
+
 def test_dashboard_refresh_retries_auto_surface_with_standalone_fallback(tmp_path: Path, monkeypatch, capsys) -> None:
     executed: list[tuple[str, ...]] = []
 
@@ -594,7 +619,53 @@ def test_dashboard_refresh_continues_after_surface_failure_and_returns_non_zero(
     assert "- compass: failed" in output
     assert "- radar: passed" in output
     assert "- tooling_shell: passed" in output
-    assert "next: odylith compass update --repo-root ." in output
+    assert "next: odylith dashboard refresh --repo-root . --surfaces compass --compass-refresh-profile shell-safe" in output
+
+
+def test_dashboard_refresh_full_compass_uses_deeper_timeout_and_marks_failed_payload(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    executed: list[tuple[tuple[str, ...], float | None]] = []
+    marked_failure: dict[str, object] = {}
+
+    def _fake_run_command(
+        *,
+        repo_root: Path,
+        args: tuple[str, ...],
+        heartbeat_label: str = "",
+        timeout_seconds: float | None = None,
+    ) -> int:  # noqa: ARG001
+        executed.append((tuple(args), timeout_seconds))
+        return 124
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.dashboard_refresh_contract,
+        "mark_compass_refresh_failure",
+        lambda **kwargs: marked_failure.update(kwargs) or True,
+    )
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("compass",),
+        runtime_mode="standalone",
+        compass_refresh_profile="full",
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 2
+    assert executed
+    command, timeout_seconds = executed[0]
+    assert "odylith.runtime.surfaces.render_compass_dashboard" in command
+    assert timeout_seconds == sync_workstream_artifacts.dashboard_refresh_contract.COMPASS_FULL_REFRESH_TIMEOUT_SECONDS
+    assert marked_failure == {
+        "repo_root": tmp_path,
+        "runtime_mode": "standalone",
+        "requested_profile": "full",
+        "rc": 124,
+        "fallback_used": False,
+    }
+    assert "next: odylith dashboard refresh --repo-root . --surfaces compass --compass-refresh-profile full" in output
 
 
 def test_run_command_terminates_timed_out_child_process(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -727,6 +798,123 @@ def test_sync_dry_run_prints_plan_without_running_commands(tmp_path: Path, monke
     assert "Render Compass before Radar" in output
 
 
+def test_run_callable_with_heartbeat_reports_progress(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sync_workstream_artifacts, "_HEARTBEAT_INTERVAL_SECONDS", 0.01)
+
+    rc = sync_workstream_artifacts._run_callable_with_heartbeat(  # noqa: SLF001
+        label="slow-step",
+        callable_=lambda: (time.sleep(0.03), 0)[1],
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "heartbeat: slow-step still running" in output
+
+
+def test_sync_blocks_large_dirty_overlap_without_explicit_ack(monkeypatch, tmp_path: Path, capsys) -> None:
+    class _Meaningful:
+        def as_dict(self) -> dict[str, int]:
+            return {
+                "linked_meaningful_event_count": 0,
+                "unlinked_meaningful_event_count": 0,
+            }
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_effective_changed_paths", lambda **_: ("odylith/radar/source/INDEX.md",))
+    monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "build_dashboard_impact",
+        lambda **_: SimpleNamespace(
+            radar=False,
+            atlas=False,
+            compass=False,
+            registry=False,
+            casebook=False,
+            tooling_shell=False,
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_meaningful_activity_evidence",
+        lambda **_: _Meaningful(),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "build_sync_execution_plan",
+        lambda **_: sync_workstream_artifacts.ExecutionPlan(
+            headline="preview",
+            steps=(),
+            dirty_overlap=tuple(f"M path-{index}" for index in range(50)),
+            notes=(),
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_execute_plan",
+        lambda **_: (_ for _ in ()).throw(AssertionError("blocked sync should not execute plan")),
+    )
+
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
+    output = capsys.readouterr().out
+
+    assert rc == 2
+    assert "workstream sync blocked" in output
+    assert "--proceed-with-overlap" in output
+
+
+def test_sync_allows_large_dirty_overlap_with_explicit_ack(monkeypatch, tmp_path: Path) -> None:
+    class _Meaningful:
+        def as_dict(self) -> dict[str, int]:
+            return {
+                "linked_meaningful_event_count": 0,
+                "unlinked_meaningful_event_count": 0,
+            }
+
+    executed = {"value": False}
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_effective_changed_paths", lambda **_: ("odylith/radar/source/INDEX.md",))
+    monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "build_dashboard_impact",
+        lambda **_: SimpleNamespace(
+            radar=False,
+            atlas=False,
+            compass=False,
+            registry=False,
+            casebook=False,
+            tooling_shell=False,
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_meaningful_activity_evidence",
+        lambda **_: _Meaningful(),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "build_sync_execution_plan",
+        lambda **_: sync_workstream_artifacts.ExecutionPlan(
+            headline="preview",
+            steps=(),
+            dirty_overlap=tuple(f"M path-{index}" for index in range(50)),
+            notes=(),
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_execute_plan",
+        lambda **_: executed.__setitem__("value", True) or 0,
+    )
+
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force", "--proceed-with-overlap"])
+
+    assert rc == 0
+    assert executed["value"] is True
+
+
 def test_sync_preflight_summarizes_backlog_contract_blockers(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(sync_workstream_artifacts, "_effective_changed_paths", lambda **_: ("odylith/radar/source/INDEX.md",))
     monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
@@ -734,7 +922,12 @@ def test_sync_preflight_summarizes_backlog_contract_blockers(monkeypatch, tmp_pa
     monkeypatch.setattr(
         sync_workstream_artifacts,
         "normalize_legacy_backlog_index",
-        lambda **_: SimpleNamespace(changed=True, normalized_sections=("B-001", "B-002")),
+        lambda **_: SimpleNamespace(
+            changed=True,
+            normalized_sections=("B-001", "B-002"),
+            added_sections=("B-002",),
+            backlog_index=tmp_path / "odylith" / "radar" / "source" / "INDEX.md",
+        ),
     )
     monkeypatch.setattr(
         sync_workstream_artifacts,
@@ -751,6 +944,8 @@ def test_sync_preflight_summarizes_backlog_contract_blockers(monkeypatch, tmp_pa
 
     assert rc == 2
     assert "workstream sync legacy normalization" in output
+    assert "- added_sections: 1" in output
+    assert "- source: odylith/radar/source/INDEX.md" in output
     assert "2x odylith/radar/source/INDEX.md: reorder rationale for `B-001` missing `- why now:`" in output
     assert "priority override idea `B-002` missing `ranking basis` bullet" in output
     assert "Finish the normalized rationale blocks in `odylith/radar/source/INDEX.md`" in output
@@ -798,6 +993,8 @@ def test_sync_auto_normalizes_legacy_backlog_before_continuing(monkeypatch, tmp_
 
     assert rc == 0
     assert "workstream sync legacy normalization" in output
+    assert "- added_sections: " in output
+    assert "- source: odylith/radar/source/INDEX.md" in output
     assert "odylith sync did not complete." not in output
     assert "workstream sync dry-run" in output
     assert "- expected outcome: clearer product truth and faster follow-on implementation planning." in backlog_index

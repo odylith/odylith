@@ -956,6 +956,12 @@ def _render_html(
         color="#334155",
         size_px=11,
     )
+    atlas_fact_typography_css = dashboard_ui_primitives.compact_label_value_typography_css(
+        label_selector=".diagram-fact-label",
+        value_selector=".diagram-fact-value",
+        label_color="#64748b",
+        value_color="#16324f",
+    )
     atlas_stat_typography_css = dashboard_ui_primitives.kpi_typography_css(
         label_selector=".stat .l",
         value_selector=".stat .k",
@@ -1311,21 +1317,59 @@ def _render_html(
     }
 
     .hero {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      flex-wrap: wrap;
+      display: grid;
+      gap: 10px;
+      min-width: 0;
     }
 
     __ODYLITH_ATLAS_DISPLAY_TITLE__
 
-    .hero-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 9px;
+    .hero-copy {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      width: 100%;
     }
+
+    .diagram-facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .diagram-fact {
+      display: grid;
+      gap: 4px;
+      align-content: start;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .diagram-fact.ok {
+      border-color: rgba(2, 122, 72, 0.22);
+      background: linear-gradient(180deg, #ffffff, #f3fbf6);
+    }
+
+    .diagram-fact.warn {
+      border-color: rgba(181, 71, 8, 0.24);
+      background: linear-gradient(180deg, #ffffff, #fff7ed);
+    }
+
+    .diagram-fact-label,
+    .diagram-fact-value {
+      min-width: 0;
+    }
+
+    .diagram-fact-value {
+      overflow-wrap: anywhere;
+    }
+
+    __ODYLITH_ATLAS_FACT_TYPOGRAPHY__
 
     .meta-pill {
       --label-bg: rgba(255, 255, 255, 0.9);
@@ -1363,7 +1407,9 @@ def _render_html(
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: flex-start;
+      width: 100%;
+      min-width: 0;
     }
 
     .source-link {
@@ -1637,6 +1683,12 @@ def _render_html(
         grid-template-columns: 1fr;
       }
     }
+
+    @media (max-width: 760px) {
+      .diagram-facts {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1685,15 +1737,33 @@ def _render_html(
 
     <main class="panel main">
       <section class="hero">
-        <div>
+        <div class="hero-copy">
           <h2 id="diagramTitle" class="hero-title"></h2>
-          <div class="hero-meta">
-            <span id="diagramId" class="meta-pill"></span>
-            <span id="diagramKind" class="meta-pill"></span>
-            <span id="diagramStatus" class="meta-pill"></span>
-            <span id="diagramOwner" class="meta-pill"></span>
-            <span id="diagramReviewed" class="meta-pill"></span>
-            <span id="diagramFreshness" class="meta-pill"></span>
+          <div class="diagram-facts" role="list">
+            <div class="diagram-fact" data-fact="diagram-id" role="listitem">
+              <p class="diagram-fact-label">Diagram ID</p>
+              <p id="diagramId" class="diagram-fact-value"></p>
+            </div>
+            <div class="diagram-fact" data-fact="kind" role="listitem">
+              <p class="diagram-fact-label">Kind</p>
+              <p id="diagramKind" class="diagram-fact-value"></p>
+            </div>
+            <div class="diagram-fact" data-fact="status" role="listitem">
+              <p class="diagram-fact-label">Status</p>
+              <p id="diagramStatus" class="diagram-fact-value"></p>
+            </div>
+            <div class="diagram-fact" data-fact="owner" role="listitem">
+              <p class="diagram-fact-label">Owner</p>
+              <p id="diagramOwner" class="diagram-fact-value"></p>
+            </div>
+            <div class="diagram-fact" data-fact="reviewed" role="listitem">
+              <p class="diagram-fact-label">Reviewed</p>
+              <p id="diagramReviewed" class="diagram-fact-value"></p>
+            </div>
+            <div id="diagramFreshnessCard" class="diagram-fact" data-fact="freshness" role="listitem">
+              <p class="diagram-fact-label">Freshness</p>
+              <p id="diagramFreshness" class="diagram-fact-value"></p>
+            </div>
           </div>
         </div>
         <div class="source-links-wrap">
@@ -1822,6 +1892,7 @@ def _render_html(
     const ownerEl = document.getElementById("diagramOwner");
     const reviewedEl = document.getElementById("diagramReviewed");
     const freshnessEl = document.getElementById("diagramFreshness");
+    const freshnessCardEl = document.getElementById("diagramFreshnessCard");
 
     const sourceLinksEl = document.getElementById("sourceLinks");
     const sidebarToggleEl = document.getElementById("sidebarToggle");
@@ -2298,7 +2369,7 @@ def _render_html(
       ownerEl.textContent = "";
       reviewedEl.textContent = "";
       freshnessEl.textContent = "";
-      freshnessEl.className = "meta-pill";
+      freshnessCardEl?.classList.remove("ok", "warn");
       summaryEl.textContent = "";
       clearNode(sourceLinksEl);
       clearNode(componentListEl);
@@ -2326,10 +2397,11 @@ def _render_html(
       idEl.textContent = diagram.diagram_id;
       kindEl.textContent = diagram.kind;
       statusEl.textContent = diagram.status;
-      ownerEl.textContent = `Owner: ${diagram.owner}`;
-      reviewedEl.textContent = `Reviewed: ${diagram.last_reviewed_utc}`;
+      ownerEl.textContent = diagram.owner;
+      reviewedEl.textContent = diagram.last_reviewed_utc;
       freshnessEl.textContent = diagram.freshness === "stale" ? "Needs Update" : "Fresh";
-      freshnessEl.className = diagram.freshness === "stale" ? "meta-pill warn" : "meta-pill ok";
+      freshnessCardEl?.classList.toggle("warn", diagram.freshness === "stale");
+      freshnessCardEl?.classList.toggle("ok", diagram.freshness !== "stale");
 
       summaryEl.textContent = diagram.summary;
 
@@ -2409,6 +2481,7 @@ def _render_html(
         const button = document.createElement("button");
         button.className = "diagram-btn";
         button.type = "button";
+        button.setAttribute("data-diagram", diagram.diagram_id);
         const tooltip = diagramButtonTooltip(diagram);
         button.setAttribute("data-tooltip", tooltip);
         button.setAttribute("aria-label", tooltip);
@@ -2777,6 +2850,7 @@ def _render_html(
         .replace("__ODYLITH_ATLAS_COMPACT_BUTTON_CONTRACT__", atlas_compact_button_css)
         .replace("__ODYLITH_ATLAS_SIDEBAR_CLOSE_TYPOGRAPHY__", sidebar_close_button_css)
         .replace("__ODYLITH_ATLAS_LABEL_TYPOGRAPHY__", atlas_label_css)
+        .replace("__ODYLITH_ATLAS_FACT_TYPOGRAPHY__", atlas_fact_typography_css)
         .replace("__ODYLITH_ATLAS_STAT_TYPOGRAPHY__", atlas_stat_typography_css)
         .replace("__ODYLITH_ATLAS_ARTIFACT_LABEL_TYPOGRAPHY__", artifact_label_css)
         .replace("__ODYLITH_ATLAS_SECONDARY_TYPOGRAPHY__", atlas_secondary_typography_css)

@@ -16,6 +16,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.common import stable_generated_utc
+from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
@@ -671,8 +672,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         payload=report,
     )
 
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    wrote_report = odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=report_path,
+        content=json.dumps(report, indent=2) + "\n",
+        lock_key=str(report_path),
+    )
     print("traceability autofix completed")
     print(f"- ideas_seen: {report['summary']['ideas_seen']}")
     print(f"- files_modified: {report['summary']['files_modified']}")
@@ -680,6 +685,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"- conflicts_skipped: {report['summary']['conflicts']}")
     print(f"- unresolved: {report['summary']['unresolved']}")
     print(f"- warnings: {report['summary']['warnings']}")
+    print(f"- report_status: {'updated' if wrote_report else 'current'}")
     print(f"- report: {_as_repo_path(repo_root, report_path)}")
     return 0
 

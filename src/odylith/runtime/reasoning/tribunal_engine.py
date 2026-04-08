@@ -24,7 +24,7 @@ from typing import Any
 
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.governance import operator_readout
-from odylith.runtime.evaluation import remediator
+from odylith.runtime.reasoning import remediator
 from odylith.runtime.governance import workstream_inference
 
 DEFAULT_REASONING_PATH = "odylith/runtime/odylith-reasoning.v4.json"
@@ -57,11 +57,11 @@ _PROVIDER_ARTIFACT_LABEL_PRIORITY: dict[str, int] = {
     "changed_artifacts": 2,
 }
 _EVALUATOR_CORE_ARTIFACT_PREFIXES: tuple[str, ...] = (
-    "src/odylith/runtime/evaluation/tribunal_engine.py",
-    "src/odylith/runtime/evaluation/odylith_reasoning.py",
+    "src/odylith/runtime/reasoning/tribunal_engine.py",
+    "src/odylith/runtime/reasoning/odylith_reasoning.py",
     "src/odylith/runtime/governance/sync_workstream_artifacts.py",
     "src/odylith/runtime/governance/delivery_intelligence_engine.py",
-    "src/odylith/runtime/evaluation/remediator.py",
+    "src/odylith/runtime/reasoning/remediator.py",
 )
 _ACTOR_ORDER: tuple[str, ...] = (
     "observer",
@@ -567,7 +567,7 @@ def _classify_change_mix(paths: Sequence[str]) -> str:
             (
                 "src/odylith/runtime/surfaces/watch_",
                 "src/odylith/runtime/governance/delivery_intelligence_engine.py",
-                "src/odylith/runtime/evaluation/odylith_reasoning.py",
+                "src/odylith/runtime/reasoning/odylith_reasoning.py",
                 "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
                 "service-deploy/",
             )

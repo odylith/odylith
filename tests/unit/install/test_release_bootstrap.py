@@ -4,6 +4,7 @@ import importlib.util
 import io
 import json
 import tarfile
+import zipfile
 from pathlib import Path
 
 from odylith.install.managed_runtime import managed_runtime_platform_by_slug, supported_managed_runtime_feature_packs
@@ -67,6 +68,10 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'say "Working in repo: $repo_root."' in text
     assert 'say "No setup questions. Odylith will pick the right managed assets for this machine."' in text
     assert 'say "Your repo\'s own Python toolchain stays untouched."' in text
+    assert "sigstore_stderr_is_benign() {" in text
+    assert "verify_sigstore_identity() {" in text
+    assert "grep -Eiq 'unsupported key type:[[:space:]]*7'" in text
+    assert "grep -Eiq 'tuf.*offline|offline.*tuf'" in text
     assert 'step "Fetching the secure bootstrap runtime"' in text
     assert 'step "Verifying signed release evidence"' in text
     assert 'step "Activating Odylith"' in text
@@ -80,7 +85,9 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "managed runtime bundle contains unsafe link target" in text
     assert "bootstrap_runtime=\"$tmpdir/bootstrap/runtime\"" in text
     assert "bootstrap_python=\"$bootstrap_runtime/bin/python\"" in text
-    assert "\"$bootstrap_python\" -m sigstore verify identity \"$tmpdir/$runtime_asset_name\"" in text
+    assert "\"$bootstrap_python\" -m sigstore verify identity \"$asset_path\"" in text
+    assert "2>\"$stderr_path\"" in text
+    assert "verify_sigstore_identity \"$tmpdir/$runtime_asset_name\" \"$tmpdir/$runtime_asset_name.sigstore.json\"" in text
     assert "validate_release.py" in text
     assert "expected_supported_platforms" in text
     assert "runtime_asset_to_slug" in text
@@ -102,9 +109,9 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "banner" in text
     assert "detect_repo_root" in text
     assert "version_root=\"$state_root/runtime/versions/$release_version\"" in text
-    assert "\"$state_root/bin/odylith\" install --repo-root \"$repo_root\" --version \"$release_version\"" in text
+    assert "\"$state_root/bin/odylith\" install --repo-root \"$repo_root\" --version \"$release_version\" --align-pin" in text
     assert text.index("\"$version_root/bin/python\" \"$tmpdir/write_runtime_trust.py\" \"$repo_root\" \"$version_root\"") < text.index(
-        "\"$state_root/bin/odylith\" install --repo-root \"$repo_root\" --version \"$release_version\""
+        "\"$state_root/bin/odylith\" install --repo-root \"$repo_root\" --version \"$release_version\" --align-pin"
     )
     assert "read -p" not in text
     assert "select " not in text
@@ -300,6 +307,25 @@ def test_runtime_wrapper_writer_creates_bin_directory(tmp_path: Path) -> None:
     wrapper = runtime_root / "bin" / "odylith"
     assert wrapper.is_file()
     assert 'exec "$script_dir/python" -m odylith.cli "$@"' in wrapper.read_text(encoding="utf-8")
+
+
+def test_extract_wheel_into_site_packages_preserves_extra_metadata(tmp_path: Path) -> None:
+    module = _load_module()
+    wheel_path = tmp_path / "odylith-1.2.3-py3-none-any.whl"
+    site_packages = tmp_path / "site-packages"
+    attribution_path = (
+        "odylith-1.2.3.dist-info/extra_metadata/THIRD_PARTY_ATTRIBUTION.md"
+    )
+
+    with zipfile.ZipFile(wheel_path, "w") as archive:
+        archive.writestr(attribution_path, "# attribution\n")
+
+    module._extract_wheel_into_site_packages(  # noqa: SLF001
+        wheel_path=wheel_path,
+        site_packages=site_packages,
+    )
+
+    assert (site_packages / attribution_path).read_text(encoding="utf-8") == "# attribution\n"
 
 
 def test_release_upload_artifacts_include_raw_runtime_bundles_and_attribution(tmp_path: Path) -> None:

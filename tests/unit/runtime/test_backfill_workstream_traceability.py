@@ -203,12 +203,28 @@ def test_backfill_report_generated_utc_stable_when_no_content_changes(tmp_path: 
     rc = autofix.main(["--repo-root", str(tmp_path)])
     assert rc == 0
     first = json.loads(report_path.read_text(encoding="utf-8"))
+    first_mtime_ns = report_path.stat().st_mtime_ns
 
     rc = autofix.main(["--repo-root", str(tmp_path)])
     assert rc == 0
     second = json.loads(report_path.read_text(encoding="utf-8"))
+    second_mtime_ns = report_path.stat().st_mtime_ns
 
     assert first["generated_utc"] == second["generated_utc"]
+    assert first_mtime_ns == second_mtime_ns
+
+
+def test_backfill_reports_current_when_report_payload_is_unchanged(tmp_path: Path, capsys) -> None:
+    _seed_repo(tmp_path)
+
+    rc = autofix.main(["--repo-root", str(tmp_path)])
+    assert rc == 0
+
+    rc = autofix.main(["--repo-root", str(tmp_path)])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "- report_status: current" in output
 
 
 def test_backfill_writes_only_canonical_odylith_report(tmp_path: Path) -> None:

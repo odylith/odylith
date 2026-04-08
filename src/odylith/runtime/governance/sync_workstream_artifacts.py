@@ -20,6 +20,7 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
+import threading
 import time
 from typing import Any, Callable, Mapping, Sequence
 
@@ -27,10 +28,14 @@ from odylith.runtime.common.command_surface import display_command, ensure_repo_
 from odylith.runtime.common.consumer_profile import surface_root_path, truth_root_path
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance.legacy_backlog_normalization import backlog_next_action
 from odylith.runtime.governance.legacy_backlog_normalization import collect_backlog_contract_errors
 from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
 from odylith.runtime.governance.legacy_backlog_normalization import summarize_backlog_contract_errors
+from odylith.runtime.governance.sync_argument_contract import DEFAULT_SYNC_COMPASS_REFRESH_PROFILE
+from odylith.runtime.governance.sync_argument_contract import DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD
+from odylith.runtime.governance.sync_argument_contract import configure_sync_parser
 from odylith.runtime.governance import sync_casebook_bug_index
 
 
@@ -98,9 +103,9 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
     "registry": "registry",
     "casebook": "casebook",
 }
-_DEFAULT_COMPASS_REFRESH_PROFILE = "shell-safe"
+_DEFAULT_COMPASS_REFRESH_PROFILE = DEFAULT_SYNC_COMPASS_REFRESH_PROFILE
 _HEARTBEAT_INTERVAL_SECONDS = 10.0
-_DASHBOARD_REFRESH_TIMEOUT_SECONDS = 45.0
+_DASHBOARD_REFRESH_TIMEOUT_SECONDS = dashboard_refresh_contract.DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS
 
 
 def _context_engine_store():
@@ -140,141 +145,7 @@ class ExecutionPlan:
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        prog="odylith sync",
-        description="Sync backlog workstream validation + rendered UI artifacts.",
-    )
-    parser.add_argument("--repo-root", default=".")
-    parser.add_argument(
-        "--odylith-mode",
-        default="",
-        help=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Run sync workflow even when changed paths are not matched.",
-    )
-    parser.add_argument(
-        "--impact-mode",
-        choices=("selective", "full"),
-        default="selective",
-        help="Dashboard rendering mode: selective impact render (default) or full render.",
-    )
-    clean_gate_group = parser.add_mutually_exclusive_group()
-    clean_gate_group.add_argument(
-        "--check-clean",
-        action="store_true",
-        help="Fail closed if generated workstream UI files remain dirty after sync, including staged changes.",
-    )
-    clean_gate_group.add_argument(
-        "--check-commit-ready",
-        action="store_true",
-        help=(
-            "Fail closed if generated workstream UI files do not match the staged commit payload. "
-            "Staged-only generated outputs are allowed; unstaged and untracked drift is not."
-        ),
-    )
-    parser.add_argument(
-        "--check-only",
-        action="store_true",
-        help=(
-            "Run non-mutating validation gates only (no reconcile/autofix/render writes). "
-            "Intended for pre-commit enforcement."
-        ),
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Preview the sync mutation plan and dirty-worktree overlap without writing files.",
-    )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Show the full dirty-overlap listing instead of the compact summary.",
-    )
-    parser.add_argument(
-        "--no-traceability-autofix",
-        action="store_true",
-        help="Skip automatic traceability metadata backfill before validation/render.",
-    )
-    parser.add_argument(
-        "--traceability-autofix-report",
-        default="odylith/radar/traceability-autofix-report.v1.json",
-        help="Output report path for traceability metadata autofix.",
-    )
-    parser.add_argument(
-        "--policy-mode",
-        choices=("advisory", "enforce-critical"),
-        default="",
-        help=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--registry-policy-mode",
-        choices=("advisory", "enforce-critical"),
-        default="enforce-critical",
-        help="Policy mode used by component-registry validator.",
-    )
-    parser.add_argument(
-        "--runtime-mode",
-        choices=("auto", "standalone", "daemon"),
-        default="auto",
-        help=(
-            "Execution mode for local upkeep commands. `auto` prefers the local runtime-backed "
-            "fast path with standalone fallback, `standalone` preserves subprocess-only strict "
-            "behavior, and `daemon` requires runtime-backed execution."
-        ),
-    )
-    parser.add_argument(
-        "--compass-refresh-profile",
-        choices=("full", "shell-safe"),
-        default=_DEFAULT_COMPASS_REFRESH_PROFILE,
-        help=(
-            "Compass refresh profile for sync/render steps. "
-            "`shell-safe` defers live AI narration so sync stays bounded."
-        ),
-    )
-    deep_skill_group = parser.add_mutually_exclusive_group()
-    deep_skill_group.add_argument(
-        "--enforce-deep-skills",
-        dest="enforce_deep_skills",
-        action="store_true",
-        help="Fail closed on critical deep-skill policy findings in validator path.",
-    )
-    deep_skill_group.add_argument(
-        "--no-enforce-deep-skills",
-        dest="enforce_deep_skills",
-        action="store_false",
-        help="Disable critical deep-skill policy enforcement for ad-hoc local refreshes.",
-    )
-    parser.set_defaults(enforce_deep_skills=True)
-    parser.add_argument(
-        "--once",
-        action="store_true",
-        help=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--no-render",
-        action="store_true",
-        help=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--interval-seconds",
-        type=int,
-        default=0,
-        help=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--max-interval-seconds",
-        type=int,
-        default=0,
-        help=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "changed_paths",
-        nargs="*",
-        help="Changed paths (pre-commit passes these automatically).",
-    )
+    parser = configure_sync_parser(argparse.ArgumentParser(prog="odylith sync"))
     args = parser.parse_args(argv)
     if str(getattr(args, "policy_mode", "")).strip():
         args.registry_policy_mode = str(args.policy_mode).strip()
@@ -471,6 +342,37 @@ def _run_command(
     return int(completed.returncode)
 
 
+def _run_callable_with_heartbeat(
+    *,
+    label: str,
+    callable_: Callable[[], int],
+) -> int:
+    result: dict[str, Any] = {"done": False, "rc": 1, "error": None}
+
+    def _target() -> None:
+        try:
+            result["rc"] = int(callable_() or 0)
+        except BaseException as exc:  # pragma: no cover - re-raised in main thread
+            result["error"] = exc
+        finally:
+            result["done"] = True
+
+    started_at = time.perf_counter()
+    last_heartbeat = started_at
+    worker = threading.Thread(target=_target, daemon=True)
+    worker.start()
+    while not bool(result["done"]):
+        now = time.perf_counter()
+        if now - last_heartbeat >= _HEARTBEAT_INTERVAL_SECONDS:
+            print(f"- heartbeat: {label} still running ({int(now - started_at)}s)")
+            last_heartbeat = now
+        worker.join(timeout=max(0.01, min(0.5, _HEARTBEAT_INTERVAL_SECONDS / 2.0)))
+    error = result.get("error")
+    if error is not None:
+        raise error
+    return int(result.get("rc", 1) or 0)
+
+
 def _terminate_process(process: subprocess.Popen[Any]) -> None:
     process_pid = int(getattr(process, "pid", 0) or 0)
     if os.name == "posix" and process_pid > 0:
@@ -511,11 +413,21 @@ def _run_command_in_process(
     timeout_seconds: float | None = None,
 ) -> int:
     tokens = tuple(str(token) for token in args)
+    if timeout_seconds is not None:
+        return _run_command(
+            repo_root=repo_root,
+            args=tokens,
+            heartbeat_label=heartbeat_label,
+            timeout_seconds=timeout_seconds,
+        )
     if len(tokens) >= 3 and tokens[0] == "python" and tokens[1] == "-m":
         module = importlib.import_module(tokens[2])
         main = getattr(module, "main", None)
         if callable(main):
-            return int(main(list(tokens[3:])))
+            return _run_callable_with_heartbeat(
+                label=heartbeat_label or _display_sync_step_command(repo_root=repo_root, command=tokens),
+                callable_=lambda: int(main(list(tokens[3:])) or 0),
+            )
     return _run_command(
         repo_root=repo_root,
         args=tokens,
@@ -817,6 +729,7 @@ def _dashboard_surface_steps(
             )
         )
     if surface == "compass":
+        normalized_profile = dashboard_refresh_contract.normalize_compass_refresh_profile(compass_refresh_profile)
         command = (
             "python",
             "-m",
@@ -824,7 +737,7 @@ def _dashboard_surface_steps(
             "--repo-root",
             str(repo_root),
             "--refresh-profile",
-            str(compass_refresh_profile).strip().lower() or _DEFAULT_COMPASS_REFRESH_PROFILE,
+            normalized_profile,
             *_runtime_args(normalized_runtime_mode),
         )
         steps.append(
@@ -835,8 +748,14 @@ def _dashboard_surface_steps(
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
                 paths=_surface_render_outputs("compass"),
-                next_command_on_failure=display_command("compass", "update", "--repo-root", "."),
-                timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
+                next_command_on_failure=dashboard_refresh_contract.dashboard_refresh_failure_command(
+                    surface=surface,
+                    compass_refresh_profile=normalized_profile,
+                ),
+                timeout_seconds=dashboard_refresh_contract.dashboard_refresh_timeout_seconds(
+                    surface=surface,
+                    compass_refresh_profile=normalized_profile,
+                ),
             )
         )
         return steps
@@ -1066,6 +985,12 @@ def _dashboard_refresh_notes(
         notes.append(
             "Excluded surfaces: " + ", ".join(_surface_display_name(surface) for surface in excluded) + "."
         )
+    if "tooling_shell" in selected_tokens and "compass" not in selected_tokens:
+        notes.append(
+            "`tooling_shell` refresh rerenders the parent shell wrapper only. "
+            "It does not rewrite `odylith/compass/runtime/current.v1.json`; if the visible Compass brief is stale, run "
+            + display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", "compass")
+        )
     if atlas_sync and "atlas" in selected_tokens:
         notes.append(
             "`--atlas-sync` mutates repo-owned Atlas truth by touching selected `.mmd` review markers and rewriting "
@@ -1163,6 +1088,7 @@ def _execute_dashboard_refresh_surface(
     surface: str,
     steps: Sequence[ExecutionStep],
     runtime_mode: str,
+    compass_refresh_profile: str,
 ) -> dict[str, Any]:
     fallback_used = False
     for index, step in enumerate(steps, start=1):
@@ -1174,6 +1100,14 @@ def _execute_dashboard_refresh_surface(
         )
         fallback_used = fallback_used or step_fallback
         if rc != 0:
+            if str(surface).strip() == "compass":
+                dashboard_refresh_contract.mark_compass_refresh_failure(
+                    repo_root=repo_root,
+                    runtime_mode=runtime_mode,
+                    requested_profile=compass_refresh_profile,
+                    rc=int(rc),
+                    fallback_used=fallback_used,
+                )
             next_command = step.next_command_on_failure
             if not next_command and step.command:
                 next_command = _display_sync_step_command(repo_root=repo_root, command=step.command)
@@ -1232,6 +1166,7 @@ def refresh_dashboard_surfaces(
             surface=surface,
             steps=steps,
             runtime_mode=normalized_runtime_mode,
+            compass_refresh_profile=compass_refresh_profile,
         )
         runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
         surface_results.append(result)
@@ -1765,7 +1700,10 @@ def _execute_plan(
     for index, step in enumerate(plan.steps, start=1):
         print(f"- step {index}/{len(plan.steps)}: {step.label}")
         if step.action is not None:
-            rc = int(step.action())
+            rc = _run_callable_with_heartbeat(
+                label=step.label,
+                callable_=lambda: int(step.action() or 0),
+            )
         elif step.command:
             heartbeat_label = _display_sync_step_command(repo_root=repo_root, command=step.command)
             command_kwargs: dict[str, Any] = {
@@ -1797,6 +1735,14 @@ def _execute_plan(
     return 0
 
 
+def _dirty_overlap_gate_required(*, args: argparse.Namespace, plan: ExecutionPlan) -> bool:
+    if bool(getattr(args, "dry_run", False)) or bool(getattr(args, "check_only", False)):
+        return False
+    if bool(getattr(args, "proceed_with_overlap", False)):
+        return False
+    return len(plan.dirty_overlap) >= DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
@@ -1823,9 +1769,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             if normalization.changed:
                 print("workstream sync legacy normalization")
                 print(
-                    f"- radar_index: normalized {len(normalization.normalized_sections)} rationale entr"
-                    f"{'y' if len(normalization.normalized_sections) == 1 else 'ies'} before validation"
+                    f"- radar_index: normalized {len(normalization.normalized_sections)} rationale section"
+                    f"{'' if len(normalization.normalized_sections) == 1 else 's'} before validation"
                 )
+                print(f"- added_sections: {len(normalization.added_sections)}")
+                print(f"- source: {normalization.backlog_index.relative_to(repo_root)}")
         backlog_errors = collect_backlog_contract_errors(repo_root=repo_root)
         if backlog_errors:
             print("odylith sync did not complete.")
@@ -1907,6 +1855,40 @@ def main(argv: Sequence[str] | None = None) -> int:
             f" unlinked={int(meaningful.get('unlinked_meaningful_event_count', 0) or 0)}"
         )
 
+    plan = build_sync_execution_plan(
+        repo_root=repo_root,
+        args=args,
+        changed_paths=changed_paths,
+        impact=impact,
+        impact_tooling_shell=impact_tooling_shell,
+        runtime_mode=effective_runtime_mode,
+    )
+    _print_execution_plan(
+        "workstream sync",
+        plan,
+        dry_run=bool(args.dry_run),
+        verbose=bool(args.verbose),
+    )
+    if _dirty_overlap_gate_required(args=args, plan=plan):
+        print("workstream sync blocked")
+        print("- outcome: blocked")
+        print(
+            "- reason: "
+            f"{len(plan.dirty_overlap)} local worktree entries overlap this write-mode sync plan "
+            f"(threshold {DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD})."
+        )
+        print(
+            "- next: "
+            f"{display_command('sync', '--repo-root', '.', '--proceed-with-overlap')}"
+        )
+        print(
+            "- preview: "
+            f"{display_command('sync', '--repo-root', '.', '--dry-run')}"
+        )
+        return 2
+    if args.dry_run:
+        return 0
+
     run_impl = _run_command
     runtime_fallback_used = False
     if not args.check_only and _use_runtime_fast_path(effective_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
@@ -1925,23 +1907,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     elif _use_runtime_fast_path(effective_runtime_mode):
         print("- runtime_fallback: standalone (runtime prerequisites missing)")
         runtime_fallback_used = True
-
-    plan = build_sync_execution_plan(
-        repo_root=repo_root,
-        args=args,
-        changed_paths=changed_paths,
-        impact=impact,
-        impact_tooling_shell=impact_tooling_shell,
-        runtime_mode=effective_runtime_mode,
-    )
-    _print_execution_plan(
-        "workstream sync",
-        plan,
-        dry_run=bool(args.dry_run),
-        verbose=bool(args.verbose),
-    )
-    if args.dry_run:
-        return 0
 
     rc = _execute_plan(
         repo_root=repo_root,

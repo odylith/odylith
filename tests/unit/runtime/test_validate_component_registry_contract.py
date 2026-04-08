@@ -161,6 +161,31 @@ def test_validate_component_registry_contract_passes_when_meaningful_events_are_
     assert rc == 0
 
 
+def test_validate_component_registry_contract_warning_output_points_to_report(tmp_path: Path, capsys) -> None:
+    _seed_repo(tmp_path)
+
+    rc = validator.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--manifest",
+            "odylith/registry/source/component_registry.v1.json",
+            "--catalog",
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "--ideas-root",
+            "odylith/radar/source/ideas",
+            "--stream",
+            "odylith/compass/runtime/codex-stream.v1.jsonl",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "component registry contract warnings" in output
+    assert "- report: " in output
+    assert "component-report" in output
+
+
 def test_validate_component_registry_contract_accepts_odylith_chatter_component_inventory(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
 

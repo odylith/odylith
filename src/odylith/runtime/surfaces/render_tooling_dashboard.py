@@ -26,6 +26,7 @@ from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import shell_onboarding
+from odylith.runtime.surfaces import tooling_dashboard_surface_status
 from odylith.runtime.surfaces import tooling_dashboard_runtime_builder
 from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
 
@@ -436,6 +437,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_path=output_path,
         self_host_payload=self_host_payload,
         shell_source_payload=shell_source_payload,
+    )
+    runtime_payload["surface_runtime_status"] = tooling_dashboard_surface_status.build_surface_runtime_status(
+        repo_root=repo_root,
+        shell_rendered_utc=tooling_dashboard_surface_status.now_utc(),
     )
     if bool(runtime_payload["live_refresh"].get("enabled")):
         odylith_context_engine_store.ensure_state_js_probe_asset(repo_root=repo_root)

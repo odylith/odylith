@@ -1,8 +1,8 @@
 # Benchmark
-Last updated: 2026-04-05
+Last updated: 2026-04-08
 
 
-Last updated (UTC): 2026-04-05
+Last updated (UTC): 2026-04-08
 
 ## Purpose
 Benchmark is Odylith's local proof subsystem for measuring whether Odylith-on
@@ -110,6 +110,12 @@ reviewer framing that explains how Odylith should be compared.
   the current passing proof is detached `source-local` posture, and
   `benchmark_compare` still reports `warn` until there is a last-shipped
   published release baseline in `docs/benchmarks/release-baselines.v1.json`
+- Active release exception:
+  `v0.1.10` currently carries a tracked `skip_proof_and_compare` override
+  because pinned-dogfood proof run `0047192366d8bf1c` wedged mid-corpus and
+  did not persist a fresh release-safe report. That exception is exact-version
+  only and moves benchmark runner tuning plus proof restoration to the next
+  release.
 
 ## Current Benchmark Priorities
 
@@ -437,23 +443,24 @@ Publication and release status use these layers:
   correctness/non-regression, grounding recall/precision, validation/fit, and
   robustness/consistency all hold the status immediately if they regress
 - `secondary guardrails`:
-  live-proof tighter-budget behavior remains status-blocking; time to valid
-  outcome and full-session token cost stay published as diagnostics because
-  they do not share the measurement basis of solo-user latency or
-  initial prompt size
+  packet-backed live-proof tighter-budget behavior remains status-blocking;
+  architecture-only or other non-packet sampled slices do not fail this
+  guardrail just because no packet rows are present; time to valid outcome and
+  full-session token cost stay published as diagnostics because they do not
+  share the measurement basis of solo-user latency or initial prompt size
 - comparative latency and prompt or payload guardrails are only status
   blockers when the compared lanes share the same measurement basis; a failed
   baseline that exits faster or cheaper stays published as a diagnostic, not
   as a blocker
-- the candidate-side `within_budget_rate` floor still applies even when the
-  relative efficiency guardrails are not active
+- the candidate-side `within_budget_rate` floor still applies on packet-backed
+  sampled slices even when the relative efficiency guardrails are not active
 - `advisory mechanism checks`:
   packet coverage, widening frequency, route posture, and related mechanism
   metrics stay published for diagnosis, but they are not the same thing as the
   primary outcome gate by themselves
 
 Current live-proof secondary guardrail:
-- `within_budget_rate` must stay at or above `0.80`
+- `within_budget_rate` must stay at or above `0.80` on packet-backed sampled slices
 
 Current diagnostic-lane efficiency guardrails:
 - median prompt-bundle delta must stay at or below `+64 tokens`
@@ -608,3 +615,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-02: Tightened the clean-room proof boundary again by restoring validator truth only from the scoped workspace snapshot and by expanding the shared snapshot allowlist to dirty same-package Python siblings needed for imports, so disposable worktrees stop rehydrating unrelated repo state or failing on partial local packages. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
 - 2026-04-02: Clarified that benchmark wins are meaningful only when Odylith improves the operating policy around the same model under the same repo and same truth contract, and explicitly documented the weaker status of wins that depend on extra hidden information. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
 - 2026-04-05: Restored canonical benchmark guidance memory, made weak-family packet shaping fail closed before prompt rendering, bounded the post-run adoption-proof finalizer so it cannot hold a completed report hostage, and refreshed the current local-memory-first source-local proof to `52aa3f76538cf12f` `provisional_pass` while the diagnostic grounding floor remains `74cbe36427f2c375` on `hold`. (Plan: [B-021](odylith/radar/radar.html?view=plan&workstream=B-021))
+- 2026-04-08: Completed the reasoning-package boundary split with no compatibility shims, refreshed Atlas and delivery-intelligence sync truth to the new reasoning paths, and re-proved the quick source-local architecture shard to `provisional_pass` after the package-separation hardening. (Plan: [B-061](odylith/radar/radar.html?view=plan&workstream=B-061))

@@ -2,7 +2,8 @@
 
 ## Current Status
 
-- Status: preview relaunch in progress / pre-GA as of `2026-03-28`.
+- Status: GA on supported public install platforms as of `2026-04-07`.
+- Latest public GitHub release: `v0.1.9`, published on `2026-04-07`.
 - Odylith is built for both Codex and Claude Code.
 - The current continuously published benchmark proof is Codex-based.
 

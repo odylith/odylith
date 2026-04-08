@@ -9,7 +9,7 @@ authors = [
   { name = "freedom-research" },
 ]
 classifiers = [
-  "License :: OSI Approved :: Apache Software License",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.13",
@@ -47,6 +47,9 @@ include = [
   "src/odylith/runtime/surfaces/assets/**",
   "src/odylith/runtime/surfaces/templates/**",
 ]
+
+[tool.hatch.build.targets.wheel.extra-metadata]
+"THIRD_PARTY_ATTRIBUTION.md" = "THIRD_PARTY_ATTRIBUTION.md"
 
 [tool.hatch.build.targets.sdist]
 include = [

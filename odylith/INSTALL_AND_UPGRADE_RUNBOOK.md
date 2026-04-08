@@ -21,8 +21,15 @@ curl -fsSL https://odylith.ai/install.sh | bash
 - First install does not depend on preinstalled machine Python on supported
   platforms. Odylith stages its own verified managed runtime under
   `.odylith/runtime/versions/<version>` and creates `./.odylith/bin/odylith`.
+- When rerun in an already-installed consumer repo, the hosted installer
+  upgrades both the active verified runtime and the tracked repo pin together
+  so the repo does not land in an active-versus-pinned split posture.
 - The installer verifies the signed release manifest, managed runtime bundle,
   managed context-engine pack, provenance, and SBOM before activation.
+- Stale runtime and release-cache retention cleanup is post-activation
+  housekeeping. If an old read-only retained tree still cannot be pruned,
+  Odylith keeps the healthy activation and prints exact remediation instead of
+  failing the whole install.
 - The installer also creates a minimal consumer-owned `odylith/` tree for
   local repo truth and bootstrap metadata. It does not copy the product repo's
   `odylith/` tree into the consumer repository.
@@ -55,6 +62,13 @@ Other useful lifecycle commands:
 
 - Refresh shell-facing surfaces:
   `./.odylith/bin/odylith dashboard refresh --repo-root .`
+- Preview or audit sync before writes:
+  `./.odylith/bin/odylith sync --repo-root . --dry-run`
+  Add `--verbose` for the full dirty-overlap list, and if a write-mode sync
+  reports a large overlap block, rerun with `--proceed-with-overlap` only after
+  you accept that mutation scope. Structured sync evidence lives in the
+  generated report artifacts today; there is not a terminal `--json` sync mode
+  yet.
 - Roll back to the last verified local version:
   `./.odylith/bin/odylith rollback --repo-root . --previous`
 - Turn Odylith guidance off or on without removing the runtime:
@@ -125,6 +139,10 @@ Other useful lifecycle commands:
   health-checks the result, and atomically switches `.odylith/runtime/current`.
 - `odylith upgrade` reports whether it moved to a new version, was already
   current, or only advanced the repo pin.
+- Hosted installer closeout on an existing install follows the same truth:
+  successful activation ends with matching active and pinned versions, and any
+  stale retention-cleanup problem is surfaced as a warning with remediation
+  instead of a false hard failure.
 - When the requested release already matches the active verified full-stack
   runtime, `odylith upgrade` treats that as already current and does not
   restage the live same-version runtime in place.

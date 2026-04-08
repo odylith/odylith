@@ -29,6 +29,8 @@ from odylith.runtime.common import log_compass_timeline_event
 from odylith.runtime.context_engine import odylith_context_engine
 from odylith.runtime.evaluation import benchmark_compare
 from odylith.runtime.governance import sync_workstream_artifacts
+from odylith.runtime.governance.sync_argument_contract import configure_sync_parser
+from odylith.runtime.governance.sync_argument_contract import namespace_to_argv as sync_namespace_to_argv
 from odylith.runtime.governance import auto_promote_workstream_phase
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import backfill_workstream_traceability
@@ -257,6 +259,23 @@ def _missing_first_run_surfaces(*, repo_root: Path) -> list[Path]:
 
 def _bootstrap_first_run_surfaces(*, repo_root: Path) -> int:
     resolved_repo_root = Path(repo_root).expanduser().resolve()
+    missing_surfaces = _missing_first_run_surfaces(repo_root=resolved_repo_root)
+    shell_path = resolved_repo_root / "odylith" / "index.html"
+    # Shell-only render depends on the sibling surface HTMLs already existing.
+    # On a fresh install, jump straight to the full sync instead of printing a
+    # transient missing-surface failure that the sync is about to resolve.
+    if any(path != shell_path for path in missing_surfaces):
+        return sync_workstream_artifacts.main(
+            [
+                "--repo-root",
+                str(resolved_repo_root),
+                "--force",
+                "--impact-mode",
+                "full",
+                "--compass-refresh-profile",
+                _DEFAULT_COMPASS_REFRESH_PROFILE,
+            ]
+        )
     render_rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=resolved_repo_root,
         surfaces=("tooling_shell",),
@@ -404,6 +423,16 @@ def _print_lifecycle_plan(plan: object, *, dry_run: bool, verbose: bool = False)
         print("dry-run mode: no files written")
 
 
+def _print_retention_warnings(summary: object) -> None:
+    warnings = tuple(
+        str(item).strip()
+        for item in getattr(summary, "retention_warnings", ()) or ()
+        if str(item).strip()
+    )
+    for warning in warnings:
+        print(f"Retention cleanup warning: {warning}", file=sys.stderr)
+
+
 def _start_bootstrap_payload(args: argparse.Namespace) -> dict[str, object]:
     from odylith.runtime.context_engine import odylith_context_engine_store
 
@@ -506,11 +535,13 @@ def _cmd_install_common(
     requested_repo_root = Path(args.repo_root).expanduser().resolve()
     first_install = _is_first_install(repo_root=requested_repo_root)
     adopt_latest = bool(adopt_latest_default or getattr(args, "adopt_latest", False))
+    align_pin = bool(getattr(args, "align_pin", False))
     release_repo = str(getattr(args, "release_repo", AUTHORITATIVE_RELEASE_REPO) or AUTHORITATIVE_RELEASE_REPO).strip()
-    target_version = str(getattr(args, "target_version", "") or "").strip()
+    target_version = str(getattr(args, "version", "") or getattr(args, "target_version", "") or "").strip()
     lifecycle_plan = plan_install_lifecycle(
         repo_root=requested_repo_root,
         adopt_latest=adopt_latest,
+        align_pin=align_pin,
         target_version=target_version,
     )
     _print_lifecycle_plan(
@@ -520,7 +551,12 @@ def _cmd_install_common(
     )
     if bool(getattr(args, "dry_run", False)):
         return 0
-    summary = install_bundle(repo_root=args.repo_root, bundle_root=bundle_root(), version=args.version or __version__)
+    summary = install_bundle(
+        repo_root=args.repo_root,
+        bundle_root=bundle_root(),
+        version=target_version or __version__,
+        align_pin=align_pin,
+    )
     _print_legacy_migration_summary(summary)
     final_version = str(summary.version or "").strip() or __version__
     final_launcher_path = summary.launcher_path
@@ -579,6 +615,15 @@ def _cmd_install_common(
         print(f"Odylith is already installed here on {final_version}.")
     print(f"Launcher: {final_launcher_path}")
     print(f"Dashboard: {dashboard_path}")
+    pinned_version = str(getattr(summary, "pinned_version", "") or "").strip()
+    pin_changed = bool(getattr(summary, "pin_changed", False))
+    if pinned_version and (align_pin or pin_changed):
+        if pin_changed and pinned_version == final_version:
+            print(f"Repo pin updated to {pinned_version}.")
+        elif pinned_version == final_version:
+            print(f"Repo pin remains {pinned_version}.")
+        else:
+            print(f"Repo pin is {pinned_version}; active runtime is {final_version}.")
     if summary.repo_guidance_created:
         print(f"Created root AGENTS.md at {summary.repo_root / 'AGENTS.md'}.")
     if getattr(summary, "gitignore_updated", False):
@@ -617,6 +662,7 @@ def _cmd_install_common(
     print(
         "If `./.odylith/bin/odylith` is missing, use `./.odylith/bin/odylith-bootstrap doctor --repo-root . --repair` to restore the repo-local launcher."
     )
+    _print_retention_warnings(summary)
     return 0
 
 
@@ -701,6 +747,7 @@ def _cmd_reinstall(args: argparse.Namespace) -> int:
         "If `./.odylith/bin/odylith` is missing, use `./.odylith/bin/odylith-bootstrap doctor --repo-root . --repair` to restore the repo-local launcher."
     )
     print("Odylith keeps the active runtime and one rollback target locally.")
+    _print_retention_warnings(summary)
     return 0
 
 
@@ -773,6 +820,7 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
     _refreshed, message = _refresh_dashboard_after_upgrade(repo_root=requested_repo_root)
     print(message)
     print("Odylith keeps the active runtime and one rollback target locally.")
+    _print_retention_warnings(summary)
     return 0
 
 
@@ -794,6 +842,7 @@ def _cmd_rollback(args: argparse.Namespace) -> int:
     else:
         print(f"Active version matches repo pin {summary.pinned_version}.")
     print(f"Repo-local launcher: {summary.launcher_path}")
+    _print_retention_warnings(summary)
     return 0
 
 
@@ -967,11 +1016,11 @@ def _cmd_off(args: argparse.Namespace) -> int:
 
 
 def _cmd_sync(args: argparse.Namespace) -> int:
-    if not _forwarded_has_flag(args.forwarded, "--check-only"):
+    if not bool(args.check_only):
         blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
         if blocked:
             return blocked
-    return sync_workstream_artifacts.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return sync_workstream_artifacts.main(sync_namespace_to_argv(args))
 
 
 def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
@@ -1221,6 +1270,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="After rematerializing the local install, adopt the latest verified release and update the repo pin in the same step.",
     )
     install.add_argument("--release-repo", default=AUTHORITATIVE_RELEASE_REPO, help=argparse.SUPPRESS)
+    install.add_argument("--align-pin", action="store_true", help=argparse.SUPPRESS)
     install.add_argument(
         "--dry-run",
         action="store_true",
@@ -1371,8 +1421,7 @@ def build_parser() -> argparse.ArgumentParser:
     off.add_argument("--repo-root", default=".", help="Consumer repository root.")
 
     sync = subparsers.add_parser("sync", help="Run the Odylith governance and surface sync pipeline.")
-    sync.add_argument("--repo-root", default=".", help="Consumer repository root.")
-    sync.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    configure_sync_parser(sync)
 
     dashboard = subparsers.add_parser("dashboard", help="Refresh local Odylith dashboard surfaces without a full governance sync.")
     dashboard_subparsers = dashboard.add_subparsers(dest="dashboard_command", required=True)
@@ -1539,11 +1588,11 @@ def main(argv: list[str] | None = None) -> int:
             )
         if tokens[0] == "sync":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
-            if _help_requested(forwarded):
-                parser = build_parser()
-                args = parser.parse_args(tokens)
-                return _cmd_sync(args)
-            return _cmd_sync(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
+            parser = build_parser()
+            args = parser.parse_args(tokens)
+            args.repo_root = repo_root
+            args.forwarded = forwarded
+            return _cmd_sync(args)
         if tokens[0] == "governance" and len(tokens) >= 2:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if tokens[1] in {

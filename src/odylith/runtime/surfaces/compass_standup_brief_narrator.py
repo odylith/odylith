@@ -20,7 +20,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
-from odylith.runtime.evaluation import odylith_reasoning
+from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.surfaces import compass_standup_brief_deterministic
 
@@ -100,8 +100,6 @@ _CACHE_TTL_SECONDS_BY_FRESHNESS = {
     "stale": 4 * 60 * 60,
     "unknown": 60 * 60,
 }
-_STALE_GLOBAL_CACHE_MAX_AGE_SECONDS = 6 * 60 * 60
-
 
 def standup_brief_cache_path(*, repo_root: Path) -> Path:
     """Return the local-only cache path for validated Compass AI briefs."""
@@ -264,78 +262,6 @@ def _cache_entry_matches_context(
     if target_context["scope_mode"] == "scoped":
         return str(cached_context.get("scope_id", "")).strip() == target_context["scope_id"]
     return True
-
-
-def _fallback_cache_entry(
-    *,
-    cache_entries: Mapping[str, Any],
-    fact_packet: Mapping[str, Any],
-    exclude_fingerprint: str,
-    now_utc: dt.datetime,
-) -> tuple[str, Mapping[str, Any]] | None:
-    candidates: list[tuple[dt.datetime, str, Mapping[str, Any]]] = []
-    for fingerprint, raw_entry in cache_entries.items():
-        fingerprint_token = str(fingerprint).strip()
-        if not fingerprint_token or fingerprint_token == exclude_fingerprint:
-            continue
-        if not isinstance(raw_entry, Mapping):
-            continue
-        if not _cache_entry_matches_context(cached_entry=raw_entry, fact_packet=fact_packet):
-            continue
-        if not _cache_entry_is_reusable(
-            cached_entry=raw_entry,
-            fact_packet=fact_packet,
-            now_utc=now_utc,
-        ):
-            continue
-        sections = raw_entry.get("sections")
-        generated_utc = _parse_iso_datetime(str(raw_entry.get("generated_utc", "")).strip())
-        if not isinstance(sections, Sequence) or not sections or generated_utc is None:
-            continue
-        candidates.append((generated_utc, fingerprint_token, raw_entry))
-    if not candidates:
-        return None
-    candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
-    _generated_utc, cached_fingerprint, cached_entry = candidates[0]
-    return cached_fingerprint, cached_entry
-
-
-def _stale_global_cache_entry(
-    *,
-    cache_entries: Mapping[str, Any],
-    fact_packet: Mapping[str, Any],
-    exclude_fingerprint: str,
-    now_utc: dt.datetime,
-) -> tuple[str, Mapping[str, Any]] | None:
-    target_context = _cache_context(fact_packet=fact_packet)
-    if target_context["scope_mode"] != "global":
-        return None
-    candidates: list[tuple[dt.datetime, str, Mapping[str, Any]]] = []
-    for fingerprint, raw_entry in cache_entries.items():
-        fingerprint_token = str(fingerprint).strip()
-        if not fingerprint_token or fingerprint_token == exclude_fingerprint:
-            continue
-        if not isinstance(raw_entry, Mapping):
-            continue
-        if not _cache_entry_matches_context(cached_entry=raw_entry, fact_packet=fact_packet):
-            continue
-        sections = raw_entry.get("sections")
-        generated_utc = _parse_iso_datetime(str(raw_entry.get("generated_utc", "")).strip())
-        age_seconds = _cache_entry_age_seconds(cached_entry=raw_entry, now_utc=now_utc)
-        if (
-            not isinstance(sections, Sequence)
-            or not sections
-            or generated_utc is None
-            or age_seconds is None
-            or age_seconds > float(_STALE_GLOBAL_CACHE_MAX_AGE_SECONDS)
-        ):
-            continue
-        candidates.append((generated_utc, fingerprint_token, raw_entry))
-    if not candidates:
-        return None
-    candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
-    _generated_utc, cached_fingerprint, cached_entry = candidates[0]
-    return cached_fingerprint, cached_entry
 
 
 def _provider_system_prompt() -> str:
@@ -1016,6 +942,28 @@ def _stale_exact_ready_brief(
     )
 
 
+def _exact_cache_ready_brief_if_reusable(
+    *,
+    fingerprint: str,
+    cached_entry: Mapping[str, Any] | None,
+    fact_packet: Mapping[str, Any],
+    now_utc: dt.datetime,
+) -> dict[str, Any] | None:
+    if not isinstance(cached_entry, Mapping):
+        return None
+    if not _cache_entry_is_reusable(
+        cached_entry=cached_entry,
+        fact_packet=fact_packet,
+        now_utc=now_utc,
+    ):
+        return None
+    return _cache_ready_brief(
+        fingerprint=fingerprint,
+        cached_entry=cached_entry,
+        cache_mode="exact",
+    )
+
+
 def _allow_stale_exact_cache_reuse(*, fact_packet: Mapping[str, Any]) -> bool:
     context = _cache_context(fact_packet=fact_packet)
     if context["scope_mode"] == "global":
@@ -1113,6 +1061,39 @@ def _deterministic_ready_brief(
         evidence_lookup=_brief_evidence_lookup(fact_packet=fact_packet),
         notice=_deterministic_fallback_notice(reason=reason),
     )
+
+
+def _unavailable_brief_message(reason: str) -> str:
+    token = str(reason or "").strip().lower()
+    if token == "provider_deferred":
+        return "Compass full refresh requires live AI narration and cannot defer into shell-safe deterministic fallback."
+    if token == "provider_unavailable":
+        return "Compass full refresh could not reach a live AI narration provider and no exact current-packet brief was available."
+    if token == "provider_empty":
+        return "Compass full refresh did not receive a structured AI brief and no exact current-packet brief was available."
+    if token == "validation_failed":
+        return "Compass full refresh received an invalid AI brief and no exact current-packet brief was available."
+    return "Compass full refresh could not build a current standup brief for this packet."
+
+
+def _unavailable_ready_brief(
+    *,
+    fingerprint: str,
+    generated_utc: str,
+    reason: str,
+) -> dict[str, Any]:
+    return {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": fingerprint,
+        "generated_utc": generated_utc,
+        "sections": [],
+        "diagnostics": {
+            "reason": str(reason or "").strip().lower() or "brief_unavailable",
+            "message": _unavailable_brief_message(reason),
+        },
+        "evidence_lookup": {},
+    }
 
 
 def _fact_ids_by_section(fact_lookup: Mapping[str, Mapping[str, Any]]) -> dict[str, set[str]]:
@@ -1422,6 +1403,8 @@ def build_standup_brief(
     provider: odylith_reasoning.ReasoningProvider | None = None,
     allow_provider: bool = True,
     prefer_provider: bool = False,
+    allow_cache_recovery: bool = True,
+    allow_deterministic_fallback: bool = True,
 ) -> dict[str, Any]:
     """Build a validated standup brief, falling back to deterministic local narration."""
 
@@ -1452,18 +1435,25 @@ def build_standup_brief(
 
     resolved_config = config or odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
     if not allow_provider:
-        recovered_ready = _recover_ready_brief_from_cache(
-            cache_entries=cache_entries,
-            reason="provider_deferred",
-            fact_packet=fact_packet,
-            fingerprint=fingerprint,
-            cached_entry=cached_entry,
-            now_utc=now_utc,
-        )
-        if recovered_ready is not None:
-            return recovered_ready
-        return _deterministic_ready_brief(
-            fact_packet=fact_packet,
+        if allow_cache_recovery:
+            recovered_ready = _recover_ready_brief_from_cache(
+                cache_entries=cache_entries,
+                reason="provider_deferred",
+                fact_packet=fact_packet,
+                fingerprint=fingerprint,
+                cached_entry=cached_entry,
+                now_utc=now_utc,
+            )
+            if recovered_ready is not None:
+                return recovered_ready
+        if allow_deterministic_fallback:
+            return _deterministic_ready_brief(
+                fact_packet=fact_packet,
+                fingerprint=fingerprint,
+                generated_utc=generated_utc,
+                reason="provider_deferred",
+            )
+        return _unavailable_ready_brief(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
             reason="provider_deferred",
@@ -1475,18 +1465,33 @@ def build_standup_brief(
         allow_implicit_local_provider=True,
     )
     if resolved_provider is None:
-        recovered_ready = _recover_ready_brief_from_cache(
-            cache_entries=cache_entries,
-            reason="provider_unavailable",
-            fact_packet=fact_packet,
+        exact_ready = _exact_cache_ready_brief_if_reusable(
             fingerprint=fingerprint,
             cached_entry=cached_entry,
+            fact_packet=fact_packet,
             now_utc=now_utc,
         )
-        if recovered_ready is not None:
-            return recovered_ready
-        return _deterministic_ready_brief(
-            fact_packet=fact_packet,
+        if exact_ready is not None:
+            return exact_ready
+        if allow_cache_recovery:
+            recovered_ready = _recover_ready_brief_from_cache(
+                cache_entries=cache_entries,
+                reason="provider_unavailable",
+                fact_packet=fact_packet,
+                fingerprint=fingerprint,
+                cached_entry=cached_entry,
+                now_utc=now_utc,
+            )
+            if recovered_ready is not None:
+                return recovered_ready
+        if allow_deterministic_fallback:
+            return _deterministic_ready_brief(
+                fact_packet=fact_packet,
+                fingerprint=fingerprint,
+                generated_utc=generated_utc,
+                reason="provider_unavailable",
+            )
+        return _unavailable_ready_brief(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
             reason="provider_unavailable",
@@ -1497,18 +1502,33 @@ def build_standup_brief(
         request=_provider_request(fact_packet=fact_packet),
     )
     if not isinstance(raw_result, Mapping):
-        recovered_ready = _recover_ready_brief_from_cache(
-            cache_entries=cache_entries,
-            reason="provider_empty",
-            fact_packet=fact_packet,
+        exact_ready = _exact_cache_ready_brief_if_reusable(
             fingerprint=fingerprint,
             cached_entry=cached_entry,
+            fact_packet=fact_packet,
             now_utc=now_utc,
         )
-        if recovered_ready is not None:
-            return recovered_ready
-        return _deterministic_ready_brief(
-            fact_packet=fact_packet,
+        if exact_ready is not None:
+            return exact_ready
+        if allow_cache_recovery:
+            recovered_ready = _recover_ready_brief_from_cache(
+                cache_entries=cache_entries,
+                reason="provider_empty",
+                fact_packet=fact_packet,
+                fingerprint=fingerprint,
+                cached_entry=cached_entry,
+                now_utc=now_utc,
+            )
+            if recovered_ready is not None:
+                return recovered_ready
+        if allow_deterministic_fallback:
+            return _deterministic_ready_brief(
+                fact_packet=fact_packet,
+                fingerprint=fingerprint,
+                generated_utc=generated_utc,
+                reason="provider_empty",
+            )
+        return _unavailable_ready_brief(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
             reason="provider_empty",
@@ -1538,18 +1558,33 @@ def build_standup_brief(
             else:
                 errors = repaired_errors
         if errors:
-            recovered_ready = _recover_ready_brief_from_cache(
-                cache_entries=cache_entries,
-                reason="validation_failed",
-                fact_packet=fact_packet,
+            exact_ready = _exact_cache_ready_brief_if_reusable(
                 fingerprint=fingerprint,
                 cached_entry=cached_entry,
+                fact_packet=fact_packet,
                 now_utc=now_utc,
             )
-            if recovered_ready is not None:
-                return recovered_ready
-            return _deterministic_ready_brief(
-                fact_packet=fact_packet,
+            if exact_ready is not None:
+                return exact_ready
+            if allow_cache_recovery:
+                recovered_ready = _recover_ready_brief_from_cache(
+                    cache_entries=cache_entries,
+                    reason="validation_failed",
+                    fact_packet=fact_packet,
+                    fingerprint=fingerprint,
+                    cached_entry=cached_entry,
+                    now_utc=now_utc,
+                )
+                if recovered_ready is not None:
+                    return recovered_ready
+            if allow_deterministic_fallback:
+                return _deterministic_ready_brief(
+                    fact_packet=fact_packet,
+                    fingerprint=fingerprint,
+                    generated_utc=generated_utc,
+                    reason="validation_failed",
+                )
+            return _unavailable_ready_brief(
                 fingerprint=fingerprint,
                 generated_utc=generated_utc,
                 reason="validation_failed",
