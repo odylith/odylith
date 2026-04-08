@@ -679,10 +679,10 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       const summary = summaryText ? `<p class="detail-summary">${escapeHtml(summaryText)}</p>` : "";
       const summaryFacts = [...detailCoreRows(detail), ...detailSupportingRows(detail)]
         .map(([label, value]) => `
-          <span class="summary-fact">
-            <span class="summary-fact-label">${escapeHtml(label)}</span>
-            <span class="summary-fact-value">${inlineCodeHtml(value)}</span>
-          </span>
+          <div class="summary-fact" data-summary-field="${escapeHtml(label)}" role="listitem">
+            <p class="summary-fact-label">${escapeHtml(label)}</p>
+            <p class="summary-fact-value">${escapeHtml(value)}</p>
+          </div>
         `)
         .join("");
       const componentNarrative = detail.components && String(detail.components).trim() && String(detail.components).trim() !== "-"
@@ -848,7 +848,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
             ${summary}
           </div>
           <div class="detail-meta">${chips.join("")}</div>
-          ${summaryFacts ? `<div class="summary-facts">${summaryFacts}</div>` : ""}
+          ${summaryFacts ? `<div class="summary-facts" role="list">${summaryFacts}</div>` : ""}
           <div class="detail-links">
             ${sourceLink}
             ${workstreamLinks.length ? renderActionChipGroup(workstreamLinks) : ""}

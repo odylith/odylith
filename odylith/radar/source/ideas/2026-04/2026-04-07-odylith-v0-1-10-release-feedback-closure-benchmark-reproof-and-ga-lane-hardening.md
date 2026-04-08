@@ -250,3 +250,6 @@ same confidence as the runtime and surfaces it delivers.
   payload projects stale or failed Compass child-runtime posture onto the
   Compass tab, and shell-only refresh notes now say explicitly that they did
   not rerender Compass runtime truth.
+- `v0.1.10` now also has authored release-note source ready for release prep,
+  and the upgrade-spotlight browser proof is tied to that exact note so the
+  popup ships from the same markdown truth that will be tagged on GitHub.

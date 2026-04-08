@@ -197,7 +197,10 @@ Related Bugs:
 
 ## Impacted Areas
 - [ ] [MAINTAINER_RELEASE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/MAINTAINER_RELEASE_RUNBOOK.md)
+- [x] [AGENTS.md](/Users/freedom/code/odylith/odylith/maintainer/AGENTS.md)
 - [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/release/CURRENT_SPEC.md)
+- [x] [v0.1.10.md](/Users/freedom/code/odylith/odylith/runtime/source/release-notes/v0.1.10.md)
+- [x] [v0.1.10.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.10.md)
 - [ ] [cli.py](/Users/freedom/code/odylith/src/odylith/cli.py)
 - [ ] [publish_release_assets.py](/Users/freedom/code/odylith/scripts/release/publish_release_assets.py)
 - [ ] [INSTALL_AND_UPGRADE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
@@ -267,6 +270,10 @@ Related Bugs:
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_release_bootstrap.py tests/unit/test_cli.py tests/unit/runtime/test_sync_cli_compat.py tests/integration/install/test_manager.py::test_install_bundle_align_pin_advances_existing_repo_pin_to_active_runtime tests/integration/install/test_manager.py::test_upgrade_prunes_runtime_and_release_cache_retention tests/integration/install/test_manager.py::test_upgrade_warns_and_continues_when_retention_prune_stays_permission_denied`
       (`116 passed`)
 - [ ] `PYTHONPATH=src .venv/bin/pytest -q tests/integration/install/test_manager.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_compass_refresh_contract.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_release_notes.py`
+      (`121 passed`)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_surface_browser_layout_audit.py -k 'compass or shell or casebook'`
+      (`33 passed, 18 deselected`)
 - [ ] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/test_validate_git_identity.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_odylith_benchmark_runner.py`
 - [ ] `git diff --check`
 
@@ -320,6 +327,9 @@ Related Bugs:
       now states when it only updated wrapper assets, surfaces failed deeper
       Compass rerenders on the Compass tab, and stops stale child-runtime data
       from masquerading as the result of the shell refresh.
+- [x] `v0.1.10` authored release-note source is now in place and mirrored into
+      the bundle assets, and the upgrade-spotlight browser proof now runs
+      against that note instead of the prior release copy.
 - [x] Focused shell-host proof passed:
       `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_render_compass_dashboard.py`
       (`54 passed`) plus `python3 -m py_compile src/odylith/runtime/surfaces/tooling_dashboard_surface_status.py src/odylith/runtime/surfaces/render_tooling_dashboard.py src/odylith/runtime/governance/sync_workstream_artifacts.py src/odylith/runtime/surfaces/render_compass_dashboard.py`.

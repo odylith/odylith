@@ -73,6 +73,22 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   Radar, Atlas, Registry, or Casebook data is current unless the child
   runtime/surface contract says it was rerendered or the shell explicitly
   projects the gap.
+- Explicit operator-requested Compass `full` refresh is a non-negotiable proof
+  contract in this maintainer lane: do not accept a passing result that reused
+  the wrong recent runtime payload, landed on deterministic local brief
+  output, or skipped browser proof across global 24h/48h plus
+  current-workstream scoped views. The five-minute reuse clamp itself is valid;
+  after changing shell, Compass, Casebook, or other checked-in governed
+  surface source truth, rerender the affected tracked surfaces before
+  interpreting browser failures. Stale generated artifacts are not evidence
+  that the live product contract is still broken.
+  the bar is that any reused payload must already satisfy the requested
+  full-refresh truth contract.
+- Treat authored release-note markdown as the single source of truth for the
+  consumer upgrade spotlight. For release-facing shell copy, land or update
+  `odylith/runtime/source/release-notes/vX.Y.Z.md` first, mirror it into the
+  bundle assets, and prove the popup from that exact note instead of patching
+  shell-only spotlight text in parallel.
 - Use direct `rg`, source reads, generator inspection, or targeted shell
   inspection only when Odylith explicitly signals fallback or ambiguity, or
   when you are verifying tracked source truth behind a runtime-generated

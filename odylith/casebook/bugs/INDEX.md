@@ -126,6 +126,10 @@ Last updated (UTC): 2026-04-08
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-068 | 2026-04-08 | Explicit Compass full refresh can pass with deterministic or stale runtime state | P0 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
+  Compass full-refresh contract and shell/browser proof. | Closed | [2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md](2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md) |
 | CB-067 | 2026-04-08 | Tooling shell refresh can look fresh while Compass child runtime stays stale | P1 | `src/odylith/runtime/surfaces/render_tooling_dashboard.py`,
   `src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, shell

@@ -49,7 +49,7 @@ Related Bugs:
 - [2026-04-02-compass-dashboard-refresh-shell-safe-keeps-timeline-audit-pinned-to-stale-snapshot.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-02-compass-dashboard-refresh-shell-safe-keeps-timeline-audit-pinned-to-stale-snapshot.md)
 - [2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md)
 - [2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md)
-- no related Casebook-specific bug record exists yet for detail-view field repetition; keep the failure mode visible in this plan and handoff until it is formalized
+- no related Casebook-specific bug record exists yet for detail-view field repetition or header-collapse regressions; keep the failure mode visible in this plan and handoff until it is formalized
 
 ## Context/Problem Statement
 - [ ] Compass can reuse stale runtime snapshots for rolling 24h/48h windows.
@@ -98,6 +98,10 @@ Related Bugs:
 - [x] Timeline Audit still stays pinned to the prior runtime snapshot when an
       explicit live refresh does not finish, because the refresh writes one
       coupled runtime payload after the standup brief stage completes.
+- [x] Explicit Compass `full` refresh still lacks one fail-closed contract
+      across the valid five-minute runtime reuse clamp, standup-brief
+      fallback, and shell/browser proof, so a passing rerender can still leave
+      deterministic or stale Compass state visible.
 
 ## Success Criteria
 - [x] Compass runtime reuse is bounded by both input change and age.
@@ -130,6 +134,9 @@ Related Bugs:
 - [x] Browser proof can observe Compass brief source, scope, window, and
       fingerprint directly instead of inferring stale selection changes from
       narrative text alone.
+- [x] A passing explicit Compass `full` refresh never lands on deterministic
+      local brief state or warmed stale payload reuse across global 24h/48h and
+      current-workstream scoped views.
 - [x] Provider and deterministic Compass briefs no longer reuse stock
       lead-ins across sections, windows, and workstreams, and validation now
       rejects those canned openings before they reach the live payload.
@@ -205,6 +212,12 @@ Related Bugs:
     shell action.
   - [x] Mitigation: fan scoped provider warming through a small worker pool
     instead of a fully serial per-workstream render.
+- [x] Risk: explicit `full` refresh still reports success via deterministic or
+      stale fallback semantics that are acceptable only in `shell-safe`, or it
+      reuses a recent payload that is not actually deep-refresh-clean.
+  - [x] Mitigation: give explicit full refresh one fail-closed contract across
+        runtime reuse, exact-cache reuse, deterministic fallback, and browser
+        proof.
 - [ ] Risk: global brief freshness fix reduces resilience when provider is
     unavailable.
   - [ ] Mitigation: keep exact-cache reuse and deterministic fallback from the
@@ -247,6 +260,15 @@ Related Bugs:
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_compass_dashboard --repo-root . --refresh-profile full`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_tooling_dashboard --repo-root . --output odylith/index.html`
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_compass_dashboard.py tests/integration/runtime/test_surface_browser_smoke.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/test_cli.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_compass_refresh_contract.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/runtime/test_sync_cli_compat.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py -k compass` (executed locally; skipped because Playwright/Chromium is unavailable in this workstation environment)
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py -k "compass or shell"`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_casebook_dashboard.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_layout_audit.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py -k casebook_detail_stacks_cleanly_in_compact_viewport`
+- [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output odylith/casebook/casebook.html`
+- [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output src/odylith/bundle/assets/odylith/casebook/casebook.html`
+- [x] `python -m py_compile src/odylith/runtime/surfaces/render_casebook_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/integration/runtime/test_surface_browser_layout_audit.py`
 - [ ] `odylith benchmark --repo-root .`
 - [x] `git diff --check`
 
@@ -305,12 +327,15 @@ Related Bugs:
       to avoid house phrases, deterministic fallback rewrites the same facts in
       plainer spoken language, and validation rejects overused stock openings
       so cached or regenerated briefs cannot slide back into the robotic voice.
-- [ ] April 7 follow-on keeps `B-025` active for the Casebook detail polish:
-      dedupe repeated proof/evidence links and tighten the browser/unit proof
-      so the bug surface stays concise under real multi-source records.
-- [ ] April 7 QA follow-on expands browser proof from correctness-only into
+- [x] April 7 follow-on keeps `B-025` active for the Casebook detail polish:
+      repeated proof/evidence links stay deduped, summary metadata now renders
+      as stacked fact cards instead of one non-wrapping strip, and the
+      browser/unit proof now attacks the live bug header under long-title
+      multi-source records.
+- [x] April 7 QA follow-on expands browser proof from correctness-only into
       compact-width and repetition-aware UX proof so the live shell catches
-      noisy detail bands before release.
+      noisy detail bands before release, including desktop and compact
+      geometry audits for Casebook detail headers.
 - [x] April 7 diagnostics follow-on keeps maintainer autofix conflict notes in
       shared traceability artifacts but removes them from default Radar warning
       cards so default surfaces agree on operator-facing warning semantics.
@@ -326,3 +351,17 @@ Related Bugs:
       to real retained history dates, closing a browser-visible 404 path that
       appeared when the old synthetic 30-day bounds offered non-existent
       historical snapshots.
+- [x] April 8 full-refresh follow-on closed the fail-closed contract: explicit
+      Compass `full` keeps the valid five-minute reuse clamp, only reuses
+      recent payloads that are already deep-refresh-clean, refuses to pass
+      with deterministic local narration or stale fallback truth, and now has
+      targeted contract/runtime/render/narrator proof plus a headless browser
+      regression for the deterministic-brief banner path.
+- [x] April 8 browser-resume follow-on fixed the tooling-shell bootstrap path:
+      shell-computed Compass stale/failure posture now survives first load and
+      later runtime probes, and the resumed headless browser lane proves both
+      stale-shell-newer and failed-full-refresh disclosure on the Compass tab.
+- [x] April 8 deeper QA follow-on rerendered checked-in shell and Casebook
+      surfaces before the broader Compass/browser sweep, eliminating stale
+      generated-artifact false positives and closing the resumed `compass or
+      shell` browser lane cleanly.

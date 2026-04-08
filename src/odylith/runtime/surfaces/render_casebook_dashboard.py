@@ -922,22 +922,21 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       margin: 0;
     }}
 .summary-facts {{
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 8px 14px;
-      align-items: center;
-      overflow-x: auto;
-      overflow-y: hidden;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      gap: 10px;
       min-width: 0;
-      white-space: nowrap;
 }}
 .summary-fact {{
-      display: inline-flex;
-      flex-wrap: nowrap;
-      align-items: baseline;
-      gap: 6px;
+      display: grid;
+      gap: 4px;
+      align-content: start;
       min-width: 0;
-      white-space: nowrap;
+      padding: 10px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
 }}
 .summary-fact-label,
 .summary-fact-value {{
@@ -1057,7 +1056,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .bug-row-summary,
     .detail-title,
     .detail-summary,
-    .detail-copy {{
+    .detail-copy,
+    .summary-fact-value {{
       overflow-wrap: anywhere;
       min-width: 0;
     }}
@@ -1145,12 +1145,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       }}
       .bug-row-meta,
       .detail-meta,
-      .detail-links,
-      .summary-facts {{
+      .detail-links {{
         flex-wrap: wrap;
       }}
-      .summary-fact {{
-        white-space: normal;
+      .summary-facts {{
+        grid-template-columns: 1fr;
       }}
     }}
       .detail {{
@@ -1854,10 +1853,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const summary = summaryText ? `<p class="detail-summary">${{escapeHtml(summaryText)}}</p>` : "";
       const summaryFacts = [...detailCoreRows(detail), ...detailSupportingRows(detail)]
         .map(([label, value]) => `
-          <span class="summary-fact">
-            <span class="summary-fact-label">${{escapeHtml(label)}}</span>
-            <span class="summary-fact-value">${{inlineCodeHtml(value)}}</span>
-          </span>
+          <div class="summary-fact" data-summary-field="${{escapeHtml(label)}}" role="listitem">
+            <p class="summary-fact-label">${{escapeHtml(label)}}</p>
+            <p class="summary-fact-value">${{escapeHtml(value)}}</p>
+          </div>
         `)
         .join("");
       const componentNarrative = detail.components && String(detail.components).trim() && String(detail.components).trim() !== "-"
@@ -2023,7 +2022,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             ${{summary}}
           </div>
           <div class="detail-meta">${{chips.join("")}}</div>
-          ${{summaryFacts ? `<div class="summary-facts">${{summaryFacts}}</div>` : ""}}
+          ${{summaryFacts ? `<div class="summary-facts" role="list">${{summaryFacts}}</div>` : ""}}
           <div class="detail-links">
             ${{sourceLink}}
             ${{workstreamLinks.length ? renderActionChipGroup(workstreamLinks) : ""}}

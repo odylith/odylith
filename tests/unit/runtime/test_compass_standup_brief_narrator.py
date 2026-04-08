@@ -970,6 +970,53 @@ def test_build_standup_brief_can_bypass_exact_cache_for_explicit_live_refresh(tm
     assert refreshed_provider.calls == 1
 
 
+def test_build_standup_brief_full_refresh_can_fall_back_to_exact_current_packet_cache(tmp_path: Path) -> None:
+    seeded_provider = _FakeProvider(_valid_provider_result())
+    seeded = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(),
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=seeded_provider,
+    )
+    assert seeded["status"] == "ready"
+    assert seeded["source"] == "provider"
+
+    refreshed = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(),
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=_QueuedProvider([None, None]),
+        allow_provider=True,
+        prefer_provider=True,
+        allow_cache_recovery=False,
+        allow_deterministic_fallback=False,
+    )
+
+    assert refreshed["status"] == "ready"
+    assert refreshed["source"] == "cache"
+    assert refreshed["cache_mode"] == "exact"
+
+
+def test_build_standup_brief_full_refresh_fails_closed_when_no_exact_cache_is_available(tmp_path: Path) -> None:
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(include_freshness_fact=True),
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=_QueuedProvider([None, None]),
+        allow_provider=True,
+        prefer_provider=True,
+        allow_cache_recovery=False,
+        allow_deterministic_fallback=False,
+    )
+
+    assert brief["status"] == "unavailable"
+    assert brief["source"] == "unavailable"
+    assert brief["diagnostics"]["reason"] == "provider_empty"
+
+
 def test_build_standup_brief_uses_current_deterministic_brief_when_provider_returns_empty_for_changed_packet(
     tmp_path: Path,
 ) -> None:

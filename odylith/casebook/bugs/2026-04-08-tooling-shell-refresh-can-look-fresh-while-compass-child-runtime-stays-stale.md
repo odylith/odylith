@@ -57,11 +57,20 @@
   should also say that shell-only refresh updates the wrapper, not Compass
   child-runtime truth.
 
-- Verification: Targeted shell-render proof should assert that a stale or
-  failed Compass child-runtime snapshot produces shell payload status for the
-  Compass tab, and focused dashboard-refresh proof should assert that
-  `tooling_shell` plan notes tell operators it does not rerender Compass
-  briefs.
+- Verification: Fixed on 2026-04-08. `PYTHONPATH=src python3 -m pytest -q
+  tests/unit/runtime/test_render_tooling_dashboard.py
+  tests/unit/runtime/test_sync_cli_compat.py
+  tests/unit/runtime/test_render_compass_dashboard.py`
+  passed with `76 passed`, and the resumed browser proof on the same date
+  passed with `PYTHONPATH=src python3 -m pytest -q
+  tests/integration/runtime/test_surface_browser_smoke.py -k "compass or shell"
+  tests/integration/runtime/test_surface_browser_deep.py -k "compass or shell"
+  tests/integration/runtime/test_surface_browser_ux_audit.py -k "compass"
+  tests/integration/runtime/test_surface_browser_filter_audit.py -k "compass"`
+  (`15 passed, 34 deselected`). That resumed browser lane also proved the
+  shell-bootstrap follow-on fix in `control.js`: precomputed Compass stale or
+  failed-full-refresh status now stays visible on first load and after runtime
+  probes instead of being cleared by an empty probe payload.
 
 - Prevention: Shell refresh must not claim freshness for Compass-derived
   sections unless the Compass child-runtime snapshot was actually refreshed, or
@@ -117,13 +126,28 @@
   `odylith/registry/source/components/compass/CURRENT_SPEC.md`.
 
 - Regression Tests Added:
-  `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_render_compass_dashboard.py`
-  (`54 passed`)
+  `PYTHONPATH=src python3 -m pytest -q
+  tests/unit/runtime/test_render_tooling_dashboard.py
+  tests/unit/runtime/test_sync_cli_compat.py
+  tests/unit/runtime/test_render_compass_dashboard.py`
+  plus the browser regressions in
+  `tests/integration/runtime/test_surface_browser_deep.py::test_shell_compass_tab_surfaces_stale_runtime_status_when_shell_is_newer`
+  and
+  `tests/integration/runtime/test_surface_browser_deep.py::test_shell_compass_tab_surfaces_failed_full_refresh_warning`
+  plus the resumed shell/Compass browser sweep
+  `PYTHONPATH=src python3 -m pytest -q
+  tests/integration/runtime/test_surface_browser_smoke.py
+  tests/integration/runtime/test_surface_browser_deep.py
+  tests/integration/runtime/test_surface_browser_ux_audit.py
+  tests/integration/runtime/test_surface_browser_filter_audit.py -k "compass or shell"`
+  (`24 passed, 25 deselected`)
 
 - Monitoring Updates: Watch shell refresh proof for cases where
   `odylith/index.html` advances while `odylith/compass/runtime/current.v1.json`
-  does not, and ensure the shell status card reflects that gap on the Compass
-  tab.
+  does not, ensure the shell status card reflects that gap on the Compass tab,
+  and keep browser proof watching the first-load/runtime-probe handoff so
+  shell-computed child-runtime status cannot be cleared by a later probe that
+  lacks shell-facing posture fields.
 
 - Residual Risk: Even after the shell truth fix, shell-only refresh still does
   not rerender Compass. That is acceptable only if the shell keeps admitting

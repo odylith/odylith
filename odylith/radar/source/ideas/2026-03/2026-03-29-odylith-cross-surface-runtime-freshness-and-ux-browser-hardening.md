@@ -66,6 +66,11 @@ remove stale cross-packet global brief recovery, curate traceability
 diagnostics once so default surfaces only show operator-facing warning/error
 rows, and expand Playwright proof to assert fresh KPIs, brief posture,
 timelines, and cross-surface state restore.
+That same slice now needs one stricter explicit Compass `full` refresh
+contract: keep the existing five-minute runtime reuse clamp, but only reuse a
+recent payload when it already satisfies the requested deep-refresh truth
+contract. A passing deep rerender must not land on deterministic local
+narration or stale child-runtime state.
 Extend that same model into a balanced live-shell posture:
 - keep live shell views fresh earlier than commit through runtime-backed data
   and bounded shell-safe refresh while the shell is actively open
@@ -88,6 +93,10 @@ Extend that same model into a balanced live-shell posture:
 ## Scope
 - fix Compass runtime reuse so 24h/48h windows rebuild on age as well as input
   change
+- keep the existing five-minute runtime reuse clamp, but make explicit Compass
+  `full` validate that any reused payload already satisfies the deep-refresh
+  contract and fail if the result would still require deterministic or stale
+  fallback state
 - version the bug projection contract into store and hot-path fingerprints
 - remove stale last-known-good global brief reuse across changed fact packets
 - extend the shell freshness model so runtime-backed live views can refresh
@@ -128,6 +137,9 @@ Extend that same model into a balanced live-shell posture:
 - default operator-facing shell surfaces agree on which traceability warnings
   deserve primary warning treatment
 - browser proof covers broader shell UX/UI freshness paths, not just Compass
+- browser proof catches explicit Compass `full` refresh regressions so a
+  passing deep rerender never lands on deterministic local brief state across
+  global 24h/48h and scoped current-workstream views
 - exact-id and normalized-token filter/search behavior is proven across Radar,
   Registry, Atlas, Casebook, and Compass filter state
 - the shell makes the difference between live runtime freshness and tracked
@@ -183,6 +195,21 @@ Extend that same model into a balanced live-shell posture:
   the audit-day picker now clamps against real retained history dates instead
   of a synthetic 30-day range, so historical filter changes stop inviting
   browser-visible 404s for snapshots that were never retained
+- implemented on 2026-04-08 for the explicit full-refresh contract:
+  Compass `full` now keeps the valid five-minute runtime reuse clamp but only
+  reuses recent payloads that already satisfy the deep-refresh truth bar,
+  fails closed instead of landing on deterministic or stale fallback brief
+  state, and is backed by targeted contract, runtime, render, narrator, and
+  browser-regression proof
+- implemented on 2026-04-08 for shell freshness projection bootstrap:
+  the tooling shell now preserves its precomputed Compass stale/failure status
+  on first load and across runtime probes, so browser-visible shell truth no
+  longer disappears just because the runtime-probe payload omits shell-only
+  status records
+- implemented on 2026-04-08 for deeper Compass/browser hardening proof:
+  the resumed shell-and-Compass browser sweep now runs against rerendered
+  checked-in shell and Casebook surfaces after source/governance changes, so
+  stale generated artifacts stop masquerading as Compass freshness regressions
 
 ## Rollout
 Ship as a freshness-and-proof hardening slice. No data migration is required,

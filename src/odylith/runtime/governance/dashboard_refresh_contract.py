@@ -3,21 +3,22 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.runtime.common.command_surface import display_command
+from odylith.runtime.surfaces import compass_refresh_contract
 
 DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS = 45.0
-COMPASS_FULL_REFRESH_TIMEOUT_SECONDS = 180.0
-DEFAULT_COMPASS_REFRESH_PROFILE = "shell-safe"
+COMPASS_FULL_REFRESH_TIMEOUT_SECONDS = 300.0
+DEFAULT_COMPASS_REFRESH_PROFILE = compass_refresh_contract.DEFAULT_REFRESH_PROFILE
 
 
 def normalize_compass_refresh_profile(value: str, *, default: str = DEFAULT_COMPASS_REFRESH_PROFILE) -> str:
-    normalized = str(value or "").strip().lower()
-    if normalized in {"full", "shell-safe"}:
-        return normalized
-    return str(default).strip().lower() or DEFAULT_COMPASS_REFRESH_PROFILE
+    return compass_refresh_contract.normalize_refresh_profile(value, default=default)
 
 
 def dashboard_refresh_timeout_seconds(*, surface: str, compass_refresh_profile: str) -> float:
-    if str(surface).strip().lower() == "compass" and normalize_compass_refresh_profile(compass_refresh_profile) == "full":
+    if (
+        str(surface).strip().lower() == "compass"
+        and compass_refresh_contract.full_refresh_requested(compass_refresh_profile)
+    ):
         return COMPASS_FULL_REFRESH_TIMEOUT_SECONDS
     return DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS
 

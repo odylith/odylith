@@ -102,6 +102,10 @@ Shell-only refresh is wrapper-scoped, not a hidden child-surface rerender. If
 wrapper assets refreshed but Compass runtime truth did not. The shell must also
 project current Compass freshness or failure posture when the Compass tab is
 active so parent-surface success does not masquerade as a fresh child brief.
+Explicit Compass `full` refresh is the opposite contract: it is a deep
+child-surface rerender, not a wrapper refresh, and a passing run must not rely
+on deterministic local brief fallback or on reusing a recent Compass payload
+that does not already satisfy the requested deep-refresh truth contract.
 
 ### Live-refresh policy contract
 Dashboard owns the shell-side policy that decides when a currently open tab may
@@ -131,6 +135,9 @@ Across all policies, the shell must keep three guardrails:
 The same truth rule applies to explicit refresh: the shell may read Compass
 runtime state and surface stale/failure posture, but it must not imply that
 Compass rerendered unless the Compass child-runtime snapshot actually changed.
+When the operator explicitly requests Compass `full`, the shell and refresh
+contract must treat deterministic local brief output or stale child-runtime
+reuse as a failed deeper refresh, not as a successful update.
 
 These policies are posture switches over one shell/runtime implementation. They
 must not fork Odylith into lane-specific codebases; source templates, generated
@@ -236,3 +243,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-31: Froze the dashboard header contract and made shell render fail closed if the source-owned header template or header CSS drifts. (Plan: [B-027](odylith/radar/radar.html?view=plan&workstream=B-027))
 - 2026-04-01: Restored the compact runtime/version string inside the frozen header contract so pinned and detached maintainer lanes stay visibly distinguishable. (Plan: [B-027](odylith/radar/radar.html?view=plan&workstream=B-027))
 - 2026-04-02: Added balanced, proof-frozen, and full-dev live-refresh policies so read-only runtime-backed tabs can stay current without background sync, provider-credit spend, or benchmark skew. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-08: Clarified that explicit Compass `full` is a deep child-surface refresh, not wrapper polish: the shell may project Compass freshness gaps, but a passing deep refresh now keeps the valid five-minute reuse clamp only when the reused payload is already deep-refresh-clean. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-08: Fixed the shell runtime-status bootstrap so Compass stale/failure disclosure survives first load and later runtime probes instead of being cleared by a probe payload that lacks shell-facing status records. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

@@ -19,6 +19,7 @@ from zoneinfo import ZoneInfo
 
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine.surface_projection_fingerprint import default_surface_projection_input_fingerprint
+from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import dashboard_surface_bundle
 
@@ -27,7 +28,7 @@ _DEFAULT_ACTIVE_WINDOW_MINUTES = 15
 _COMPASS_TZ = ZoneInfo("America/Los_Angeles")
 _RUNTIME_CONTRACT_VERSION = "v1"
 _RUNTIME_REUSE_MAX_AGE_SECONDS = 5 * 60
-_DEFAULT_REFRESH_PROFILE = "shell-safe"
+_DEFAULT_REFRESH_PROFILE = compass_refresh_contract.DEFAULT_REFRESH_PROFILE
 _EXPORT_MODULES = (
     "odylith.runtime.surfaces.compass_dashboard_base",
     "odylith.runtime.surfaces.compass_dashboard_runtime",
@@ -67,10 +68,7 @@ def _load_runtime_impl():
 
 
 def _normalize_refresh_profile(value: str) -> str:
-    token = str(value or "").strip().lower()
-    if token in {"full", "shell-safe"}:
-        return token
-    return _DEFAULT_REFRESH_PROFILE
+    return compass_refresh_contract.normalize_refresh_profile(value, default=_DEFAULT_REFRESH_PROFILE)
 
 
 def _now_utc_iso() -> str:
@@ -334,7 +332,10 @@ def refresh_runtime_artifacts(
         input_fingerprint=input_fingerprint,
         runtime_paths=runtime_paths,
     )
-    if existing_payload is not None:
+    if existing_payload is not None and _payload_satisfies_requested_refresh(
+        payload=existing_payload,
+        requested_profile=normalized_profile,
+    ):
         updated_existing_payload = _apply_refresh_attempt_state(
             payload=dict(existing_payload),
             requested_profile=normalized_profile,
@@ -465,6 +466,42 @@ def _existing_runtime_payload_if_fresh(
     if age_seconds < 0 or age_seconds > float(_RUNTIME_REUSE_MAX_AGE_SECONDS):
         return None
     return payload
+
+
+def _payload_satisfies_requested_refresh(
+    *,
+    payload: Mapping[str, Any],
+    requested_profile: str,
+) -> bool:
+    if not compass_refresh_contract.full_refresh_requested(requested_profile):
+        return True
+    current_workstreams = payload.get("current_workstreams")
+    if not isinstance(current_workstreams, list):
+        return False
+    expected_scoped_ids = {
+        str(row.get("idea_id", "")).strip()
+        for row in current_workstreams
+        if isinstance(row, Mapping) and str(row.get("idea_id", "")).strip()
+    }
+    standup_brief = payload.get("standup_brief")
+    if not isinstance(standup_brief, Mapping):
+        return False
+    standup_brief_scoped = payload.get("standup_brief_scoped")
+    scoped_by_window = standup_brief_scoped if isinstance(standup_brief_scoped, Mapping) else {}
+    for window in ("24h", "48h"):
+        brief = standup_brief.get(window)
+        if not isinstance(brief, Mapping) or not compass_refresh_contract.brief_satisfies_full_refresh(brief):
+            return False
+        scoped_map = scoped_by_window.get(window)
+        if not isinstance(scoped_map, Mapping):
+            return False
+        for ws_id in expected_scoped_ids:
+            scoped_brief = scoped_map.get(ws_id)
+            if not isinstance(scoped_brief, Mapping):
+                return False
+            if not compass_refresh_contract.brief_satisfies_full_refresh(scoped_brief):
+                return False
+    return True
 
 
 def _parse_generated_utc(payload: Mapping[str, Any]) -> dt.datetime | None:

@@ -619,8 +619,10 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "function runtimeStateAffectsTab(tab, runtimeState)" in control_js
     assert "function runtimeAutoReloadReadyForTab(tab)" in control_js
     assert "function buildRuntimeStatusFingerprint(posture) {" in control_js
+    assert "const initialSurfaceRuntimeStatus = payload && payload.surface_runtime_status" in control_js
     assert "const surfaceRuntimeStatus = runtimeState && runtimeState.surface_runtime_status" in control_js
     assert "const rawPosture = surfaceRuntimeStatus[currentTab];" in control_js
+    assert "function mergeRuntimeStatusState(runtimeState) {" in control_js
     assert "function runtimeStatusDismissed() {" in control_js
     assert "function syncRuntimeStatusLayout() {" in control_js
     assert "function scheduleRuntimeStatusLayoutSync() {" in control_js
@@ -629,6 +631,7 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "function buildRuntimeStatusPosture(runtimeState) {" in control_js
     assert "visible: false," in control_js
     assert "applyRuntimeStatus(latestRuntimeStatusState || {});" in control_js
+    assert "applyRuntimeStatus(mergeRuntimeStatusState(payload));" in control_js
     assert 'applyTab(buildTabActivationState("atlas"), { pushHistory: true });' in control_js
     assert 'applyTab(buildTabActivationState("radar"), { pushHistory: true });' in control_js
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")

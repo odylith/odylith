@@ -19,6 +19,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.surfaces import compass_outcome_digest_runtime
 from odylith.runtime.surfaces import compass_narrative_runtime
+from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_fact_packets
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import compass_self_host_runtime
@@ -61,8 +62,7 @@ def _global_brief_provider_allowed(
     window_hours: int,
     refresh_profile: str,
 ) -> bool:
-    profile = str(refresh_profile or "full").strip().lower() or "full"
-    if profile == "shell-safe":
+    if not compass_refresh_contract.full_refresh_requested(refresh_profile):
         return False
     return _global_brief_should_use_provider(
         repo_root=repo_root,

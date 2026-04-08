@@ -113,10 +113,15 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Repo Bug Knowledge View" not in html
     assert ".detail-section-agent {" in html
     assert "background: linear-gradient(180deg, #ffffff, #f5fbf8);" in html
+    assert ".summary-facts {" in html
+    assert "grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));" in html
+    assert "padding: 10px 12px;" in html
     assert "Odylith Agent Learnings" in app_js
     assert "Human Readout" not in app_js
     assert "Nearby Change Guidance" not in app_js
     assert "Inspect Next" not in app_js
+    assert 'data-summary-field="${escapeHtml(label)}"' in app_js
+    assert '<div class="summary-facts" role="list">${summaryFacts}</div>' in app_js
     assert "function normalizeSearchToken(value)" in app_js
     assert "function canonicalizeBugIdToken(value)" in app_js
     assert "function bugSearchText(row)" in app_js

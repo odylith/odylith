@@ -1,8 +1,8 @@
 # Release
-Last updated: 2026-04-07
+Last updated: 2026-04-08
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-08
 
 ## Purpose
 Release is Odylith's canonical maintainer publication lane. It owns the
@@ -74,6 +74,11 @@ claims aligned for public publication.
   options.
   The canonical public bootstrap command is
   `curl -fsSL https://odylith.ai/install.sh | bash`.
+- Release prep for the next version must land an authored note under
+  `odylith/runtime/source/release-notes/vX.Y.Z.md` before the lane is treated
+  as launch-ready. That note is the source of truth for the consumer upgrade
+  spotlight copy, so release-facing popup claims must be proved from the same
+  authored markdown rather than one-off shell text.
 - When the hosted installer upgrades an already-installed consumer repo, it
   must leave one truthful closeout posture: the verified runtime is active, the
   tracked repo pin matches that runtime, and any stale-retention cleanup that
@@ -190,6 +195,9 @@ claims aligned for public publication.
 - `odylith/MAINTAINER_RELEASE_RUNBOOK.md` and
   `odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md`
   Canonical release-order and launch-readiness operator guidance.
+- `odylith/runtime/source/release-notes/vX.Y.Z.md`
+  Authored release-note source that drives the consumer upgrade spotlight and
+  the tagged GitHub note URL for the released version.
 - `bin/_odylith.sh`
   Shared maintainer release-lane authority checks, local session-file
   location, and wrapper plumbing.
