@@ -140,4 +140,4 @@
 
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: `2026/freedom/v0.1.10` Compass closeout series.
