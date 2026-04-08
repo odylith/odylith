@@ -113,6 +113,10 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   existing repos, branch on repo state using stable commands instead of
   assuming a newly added hidden CLI flag already exists in older shipped
   versions.
+- Keep generated hosted installer shell templates strict-mode safe. If the
+  template runs under `set -euo pipefail`, initialize every optional local
+  before testing it and prove the nested fresh-install path in canonical smoke
+  before trusting the change for release.
 - Use direct `rg`, source reads, generator inspection, or targeted shell
   inspection only when Odylith explicitly signals fallback or ambiguity, or
   when you are verifying tracked source truth behind a runtime-generated

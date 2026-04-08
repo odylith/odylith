@@ -128,6 +128,9 @@ Last updated (UTC): 2026-04-08
 | CB-074 | 2026-04-08 | Hosted install script uses hidden pin alignment flag that older shipped runtimes do not understand | P0 | release asset publisher, local release smoke harness,
   generated `install.sh`, hosted installer upgrade compatibility, release
   component contract. | Closed | [2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md](2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md) |
+| CB-075 | 2026-04-08 | Hosted install script repo root detection crashes under strict shell mode before fresh install proof | P0 | release asset publisher, generated `install.sh`,
+  repo-root detection in strict shell mode, local release smoke harness,
+  release component contract. | Closed | [2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md](2026-04-08-hosted-install-script-repo-root-detection-crashes-under-strict-shell-mode-before-fresh-install-proof.md) |
 | CB-068 | 2026-04-08 | Explicit compass full refresh can pass with deterministic or stale runtime state | P0 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
   `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,

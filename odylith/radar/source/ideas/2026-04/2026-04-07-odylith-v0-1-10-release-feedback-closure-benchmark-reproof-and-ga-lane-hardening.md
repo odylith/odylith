@@ -67,7 +67,12 @@ landed cleanly. Release prep on 2026-04-08 exposed one more maintainer truth:
 PR `pytest` and `candidate-proof` still carried unit tests that silently
 depended on a live Codex host runtime or a local `codex` binary, so GitHub
 Actions could fail release proof even when the underlying routing contract was
-correct for a non-Codex runner.
+correct for a non-Codex runner. Canonical candidate proof the same day exposed
+another hosted-installer truth after the flag-compatibility fix: the generated
+strict-mode `install.sh` still crashed on the fresh nested-folder smoke path
+because repo-root detection tested an uninitialized `git_candidate` variable
+before it could climb to the ancestor repo markers that define the install
+root.
 
 ## Customer
 - Primary: Odylith maintainers cutting, proving, and recovering canonical
@@ -98,8 +103,9 @@ identity exceptions, or hand-waved benchmark deferrals.
   are meant to prove explicit routing or benchmark contracts
 - make hosted-installer closeout converge on one truthful posture: the new
   runtime stays live, stale retention cleanup is best-effort with exact
-  remediation, and existing consumer installs do not land in a silent
-  active-versus-pin split state
+  remediation, existing consumer installs do not land in a silent
+  active-versus-pin split state, and fresh nested-folder installs stay
+  strict-mode safe before ancestor repo markers are discovered
 - make `odylith sync` operator proof as trustworthy as the engine underneath
   it: visible help for real controls, heartbeat progress on long steps,
   stronger dirty-overlap acknowledgement, durable warning-report pointers, and
@@ -170,8 +176,9 @@ identity exceptions, or hand-waved benchmark deferrals.
 - disposable consumer first install and GA-gate rehearsal render shell surfaces
   cleanly without transient missing-surface warnings
 - hosted-installer upgrades on already-installed consumer repos finish with a
-  healthy active runtime, a matching tracked repo pin, and no retention-prune
-  hard failure from read-only stale trees
+  healthy active runtime, a matching tracked repo pin, no retention-prune hard
+  failure from read-only stale trees, and no strict-shell repo-root detection
+  abort on nested first install
 - downstream `odylith sync` runs expose their real control surface, stay visibly
   alive during long steps, require explicit acknowledgement for large dirty
   overlap, and keep generated-artifact metadata truthful on semantic no-op runs
