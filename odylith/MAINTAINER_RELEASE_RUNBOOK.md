@@ -211,18 +211,24 @@ Run the targets in this order.
   before dispatch.
 - The GitHub workflow will refuse to publish unless the requested `tag`, the
   session `expected_sha`, and `GITHUB_SHA` all match.
-- Maintainer identity proof still expects `freedom-research` local authorship
-  for authored commits, but `v0.1.9` release prep must also tolerate the
-  currently observed GitHub squash-merge shape on canonical `main`: maintainer
-  author email `freedom@freedompreetham.org` with GitHub-generated committer
-  `GitHub <noreply@github.com>`. Treat that as a narrow release-path
-  compatibility exception, not a new canonical identity policy.
-- Post-`v0.1.9` follow-up: stop depending on GitHub-generated squash-merge
-  committer metadata in release ancestry. The long-term cleaner path is to use
-  a merge policy or release-bound integration path that preserves canonical
-  maintainer identity end to end. Track that cleanup, the skipped `v0.1.9`
-  benchmark proof, and the first-install shell wobble under
+- Maintainer identity proof now pins canonical maintainer authorship for
+  release-history validation and no longer depends on a GitHub-generated
+  squash-merge committer exception in canonical `main` ancestry. Local
+  maintainer config still stays strict on both author and committer identity;
+  release-history proof no longer treats platform-generated committer metadata
+  as the deciding signal, but it still tolerates the immutable historical
+  maintainer author alias already present in older canonical commits.
+- Release, release-candidate, and test workflows now pin `actions/checkout
+  v5.0.1` and `actions/setup-python v6.1.0` at immutable SHAs so the
+  canonical release lane no longer carries the prior Node 20 runtime warning
+  in configured workflow truth.
+- Track release identity cleanup, the skipped `v0.1.9` benchmark proof, and
+  the first-install shell wobble under
   [B-060](/Users/freedom/code/odylith/odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md).
+- Treat GitHub-hosted runtime deprecation warnings from pinned first-party
+  Actions as release blockers. Refresh the `release`,
+  `release-candidate`, and baseline `test` workflow pins together on newer
+  immutable SHAs instead of normalizing warning-only CI drift.
 - Public install and upgrade must preserve strict interpreter isolation:
   `./.odylith/bin/odylith` runs Odylith inside `.odylith/`, while the consumer
   repo's own toolchain remains untouched.

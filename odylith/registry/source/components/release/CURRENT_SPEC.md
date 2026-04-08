@@ -249,21 +249,23 @@ claims aligned for public publication.
   - the workflow ref is `refs/heads/main`
   - the requested `tag` resolves to the session `expected_sha`
   - `GITHUB_SHA` equals that same `expected_sha`
-- Release identity validation accepts two commit-history shapes only:
-  - direct maintainer-authored commits with `freedom-research` local identity
-  - the currently observed GitHub-generated squash-merge shape on canonical
-    `main`, where maintainer authorship still uses
-    `freedom@freedompreetham.org` and only the committer is
-    `GitHub <noreply@github.com>`
-- This GitHub-committer path is a release-path compatibility exception, not
-  the desired long-term publication posture. A follow-on release slice should
-  remove the dependency on GitHub-generated merge committer metadata and
-  restore canonical maintainer identity end to end. The concrete `v0.1.10`
-  follow-up record is
+- Release identity validation now pins canonical maintainer authorship for
+  commit-history proof and no longer depends on a GitHub-generated committer
+  exception in canonical `main` ancestry.
+- Local maintainer config still remains strict on both author and committer
+  identity. The history gate is intentionally narrower: it validates the
+  canonical authored identity that must survive platform merge machinery while
+  tolerating the immutable historical maintainer author alias already present
+  in older canonical commits.
+- The concrete `v0.1.10` follow-up record is
   [B-060](/Users/freedom/code/odylith/odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md).
-- Release, release-candidate, and test workflows should pin first-party GitHub
-  Actions to immutable SHAs, pin the runner image, and pin the build frontend
-  version instead of relying on floating CI inputs.
+- Release, release-candidate, and test workflows now pin
+  `actions/checkout v5.0.1` and `actions/setup-python v6.1.0` to immutable
+  SHAs, keep the runner image pinned, and keep the build frontend version
+  pinned instead of relying on floating CI inputs.
+- Those first-party Action pins must also stay on a currently supported
+  GitHub-hosted runtime major. A release-lane Node-runtime deprecation warning
+  from pinned first-party Actions is a release blocker, not benign CI noise.
 - Release assets are authoritative only when the signed manifest, provenance,
   and SBOM all verify for the canonical signer identity.
 - Consumer posture must reject maintainer-only localhost asset overrides and

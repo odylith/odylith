@@ -76,6 +76,14 @@ Related Bugs:
   tracks the new release-proof benchmark blocker: the pinned-dogfood
   `--profile proof` lane can wedge mid-corpus without persisting a fresh
   release-safe report, forcing a tracked one-release override for `v0.1.10`.
+- [CB-070](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md)
+  tracks the release-identity gap: the canonical history guard still depended
+  on a GitHub-generated committer exception instead of canonical maintainer
+  authorship.
+- [CB-071](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md)
+  tracks the remaining CI pin gap: first-party GitHub Actions revisions were
+  still on the Node 20 runtime and emitting deprecation warnings in release
+  proof.
 
 ## Learnings
 - [x] `v0.1.9` published on 2026-04-07, but canonical release proof still
@@ -128,10 +136,9 @@ Related Bugs:
       hold the release on benchmark runner tuning in the same cut.
 
 ## Must-Ship
-- [ ] Remove dependency on GitHub-generated merge committer metadata from the
-      canonical release ancestry rule, or replace the merge/publication posture
-      with a cleaner path that preserves canonical maintainer identity end to
-      end.
+- [x] Remove dependency on GitHub-generated committer metadata from the
+      canonical release ancestry rule by pinning release-history validation to
+      canonical maintainer authorship instead of a GitHub-specific exception.
 - [x] Record the exact `v0.1.10` benchmark override in tracked maintainer
       truth, bind the pinned-dogfood proof-run wedge to a Casebook bug, and
       keep the release story honest that `v0.1.10` is benchmark-advisory
@@ -156,8 +163,9 @@ Related Bugs:
       runtime age and last failed deeper-refresh state into the shell so the
       Compass tab admits it is showing an older child snapshot instead of
       implying fresh brief data.
-- [ ] Refresh pinned first-party GitHub Actions inputs so the release workflow
-      no longer carries the Node 20 deprecation warning.
+- [x] Refresh pinned first-party GitHub Actions inputs so the release workflow
+      no longer carries the Node 20 deprecation warning in configured
+      workflow truth.
 - [ ] Keep post-publish `dogfood-activate` and surface refresh from dirtying
       the active maintainer checkout, or move that generated refresh into an
       isolated proof workspace by design.
@@ -362,6 +370,14 @@ Related Bugs:
       pinned-dogfood proof run `0047192366d8bf1c` wedged mid-corpus, so the
       release will stay benchmark-advisory instead of misreporting a full
       re-proof.
+- [x] Release identity validation no longer carries the GitHub-specific
+      `noreply@github.com` committer exception. The history gate now proves
+      canonical maintainer authorship instead of platform-generated committer
+      metadata.
+- [x] Release workflow pin hardening landed: release, release-candidate, and
+      test now pin `actions/checkout v5.0.1` and
+      `actions/setup-python v6.1.0` at immutable SHAs, and workflow YAML parse
+      validation passed across all three files.
 - [x] Focused shell-host proof passed:
       `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_render_compass_dashboard.py`
       (`54 passed`) plus `python3 -m py_compile src/odylith/runtime/surfaces/tooling_dashboard_surface_status.py src/odylith/runtime/surfaces/render_tooling_dashboard.py src/odylith/runtime/governance/sync_workstream_artifacts.py src/odylith/runtime/surfaces/render_compass_dashboard.py`.

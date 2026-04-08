@@ -205,6 +205,12 @@ The release lane should feel as trustworthy as the product itself. `v0.1.9`
 proved Odylith can ship; `v0.1.10` should prove the shipping path deserves the
 same confidence as the runtime and surfaces it delivers.
 
+The remaining release-hardening closeout on 2026-04-08 is narrower and more
+mechanical: keep canonical release history proof focused on maintainer
+authorship instead of GitHub-generated committer metadata, and refresh the
+first-party GitHub Actions pins so the core release lanes stop carrying the
+Node 20 deprecation warning into GA.
+
 ## Impacted Components
 - `release`
 - `odylith`
@@ -251,6 +257,13 @@ same confidence as the runtime and surfaces it delivers.
   shell history: pinned-dogfood proof run `0047192366d8bf1c` wedged mid-corpus
   without producing a fresh release-safe report, so benchmark runner tuning and
   full proof restoration move to the next release under `CB-069`.
+- Release identity hardening is now landed too: canonical history validation no
+  longer depends on a GitHub-generated committer exception and instead pins the
+  maintainer-authored identity that must survive merge machinery.
+- Release CI input hardening is landed too: release, release-candidate, and
+  test now pin `actions/checkout v5.0.1` and `actions/setup-python v6.1.0` at
+  immutable SHAs so the canonical release lane stops carrying the Node 20
+  workflow-runtime warning in configured truth.
 - Compass explicit-refresh hardening is now part of the landed `v0.1.10`
   release-feedback slice: explicit `full` refresh no longer shares the old
   shell-safe timeout budget, the failure hint points back to a real Compass

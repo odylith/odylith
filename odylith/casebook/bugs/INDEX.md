@@ -131,6 +131,12 @@ Last updated (UTC): 2026-04-08
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, tooling shell
   refresh contract, Compass child-runtime freshness projection, shell runtime
   status messaging. | Closed | [2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md](2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md) |
+| CB-071 | 2026-04-08 | Release workflows still pin first party actions on node 20 runtime | P1 | `.github/workflows/release.yml`,
+  `.github/workflows/release-candidate.yml`, `.github/workflows/test.yml`,
+  maintainer release workflow pin policy, release component contract. | Closed | [2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md](2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md) |
+| CB-070 | 2026-04-08 | Release identity guard still depends on github generated committer metadata | P0 | `scripts/validate_git_identity.py`,
+  `tests/unit/test_validate_git_identity.py`, release workflow identity guard,
+  maintainer release contract. | Closed | [2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md](2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md) |
 | CB-068 | 2026-04-08 | Explicit compass full refresh can pass with deterministic or stale runtime state | P0 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
   `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,

@@ -68,6 +68,15 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   the same change whenever maintainer work reveals a new failure mode, a stale
   diagram, a changed benchmark story, or a boundary that needs a first-class
   component spec.
+- Local maintainer release identity is also non-negotiable in this lane:
+  authored maintainer work uses `freedom-research
+  <freedom@freedompreetham.org>` for both author and committer config. If
+  canonical release-history proof needs to survive platform merge machinery,
+  keep the history gate focused on canonical maintainer authorship instead of
+  widening local identity policy.
+- Before GA, keep first-party GitHub Actions pins in release, release-candidate,
+  and test workflows on current immutable SHAs that no longer carry scheduled
+  runtime deprecation warnings into the release lane.
 - Treat parent-shell freshness and child-surface freshness as separate truths.
   A successful wrapper refresh is never enough evidence to imply Compass,
   Radar, Atlas, Registry, or Casebook data is current unless the child
