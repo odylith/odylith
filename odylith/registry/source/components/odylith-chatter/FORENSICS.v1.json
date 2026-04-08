@@ -47,23 +47,20 @@
   "timeline": [
     {
       "artifacts": [
-        "AGENTS.md",
-        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
-        "docs/benchmarks/README.md",
-        "odylith/README.md",
+        "odylith/maintainer/AGENTS.md",
         "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
-        "src/odylith/bundle/assets/odylith/README.md"
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md"
       ],
       "confidence": "high",
-      "event_index": 62,
+      "event_index": 61,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-chatter"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, docs/benchmarks/METRICS_AND_PRIORITIES.md +4 more",
-      "ts_iso": "2026-04-08T00:03:18-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/maintainer/AGENTS.md, odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md +1 more",
+      "ts_iso": "2026-04-08T02:06:40-07:00",
       "workstreams": []
     },
     {

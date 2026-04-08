@@ -538,9 +538,6 @@
       gap: 6px;
       max-width: 80ch;
     }
-    .detail-summary {
-      max-width: 80ch;
-    }
     .section-stack {
       display: grid;
       gap: 0;
@@ -592,21 +589,22 @@
       margin: 0;
     }
 .summary-facts {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
-      gap: 10px;
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px 14px;
+      align-items: center;
+      overflow-x: auto;
+      overflow-y: hidden;
       min-width: 0;
+      white-space: nowrap;
 }
 .summary-fact {
-      display: grid;
-      gap: 4px;
-      align-content: start;
+      display: inline-flex;
+      flex-wrap: nowrap;
+      align-items: baseline;
+      gap: 6px;
       min-width: 0;
-      padding: 10px 12px;
-      border: 1px solid rgba(148, 163, 184, 0.22);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #ffffff, #f8fbff);
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+      white-space: nowrap;
 }
 .summary-fact-label,
 .summary-fact-value {
@@ -748,8 +746,7 @@
     .bug-row-summary,
     .detail-title,
     .detail-summary,
-    .detail-copy,
-    .summary-fact-value {
+    .detail-copy {
       overflow-wrap: anywhere;
       min-width: 0;
     }
@@ -865,11 +862,12 @@
       }
       .bug-row-meta,
       .detail-meta,
-      .detail-links {
+      .detail-links,
+      .summary-facts {
         flex-wrap: wrap;
       }
-      .summary-facts {
-        grid-template-columns: 1fr;
+      .summary-fact {
+        white-space: normal;
       }
     }
       .detail {
@@ -989,7 +987,7 @@
   }
 })();
 </script>
-  <script id="casebookData" src="casebook-payload.v1.js?v=7192397f93b5"></script>
-  <script src="casebook-app.v1.js?v=7192397f93b5"></script>
+  <script id="casebookData" src="casebook-payload.v1.js?v=c9104bc1e46a"></script>
+  <script src="casebook-app.v1.js?v=c9104bc1e46a"></script>
 </body>
 </html>

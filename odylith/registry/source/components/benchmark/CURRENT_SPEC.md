@@ -110,6 +110,12 @@ reviewer framing that explains how Odylith should be compared.
   the current passing proof is detached `source-local` posture, and
   `benchmark_compare` still reports `warn` until there is a last-shipped
   published release baseline in `docs/benchmarks/release-baselines.v1.json`
+- Active release exception:
+  `v0.1.10` currently carries a tracked `skip_proof_and_compare` override
+  because pinned-dogfood proof run `0047192366d8bf1c` wedged mid-corpus and
+  did not persist a fresh release-safe report. That exception is exact-version
+  only and moves benchmark runner tuning plus proof restoration to the next
+  release.
 
 ## Current Benchmark Priorities
 

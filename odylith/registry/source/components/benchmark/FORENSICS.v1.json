@@ -26,22 +26,20 @@
   "timeline": [
     {
       "artifacts": [
-        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
-        "docs/benchmarks/README.md",
         "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
-        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 59,
+      "event_index": 60,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "benchmark"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/METRICS_AND_PRIORITIES.md, docs/benchmarks/README.md +3 more",
-      "ts_iso": "2026-04-08T01:12:10-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md, odylith/maintainer/skills/release-benchmark-publishing/SKILL.md +1 more",
+      "ts_iso": "2026-04-08T02:06:40-07:00",
       "workstreams": []
     },
     {

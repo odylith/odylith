@@ -58,7 +58,12 @@ active with no explicit failure marker. A 2026-04-08 follow-up packet showed
 the shell host still projecting stale Compass state poorly: `tooling_shell`
 could refresh successfully after that failed deeper Compass rerender and keep
 presenting the older Compass brief with no shell-level admission that the
-wrapper had refreshed separately from the child runtime.
+wrapper had refreshed separately from the child runtime. The same day, pinned
+dogfood release proof exposed a fresh benchmark truth: the full
+`--profile proof` benchmark lane can wedge mid-corpus and block release prep
+without persisting a fresh release-safe report, so `v0.1.10` now needs an
+explicit tracked benchmark override instead of pretending benchmark re-proof
+landed cleanly.
 
 ## Customer
 - Primary: Odylith maintainers cutting, proving, and recovering canonical
@@ -75,8 +80,10 @@ identity exceptions, or hand-waved benchmark deferrals.
 - remove the dependency on GitHub-generated merge committer metadata from
   canonical release ancestry, either by a cleaner merge policy or by a release
   integration path that preserves canonical maintainer identity end to end
-- retire the `v0.1.9` benchmark-proof override and run a full benchmark audit
-  plus publication-quality release proof for `v0.1.10`
+- record a one-release benchmark override for `v0.1.10`, capture the
+  pinned-dogfood proof-run wedge as a product bug, and move benchmark runner
+  tuning plus proof restoration into the next release instead of pretending
+  `v0.1.10` landed a clean full re-proof
 - harden first-install and first-refresh shell rendering so disposable consumer
   proof repos never flash missing Radar, Atlas, Compass, Registry, or Casebook
   surfaces before full sync completes
@@ -105,7 +112,8 @@ identity exceptions, or hand-waved benchmark deferrals.
 
 ## Scope
 - release identity validation and merge/publication posture
-- benchmark proof and benchmark-publication discipline for the next release
+- benchmark override truth for `v0.1.10` plus benchmark-publication
+  discipline and runner restoration for the next release
 - first-install and consumer-rehearsal shell refresh robustness
 - sync operator-surface discoverability, progress, and audit fidelity
 - Compass explicit refresh timeout, hinting, and payload-truth hardening
@@ -123,8 +131,8 @@ identity exceptions, or hand-waved benchmark deferrals.
 ## Risks
 - if the GitHub committer exception stays implicit, it will quietly become the
   de facto release policy
-- if benchmark proof remains skippable, the product story can run ahead of
-  measured proof
+- if benchmark overrides stay under-documented or become routine, the product
+  story can run ahead of measured proof and normalize a broken proof runner
 - if the first-install shell wobble stays untreated, the default consumer proof
   lane will keep feeling less trustworthy than the broader system actually is
 - if hosted-install closeout keeps failing late or leaving the pin behind, the
@@ -149,8 +157,9 @@ identity exceptions, or hand-waved benchmark deferrals.
 ## Success Metrics
 - canonical release proof no longer relies on the GitHub-generated
   `noreply@github.com` committer exception
-- `v0.1.10` ships with full benchmark proof reinstated and no maintainer
-  override hiding that lane
+- `v0.1.10` ships with an explicit tracked benchmark override instead of a
+  shell-only exception, and the release story stays honest that full
+  pinned-dogfood proof did not land for that version
 - disposable consumer first install and GA-gate rehearsal render shell surfaces
   cleanly without transient missing-surface warnings
 - hosted-installer upgrades on already-installed consumer repos finish with a
@@ -172,7 +181,8 @@ identity exceptions, or hand-waved benchmark deferrals.
 - `make release-preflight VERSION=0.1.10`
 - `make consumer-rehearsal PREVIOUS_VERSION=0.1.9`
 - `make ga-gate PREVIOUS_VERSION=0.1.9`
-- full benchmark audit and release-proof lane for `v0.1.10`
+- benchmark override truth for `v0.1.10` plus explicit next-release benchmark
+  restoration plan
 - focused install and release browser proof for welcome plus upgrade UX
 - focused hosted-install closeout proof for retention cleanup and repo-pin
   convergence
@@ -237,6 +247,10 @@ same confidence as the runtime and surfaces it delivers.
   mismatch, and the dirty post-publish maintainer checkout.
 - The active maintainer branch `2026/freedom/v0.1.10` now holds the real
   post-release worktree drift instead of leaving it stranded on `main`.
+- `v0.1.10` now also carries a tracked benchmark override instead of silent
+  shell history: pinned-dogfood proof run `0047192366d8bf1c` wedged mid-corpus
+  without producing a fresh release-safe report, so benchmark runner tuning and
+  full proof restoration move to the next release under `CB-069`.
 - Compass explicit-refresh hardening is now part of the landed `v0.1.10`
   release-feedback slice: explicit `full` refresh no longer shares the old
   shell-safe timeout budget, the failure hint points back to a real Compass

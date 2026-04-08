@@ -6,6 +6,10 @@ Last updated (UTC): 2026-04-08
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-069 | 2026-04-08 | Pinned dogfood proof benchmark can wedge mid corpus and block release proof | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
+  benchmark progress finalization, benchmark cleanup/interruption handling,
+  pinned-dogfood release proof, maintainer benchmark override contract. | Open | [2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md](2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md) |
 | CB-066 | 2026-04-07 | Sync refresh rewrites unchanged artifacts and stales generated timestamps | P1 | `src/odylith/runtime/governance/backfill_workstream_traceability.py`,
   `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
   stable generated-timestamp handling, and sync-owned generated JSON artifacts. | Open | [2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md](2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md) |

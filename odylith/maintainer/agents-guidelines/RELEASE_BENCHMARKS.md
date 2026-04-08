@@ -16,7 +16,10 @@ execute the Odylith release benchmark publishing lane.
   recorded in `odylith/runtime/source/release-maintainer-overrides.v1.json`.
   That override may downgrade benchmark proof and compare from blocking to
   advisory for one named release version, but it must never become an
-  untracked shell-only exception.
+  untracked shell-only exception. If the override decision happens after a
+  proof run already started, stop the run, capture the blocker in Casebook,
+  and keep the release narrative explicit that the version is benchmark
+  advisory rather than benchmark re-proved.
 
 ## Integrity Non-Negotiable
 - Never game the eval.

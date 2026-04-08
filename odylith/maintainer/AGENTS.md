@@ -123,6 +123,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   preserves or improves proof on the same metric ladder.
 - A diagnostic-only gain that harms proof is a regression, not a benchmark
   win.
+- If a maintainer explicitly waives benchmark proof for one exact release
+  version, stop any in-flight proof run, record the override in
+  `odylith/runtime/source/release-maintainer-overrides.v1.json`, bind the
+  blocker into Casebook plus the active workstream/plan and the impacted
+  Registry specs, and describe that release as benchmark-advisory rather than
+  benchmark-proved.
 - Use pinned dogfood whenever the question is "does the shipped Odylith
   runtime behave correctly?". Use detached `source-local` only when the
   question is "do these unreleased `src/odylith/*` changes execute

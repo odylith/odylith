@@ -58,6 +58,11 @@ claims aligned for public publication.
   `odylith/runtime/source/release-maintainer-overrides.v1.json` with an exact
   version, reason, and owner so PR gating, lane status, and the final release
   story can agree on why benchmark proof was advisory instead of blocking.
+- The current `v0.1.10` release uses that exact exception path because the
+  pinned-dogfood proof benchmark wedged mid-corpus on report
+  `0047192366d8bf1c`. This release must not be narrated as benchmark
+  re-proved; the override is exact-version only and the runner fix moves to the
+  next release.
 - Preflight is the session initializer. Dispatch reuses the active session
   rather than recomputing a version.
 - The canonical release lane is authoritative only when it runs from the

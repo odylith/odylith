@@ -84,7 +84,9 @@ Run the targets in this order.
    recorded in `odylith/runtime/source/release-maintainer-overrides.v1.json`;
    that path is exceptional, must name the exact release version, and must
    carry the reason in tracked repo truth instead of living only in shell
-   history.
+   history. If the override decision lands after a proof run already started,
+   stop the in-flight benchmark, capture the blocker in Casebook, and keep the
+   release story explicit that benchmark proof is advisory for that version.
 
 4. `make release-preflight [VERSION=X.Y.Z]`
    Initialize or reuse the sticky release session, reserve the release tag,

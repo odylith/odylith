@@ -28,9 +28,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 46,
+    "explicit_event_count": 47,
     "mapped_workstream_evidence_count": 3,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
     "timeline_event_count": 47
@@ -45,19 +45,27 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
-        "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
-      "event_index": 60,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 59,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
       "mapped_components": [
-        "compass"
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/compass/CURRENT_SPEC.md, src/odylith/runtime/surfaces/render_compass_dashboard.py",
-      "ts_iso": "2026-04-08T00:45:43-07:00",
+      "summary": "Activated Odylith runtime 0.1.9 for the current repository; repo pin is 0.1.9.",
+      "ts_iso": "2026-04-08T01:46:37-07:00",
       "workstreams": []
     },
     {

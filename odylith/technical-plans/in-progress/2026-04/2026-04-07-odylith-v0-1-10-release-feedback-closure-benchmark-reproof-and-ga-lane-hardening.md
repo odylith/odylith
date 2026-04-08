@@ -7,14 +7,17 @@ Updated: 2026-04-08
 Backlog: B-060
 
 Goal: Turn the concrete `v0.1.9` release learnings into an explicit `v0.1.10`
-release-hardening plan that restores full benchmark proof, removes the narrow
-GitHub merge-identity exception, cleans up first-install shell proof, and keeps
-post-publish maintainer state trustworthy.
+release-hardening plan that keeps release truth honest, records the
+version-scoped benchmark override now needed for `v0.1.10`, removes the narrow
+GitHub merge-identity exception, cleans up first-install shell proof, and
+keeps post-publish maintainer state trustworthy.
 
 Assumptions:
 - `v0.1.9` was the right ship decision even though the release lane still
   exposed cleanup work for the next cut.
-- The current benchmark override is a one-release exception, not a new normal.
+- A benchmark override may still be necessary when the pinned-dogfood proof
+  runner itself fails, but it must stay an exact-version tracked exception and
+  cannot be narrated as completed proof.
 - The first-install shell warning is a real polish and trust bug even though
   the broader consumer and GA gates recovered successfully.
 - Welcome-screen and upgrade-popup UX are already strong enough that the next
@@ -69,6 +72,10 @@ Related Bugs:
   tracks the shell-host follow-up: after a failed deeper Compass refresh, a
   successful `tooling_shell` rerender can still leave the parent surface
   presenting the stale Compass brief with no shell-level freshness warning.
+- [CB-069](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md)
+  tracks the new release-proof benchmark blocker: the pinned-dogfood
+  `--profile proof` lane can wedge mid-corpus without persisting a fresh
+  release-safe report, forcing a tracked one-release override for `v0.1.10`.
 
 ## Learnings
 - [x] `v0.1.9` published on 2026-04-07, but canonical release proof still
@@ -113,14 +120,22 @@ Related Bugs:
       successful `tooling_shell` rerender could leave the visible Compass brief
       on an older child snapshot with no shell-level warning that Compass had
       not actually been rerendered.
+- [x] Pinned-dogfood benchmark proof for `v0.1.10` did not just look slow; the
+      full `./.odylith/bin/odylith benchmark --repo-root . --profile proof`
+      lane wedged mid-corpus on report `0047192366d8bf1c`, leaving only an
+      in-progress ledger and no fresh release-safe report. The release owner
+      chose a tracked one-release benchmark override for `v0.1.10` rather than
+      hold the release on benchmark runner tuning in the same cut.
 
 ## Must-Ship
 - [ ] Remove dependency on GitHub-generated merge committer metadata from the
       canonical release ancestry rule, or replace the merge/publication posture
       with a cleaner path that preserves canonical maintainer identity end to
       end.
-- [ ] Retire the `v0.1.9` benchmark-proof override and restore full benchmark
-      audit plus publication-quality proof for `v0.1.10`.
+- [x] Record the exact `v0.1.10` benchmark override in tracked maintainer
+      truth, bind the pinned-dogfood proof-run wedge to a Casebook bug, and
+      keep the release story honest that `v0.1.10` is benchmark-advisory
+      rather than benchmark re-proved.
 - [ ] Make first-install, consumer-rehearsal, and GA-gate shell refresh render
       cleanly without transient missing-surface warnings before broad sync.
 - [ ] Make hosted-install closeout converge on one truthful posture: healthy
@@ -167,7 +182,11 @@ Related Bugs:
 ## Success Criteria
 - [ ] Canonical release proof for `v0.1.10` passes without relying on the
       GitHub-generated `noreply@github.com` committer exception.
-- [ ] `v0.1.10` release prep and GA proof include full benchmark audit again.
+- [x] `v0.1.10` release prep carries a tracked benchmark override instead of a
+      shell-only exception, and the release story does not claim full
+      benchmark re-proof.
+- [ ] The next release restores full pinned-dogfood benchmark proof and removes
+      the `v0.1.10` override.
 - [ ] Disposable consumer proof repos render the shell cleanly on first refresh
       with zero transient missing-surface warnings.
 - [ ] Hosted installer upgrades on already-installed consumer repos finish with
@@ -196,9 +215,13 @@ Related Bugs:
       reinstated.
 
 ## Impacted Areas
-- [ ] [MAINTAINER_RELEASE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/MAINTAINER_RELEASE_RUNBOOK.md)
+- [x] [MAINTAINER_RELEASE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/MAINTAINER_RELEASE_RUNBOOK.md)
 - [x] [AGENTS.md](/Users/freedom/code/odylith/odylith/maintainer/AGENTS.md)
-- [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/release/CURRENT_SPEC.md)
+- [x] [RELEASE_BENCHMARKS.md](/Users/freedom/code/odylith/odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/maintainer/skills/release-benchmark-publishing/SKILL.md)
+- [x] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/release/CURRENT_SPEC.md)
+- [x] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/benchmark/CURRENT_SPEC.md)
+- [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/benchmark/CURRENT_SPEC.md)
 - [x] [v0.1.10.md](/Users/freedom/code/odylith/odylith/runtime/source/release-notes/v0.1.10.md)
 - [x] [v0.1.10.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/runtime/source/release-notes/v0.1.10.md)
 - [ ] [cli.py](/Users/freedom/code/odylith/src/odylith/cli.py)
@@ -207,7 +230,7 @@ Related Bugs:
 - [ ] Maintainer contributor-identity guard
 - [ ] [test_validate_git_identity.py](/Users/freedom/code/odylith/tests/unit/test_validate_git_identity.py)
 - [ ] [release.yml](/Users/freedom/code/odylith/.github/workflows/release.yml)
-- [ ] [release-maintainer-overrides.v1.json](/Users/freedom/code/odylith/odylith/runtime/source/release-maintainer-overrides.v1.json)
+- [x] [release-maintainer-overrides.v1.json](/Users/freedom/code/odylith/odylith/runtime/source/release-maintainer-overrides.v1.json)
 - [ ] [manager.py](/Users/freedom/code/odylith/src/odylith/install/manager.py)
 - [ ] [sync_workstream_artifacts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/sync_workstream_artifacts.py)
 - [ ] [render_compass_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_compass_dashboard.py)
@@ -262,7 +285,9 @@ Related Bugs:
 - [ ] `make release-preflight VERSION=0.1.10`
 - [ ] `make consumer-rehearsal PREVIOUS_VERSION=0.1.9`
 - [ ] `make ga-gate PREVIOUS_VERSION=0.1.9`
-- [ ] full benchmark audit and release-proof rerun for `v0.1.10`
+- [x] Govern the `v0.1.10` benchmark override in tracked repo truth and keep
+      benchmark compare advisory instead of blocking when no fresh
+      release-safe report exists for that exact version.
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/integration/install/test_manager.py tests/unit/install/test_release_bootstrap.py tests/unit/test_cli.py`
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_backfill_workstream_traceability.py tests/unit/runtime/test_delivery_intelligence_engine.py`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_compass_dashboard_runtime.py`
@@ -283,8 +308,10 @@ Related Bugs:
 - [x] Move the dirty post-release maintainer worktree off `main` and onto
       `2026/freedom/v0.1.10` so the follow-up work starts from the truthful
       release aftermath.
-- [ ] Keep the `v0.1.9` benchmark override explicitly documented as expired for
-      the next release.
+- [x] Keep the `v0.1.10` benchmark override explicit in tracked truth instead
+      of letting it live only in shell history.
+- [ ] Carry the benchmark runner wedge and proof restoration into the next
+      release so the `v0.1.10` override expires instead of lingering.
 - [ ] Communicate the long-term merge-identity cleanup as a deliberate next
       release objective instead of letting the temporary compatibility rule look
       canonical.
@@ -330,6 +357,11 @@ Related Bugs:
 - [x] `v0.1.10` authored release-note source is now in place and mirrored into
       the bundle assets, and the upgrade-spotlight browser proof now runs
       against that note instead of the prior release copy.
+- [x] `v0.1.10` now also carries a tracked benchmark override in
+      [release-maintainer-overrides.v1.json](/Users/freedom/code/odylith/odylith/runtime/source/release-maintainer-overrides.v1.json):
+      pinned-dogfood proof run `0047192366d8bf1c` wedged mid-corpus, so the
+      release will stay benchmark-advisory instead of misreporting a full
+      re-proof.
 - [x] Focused shell-host proof passed:
       `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_render_compass_dashboard.py`
       (`54 passed`) plus `python3 -m py_compile src/odylith/runtime/surfaces/tooling_dashboard_surface_status.py src/odylith/runtime/surfaces/render_tooling_dashboard.py src/odylith/runtime/governance/sync_workstream_artifacts.py src/odylith/runtime/surfaces/render_compass_dashboard.py`.
