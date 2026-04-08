@@ -150,3 +150,10 @@ def test_render_backlog_ui_omits_empty_placeholder_copy() -> None:
     assert "No finished execution data yet." not in html
     assert "No completed execution samples in this window." not in html
     assert "Open analytics to load trend data." not in html
+
+
+def test_render_backlog_ui_promotes_workstream_id_into_detail_kpi_grid() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert 'data-kpi="workstream-id"' in html
+    assert "Workstream ID" in html

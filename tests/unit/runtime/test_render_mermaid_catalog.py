@@ -90,6 +90,25 @@ def test_render_mermaid_catalog_uses_specific_surface_header_copy() -> None:
     assert "Living Diagram System" not in html
 
 
+def test_render_mermaid_catalog_uses_casebook_style_detail_fact_cards() -> None:
+    html = renderer._render_html(  # noqa: SLF001
+        diagrams=[],
+        stats={"total": 0, "fresh": 0, "stale": 0},
+        max_review_age_days=21,
+        tooltip_lookup={},
+        generated_utc="2026-03-27T05:42:32Z",
+        brand_head_html="",
+        tooling_base_href="../index.html",
+    )
+
+    assert ".diagram-facts {" in html
+    assert "grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));" in html
+    assert 'data-fact="diagram-id"' in html
+    assert "Diagram ID" in html
+    assert "Reviewed" in html
+    assert 'id="diagramFreshnessCard"' in html
+
+
 def test_render_mermaid_catalog_sizes_image_box_from_diagram_dimensions() -> None:
     html = renderer._render_html(  # noqa: SLF001
         diagrams=[],
