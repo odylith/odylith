@@ -5,10 +5,10 @@
     "empty_reasons": [],
     "explicit_event_count": 7,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 8
+    "timeline_event_count": 7
   },
   "name": "Security",
   "path_prefixes": [
@@ -24,24 +24,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/security/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "github/workflows/release-candidate.yml",
-        "github/workflows/release.yml",
-        "github/workflows/test.yml"
-      ],
-      "confidence": "high",
-      "event_index": 63,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "security"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: github/workflows/release-candidate.yml, github/workflows/release.yml +1 more",
-      "ts_iso": "2026-04-07T22:00:57-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "github/workflows/release.yml",

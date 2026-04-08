@@ -143,12 +143,12 @@ Related Bugs:
       truth, bind the pinned-dogfood proof-run wedge to a Casebook bug, and
       keep the release story honest that `v0.1.10` is benchmark-advisory
       rather than benchmark re-proved.
-- [ ] Make first-install, consumer-rehearsal, and GA-gate shell refresh render
+- [x] Make first-install, consumer-rehearsal, and GA-gate shell refresh render
       cleanly without transient missing-surface warnings before broad sync.
-- [ ] Make hosted-install closeout converge on one truthful posture: healthy
+- [x] Make hosted-install closeout converge on one truthful posture: healthy
       activation, best-effort stale cleanup, and matching active-plus-pinned
       versions when the public installer upgrades an existing consumer repo.
-- [ ] Make `odylith sync` operator proof honest and discoverable: visible help
+- [x] Make `odylith sync` operator proof honest and discoverable: visible help
       for supported controls, heartbeat progress for long action-backed steps,
       explicit acknowledgement past large dirty-overlap thresholds, structured
       warning pointers, and truthful audit metadata for semantic no-op artifact
@@ -235,9 +235,9 @@ Related Bugs:
 - [ ] [cli.py](/Users/freedom/code/odylith/src/odylith/cli.py)
 - [ ] [release_assets.py](/Users/freedom/code/odylith/src/odylith/install/release_assets.py)
 - [ ] [INSTALL_AND_UPGRADE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
-- [ ] Maintainer contributor-identity guard
-- [ ] [test_validate_git_identity.py](/Users/freedom/code/odylith/tests/unit/test_validate_git_identity.py)
-- [ ] [release.yml](/Users/freedom/code/odylith/.github/workflows/release.yml)
+- [x] Maintainer contributor-identity guard
+- [x] [test_validate_git_identity.py](/Users/freedom/code/odylith/tests/unit/test_validate_git_identity.py)
+- [x] [release.yml](/Users/freedom/code/odylith/.github/workflows/release.yml)
 - [x] [release-maintainer-overrides.v1.json](/Users/freedom/code/odylith/odylith/runtime/source/release-maintainer-overrides.v1.json)
 - [ ] [manager.py](/Users/freedom/code/odylith/src/odylith/install/manager.py)
 - [ ] [sync_workstream_artifacts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/sync_workstream_artifacts.py)

@@ -1,6 +1,6 @@
 - Bug ID: CB-063
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-07
 
@@ -38,9 +38,18 @@
   even if stale cleanup still cannot finish, and surface exact remediation for
   any leftover paths instead of failing the whole lifecycle.
 
-- Verification: Install-manager tests should prove read-only stale runtime trees
-  no longer fail upgrade or reinstall and that retained-path remediation is
-  surfaced when cleanup still cannot complete.
+- Verification: Fixed on 2026-04-08. `PYTHONPATH=src python3 -m pytest -q
+  tests/unit/install/test_release_assets.py tests/unit/install/test_release_bootstrap.py
+  tests/unit/test_cli.py tests/unit/runtime/test_sync_cli_compat.py
+  tests/unit/runtime/test_backfill_workstream_traceability.py
+  tests/unit/runtime/test_delivery_intelligence_engine.py
+  tests/unit/runtime/test_validate_component_registry_contract.py
+  tests/integration/install/test_manager.py::test_install_bundle_align_pin_advances_existing_repo_pin_to_active_runtime
+  tests/integration/install/test_manager.py::test_upgrade_prunes_runtime_and_release_cache_retention
+  tests/integration/install/test_manager.py::test_upgrade_warns_and_continues_when_retention_prune_stays_permission_denied`
+  passed with `176 passed in 1.75s`, including the two retention-specific
+  integration tests that prove read-only stale runtime cleanup is now
+  best-effort and remediation-only instead of lifecycle-fatal.
 
 - Prevention: Post-activation retention cleanup must never be able to overturn a
   verified healthy runtime activation.
@@ -113,4 +122,4 @@
 
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: `2026/freedom/v0.1.10` hosted-install hardening series.

@@ -1,6 +1,6 @@
 - Bug ID: CB-065
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-07
 
@@ -46,9 +46,18 @@
   a first-class phase with counts, and print a durable warning-report pointer
   when sync passes with high warning volume.
 
-- Verification: CLI and sync-runtime tests should prove visible help flags,
-  overlap gating, action-step heartbeat output, normalization summaries, and
-  warning-report pointers in the successful validator path.
+- Verification: Fixed on 2026-04-08. `PYTHONPATH=src python3 -m pytest -q
+  tests/unit/install/test_release_assets.py tests/unit/install/test_release_bootstrap.py
+  tests/unit/test_cli.py tests/unit/runtime/test_sync_cli_compat.py
+  tests/unit/runtime/test_backfill_workstream_traceability.py
+  tests/unit/runtime/test_delivery_intelligence_engine.py
+  tests/unit/runtime/test_validate_component_registry_contract.py
+  tests/integration/install/test_manager.py::test_install_bundle_align_pin_advances_existing_repo_pin_to_active_runtime
+  tests/integration/install/test_manager.py::test_upgrade_prunes_runtime_and_release_cache_retention
+  tests/integration/install/test_manager.py::test_upgrade_warns_and_continues_when_retention_prune_stays_permission_denied`
+  passed with `176 passed in 1.75s`, covering sync help exposure, overlap
+  gating, heartbeat output, normalization summaries, and warning-report
+  pointers in the successful validator path.
 
 - Prevention: Operator-facing lifecycle commands should never hide supported
   safety controls or leave long-running steps silent enough to feel hung.
@@ -96,7 +105,10 @@
   execution, overlap summaries, and registry warning reporting before changing
   the public help surface.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added:
+  `tests/unit/test_cli.py`,
+  `tests/unit/runtime/test_sync_cli_compat.py`,
+  `tests/unit/runtime/test_validate_component_registry_contract.py`
 
 - Monitoring Updates: Watch downstream sync feedback for missing-help,
   silent-progress, and overlap-guard complaints after the improved operator
@@ -125,4 +137,4 @@
 
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: `2026/freedom/v0.1.10` sync-operator hardening series.

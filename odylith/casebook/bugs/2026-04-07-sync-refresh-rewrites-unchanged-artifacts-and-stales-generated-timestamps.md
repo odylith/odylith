@@ -1,6 +1,6 @@
 - Bug ID: CB-066
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-07
 
@@ -39,9 +39,17 @@
   truthful "current" or "unchanged" messaging when sync rechecks a file without
   changing its payload.
 
-- Verification: Unit tests should prove repeat no-op runs keep both file mtime
-  intent and embedded `generated_utc` stable while changed payloads still write
-  fresh timestamps.
+- Verification: Fixed on 2026-04-08. `PYTHONPATH=src python3 -m pytest -q
+  tests/unit/install/test_release_assets.py tests/unit/install/test_release_bootstrap.py
+  tests/unit/test_cli.py tests/unit/runtime/test_sync_cli_compat.py
+  tests/unit/runtime/test_backfill_workstream_traceability.py
+  tests/unit/runtime/test_delivery_intelligence_engine.py
+  tests/unit/runtime/test_validate_component_registry_contract.py
+  tests/integration/install/test_manager.py::test_install_bundle_align_pin_advances_existing_repo_pin_to_active_runtime
+  tests/integration/install/test_manager.py::test_upgrade_prunes_runtime_and_release_cache_retention
+  tests/integration/install/test_manager.py::test_upgrade_warns_and_continues_when_retention_prune_stays_permission_denied`
+  passed with `176 passed in 1.75s`, including the write-if-changed regression
+  coverage for traceability autofix and delivery-intelligence artifacts.
 
 - Prevention: No generated artifact should claim to be refreshed if the write
   path only reserialized an unchanged payload.
@@ -87,7 +95,9 @@
 - Preflight Checks: Inspect stable-timestamp helpers and every sync-owned JSON
   writer that still bypasses `write_if_changed` semantics.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added:
+  `tests/unit/runtime/test_backfill_workstream_traceability.py`,
+  `tests/unit/runtime/test_delivery_intelligence_engine.py`
 
 - Monitoring Updates: Watch sync output for truthful "current" messaging on
   repeated no-op runs and for disappearing timestamp mismatches in downstream
@@ -115,4 +125,4 @@
 
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: `2026/freedom/v0.1.10` sync-audit hardening series.

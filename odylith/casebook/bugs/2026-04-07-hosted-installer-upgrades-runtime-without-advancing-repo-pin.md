@@ -1,6 +1,6 @@
 - Bug ID: CB-064
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-07
 
@@ -38,9 +38,18 @@
   existing installs so the final active runtime and tracked repo pin converge in
   one command, and print an explicit repo-pin outcome line at closeout.
 
-- Verification: Hosted-installer generation tests and install-manager or CLI
-  tests should prove existing installs upgraded through the hosted path finish
-  with matching active and pinned versions.
+- Verification: Fixed on 2026-04-08. `PYTHONPATH=src python3 -m pytest -q
+  tests/unit/install/test_release_assets.py tests/unit/install/test_release_bootstrap.py
+  tests/unit/test_cli.py tests/unit/runtime/test_sync_cli_compat.py
+  tests/unit/runtime/test_backfill_workstream_traceability.py
+  tests/unit/runtime/test_delivery_intelligence_engine.py
+  tests/unit/runtime/test_validate_component_registry_contract.py
+  tests/integration/install/test_manager.py::test_install_bundle_align_pin_advances_existing_repo_pin_to_active_runtime
+  tests/integration/install/test_manager.py::test_upgrade_prunes_runtime_and_release_cache_retention
+  tests/integration/install/test_manager.py::test_upgrade_warns_and_continues_when_retention_prune_stays_permission_denied`
+  passed with `176 passed in 1.75s`, including the hosted-installer pin-
+  convergence integration proof and the release-bootstrap plus CLI coverage for
+  closeout messaging.
 
 - Prevention: Public bootstrap and upgrade entrypoints should not leave
   consumers in a split-brain active-versus-pinned posture unless the terminal
@@ -118,4 +127,4 @@
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`,
   `odylith/registry/source/components/release/CURRENT_SPEC.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: `2026/freedom/v0.1.10` hosted-install hardening series.

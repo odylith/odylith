@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-08T09:26:58Z",
-  "now_local_iso": "2026-04-08T02:26:58-07:00",
+  "generated_utc": "2026-04-08T09:34:35Z",
+  "now_local_iso": "2026-04-08T02:34:35-07:00",
   "time_context": {
     "timezone": "America/Los_Angeles",
     "label": "San Francisco"
@@ -21,18 +21,18 @@
   },
   "kpis": {
     "24h": {
-      "commits": 12,
-      "local_changes": 11,
-      "touched_workstreams": 16,
+      "commits": 13,
+      "local_changes": 10,
+      "touched_workstreams": 13,
       "active_workstreams": 11,
       "critical_risks": 5,
       "recent_completed_plans": 7,
       "active_touched_workstreams": 7
     },
     "48h": {
-      "commits": 18,
-      "local_changes": 11,
-      "touched_workstreams": 16,
+      "commits": 19,
+      "local_changes": 10,
+      "touched_workstreams": 14,
       "active_workstreams": 11,
       "critical_risks": 11,
       "recent_completed_plans": 7,
@@ -134,10 +134,10 @@
       "B-060": [
         "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
         "Completed in this window: The clearest move this window was Checkpoint all open release-prep work. It gave the rest of the work something concrete to steer against.",
-        "Current execution: Executive: `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Right now the clearest signal is Checkpoint all open release-prep work. | Operator: This lane is still carrying real weight. 72 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 4 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
+        "Current execution: Executive: `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Right now the clearest signal is Checkpoint all open release-prep work. | Operator: This lane is still carrying real weight. 66 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 4 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
         "Why this matters: Executive: What matters here is For Odylith maintainers cutting, proving, and recovering canonical releases from the product repo, `v0.1.9` reached GA on 2026-04-07, but the release lane still carried several truths that should not become permanent operating posture. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-        "Risks to watch: The lane can still sprawl: 72 plan items are open on `B-060`, so the next checkpoint needs to land cleanly."
+        "Risks to watch: The lane can still sprawl: 66 plan items are open on `B-060`, so the next checkpoint needs to land cleanly."
       ],
       "B-061": [
         "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
@@ -232,10 +232,10 @@
       "B-060": [
         "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
         "Completed in this window: Over the last 48 hours, the clearest move was Checkpoint all open release-prep work. It gave the rest of the work something concrete to steer against.",
-        "Current execution: Executive: Over the last 48 hours, `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Over the last 48 hours, the clearest signal has been Checkpoint all open release-prep work. | Operator: This lane is still carrying real weight. 72 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 4 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
+        "Current execution: Executive: Over the last 48 hours, `B-060` is still carrying the main decision load. The right time to process release feedback is right after the release, while the evidence is still crisp and before temporary exceptions turn into folklore. | Operator: Over the last 48 hours, the clearest signal has been Checkpoint all open release-prep work. | Operator: This lane is still carrying real weight. 66 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 4 days and expected to tighten as execution closes checklist items, so nobody should mistake this for cleanup.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
         "Why this matters: Executive: What matters here is For Odylith maintainers cutting, proving, and recovering canonical releases from the product repo, `v0.1.9` reached GA on 2026-04-07, but the release lane still carried several truths that should not become permanent operating posture. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-        "Risks to watch: The lane can still sprawl: 72 plan items are open on `B-060`, so the next checkpoint needs to land cleanly."
+        "Risks to watch: The lane can still sprawl: 66 plan items are open on `B-060`, so the next checkpoint needs to land cleanly."
       ],
       "B-061": [
         "Showing deterministic local brief: Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
@@ -260,8 +260,8 @@
       "schema_version": "v13",
       "status": "ready",
       "source": "deterministic",
-      "fingerprint": "bb522abcb71bd97ce064e6ebedc0d0309ed95e188aad73a36996bb8ba2b7b6c3",
-      "generated_utc": "2026-04-08T09:26:58Z",
+      "fingerprint": "beb1b7e5f53ba780ce9596bf09e3bd4d2e0d6d6878f89b7e13231baf6ac72c60",
+      "generated_utc": "2026-04-08T09:34:35Z",
       "sections": [
         {
           "key": "completed",
@@ -457,8 +457,8 @@
       "schema_version": "v13",
       "status": "ready",
       "source": "deterministic",
-      "fingerprint": "faeed0e5cdadb5cf2044fa175a63853140ba9f7ee7f41dfe1c6e35ba4cdffd49",
-      "generated_utc": "2026-04-08T09:26:58Z",
+      "fingerprint": "6b0da37b2b9cc306017a4bd2f73705ae11c05ad8c370d4d46a17928921df406b",
+      "generated_utc": "2026-04-08T09:34:35Z",
       "sections": [
         {
           "key": "completed",
@@ -658,7 +658,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "cd77de857aad7e7b9eac13f23b244680422930d823acc3029d5a5bf746c67557",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -847,7 +847,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "60a687f292f74b6b7e1172e26a0e5ad29eb32bb371050706ab2929383ee8bbd8",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -1067,7 +1067,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "656143e3299c7dfb778932f4a3881ac24f6f5c440a624100bcd58e41106de4b1",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -1269,7 +1269,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "7172945945932c715dfface66c6bf057dc6fd4788676c4496e8e18b0ad46b29a",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -1479,7 +1479,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "3fe40dad9b96a97406450d537e97cdf87cdd47920f6b986d054979b167d98340",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -1653,7 +1653,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "f9c63235ed4f17346a6f770a90c6a82ecb45882d1ba69b11da15d9116e8a5032",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -1863,7 +1863,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "1c5760e960b5e2b18c1320006900e3d629f85baddb31f47a0e2617295672ae30",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -2049,7 +2049,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "3eda6189489ef753ed72204fe06cf9eae575686357b50d869b25b06acf5142f4",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -2223,7 +2223,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "6bab984ce930a5dcf3d7281af1c730e92c122a3b9cebbc62440e902758d3bc4f",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -2432,8 +2432,8 @@
         "schema_version": "v13",
         "status": "ready",
         "source": "deterministic",
-        "fingerprint": "75303822b9ea25aedbb37e78cc5ddc99a0999a4a575f9b6762c2b6b7179f0efa",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "fingerprint": "46aaad6308947bbebe0c6c0d111e09a0ff23c9359f24f846f7106f5e501e701c",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -2468,7 +2468,7 @@
               },
               {
                 "voice": "operator",
-                "text": "This lane is still carrying real weight. 72 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
+                "text": "This lane is still carrying real weight. 66 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
                 "fact_ids": [
                   "F-006"
                 ]
@@ -2521,7 +2521,7 @@
             "bullets": [
               {
                 "voice": "operator",
-                "text": "The lane can still sprawl: 72 plan items are open on `B-060`, so the next checkpoint needs to land cleanly.",
+                "text": "The lane can still sprawl: 66 plan items are open on `B-060`, so the next checkpoint needs to land cleanly.",
                 "fact_ids": [
                   "F-011"
                 ]
@@ -2571,7 +2571,7 @@
             ]
           },
           "F-006": {
-            "text": "Plan posture: checklist progress is 50/122; execution checklist closure is underway while implementation execution remains active.",
+            "text": "Plan posture: checklist progress is 56/122; execution checklist closure is underway while implementation execution remains active.",
             "section_key": "current_execution",
             "kind": "checklist",
             "workstreams": [
@@ -2611,7 +2611,7 @@
             ]
           },
           "F-011": {
-            "text": "Primary watch item is closure discipline: 72 plan items remain open for Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening (B-060).",
+            "text": "Primary watch item is closure discipline: 66 plan items remain open for Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening (B-060).",
             "section_key": "risks_to_watch",
             "kind": "risk_posture",
             "workstreams": [
@@ -2630,7 +2630,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "c6bde057e028c7a0d6baad9ecf1c4ee6f344074418a7e111996fb5d6df3da3d8",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -2832,7 +2832,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "1f951f8e1f42f6ec89215f5688b26e129d7e3b17975f1a2dd8b0fbe35a942d82",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -3036,7 +3036,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "82f97700a1e4a1730416debbd50a779f3b8aa57afad1e929e3c795a7c21f2246",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -3225,7 +3225,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "5a16805d44d5bf9688a93950f69c997fc9c7b07756ffeed7e305da671221c607",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -3445,7 +3445,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "20a2c5e9d8fc6bf6657fcd68abbcdc8318498dba26c24b5ffdd8cd41be8a6148",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -3647,7 +3647,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "c4c85353a154286063661d5dab00952fdef6e78fd5ba60d0f0a76893024a5baf",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -3857,7 +3857,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "6b6587a9d20ea2dd97e4f46eb146da14dff7dd2d3099e1bbcde8fed0ee210013",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -4054,7 +4054,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "2c305236651d9343da8c644d0e7553ea804d843fb3f51040008fd58d4ebd5ca5",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -4264,7 +4264,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "c80d9627788c491fb472dd70dfcb6fdd888abe1429e3d7d36619c2f08df0ef47",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -4450,7 +4450,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "94e1d4ff42b7e68deddefce97f284ea6a18897980d59e38608eb5135c44acb98",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -4624,7 +4624,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "6a91e9f8e1ce0f4176803368d5b936c37f8c31b79e44bd27a5f450edd83abe1a",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -4833,8 +4833,8 @@
         "schema_version": "v13",
         "status": "ready",
         "source": "deterministic",
-        "fingerprint": "b0bf2f44727c2e932ae8d859921e0a7e08e33ccdee93d484569ce3d5979bc0e8",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "fingerprint": "c92a94de2ddfecb327ad3363c8f3b4300abab6e6e8b9036e3432199fa5b180f8",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -4869,7 +4869,7 @@
               },
               {
                 "voice": "operator",
-                "text": "This lane is still carrying real weight. 72 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
+                "text": "This lane is still carrying real weight. 66 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
                 "fact_ids": [
                   "F-006"
                 ]
@@ -4922,7 +4922,7 @@
             "bullets": [
               {
                 "voice": "operator",
-                "text": "The lane can still sprawl: 72 plan items are open on `B-060`, so the next checkpoint needs to land cleanly.",
+                "text": "The lane can still sprawl: 66 plan items are open on `B-060`, so the next checkpoint needs to land cleanly.",
                 "fact_ids": [
                   "F-011"
                 ]
@@ -4972,7 +4972,7 @@
             ]
           },
           "F-006": {
-            "text": "Plan posture: checklist progress is 50/122; execution checklist closure is underway while implementation execution remains active.",
+            "text": "Plan posture: checklist progress is 56/122; execution checklist closure is underway while implementation execution remains active.",
             "section_key": "current_execution",
             "kind": "checklist",
             "workstreams": [
@@ -5012,7 +5012,7 @@
             ]
           },
           "F-011": {
-            "text": "Primary watch item is closure discipline: 72 plan items remain open for Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening (B-060).",
+            "text": "Primary watch item is closure discipline: 66 plan items remain open for Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening (B-060).",
             "section_key": "risks_to_watch",
             "kind": "risk_posture",
             "workstreams": [
@@ -5031,7 +5031,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "8302c6e76dbe47d3e8a60909c278f9fc66f08f97eb98b2d83cddfd703ac25b6e",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -5233,7 +5233,7 @@
         "status": "ready",
         "source": "deterministic",
         "fingerprint": "8e072db31fd9217ffc71c038a812903fbe40f96b6f0b86251c78805a4a3c40bf",
-        "generated_utc": "2026-04-08T09:26:58Z",
+        "generated_utc": "2026-04-08T09:34:35Z",
         "sections": [
           {
             "key": "completed",
@@ -5518,7 +5518,7 @@
     "advisory_retrieval_focus": "expand_coverage",
     "advisory_speed_mode": "balanced",
     "advisory_freshness_bucket": "fresh",
-    "advisory_freshness_age_hours": 1.07,
+    "advisory_freshness_age_hours": 1.2,
     "advisory_evidence_strength_score": 2,
     "advisory_evidence_strength_level": "medium",
     "advisory_sample_balance": "thin",
@@ -5585,56 +5585,45 @@
       "casebook": true,
       "reasons": {
         "radar": [
-          "fallback:github/workflows/release-candidate.yml",
-          "fallback:github/workflows/release.yml",
-          "fallback:github/workflows/test.yml",
-          "fallback:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:scripts/validate_git_identity.py",
-          "fallback:tests/unit/test_validate_git_identity.py",
+          "fallback:odylith/index.html",
+          "fallback:odylith/tooling-payload.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js",
+          "odylith/radar/backlog-document-shard-002.v1.js",
+          "odylith/radar/backlog-payload.v1.js",
+          "odylith/radar/radar.html",
           "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+          "odylith/runtime/delivery_intelligence.v4.json",
           "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
         ],
         "atlas": [
-          "fallback:github/workflows/release-candidate.yml",
-          "fallback:github/workflows/release.yml",
-          "fallback:github/workflows/test.yml",
-          "fallback:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:scripts/validate_git_identity.py",
-          "fallback:tests/unit/test_validate_git_identity.py"
+          "fallback:odylith/index.html",
+          "fallback:odylith/tooling-payload.v1.js",
+          "odylith/runtime/delivery_intelligence.v4.json"
         ],
         "compass": [
-          "fallback:github/workflows/release-candidate.yml",
-          "fallback:github/workflows/release.yml",
-          "fallback:github/workflows/test.yml",
-          "fallback:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:scripts/validate_git_identity.py",
-          "fallback:tests/unit/test_validate_git_identity.py"
+          "fallback:odylith/index.html",
+          "fallback:odylith/tooling-payload.v1.js",
+          "odylith/runtime/delivery_intelligence.v4.json"
         ],
         "registry": [
-          "fallback:github/workflows/release-candidate.yml",
-          "fallback:github/workflows/release.yml",
-          "fallback:github/workflows/test.yml",
-          "fallback:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:scripts/validate_git_identity.py",
-          "fallback:tests/unit/test_validate_git_identity.py",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md"
+          "fallback:odylith/index.html",
+          "fallback:odylith/tooling-payload.v1.js",
+          "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+          "odylith/registry/source/components/radar/FORENSICS.v1.json",
+          "odylith/registry/source/components/release/FORENSICS.v1.json",
+          "odylith/registry/source/components/security/FORENSICS.v1.json",
+          "odylith/runtime/delivery_intelligence.v4.json"
         ],
         "casebook": [
-          "fallback:github/workflows/release-candidate.yml",
-          "fallback:github/workflows/release.yml",
-          "fallback:github/workflows/test.yml",
-          "fallback:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "fallback:odylith/maintainer/AGENTS.md",
-          "fallback:scripts/validate_git_identity.py",
-          "fallback:tests/unit/test_validate_git_identity.py",
-          "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
-          "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
-          "odylith/casebook/bugs/INDEX.md"
+          "fallback:odylith/index.html",
+          "fallback:odylith/tooling-payload.v1.js",
+          "odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md",
+          "odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md",
+          "odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md",
+          "odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md",
+          "odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md",
+          "odylith/casebook/bugs/INDEX.md",
+          "odylith/runtime/delivery_intelligence.v4.json"
         ]
       },
       "tooling_shell": true
@@ -5651,9 +5640,9 @@
     },
     "component_registry": {
       "component_count": 21,
-      "event_count": 63,
-      "meaningful_event_count": 57,
-      "mapped_meaningful_event_count": 57,
+      "event_count": 59,
+      "meaningful_event_count": 53,
+      "mapped_meaningful_event_count": 53,
       "unmapped_meaningful_event_count": 0,
       "diagnostic_count": 2
     },
@@ -5891,19 +5880,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 330
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 333
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 386
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 389
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-04-08T02:26:42-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 8,
         "eta_days": 6,
         "eta_confidence": "high"
@@ -6291,19 +6280,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 330
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 333
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 385
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 388
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-04-08T02:26:42-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 8,
         "eta_days": 6,
         "eta_confidence": "high"
@@ -6660,32 +6649,32 @@
         "created": "2026-04-07",
         "updated": "2026-04-08",
         "total_tasks": 122,
-        "done_tasks": 50,
-        "progress_ratio": 0.4098,
+        "done_tasks": 56,
+        "progress_ratio": 0.459,
         "next_tasks": [
-          "Make first-install, consumer-rehearsal, and GA-gate shell refresh render",
-          "Make hosted-install closeout converge on one truthful posture: healthy",
-          "Make `odylith sync` operator proof honest and discoverable: visible help",
           "Keep post-publish `dogfood-activate` and surface refresh from dirtying",
           "Thread the `v0.1.10` release feedback into one reusable maintainer-facing",
-          "Keep welcome-screen and upgrade-popup browser proof in the main release"
+          "Keep welcome-screen and upgrade-popup browser proof in the main release",
+          "Make the next release proof report name any remaining maintainer",
+          "Do not reopen `v0.1.9` just to erase its already-shipped compatibility",
+          "Do not bundle unrelated feature work into this release-hardening wave."
         ]
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 197
+          "commit_count": 5,
+          "local_change_count": 1,
+          "file_touch_count": 204
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 197
+          "commit_count": 5,
+          "local_change_count": 1,
+          "file_touch_count": 204
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-08T02:26:42-07:00",
+        "last_activity_iso": "2026-04-08T02:34:18-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -6701,11 +6690,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 52,
+          "index": 53,
           "band": "Medium"
         },
         "48h": {
-          "index": 52,
+          "index": 53,
           "band": "Medium"
         }
       }
@@ -7155,19 +7144,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 339
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 343
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 390
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 394
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-04-08T02:26:58-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 12,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -7250,19 +7239,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
-          "local_change_count": 4,
-          "file_touch_count": 342
+          "commit_count": 10,
+          "local_change_count": 0,
+          "file_touch_count": 344
         },
         "48h": {
-          "commit_count": 13,
-          "local_change_count": 4,
-          "file_touch_count": 395
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 397
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T02:26:58-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -7432,19 +7421,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
-          "local_change_count": 2,
-          "file_touch_count": 338
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 341
         },
         "48h": {
-          "commit_count": 9,
-          "local_change_count": 2,
-          "file_touch_count": 390
+          "commit_count": 10,
+          "local_change_count": 0,
+          "file_touch_count": 393
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T02:26:42-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -8589,19 +8578,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 330
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 333
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 385
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 388
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-04-08T02:26:42-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 10,
         "eta_days": 2,
         "eta_confidence": "high"
@@ -8929,19 +8918,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 339
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 343
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 396
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 400
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-08T02:26:58-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 9,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -11381,19 +11370,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 330
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 333
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 386
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 389
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-04-08T02:26:42-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 8,
         "eta_days": 6,
         "eta_confidence": "high"
@@ -11781,19 +11770,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 330
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 333
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 385
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 388
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-04-08T02:26:42-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 8,
         "eta_days": 6,
         "eta_confidence": "high"
@@ -12150,32 +12139,32 @@
         "created": "2026-04-07",
         "updated": "2026-04-08",
         "total_tasks": 122,
-        "done_tasks": 50,
-        "progress_ratio": 0.4098,
+        "done_tasks": 56,
+        "progress_ratio": 0.459,
         "next_tasks": [
-          "Make first-install, consumer-rehearsal, and GA-gate shell refresh render",
-          "Make hosted-install closeout converge on one truthful posture: healthy",
-          "Make `odylith sync` operator proof honest and discoverable: visible help",
           "Keep post-publish `dogfood-activate` and surface refresh from dirtying",
           "Thread the `v0.1.10` release feedback into one reusable maintainer-facing",
-          "Keep welcome-screen and upgrade-popup browser proof in the main release"
+          "Keep welcome-screen and upgrade-popup browser proof in the main release",
+          "Make the next release proof report name any remaining maintainer",
+          "Do not reopen `v0.1.9` just to erase its already-shipped compatibility",
+          "Do not bundle unrelated feature work into this release-hardening wave."
         ]
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 197
+          "commit_count": 5,
+          "local_change_count": 1,
+          "file_touch_count": 204
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 197
+          "commit_count": 5,
+          "local_change_count": 1,
+          "file_touch_count": 204
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-08T02:26:42-07:00",
+        "last_activity_iso": "2026-04-08T02:34:18-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -12191,11 +12180,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 52,
+          "index": 53,
           "band": "Medium"
         },
         "48h": {
-          "index": 52,
+          "index": 53,
           "band": "Medium"
         }
       }
@@ -12348,19 +12337,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
-          "local_change_count": 4,
-          "file_touch_count": 342
+          "commit_count": 10,
+          "local_change_count": 0,
+          "file_touch_count": 344
         },
         "48h": {
-          "commit_count": 13,
-          "local_change_count": 4,
-          "file_touch_count": 395
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 397
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-08T02:26:58-07:00",
+        "last_activity_iso": "2026-04-08T02:28:08-07:00",
         "age_days": 11,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -12475,72 +12464,9 @@
   ],
   "timeline_events": [
     {
-      "id": "local:M:github/workflows/test.yml",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:58-07:00",
-      "summary": "Modified github/workflows/test.yml",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-005"
-      ],
-      "files": [
-        "github/workflows/test.yml"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:github/workflows/release.yml",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:58-07:00",
-      "summary": "Modified github/workflows/release.yml",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-004",
-        "B-005",
-        "B-027"
-      ],
-      "files": [
-        "github/workflows/release.yml"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:github/workflows/release-candidate.yml",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:58-07:00",
-      "summary": "Modified github/workflows/release-candidate.yml",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "github/workflows/release-candidate.yml"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
       "id": "local:M:odylith/casebook/bugs/INDEX.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:58-07:00",
+      "ts_iso": "2026-04-08T02:34:35-07:00",
       "summary": "Modified odylith/casebook/bugs/INDEX.md",
       "author": "local",
       "sha": "",
@@ -12559,7 +12485,7 @@
     {
       "id": "local:M:odylith/radar/source/INDEX.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:51-07:00",
+      "ts_iso": "2026-04-08T02:34:28-07:00",
       "summary": "Modified odylith/radar/source/INDEX.md",
       "author": "local",
       "sha": "",
@@ -12578,8 +12504,8 @@
     {
       "id": "plan:update:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "plan_update",
-      "ts_iso": "2026-04-08T02:26:42-07:00",
-      "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 50/122 complete.",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 56/122 complete.",
       "author": "plan",
       "sha": "",
       "workstreams": [
@@ -12599,7 +12525,7 @@
     {
       "id": "plan:implementation:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "implementation",
-      "ts_iso": "2026-04-08T02:26:42-07:00",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
       "summary": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed `v0.1.9` published on 2026-04-07, but canonical release proof still.",
       "author": "plan",
       "sha": "",
@@ -12620,7 +12546,7 @@
     {
       "id": "local:M:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:42-07:00",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
       "summary": "Modified odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "author": "local",
       "sha": "",
@@ -12639,85 +12565,467 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+      "id": "local:M:odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md",
       "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:42-07:00",
-      "summary": "Modified odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-060"
-      ],
-      "files": [
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:42-07:00",
-      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-005",
-        "B-007"
-      ],
-      "files": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:42-07:00",
-      "summary": "Modified odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-005",
-        "B-007",
-        "B-020",
-        "B-022",
-        "B-038"
-      ],
-      "files": [
-        "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:??:odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:42-07:00",
-      "summary": "Added odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Modified odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md"
+        "odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md"
       ],
       "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "bug:watch:9:P1",
+      "kind": "bug_watch",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Critical bug remains open (P1): Sync refresh rewrites unchanged artifacts and stales generated timestamps.",
+      "author": "bugs",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md"
+      ],
+      "source": "bugs_index",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Modified odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "bug:watch:8:P1",
+      "kind": "bug_watch",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Critical bug remains open (P1): Sync operator surface hides real controls and long running progress.",
+      "author": "bugs",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md"
+      ],
+      "source": "bugs_index",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Modified odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "bug:watch:6:P1",
+      "kind": "bug_watch",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Critical bug remains open (P1): Hosted installer upgrades runtime without advancing repo pin.",
+      "author": "bugs",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md"
+      ],
+      "source": "bugs_index",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Modified odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "bug:watch:7:P1",
+      "kind": "bug_watch",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Critical bug remains open (P1): Runtime retention prune fails on read only stale runtime trees.",
+      "author": "bugs",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md"
+      ],
+      "source": "bugs_index",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Modified odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "bug:watch:17:P1",
+      "kind": "bug_watch",
+      "ts_iso": "2026-04-08T02:34:18-07:00",
+      "summary": "Critical bug remains open (P1): Successful trust bootstrap still prints scary non fatal warnings.",
+      "author": "bugs",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md"
+      ],
+      "source": "bugs_index",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/tooling-payload.v1.js",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:39-07:00",
+      "summary": "Modified odylith/tooling-payload.v1.js",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/tooling-payload.v1.js"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/index.html",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:39-07:00",
+      "summary": "Modified odylith/index.html",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/index.html"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/runtime/delivery_intelligence.v4.json",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:37-07:00",
+      "summary": "Modified odylith/runtime/delivery_intelligence.v4.json",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/runtime/delivery_intelligence.v4.json"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/registry/source/components/security/FORENSICS.v1.json",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:36-07:00",
+      "summary": "Modified odylith/registry/source/components/security/FORENSICS.v1.json",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/registry/source/components/security/FORENSICS.v1.json"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/registry/source/components/release/FORENSICS.v1.json",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:36-07:00",
+      "summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/registry/source/components/release/FORENSICS.v1.json"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/registry/source/components/radar/FORENSICS.v1.json",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:36-07:00",
+      "summary": "Modified odylith/registry/source/components/radar/FORENSICS.v1.json",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/registry/source/components/radar/FORENSICS.v1.json"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:36-07:00",
+      "summary": "Modified odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/radar/backlog-document-shard-002.v1.js",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:36-07:00",
+      "summary": "Modified odylith/radar/backlog-document-shard-002.v1.js",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/radar/backlog-document-shard-002.v1.js"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/radar/backlog-detail-shard-002.v1.js",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:36-07:00",
+      "summary": "Modified odylith/radar/backlog-detail-shard-002.v1.js",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/radar/backlog-detail-shard-002.v1.js"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/radar/backlog-payload.v1.js",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:36-07:00",
+      "summary": "Modified odylith/radar/backlog-payload.v1.js",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/radar/backlog-payload.v1.js"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "local:M:odylith/radar/radar.html",
+      "kind": "local_change",
+      "ts_iso": "2026-04-08T02:30:36-07:00",
+      "summary": "Modified odylith/radar/radar.html",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/radar/radar.html"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": ""
+    },
+    {
+      "id": "commit:02e4c152c151197c5ca557dda8cf819da749fd9b",
+      "kind": "commit",
+      "ts_iso": "2026-04-08T02:28:08-07:00",
+      "summary": "Close release identity and workflow pin blockers",
+      "author": "freedom-research",
+      "sha": "02e4c152c151197c5ca557dda8cf819da749fd9b",
+      "workstreams": [
+        "B-004",
+        "B-005",
+        "B-007",
+        "B-020",
+        "B-022",
+        "B-027",
+        "B-038",
+        "B-060"
+      ],
+      "files": [
+        "github/workflows/release-candidate.yml",
+        "github/workflows/release.yml",
+        "github/workflows/test.yml",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "odylith/atlas/atlas.html",
+        "odylith/atlas/mermaid-payload.v1.js",
+        "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
+        "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-04-08.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/benchmark/FORENSICS.v1.json",
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/registry/source/components/security/FORENSICS.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/tooling-payload.v1.js",
+        "scripts/validate_git_identity.py",
+        "tests/unit/test_validate_git_identity.py"
+      ],
+      "source": "git",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -12729,7 +13037,7 @@
       "id": "bug:bug_resolved:4:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T02:26:42-07:00",
-      "summary": "Critical bug resolved (P1): Release workflows still pin first-party actions on Node 20 runtime.",
+      "summary": "Critical bug resolved (P1): Release workflows still pin first party actions on node 20 runtime.",
       "author": "bugs",
       "sha": "",
       "workstreams": [],
@@ -12745,29 +13053,10 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:26:42-07:00",
-      "summary": "Added odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
       "id": "bug:bug_resolved:3:P0",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T02:26:42-07:00",
-      "summary": "Critical bug resolved (P0): Release identity guard still depends on GitHub generated committer metadata.",
+      "summary": "Critical bug resolved (P0): Release identity guard still depends on github generated committer metadata.",
       "author": "bugs",
       "sha": "",
       "workstreams": [],
@@ -12775,63 +13064,6 @@
         "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md"
       ],
       "source": "bugs_index",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:odylith/maintainer/AGENTS.md",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:24:13-07:00",
-      "summary": "Modified odylith/maintainer/AGENTS.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/maintainer/AGENTS.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:tests/unit/test_validate_git_identity.py",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:17:43-07:00",
-      "summary": "Modified tests/unit/test_validate_git_identity.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "tests/unit/test_validate_git_identity.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "local:M:scripts/validate_git_identity.py",
-      "kind": "local_change",
-      "ts_iso": "2026-04-08T02:17:43-07:00",
-      "summary": "Modified scripts/validate_git_identity.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "scripts/validate_git_identity.py"
-      ],
-      "source": "local",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -13136,44 +13368,6 @@
       "headline_hint": ""
     },
     {
-      "id": "bug:watch:8:P1",
-      "kind": "bug_watch",
-      "ts_iso": "2026-04-08T00:31:37-07:00",
-      "summary": "Critical bug remains open (P1): Sync operator surface hides real controls and long running progress.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md"
-      ],
-      "source": "bugs_index",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "bug:watch:9:P1",
-      "kind": "bug_watch",
-      "ts_iso": "2026-04-08T00:31:37-07:00",
-      "summary": "Critical bug remains open (P1): Sync refresh rewrites unchanged artifacts and stales generated timestamps.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md"
-      ],
-      "source": "bugs_index",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
       "id": "bug:bug_resolved:5:P1",
       "kind": "bug_resolved",
       "ts_iso": "2026-04-08T00:31:37-07:00",
@@ -13183,25 +13377,6 @@
       "workstreams": [],
       "files": [
         "odylith/casebook/bugs/2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md"
-      ],
-      "source": "bugs_index",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "bug:watch:6:P1",
-      "kind": "bug_watch",
-      "ts_iso": "2026-04-08T00:31:37-07:00",
-      "summary": "Critical bug remains open (P1): Hosted installer upgrades runtime without advancing repo pin.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md"
       ],
       "source": "bugs_index",
       "session_id": "",
@@ -13768,25 +13943,6 @@
         "tmp/codex-screens/v0.1.9-welcome-screen.png"
       ],
       "source": "git",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "bug:watch:7:P1",
-      "kind": "bug_watch",
-      "ts_iso": "2026-04-07T17:18:18-07:00",
-      "summary": "Critical bug remains open (P1): Runtime retention prune fails on read only stale runtime trees.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md"
-      ],
-      "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -14622,25 +14778,6 @@
         "odylith/registry/source/components/odylith/FORENSICS.v1.json"
       ],
       "source": "git",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": ""
-    },
-    {
-      "id": "bug:watch:17:P1",
-      "kind": "bug_watch",
-      "ts_iso": "2026-04-06T14:34:39-07:00",
-      "summary": "Critical bug remains open (P1): Successful trust bootstrap still prints scary non fatal warnings.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md"
-      ],
-      "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -15705,108 +15842,35 @@
   ],
   "timeline_transactions": [
     {
-      "id": "txn:global:auto-global-0046:0046",
-      "transaction_id": "txn:global:auto-global-0046:0046",
+      "id": "txn:global:auto-global-0045:0045",
+      "transaction_id": "txn:global:auto-global-0045:0045",
       "session_id": "",
-      "start_ts_iso": "2026-04-08T02:26:42-07:00",
-      "end_ts_iso": "2026-04-08T02:26:58-07:00",
+      "start_ts_iso": "2026-04-08T02:34:18-07:00",
+      "end_ts_iso": "2026-04-08T02:34:35-07:00",
       "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
       "context": "",
       "event_count": 15,
-      "files_count": 11,
+      "files_count": 8,
       "workstreams": [
-        "B-004",
-        "B-005",
-        "B-007",
-        "B-020",
-        "B-022",
-        "B-027",
-        "B-038",
         "B-060"
       ],
       "files": [
-        "github/workflows/release-candidate.yml",
-        "github/workflows/release.yml",
-        "github/workflows/test.yml",
-        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-        "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
-        "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
+        "odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md",
+        "odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md",
+        "odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md",
+        "odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md",
+        "odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md",
         "odylith/casebook/bugs/INDEX.md",
         "odylith/radar/source/INDEX.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md",
         "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
       ],
       "explicit_open": false,
       "explicit_closed": false,
       "events": [
         {
-          "id": "local:M:github/workflows/test.yml",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:58-07:00",
-          "summary": "Modified github/workflows/test.yml",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-005"
-          ],
-          "files": [
-            "github/workflows/test.yml"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:github/workflows/release.yml",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:58-07:00",
-          "summary": "Modified github/workflows/release.yml",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-004",
-            "B-005",
-            "B-027"
-          ],
-          "files": [
-            "github/workflows/release.yml"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:github/workflows/release-candidate.yml",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:58-07:00",
-          "summary": "Modified github/workflows/release-candidate.yml",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "github/workflows/release-candidate.yml"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
           "id": "local:M:odylith/casebook/bugs/INDEX.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:58-07:00",
+          "ts_iso": "2026-04-08T02:34:35-07:00",
           "summary": "Modified odylith/casebook/bugs/INDEX.md",
           "author": "local",
           "sha": "",
@@ -15825,7 +15889,7 @@
         {
           "id": "local:M:odylith/radar/source/INDEX.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:51-07:00",
+          "ts_iso": "2026-04-08T02:34:28-07:00",
           "summary": "Modified odylith/radar/source/INDEX.md",
           "author": "local",
           "sha": "",
@@ -15844,8 +15908,8 @@
         {
           "id": "plan:update:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "plan_update",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
-          "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 50/122 complete.",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Plan updated: odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening (B-060) is In progress; checklist 56/122 complete.",
           "author": "plan",
           "sha": "",
           "workstreams": [
@@ -15865,7 +15929,7 @@
         {
           "id": "plan:implementation:3:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "implementation",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
           "summary": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed `v0.1.9` published on 2026-04-07, but canonical release proof still.",
           "author": "plan",
           "sha": "",
@@ -15886,7 +15950,7 @@
         {
           "id": "local:M:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
           "summary": "Modified odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
           "author": "local",
           "sha": "",
@@ -15905,83 +15969,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+          "id": "local:M:odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
-          "summary": "Modified odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-060"
-          ],
-          "files": [
-            "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
-          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-005",
-            "B-007"
-          ],
-          "files": [
-            "odylith/registry/source/components/release/CURRENT_SPEC.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:M:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
-          "summary": "Modified odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-005",
-            "B-007",
-            "B-020",
-            "B-022",
-            "B-038"
-          ],
-          "files": [
-            "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "local:??:odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
-          "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
-          "summary": "Added odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Modified odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md"
+            "odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md"
           ],
           "source": "local",
           "session_id": "",
@@ -15992,15 +15988,15 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:4:P1",
-          "kind": "bug_resolved",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
-          "summary": "Critical bug resolved (P1): Release workflows still pin first-party actions on Node 20 runtime.",
+          "id": "bug:watch:9:P1",
+          "kind": "bug_watch",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Critical bug remains open (P1): Sync refresh rewrites unchanged artifacts and stales generated timestamps.",
           "author": "bugs",
           "sha": "",
           "workstreams": [],
           "files": [
-            "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md"
+            "odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md"
           ],
           "source": "bugs_index",
           "session_id": "",
@@ -16011,15 +16007,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
+          "id": "local:M:odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
-          "summary": "Added odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Modified odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md"
+            "odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md"
           ],
           "source": "local",
           "session_id": "",
@@ -16030,15 +16026,15 @@
           "headline_hint": ""
         },
         {
-          "id": "bug:bug_resolved:3:P0",
-          "kind": "bug_resolved",
-          "ts_iso": "2026-04-08T02:26:42-07:00",
-          "summary": "Critical bug resolved (P0): Release identity guard still depends on GitHub generated committer metadata.",
+          "id": "bug:watch:8:P1",
+          "kind": "bug_watch",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Critical bug remains open (P1): Sync operator surface hides real controls and long running progress.",
           "author": "bugs",
           "sha": "",
           "workstreams": [],
           "files": [
-            "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md"
+            "odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md"
           ],
           "source": "bugs_index",
           "session_id": "",
@@ -16047,38 +16043,114 @@
           "transaction_boundary": "",
           "context": "",
           "headline_hint": ""
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0045:0045",
-      "transaction_id": "txn:global:auto-global-0045:0045",
-      "session_id": "",
-      "start_ts_iso": "2026-04-08T02:24:13-07:00",
-      "end_ts_iso": "2026-04-08T02:24:13-07:00",
-      "headline": "Updated odylith artifacts",
-      "context": "",
-      "event_count": 1,
-      "files_count": 1,
-      "workstreams": [],
-      "files": [
-        "odylith/maintainer/AGENTS.md"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
+        },
         {
-          "id": "local:M:odylith/maintainer/AGENTS.md",
+          "id": "local:M:odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T02:24:13-07:00",
-          "summary": "Modified odylith/maintainer/AGENTS.md",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Modified odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "odylith/maintainer/AGENTS.md"
+            "odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md"
           ],
           "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "bug:watch:6:P1",
+          "kind": "bug_watch",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Critical bug remains open (P1): Hosted installer upgrades runtime without advancing repo pin.",
+          "author": "bugs",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md"
+          ],
+          "source": "bugs_index",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Modified odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "bug:watch:7:P1",
+          "kind": "bug_watch",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Critical bug remains open (P1): Runtime retention prune fails on read only stale runtime trees.",
+          "author": "bugs",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md"
+          ],
+          "source": "bugs_index",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Modified odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "bug:watch:17:P1",
+          "kind": "bug_watch",
+          "ts_iso": "2026-04-08T02:34:18-07:00",
+          "summary": "Critical bug remains open (P1): Successful trust bootstrap still prints scary non fatal warnings.",
+          "author": "bugs",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md"
+          ],
+          "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
           "transaction_seq": null,
@@ -16092,30 +16164,39 @@
       "id": "txn:global:auto-global-0044:0044",
       "transaction_id": "txn:global:auto-global-0044:0044",
       "session_id": "",
-      "start_ts_iso": "2026-04-08T02:17:43-07:00",
-      "end_ts_iso": "2026-04-08T02:17:43-07:00",
-      "headline": "Updated unit tests + scripts artifacts",
+      "start_ts_iso": "2026-04-08T02:30:36-07:00",
+      "end_ts_iso": "2026-04-08T02:30:39-07:00",
+      "headline": "Updated odylith artifacts and 2 other areas",
       "context": "",
-      "event_count": 2,
-      "files_count": 2,
+      "event_count": 11,
+      "files_count": 11,
       "workstreams": [],
       "files": [
-        "scripts/validate_git_identity.py",
-        "tests/unit/test_validate_git_identity.py"
+        "odylith/index.html",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/registry/source/components/security/FORENSICS.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/tooling-payload.v1.js"
       ],
       "explicit_open": false,
       "explicit_closed": false,
       "events": [
         {
-          "id": "local:M:tests/unit/test_validate_git_identity.py",
+          "id": "local:M:odylith/tooling-payload.v1.js",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T02:17:43-07:00",
-          "summary": "Modified tests/unit/test_validate_git_identity.py",
+          "ts_iso": "2026-04-08T02:30:39-07:00",
+          "summary": "Modified odylith/tooling-payload.v1.js",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "tests/unit/test_validate_git_identity.py"
+            "odylith/tooling-payload.v1.js"
           ],
           "source": "local",
           "session_id": "",
@@ -16126,15 +16207,186 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:scripts/validate_git_identity.py",
+          "id": "local:M:odylith/index.html",
           "kind": "local_change",
-          "ts_iso": "2026-04-08T02:17:43-07:00",
-          "summary": "Modified scripts/validate_git_identity.py",
+          "ts_iso": "2026-04-08T02:30:39-07:00",
+          "summary": "Modified odylith/index.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "scripts/validate_git_identity.py"
+            "odylith/index.html"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/runtime/delivery_intelligence.v4.json",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:30:37-07:00",
+          "summary": "Modified odylith/runtime/delivery_intelligence.v4.json",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/runtime/delivery_intelligence.v4.json"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/registry/source/components/security/FORENSICS.v1.json",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:30:36-07:00",
+          "summary": "Modified odylith/registry/source/components/security/FORENSICS.v1.json",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/registry/source/components/security/FORENSICS.v1.json"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/registry/source/components/release/FORENSICS.v1.json",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:30:36-07:00",
+          "summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/registry/source/components/release/FORENSICS.v1.json"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/registry/source/components/radar/FORENSICS.v1.json",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:30:36-07:00",
+          "summary": "Modified odylith/registry/source/components/radar/FORENSICS.v1.json",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/registry/source/components/radar/FORENSICS.v1.json"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:30:36-07:00",
+          "summary": "Modified odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/radar/backlog-document-shard-002.v1.js",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:30:36-07:00",
+          "summary": "Modified odylith/radar/backlog-document-shard-002.v1.js",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/radar/backlog-document-shard-002.v1.js"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/radar/backlog-detail-shard-002.v1.js",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:30:36-07:00",
+          "summary": "Modified odylith/radar/backlog-detail-shard-002.v1.js",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/radar/backlog-detail-shard-002.v1.js"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/radar/backlog-payload.v1.js",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:30:36-07:00",
+          "summary": "Modified odylith/radar/backlog-payload.v1.js",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/radar/backlog-payload.v1.js"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "local:M:odylith/radar/radar.html",
+          "kind": "local_change",
+          "ts_iso": "2026-04-08T02:30:36-07:00",
+          "summary": "Modified odylith/radar/radar.html",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/radar/radar.html"
           ],
           "source": "local",
           "session_id": "",
@@ -16149,6 +16401,184 @@
     {
       "id": "txn:global:auto-global-0043:0043",
       "transaction_id": "txn:global:auto-global-0043:0043",
+      "session_id": "",
+      "start_ts_iso": "2026-04-08T02:26:42-07:00",
+      "end_ts_iso": "2026-04-08T02:28:08-07:00",
+      "headline": "Close release identity and workflow pin blockers",
+      "context": "",
+      "event_count": 3,
+      "files_count": 43,
+      "workstreams": [
+        "B-004",
+        "B-005",
+        "B-007",
+        "B-020",
+        "B-022",
+        "B-027",
+        "B-038",
+        "B-060"
+      ],
+      "files": [
+        "github/workflows/release-candidate.yml",
+        "github/workflows/release.yml",
+        "github/workflows/test.yml",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "odylith/atlas/atlas.html",
+        "odylith/atlas/mermaid-payload.v1.js",
+        "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
+        "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-04-08.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-002.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/benchmark/FORENSICS.v1.json",
+        "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/registry/source/components/security/FORENSICS.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+        "odylith/tooling-payload.v1.js",
+        "scripts/validate_git_identity.py",
+        "tests/unit/test_validate_git_identity.py"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
+          "id": "commit:02e4c152c151197c5ca557dda8cf819da749fd9b",
+          "kind": "commit",
+          "ts_iso": "2026-04-08T02:28:08-07:00",
+          "summary": "Close release identity and workflow pin blockers",
+          "author": "freedom-research",
+          "sha": "02e4c152c151197c5ca557dda8cf819da749fd9b",
+          "workstreams": [
+            "B-004",
+            "B-005",
+            "B-007",
+            "B-020",
+            "B-022",
+            "B-027",
+            "B-038",
+            "B-060"
+          ],
+          "files": [
+            "github/workflows/release-candidate.yml",
+            "github/workflows/release.yml",
+            "github/workflows/test.yml",
+            "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+            "odylith/atlas/atlas.html",
+            "odylith/atlas/mermaid-payload.v1.js",
+            "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
+            "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
+            "odylith/casebook/bugs/INDEX.md",
+            "odylith/casebook/casebook-detail-shard-003.v1.js",
+            "odylith/casebook/casebook-payload.v1.js",
+            "odylith/casebook/casebook.html",
+            "odylith/compass/compass-payload.v1.js",
+            "odylith/compass/compass.html",
+            "odylith/compass/runtime/current.v1.js",
+            "odylith/compass/runtime/current.v1.json",
+            "odylith/compass/runtime/history/2026-04-08.v1.json",
+            "odylith/compass/runtime/history/embedded.v1.js",
+            "odylith/compass/runtime/history/index.v1.json",
+            "odylith/index.html",
+            "odylith/maintainer/AGENTS.md",
+            "odylith/radar/backlog-detail-shard-001.v1.js",
+            "odylith/radar/backlog-detail-shard-002.v1.js",
+            "odylith/radar/backlog-document-shard-002.v1.js",
+            "odylith/radar/backlog-document-shard-004.v1.js",
+            "odylith/radar/backlog-payload.v1.js",
+            "odylith/radar/radar.html",
+            "odylith/radar/source/INDEX.md",
+            "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+            "odylith/registry/registry-detail-shard-001.v1.js",
+            "odylith/registry/registry-payload.v1.js",
+            "odylith/registry/registry.html",
+            "odylith/registry/source/components/benchmark/FORENSICS.v1.json",
+            "odylith/registry/source/components/odylith-chatter/FORENSICS.v1.json",
+            "odylith/registry/source/components/radar/FORENSICS.v1.json",
+            "odylith/registry/source/components/release/CURRENT_SPEC.md",
+            "odylith/registry/source/components/release/FORENSICS.v1.json",
+            "odylith/registry/source/components/security/FORENSICS.v1.json",
+            "odylith/runtime/delivery_intelligence.v4.json",
+            "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
+            "odylith/tooling-payload.v1.js",
+            "scripts/validate_git_identity.py",
+            "tests/unit/test_validate_git_identity.py"
+          ],
+          "source": "git",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "bug:bug_resolved:4:P1",
+          "kind": "bug_resolved",
+          "ts_iso": "2026-04-08T02:26:42-07:00",
+          "summary": "Critical bug resolved (P1): Release workflows still pin first party actions on node 20 runtime.",
+          "author": "bugs",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md"
+          ],
+          "source": "bugs_index",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        },
+        {
+          "id": "bug:bug_resolved:3:P0",
+          "kind": "bug_resolved",
+          "ts_iso": "2026-04-08T02:26:42-07:00",
+          "summary": "Critical bug resolved (P0): Release identity guard still depends on github generated committer metadata.",
+          "author": "bugs",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md"
+          ],
+          "source": "bugs_index",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": ""
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0042:0042",
+      "transaction_id": "txn:global:auto-global-0042:0042",
       "session_id": "",
       "start_ts_iso": "2026-04-08T02:10:20-07:00",
       "end_ts_iso": "2026-04-08T02:10:20-07:00",
@@ -16303,8 +16733,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0042:0042",
-      "transaction_id": "txn:global:auto-global-0042:0042",
+      "id": "txn:global:auto-global-0041:0041",
+      "transaction_id": "txn:global:auto-global-0041:0041",
       "session_id": "",
       "start_ts_iso": "2026-04-08T02:05:17-07:00",
       "end_ts_iso": "2026-04-08T02:05:17-07:00",
@@ -16341,8 +16771,8 @@
       ]
     },
     {
-      "id": "txn:019d6a39-7866-76a2-a7d4-1333763b0d78:auto-019d6a39-7866-76a2-a7d4-1333763b0d78-0041:0041",
-      "transaction_id": "txn:019d6a39-7866-76a2-a7d4-1333763b0d78:auto-019d6a39-7866-76a2-a7d4-1333763b0d78-0041:0041",
+      "id": "txn:019d6a39-7866-76a2-a7d4-1333763b0d78:auto-019d6a39-7866-76a2-a7d4-1333763b0d78-0040:0040",
+      "transaction_id": "txn:019d6a39-7866-76a2-a7d4-1333763b0d78:auto-019d6a39-7866-76a2-a7d4-1333763b0d78-0040:0040",
       "session_id": "019d6a39-7866-76a2-a7d4-1333763b0d78",
       "start_ts_iso": "2026-04-08T01:46:37-07:00",
       "end_ts_iso": "2026-04-08T01:46:37-07:00",
@@ -16381,8 +16811,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0040:0040",
-      "transaction_id": "txn:global:auto-global-0040:0040",
+      "id": "txn:global:auto-global-0039:0039",
+      "transaction_id": "txn:global:auto-global-0039:0039",
       "session_id": "",
       "start_ts_iso": "2026-04-08T01:37:21-07:00",
       "end_ts_iso": "2026-04-08T01:37:21-07:00",
@@ -16661,8 +17091,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0039:0039",
-      "transaction_id": "txn:global:auto-global-0039:0039",
+      "id": "txn:global:auto-global-0038:0038",
+      "transaction_id": "txn:global:auto-global-0038:0038",
       "session_id": "",
       "start_ts_iso": "2026-04-08T01:26:42-07:00",
       "end_ts_iso": "2026-04-08T01:26:42-07:00",
@@ -16724,8 +17154,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0038:0038",
-      "transaction_id": "txn:global:auto-global-0038:0038",
+      "id": "txn:global:auto-global-0037:0037",
+      "transaction_id": "txn:global:auto-global-0037:0037",
       "session_id": "",
       "start_ts_iso": "2026-04-08T01:12:10-07:00",
       "end_ts_iso": "2026-04-08T01:12:10-07:00",
@@ -16762,21 +17192,18 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0037:0037",
-      "transaction_id": "txn:global:auto-global-0037:0037",
+      "id": "txn:global:auto-global-0036:0036",
+      "transaction_id": "txn:global:auto-global-0036:0036",
       "session_id": "",
       "start_ts_iso": "2026-04-08T00:31:37-07:00",
       "end_ts_iso": "2026-04-08T00:31:37-07:00",
-      "headline": "Critical bug watch",
+      "headline": "Critical bug resolved",
       "context": "",
-      "event_count": 5,
-      "files_count": 5,
+      "event_count": 2,
+      "files_count": 2,
       "workstreams": [],
       "files": [
         "odylith/casebook/bugs/2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md",
-        "odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md",
-        "odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md",
-        "odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md",
         "odylith/casebook/bugs/2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md"
       ],
       "explicit_open": false,
@@ -16792,44 +17219,6 @@
           "workstreams": [],
           "files": [
             "odylith/casebook/bugs/2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md"
-          ],
-          "source": "bugs_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "bug:watch:8:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-04-08T00:31:37-07:00",
-          "summary": "Critical bug remains open (P1): Sync operator surface hides real controls and long running progress.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md"
-          ],
-          "source": "bugs_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
-        {
-          "id": "bug:watch:9:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-04-08T00:31:37-07:00",
-          "summary": "Critical bug remains open (P1): Sync refresh rewrites unchanged artifacts and stales generated timestamps.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md"
           ],
           "source": "bugs_index",
           "session_id": "",
@@ -16857,31 +17246,12 @@
           "transaction_boundary": "",
           "context": "",
           "headline_hint": ""
-        },
-        {
-          "id": "bug:watch:6:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-04-08T00:31:37-07:00",
-          "summary": "Critical bug remains open (P1): Hosted installer upgrades runtime without advancing repo pin.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md"
-          ],
-          "source": "bugs_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
         }
       ]
     },
     {
-      "id": "txn:global:auto-global-0036:0036",
-      "transaction_id": "txn:global:auto-global-0036:0036",
+      "id": "txn:global:auto-global-0035:0035",
+      "transaction_id": "txn:global:auto-global-0035:0035",
       "session_id": "",
       "start_ts_iso": "2026-04-08T00:27:28-07:00",
       "end_ts_iso": "2026-04-08T00:28:36-07:00",
@@ -16963,8 +17333,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0035:0035",
-      "transaction_id": "txn:global:auto-global-0035:0035",
+      "id": "txn:global:auto-global-0034:0034",
+      "transaction_id": "txn:global:auto-global-0034:0034",
       "session_id": "",
       "start_ts_iso": "2026-04-07T22:57:54-07:00",
       "end_ts_iso": "2026-04-07T22:57:54-07:00",
@@ -17021,8 +17391,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0034:0034",
-      "transaction_id": "txn:global:auto-global-0034:0034",
+      "id": "txn:global:auto-global-0033:0033",
+      "transaction_id": "txn:global:auto-global-0033:0033",
       "session_id": "",
       "start_ts_iso": "2026-04-07T22:54:34-07:00",
       "end_ts_iso": "2026-04-07T22:55:32-07:00",
@@ -17223,8 +17593,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0033:0033",
-      "transaction_id": "txn:global:auto-global-0033:0033",
+      "id": "txn:global:auto-global-0032:0032",
+      "transaction_id": "txn:global:auto-global-0032:0032",
       "session_id": "",
       "start_ts_iso": "2026-04-07T22:50:07-07:00",
       "end_ts_iso": "2026-04-07T22:50:07-07:00",
@@ -17281,8 +17651,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0032:0032",
-      "transaction_id": "txn:global:auto-global-0032:0032",
+      "id": "txn:global:auto-global-0031:0031",
+      "transaction_id": "txn:global:auto-global-0031:0031",
       "session_id": "",
       "start_ts_iso": "2026-04-07T22:05:32-07:00",
       "end_ts_iso": "2026-04-07T22:05:32-07:00",
@@ -17447,8 +17817,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0031:0031",
-      "transaction_id": "txn:global:auto-global-0031:0031",
+      "id": "txn:global:auto-global-0030:0030",
+      "transaction_id": "txn:global:auto-global-0030:0030",
       "session_id": "",
       "start_ts_iso": "2026-04-07T20:22:12-07:00",
       "end_ts_iso": "2026-04-07T20:23:23-07:00",
@@ -17625,8 +17995,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0030:0030",
-      "transaction_id": "txn:global:auto-global-0030:0030",
+      "id": "txn:global:auto-global-0029:0029",
+      "transaction_id": "txn:global:auto-global-0029:0029",
       "session_id": "",
       "start_ts_iso": "2026-04-07T18:42:54-07:00",
       "end_ts_iso": "2026-04-07T18:44:34-07:00",
@@ -17703,8 +18073,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0029:0029",
-      "transaction_id": "txn:global:auto-global-0029:0029",
+      "id": "txn:global:auto-global-0028:0028",
+      "transaction_id": "txn:global:auto-global-0028:0028",
       "session_id": "",
       "start_ts_iso": "2026-04-07T18:26:06-07:00",
       "end_ts_iso": "2026-04-07T18:26:06-07:00",
@@ -17881,44 +18251,6 @@
             "tmp/codex-screens/v0.1.9-welcome-screen.png"
           ],
           "source": "git",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0028:0028",
-      "transaction_id": "txn:global:auto-global-0028:0028",
-      "session_id": "",
-      "start_ts_iso": "2026-04-07T17:18:18-07:00",
-      "end_ts_iso": "2026-04-07T17:18:18-07:00",
-      "headline": "Critical bug watch",
-      "context": "",
-      "event_count": 1,
-      "files_count": 1,
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "bug:watch:7:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-04-07T17:18:18-07:00",
-          "summary": "Critical bug remains open (P1): Runtime retention prune fails on read only stale runtime trees.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md"
-          ],
-          "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
           "transaction_seq": null,
@@ -19726,38 +20058,18 @@
       "end_ts_iso": "2026-04-06T14:34:39-07:00",
       "headline": "Critical bug watch",
       "context": "",
-      "event_count": 5,
-      "files_count": 5,
+      "event_count": 4,
+      "files_count": 4,
       "workstreams": [],
       "files": [
         "odylith/casebook/bugs/2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md",
         "odylith/casebook/bugs/2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md",
         "odylith/casebook/bugs/2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md",
-        "odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md",
         "odylith/casebook/bugs/2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md"
       ],
       "explicit_open": false,
       "explicit_closed": false,
       "events": [
-        {
-          "id": "bug:watch:17:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-04-06T14:34:39-07:00",
-          "summary": "Critical bug remains open (P1): Successful trust bootstrap still prints scary non fatal warnings.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md"
-          ],
-          "source": "bugs_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": ""
-        },
         {
           "id": "bug:bug_update:13:P2",
           "kind": "bug_update",
@@ -21077,11 +21389,11 @@
     "recent_window_minutes": 90,
     "global": {
       "is_active": true,
-      "transaction_id": "txn:global:auto-global-0046:0046",
+      "transaction_id": "txn:global:auto-global-0043:0043",
       "session_id": "",
       "context": "",
-      "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
-      "last_event_iso": "2026-04-08T02:26:58-07:00",
+      "headline": "Close release identity and workflow pin blockers",
+      "last_event_iso": "2026-04-08T02:28:08-07:00",
       "start_ts_iso": "2026-04-08T02:26:42-07:00",
       "workstreams": [
         "B-004",
@@ -21093,52 +21405,48 @@
         "B-038",
         "B-060"
       ],
-      "event_count": 15,
-      "files_count": 11,
+      "event_count": 3,
+      "files_count": 43,
       "kind_counts": {
-        "local_change": 11,
-        "plan_update": 1,
-        "implementation": 1,
+        "commit": 1,
         "bug_resolved": 2
       },
       "source_counts": {
-        "local": 11,
-        "plan_index": 1,
-        "plan_file": 1,
+        "git": 1,
         "bugs_index": 2
       },
-      "activity_signal_count": 13,
+      "activity_signal_count": 1,
       "risk_signal_count": 2,
       "top_files": [
         "github/workflows/release-candidate.yml",
         "github/workflows/release.yml",
         "github/workflows/test.yml",
         "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-        "odylith/radar/source/INDEX.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js"
       ],
-      "source_files_count": 8,
-      "generated_files_count": 3,
+      "source_files_count": 26,
+      "generated_files_count": 17,
       "generated_only_batch": false,
-      "latest_event_kind": "local_change",
-      "latest_event_summary": "Modified github/workflows/test.yml",
+      "latest_event_kind": "commit",
+      "latest_event_summary": "Close release identity and workflow pin blockers",
       "has_implementation_signal": true,
       "focus_reason": "recent_activity_signal",
       "selection_mode": "active_implementation",
       "has_live_implementation": true,
       "has_recent_implementation": true,
-      "latest_implementation_iso": "2026-04-08T02:26:58-07:00"
+      "latest_implementation_iso": "2026-04-08T02:34:35-07:00"
     },
     "by_workstream": {
       "B-004": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0046:0046",
+        "transaction_id": "txn:global:auto-global-0043:0043",
         "session_id": "",
         "context": "",
-        "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
-        "last_event_iso": "2026-04-08T02:26:58-07:00",
+        "headline": "Close release identity and workflow pin blockers",
+        "last_event_iso": "2026-04-08T02:28:08-07:00",
         "start_ts_iso": "2026-04-08T02:26:42-07:00",
         "workstreams": [
           "B-004",
@@ -21150,51 +21458,47 @@
           "B-038",
           "B-060"
         ],
-        "event_count": 15,
-        "files_count": 11,
+        "event_count": 3,
+        "files_count": 43,
         "kind_counts": {
-          "local_change": 11,
-          "plan_update": 1,
-          "implementation": 1,
+          "commit": 1,
           "bug_resolved": 2
         },
         "source_counts": {
-          "local": 11,
-          "plan_index": 1,
-          "plan_file": 1,
+          "git": 1,
           "bugs_index": 2
         },
-        "activity_signal_count": 13,
+        "activity_signal_count": 1,
         "risk_signal_count": 2,
         "top_files": [
           "github/workflows/release-candidate.yml",
           "github/workflows/release.yml",
           "github/workflows/test.yml",
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js"
         ],
-        "source_files_count": 8,
-        "generated_files_count": 3,
+        "source_files_count": 26,
+        "generated_files_count": 17,
         "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified github/workflows/test.yml",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Close release identity and workflow pin blockers",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T02:26:58-07:00"
+        "latest_implementation_iso": "2026-04-08T02:28:08-07:00"
       },
       "B-005": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0046:0046",
+        "transaction_id": "txn:global:auto-global-0043:0043",
         "session_id": "",
         "context": "",
-        "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
-        "last_event_iso": "2026-04-08T02:26:58-07:00",
+        "headline": "Close release identity and workflow pin blockers",
+        "last_event_iso": "2026-04-08T02:28:08-07:00",
         "start_ts_iso": "2026-04-08T02:26:42-07:00",
         "workstreams": [
           "B-004",
@@ -21206,51 +21510,47 @@
           "B-038",
           "B-060"
         ],
-        "event_count": 15,
-        "files_count": 11,
+        "event_count": 3,
+        "files_count": 43,
         "kind_counts": {
-          "local_change": 11,
-          "plan_update": 1,
-          "implementation": 1,
+          "commit": 1,
           "bug_resolved": 2
         },
         "source_counts": {
-          "local": 11,
-          "plan_index": 1,
-          "plan_file": 1,
+          "git": 1,
           "bugs_index": 2
         },
-        "activity_signal_count": 13,
+        "activity_signal_count": 1,
         "risk_signal_count": 2,
         "top_files": [
           "github/workflows/release-candidate.yml",
           "github/workflows/release.yml",
           "github/workflows/test.yml",
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js"
         ],
-        "source_files_count": 8,
-        "generated_files_count": 3,
+        "source_files_count": 26,
+        "generated_files_count": 17,
         "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified github/workflows/test.yml",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Close release identity and workflow pin blockers",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T02:26:58-07:00"
+        "latest_implementation_iso": "2026-04-08T02:28:08-07:00"
       },
       "B-007": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0046:0046",
+        "transaction_id": "txn:global:auto-global-0043:0043",
         "session_id": "",
         "context": "",
-        "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
-        "last_event_iso": "2026-04-08T02:26:58-07:00",
+        "headline": "Close release identity and workflow pin blockers",
+        "last_event_iso": "2026-04-08T02:28:08-07:00",
         "start_ts_iso": "2026-04-08T02:26:42-07:00",
         "workstreams": [
           "B-004",
@@ -21262,51 +21562,47 @@
           "B-038",
           "B-060"
         ],
-        "event_count": 15,
-        "files_count": 11,
+        "event_count": 3,
+        "files_count": 43,
         "kind_counts": {
-          "local_change": 11,
-          "plan_update": 1,
-          "implementation": 1,
+          "commit": 1,
           "bug_resolved": 2
         },
         "source_counts": {
-          "local": 11,
-          "plan_index": 1,
-          "plan_file": 1,
+          "git": 1,
           "bugs_index": 2
         },
-        "activity_signal_count": 13,
+        "activity_signal_count": 1,
         "risk_signal_count": 2,
         "top_files": [
           "github/workflows/release-candidate.yml",
           "github/workflows/release.yml",
           "github/workflows/test.yml",
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js"
         ],
-        "source_files_count": 8,
-        "generated_files_count": 3,
+        "source_files_count": 26,
+        "generated_files_count": 17,
         "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified github/workflows/test.yml",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Close release identity and workflow pin blockers",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T02:26:58-07:00"
+        "latest_implementation_iso": "2026-04-08T02:28:08-07:00"
       },
       "B-020": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0046:0046",
+        "transaction_id": "txn:global:auto-global-0043:0043",
         "session_id": "",
         "context": "",
-        "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
-        "last_event_iso": "2026-04-08T02:26:58-07:00",
+        "headline": "Close release identity and workflow pin blockers",
+        "last_event_iso": "2026-04-08T02:28:08-07:00",
         "start_ts_iso": "2026-04-08T02:26:42-07:00",
         "workstreams": [
           "B-004",
@@ -21318,51 +21614,47 @@
           "B-038",
           "B-060"
         ],
-        "event_count": 15,
-        "files_count": 11,
+        "event_count": 3,
+        "files_count": 43,
         "kind_counts": {
-          "local_change": 11,
-          "plan_update": 1,
-          "implementation": 1,
+          "commit": 1,
           "bug_resolved": 2
         },
         "source_counts": {
-          "local": 11,
-          "plan_index": 1,
-          "plan_file": 1,
+          "git": 1,
           "bugs_index": 2
         },
-        "activity_signal_count": 13,
+        "activity_signal_count": 1,
         "risk_signal_count": 2,
         "top_files": [
           "github/workflows/release-candidate.yml",
           "github/workflows/release.yml",
           "github/workflows/test.yml",
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js"
         ],
-        "source_files_count": 8,
-        "generated_files_count": 3,
+        "source_files_count": 26,
+        "generated_files_count": 17,
         "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified github/workflows/test.yml",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Close release identity and workflow pin blockers",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T02:26:58-07:00"
+        "latest_implementation_iso": "2026-04-08T02:28:08-07:00"
       },
       "B-022": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0046:0046",
+        "transaction_id": "txn:global:auto-global-0043:0043",
         "session_id": "",
         "context": "",
-        "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
-        "last_event_iso": "2026-04-08T02:26:58-07:00",
+        "headline": "Close release identity and workflow pin blockers",
+        "last_event_iso": "2026-04-08T02:28:08-07:00",
         "start_ts_iso": "2026-04-08T02:26:42-07:00",
         "workstreams": [
           "B-004",
@@ -21374,51 +21666,47 @@
           "B-038",
           "B-060"
         ],
-        "event_count": 15,
-        "files_count": 11,
+        "event_count": 3,
+        "files_count": 43,
         "kind_counts": {
-          "local_change": 11,
-          "plan_update": 1,
-          "implementation": 1,
+          "commit": 1,
           "bug_resolved": 2
         },
         "source_counts": {
-          "local": 11,
-          "plan_index": 1,
-          "plan_file": 1,
+          "git": 1,
           "bugs_index": 2
         },
-        "activity_signal_count": 13,
+        "activity_signal_count": 1,
         "risk_signal_count": 2,
         "top_files": [
           "github/workflows/release-candidate.yml",
           "github/workflows/release.yml",
           "github/workflows/test.yml",
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js"
         ],
-        "source_files_count": 8,
-        "generated_files_count": 3,
+        "source_files_count": 26,
+        "generated_files_count": 17,
         "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified github/workflows/test.yml",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Close release identity and workflow pin blockers",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T02:26:58-07:00"
+        "latest_implementation_iso": "2026-04-08T02:28:08-07:00"
       },
       "B-027": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0046:0046",
+        "transaction_id": "txn:global:auto-global-0043:0043",
         "session_id": "",
         "context": "",
-        "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
-        "last_event_iso": "2026-04-08T02:26:58-07:00",
+        "headline": "Close release identity and workflow pin blockers",
+        "last_event_iso": "2026-04-08T02:28:08-07:00",
         "start_ts_iso": "2026-04-08T02:26:42-07:00",
         "workstreams": [
           "B-004",
@@ -21430,51 +21718,47 @@
           "B-038",
           "B-060"
         ],
-        "event_count": 15,
-        "files_count": 11,
+        "event_count": 3,
+        "files_count": 43,
         "kind_counts": {
-          "local_change": 11,
-          "plan_update": 1,
-          "implementation": 1,
+          "commit": 1,
           "bug_resolved": 2
         },
         "source_counts": {
-          "local": 11,
-          "plan_index": 1,
-          "plan_file": 1,
+          "git": 1,
           "bugs_index": 2
         },
-        "activity_signal_count": 13,
+        "activity_signal_count": 1,
         "risk_signal_count": 2,
         "top_files": [
           "github/workflows/release-candidate.yml",
           "github/workflows/release.yml",
           "github/workflows/test.yml",
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js"
         ],
-        "source_files_count": 8,
-        "generated_files_count": 3,
+        "source_files_count": 26,
+        "generated_files_count": 17,
         "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified github/workflows/test.yml",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Close release identity and workflow pin blockers",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T02:26:58-07:00"
+        "latest_implementation_iso": "2026-04-08T02:28:08-07:00"
       },
       "B-038": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0046:0046",
+        "transaction_id": "txn:global:auto-global-0043:0043",
         "session_id": "",
         "context": "",
-        "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
-        "last_event_iso": "2026-04-08T02:26:58-07:00",
+        "headline": "Close release identity and workflow pin blockers",
+        "last_event_iso": "2026-04-08T02:28:08-07:00",
         "start_ts_iso": "2026-04-08T02:26:42-07:00",
         "workstreams": [
           "B-004",
@@ -21486,51 +21770,47 @@
           "B-038",
           "B-060"
         ],
-        "event_count": 15,
-        "files_count": 11,
+        "event_count": 3,
+        "files_count": 43,
         "kind_counts": {
-          "local_change": 11,
-          "plan_update": 1,
-          "implementation": 1,
+          "commit": 1,
           "bug_resolved": 2
         },
         "source_counts": {
-          "local": 11,
-          "plan_index": 1,
-          "plan_file": 1,
+          "git": 1,
           "bugs_index": 2
         },
-        "activity_signal_count": 13,
+        "activity_signal_count": 1,
         "risk_signal_count": 2,
         "top_files": [
           "github/workflows/release-candidate.yml",
           "github/workflows/release.yml",
           "github/workflows/test.yml",
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js"
         ],
-        "source_files_count": 8,
-        "generated_files_count": 3,
+        "source_files_count": 26,
+        "generated_files_count": 17,
         "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified github/workflows/test.yml",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Close release identity and workflow pin blockers",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T02:26:58-07:00"
+        "latest_implementation_iso": "2026-04-08T02:28:08-07:00"
       },
       "B-060": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0046:0046",
+        "transaction_id": "txn:global:auto-global-0043:0043",
         "session_id": "",
         "context": "",
-        "headline": "Implementation checkpoint in odylith v0 1 10 release feedback closure benchmark reproof and ga lane hardening: completed v0.1.9 published on 2026-04-07, but canonical release",
-        "last_event_iso": "2026-04-08T02:26:58-07:00",
+        "headline": "Close release identity and workflow pin blockers",
+        "last_event_iso": "2026-04-08T02:28:08-07:00",
         "start_ts_iso": "2026-04-08T02:26:42-07:00",
         "workstreams": [
           "B-004",
@@ -21542,47 +21822,43 @@
           "B-038",
           "B-060"
         ],
-        "event_count": 15,
-        "files_count": 11,
+        "event_count": 3,
+        "files_count": 43,
         "kind_counts": {
-          "local_change": 11,
-          "plan_update": 1,
-          "implementation": 1,
+          "commit": 1,
           "bug_resolved": 2
         },
         "source_counts": {
-          "local": 11,
-          "plan_index": 1,
-          "plan_file": 1,
+          "git": 1,
           "bugs_index": 2
         },
-        "activity_signal_count": 13,
+        "activity_signal_count": 1,
         "risk_signal_count": 2,
         "top_files": [
           "github/workflows/release-candidate.yml",
           "github/workflows/release.yml",
           "github/workflows/test.yml",
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-          "odylith/radar/source/INDEX.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/maintainer/AGENTS.md",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js"
         ],
-        "source_files_count": 8,
-        "generated_files_count": 3,
+        "source_files_count": 26,
+        "generated_files_count": 17,
         "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified github/workflows/test.yml",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Close release identity and workflow pin blockers",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-04-08T02:26:58-07:00"
+        "latest_implementation_iso": "2026-04-08T02:34:35-07:00"
       },
       "B-001": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0040:0040",
+        "transaction_id": "txn:global:auto-global-0039:0039",
         "session_id": "",
         "context": "",
         "headline": "Checkpoint all open release-prep work",
@@ -21640,7 +21916,7 @@
       },
       "B-003": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0040:0040",
+        "transaction_id": "txn:global:auto-global-0039:0039",
         "session_id": "",
         "context": "",
         "headline": "Checkpoint all open release-prep work",
@@ -21698,7 +21974,7 @@
       },
       "B-010": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0040:0040",
+        "transaction_id": "txn:global:auto-global-0039:0039",
         "session_id": "",
         "context": "",
         "headline": "Checkpoint all open release-prep work",
@@ -21756,7 +22032,7 @@
       },
       "B-025": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0040:0040",
+        "transaction_id": "txn:global:auto-global-0039:0039",
         "session_id": "",
         "context": "",
         "headline": "Checkpoint all open release-prep work",
@@ -21814,7 +22090,7 @@
       },
       "B-031": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0040:0040",
+        "transaction_id": "txn:global:auto-global-0039:0039",
         "session_id": "",
         "context": "",
         "headline": "Checkpoint all open release-prep work",
@@ -21872,7 +22148,7 @@
       },
       "B-058": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0040:0040",
+        "transaction_id": "txn:global:auto-global-0039:0039",
         "session_id": "",
         "context": "",
         "headline": "Checkpoint all open release-prep work",
@@ -21930,7 +22206,7 @@
       },
       "B-059": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0040:0040",
+        "transaction_id": "txn:global:auto-global-0039:0039",
         "session_id": "",
         "context": "",
         "headline": "Checkpoint all open release-prep work",
@@ -21988,7 +22264,7 @@
       },
       "B-061": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0040:0040",
+        "transaction_id": "txn:global:auto-global-0039:0039",
         "session_id": "",
         "context": "",
         "headline": "Checkpoint all open release-prep work",
@@ -23117,7 +23393,7 @@
       },
       {
         "date": "2026-04-08",
-        "title": "Release identity guard still depends on GitHub generated committer metadata",
+        "title": "Release identity guard still depends on github generated committer metadata",
         "severity": "P0",
         "status": "Closed",
         "link": "odylith/casebook/bugs/2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md",
@@ -23126,7 +23402,7 @@
       },
       {
         "date": "2026-04-08",
-        "title": "Release workflows still pin first-party actions on Node 20 runtime",
+        "title": "Release workflows still pin first party actions on node 20 runtime",
         "severity": "P1",
         "status": "Closed",
         "link": "odylith/casebook/bugs/2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md",
@@ -23887,7 +24163,7 @@
   "runtime_contract": {
     "version": "v1",
     "standup_brief_schema_version": "v13",
-    "input_fingerprint": "9ff9c8bbb5ace1440465584908c96a4281e1038a6d2c5cea0a2dbc08cc7fb81f",
+    "input_fingerprint": "918a5601cf3f3599bf0172b79bc76c93ecc68306cdc708ab7469b94239f74700",
     "retention_days": 15,
     "active_window_minutes": 15,
     "max_review_age_days": 21,

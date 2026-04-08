@@ -10,25 +10,9 @@ Last updated (UTC): 2026-04-08
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   benchmark progress finalization, benchmark cleanup/interruption handling,
   pinned-dogfood release proof, maintainer benchmark override contract. | Open | [2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md](2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md) |
-| CB-066 | 2026-04-07 | Sync refresh rewrites unchanged artifacts and stales generated timestamps | P1 | `src/odylith/runtime/governance/backfill_workstream_traceability.py`,
-  `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
-  stable generated-timestamp handling, and sync-owned generated JSON artifacts. | Open | [2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md](2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md) |
-| CB-065 | 2026-04-07 | Sync operator surface hides real controls and long running progress | P1 | `src/odylith/cli.py`,
-  `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
-  `src/odylith/runtime/governance/validate_component_registry_contract.py`,
-  sync CLI help and forwarding, sync execution-plan UX, operator warning
-  summaries, overlap guardrails, and legacy-normalization reporting. | Open | [2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md](2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md) |
-| CB-063 | 2026-04-07 | Runtime retention prune fails on read only stale runtime trees | P1 | `src/odylith/install/manager.py`, retention cleanup for
-  `.odylith/runtime/versions/` and `.odylith/cache/releases/`, hosted installer
-  finish path, upgrade and reinstall lifecycle closeout. | Open | [2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md](2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md) |
-| CB-064 | 2026-04-07 | Hosted installer upgrades runtime without advancing repo pin | P1 | hosted installer publication flow,
-  `src/odylith/cli.py`, install manager pin-alignment semantics in
-  `src/odylith/install/manager.py`, and public install and upgrade guidance. | Open | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
 | CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
   presentation and next-action routing. | Open | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
-| CB-061 | 2026-04-06 | Successful trust bootstrap still prints scary non fatal warnings | P1 | `src/odylith/install/release_assets.py`,
-  `src/odylith/cli.py`, install and repair success messaging, release-note copy. | Open | [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md) |
 | CB-055 | 2026-04-06 | Repair and reinstall do not converge after partial runtime failure | P0 | `src/odylith/install/runtime.py`,
   `src/odylith/install/manager.py`, runtime replacement helpers, repair
   lifecycle, reinstall flow. | Open | [2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md](2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md) |
@@ -143,6 +127,22 @@ Last updated (UTC): 2026-04-08
   `src/odylith/runtime/governance/dashboard_refresh_contract.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
   Compass full-refresh contract, shell/browser freshness proof. | Closed | [2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md](2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md) |
+| CB-066 | 2026-04-07 | Sync refresh rewrites unchanged artifacts and stales generated timestamps | P1 | `src/odylith/runtime/governance/backfill_workstream_traceability.py`,
+  `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
+  stable generated-timestamp handling, and sync-owned generated JSON artifacts. | Closed | [2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md](2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md) |
+| CB-065 | 2026-04-07 | Sync operator surface hides real controls and long running progress | P1 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  `src/odylith/runtime/governance/validate_component_registry_contract.py`,
+  sync CLI help and forwarding, sync execution-plan UX, operator warning
+  summaries, overlap guardrails, and legacy-normalization reporting. | Closed | [2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md](2026-04-07-sync-operator-surface-hides-real-controls-and-long-running-progress.md) |
+| CB-063 | 2026-04-07 | Runtime retention prune fails on read only stale runtime trees | P1 | `src/odylith/install/manager.py`, retention cleanup for
+  `.odylith/runtime/versions/` and `.odylith/cache/releases/`, hosted installer
+  finish path, upgrade and reinstall lifecycle closeout. | Closed | [2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md](2026-04-07-runtime-retention-prune-fails-on-read-only-stale-runtime-trees.md) |
+| CB-064 | 2026-04-07 | Hosted installer upgrades runtime without advancing repo pin | P1 | hosted installer publication flow,
+  `src/odylith/cli.py`, install manager pin-alignment semantics in
+  `src/odylith/install/manager.py`, and public install and upgrade guidance. | Closed | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
+| CB-061 | 2026-04-06 | Successful trust bootstrap still prints scary non fatal warnings | P1 | `src/odylith/install/release_assets.py`,
+  `src/odylith/cli.py`, install and repair success messaging, release-note copy. | Closed | [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md) |
 | CB-062 | 2026-04-06 | Radar topology deep links fall through to stale filtered selection and browser proof misses disclosure gated routes | P0 | `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
   bundled Radar `backlog-app.v1.js` mirrors, Radar explicit-selection routing,
   and the Playwright browser proof lane in
