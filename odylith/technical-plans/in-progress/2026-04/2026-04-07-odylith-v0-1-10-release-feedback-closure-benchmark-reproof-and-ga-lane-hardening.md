@@ -402,6 +402,11 @@ Related Bugs:
       routing-ladder, and benchmark-runner tests now force Codex host or mock
       CLI discovery explicitly, so GitHub-hosted proof matches the real
       contract instead of maintainer-machine ambient state.
+- [x] Canonical release version truth is now aligned for `v0.1.10`: the
+      tracked source version in `pyproject.toml`, the package version in
+      `src/odylith/__init__.py`, and the tracked product pin in
+      `odylith/runtime/source/product-version.v1.json` now move together before
+      canonical preflight.
 - [x] Repo-wide validation passed at the product level:
       `make validate` reached `1449 passed, 1 skipped` plus compile and
       non-mutating sync proof; the only terminal stop was the expected

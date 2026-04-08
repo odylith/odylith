@@ -278,6 +278,11 @@ Node 20 deprecation warning into GA.
   GitHub-hosted runner proof no longer gets to inherit ambient maintainer
   workstation Codex availability just to prove routing or benchmark packet
   contracts.
+- Canonical release-truth hardening is now part of the same closeout too:
+  `v0.1.10` preflight on `main` surfaced that release notes and override truth
+  had landed without the actual product version bump, so tracked source
+  version, package version, and product pin now advance together before
+  canonical preflight can continue.
 - Compass explicit-refresh hardening is now part of the landed `v0.1.10`
   release-feedback slice: explicit `full` refresh no longer shares the old
   shell-safe timeout budget, the failure hint points back to a real Compass

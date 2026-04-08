@@ -102,6 +102,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   `odylith/runtime/source/release-notes/vX.Y.Z.md` first, mirror it into the
   bundle assets, and prove the popup from that exact note instead of patching
   shell-only spotlight text in parallel.
+- Treat the release version bump as separate tracked truth, not an implication
+  of authored notes or overrides. Before canonical `make release-preflight`
+  for `vX.Y.Z`, land the matching `pyproject.toml` version and synchronize
+  `src/odylith/__init__.py` plus
+  `odylith/runtime/source/product-version.v1.json` on the release branch, then
+  return to `main` for canonical proof.
 - Use direct `rg`, source reads, generator inspection, or targeted shell
   inspection only when Odylith explicitly signals fallback or ambiguity, or
   when you are verifying tracked source truth behind a runtime-generated
