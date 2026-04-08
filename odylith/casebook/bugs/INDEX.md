@@ -131,6 +131,10 @@ Last updated (UTC): 2026-04-08
   `src/odylith/runtime/governance/dashboard_refresh_contract.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
   Compass full-refresh contract, shell/browser freshness proof. | Closed | [2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md](2026-04-08-explicit-compass-full-refresh-can-pass-with-deterministic-or-stale-runtime-state.md) |
+| CB-073 | 2026-04-08 | Canonical release preflight stops when product version truth still points at the prior shipped tag | P0 | `pyproject.toml`, `src/odylith/__init__.py`,
+  `odylith/runtime/source/product-version.v1.json`, canonical
+  `make release-preflight`, release component contract, maintainer release
+  workflow truth. | Closed | [2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md](2026-04-08-canonical-release-preflight-stops-when-product-version-truth-still-points-at-the-prior-shipped-tag.md) |
 | CB-066 | 2026-04-07 | Sync refresh rewrites unchanged artifacts and stales generated timestamps | P1 | `src/odylith/runtime/governance/backfill_workstream_traceability.py`,
   `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
   stable generated-timestamp handling, and sync-owned generated JSON artifacts. | Closed | [2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md](2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md) |

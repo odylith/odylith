@@ -84,6 +84,12 @@ claims aligned for public publication.
   as launch-ready. That note is the source of truth for the consumer upgrade
   spotlight copy, so release-facing popup claims must be proved from the same
   authored markdown rather than one-off shell text.
+- Release notes and maintainer overrides are necessary but not sufficient
+  version truth. Before canonical preflight for `vX.Y.Z`, the tracked product
+  version must already be advanced in `pyproject.toml` and synchronized into
+  `src/odylith/__init__.py` plus
+  `odylith/runtime/source/product-version.v1.json`; the `VERSION=` argument to
+  preflight does not substitute for that tracked source bump.
 - When the hosted installer upgrades an already-installed consumer repo, it
   must leave one truthful closeout posture: the verified runtime is active, the
   tracked repo pin matches that runtime, and any stale-retention cleanup that
