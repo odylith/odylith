@@ -55,8 +55,9 @@ What you should see within the first turn:
 - `odylith/index.html` reflecting the repo's live execution state
 - durable repo-local records under `odylith/` for the chosen slice
 
-**If Odylith makes your coding agent materially sharper in real repo work, star
-the repo so other operators can find it.**
+> [!TIP]
+> **⭐ If Odylith makes your coding agent materially sharper in real repo work,
+> star the repo so other operators can find it.**
 
 ## What Does The Name "Odylith" Mean?
 
