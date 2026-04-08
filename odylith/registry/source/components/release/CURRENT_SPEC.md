@@ -90,6 +90,12 @@ claims aligned for public publication.
   `src/odylith/__init__.py` plus
   `odylith/runtime/source/product-version.v1.json`; the `VERSION=` argument to
   preflight does not substitute for that tracked source bump.
+- Generated hosted installer commands must remain compatible with the last
+  shipped runtime shape used in release smoke. When the template needs
+  different first-install versus existing-install behavior, branch on repo
+  state using stable commands such as `install --version` and
+  `upgrade --to ... --write-pin` instead of assuming a newly introduced hidden
+  flag exists in older shipped CLIs.
 - When the hosted installer upgrades an already-installed consumer repo, it
   must leave one truthful closeout posture: the verified runtime is active, the
   tracked repo pin matches that runtime, and any stale-retention cleanup that

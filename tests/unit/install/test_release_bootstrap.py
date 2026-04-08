@@ -109,9 +109,14 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "banner" in text
     assert "detect_repo_root" in text
     assert "version_root=\"$state_root/runtime/versions/$release_version\"" in text
-    assert "\"$state_root/bin/odylith\" install --repo-root \"$repo_root\" --version \"$release_version\" --align-pin" in text
+    assert 'pin_path="$repo_root/odylith/runtime/source/product-version.v1.json"' in text
+    assert 'install_state_path="$repo_root/.odylith/install.json"' in text
+    assert 'if [[ -f "$pin_path" || -f "$install_state_path" ]]; then' in text
+    assert '"$state_root/bin/odylith" upgrade --repo-root "$repo_root" --to "$release_version" --write-pin' in text
+    assert '"$state_root/bin/odylith" install --repo-root "$repo_root" --version "$release_version"' in text
+    assert "--align-pin" not in text
     assert text.index("\"$version_root/bin/python\" \"$tmpdir/write_runtime_trust.py\" \"$repo_root\" \"$version_root\"") < text.index(
-        "\"$state_root/bin/odylith\" install --repo-root \"$repo_root\" --version \"$release_version\" --align-pin"
+        'pin_path="$repo_root/odylith/runtime/source/product-version.v1.json"'
     )
     assert "read -p" not in text
     assert "select " not in text

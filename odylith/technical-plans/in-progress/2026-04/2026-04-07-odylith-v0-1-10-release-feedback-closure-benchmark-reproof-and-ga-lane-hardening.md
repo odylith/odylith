@@ -407,6 +407,11 @@ Related Bugs:
       `src/odylith/__init__.py`, and the tracked product pin in
       `odylith/runtime/source/product-version.v1.json` now move together before
       canonical preflight.
+- [x] Hosted installer generation now stays compatible with the prior shipped
+      runtime used in release smoke: generated `install.sh` branches between
+      first-install `install --version` and existing-install
+      `upgrade --to ... --write-pin` instead of relying on unconditional hidden
+      `install --align-pin`.
 - [x] Repo-wide validation passed at the product level:
       `make validate` reached `1449 passed, 1 skipped` plus compile and
       non-mutating sync proof; the only terminal stop was the expected
