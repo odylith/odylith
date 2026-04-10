@@ -28,6 +28,7 @@ from odylith.runtime.governance import operator_readout
 from odylith.runtime.governance import proof_state
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.common import stable_generated_utc
+from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import tribunal_engine
@@ -38,6 +39,8 @@ DEFAULT_OUTPUT_PATH = "odylith/runtime/delivery_intelligence.v4.json"
 DEFAULT_CONTROL_POSTURE_PATH = "odylith/runtime/control-posture.v4.json"
 DEFAULT_ODYLITH_REASONING_PATH = odylith_reasoning.DEFAULT_REASONING_PATH
 DEFAULT_MAX_REVIEW_AGE_DAYS = 21
+_DELIVERY_INTELLIGENCE_GUARD_NAMESPACE = "generated-refresh-guards"
+_DELIVERY_INTELLIGENCE_GUARD_KEY = "delivery-intelligence"
 _SCOPE_TYPE_ORDER: tuple[str, ...] = ("grid", "surface", "workstream", "component", "diagram")
 _CARD_KEYS: tuple[str, ...] = (
     "executive_thesis",
@@ -2802,6 +2805,31 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
     output_path = _resolve(repo_root, args.output)
+    if not args.check_only:
+        skip_rebuild, input_fingerprint, _cached = generated_refresh_guard.should_skip_rebuild(
+            repo_root=repo_root,
+            namespace=_DELIVERY_INTELLIGENCE_GUARD_NAMESPACE,
+            key=_DELIVERY_INTELLIGENCE_GUARD_KEY,
+            watched_paths=(
+                "odylith/radar/source",
+                "odylith/technical-plans",
+                "odylith/casebook/bugs",
+                "odylith/registry/source",
+                "odylith/atlas/source/catalog/diagrams.v1.json",
+                "odylith/radar/traceability-graph.v1.json",
+                "odylith/compass/runtime/codex-stream.v1.jsonl",
+                DEFAULT_CONTROL_POSTURE_PATH,
+                DEFAULT_ODYLITH_REASONING_PATH,
+                "src/odylith/runtime/governance",
+                "src/odylith/runtime/reasoning",
+                "src/odylith/runtime/common",
+            ),
+            output_paths=(output_path,),
+            extra={"max_review_age_days": int(args.max_review_age_days)},
+        )
+        if skip_rebuild:
+            print("delivery intelligence artifact is current")
+            return 0
     payload = build_delivery_intelligence_artifact(
         repo_root=repo_root,
         max_review_age_days=int(args.max_review_age_days),
@@ -2834,6 +2862,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         path=output_path,
         content=rendered,
         lock_key=str(output_path),
+    )
+    generated_refresh_guard.record_rebuild(
+        repo_root=repo_root,
+        namespace=_DELIVERY_INTELLIGENCE_GUARD_NAMESPACE,
+        key=_DELIVERY_INTELLIGENCE_GUARD_KEY,
+        input_fingerprint=input_fingerprint,
+        output_paths=(output_path,),
+        metadata={"generated_utc": str(payload.get("generated_utc", "")).strip()},
     )
     if wrote_output:
         print(f"wrote delivery intelligence artifact: {output_path.relative_to(repo_root)}")

@@ -725,6 +725,11 @@ def _assert_compass_release_member_title_stays_on_second_row(  # noqa: ANN001
 
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    release_section = compass.locator("#release-groups details.execution-wave-section").first
+    release_section.wait_for(timeout=15000)
+    if release_section.get_attribute("open") is None:
+        release_section.locator("summary").first.click()
+    release_section.locator(".execution-wave-panel").first.wait_for(timeout=15000)
     card = compass.locator("#release-groups .execution-wave-card").first
     card.wait_for(timeout=15000)
     layout = card.evaluate(
@@ -763,6 +768,11 @@ def _assert_compass_release_targets_keep_single_column_board_layout(  # noqa: AN
 
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    release_section = compass.locator("#release-groups details.execution-wave-section").first
+    release_section.wait_for(timeout=15000)
+    if release_section.get_attribute("open") is None:
+        release_section.locator("summary").first.click()
+    release_section.locator(".execution-wave-panel").first.wait_for(timeout=15000)
     board = compass.locator("#release-groups .execution-wave-board").first
     board.wait_for(timeout=15000)
     layout = board.evaluate(
@@ -798,3 +808,192 @@ def test_compass_release_targets_keep_single_column_board_layout_in_browser(brow
 
 def test_compass_release_targets_keep_single_column_board_layout_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
     _assert_compass_release_targets_keep_single_column_board_layout(*compact_browser_context)
+
+
+def _assert_compass_program_and_release_cards_keep_distinct_surface_tints(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    program_section = compass.locator("#execution-waves-host .execution-wave-section").first
+    release_section = compass.locator("#release-groups-host .execution-wave-section").first
+    program_section.wait_for(timeout=15000)
+    release_section.wait_for(timeout=15000)
+
+    program_style = program_section.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            return {
+              borderTopColor: style.borderTopColor,
+              backgroundImage: style.backgroundImage,
+            };
+        }"""
+    )
+    release_style = release_section.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            return {
+              borderTopColor: style.borderTopColor,
+              backgroundImage: style.backgroundImage,
+            };
+        }"""
+    )
+
+    assert program_style["borderTopColor"] != release_style["borderTopColor"]
+    assert program_style["backgroundImage"] != release_style["backgroundImage"]
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_program_and_release_cards_keep_distinct_surface_tints_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_program_and_release_cards_keep_distinct_surface_tints(*browser_context)
+
+
+def test_compass_program_and_release_cards_keep_distinct_surface_tints_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_program_and_release_cards_keep_distinct_surface_tints(*compact_browser_context)
+
+
+def _assert_compass_program_focus_does_not_repeat_outer_program_chip(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    section = compass.locator("#execution-waves-host .execution-wave-section").first
+    section.wait_for(timeout=15000)
+    summary = section.locator("> summary").first
+    if section.get_attribute("open") is None:
+        summary.click()
+        expect_open = section
+        expect_open.evaluate("""(node) => {
+            if (!(node instanceof HTMLElement)) return false;
+            return node.hasAttribute("open");
+        }""")
+    outer_program_chip = section.locator(".execution-wave-section-summary .wave-chip-program").first
+    outer_program_chip.wait_for(timeout=15000)
+    focus = section.locator(".execution-wave-focus").first
+    focus.wait_for(timeout=15000)
+
+    assert focus.locator(".wave-chip-program").count() == 0
+    assert outer_program_chip.count() == 1
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_program_focus_does_not_repeat_outer_program_chip_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_program_focus_does_not_repeat_outer_program_chip(*browser_context)
+
+
+def test_compass_program_focus_does_not_repeat_outer_program_chip_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_program_focus_does_not_repeat_outer_program_chip(*compact_browser_context)
+
+
+def _assert_compass_outer_governance_section_titles(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    compass.locator("#execution-waves-host h2", has_text="Programs").wait_for(timeout=15000)
+    compass.locator("#release-groups-host h2", has_text="Release Targets").wait_for(timeout=15000)
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_outer_governance_section_titles_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_outer_governance_section_titles(*browser_context)
+
+
+def test_compass_outer_governance_section_titles_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_outer_governance_section_titles(*compact_browser_context)
+
+
+def _assert_compass_outer_governance_cards_keep_distinct_surface_tints(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    programs_card = compass.locator("#execution-waves-host > .card.execution-waves-card").first
+    releases_card = compass.locator("#release-groups-host > .card.release-groups-card").first
+    programs_card.wait_for(timeout=15000)
+    releases_card.wait_for(timeout=15000)
+
+    programs_style = programs_card.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            return {
+              borderTopColor: style.borderTopColor,
+              backgroundImage: style.backgroundImage,
+            };
+        }"""
+    )
+    releases_style = releases_card.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            return {
+              borderTopColor: style.borderTopColor,
+              backgroundImage: style.backgroundImage,
+            };
+        }"""
+    )
+
+    assert programs_style["borderTopColor"] != releases_style["borderTopColor"]
+    assert programs_style["backgroundImage"] != releases_style["backgroundImage"]
+    assert programs_style["borderTopColor"] == "rgb(191, 213, 243)"
+    assert "237, 244, 255" in programs_style["backgroundImage"]
+    assert "248, 251, 255" in programs_style["backgroundImage"]
+    assert releases_style["borderTopColor"] == "rgb(207, 228, 209)"
+    assert "242, 250, 241" in releases_style["backgroundImage"]
+    assert "251, 254, 251" in releases_style["backgroundImage"]
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_outer_governance_cards_keep_distinct_surface_tints_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_outer_governance_cards_keep_distinct_surface_tints(*browser_context)
+
+
+def test_compass_outer_governance_cards_keep_distinct_surface_tints_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_outer_governance_cards_keep_distinct_surface_tints(*compact_browser_context)
+
+
+def _assert_compass_release_targets_start_collapsed(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    release_section = compass.locator("#release-groups-host .execution-wave-section").first
+    release_section.wait_for(timeout=15000)
+    assert release_section.evaluate("(node) => node.hasAttribute('open')") is False
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_release_targets_start_collapsed_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_release_targets_start_collapsed(*browser_context)
+
+
+def test_compass_release_targets_start_collapsed_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_release_targets_start_collapsed(*compact_browser_context)

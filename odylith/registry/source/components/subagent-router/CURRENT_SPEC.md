@@ -31,7 +31,9 @@ native-spawn host.
   them.
 - Spawning agents directly. It emits a decision contract for the caller.
 - Core admissibility policy. Execution Governance decides whether a next move
-  is allowed before routing chooses the best delegated profile.
+  is allowed before routing chooses the best delegated profile, and the router
+  must fail closed when the governed frontier says the truthful next move is
+  re-anchor, local recovery, or waiting on an external dependency.
 
 ## Developer Mental Model
 - The router is the leaf authority. If a task has already been decomposed, the
@@ -191,8 +193,13 @@ The router combines three kinds of signals:
 - Context signals:
   extracted from keys such as `routing_handoff`, `context_packet`,
   `evidence_pack`, `optimization_snapshot`, `architecture_audit`,
-  `validation_bundle`, `governance_obligations`, `surface_refs`, and
-  `diagram_watch_gaps`.
+  `validation_bundle`, `governance_obligations`, `surface_refs`,
+  `diagram_watch_gaps`, and compact `execution_governance_*` summary fields.
+
+Execution-governance summary fields are first-class hard-gate inputs. Re-anchor
+pressure, live contradictions, semantic wait state, critical-path verify or
+recover modes, unsafe closure, and host-serial posture must all be allowed to
+keep a leaf local before any profile ladder scoring runs.
 
 The router also enforces implied write-surface rules. For example, prompts that
 mention tests, docs, governance artifacts, or contracts must declare path scope
@@ -225,6 +232,7 @@ Important guardrails:
 - Hard gates override soft scoring.
 - `frontier_xhigh` is not a default winner and should appear only after explicit
   risk or escalation logic unlocks it.
+- Execution-governance defer or deny posture beats route-readiness scoring.
 - Host integration supports only native agent types:
   `default`, `explorer`, and `worker`.
 - Custom named agents from `.codex/agents/` are not part of the router's host

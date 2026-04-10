@@ -13,7 +13,7 @@
       return String(release && (release.release_id || "") || "").trim();
     }
 
-    function heroKpiRows(base, state, touchedIds, riskRows, waveSummary, scopedTouch, commitCount, localCount) {
+    function heroKpiRows(base, state, touchedIds, riskRows, scopedTouch, commitCount, localCount) {
       const releaseSummary = payloadReleaseSummary(base.__payload);
       const currentRelease = releaseSummary.current_release || {};
       const rows = [
@@ -27,9 +27,6 @@
       const currentReleaseLabel = releaseHeroLabel(currentRelease);
       if (currentReleaseLabel) {
         rows.push(["Current Release", currentReleaseLabel, "stat-release-only"]);
-      }
-      if (Number(waveSummary.program_count || 0) > 0) {
-        rows.push(["Active Waves", Number(waveSummary.active_wave_count || 0)]);
       }
       return rows;
     }
@@ -45,7 +42,6 @@
       const base = { ...((payload.kpis && payload.kpis[key]) || {}), __payload: payload };
       const touchedIds = collectScopedWorkstreamIds(payload, state);
       const riskRows = resolveScopedRiskRows(payload, state);
-      const waveSummary = executionWavePayload(payload).summary || {};
       const scopedTouch = new Set();
       let commitCount = 0;
       let localCount = 0;
@@ -56,7 +52,7 @@
         for (const item of ws) scopedTouch.add(String(item || "").trim());
       }
 
-      const kpis = heroKpiRows(base, state, touchedIds, riskRows, waveSummary, scopedTouch, commitCount, localCount);
+      const kpis = heroKpiRows(base, state, touchedIds, riskRows, scopedTouch, commitCount, localCount);
       const target = document.getElementById("kpi-grid");
       target.innerHTML = kpis.map(([label, value, cardClass]) => `
         <article class="stat${cardClass ? ` ${cardClass}` : ""}">

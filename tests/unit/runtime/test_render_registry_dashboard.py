@@ -431,6 +431,8 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert ".detail-disclosure-title {" in html
     assert re.search(r"\.detail-disclosure-title\s*\{[^}]*color:\s*#22496f;[^}]*font-size:\s*15px;[^}]*line-height:\s*1\.55;[^}]*letter-spacing:\s*0em;[^}]*font-weight:\s*700;", html, flags=re.S)
     assert 'class="context-k context-toggle-label"' not in html
+    assert '<div class="context-head">\n              <span class="detail-disclosure-title context-toggle-label">Topology</span>\n            </div>' in html
+    assert 'class="detail-chip-label' not in html
     assert re.search(r"\.label\s*\{[^}]*border:\s*1px solid var\(--label-border\);[^}]*border-radius:\s*4px;[^}]*padding:\s*4px 10px;", html, flags=re.S)
     assert re.search(
         r"\.action-chip\s*\{[^}]*--chip-link-border:\s*var\(--action-border\);[^}]*--chip-link-bg:\s*var\(--action-bg\);[^}]*--chip-link-text:\s*var\(--action-text\);[^}]*min-height:\s*0px;[^}]*padding:\s*var\(--surface-deep-link-button-padding,\s*4px 12px\);[^}]*border-radius:\s*999px;[^}]*border:\s*1px solid var\(--chip-link-border\);[^}]*background:\s*var\(--chip-link-bg\);[^}]*color:\s*var\(--chip-link-text\);",
@@ -452,8 +454,8 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
         html,
         flags=re.S,
     )
-    assert re.search(r"\.detail-chip-label\s*\{[^}]*border:\s*1px solid var\(--label-border\);[^}]*border-radius:\s*4px;[^}]*min-height:\s*0px;[^}]*padding:\s*4px 10px;", html, flags=re.S)
-    assert re.search(r"\.detail-chip-label\s*\{[^}]*font-size:\s*var\(--surface-identifier-font-size,\s*14px\);[^}]*font-weight:\s*var\(--surface-identifier-font-weight,\s*500\);[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;", html, flags=re.S)
+    assert ".detail-chip-label {" not in html
+    assert ".detail-chip-label.tone-gov {" not in html
     assert re.search(r"\.action-chip\.active\s*\{[^}]*border-color:\s*#1d4a8f;[^}]*background:\s*#deebff;[^}]*color:\s*#1d4ed8;", html, flags=re.S)
     assert not re.search(r"\.action-chip\.active\s*\{[^}]*box-shadow:", html, flags=re.S)
     assert re.search(r"\.component-btn\.active\s*\{[^}]*border-color:\s*var\(--line-strong\);[^}]*background:\s*#eaf3ff;", html, flags=re.S)

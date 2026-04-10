@@ -29,18 +29,10 @@ async function main() {
   const packageRequire = createRequire(path.join(packageRoot, 'package.json'));
   const puppeteerModule = packageRequire('puppeteer');
   const puppeteer = puppeteerModule.default ?? puppeteerModule;
-  const mermaidModule = await import(pathToFileURL(path.join(packageRoot, 'src', 'index.js')).href);
-  const renderMermaid = mermaidModule.renderMermaid;
-  if (typeof renderMermaid !== 'function') {
-    throw new Error('mermaid-cli renderMermaid export unavailable');
-  }
-  const mermaidPackage = packageRequire('mermaid');
-  const mermaid = mermaidPackage.default ?? mermaidPackage;
-  if (typeof mermaid.parse !== 'function') {
-    throw new Error('mermaid parse export unavailable');
-  }
-
+  const mermaidIIFEPath = packageRequire.resolve('mermaid/dist/mermaid.js');
+  const zenumlIIFEPath = packageRequire.resolve('@mermaid-js/mermaid-zenuml/dist/mermaid-zenuml.js');
   let browser = null;
+  let renderPage = null;
   const ensureBrowser = async () => {
     if (browser !== null) {
       return browser;
@@ -55,7 +47,29 @@ async function main() {
     }
     const current = browser;
     browser = null;
+    if (renderPage !== null) {
+      const page = renderPage;
+      renderPage = null;
+      await page.close();
+    }
     await current.close();
+  };
+
+  const mermaidHTMLPath = path.join(packageRoot, 'dist', 'index.html');
+  const ensureRenderPage = async () => {
+    if (renderPage !== null) {
+      return renderPage;
+    }
+    const activeBrowser = await ensureBrowser();
+    renderPage = await activeBrowser.newPage();
+    await renderPage.setViewport({ width: 1600, height: 1200 });
+    renderPage.on('console', msg => {
+      console.warn(msg.text());
+    });
+    await renderPage.goto(pathToFileURL(mermaidHTMLPath).href, { waitUntil: 'load' });
+    await renderPage.addScriptTag({ path: mermaidIIFEPath });
+    await renderPage.addScriptTag({ path: zenumlIIFEPath });
+    return renderPage;
   };
 
   const emit = payload => {
@@ -88,6 +102,67 @@ async function main() {
     };
   };
 
+  const renderOutputs = async definition => {
+    const page = await ensureRenderPage();
+    const rendered = await page.evaluate(async definitionText => {
+      const container = document.querySelector('#container');
+      if (!container) {
+        throw new Error('Mermaid render container missing');
+      }
+      container.innerHTML = '';
+      document.body.style.background = 'white';
+      await Promise.all(Array.from(document.fonts, font => font.load()));
+      const globalWithMermaid = globalThis;
+      const mermaid = globalWithMermaid.mermaid;
+      const zenuml = globalWithMermaid['mermaid-zenuml'];
+      const elkLayouts = globalWithMermaid.elkLayouts;
+      if (!mermaid) {
+        throw new Error('Mermaid global missing after worker bootstrap');
+      }
+      if (!zenuml) {
+        throw new Error('Mermaid Zenuml plugin missing after worker bootstrap');
+      }
+      if (!globalWithMermaid.__odylithMermaidInitialized) {
+        await mermaid.registerExternalDiagrams([zenuml]);
+        if (elkLayouts) {
+          mermaid.registerLayoutLoaders(elkLayouts);
+        }
+        mermaid.initialize({ startOnLoad: false });
+        globalWithMermaid.__odylithMermaidInitialized = true;
+      }
+      globalWithMermaid.__odylithMermaidRenderCounter =
+        (Number(globalWithMermaid.__odylithMermaidRenderCounter || 0) + 1);
+      const renderId = `odylith-svg-${globalWithMermaid.__odylithMermaidRenderCounter}`;
+      const { svg: svgText } = await mermaid.render(renderId, definitionText, container);
+      container.innerHTML = svgText;
+      const svg = container.getElementsByTagName?.('svg')?.[0];
+      if (!svg) {
+        throw new Error('svg not found');
+      }
+      const xmlSerializer = new XMLSerializer();
+      const svgXML = xmlSerializer.serializeToString(svg);
+      const rect = svg.getBoundingClientRect();
+      return {
+        svgXML,
+        clip: {
+          x: Math.floor(rect.left),
+          y: Math.floor(rect.top),
+          width: Math.ceil(rect.width),
+          height: Math.ceil(rect.height)
+        }
+      };
+    }, definition);
+    await page.setViewport({
+      width: Math.max(rendered.clip.x + rendered.clip.width, 1),
+      height: Math.max(rendered.clip.y + rendered.clip.height, 1)
+    });
+    const png = await page.screenshot({ clip: rendered.clip });
+    return {
+      svg: Buffer.from(rendered.svgXML, 'utf-8'),
+      png
+    };
+  };
+
   const validateJobs = async jobs => {
     for (const job of jobs) {
       const sourceMmd = String(job.source_mmd || '').trim();
@@ -97,7 +172,7 @@ async function main() {
       }
       const definition = await fs.readFile(resolvedSourceMmd, 'utf-8');
       try {
-        await mermaid.parse(definition);
+        await renderOutputs(definition);
       } catch (error) {
         const validationError = buildValidationError({ job, definition, error });
         throw Object.assign(new Error(validationError.error), validationError);
@@ -106,7 +181,6 @@ async function main() {
   };
 
   const renderJobs = async jobs => {
-    const activeBrowser = await ensureBrowser();
     for (const job of jobs) {
       const sourceMmd = path.resolve(String(job.source_mmd || '').trim());
       const sourceSvg = path.resolve(String(job.source_svg || '').trim());
@@ -115,12 +189,17 @@ async function main() {
         throw new Error('render job missing source paths');
       }
       const definition = await fs.readFile(sourceMmd, 'utf-8');
-      const svg = await renderMermaid(activeBrowser, definition, 'svg');
-      const png = await renderMermaid(activeBrowser, definition, 'png');
+      let rendered;
+      try {
+        rendered = await renderOutputs(definition);
+      } catch (error) {
+        const validationError = buildValidationError({ job, definition, error });
+        throw Object.assign(new Error(validationError.error), validationError);
+      }
       await fs.mkdir(path.dirname(sourceSvg), { recursive: true });
       await fs.mkdir(path.dirname(sourcePng), { recursive: true });
-      await fs.writeFile(sourceSvg, svg.data);
-      await fs.writeFile(sourcePng, png.data);
+      await fs.writeFile(sourceSvg, rendered.svg);
+      await fs.writeFile(sourcePng, rendered.png);
     }
   };
 

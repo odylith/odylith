@@ -18,17 +18,24 @@
       "current": "D-002,D-020,D-025",
       "candidate": "D-002,D-018,D-020,D-025",
       "reason": "inferred from Mermaid catalog related_backlog/related_workstreams"
+    },
+    {
+      "idea_id": "B-071",
+      "field": "related_diagram_ids",
+      "current": "D-028,D-029",
+      "candidate": "D-028,D-029,D-032",
+      "reason": "inferred from Mermaid catalog related_backlog/related_workstreams"
     }
   ],
   "fields_unresolved": [],
   "warnings": [],
   "summary": {
-    "ideas_seen": 71,
+    "ideas_seen": 81,
     "files_modified": 0,
     "fields_filled": 0,
-    "conflicts": 2,
+    "conflicts": 3,
     "unresolved": 0,
     "warnings": 0
   },
-  "generated_utc": "2026-04-09 22:10:10Z"
+  "generated_utc": "2026-04-10 15:59:23Z"
 }

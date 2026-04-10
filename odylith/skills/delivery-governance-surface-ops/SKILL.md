@@ -27,7 +27,7 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 - run Casebook preflight and capture named failures or repeat-debug loops in the same turn
 - keep Compass updates intent-first and carry forward constraints plus validation obligations
 - treat Compass voice as governed truth: plainspoken grounded maintainer narration in ordinary words, with no stock framing, house phrases, queue-label restatement, repeated window leads, generic priority wrappers, rhetorical benchmark challenges, stagey metaphor, or canned current/next/why/timing scaffolding in Compass-facing summaries or updates
-- keep Compass cheap too: the one bounded Compass refresh should stay deterministic and provider-light, timeline audit inputs should be reused instead of recomputed through model calls, there is no separate Compass `full` mode anymore, and simple brief enrichment should prefer `gpt-5.3-codex-spark` with low reasoning
+- keep Compass cheap too: the one bounded Compass refresh should stay deterministic and provider-light, timeline audit inputs should be reused instead of recomputed through model calls, and if a user asks for a "full" Compass refresh the correct command is still `odylith compass refresh --repo-root . --wait`; do not add a Compass-specific `full` flag or second mode
 - use Delivery Intelligence's shared Scope Signal Ladder when deciding what
   deserves default visibility, promotion, or expensive compute:
   - `R0 suppressed_noise`
@@ -120,6 +120,10 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
   format, and do not reintroduce side-by-side or auto-fit multi-column release
   boards through renderer or shared-CSS changes unless the operator explicitly
   authorizes that layout change.
+- In the default unscoped Compass view, treat `Current Workstreams` as the
+  residual focus table after `Programs` and `Release Targets` have claimed
+  their represented workstreams. Do not duplicate those same `B-###` rows in
+  the current table unless the operator explicitly scopes to one of them.
 - Treat top-line governance KPI/stat cards as a shared shell contract too.
   Compass hero KPIs, Radar summary stats, Registry summary KPIs, and
   Casebook summary KPIs should consume the shared Dashboard KPI helpers for

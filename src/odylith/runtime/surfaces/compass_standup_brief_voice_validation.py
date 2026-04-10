@@ -17,6 +17,14 @@ _DASHBOARD_POLISH_RE = re.compile(
     r"\b(?:window\s+coverage\s+spans|with\s+the\s+clearest\s+movement\s+around|thing\s+under\s+active\s+implementation\s+now|the\s+pressure\s+here\s+is|the\s+next\s+move\s+is|a\s+lot\s+moved\s+in\s+this\s+window|most\s+of\s+the\s+movement\s+this\s+window\s+sat\s+in|a\s+lot\s+happened,\s+but\s+most\s+of\s+it\s+came\s+through|work\s+is\s+now\s+driving\s+through|there\s+is\s+a\s+live-version\s+split\s+to\s+keep\s+in\s+view|release\s+planning\s+and\s+execution\s+are\s+running\s+together|developer-core\s+local\s+coding\s+slices|local\s+developer-core\s+coding\s+slices|developer-core\s+coding\s+slices|next\s+is\s+pushing|next\s+step\s+is|that\s+push\s+needs\s+more|the\s+follow-on\s+adds|is\s+moving\s+with\s+it\s+too|the\s+surrounding\s+work\s+is\s+still\s+attached\s+to\s+the\s+changes\s+underneath\s+it|already\s+proved\s+the\s+cost\s+of\s+local\s+heuristics|it\s+is\s+clearer\s+now\s+which\s+lanes\s+are\s+active\s+again|still\s+holds\s+up\s+across\s+the\s+48h\s+view)\b",
     re.IGNORECASE,
 )
+_CACHED_STOCK_PHRASE_RE = re.compile(
+    r"\b(?:this\s+window\s+mostly\s+ran\s+through|"
+    r"trying\s+to\s+stop\s+each\s+surface\s+from\s+guessing\s+scope\s+importance\s+on\s+its\s+own|"
+    r"compass\s+already\s+showed\s+how\s+expensive\s+that\s+gets|"
+    r"next\s+stop\s+is\s+B-\d+|"
+    r"paper-only\s+signal)\b",
+    re.IGNORECASE,
+)
 _SHORT_TOKEN_ALLOWLIST = {"ai", "ci", "ga", "qa", "ui", "ux"}
 _STOPWORDS = {
     "a",
@@ -179,9 +187,17 @@ def bullet_shape_errors(
         errors.append(
             f"section {section_key} bullet {bullet_index} slides back into dashboard-polished summary language"
         )
+    if _CACHED_STOCK_PHRASE_RE.search(text):
+        errors.append(
+            f"section {section_key} bullet {bullet_index} reuses cached stock phrasing instead of plainspoken maintainer narration"
+        )
     if _BALANCED_CADENCE_RE.search(text) and generic_count >= 3 and len(overlap) < 2:
         errors.append(f"section {section_key} bullet {bullet_index} falls into portable summary cadence")
     return errors
+
+
+def contains_rejected_cached_phrase(text: str) -> bool:
+    return bool(_CACHED_STOCK_PHRASE_RE.search(str(text or "")))
 
 
 def brief_shape_errors(*, sections: Sequence[Mapping[str, object]]) -> list[str]:

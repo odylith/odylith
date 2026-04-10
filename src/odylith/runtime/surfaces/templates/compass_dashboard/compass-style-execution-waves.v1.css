@@ -1,3 +1,26 @@
+.execution-wave-program-stack:not(.execution-wave-program-stack-release) .execution-wave-section {
+  border-color: #dbeafe;
+  background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
+}
+
+.execution-wave-program-stack-release .execution-wave-section {
+  border-color: #dbe9df;
+  background: linear-gradient(180deg, #fbfdfa 0%, #ffffff 100%);
+}
+
+.execution-wave-program-stack-release .execution-wave-section-toggle-triangle::before {
+  border-color: transparent transparent transparent #0f766e;
+}
+
+.execution-wave-program-stack-release .execution-wave-section-body {
+  background: linear-gradient(180deg, rgba(247, 252, 249, 0.72) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.execution-wave-program-stack-release .execution-wave-panel {
+  border-color: #e2ece5;
+  background: linear-gradient(180deg, #fcfefc 0%, #ffffff 100%);
+}
+
 .execution-wave-program-stack-release .execution-wave-section-title {
   font-size: 14px;
 }

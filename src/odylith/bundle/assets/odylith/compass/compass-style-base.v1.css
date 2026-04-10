@@ -291,8 +291,15 @@ h1 {
   gap: 8px;
   align-content: start;
 }
+.card.execution-waves-card {
+  border-color: #bfd5f3;
+  background: linear-gradient(180deg, #edf4ff 0%, #f8fbff 100%);
+}
+
     .card.release-groups-card {
   padding-bottom: 15px;
+  border-color: #cfe4d1;
+  background: linear-gradient(180deg, #f2faf1 0%, #fbfefb 100%);
 }
 
 .card.release-groups-card .execution-wave-section-body {

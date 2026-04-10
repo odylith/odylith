@@ -643,19 +643,46 @@ def _build_prompt_transactions(
             "created_order": auto_idx,
         }
 
-    def _event_related_workstreams(row: Mapping[str, Any]) -> set[str]:
-        ids = {
-            str(token).strip()
-            for token in row.get("workstreams", [])
-            if re.fullmatch(r"B-\d{3,}", str(token).strip())
-        }
+    def _merge_event_workstreams(group: dict[str, Any], row: Mapping[str, Any]) -> None:
+        for token in _event_related_workstream_list(row):
+            if token:
+                group["workstreams"].add(token)
+
+    def _push_workstream_id(rows: list[str], seen: set[str], token: object) -> None:
+        normalized = str(token).strip()
+        if not re.fullmatch(r"B-\d{3,}", normalized) or normalized in seen:
+            return
+        seen.add(normalized)
+        rows.append(normalized)
+
+    def _event_related_workstream_list(row: Mapping[str, Any]) -> list[str]:
+        ids: list[str] = []
+        seen: set[str] = set()
         summary = " ".join(
             str(row.get(field, "")).strip()
             for field in ("summary", "context")
             if str(row.get(field, "")).strip()
         )
         for match in re.findall(r"\bB-\d{3,}\b", summary):
-            ids.add(match)
+            _push_workstream_id(ids, seen, match)
+        for token in row.get("workstreams", []):
+            _push_workstream_id(ids, seen, token)
+        return ids
+
+    def _event_related_workstreams(row: Mapping[str, Any]) -> set[str]:
+        return set(_event_related_workstream_list(row))
+
+    def _ordered_transaction_workstreams(
+        tx_events: Sequence[Mapping[str, Any]],
+        fallback_workstreams: Sequence[str],
+    ) -> list[str]:
+        ids: list[str] = []
+        seen: set[str] = set()
+        for row in tx_events:
+            for token in _event_related_workstream_list(row):
+                _push_workstream_id(ids, seen, token)
+        for token in fallback_workstreams:
+            _push_workstream_id(ids, seen, token)
         return ids
 
     def _event_signal_bucket(row: Mapping[str, Any]) -> str:
@@ -754,10 +781,7 @@ def _build_prompt_transactions(
                 "created_order": int(group.get("created_order", 0) or 0) * 100 + split_index,
             }
             for row in slice_events:
-                for ws in row.get("workstreams", []):
-                    token = str(ws).strip()
-                    if token:
-                        split_group["workstreams"].add(token)
+                _merge_event_workstreams(split_group, row)
                 for file_token in row.get("files", []):
                     token = str(file_token).strip()
                     if token:
@@ -814,10 +838,7 @@ def _build_prompt_transactions(
         if not isinstance(end_ts, dt.datetime) or ts > end_ts:
             group["end_ts"] = ts
 
-        for ws in event.get("workstreams", []):
-            token = str(ws).strip()
-            if token:
-                group["workstreams"].add(token)
+        _merge_event_workstreams(group, event)
         for file_token in event.get("files", []):
             token = str(file_token).strip()
             if token:
@@ -861,7 +882,10 @@ def _build_prompt_transactions(
             ),
             contexts[-1] if contexts else "",
         )
-        workstreams = sorted(str(token) for token in group.get("workstreams", set()) if str(token).strip())
+        workstreams = _ordered_transaction_workstreams(
+            tx_events,
+            sorted(str(token) for token in group.get("workstreams", set()) if str(token).strip()),
+        )
         files = sorted(str(token) for token in group.get("files", set()) if str(token).strip())
         headline = _build_transaction_headline(
             tx_events=tx_events,
@@ -885,7 +909,13 @@ def _build_prompt_transactions(
                 "files": files,
                 "explicit_open": bool(group.get("explicit_start")) and not bool(group.get("explicit_end")),
                 "explicit_closed": bool(group.get("explicit_end")),
-                "events": [event_public_payload(event) for event in tx_events],
+                "events": [
+                    {
+                        **event_public_payload(event),
+                        "workstreams": _event_related_workstream_list(event),
+                    }
+                    for event in tx_events
+                ],
             }
         )
 

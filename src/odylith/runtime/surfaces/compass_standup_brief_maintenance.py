@@ -29,9 +29,12 @@ _REQUEST_VERSION = "v1"
 _STATE_VERSION = "v1"
 _REQUEST_PATH = ".odylith/compass/standup-brief-maintenance-request.v1.json"
 _STATE_PATH = ".odylith/compass/standup-brief-maintenance-state.v1.json"
-_TERMINAL_STATUSES = frozenset({"ready", "failed", "provider_unavailable"})
 _RUNTIME_CURRENT_JSON = "odylith/compass/runtime/current.v1.json"
 _RUNTIME_CURRENT_JS = "odylith/compass/runtime/current.v1.js"
+_FAILED_RETRY_BASE_SECONDS = 300
+_FAILED_RETRY_MAX_SECONDS = 3600
+_PROVIDER_UNAVAILABLE_RETRY_BASE_SECONDS = 1800
+_PROVIDER_UNAVAILABLE_RETRY_MAX_SECONDS = 21600
 
 
 def maintenance_request_path(*, repo_root: Path) -> Path:
@@ -111,7 +114,28 @@ def _terminal_state_matches(
         return False
     if str(entry.get("fingerprint", "")).strip() != str(fingerprint).strip():
         return False
-    return str(entry.get("status", "")).strip().lower() in _TERMINAL_STATUSES
+    status = str(entry.get("status", "")).strip().lower()
+    if status == "ready":
+        return True
+    next_retry_dt = compass_standup_brief_narrator._parse_iso_datetime(  # noqa: SLF001
+        str(entry.get("next_retry_utc", "")).strip()
+    )
+    if next_retry_dt is None:
+        return False
+    return dt.datetime.now(tz=dt.timezone.utc) < next_retry_dt
+
+
+def _retry_backoff_seconds(*, status: str, source: str, attempt_count: int) -> int:
+    status_token = str(status).strip().lower()
+    source_token = str(source).strip().lower()
+    attempts = max(1, int(attempt_count))
+    if status_token == "provider_unavailable" or source_token == "none":
+        base = _PROVIDER_UNAVAILABLE_RETRY_BASE_SECONDS
+        cap = _PROVIDER_UNAVAILABLE_RETRY_MAX_SECONDS
+    else:
+        base = _FAILED_RETRY_BASE_SECONDS
+        cap = _FAILED_RETRY_MAX_SECONDS
+    return min(base * (2 ** (attempts - 1)), cap)
 
 
 def _scoped_candidate_allowed(*, signal: Mapping[str, Any] | None) -> bool:
@@ -295,12 +319,28 @@ def _record_result(
 ) -> None:
     entries = dict(state.get("entries", {}))
     key = _candidate_key(window_key=window_key, scope_id=scope_id)
-    entries[key] = {
+    prior_entry = entries.get(key)
+    prior_attempts = 0
+    if isinstance(prior_entry, Mapping) and str(prior_entry.get("fingerprint", "")).strip() == str(fingerprint).strip():
+        prior_attempts = int(prior_entry.get("attempt_count", 0) or 0)
+    attempt_count = 1 if str(status).strip().lower() == "ready" else prior_attempts + 1
+    payload = {
         "fingerprint": str(fingerprint).strip(),
         "status": str(status).strip().lower(),
         "source": str(source).strip().lower(),
         "attempted_utc": _now_utc_iso(),
+        "attempt_count": attempt_count,
     }
+    if payload["status"] != "ready":
+        retry_at = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
+            seconds=_retry_backoff_seconds(
+                status=payload["status"],
+                source=payload["source"],
+                attempt_count=attempt_count,
+            )
+        )
+        payload["next_retry_utc"] = retry_at.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    entries[key] = payload
     state["entries"] = entries
 
 

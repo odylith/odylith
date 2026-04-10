@@ -11,6 +11,7 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import proof_state as proof_state_runtime
 from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
+from odylith.runtime.surfaces import compass_governance_source_runtime
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_execution_focus_runtime
 from odylith.runtime.surfaces import compass_standup_brief_batch
@@ -76,22 +77,22 @@ def _format_brief_source_counts(counts: Mapping[str, int]) -> str:
     return ", ".join(parts) if parts else "no scoped briefs"
 
 
-def _brief_reuse_valid_for_fact_packet(
+def _reusable_brief_sections_for_fact_packet(
     *,
     brief: Mapping[str, Any],
     fact_packet: Mapping[str, Any],
-) -> bool:
+) -> list[dict[str, Any]] | None:
     if not compass_standup_runtime_reuse.brief_ready_without_notice(brief):
-        return False
+        return None
     raw_sections = brief.get("sections")
     if not isinstance(raw_sections, Sequence) or not raw_sections:
-        return False
+        return None
     narrator = _host().compass_standup_brief_narrator
     return narrator._validated_cached_sections(  # noqa: SLF001
         raw_sections=raw_sections,
         fact_packet=fact_packet,
         cached_evidence_lookup=brief.get("evidence_lookup", {}),
-    ) is not None
+    )
 
 
 def _is_default_traceability_warning(row: Mapping[str, Any]) -> bool:
@@ -535,7 +536,6 @@ def _build_runtime_payload(
 ) -> dict[str, Any]:
     host = _host()
     _load_json = host._load_json
-    execution_wave_view_model = host.execution_wave_view_model
     _load_component_index_runtime = host._load_component_index_runtime
     _parse_backlog_rows = host._parse_backlog_rows
     _parse_plan_active_rows = host._parse_plan_active_rows
@@ -598,9 +598,22 @@ def _build_runtime_payload(
     odylith_context_engine_store = host.odylith_context_engine_store
     _build_execution_focus_payload = compass_execution_focus_runtime._build_execution_focus_payload
     traceability_graph = _load_json(traceability_graph_path)
-    execution_waves_all = execution_wave_view_model.build_execution_wave_view_payload(traceability_graph)
+    governance_context = compass_governance_source_runtime.build_live_governance_context(
+        repo_root=repo_root,
+        traceability_graph=traceability_graph,
+    )
+    live_traceability_graph = (
+        dict(governance_context.get("traceability_graph", {}))
+        if isinstance(governance_context.get("traceability_graph"), Mapping)
+        else dict(traceability_graph)
+    )
+    execution_waves_all = (
+        dict(governance_context.get("execution_waves", {}))
+        if isinstance(governance_context.get("execution_waves"), Mapping)
+        else {}
+    )
     mermaid_catalog = _load_json(mermaid_catalog_path)
-    workstream_rows = traceability_graph.get("workstreams", [])
+    workstream_rows = governance_context.get("workstream_rows", [])
     diagram_rows = mermaid_catalog.get("diagrams", []) if isinstance(mermaid_catalog.get("diagrams"), list) else []
     component_index = _load_component_index_runtime(
         repo_root=repo_root,
@@ -646,7 +659,7 @@ def _build_runtime_payload(
 
     ws_path_index = _collect_workstream_path_index(
         repo_root=repo_root,
-        traceability_graph=traceability_graph,
+        traceability_graph=live_traceability_graph,
         mermaid_catalog=mermaid_catalog,
     )
 
@@ -729,33 +742,16 @@ def _build_runtime_payload(
         message=f"collected {len(commits)} commits, {len(local_changes)} local changes, and {len(events)} timeline events",
     )
 
-    release_workstream_rows = {
-        str(row.get("idea_id", "")).strip(): dict(row)
-        for row in workstream_rows
-        if isinstance(row, Mapping) and str(row.get("idea_id", "")).strip()
-    } if isinstance(workstream_rows, list) else {}
-    release_summary = {
-        "catalog": [
-            dict(row)
-            for row in traceability_graph.get("releases", [])
-            if isinstance(row, Mapping)
-        ] if isinstance(traceability_graph.get("releases"), list) else [],
-        "current_release": (
-            dict(traceability_graph.get("current_release", {}))
-            if isinstance(traceability_graph.get("current_release"), Mapping)
-            else {}
-        ),
-        "next_release": (
-            dict(traceability_graph.get("next_release", {}))
-            if isinstance(traceability_graph.get("next_release"), Mapping)
-            else {}
-        ),
-        "summary": (
-            dict(traceability_graph.get("release_summary", {}))
-            if isinstance(traceability_graph.get("release_summary"), Mapping)
-            else {}
-        ),
-    }
+    release_workstream_rows = (
+        dict(governance_context.get("release_workstreams", {}))
+        if isinstance(governance_context.get("release_workstreams"), Mapping)
+        else {}
+    )
+    release_summary = (
+        dict(governance_context.get("release_summary", {}))
+        if isinstance(governance_context.get("release_summary"), Mapping)
+        else {}
+    )
     ws_payloads: list[dict[str, Any]] = []
 
     active_plan_map: dict[str, str] = {}
@@ -794,6 +790,13 @@ def _build_runtime_payload(
             if isinstance(release_row.get("active_release"), Mapping)
             else {}
         )
+        execution_wave_programs = execution_waves_all.get("workstreams", {}).get(idea_id, [])
+        if not execution_wave_programs and isinstance(execution_waves_all.get("programs"), list):
+            execution_wave_programs = [
+                dict(program)
+                for program in execution_waves_all.get("programs", [])
+                if isinstance(program, Mapping) and str(program.get("umbrella_id", "")).strip() == idea_id
+            ]
 
         idea_file = _normalize_repo_token(str(row.get("idea_file", "")), repo_root=repo_root)
         idea_path = _resolve(repo_root, idea_file) if idea_file else None
@@ -910,7 +913,11 @@ def _build_runtime_payload(
                     component_index=component_index,
                     workstream_id=idea_id,
                 ),
-                "execution_wave_programs": execution_waves_all.get("workstreams", {}).get(idea_id, []),
+                "execution_wave_programs": [
+                    dict(item)
+                    for item in execution_wave_programs
+                    if isinstance(item, Mapping)
+                ],
                 "release": active_release,
                 "release_history_summary": str(row.get("release_history_summary", "")).strip(),
                 "plan": {
@@ -1154,7 +1161,7 @@ def _build_runtime_payload(
             }
         )
 
-    warnings = traceability_graph.get("warning_items", [])
+    warnings = live_traceability_graph.get("warning_items", [])
     traceability_risks: list[dict[str, str]] = []
     traceability_critical: list[dict[str, str]] = []
     traceability_warnings: list[dict[str, str]] = []
@@ -1518,17 +1525,19 @@ def _build_runtime_payload(
             now=now,
         )
         standup_global: dict[str, Any] = {}
+        reusable_global_sections = _reusable_brief_sections_for_fact_packet(
+            brief=prior_global_brief,
+            fact_packet=global_fact_packet,
+        )
         if (
             str(prior_window_runtime.get("global_reuse_fingerprint", "")).strip() == global_reuse_fingerprint
-            and _brief_reuse_valid_for_fact_packet(
-                brief=prior_global_brief,
-                fact_packet=global_fact_packet,
-            )
+            and reusable_global_sections is not None
         ):
             standup_global = compass_standup_runtime_reuse.reuse_ready_brief(
                 brief=prior_global_brief,
                 generated_utc=generated_utc,
                 fingerprint=f"salient:{global_reuse_fingerprint}",
+                sections=reusable_global_sections,
             )
         else:
             global_allow_provider = _global_brief_provider_allowed(
@@ -1598,16 +1607,6 @@ def _build_runtime_payload(
                 self_host_snapshot=self_host,
             )
             standup_runtime_window["scoped_reuse_fingerprints"][ws_id] = scoped_reuse_fingerprint
-            if (
-                str((prior_window_runtime.get("scoped_reuse_fingerprints", {}) if isinstance(prior_window_runtime.get("scoped_reuse_fingerprints", {}), Mapping) else {}).get(ws_id, "")).strip() == scoped_reuse_fingerprint
-                and compass_standup_runtime_reuse.brief_ready_without_notice(prior_scoped_briefs.get(ws_id))
-            ):
-                standup_scoped[ws_id] = compass_standup_runtime_reuse.reuse_ready_brief(
-                    brief=prior_scoped_briefs[ws_id],
-                    generated_utc=generated_utc,
-                    fingerprint=f"salient:{scoped_reuse_fingerprint}",
-                )
-                continue
             scoped_fact_packet = _build_scoped_standup_fact_packet(
                 row=ws,
                 next_actions=next_actions,
@@ -1623,6 +1622,21 @@ def _build_runtime_payload(
                 now=now,
             )
             scoped_packet_index[ws_id] = scoped_fact_packet
+            reusable_scoped_sections = _reusable_brief_sections_for_fact_packet(
+                brief=prior_scoped_briefs.get(ws_id),
+                fact_packet=scoped_fact_packet,
+            )
+            if (
+                str((prior_window_runtime.get("scoped_reuse_fingerprints", {}) if isinstance(prior_window_runtime.get("scoped_reuse_fingerprints", {}), Mapping) else {}).get(ws_id, "")).strip() == scoped_reuse_fingerprint
+                and reusable_scoped_sections is not None
+            ):
+                standup_scoped[ws_id] = compass_standup_runtime_reuse.reuse_ready_brief(
+                    brief=prior_scoped_briefs[ws_id],
+                    generated_utc=generated_utc,
+                    fingerprint=f"salient:{scoped_reuse_fingerprint}",
+                    sections=reusable_scoped_sections,
+                )
+                continue
             prior_entry = reuse_scoped_from.get(ws_id) if isinstance(reuse_scoped_from, Mapping) else None
             if isinstance(prior_entry, tuple) and len(prior_entry) == 2:
                 prior_packet, prior_brief = prior_entry

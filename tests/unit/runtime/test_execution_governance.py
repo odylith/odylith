@@ -5,6 +5,7 @@ from odylith.runtime.execution_engine import frontier
 from odylith.runtime.execution_engine import policy
 from odylith.runtime.execution_engine import receipts
 from odylith.runtime.execution_engine import resource_closure
+from odylith.runtime.execution_engine import runtime_lane_policy
 from odylith.runtime.execution_engine import validation
 from odylith.runtime.execution_engine.contract import ExecutionContract
 from odylith.runtime.execution_engine.contract import ExecutionEvent
@@ -148,3 +149,25 @@ def test_resource_closure_receipts_validation_and_contradictions_cover_execution
     assert matrix.checks == ("submit", "progress", "status", "verification", "logs", "recovery")
     assert any(row.blocks_execution for row in contradiction_rows)
     assert any("local fixture" in row.conflicting_evidence for row in contradiction_rows)
+
+
+def test_runtime_lane_policy_blocks_wait_state_and_claude_parallelism() -> None:
+    wait_guard = runtime_lane_policy.delegation_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_wait_status": "building",
+            "execution_governance_wait_detail": "deploying cell-01",
+        }
+    )
+    claude_guard = runtime_lane_policy.parallelism_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_host_family": "claude",
+            "execution_governance_model_family": "claude",
+        }
+    )
+
+    assert wait_guard.blocked is True
+    assert "resume the active external dependency" in wait_guard.reason
+    assert claude_guard.blocked is True
+    assert "Claude Code" in claude_guard.reason

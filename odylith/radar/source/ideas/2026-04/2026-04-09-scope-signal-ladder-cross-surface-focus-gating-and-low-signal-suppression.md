@@ -114,6 +114,8 @@ fresh provider or reasoning work is reserved for the top rungs only.
 ## Success Metrics
 - low-signal scopes such as lone governance-file churn or broad fanout rows
   stay out of default Compass selectors, timelines, and focus lists
+- Timeline Audit keeps the anchor workstream visible and first in the chip
+  row when a checkpoint or headline clearly names the most important fix
 - Radar default operational views, Registry ordering, and Atlas active pills
   promote the same scopes instead of drifting
 - `R0-R3` scopes do not buy fresh provider or Tribunal-style reasoning work by

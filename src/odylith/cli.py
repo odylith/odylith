@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import UTC, datetime
+import importlib
 import json
 import os
 import subprocess
@@ -12,53 +13,12 @@ from types import SimpleNamespace
 from typing import Sequence
 
 from odylith import __version__
-from odylith.bundle import bundle_root
-import odylith.install as install_api
-from odylith.install.state import (
-    AUTHORITATIVE_RELEASE_REPO,
-    clear_upgrade_spotlight,
-    install_state_path,
-    write_upgrade_spotlight,
-)
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.common.command_surface import (
     ensure_nested_subcommand_repo_root_args,
     ensure_repo_root_args,
 )
-from odylith.runtime.common import log_compass_timeline_event
-from odylith.runtime.context_engine import odylith_context_engine
-from odylith.runtime.evaluation import benchmark_compare
-from odylith.runtime.governance import sync_workstream_artifacts
-from odylith.runtime.governance.sync_argument_contract import configure_sync_parser
-from odylith.runtime.governance.sync_argument_contract import namespace_to_argv as sync_namespace_to_argv
-from odylith.runtime.governance import auto_promote_workstream_phase
-from odylith.runtime.governance import backlog_authoring
-from odylith.runtime.governance import backfill_workstream_traceability
-from odylith.runtime.governance import maintainer_lane_status
-from odylith.runtime.governance import normalize_plan_risk_mitigation
-from odylith.runtime.governance import program_wave_authoring
-from odylith.runtime.governance import reconcile_plan_workstream_binding
-from odylith.runtime.governance import release_planning_authoring
-from odylith.runtime.governance import sync_component_spec_requirements
-from odylith.runtime.governance import validate_guidance_portability
-from odylith.runtime.governance import validate_backlog_contract
-from odylith.runtime.governance import validate_component_registry_contract
-from odylith.runtime.governance import validate_plan_risk_mitigation_contract
-from odylith.runtime.governance import validate_self_host_posture
-from odylith.runtime.governance import validate_plan_traceability_contract
-from odylith.runtime.governance import validate_plan_workstream_binding
-from odylith.runtime.governance import version_truth
-from odylith.runtime.orchestration import subagent_orchestrator
-from odylith.runtime.orchestration import subagent_router
-from odylith.runtime.surfaces import install_mermaid_autosync_hook
-from odylith.runtime.surfaces import auto_update_mermaid_diagrams
-from odylith.runtime.surfaces import compass_refresh_runtime
-from odylith.runtime.surfaces import render_mermaid_catalog
-from odylith.runtime.surfaces import restore_compass_history
-from odylith.runtime.surfaces import scaffold_mermaid_diagram
-from odylith.runtime.surfaces import shell_onboarding
-from odylith.runtime.surfaces import update_compass
-from odylith.runtime.surfaces import watch_prompt_transactions
+from odylith.runtime.common.repo_shape import PRODUCT_REPO_ROLE, repo_role_from_local_shape
 
 _CONTEXT_ENGINE_FEATURE_PACK_COMMANDS = {"warmup", "serve", "benchmark", "odylith-remote-sync"}
 _CONTEXT_ENGINE_SHORTCUTS = (
@@ -82,70 +42,224 @@ _FIRST_RUN_SURFACE_OUTPUTS = (
 )
 _DEFAULT_DASHBOARD_REFRESH_SURFACES = ("tooling_shell", "radar", "compass")
 _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV = ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
+_CONTEXT_ENGINE_MODULE = "odylith.runtime.context_engine.odylith_context_engine"
+_VERSION_TRUTH_MODULE = "odylith.runtime.governance.version_truth"
+_BENCHMARK_COMPARE_MODULE = "odylith.runtime.evaluation.benchmark_compare"
+_PROGRAM_WAVE_AUTHORING_MODULE = "odylith.runtime.governance.program_wave_authoring"
+_MAINTAINER_LANE_STATUS_MODULE = "odylith.runtime.governance.maintainer_lane_status"
+_COMPASS_LOG_MODULE = "odylith.runtime.common.log_compass_timeline_event"
+_COMPASS_REFRESH_MODULE = "odylith.runtime.surfaces.compass_refresh_runtime"
+_COMPASS_UPDATE_MODULE = "odylith.runtime.surfaces.update_compass"
+_COMPASS_WATCH_TRANSACTIONS_MODULE = "odylith.runtime.surfaces.watch_prompt_transactions"
+_COMPASS_RESTORE_HISTORY_MODULE = "odylith.runtime.surfaces.restore_compass_history"
+_SUBAGENT_ROUTER_MODULE = "odylith.runtime.orchestration.subagent_router"
+_SUBAGENT_ORCHESTRATOR_MODULE = "odylith.runtime.orchestration.subagent_orchestrator"
+_GOVERNANCE_COMMAND_MODULES = {
+    "normalize-plan-risk-mitigation": "odylith.runtime.governance.normalize_plan_risk_mitigation",
+    "backfill-workstream-traceability": "odylith.runtime.governance.backfill_workstream_traceability",
+    "reconcile-plan-workstream-binding": "odylith.runtime.governance.reconcile_plan_workstream_binding",
+    "auto-promote-workstream-phase": "odylith.runtime.governance.auto_promote_workstream_phase",
+    "sync-component-spec-requirements": "odylith.runtime.governance.sync_component_spec_requirements",
+    "validate-guidance-portability": "odylith.runtime.governance.validate_guidance_portability",
+    "validate-plan-traceability": "odylith.runtime.governance.validate_plan_traceability_contract",
+}
+_VALIDATE_COMMAND_MODULES = {
+    "backlog-contract": "odylith.runtime.governance.validate_backlog_contract",
+    "component-registry": "odylith.runtime.governance.validate_component_registry_contract",
+    "component-registry-contract": "odylith.runtime.governance.validate_component_registry_contract",
+    "guidance-portability": "odylith.runtime.governance.validate_guidance_portability",
+    "plan-risk-mitigation": "odylith.runtime.governance.validate_plan_risk_mitigation_contract",
+    "plan-risk-mitigation-contract": "odylith.runtime.governance.validate_plan_risk_mitigation_contract",
+    "self-host-posture": "odylith.runtime.governance.validate_self_host_posture",
+    "plan-traceability": "odylith.runtime.governance.validate_plan_traceability_contract",
+    "plan-workstream-binding": "odylith.runtime.governance.validate_plan_workstream_binding",
+}
+_ATLAS_COMMAND_MODULES = {
+    "render": "odylith.runtime.surfaces.render_mermaid_catalog",
+    "auto-update": "odylith.runtime.surfaces.auto_update_mermaid_diagrams",
+    "scaffold": "odylith.runtime.surfaces.scaffold_mermaid_diagram",
+    "install-autosync-hook": "odylith.runtime.surfaces.install_mermaid_autosync_hook",
+}
+
+
+def _load_module(name: str):
+    return importlib.import_module(name)
+
+
+class _LazyModuleProxy:
+    def __init__(self, module_name: str) -> None:
+        object.__setattr__(self, "_module_name", str(module_name))
+
+    def __getattr__(self, attr: str):
+        return getattr(_load_module(object.__getattribute__(self, "_module_name")), attr)
+
+
+_LAZY_COMPAT_MODULES: dict[str, _LazyModuleProxy] = {}
+
+
+def _register_lazy_module(module_name: str, *, target_name: str | None = None) -> _LazyModuleProxy:
+    proxy = _LazyModuleProxy(target_name or module_name)
+    _LAZY_COMPAT_MODULES[module_name] = proxy
+    return proxy
+
+
+def _module_handle(module_name: str):
+    return _LAZY_COMPAT_MODULES.get(module_name) or _load_module(module_name)
+
+
+def _module_attr(module_name: str, attr: str):
+    return getattr(_module_handle(module_name), attr)
+
+
+def _run_module_main(module_name: str, argv: Sequence[str]) -> int:
+    return _module_attr(module_name, "main")(list(argv))
+
+
+def _install_api():
+    return _load_module("odylith.install")
+
+
+def _install_state():
+    return _load_module("odylith.install.state")
+
+
+def _authoritative_release_repo() -> str:
+    return str(_install_state().AUTHORITATIVE_RELEASE_REPO)
+
+
+def _bundle_root():
+    return _module_attr("odylith.bundle", "bundle_root")()
+
+
+def _clear_upgrade_spotlight(*args, **kwargs):
+    return _install_state().clear_upgrade_spotlight(*args, **kwargs)
+
+
+def _install_state_path(*args, **kwargs):
+    return _install_state().install_state_path(*args, **kwargs)
+
+
+def _write_upgrade_spotlight(*args, **kwargs):
+    return _install_state().write_upgrade_spotlight(*args, **kwargs)
+
+
+def _sync_workstream_artifacts():
+    return _module_handle("odylith.runtime.governance.sync_workstream_artifacts")
+
+
+def _configure_sync_parser(parser: argparse.ArgumentParser) -> None:
+    _module_attr("odylith.runtime.governance.sync_argument_contract", "configure_sync_parser")(parser)
+
+
+def _sync_namespace_to_argv(args: argparse.Namespace) -> list[str]:
+    return list(_module_attr("odylith.runtime.governance.sync_argument_contract", "namespace_to_argv")(args))
+
+
+sync_workstream_artifacts = _register_lazy_module("odylith.runtime.governance.sync_workstream_artifacts")
+normalize_plan_risk_mitigation = _register_lazy_module("odylith.runtime.governance.normalize_plan_risk_mitigation")
+backfill_workstream_traceability = _register_lazy_module("odylith.runtime.governance.backfill_workstream_traceability")
+reconcile_plan_workstream_binding = _register_lazy_module("odylith.runtime.governance.reconcile_plan_workstream_binding")
+auto_promote_workstream_phase = _register_lazy_module("odylith.runtime.governance.auto_promote_workstream_phase")
+sync_component_spec_requirements = _register_lazy_module("odylith.runtime.governance.sync_component_spec_requirements")
+version_truth = _register_lazy_module(_VERSION_TRUTH_MODULE)
+validate_guidance_portability = _register_lazy_module("odylith.runtime.governance.validate_guidance_portability")
+validate_plan_traceability_contract = _register_lazy_module("odylith.runtime.governance.validate_plan_traceability_contract")
+backlog_authoring = _register_lazy_module("odylith.runtime.governance.backlog_authoring")
+release_planning_authoring = _register_lazy_module("odylith.runtime.governance.release_planning_authoring")
+program_wave_authoring = _register_lazy_module(_PROGRAM_WAVE_AUTHORING_MODULE)
+validate_backlog_contract = _register_lazy_module("odylith.runtime.governance.validate_backlog_contract")
+validate_component_registry_contract = _register_lazy_module("odylith.runtime.governance.validate_component_registry_contract")
+validate_plan_risk_mitigation_contract = _register_lazy_module(
+    "odylith.runtime.governance.validate_plan_risk_mitigation_contract"
+)
+validate_self_host_posture = _register_lazy_module("odylith.runtime.governance.validate_self_host_posture")
+validate_plan_workstream_binding = _register_lazy_module("odylith.runtime.governance.validate_plan_workstream_binding")
+maintainer_lane_status = _register_lazy_module(_MAINTAINER_LANE_STATUS_MODULE)
+odylith_context_engine = _register_lazy_module(_CONTEXT_ENGINE_MODULE)
+benchmark_compare = _register_lazy_module(_BENCHMARK_COMPARE_MODULE)
+shell_onboarding = _register_lazy_module("odylith.runtime.surfaces.shell_onboarding")
+log_compass_timeline_event = _register_lazy_module(_COMPASS_LOG_MODULE)
+compass_refresh_runtime = _register_lazy_module(_COMPASS_REFRESH_MODULE)
+update_compass = _register_lazy_module(_COMPASS_UPDATE_MODULE)
+watch_prompt_transactions = _register_lazy_module(_COMPASS_WATCH_TRANSACTIONS_MODULE)
+restore_compass_history = _register_lazy_module(_COMPASS_RESTORE_HISTORY_MODULE)
+subagent_router = _register_lazy_module(_SUBAGENT_ROUTER_MODULE)
+subagent_orchestrator = _register_lazy_module(_SUBAGENT_ORCHESTRATOR_MODULE)
+render_mermaid_catalog = _register_lazy_module(
+    "odylith.runtime.surfaces.render_mermaid_catalog",
+    target_name="odylith.runtime.surfaces.render_mermaid_catalog_refresh",
+)
+auto_update_mermaid_diagrams = _register_lazy_module("odylith.runtime.surfaces.auto_update_mermaid_diagrams")
+scaffold_mermaid_diagram = _register_lazy_module("odylith.runtime.surfaces.scaffold_mermaid_diagram")
+install_mermaid_autosync_hook = _register_lazy_module("odylith.runtime.surfaces.install_mermaid_autosync_hook")
+bundle_root = _bundle_root
+clear_upgrade_spotlight = _clear_upgrade_spotlight
+install_state_path = _install_state_path
+write_upgrade_spotlight = _write_upgrade_spotlight
 
 
 def doctor_bundle(*args, **kwargs):
-    return install_api.doctor_bundle(*args, **kwargs)
+    return _install_api().doctor_bundle(*args, **kwargs)
 
 
 def evaluate_start_preflight(*args, **kwargs):
-    return install_api.evaluate_start_preflight(*args, **kwargs)
+    return _install_api().evaluate_start_preflight(*args, **kwargs)
 
 
 def ensure_context_engine_pack(*args, **kwargs):
-    return install_api.ensure_context_engine_pack(*args, **kwargs)
+    return _install_api().ensure_context_engine_pack(*args, **kwargs)
 
 
 def install_bundle(*args, **kwargs):
-    return install_api.install_bundle(*args, **kwargs)
+    return _install_api().install_bundle(*args, **kwargs)
 
 
 def migrate_legacy_install(*args, **kwargs):
-    return install_api.migrate_legacy_install(*args, **kwargs)
+    return _install_api().migrate_legacy_install(*args, **kwargs)
 
 
 def plan_install_lifecycle(*args, **kwargs):
-    return install_api.plan_install_lifecycle(*args, **kwargs)
+    return _install_api().plan_install_lifecycle(*args, **kwargs)
 
 
 def plan_reinstall_lifecycle(*args, **kwargs):
-    return install_api.plan_reinstall_lifecycle(*args, **kwargs)
+    return _install_api().plan_reinstall_lifecycle(*args, **kwargs)
 
 
 def plan_upgrade_lifecycle(*args, **kwargs):
-    return install_api.plan_upgrade_lifecycle(*args, **kwargs)
+    return _install_api().plan_upgrade_lifecycle(*args, **kwargs)
 
 
 def preferred_repair_entrypoint(*args, **kwargs):
-    return install_api.preferred_repair_entrypoint(*args, **kwargs)
+    return _install_api().preferred_repair_entrypoint(*args, **kwargs)
 
 
 def product_repo_role(*args, **kwargs):
-    return install_api.product_repo_role(*args, **kwargs)
+    return _install_api().product_repo_role(*args, **kwargs)
 
 
 def reinstall_install(*args, **kwargs):
-    return install_api.reinstall_install(*args, **kwargs)
+    return _install_api().reinstall_install(*args, **kwargs)
 
 
 def rollback_install(*args, **kwargs):
-    return install_api.rollback_install(*args, **kwargs)
+    return _install_api().rollback_install(*args, **kwargs)
 
 
 def set_agents_integration(*args, **kwargs):
-    return install_api.set_agents_integration(*args, **kwargs)
+    return _install_api().set_agents_integration(*args, **kwargs)
 
 
 def uninstall_bundle(*args, **kwargs):
-    return install_api.uninstall_bundle(*args, **kwargs)
+    return _install_api().uninstall_bundle(*args, **kwargs)
 
 
 def upgrade_install(*args, **kwargs):
-    return install_api.upgrade_install(*args, **kwargs)
+    return _install_api().upgrade_install(*args, **kwargs)
 
 
 def version_status(*args, **kwargs):
-    return install_api.version_status(*args, **kwargs)
+    return _install_api().version_status(*args, **kwargs)
 
 
 def _extract_repo_root(argv: Sequence[str]) -> tuple[str, list[str]]:
@@ -186,15 +300,16 @@ def _maybe_stage_context_engine_pack(*, repo_root: str, forwarded: Sequence[str]
         return
     if status.runtime_source != "pinned_runtime":
         return
-    changed, message = ensure_context_engine_pack(repo_root=repo_root, release_repo=AUTHORITATIVE_RELEASE_REPO)
+    changed, message = ensure_context_engine_pack(repo_root=repo_root, release_repo=_authoritative_release_repo())
     if changed and message:
         print(message)
 
 
 def _dispatch_context_engine_shortcut(*, repo_root: str, target_command: str, forwarded: Sequence[str]) -> int:
     _maybe_stage_context_engine_pack(repo_root=repo_root, forwarded=[target_command, *list(forwarded)])
-    return odylith_context_engine.main(
-        ["--repo-root", str(Path(repo_root).expanduser().resolve()), target_command, *list(forwarded)]
+    return _run_module_main(
+        _CONTEXT_ENGINE_MODULE,
+        ["--repo-root", str(Path(repo_root).expanduser().resolve()), target_command, *list(forwarded)],
     )
 
 
@@ -211,9 +326,13 @@ def _current_git_branch(*, repo_root: str | Path) -> str:
     return str(completed.stdout or "").strip()
 
 
+def _main_branch_guard_repo_role(*, repo_root: str | Path) -> str:
+    return repo_role_from_local_shape(repo_root=repo_root)
+
+
 def _product_repo_main_branch_write_block(*, repo_root: str | Path) -> str:
     root = Path(repo_root).expanduser().resolve()
-    if product_repo_role(repo_root=root) != "product_repo":
+    if _main_branch_guard_repo_role(repo_root=root) != PRODUCT_REPO_ROLE:
         return ""
     branch = _current_git_branch(repo_root=root)
     if branch != "main":
@@ -263,6 +382,7 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path) -> int:
     resolved_repo_root = Path(repo_root).expanduser().resolve()
     missing_surfaces = _missing_first_run_surfaces(repo_root=resolved_repo_root)
     shell_path = resolved_repo_root / "odylith" / "index.html"
+    sync_workstream_artifacts = _sync_workstream_artifacts()
     # Shell-only render depends on the sibling surface HTMLs already existing.
     # On a fresh install, jump straight to the full sync instead of printing a
     # transient missing-surface failure that the sync is about to resolve.
@@ -300,7 +420,7 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path) -> int:
 
 
 def _is_first_install(*, repo_root: Path) -> bool:
-    return not install_state_path(repo_root=repo_root).is_file()
+    return not _install_state_path(repo_root=repo_root).is_file()
 
 
 def _env_flag_enabled(name: str) -> bool:
@@ -459,9 +579,9 @@ def _prepare_consumer_upgrade_spotlight(*, repo_root: Path, summary: object, sou
     previous_version = str(getattr(summary, "previous_version", "") or "").strip()
     repo_role = str(getattr(summary, "repo_role", "") or "").strip()
     if source_repo or repo_role == "product_repo" or not active_version or not previous_version or previous_version == active_version:
-        clear_upgrade_spotlight(repo_root=repo_root)
+        _clear_upgrade_spotlight(repo_root=repo_root)
         return False
-    write_upgrade_spotlight(
+    _write_upgrade_spotlight(
         repo_root=repo_root,
         from_version=previous_version,
         to_version=active_version,
@@ -480,7 +600,7 @@ def _prepare_consumer_upgrade_spotlight(*, repo_root: Path, summary: object, sou
 
 def _refresh_dashboard_after_upgrade(*, repo_root: Path) -> tuple[bool, str]:
     print("Refreshing Odylith dashboard surfaces so the local shell reflects the new release.")
-    render_rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+    render_rc = _sync_workstream_artifacts().refresh_dashboard_surfaces(
         repo_root=repo_root,
         surfaces=_DEFAULT_DASHBOARD_REFRESH_SURFACES,
         runtime_mode="auto",
@@ -532,7 +652,7 @@ def _cmd_install_common(
     first_install = _is_first_install(repo_root=requested_repo_root)
     adopt_latest = bool(adopt_latest_default or getattr(args, "adopt_latest", False))
     align_pin = bool(getattr(args, "align_pin", False))
-    release_repo = str(getattr(args, "release_repo", AUTHORITATIVE_RELEASE_REPO) or AUTHORITATIVE_RELEASE_REPO).strip()
+    release_repo = str(getattr(args, "release_repo", _authoritative_release_repo()) or _authoritative_release_repo()).strip()
     target_version = str(getattr(args, "version", "") or getattr(args, "target_version", "") or "").strip()
     lifecycle_plan = plan_install_lifecycle(
         repo_root=requested_repo_root,
@@ -549,7 +669,7 @@ def _cmd_install_common(
         return 0
     summary = install_bundle(
         repo_root=args.repo_root,
-        bundle_root=bundle_root(),
+        bundle_root=_bundle_root(),
         version=target_version or __version__,
         align_pin=align_pin,
     )
@@ -590,7 +710,7 @@ def _cmd_install_common(
         final_version = str(upgrade_summary.active_version or final_version).strip() or final_version
         final_launcher_path = Path(getattr(upgrade_summary, "launcher_path", final_launcher_path))
         if first_install:
-            clear_upgrade_spotlight(repo_root=requested_repo_root)
+            _clear_upgrade_spotlight(repo_root=requested_repo_root)
         else:
             _prepare_consumer_upgrade_spotlight(
                 repo_root=requested_repo_root,
@@ -643,7 +763,7 @@ def _cmd_install_common(
     )
     _print_grounding_quickstart()
     print("Starter prompt:")
-    print(_format_bold(shell_onboarding.STARTER_PROMPT))
+    print(_format_bold(_module_attr("odylith.runtime.surfaces.shell_onboarding", "STARTER_PROMPT")))
     opened_dashboard, open_message = _maybe_open_dashboard_in_browser(
         dashboard_path=dashboard_path,
         enabled=first_install and not bool(args.no_open),
@@ -889,7 +1009,7 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
         return 2
     healthy, message = doctor_bundle(
         repo_root=args.repo_root,
-        bundle_root=bundle_root(),
+        bundle_root=_bundle_root(),
         repair=bool(args.repair),
         reset_local_state=bool(args.reset_local_state),
     )
@@ -1016,7 +1136,7 @@ def _cmd_sync(args: argparse.Namespace) -> int:
         blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
         if blocked:
             return blocked
-    return sync_workstream_artifacts.main(sync_namespace_to_argv(args))
+    return _sync_workstream_artifacts().main(_sync_namespace_to_argv(args))
 
 
 def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
@@ -1025,11 +1145,11 @@ def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
         return blocked
     try:
         surfaces_value = str(args.surfaces or "").strip() or ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
-        surfaces = sync_workstream_artifacts.normalize_dashboard_surfaces([surfaces_value])
+        surfaces = _sync_workstream_artifacts().normalize_dashboard_surfaces([surfaces_value])
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
         return 2
-    return sync_workstream_artifacts.refresh_dashboard_surfaces(
+    return _sync_workstream_artifacts().refresh_dashboard_surfaces(
         repo_root=Path(args.repo_root).expanduser().resolve(),
         surfaces=surfaces,
         runtime_mode=str(args.runtime_mode),
@@ -1042,27 +1162,20 @@ def _cmd_governance(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
         return blocked
-    target = {
-        "normalize-plan-risk-mitigation": normalize_plan_risk_mitigation.main,
-        "backfill-workstream-traceability": backfill_workstream_traceability.main,
-        "reconcile-plan-workstream-binding": reconcile_plan_workstream_binding.main,
-        "auto-promote-workstream-phase": auto_promote_workstream_phase.main,
-        "sync-component-spec-requirements": sync_component_spec_requirements.main,
-        "version-truth": lambda argv: version_truth.main([*argv, "check"]),
-        "validate-guidance-portability": validate_guidance_portability.main,
-        "validate-plan-traceability": validate_plan_traceability_contract.main,
-    }[args.governance_command]
-    return target(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    forwarded = ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded)
+    if args.governance_command == "version-truth":
+        return _run_module_main(_VERSION_TRUTH_MODULE, [*forwarded, "check"])
+    return _run_module_main(_GOVERNANCE_COMMAND_MODULES[args.governance_command], forwarded)
 
 
 def _cmd_backlog(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
         return blocked
-    target = {
-        "create": backlog_authoring.main,
-    }[args.backlog_command]
-    return target(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(
+        "odylith.runtime.governance.backlog_authoring",
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
 
 
 def _cmd_release(args: argparse.Namespace) -> int:
@@ -1073,7 +1186,8 @@ def _cmd_release(args: argparse.Namespace) -> int:
         blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
         if blocked:
             return blocked
-    return release_planning_authoring.main(
+    return _run_module_main(
+        "odylith.runtime.governance.release_planning_authoring",
         ensure_repo_root_args(
             repo_root=args.repo_root,
             argv=[str(args.release_command).strip(), *list(args.forwarded)],
@@ -1089,7 +1203,7 @@ def _cmd_program(args: argparse.Namespace) -> int:
         blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
         if blocked:
             return blocked
-    return program_wave_authoring.run_program(
+    return _module_attr(_PROGRAM_WAVE_AUTHORING_MODULE, "run_program")(
         ensure_repo_root_args(
             repo_root=args.repo_root,
             argv=[str(args.program_command).strip(), *list(args.forwarded)],
@@ -1105,7 +1219,7 @@ def _cmd_wave(args: argparse.Namespace) -> int:
         blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
         if blocked:
             return blocked
-    return program_wave_authoring.run_wave(
+    return _module_attr(_PROGRAM_WAVE_AUTHORING_MODULE, "run_wave")(
         ensure_repo_root_args(
             repo_root=args.repo_root,
             argv=[str(args.wave_command).strip(), *list(args.forwarded)],
@@ -1116,19 +1230,11 @@ def _cmd_wave(args: argparse.Namespace) -> int:
 def _cmd_validate(args: argparse.Namespace) -> int:
     if args.validate_command == "version-truth":
         forwarded = ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded)
-        return version_truth.main([*forwarded, "check"])
-    target = {
-        "backlog-contract": validate_backlog_contract.main,
-        "component-registry": validate_component_registry_contract.main,
-        "component-registry-contract": validate_component_registry_contract.main,
-        "guidance-portability": validate_guidance_portability.main,
-        "plan-risk-mitigation": validate_plan_risk_mitigation_contract.main,
-        "plan-risk-mitigation-contract": validate_plan_risk_mitigation_contract.main,
-        "self-host-posture": validate_self_host_posture.main,
-        "plan-traceability": validate_plan_traceability_contract.main,
-        "plan-workstream-binding": validate_plan_workstream_binding.main,
-    }[args.validate_command]
-    return target(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+        return _run_module_main(_VERSION_TRUTH_MODULE, [*forwarded, "check"])
+    return _run_module_main(
+        _VALIDATE_COMMAND_MODULES[args.validate_command],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
 
 
 def _cmd_bootstrap(args: argparse.Namespace) -> int:
@@ -1170,7 +1276,7 @@ def _cmd_query_shortcut(args: argparse.Namespace) -> int:
 
 def _cmd_context_engine(args: argparse.Namespace) -> int:
     _maybe_stage_context_engine_pack(repo_root=args.repo_root, forwarded=args.forwarded)
-    return odylith_context_engine.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(_CONTEXT_ENGINE_MODULE, ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
 
 
 def _cmd_benchmark(args: argparse.Namespace) -> int:
@@ -1184,6 +1290,7 @@ def _cmd_benchmark(args: argparse.Namespace) -> int:
         parser.add_argument("--baseline", default="last-shipped")
         parser.add_argument("--json", action="store_true", dest="as_json")
         parsed = parser.parse_args(forwarded[1:])
+        benchmark_compare = _load_module(_BENCHMARK_COMPARE_MODULE)
         result = benchmark_compare.compare_latest_to_baseline(
             repo_root=parsed.repo_root,
             baseline=parsed.baseline,
@@ -1198,8 +1305,9 @@ def _cmd_benchmark(args: argparse.Namespace) -> int:
             return 1
         return 0
     _maybe_stage_context_engine_pack(repo_root=args.repo_root, forwarded=["benchmark"])
-    return odylith_context_engine.main(
-        ["--repo-root", str(Path(args.repo_root).expanduser().resolve()), "benchmark", *forwarded]
+    return _run_module_main(
+        _CONTEXT_ENGINE_MODULE,
+        ["--repo-root", str(Path(args.repo_root).expanduser().resolve()), "benchmark", *forwarded],
     )
 
 
@@ -1207,11 +1315,11 @@ def _cmd_lane_status(args: argparse.Namespace) -> int:
     forwarded: list[str] = ["--repo-root", str(Path(args.repo_root).expanduser().resolve())]
     if bool(args.as_json):
         forwarded.append("--json")
-    return maintainer_lane_status.main(forwarded)
+    return _run_module_main(_MAINTAINER_LANE_STATUS_MODULE, forwarded)
 
 
 def _cmd_compass_log(args: argparse.Namespace) -> int:
-    return log_compass_timeline_event.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(_COMPASS_LOG_MODULE, ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
 
 
 def _cmd_compass_refresh(args: argparse.Namespace) -> int:
@@ -1225,30 +1333,40 @@ def _cmd_compass_refresh(args: argparse.Namespace) -> int:
     if bool(getattr(args, "status", False)):
         forwarded.append("--status")
     forwarded.extend(["--runtime-mode", str(getattr(args, "runtime_mode", "auto"))])
-    return compass_refresh_runtime.main(forwarded)
+    return _run_module_main(_COMPASS_REFRESH_MODULE, forwarded)
 
 
 def _cmd_compass_update(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
         return blocked
-    return update_compass.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(_COMPASS_UPDATE_MODULE, ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
 
 
 def _cmd_compass_watch_transactions(args: argparse.Namespace) -> int:
-    return watch_prompt_transactions.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(
+        _COMPASS_WATCH_TRANSACTIONS_MODULE,
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
 
 
 def _cmd_compass_restore_history(args: argparse.Namespace) -> int:
-    return restore_compass_history.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(
+        _COMPASS_RESTORE_HISTORY_MODULE,
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
 
 
 def _cmd_subagent_router(args: argparse.Namespace) -> int:
-    return subagent_router.main(ensure_nested_subcommand_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(
+        _SUBAGENT_ROUTER_MODULE,
+        ensure_nested_subcommand_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
 
 
 def _cmd_subagent_orchestrator(args: argparse.Namespace) -> int:
-    return subagent_orchestrator.main(
+    return _run_module_main(
+        _SUBAGENT_ORCHESTRATOR_MODULE,
         ensure_nested_subcommand_repo_root_args(repo_root=args.repo_root, argv=args.forwarded)
     )
 
@@ -1257,28 +1375,53 @@ def _cmd_atlas_render(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
         return blocked
-    return render_mermaid_catalog.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(
+        _ATLAS_COMMAND_MODULES["render"],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
 
 
 def _cmd_atlas_auto_update(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
         return blocked
-    return auto_update_mermaid_diagrams.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(
+        _ATLAS_COMMAND_MODULES["auto-update"],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
 
 
 def _cmd_atlas_scaffold(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
         return blocked
-    return scaffold_mermaid_diagram.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(
+        _ATLAS_COMMAND_MODULES["scaffold"],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
 
 
 def _cmd_atlas_install_autosync_hook(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
         return blocked
-    return install_mermaid_autosync_hook.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _run_module_main(
+        _ATLAS_COMMAND_MODULES["install-autosync-hook"],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
+
+
+def _parse_dashboard_refresh_fast_args(*, repo_root: str, forwarded: Sequence[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="odylith dashboard refresh",
+        description="Refresh selected local dashboard surfaces without a full governance sync.",
+    )
+    parser.add_argument("--repo-root", default=repo_root, help=argparse.SUPPRESS)
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--surfaces", default=_DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV)
+    parser.add_argument("--atlas-sync", action="store_true")
+    parser.add_argument("--runtime-mode", choices=("auto", "standalone", "daemon"), default="auto")
+    return parser.parse_args(["--repo-root", repo_root, *list(forwarded)])
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1326,7 +1469,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="After rematerializing the local install, adopt the latest verified release and update the repo pin in the same step.",
     )
-    install.add_argument("--release-repo", default=AUTHORITATIVE_RELEASE_REPO, help=argparse.SUPPRESS)
+    install.add_argument("--release-repo", default=_authoritative_release_repo(), help=argparse.SUPPRESS)
     install.add_argument("--align-pin", action="store_true", help=argparse.SUPPRESS)
     install.add_argument(
         "--dry-run",
@@ -1350,7 +1493,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     reinstall.add_argument("--repo-root", default=".", help="Consumer repository root.")
     reinstall.add_argument("--version", default="", help=argparse.SUPPRESS)
-    reinstall.add_argument("--release-repo", default=AUTHORITATIVE_RELEASE_REPO, help=argparse.SUPPRESS)
+    reinstall.add_argument("--release-repo", default=_authoritative_release_repo(), help=argparse.SUPPRESS)
     reinstall.add_argument(
         "--dry-run",
         action="store_true",
@@ -1380,7 +1523,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     upgrade = subparsers.add_parser("upgrade", help="Stage and activate the pinned Odylith runtime without rewriting repo-owned truth.")
     upgrade.add_argument("--repo-root", default=".", help="Consumer repository root.")
-    upgrade.add_argument("--release-repo", default=AUTHORITATIVE_RELEASE_REPO, help="GitHub release repository.")
+    upgrade.add_argument("--release-repo", default=_authoritative_release_repo(), help="GitHub release repository.")
     upgrade.add_argument("--to", dest="target_version", default="", help="Explicit target version. Requires --write-pin when it differs from the repo pin.")
     upgrade.add_argument("--version", dest="target_version", help=argparse.SUPPRESS)
     upgrade.add_argument("--write-pin", action="store_true", help="Maintainer workflow: write the requested version into odylith/runtime/source/product-version.v1.json.")
@@ -1478,7 +1621,7 @@ def build_parser() -> argparse.ArgumentParser:
     off.add_argument("--repo-root", default=".", help="Consumer repository root.")
 
     sync = subparsers.add_parser("sync", help="Run the Odylith governance and surface sync pipeline.")
-    configure_sync_parser(sync)
+    _configure_sync_parser(sync)
 
     dashboard = subparsers.add_parser("dashboard", help="Refresh local Odylith dashboard surfaces without a full governance sync.")
     dashboard_subparsers = dashboard.add_subparsers(dest="dashboard_command", required=True)
@@ -1708,6 +1851,13 @@ def main(argv: list[str] | None = None) -> int:
             args.repo_root = repo_root
             args.forwarded = forwarded
             return _cmd_sync(args)
+        if tokens[0] == "dashboard" and len(tokens) >= 2 and tokens[1] == "refresh":
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            if _help_requested(forwarded):
+                parser = build_parser()
+                args = parser.parse_args(tokens)
+                return _cmd_dashboard_refresh(args)
+            return _cmd_dashboard_refresh(_parse_dashboard_refresh_fast_args(repo_root=repo_root, forwarded=forwarded))
         if tokens[0] == "governance" and len(tokens) >= 2:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if tokens[1] in {
@@ -1765,36 +1915,26 @@ def main(argv: list[str] | None = None) -> int:
                     parser = build_parser()
                     args = parser.parse_args(tokens)
                     return _cmd_validate(args)
-                return version_truth.main(["--repo-root", repo_root, *forwarded, "check"])
+                return _run_module_main(_VERSION_TRUTH_MODULE, ["--repo-root", repo_root, *forwarded, "check"])
             if _help_requested(forwarded):
                 parser = build_parser()
                 args = parser.parse_args(tokens)
                 return _cmd_validate(args)
-            target = {
-                "backlog-contract": validate_backlog_contract.main,
-                "component-registry": validate_component_registry_contract.main,
-                "component-registry-contract": validate_component_registry_contract.main,
-                "guidance-portability": validate_guidance_portability.main,
-                "plan-risk-mitigation": validate_plan_risk_mitigation_contract.main,
-                "plan-risk-mitigation-contract": validate_plan_risk_mitigation_contract.main,
-                "self-host-posture": validate_self_host_posture.main,
-                "plan-traceability": validate_plan_traceability_contract.main,
-                "plan-workstream-binding": validate_plan_workstream_binding.main,
-            }.get(tokens[1])
+            target = _VALIDATE_COMMAND_MODULES.get(tokens[1])
             if target is not None:
-                return target(["--repo-root", repo_root, *forwarded])
+                return _run_module_main(target, ["--repo-root", repo_root, *forwarded])
         if tokens[0] == "lane" and len(tokens) >= 2 and tokens[1] == "status":
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if _help_requested(forwarded):
                 parser = build_parser()
                 args = parser.parse_args(tokens)
                 return _cmd_lane_status(args)
-            return maintainer_lane_status.main(["--repo-root", repo_root, *forwarded])
+            return _run_module_main(_MAINTAINER_LANE_STATUS_MODULE, ["--repo-root", repo_root, *forwarded])
         if tokens[0] == "context-engine":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
             if _help_requested(forwarded):
-                return odylith_context_engine.main(["--repo-root", repo_root, *forwarded])
-            return odylith_context_engine.main(["--repo-root", repo_root, *forwarded])
+                return _run_module_main(_CONTEXT_ENGINE_MODULE, ["--repo-root", repo_root, *forwarded])
+            return _run_module_main(_CONTEXT_ENGINE_MODULE, ["--repo-root", repo_root, *forwarded])
         if tokens[0] == "benchmark":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
             if _help_requested(forwarded):
@@ -1803,7 +1943,7 @@ def main(argv: list[str] | None = None) -> int:
                 return _cmd_benchmark(args)
             if forwarded and str(forwarded[0]).strip() == "compare":
                 return _cmd_benchmark(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
-            return odylith_context_engine.main(["--repo-root", repo_root, "benchmark", *forwarded])
+            return _run_module_main(_CONTEXT_ENGINE_MODULE, ["--repo-root", repo_root, "benchmark", *forwarded])
         if tokens[0] == "compass" and len(tokens) >= 2 and tokens[1] in {"log", "refresh", "update", "restore-history", "watch-transactions"}:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             compass_command = tokens[1]
@@ -1833,10 +1973,14 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_compass_watch_transactions(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
         if tokens[0] == "subagent-router":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
-            return subagent_router.main(ensure_nested_subcommand_repo_root_args(repo_root=repo_root, argv=forwarded))
+            return _run_module_main(
+                _SUBAGENT_ROUTER_MODULE,
+                ensure_nested_subcommand_repo_root_args(repo_root=repo_root, argv=forwarded),
+            )
         if tokens[0] == "subagent-orchestrator":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
-            return subagent_orchestrator.main(
+            return _run_module_main(
+                _SUBAGENT_ORCHESTRATOR_MODULE,
                 ensure_nested_subcommand_repo_root_args(repo_root=repo_root, argv=forwarded)
             )
         if tokens[0] == "atlas" and len(tokens) >= 2 and tokens[1] in {"render", "auto-update", "scaffold", "install-autosync-hook"}:

@@ -24,6 +24,7 @@ from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import compass_self_host_runtime
 from odylith.runtime.surfaces import compass_transaction_runtime
 from odylith.runtime.surfaces import compass_execution_focus_runtime
+from odylith.runtime.surfaces import compass_current_workstreams_runtime
 from odylith.runtime.surfaces import compass_runtime_payload_runtime
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.governance import execution_wave_view_model
@@ -34,7 +35,6 @@ from odylith.runtime.context_engine import odylith_runtime_surface_summary
 from odylith.runtime.surfaces.compass_dashboard_base import *  # noqa: F401,F403
 
 
-_CURRENT_WORKSTREAM_MAX_ROWS = 12
 _FRESHNESS_LIVE_MAX_MINUTES = 90
 _FRESHNESS_RECENT_MAX_MINUTES = 6 * 60
 _FRESHNESS_AGING_MAX_MINUTES = 24 * 60
@@ -2199,72 +2199,12 @@ def _select_current_workstream_rows(
     all_rows: Sequence[Mapping[str, Any]],
     window_events_48h: Sequence[Mapping[str, Any]],
     recent_completed_rows_48h: Sequence[Mapping[str, str]],
-    max_rows: int = _CURRENT_WORKSTREAM_MAX_ROWS,
 ) -> list[dict[str, Any]]:
-    """Select the rows Compass should surface as current execution lanes.
-
-    Compass needs a full workstream catalog for lookups and deep links, but the
-    live "Current Workstreams" panel and scoped AI standup generation should
-    stay limited to the lanes with real near-term execution relevance.
-    """
-
-    by_id: dict[str, dict[str, Any]] = {}
-    ordered_rows: list[dict[str, Any]] = []
-    for raw in all_rows:
-        if not isinstance(raw, Mapping):
-            continue
-        row = dict(raw)
-        idea_id = str(row.get("idea_id", "")).strip()
-        if not idea_id or idea_id in by_id:
-            continue
-        by_id[idea_id] = row
-        ordered_rows.append(row)
-
-    required_ids: list[str] = []
-    optional_ids: list[str] = []
-    seen_ids: set[str] = set()
-
-    def _append(ws_id: str, *, required: bool = False) -> None:
-        token = str(ws_id).strip()
-        if not token or token in seen_ids or token not in by_id:
-            return
-        seen_ids.add(token)
-        if required:
-            required_ids.append(token)
-            return
-        optional_ids.append(token)
-
-    for row in ordered_rows:
-        status = str(row.get("status", "")).strip().lower()
-        if status in {"implementation", "planning"}:
-            _append(str(row.get("idea_id", "")).strip(), required=True)
-
-    event_counts_by_ws = _build_window_event_counts(window_events_48h)
-    for ws_id, _count in sorted(event_counts_by_ws.items(), key=lambda item: (-int(item[1]), item[0])):
-        _append(ws_id)
-
-    for item in recent_completed_rows_48h:
-        if not isinstance(item, Mapping):
-            continue
-        _append(str(item.get("backlog", "")).strip())
-
-    for row in ordered_rows:
-        programs = row.get("execution_wave_programs", [])
-        if not isinstance(programs, Sequence):
-            continue
-        if any(bool(program.get("has_active_wave")) for program in programs if isinstance(program, Mapping)):
-            _append(str(row.get("idea_id", "")).strip())
-
-    if not required_ids and not optional_ids:
-        for row in ordered_rows[: max(1, int(max_rows))]:
-            _append(str(row.get("idea_id", "")).strip())
-
-    limit = max(1, int(max_rows))
-    if len(required_ids) >= limit:
-        selected_ids = list(required_ids)
-    else:
-        selected_ids = [*required_ids, *optional_ids[: max(0, limit - len(required_ids))]]
-    return [by_id[ws_id] for ws_id in selected_ids if ws_id in by_id]
+    return compass_current_workstreams_runtime.select_current_workstream_rows(
+        all_rows=all_rows,
+        window_events_48h=window_events_48h,
+        recent_completed_rows_48h=recent_completed_rows_48h,
+    )
 
 
 def _execution_wave_program_member_ids(program: Mapping[str, Any]) -> set[str]:

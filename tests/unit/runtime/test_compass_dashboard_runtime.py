@@ -893,14 +893,14 @@ def test_scoped_brief_provider_allowed_enables_provider_for_high_rung_scope() ->
     )
 
 
-def test_brief_reuse_valid_for_fact_packet_requires_voice_valid_sections(monkeypatch) -> None:  # noqa: ANN001
+def test_reusable_brief_sections_for_fact_packet_requires_voice_valid_sections(monkeypatch) -> None:  # noqa: ANN001
     monkeypatch.setattr(
         compass_standup_brief_narrator,
         "_validated_cached_sections",
         lambda **_kwargs: None,
     )
 
-    assert not compass_runtime_payload_runtime._brief_reuse_valid_for_fact_packet(  # noqa: SLF001
+    assert compass_runtime_payload_runtime._reusable_brief_sections_for_fact_packet(  # noqa: SLF001
         brief={
             "status": "ready",
             "source": "provider",
@@ -913,17 +913,18 @@ def test_brief_reuse_valid_for_fact_packet_requires_voice_valid_sections(monkeyp
             ],
         },
         fact_packet={"facts": [{"id": "F-001", "section_key": "completed", "text": "Good fact."}]},
-    )
+    ) is None
 
 
-def test_brief_reuse_valid_for_fact_packet_accepts_clean_ready_brief(monkeypatch) -> None:  # noqa: ANN001
+def test_reusable_brief_sections_for_fact_packet_accepts_clean_ready_brief(monkeypatch) -> None:  # noqa: ANN001
+    sections = [{"key": "completed", "label": "Completed in this window", "bullets": []}]
     monkeypatch.setattr(
         compass_standup_brief_narrator,
         "_validated_cached_sections",
-        lambda **_kwargs: [{"key": "completed", "label": "Completed in this window", "bullets": []}],
+        lambda **_kwargs: sections,
     )
 
-    assert compass_runtime_payload_runtime._brief_reuse_valid_for_fact_packet(  # noqa: SLF001
+    assert compass_runtime_payload_runtime._reusable_brief_sections_for_fact_packet(  # noqa: SLF001
         brief={
             "status": "ready",
             "source": "provider",
@@ -936,7 +937,7 @@ def test_brief_reuse_valid_for_fact_packet_accepts_clean_ready_brief(monkeypatch
             ],
         },
         fact_packet={"facts": [{"id": "F-001", "section_key": "completed", "text": "Good fact."}]},
-    )
+    ) == sections
 
 
 def test_generated_only_transaction_detection_keeps_source_mixed_rows() -> None:

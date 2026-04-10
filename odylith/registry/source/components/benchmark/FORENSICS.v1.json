@@ -11,10 +11,10 @@
     "empty_reasons": [],
     "explicit_event_count": 6,
     "mapped_workstream_evidence_count": 6,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 7
+    "timeline_event_count": 6
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -27,33 +27,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "docs/benchmarks/BENCHMARK_TABLES.md",
-        "docs/benchmarks/FAMILIES_AND_EVALS.md",
-        "docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md",
-        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
-        "docs/benchmarks/README.md",
-        "docs/benchmarks/REVIEWER_GUIDE.md",
-        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
-        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
-        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
-      ],
-      "confidence": "high",
-      "event_index": 64,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "benchmark"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/BENCHMARK_TABLES.md, docs/benchmarks/FAMILIES_AND_EVALS.md +10 more",
-      "ts_iso": "2026-04-09T13:51:28-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [],
       "confidence": "high",

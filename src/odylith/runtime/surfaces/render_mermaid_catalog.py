@@ -11,11 +11,12 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+from dataclasses import replace
 import json
 import os
 from pathlib import Path
 import re
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.delivery import scope_signal_ladder
@@ -27,18 +28,21 @@ from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.governance import delivery_intelligence_engine  # Backward-compatible test monkeypatch surface.
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.common import diagram_freshness
+from odylith.runtime.common import generated_refresh_guard
+from odylith.runtime.common.repo_path_resolver import RepoPathResolver
+from odylith.runtime.common.repo_shape import CONSUMER_REPO_ROLE, repo_role_from_local_shape
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.context_engine import odylith_context_cache
-from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import traceability_ui_lookup
-from odylith.runtime.governance import validate_backlog_contract as backlog_contract
-from odylith.install.manager import CONSUMER_REPO_ROLE, product_repo_role
 
 
 _SVG_VIEWBOX_RE = re.compile(r"viewBox\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
 _WORKSTREAM_ID_RE = re.compile(r"^B-\d{3,}$")
 _DIAGRAM_ID_RE = re.compile(r"^D-(\d{3,})$")
 _DIAGRAM_COMPACT_RE = re.compile(r"^D(\d{3,})$")
+_ATLAS_RENDER_GUARD_NAMESPACE = "generated-refresh-guards"
+_ATLAS_RENDER_GUARD_KEY = "atlas-render"
 
 
 def _extract_svg_viewbox_dimensions(svg_path: Path) -> tuple[float, float] | None:
@@ -141,20 +145,60 @@ def _load_component_index(
     repo_root: Path,
 ) -> Mapping[str, component_registry.ComponentEntry]:
     manifest_path = component_registry.default_manifest_path(repo_root=repo_root)
-    catalog_path = _resolve(repo_root, component_registry.DEFAULT_CATALOG_PATH)
-    ideas_root = _resolve(repo_root, component_registry.DEFAULT_IDEAS_ROOT)
     if not manifest_path.is_file():
         return {}
     try:
-        components, _alias_to_component, _diagnostics = component_registry.build_component_index(
-            repo_root=repo_root,
-            manifest_path=manifest_path,
-            catalog_path=catalog_path,
-            ideas_root=ideas_root,
-        )
-    except Exception:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
         return {}
+    rows = payload.get("components") if isinstance(payload, Mapping) else None
+    if not isinstance(rows, list):
+        return {}
+    components: dict[str, component_registry.ComponentEntry] = {}
+    for raw in rows:
+        if not isinstance(raw, Mapping):
+            continue
+        entry = component_registry._component_entry_from_payload(raw)  # noqa: SLF001
+        component_id = component_registry.normalize_component_id(entry.component_id)
+        if not component_id or not str(entry.name).strip():
+            continue
+        components[component_id] = replace(
+            entry,
+            component_id=component_id,
+            aliases=[
+                normalized
+                for token in entry.aliases
+                for normalized in [component_registry.normalize_component_id(token)]
+                if normalized
+            ],
+            workstreams=[
+                normalized
+                for token in entry.workstreams
+                for normalized in [component_registry.normalize_workstream_id(token)]
+                if normalized
+            ],
+        )
     return components
+
+
+def _load_delivery_surface_payload(
+    *,
+    repo_root: Path,
+    surface: str,
+) -> dict[str, Any]:
+    try:
+        payload = delivery_intelligence_engine.load_delivery_intelligence_artifact(repo_root=repo_root)
+    except Exception:
+        payload = {}
+    if isinstance(payload, Mapping):
+        try:
+            return delivery_intelligence_engine.slice_delivery_intelligence_for_surface(
+                payload=payload,
+                surface=surface,
+            )
+        except Exception:
+            return {}
+    return {}
 
 
 def _component_catalog_rows(
@@ -238,6 +282,8 @@ def _validate_related_paths(
     context: str,
     errors: list[str],
     required: bool,
+    resolve_path: Callable[[str], Path] | None = None,
+    repo_path_for: Callable[[str | Path], str] | None = None,
 ) -> list[str]:
     resolved: list[str] = []
     for raw in values:
@@ -245,26 +291,66 @@ def _validate_related_paths(
         if not token:
             errors.append(f"{context}: `{field}` contains empty path value")
             continue
-        target = _resolve(repo_root, token)
+        target = resolve_path(token) if resolve_path is not None else _resolve(repo_root, token)
         if not target.exists():
             errors.append(f"{context}: `{field}` path does not exist: {token}")
             continue
-        resolved.append(_as_repo_path(repo_root, target))
+        if repo_path_for is not None:
+            resolved.append(repo_path_for(target))
+        else:
+            resolved.append(_as_repo_path(repo_root, target))
 
     if required and not resolved:
         errors.append(f"{context}: `{field}` must contain at least one valid path")
     return resolved
 
 
-def _extract_idea_id_from_backlog_path(*, repo_root: Path, token: str) -> str:
-    raw = str(token or "").strip()
-    if not raw:
-        return ""
-    target = _resolve(repo_root, raw)
-    if not target.is_file():
-        return ""
-    spec = backlog_contract._parse_idea_spec(target)
-    return str(spec.idea_id or "").strip()
+def _read_backlog_front_matter_fields(
+    *,
+    path: Path,
+    field_names: Sequence[str],
+    cache: dict[str, dict[str, str]] | None = None,
+) -> dict[str, str]:
+    target = Path(path).resolve()
+    cache_key = str(target)
+    if cache is not None and cache_key in cache:
+        return dict(cache[cache_key])
+
+    wanted = {str(name).strip() for name in field_names if str(name).strip()}
+    metadata = {name: "" for name in wanted}
+    if not wanted or not target.is_file():
+        if cache is not None:
+            cache[cache_key] = dict(metadata)
+        return metadata
+
+    try:
+        with target.open("r", encoding="utf-8") as handle:
+            for raw_line in handle:
+                line = raw_line.strip()
+                if line.startswith("## "):
+                    break
+                if not line or line in {"---", "..."} or line.startswith("#") or ":" not in line:
+                    continue
+                key, value = line.split(":", 1)
+                normalized_key = key.strip()
+                if normalized_key not in wanted or metadata[normalized_key]:
+                    continue
+                metadata[normalized_key] = value.strip()
+                if all(metadata[name] for name in wanted):
+                    break
+    except OSError:
+        metadata = {name: "" for name in wanted}
+
+    if cache is not None:
+        cache[cache_key] = dict(metadata)
+    return metadata
+
+
+def _stored_watch_fingerprints(item: Mapping[str, Any]) -> dict[str, str]:
+    raw = item.get("reviewed_watch_fingerprints", {})
+    if not isinstance(raw, Mapping):
+        return {}
+    return {str(key).strip(): str(value).strip() for key, value in raw.items() if str(key).strip() and str(value).strip()}
 
 
 def _max_mtime(path: Path, *, cache: dict[str, float] | None = None) -> float:
@@ -302,15 +388,20 @@ def _newest_watch_path(
     repo_root: Path,
     watch_paths: list[str],
     mtime_cache: dict[str, float] | None = None,
+    resolve_path: Callable[[str], Path] | None = None,
+    repo_path_for: Callable[[str | Path], str] | None = None,
 ) -> tuple[float, str]:
     newest_time = 0.0
     newest_path = ""
     for raw in watch_paths:
-        target = _resolve(repo_root, raw)
+        target = resolve_path(raw) if resolve_path is not None else _resolve(repo_root, raw)
         score = _max_mtime(target, cache=mtime_cache)
         if score > newest_time:
             newest_time = score
-            newest_path = _as_repo_path(repo_root, target)
+            if repo_path_for is not None:
+                newest_path = repo_path_for(target)
+            else:
+                newest_path = _as_repo_path(repo_root, target)
     return newest_time, newest_path
 
 
@@ -356,7 +447,7 @@ def _load_catalog(
     if not isinstance(diagrams, list):
         return [], [f"{catalog_path}: `diagrams` must be a list"], stats
     if not diagrams:
-        if product_repo_role(repo_root=repo_root) == CONSUMER_REPO_ROLE:
+        if repo_role_from_local_shape(repo_root=repo_root) == CONSUMER_REPO_ROLE:
             return [], [], stats
         return [], [f"{catalog_path}: `diagrams` list is empty"], stats
 
@@ -364,8 +455,11 @@ def _load_catalog(
     seen_ids: set[str] = set()
     seen_slugs: set[str] = set()
     rendered: list[dict[str, Any]] = []
-    tooling_shell_href = _as_href(output_path, _resolve(repo_root, "odylith/index.html"))
+    path_resolver = RepoPathResolver(repo_root=repo_root, output_path=output_path)
+    tooling_shell_href = path_resolver.href("odylith/index.html")
     watch_path_mtime_cache: dict[str, float] = {}
+    watch_path_content_cache = diagram_freshness.ContentFingerprintCache()
+    backlog_metadata_cache: dict[str, dict[str, str]] = {}
 
     for idx, item in enumerate(diagrams):
         context = f"{catalog_path}: diagrams[{idx}]"
@@ -423,9 +517,9 @@ def _load_catalog(
                 errors.append(f"{context}: duplicate slug `{slug}`")
             seen_slugs.add(slug)
 
-        mmd_path = _resolve(repo_root, source_mmd) if source_mmd else None
-        svg_path = _resolve(repo_root, source_svg) if source_svg else None
-        png_path = _resolve(repo_root, source_png) if source_png else None
+        mmd_path = path_resolver.resolve(source_mmd) if source_mmd else None
+        svg_path = path_resolver.resolve(source_svg) if source_svg else None
+        png_path = path_resolver.resolve(source_png) if source_png else None
 
         if mmd_path is not None and not mmd_path.is_file():
             errors.append(f"{context}: source_mmd does not exist: {source_mmd}")
@@ -435,7 +529,7 @@ def _load_catalog(
             errors.append(f"{context}: source_png does not exist: {source_png}")
 
         for watch in watch_paths:
-            target = _resolve(repo_root, watch)
+            target = path_resolver.resolve(watch)
             if not target.exists():
                 errors.append(f"{context}: change_watch_paths entry does not exist: {watch}")
 
@@ -465,6 +559,8 @@ def _load_catalog(
             context=context,
             errors=errors,
             required=True,
+            resolve_path=path_resolver.resolve,
+            repo_path_for=path_resolver.repo_path,
         )
         related_plans = _validate_related_paths(
             repo_root=repo_root,
@@ -473,6 +569,8 @@ def _load_catalog(
             context=context,
             errors=errors,
             required=True,
+            resolve_path=path_resolver.resolve,
+            repo_path_for=path_resolver.repo_path,
         )
         related_docs = _validate_related_paths(
             repo_root=repo_root,
@@ -481,6 +579,8 @@ def _load_catalog(
             context=context,
             errors=errors,
             required=True,
+            resolve_path=path_resolver.resolve,
+            repo_path_for=path_resolver.repo_path,
         )
         related_code = _validate_related_paths(
             repo_root=repo_root,
@@ -489,6 +589,8 @@ def _load_catalog(
             context=context,
             errors=errors,
             required=False,
+            resolve_path=path_resolver.resolve,
+            repo_path_for=path_resolver.repo_path,
         )
         raw_related_workstreams = item.get("related_workstreams", [])
         related_workstreams: list[str] = []
@@ -504,12 +606,24 @@ def _load_catalog(
                     continue
                 related_workstreams.append(value)
         backlog_workstreams: list[str] = []
+        related_backlog_entries: list[dict[str, str]] = []
         for backlog_rel in related_backlog:
-            inferred = _normalize_workstream_id(
-                _extract_idea_id_from_backlog_path(repo_root=repo_root, token=backlog_rel)
+            metadata = _read_backlog_front_matter_fields(
+                path=path_resolver.resolve(backlog_rel),
+                field_names=("idea_id", "title"),
+                cache=backlog_metadata_cache,
             )
+            inferred = _normalize_workstream_id(metadata.get("idea_id", ""))
             if inferred:
                 backlog_workstreams.append(inferred)
+            related_backlog_entries.append(
+                {
+                    "file": backlog_rel,
+                    "href": path_resolver.href(backlog_rel),
+                    "idea_id": inferred,
+                    "title": str(metadata.get("title", "")).strip(),
+                }
+            )
         related_workstreams = sorted(set(related_workstreams))
         context_workstreams = sorted(set(related_workstreams) | set(backlog_workstreams))
         related_component_ids: set[str] = set()
@@ -553,18 +667,38 @@ def _load_catalog(
         viewbox_width = float(viewbox_dims[0]) if viewbox_dims else 0.0
         viewbox_height = float(viewbox_dims[1]) if viewbox_dims else 0.0
 
-        mmd_mtime = _max_mtime(mmd_path)
-        newest_watch_mtime, newest_watch_path = _newest_watch_path(
-            repo_root=repo_root,
-            watch_paths=watch_paths,
-            mtime_cache=watch_path_mtime_cache,
-        )
         stale_reasons: list[str] = []
+        current_watch_fingerprints = diagram_freshness.watched_path_fingerprints(
+            repo_root=repo_root,
+            watched_paths=watch_paths,
+            resolve_path=path_resolver.resolve,
+            cache=watch_path_content_cache,
+        )
+        stored_watch_fingerprints = _stored_watch_fingerprints(item)
 
-        if newest_watch_mtime > (mmd_mtime + 0.0001):
-            stale_reasons.append(
-                f"Linked implementation changed after diagram source update ({newest_watch_path})."
+        if stored_watch_fingerprints:
+            changed_watch_paths = [
+                token
+                for token in watch_paths
+                if stored_watch_fingerprints.get(token, "") != current_watch_fingerprints.get(token, "")
+            ]
+            if changed_watch_paths:
+                stale_reasons.append(
+                    f"Linked implementation changed after diagram source update ({changed_watch_paths[0]})."
+                )
+        else:
+            mmd_mtime = _max_mtime(mmd_path)
+            newest_watch_mtime, newest_watch_path = _newest_watch_path(
+                repo_root=repo_root,
+                watch_paths=watch_paths,
+                mtime_cache=watch_path_mtime_cache,
+                resolve_path=path_resolver.resolve,
+                repo_path_for=path_resolver.repo_path,
             )
+            if newest_watch_mtime > (mmd_mtime + 0.0001):
+                stale_reasons.append(
+                    f"Linked implementation changed after diagram source update ({newest_watch_path})."
+                )
 
         review_age_days = (today - review_date).days
         if review_age_days > max_review_age_days:
@@ -591,41 +725,35 @@ def _load_catalog(
                 "review_age_days": review_age_days,
                 "freshness": freshness,
                 "stale_reasons": stale_reasons,
-                "source_mmd_file": _as_repo_path(repo_root, mmd_path),
-                "source_svg_file": _as_repo_path(repo_root, svg_path),
-                "source_png_file": _as_repo_path(repo_root, png_path) if png_path else "",
-                "source_mmd_href": _as_href(output_path, mmd_path),
-                "source_svg_href": _as_href(output_path, svg_path),
-                "source_png_href": _as_href(output_path, png_path) if png_path else "",
+                "source_mmd_file": path_resolver.repo_path(mmd_path),
+                "source_svg_file": path_resolver.repo_path(svg_path),
+                "source_png_file": path_resolver.repo_path(png_path) if png_path else "",
+                "source_mmd_href": path_resolver.href(mmd_path),
+                "source_svg_href": path_resolver.href(svg_path),
+                "source_png_href": path_resolver.href(png_path) if png_path else "",
                 "svg_viewbox_width": viewbox_width,
                 "svg_viewbox_height": viewbox_height,
                 "initial_view_fit_factor": initial_view_fit_factor,
                 "components": components,
-                "related_backlog": [
-                    {
-                        "file": path,
-                        "href": _as_href(output_path, _resolve(repo_root, path)),
-                    }
-                    for path in related_backlog
-                ],
+                "related_backlog": related_backlog_entries,
                 "related_plans": [
                     {
                         "file": path,
-                        "href": _as_href(output_path, _resolve(repo_root, path)),
+                        "href": path_resolver.href(path),
                     }
                     for path in related_plans
                 ],
                 "related_docs": [
                     {
                         "file": path,
-                        "href": _as_href(output_path, _resolve(repo_root, path)),
+                        "href": path_resolver.href(path),
                     }
                     for path in related_docs
                 ],
                 "related_code": [
                     {
                         "file": path,
-                        "href": _as_href(output_path, _resolve(repo_root, path)),
+                        "href": path_resolver.href(path),
                     }
                     for path in related_code
                 ],
@@ -771,6 +899,7 @@ def _workstream_title_entries(
     delivery_intelligence: Mapping[str, Any],
 ) -> list[dict[str, str]]:
     lookup: dict[str, str] = {}
+    path_resolver = RepoPathResolver(repo_root=repo_root)
 
     def remember(*, workstream_id: str, title: str) -> None:
         normalized_id = _normalize_workstream_id(workstream_id)
@@ -801,32 +930,28 @@ def _workstream_title_entries(
                 title=str(snapshot.get("scope_label") or snapshot.get("title") or snapshot.get("label") or ""),
             )
 
-    spec_cache: dict[str, backlog_contract.IdeaSpec | None] = {}
+    backlog_metadata_cache: dict[str, dict[str, str]] = {}
     for diagram in diagrams:
         related_backlog = diagram.get("related_backlog", [])
         if not isinstance(related_backlog, list):
             continue
         for item in related_backlog:
-            raw_path = ""
-            if isinstance(item, Mapping):
-                raw_path = str(item.get("file", "")).strip()
-            else:
-                raw_path = str(item or "").strip()
-            if not raw_path:
+            if not isinstance(item, Mapping):
                 continue
-            target = _resolve(repo_root, raw_path)
-            cache_key = str(target)
-            if cache_key not in spec_cache:
-                if target.is_file():
-                    spec_cache[cache_key] = backlog_contract._parse_idea_spec(target)
-                else:
-                    spec_cache[cache_key] = None
-            spec = spec_cache[cache_key]
-            if spec is None:
-                continue
+            raw_path = str(item.get("file", "")).strip()
+            metadata = {
+                "idea_id": str(item.get("idea_id", "")).strip(),
+                "title": str(item.get("title", "")).strip(),
+            }
+            if not metadata["idea_id"] or not metadata["title"]:
+                metadata = _read_backlog_front_matter_fields(
+                    path=path_resolver.resolve(raw_path),
+                    field_names=("idea_id", "title"),
+                    cache=backlog_metadata_cache,
+                )
             remember(
-                workstream_id=str(spec.idea_id),
-                title=str(spec.metadata.get("title", "")),
+                workstream_id=str(metadata.get("idea_id", "")),
+                title=str(metadata.get("title", "")),
             )
 
     return [
@@ -2909,6 +3034,51 @@ def main(argv: Sequence[str] | None = None) -> int:
     output_path = _resolve(repo_root, args.output)
     traceability_graph_path = _resolve(repo_root, args.traceability_graph)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="mermaid")
+    output_paths = [
+        output_path,
+        bundle_paths.payload_js_path,
+        bundle_paths.control_js_path,
+    ]
+    if source_bundle_mirror.source_bundle_root(repo_root=repo_root).is_dir():
+        for live_path in tuple(output_paths):
+            output_paths.append(source_bundle_mirror.bundle_mirror_path(repo_root=repo_root, live_path=live_path))
+    input_fingerprint = ""
+    if not args.check_only and not args.diagram_id:
+        skip_rebuild, input_fingerprint, cached_metadata = generated_refresh_guard.should_skip_rebuild(
+            repo_root=repo_root,
+            namespace=_ATLAS_RENDER_GUARD_NAMESPACE,
+            key=_ATLAS_RENDER_GUARD_KEY,
+            watched_paths=(
+                "odylith/atlas/source",
+                "odylith/radar/traceability-graph.v1.json",
+                "odylith/runtime/delivery_intelligence.v4.json",
+                "odylith/registry/source",
+                "src/odylith/runtime/surfaces",
+                "src/odylith/runtime/governance",
+                "src/odylith/runtime/common",
+            ),
+            output_paths=tuple(output_paths),
+            extra={
+                "max_review_age_days": int(args.max_review_age_days),
+                "runtime_mode": str(args.runtime_mode),
+            },
+        )
+        if skip_rebuild:
+            print("mermaid catalog render passed")
+            print(f"- output: {output_path}")
+            if cached_metadata:
+                print(f"- diagrams: {int(cached_metadata.get('diagram_count', 0) or 0)}")
+                print(f"- fresh: {int(cached_metadata.get('fresh_count', 0) or 0)}")
+                print(f"- stale: {int(cached_metadata.get('stale_count', 0) or 0)}")
+                stale_count = int(cached_metadata.get("stale_count", 0) or 0)
+            else:
+                stale_count = 0
+            if args.fail_on_stale and stale_count > 0:
+                print("mermaid catalog freshness FAILED")
+                print("- at least one diagram is stale; update diagram source/metadata and rerun")
+                return 3
+            return 0
     component_index = _load_component_index(repo_root=repo_root)
 
     diagrams, errors, stats = _load_catalog(
@@ -2937,11 +3107,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"- {err}")
         return 2
 
-    delivery_intelligence = odylith_context_engine_store.load_delivery_surface_payload(
+    delivery_intelligence = _load_delivery_surface_payload(
         repo_root=repo_root,
         surface="atlas",
-        runtime_mode=str(args.runtime_mode),
-        buckets=("workstreams",),
     )
 
     _attach_diagram_workstream_relationships(
@@ -2967,7 +3135,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         "diagrams": diagrams,
         "tooltip_lookup": tooltip_lookup,
     }
-    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="mermaid")
     generated_utc = stable_generated_utc.resolve_for_js_assignment_file(
         output_path=bundle_paths.payload_js_path,
         global_name="__ODYLITH_MERMAID_DATA__",
@@ -3031,6 +3198,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             active_outputs=(output_path,),
             legacy_paths=((repo_root / "mermaid" / "index.html").resolve(),),
         )
+        if input_fingerprint:
+            generated_refresh_guard.record_rebuild(
+                repo_root=repo_root,
+                namespace=_ATLAS_RENDER_GUARD_NAMESPACE,
+                key=_ATLAS_RENDER_GUARD_KEY,
+                input_fingerprint=input_fingerprint,
+                output_paths=tuple(output_paths),
+                metadata={
+                    "diagram_count": len(diagrams),
+                    "fresh_count": int(stats["fresh"]),
+                    "stale_count": int(stats["stale"]),
+                },
+            )
 
     print("mermaid catalog render passed")
     print(f"- output: {output_path}")

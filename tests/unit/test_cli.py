@@ -3,12 +3,26 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from odylith import cli
 
 
 class _TTYStream:
     def isatty(self) -> bool:
         return True
+
+
+def _seed_product_repo_shape(repo_root: Path) -> None:
+    (repo_root / "pyproject.toml").write_text("[project]\nname='odylith'\nversion='0.1.0'\n", encoding="utf-8")
+    (repo_root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "radar" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "radar" / "source" / "INDEX.md").write_text("# Backlog Index\n", encoding="utf-8")
+    (repo_root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
+        json.dumps({"version": "v1", "components": []}) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _seed_first_run_surfaces(repo_root: Path) -> None:
@@ -609,6 +623,21 @@ def test_dashboard_refresh_defaults_to_tooling_shell_radar_and_compass(monkeypat
     assert captured["runtime_mode"] == "auto"
     assert captured["atlas_sync"] is False
     assert captured["dry_run"] is True
+
+
+def test_product_repo_main_branch_guard_uses_local_shape_without_install_manager(monkeypatch, tmp_path: Path) -> None:
+    _seed_product_repo_shape(tmp_path)
+    monkeypatch.setattr(
+        cli,
+        "product_repo_role",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install manager role lookup should stay off the hot path")),
+    )
+    monkeypatch.setattr(cli, "_current_git_branch", lambda **kwargs: "main")
+
+    message = cli._product_repo_main_branch_write_block(repo_root=tmp_path)
+
+    assert "Maintainer authoring on `main` is forbidden in this repo." in message
+    assert f"{cli.datetime.now(cli.UTC).year}/freedom/<tag>" in message
 
 
 def test_backlog_create_dispatches_to_backlog_authoring(monkeypatch, tmp_path: Path) -> None:
@@ -1241,6 +1270,20 @@ def test_compass_refresh_dispatch_accepts_structured_flags(monkeypatch, tmp_path
         "--runtime-mode",
         "standalone",
     ]
+
+
+def test_compass_refresh_dispatch_rejects_removed_refresh_profile_flag(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit):
+        cli.main(
+            [
+                "compass",
+                "refresh",
+                "--repo-root",
+                str(tmp_path),
+                "--refresh-profile",
+                "full",
+            ]
+        )
 
 
 def test_compass_restore_history_dispatch_accepts_forwarded_flags(monkeypatch, tmp_path: Path) -> None:

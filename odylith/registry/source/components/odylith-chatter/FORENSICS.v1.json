@@ -49,40 +49,26 @@
   "timeline": [
     {
       "artifacts": [
-        "AGENTS.md",
-        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
-        "docs/benchmarks/README.md",
-        "docs/benchmarks/REVIEWER_GUIDE.md",
         "odylith/AGENTS.md",
-        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
         "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        "odylith/maintainer/AGENTS.md",
-        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
-        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
         "odylith/skills/delivery-governance-surface-ops/SKILL.md",
-        "odylith/skills/session-context/SKILL.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
-        "odylith/skills/subagent-router/SKILL.md",
-        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "src/odylith/bundle/assets/odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
         "src/odylith/bundle/assets/odylith/skills/delivery-governance-surface-ops/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/session-context/SKILL.md",
-        "src/odylith/install/agents.py",
-        "src/odylith/install/manager.py",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py",
-        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator_runtime_signals.py",
+        "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
         "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py"
       ],
       "confidence": "high",
-      "event_index": 70,
+      "event_index": 67,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-chatter"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, docs/benchmarks/METRICS_AND_PRIORITIES.md +21 more",
-      "ts_iso": "2026-04-09T14:58:31-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/AGENTS.md, odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md +7 more",
+      "ts_iso": "2026-04-09T22:27:08-07:00",
       "workstreams": []
     },
     {

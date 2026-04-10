@@ -24,14 +24,15 @@
     "D-017",
     "D-024",
     "D-028",
-    "D-029"
+    "D-029",
+    "D-030"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 19,
     "mapped_workstream_evidence_count": 0,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 5,
+    "spec_history_event_count": 7,
     "status": "forensic_coverage_present",
     "timeline_event_count": 20
   },
@@ -46,6 +47,7 @@
     {
       "artifacts": [
         "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
         "src/odylith/runtime/surfaces/render_mermaid_catalog.py"
       ],
       "confidence": "high",
@@ -56,8 +58,8 @@
         "atlas"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/atlas/CURRENT_SPEC.md, src/odylith/runtime/surfaces/render_mermaid_catalog.py",
-      "ts_iso": "2026-04-09T15:09:43-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/atlas/CURRENT_SPEC.md, src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py +1 more",
+      "ts_iso": "2026-04-10T00:22:31-07:00",
       "workstreams": []
     },
     {
@@ -607,6 +609,8 @@
     "B-032",
     "B-033",
     "B-043",
-    "B-071"
+    "B-080",
+    "B-071",
+    "B-081"
   ]
 }

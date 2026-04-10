@@ -454,4 +454,6 @@ def _assert_compass_live_state(compass, *, window_token: str) -> None:  # noqa: 
     assert "stale last known good" not in brief_notice
     assert _compass_kpi_value(compass, "Critical Risks") >= 0
     assert compass.locator("#risk-list .risk, #risk-list .empty").count() > 0
-    assert compass.locator("#timeline .tx-card, #timeline .empty").count() > 0
+    assert compass.locator(
+        "#timeline .tx-card, #timeline .empty, #timeline .timeline-day-title, #timeline .hour-empty"
+    ).count() > 0

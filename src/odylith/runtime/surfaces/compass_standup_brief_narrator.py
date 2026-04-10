@@ -1718,12 +1718,23 @@ def _recoverable_cached_section_keys(*, validation_errors: Sequence[str]) -> set
     recoverable: set[str] = set()
     for error in validation_errors:
         message = str(error).strip()
+        if message == "Current execution must cite freshness evidence when the fact packet is aging or stale":
+            recoverable.add("current_execution")
+            continue
         match = re.match(r"^section\s+([a-z_]+)\s+bullet\s+\d+\s+", message)
         if not match:
             return set()
         section_key = str(match.group(1)).strip()
         if message.endswith("drifts away from the cited fact language") or message.endswith(
             "falls into portable summary cadence"
+        ) or message.endswith(
+            "leans on stagey metaphor instead of plainspoken maintainer language"
+        ) or message.endswith(
+            "slides back into dashboard-polished summary language"
+        ) or message.endswith(
+            "reuses cached stock phrasing instead of plainspoken maintainer narration"
+        ) or message.endswith(
+            "leads with counts-only telemetry"
         ):
             recoverable.add(section_key)
             continue
@@ -1778,15 +1789,15 @@ def _global_window_coverage_bullet_text(*, fact_text: str) -> str:
         remainder = detail.split(".", 1)[1].strip() if "." in detail else ""
         remainder = re.sub(r"\s*carried most of it\.?$", "", remainder, flags=re.IGNORECASE).strip()
         if remainder:
-            return f"This window mostly ran through {remainder}."
+            return f"Most of the work here was in {remainder}."
     if detail.startswith("Work moved across ") and ":" in detail:
         remainder = detail.split(":", 1)[1].strip()
         if remainder:
-            return f"This window mostly ran through {remainder.rstrip('.')}."
+            return f"Most of the work here was in {remainder.rstrip('.')}."
     if detail.startswith("Most of the movement this window sat in "):
         remainder = detail.split("Most of the movement this window sat in ", 1)[1].strip()
         if remainder:
-            return f"This window mostly ran through {remainder.rstrip('.')}."
+            return f"Most of the work here was in {remainder.rstrip('.')}."
     return detail.rstrip(".")
 
 

@@ -287,7 +287,7 @@
           completedCount ? `<span class="label execution-wave-label wave-status-complete">${escapeHtml(completedLabel)}</span>` : "",
           releaseProgress.percent ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(`Overall ${releaseProgress.percent} progress`)}</span>` : "",
         ].filter(Boolean);
-        const openAttr = scopedWorkstream || group.is_current || groups.length === 1 ? " open" : "";
+        const openAttr = scopedWorkstream ? " open" : "";
         const panels = [];
         if (group.members.length || !group.completed_members.length) {
           panels.push(`

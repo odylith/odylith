@@ -23,6 +23,10 @@ Last updated (UTC): 2026-04-10
   `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`,
   benchmark docs under `docs/benchmarks/`, benchmark component truth, and
   benchmark regression tests. | Open | [2026-04-09-benchmark-live-proof-reports-still-emit-codex-branded-canonical-fields.md](2026-04-09-benchmark-live-proof-reports-still-emit-codex-branded-canonical-fields.md) |
+| CB-100 | 2026-04-09 | Atlas real render lane still misses sub second bar after review only fast path | P1 | `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`,
+  `src/odylith/runtime/surfaces/mermaid_worker_session.py`,
+  `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`,
+  Mermaid CLI integration, and `B-080`. | Open | [2026-04-09-atlas-real-render-lane-still-misses-sub-second-bar-after-review-only-fast-path.md](2026-04-09-atlas-real-render-lane-still-misses-sub-second-bar-after-review-only-fast-path.md) |
 | CB-076 | 2026-04-08 | Successful pinned runtime verification still prints scary trusted root key warning noise | P1 | pinned-runtime release verification messaging,
   `src/odylith/install/release_assets.py`, shipped-runtime trust bootstrap
   output, `make dogfood-activate`, `make consumer-rehearsal`,
@@ -189,12 +193,24 @@ Last updated (UTC): 2026-04-10
   `src/odylith/runtime/surfaces/render_casebook_dashboard.py`,
   `src/odylith/runtime/surfaces/render_mermaid_catalog.py`,
   and the cross-surface browser route-proof lane. | Closed | [2026-04-09-cross-surface-workstream-buttons-can-reopen-local-scope-instead-of-radar.md](2026-04-09-cross-surface-workstream-buttons-can-reopen-local-scope-instead-of-radar.md) |
+| CB-092 | 2026-04-09 | Compass timeline audit cards can hide their own anchor workstream in visible chip row | P1 | `src/odylith/runtime/surfaces/compass_transaction_runtime.py`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-timeline.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
+  `tests/unit/runtime/test_compass_transaction_runtime.py`,
+  `tests/integration/runtime/test_surface_browser_deep.py`, Compass component
+  spec, `B-025`, and `B-071`. | Closed | [2026-04-09-compass-timeline-audit-cards-can-hide-their-own-anchor-workstream-in-visible-chip-row.md](2026-04-09-compass-timeline-audit-cards-can-hide-their-own-anchor-workstream-in-visible-chip-row.md) |
 | CB-088 | 2026-04-09 | Compass scoped selector can advertise unverified window activity and leak global audit cards | P1 | `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
   `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-state.v1.js`,
   `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
   `tests/unit/runtime/test_compass_dashboard_runtime.py`,
   `tests/integration/runtime/test_surface_browser_deep.py`, Compass component
   spec, and `B-025` governance memory. | Closed | [2026-04-09-compass-scoped-selector-can-advertise-unverified-window-activity-and-leak-global-audit-cards.md](2026-04-09-compass-scoped-selector-can-advertise-unverified-window-activity-and-leak-global-audit-cards.md) |
+| CB-093 | 2026-04-09 | Compass runtime reuse can ignore live release and program source changes | P0 | `src/odylith/runtime/context_engine/surface_projection_fingerprint.py`,
+  `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_governance_source_runtime.py`,
+  Compass runtime reuse, live release-target truth, execution-wave source
+  overlay, and `B-072`. | Closed | [2026-04-09-compass-runtime-reuse-can-ignore-live-release-and-program-source-changes.md](2026-04-09-compass-runtime-reuse-can-ignore-live-release-and-program-source-changes.md) |
 | CB-081 | 2026-04-09 | Compass release targets can pin closed workstreams until runtime refresh | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
   `src/odylith/runtime/surfaces/compass_dashboard_frontend_contract.py`,
   `src/odylith/runtime/surfaces/templates/compass_dashboard/`,
@@ -214,6 +230,30 @@ Last updated (UTC): 2026-04-10
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
   Compass release notes, Compass and Dashboard current specs, B-025 and B-060
   governed workstream memory, browser and runtime regression tests. | Closed | [2026-04-09-compass-minute-scale-full-refresh-lane-remained-in-product-after-bounded-contract.md](2026-04-09-compass-minute-scale-full-refresh-lane-remained-in-product-after-bounded-contract.md) |
+| CB-095 | 2026-04-09 | Compass current workstreams can duplicate governed lanes already visible in programs or release targets | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
+  `odylith/compass/compass-workstreams.v1.js`,
+  `src/odylith/bundle/assets/odylith/compass/compass-workstreams.v1.js`,
+  Compass `Current Workstreams`, release-target coexistence, and execution-wave
+  coexistence in the visible UI. | Closed | [2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md](2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md) |
+| CB-094 | 2026-04-09 | Compass current workstream ranking can hide active release and wave lanes | P1 | `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_current_workstreams_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  current-workstream ranking, release-target visibility, and execution-wave
+  promotion inside Compass. | Closed | [2026-04-09-compass-current-workstream-ranking-can-hide-active-release-and-wave-lanes.md](2026-04-09-compass-current-workstream-ranking-can-hide-active-release-and-wave-lanes.md) |
+| CB-096 | 2026-04-09 | Compass browser source truth fallback can accept unusable snapshots and preserve stale scope state | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-runtime-truth.v1.js`,
+  `odylith/compass/compass-runtime-truth.v1.js`,
+  `src/odylith/bundle/assets/odylith/compass/compass-runtime-truth.v1.js`,
+  source-truth reconciliation, traceability fallback, and scoped-workstream
+  runtime metadata in Compass. | Closed | [2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md](2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md) |
+| CB-097 | 2026-04-09 | Atlas watch freshness can mark diagrams stale on mtime only churn | P1 | `src/odylith/runtime/common/diagram_freshness.py`,
+  `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`,
+  `src/odylith/runtime/surfaces/render_mermaid_catalog.py`,
+  Atlas freshness contract, and `B-080`. | Closed | [2026-04-09-atlas-watch-freshness-can-mark-diagrams-stale-on-mtime-only-churn.md](2026-04-09-atlas-watch-freshness-can-mark-diagrams-stale-on-mtime-only-churn.md) |
+| CB-099 | 2026-04-09 | Atlas persistent mermaid worker bootstrap can fail real render jobs | P1 | `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`,
+  `src/odylith/runtime/surfaces/mermaid_worker_session.py`,
+  Atlas Mermaid render path, and `B-080`. | Closed | [2026-04-09-atlas-persistent-mermaid-worker-bootstrap-can-fail-real-render-jobs.md](2026-04-09-atlas-persistent-mermaid-worker-bootstrap-can-fail-real-render-jobs.md) |
+| CB-098 | 2026-04-09 | Atlas auto update plan can claim render work for review only sync | P2 | `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`,
+  Atlas CLI plan output, and `B-080`. | Closed | [2026-04-09-atlas-auto-update-plan-can-claim-render-work-for-review-only-sync.md](2026-04-09-atlas-auto-update-plan-can-claim-render-work-for-review-only-sync.md) |
 | CB-067 | 2026-04-08 | Tooling shell refresh can look fresh while compass child runtime stays stale | P1 | `src/odylith/runtime/surfaces/render_tooling_dashboard.py`,
   `src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, tooling shell

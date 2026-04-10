@@ -27,7 +27,7 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 - run Casebook preflight and capture named failures or repeat-debug loops in the same turn
 - keep Compass updates intent-first and carry forward constraints plus validation obligations
 - treat Compass voice as governed truth: plainspoken grounded maintainer narration in ordinary words, with no stock framing, house phrases, queue-label restatement, repeated window leads, generic priority wrappers, rhetorical benchmark challenges, stagey metaphor, or canned current/next/why/timing scaffolding in Compass-facing summaries or updates
-- keep Compass cheap too: the one bounded Compass refresh should stay deterministic and provider-light, timeline audit inputs should be reused instead of recomputed through model calls, there is no separate Compass `full` mode anymore, and simple brief enrichment should prefer `gpt-5.3-codex-spark` with low reasoning
+- keep Compass cheap too: the one bounded Compass refresh should stay deterministic and provider-light, timeline audit inputs should be reused instead of recomputed through model calls, and if a user asks for a "full" Compass refresh the correct command is still `odylith compass refresh --repo-root . --wait`; do not add a Compass-specific `full` flag or second mode
 - use Delivery Intelligence's shared Scope Signal Ladder when deciding what
   deserves default visibility, promotion, or expensive compute:
   - `R0 suppressed_noise`

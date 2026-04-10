@@ -10,6 +10,9 @@
 - Consumer repo code still validates on the consumer repo's own toolchain.
 - The shipped bundle covers the installed consumer contract only.
 
+## Coding Standards
+- Follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the canonical Odylith coding standards, including file-size discipline, refactor-first posture, documentation, reuse, robustness, and focused validation expectations.
+
 ## Runtime, Write, And Validation Boundaries
 - Runtime boundary: the invoked Odylith executable decides which interpreter runs Odylith itself.
 - Write boundary: interpreter choice does not decide which repo files the agent may edit.

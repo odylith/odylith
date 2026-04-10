@@ -11,18 +11,20 @@
 - Type: Product
 
 - Description: Compass now has one bounded refresh contract and the visible
-  global `24h` and `48h` briefs stay on maintained narrated cache, and the
-  latest live payload now keeps every ready brief on narrated cache too. The
-  product is still not release-ready because the bounded cold lane remains
-  above the founder runtime bar. On the latest measured source-local runs, hot
-  exact reuse landed at `0.1s` internal / `0.61s` wall, cold shell-safe
-  landed at `0.8s` internal / `1.14s` wall, and the live payload carried
-  `39` ready narrated-cache briefs with `0` deterministic ready briefs.
+  global `24h` and `48h` briefs stay on maintained narrated cache, and the old
+  stock phrasing is no longer replayed from cached runtime payloads. The
+  product is still not release-ready because the rebuilt bounded lane remains
+  above the founder runtime bar. On the latest measured source-local runs,
+  exact reuse landed at `0.3s` internal / `0.73s` wall, the rebuilt bounded
+  refresh landed at `1.7s` internal / `2.18s` wall, and the live payload
+  carried `35` ready briefs with `35` narrated cache and `0` deterministic
+  scoped fallbacks.
 
-- Impact: Compass now avoids the older stale-global lie, but it still spends
-  too much time in the bounded cold path. Live narration quality is back on
-  the ready brief set, but the runtime still misses the founder wall-clock
-  bar and therefore remains below release readiness.
+- Impact: Compass now avoids the older stale-global lie and it no longer
+  replays the cached stock lines that made live narration feel templated
+  again, and the deterministic scoped tail is gone, but it still spends too
+  much time on rebuilt refresh. Release readiness is still blocked on
+  runtime latency alone.
 
 - Components Affected: `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
@@ -34,37 +36,34 @@
   `odylith compass refresh --repo-root . --wait`, and the checked-in Compass
   runtime payload.
 
-- Root Cause: The architecture improved in two uneven halves. Maintained
-  narrated reuse now protects the global windows, and an exact-reuse hot lane
-  exists again after the refresh contract stopped persisting a pre-build input
-  fingerprint that self-invalidated on the next run. The remaining scoped
-  deterministic dominance turned out to come from two bounded-reuse gaps:
-  same-scope cache reuse was still blocked by scoped freshness facts, and one
-  recoverable stale current-execution bullet could invalidate an otherwise
-  healthy narrated cache candidate. Those are now fixed. The remaining cold
-  shell-safe miss is mostly startup, input loading, and runtime-payload
-  rebuild cost.
+- Root Cause: The architecture improved in three uneven halves. Maintained
+  narrated reuse protects the global windows, and exact runtime reuse now
+  survives date rollover because it keys off exact input fingerprint instead
+  of a small snapshot-age budget. Cached narrated sections are also forced
+  back through the current voice validator before reuse, which is what stopped
+  old stock lines from replaying forever. The remaining miss is narrower:
+  rebuilt shell-safe refresh still spends most of its time in input loading
+  and payload construction, even after the ready-brief population returned
+  fully to narrated cache.
 
-- Solution: Keep deterministic as emergency coverage only, keep ready briefs on
-  maintained narrated cache, and continue pushing the product toward two real
-  release lanes only: hot exact reuse under `50ms` of internal runtime work
-  and complete cold shell-safe refresh under `1s` wall clock. The next cuts
-  belong in launcher or import slimming and cheaper incremental projection or
-  payload reuse, not in reintroducing fresh provider spend on the default
-  path.
+- Solution: Keep deterministic as emergency coverage only, keep the visible
+  globals on maintained narrated cache, and continue pushing the product
+  toward two real release lanes only: hot exact reuse under `50ms` of
+  internal runtime work and complete rebuilt shell-safe refresh under `1s`
+  wall clock. The next cuts belong in launcher or import slimming and
+  cheaper incremental projection or payload reuse, not in reintroducing
+  fresh provider spend on the default path.
 
 - Verification:
   - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/runtime/test_compass_standup_brief_maintenance.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_refresh_runtime.py`
-    (`143 passed`)
-  - `PYTHONPATH=src python3 -m pytest -q tests/integration/runtime/test_surface_browser_deep.py -k 'shell_safe_compass_refresh_artifacts_reuse_warmed_globals_but_do_not_cold_call_provider or compass_scope_window_and_detail_behavior_in_compact_viewport or compass_scoped_brief_missing_fails_closed_instead_of_showing_global or compass_quiet_catalog_scope_reports_quiet_window_instead_of_missing_brief'`
-    (`4 passed`)
+    (`138 passed` on the focused narrator/runtime/render lane after the cache-voice and exact-reuse fixes, plus `39 passed` on the Compass browser/runtime regression lane)
   - `env PYTHONPATH=src /usr/bin/time -p python3 -m odylith.cli compass refresh --repo-root . --wait`
-    produced `elapsed_seconds: 0.8`, `real 1.14`
-  - immediate rerun of the same command produced `elapsed_seconds: 0.1`,
-    `real 0.61`
+    produced `elapsed_seconds: 1.7`, `real 2.18` on the latest rebuilt run
+  - immediate rerun of the same command produced `elapsed_seconds: 0.4`,
+    then `elapsed_seconds: 0.3`, `real 0.73` after the CLI import slimming
   - `odylith/compass/runtime/current.v1.json` now shows global `24h` and `48h`
-    as `source=cache`, and the ready-brief source mix now sits at
-    `39 cache / 0 deterministic`
+    as `source=cache`, the cached stock lines no longer appear in the live
+    payload, and the ready-brief source mix now sits at `35 cache / 0 deterministic`
 
 - Prevention: Release readiness must stay explicit in governed truth whenever
   Compass misses either of its bounded runtime targets or lets deterministic
@@ -76,8 +75,8 @@
   timings after the maintained-global narration fix.
 
 - Failure Signature: Global briefs look healthy, but the overall ready-brief
-  source mix has recovered to narrated cache while bounded cold refresh still
-  measures above the published wall-clock budget.
+  source mix is healthy and rebuilt bounded refresh still measures above the
+  published wall-clock budget.
 
 - Trigger Path: 1. Run `odylith compass refresh --repo-root . --wait`
   twice without changing source inputs. 2. Inspect `refresh-state.v1.json`
@@ -97,8 +96,10 @@
 - Rollback/Forward Fix: Forward fix.
 
 - Agent Guardrails: Do not declare Compass release-ready just because global
-  `24h` and `48h` are back on narrated cache. The governing numbers are the
-  bounded refresh timings first, and the full ready-brief source mix second.
+  `24h` and `48h` are back on narrated cache or because the stock phrasing is
+  gone from the visible brief. The governing numbers are the rebuilt refresh
+  timings first, the exact-reuse lane second, and the full ready-brief source
+  mix third.
 
 - Related Incidents/Bugs:
   [2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md](2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md)

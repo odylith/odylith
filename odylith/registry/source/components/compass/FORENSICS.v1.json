@@ -25,8 +25,11 @@
     "D-022",
     "D-023",
     "D-024",
+    "D-032",
     "D-026",
     "D-027",
+    "D-030",
+    "D-031",
     "D-028",
     "D-029"
   ],
@@ -35,7 +38,7 @@
     "explicit_event_count": 50,
     "mapped_workstream_evidence_count": 3,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 20,
+    "spec_history_event_count": 23,
     "status": "forensic_coverage_present",
     "timeline_event_count": 51
   },
@@ -50,20 +53,18 @@
     {
       "artifacts": [
         "odylith/registry/source/components/compass/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/odylith/compass/runtime/AGENTS.md",
-        "src/odylith/runtime/common/log_compass_timeline_event.py",
         "src/odylith/runtime/surfaces/render_compass_dashboard.py"
       ],
       "confidence": "high",
-      "event_index": 66,
+      "event_index": 64,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "compass"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/compass/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/compass/runtime/AGENTS.md +2 more",
-      "ts_iso": "2026-04-09T14:53:40-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/compass/CURRENT_SPEC.md, src/odylith/runtime/surfaces/render_compass_dashboard.py",
+      "ts_iso": "2026-04-10T00:09:17-07:00",
       "workstreams": []
     },
     {
@@ -1454,6 +1455,9 @@
     "B-063",
     "B-064",
     "B-069",
-    "B-071"
+    "B-072",
+    "B-077",
+    "B-071",
+    "B-078"
   ]
 }

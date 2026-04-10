@@ -33,10 +33,7 @@
     - if the current branch is `main`, create and switch to a new branch before any code or tracked-file edit
     - if work is already on a non-`main` branch, keep using that branch
   - source-file discipline posture:
-    - the repo-root file-size policy is non-negotiable in this maintainer lane
-    - `800` LOC is the soft limit, `1200` LOC requires an explicit exception and decomposition plan, `2000+` LOC is red-zone exception only, and tests cap at `1500` LOC
-    - when a hand-maintained source file is already beyond those thresholds, the next meaningful change should be refactor-first work that splits it into multiple focused files or modules with robustness, reliability, and reusability as explicit goals instead of growing the oversized file in place
-    - generated or mirrored bundle assets are excluded; govern their source-of-truth files instead
+    - follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the canonical Odylith coding standards, including file-size discipline, refactor-first posture, documentation, reuse, robustness, and focused validation expectations
 
 ## Runtime, Write, And Validation Boundaries
 - Runtime boundary: the invoked Odylith executable decides which interpreter runs Odylith itself.

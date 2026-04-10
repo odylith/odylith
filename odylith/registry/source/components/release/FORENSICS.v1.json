@@ -46,27 +46,18 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-        "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "src/odylith/runtime/governance/validate_self_host_posture.py",
-        "odylith/radar/source/releases/AGENTS.md",
-        "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
-        "odylith/radar/source/releases/releases.v1.json",
-        "src/odylith/runtime/governance/release_planning_authoring.py",
-        "src/odylith/runtime/governance/release_planning_contract.py",
-        "src/odylith/runtime/governance/release_planning_view_model.py"
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
       ],
       "confidence": "high",
-      "event_index": 77,
+      "event_index": 71,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "release"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/MAINTAINER_RELEASE_RUNBOOK.md, odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md +8 more",
-      "ts_iso": "2026-04-09T14:11:45-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+      "ts_iso": "2026-04-09T21:12:44-07:00",
       "workstreams": []
     },
     {

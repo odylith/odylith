@@ -434,7 +434,9 @@ def _assert_compass_live_state(compass, *, window_token: str) -> None:  # noqa: 
     assert "stale last known good" not in brief_notice
     assert _compass_kpi_value(compass, "Critical Risks") >= 0
     assert compass.locator("#risk-list .risk, #risk-list .empty").count() > 0
-    assert compass.locator("#timeline .tx-card, #timeline .empty").count() > 0
+    assert compass.locator(
+        "#timeline .tx-card, #timeline .empty, #timeline .timeline-day-title, #timeline .hour-empty"
+    ).count() > 0
 
 
 def test_surface_entrypoints_redirect_into_shell_and_load_requested_surface(browser_context) -> None:  # noqa: ANN001
@@ -587,6 +589,58 @@ def test_compass_and_radar_current_release_cards_show_labeled_release_version(br
     radar_release = radar.locator(".stats .stat.stat-release-only .value").first.inner_text().strip()
     assert radar_release_label == "CURRENT RELEASE"
     assert radar_release == "0.1.11"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_current_workstreams_excludes_rows_already_represented_in_programs_or_release_targets(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    page.wait_for_function(
+        """() => {
+            const node = document.querySelector("#shellRuntimeStatus");
+            return Boolean(node && node.hidden && node.getAttribute("aria-hidden") === "true");
+        }""",
+        timeout=15000,
+    )
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    _assert_compass_live_state(compass, window_token="48h")
+
+    represented_ids = set(
+        compass.locator(
+            "#execution-waves-host .execution-wave-section-title, "
+            "#execution-waves-host a.execution-wave-chip-link, "
+            "#release-groups-host a.execution-wave-chip-link"
+        ).evaluate_all(
+            """(nodes) => {
+                const seen = new Set();
+                nodes.forEach((node) => {
+                    const text = String(node.textContent || "");
+                    const matches = text.match(/\\bB-\\d{3,}\\b/g) || [];
+                    matches.forEach((token) => seen.add(token));
+                });
+                return Array.from(seen).sort();
+            }"""
+        )
+    )
+    current_ids = set(
+        compass.locator("#current-workstreams a.ws-id-btn").evaluate_all(
+            """(nodes) => Array.from(new Set(
+                nodes
+                  .map((node) => String(node.textContent || "").trim())
+                  .filter((token) => /^B-\\d{3,}$/.test(token))
+            )).sort()"""
+        )
+    )
+
+    assert represented_ids, "expected Compass Programs or Release Targets to represent at least one workstream"
+    assert represented_ids.isdisjoint(current_ids), (
+        f"Current Workstreams still duplicates ids already represented above: {sorted(represented_ids & current_ids)}"
+    )
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

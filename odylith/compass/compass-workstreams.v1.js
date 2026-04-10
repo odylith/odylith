@@ -33,6 +33,57 @@
       return Number.isFinite(ratio) ? ratio : null;
     }
 
+    function compassGovernanceRepresentedWorkstreamIds(payload) {
+      const represented = new Set();
+      const addWorkstreamId = (value) => {
+        const token = String(value || "").trim();
+        if (WORKSTREAM_RE.test(token)) represented.add(token);
+      };
+      const addWorkstreamRefList = (values) => {
+        const rows = Array.isArray(values) ? values : [];
+        rows.forEach((item) => {
+          if (item && typeof item === "object") {
+            addWorkstreamId(item.idea_id || item.workstream_id);
+          } else {
+            addWorkstreamId(item);
+          }
+        });
+      };
+
+      executionWavePrograms(payload).forEach((program) => {
+        addWorkstreamId(program && program.umbrella_id);
+        const waves = Array.isArray(program && program.waves) ? program.waves : [];
+        waves.forEach((wave) => {
+          addWorkstreamRefList(wave && wave.primary_workstreams);
+          addWorkstreamRefList(wave && wave.carried_workstreams);
+          addWorkstreamRefList(wave && wave.in_band_workstreams);
+          addWorkstreamRefList(wave && wave.all_workstreams);
+          addWorkstreamRefList(wave && wave.gate_refs);
+        });
+      });
+
+      const releaseSummary = payload && payload.release_summary && typeof payload.release_summary === "object"
+        ? payload.release_summary
+        : {};
+      const releaseCatalog = Array.isArray(releaseSummary.catalog) ? releaseSummary.catalog : [];
+      const workstreamRows = workstreamRowsForLookup(payload);
+      releaseCatalog.forEach((release) => {
+        addWorkstreamRefList(release && release.active_workstreams);
+        addWorkstreamRefList(release && release.completed_workstreams);
+        const removedSummary = `Removed from ${compassWorkstreamReleaseLabel(release)}`;
+        workstreamRows.forEach((row) => {
+          const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
+          const status = String(row && row.status ? row.status : "").trim().toLowerCase();
+          const releaseHistorySummary = String(row && row.release_history_summary ? row.release_history_summary : "").trim();
+          if (WORKSTREAM_RE.test(ideaId) && status === "finished" && releaseHistorySummary === removedSummary) {
+            represented.add(ideaId);
+          }
+        });
+      });
+
+      return represented;
+    }
+
     function focusAreaSummary(files) {
       const rows = Array.isArray(files) ? files.map((file) => String(file || "").trim()).filter(Boolean) : [];
       const buckets = [
@@ -303,7 +354,11 @@
     }
 
     function renderCurrentWorkstreams(payload, state, events, transactions, navigationState) {
-      const rows = scopeWorkstreams(payload, state);
+      const scopedRows = scopeWorkstreams(payload, state);
+      const representedIds = state.workstream ? new Set() : compassGovernanceRepresentedWorkstreamIds(payload);
+      const rows = state.workstream
+        ? scopedRows
+        : scopedRows.filter((row) => !representedIds.has(String(row && row.idea_id ? row.idea_id : "").trim()));
       const target = document.getElementById("current-workstreams");
       const windowKey = state.window === "24h" ? "24h" : "48h";
       const planLookup = planHrefLookup(payload);
@@ -334,7 +389,9 @@
       };
 
       if (!rows.length) {
-        target.innerHTML = '<p class="empty">No active workstreams in this scope.</p>';
+        target.innerHTML = state.workstream
+          ? '<p class="empty">No active workstreams in this scope.</p>'
+          : '<p class="empty">All current workstreams are already represented in Programs or Release Targets.</p>';
         return;
       }
 
@@ -569,7 +626,9 @@
       });
 
       if (!records.length) {
-        target.innerHTML = '<p class="empty">No active workstreams in this scope.</p>';
+        target.innerHTML = state.workstream
+          ? '<p class="empty">No active workstreams in this scope.</p>'
+          : '<p class="empty">All current workstreams are already represented in Programs or Release Targets.</p>';
         return;
       }
 
@@ -768,11 +827,16 @@
       const historyDates = knownHistoryDateTokens(payload);
       const missingSnapshot = state.date !== "live" && DATE_RE.test(state.date) && !historyDates.includes(state.date);
 
-      const renderTimelineWorkstreamChips = (workstreams, maxItems) => {
+      const renderTimelineWorkstreamChips = (workstreams, maxItems, prioritizedId = "") => {
         const rows = Array.isArray(workstreams) ? workstreams : [];
-        const chips = rows
-          .map((id) => String(id || "").trim())
-          .filter(Boolean)
+        const normalizedIds = Array.from(new Set(
+          rows.map((id) => String(id || "").trim()).filter(Boolean)
+        ));
+        const preferred = String(prioritizedId || "").trim();
+        const orderedIds = preferred && normalizedIds.includes(preferred)
+          ? [preferred, ...normalizedIds.filter((id) => id !== preferred)]
+          : normalizedIds;
+        const chips = orderedIds
           .slice(0, Math.max(0, Number(maxItems || 0)))
           .map((id) => {
             const tooltipAttrs = workstreamTooltipAttrs(id, workstreamTitles, `Open radar for ${id}`);
@@ -959,7 +1023,8 @@
           const eventHtml = orderedItems.map((row) => {
             const timeLabel = summarizeAnchorTime(row.start_ts_iso, row.end_ts_iso);
             const ws = Array.isArray(row.workstreams) ? row.workstreams : [];
-            const chips = renderTimelineWorkstreamChips(ws, 5);
+            const primaryIdeaId = String(timelineSummaryPrimaryWorkstreamContext(row, workstreamNarratives).ideaId || "").trim();
+            const chips = renderTimelineWorkstreamChips(ws, 5, primaryIdeaId);
             const transactionId = String(row.transaction_id || row.id || "").trim();
             const sessionId = String(row.session_id || "").trim();
             const contextText = String(row.context || "").trim();

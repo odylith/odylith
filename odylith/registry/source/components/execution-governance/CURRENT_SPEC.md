@@ -69,6 +69,13 @@ runtime profile; it must not redefine the shared execution policy surface.
   Validation-matrix synthesis.
 - `src/odylith/runtime/execution_engine/contradictions.py`
   Contradiction detection across contract, evidence, and intended action.
+- `src/odylith/runtime/execution_engine/runtime_surface_governance.py`
+  Shared summary extraction so packet, shell, Compass, and router-consumable
+  read models all carry the same compact execution-governance posture.
+- `src/odylith/runtime/execution_engine/runtime_lane_policy.py`
+  Local or serial follow-through guards for delegation and parallel fan-out
+  when the active governed frontier says the next move is re-anchor, wait,
+  critical-path verification, unsafe closure, or host-serial execution.
 
 ### Core types
 - `ExecutionHostProfile`
@@ -158,7 +165,8 @@ program schema.
 
 ## Composition
 - [Odylith Context Engine](../odylith-context-engine/CURRENT_SPEC.md) supplies
-  grounded evidence, bounded packets, and resolved entity context.
+  grounded evidence, bounded packets, and resolved entity context, including
+  the compact execution-governance snapshot exported through packet summaries.
 - [Delivery Intelligence](../delivery-intelligence/CURRENT_SPEC.md) supplies
   shared posture and scope signals.
 - [Proof State](../proof-state/CURRENT_SPEC.md) supplies blocker frontier and
@@ -167,10 +175,12 @@ program schema.
   is why the posture exists.
 - [Subagent Router](../subagent-router/CURRENT_SPEC.md) and
   [Subagent Orchestrator](../subagent-orchestrator/CURRENT_SPEC.md) consume
-  execution-governance policy instead of acting as the first policy boundary.
+  execution-governance policy instead of acting as the first policy boundary;
+  active re-anchor, wait-state, contradiction, unsafe-closure, and host-serial
+  posture must keep delegation or parallel fan-out local or serial.
 - [Remediator](../remediator/CURRENT_SPEC.md) compiles bounded correction
-  packets, but those packets should still respect execution-governance
-  admissibility.
+  packets, but those packets should still carry execution-governance posture
+  and refuse deterministic execution when admissibility is not `admit`.
 
 ## What To Change Together
 - If execution-contract fields change, update contract types, policy helpers,
@@ -196,3 +206,4 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 - 2026-04-09: Promoted execution governance into a first-class Registry component so Odylith can turn grounded truth into admissible next-action control, preserve hard user constraints, and keep the shared execution contract host-general across Codex and Claude Code. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-09: Added shared runtime-lane policy and compact surface summaries so packet reads, router or orchestrator guards, shell or Compass posture, and deterministic remediation all consume the same execution-governance snapshot instead of re-deriving local policy. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

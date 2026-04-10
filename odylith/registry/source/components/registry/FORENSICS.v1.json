@@ -48,21 +48,18 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/component_registry.v1.json",
-        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
-        "src/odylith/runtime/governance/component_registry_intelligence.py",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py"
       ],
       "confidence": "high",
-      "event_index": 76,
+      "event_index": 70,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "registry"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json, odylith/registry/source/components/registry/CURRENT_SPEC.md +2 more",
-      "ts_iso": "2026-04-09T15:09:43-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/surfaces/render_registry_dashboard.py",
+      "ts_iso": "2026-04-10T00:01:05-07:00",
       "workstreams": []
     },
     {
@@ -544,6 +541,7 @@
     "B-045",
     "B-059",
     "B-058",
+    "B-080",
     "B-071"
   ]
 }

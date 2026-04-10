@@ -317,10 +317,10 @@ def _build_single_scope_brief(
         config=config,
         provider=provider,
         allow_provider=True,
-        prefer_provider=True,
-        allow_cache_recovery=False,
+        prefer_provider=False,
+        allow_cache_recovery=True,
         allow_deterministic_fallback=False,
-        allow_composed_fallback=True,
+        allow_composed_fallback=False,
     )
     if str(brief.get("status", "")).strip().lower() != "ready":
         return {}

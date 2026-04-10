@@ -87,6 +87,34 @@ def test_delivery_intelligence_main_reports_current_for_semantic_noop(monkeypatc
     assert "delivery intelligence artifact is current" in output
 
 
+def test_delivery_intelligence_main_skips_rebuild_when_inputs_are_unchanged(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    monkeypatch.setattr(
+        engine,
+        "build_delivery_intelligence_artifact",
+        lambda **_: {"version": "v4", "summary": {"state": "steady"}},
+    )
+    monkeypatch.setattr(engine, "validate_delivery_intelligence_artifact", lambda _payload: [])
+
+    first_rc = engine.main(["--repo-root", str(tmp_path)])
+    assert first_rc == 0
+
+    monkeypatch.setattr(
+        engine,
+        "build_delivery_intelligence_artifact",
+        lambda **_: (_ for _ in ()).throw(AssertionError("rebuild should have been skipped")),
+    )
+
+    second_rc = engine.main(["--repo-root", str(tmp_path)])
+    output = capsys.readouterr().out
+
+    assert second_rc == 0
+    assert "delivery intelligence artifact is current" in output
+
+
 def test_slice_delivery_intelligence_for_surface_retains_proof_state_contract() -> None:
     payload = {
         "version": "v4",

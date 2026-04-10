@@ -6,6 +6,8 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.execution_engine import runtime_lane_policy
+
 
 def _host():
     from odylith.runtime.orchestration import subagent_orchestrator as host
@@ -64,6 +66,10 @@ def _adaptive_batch_mode(
         return mode, _sanitize_user_facing_lines(notes)
 
     context_summary = dict(assessment.context_signal_summary or {})
+    governance_guard = runtime_lane_policy.parallelism_guard(context_summary)
+    if governance_guard.blocked:
+        notes.append(governance_guard.reason)
+        return _finish(OrchestrationMode.SERIAL_BATCH)
     odylith_confidence = _clamp_confidence(context_summary.get("odylith_execution_confidence_score", 0) or 0)
     odylith_delegate_preference = _normalize_token(context_summary.get("odylith_execution_delegate_preference", ""))
     odylith_selection_mode = _normalize_token(context_summary.get("odylith_execution_selection_mode", ""))

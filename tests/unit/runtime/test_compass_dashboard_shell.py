@@ -75,7 +75,10 @@ def test_shared_compass_asset_preserves_legacy_digest_fallback_logic() -> None:
     assert 'return `../index.html?${params.toString()}`;' in shared_js
     assert 'const href = radarWorkstreamHref(ideaId, { view: "plan" });' in shared_js
     assert "async function reconcileRuntimePayloadWithSourceTruth(payload)" in runtime_truth_js
-    assert "Compass reconciled this view from the live traceability graph." in runtime_truth_js
+    assert "governed source-truth snapshot" in runtime_truth_js
+    assert 'const sourceTruthHref = String(compassShell().source_truth_href || "").trim();' in runtime_truth_js
+    assert "function sourceTruthPayloadIsUsable(sourceTruth)" in runtime_truth_js
+    assert "if (!sourceTruthPayloadIsUsable(normalizedSourceTruth)) continue;" in runtime_truth_js
     assert "const historyDates = knownHistoryDateTokens(payload);" in state_js
     assert "const minDate = historyDates.length" in state_js
     assert "? historyDates[historyDates.length - 1]" in state_js
@@ -118,6 +121,14 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert '<div class="ws-links">' not in workstreams_js
     assert '<div class="ws-id-stack"><a class="ws-id-btn"' in workstreams_js
     assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js
+    assert "function compassGovernanceRepresentedWorkstreamIds(payload)" in workstreams_js
+    assert "executionWavePrograms(payload).forEach((program) => {" in workstreams_js
+    assert "addWorkstreamRefList(release && release.active_workstreams);" in workstreams_js
+    assert "addWorkstreamRefList(release && release.completed_workstreams);" in workstreams_js
+    assert 'const removedSummary = `Removed from ${compassWorkstreamReleaseLabel(release)}`;' in workstreams_js
+    assert 'if (WORKSTREAM_RE.test(ideaId) && status === "finished" && releaseHistorySummary === removedSummary)' in workstreams_js
+    assert 'scopedRows.filter((row) => !representedIds.has(String(row && row.idea_id ? row.idea_id : "").trim()))' in workstreams_js
+    assert "const rows = scopedRows;" not in workstreams_js
     assert "function numericProgressOrNull(value)" in workstreams_js
     assert '${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}' in workstreams_js
     assert 'Release ${item.releaseLabel}' not in workstreams_js
@@ -148,6 +159,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "function numericProgressOrNull(value)" in releases_js
     assert 'if (value === null || value === undefined || value === "") return null;' in releases_js
     assert "function numericProgressOrNull(value)" in waves_js
+    assert '<article class="card execution-waves-card"><h2>Programs</h2><div id="execution-waves" class="muted"></div></article>' in waves_js
     assert 'if (value === null || value === undefined || value === "") return null;' in waves_js
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in waves_js
     assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}' in releases_js
@@ -171,10 +183,15 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "const progressKnown = progressRatio !== null;" in workstreams_js
     assert 'const progressLabel = String(plan && plan.display_progress_label ? plan.display_progress_label : "").trim();' in workstreams_js
     assert 'const progressCellLabel = progressKnown ? `${progressPct}%` : (progressLabel || "n/a");' in workstreams_js
+    assert "All current workstreams are already represented in Programs or Release Targets." in workstreams_js
+    assert "No active workstreams in this scope." in workstreams_js
     assert "`Open radar for ${token}`" in waves_js
     assert 'href="${escapeHtml(radarWorkstreamHref(token))}"' in waves_js
     assert "compassScopeHref(token, state)" not in waves_js
     assert "`Scope to ${token}`" not in waves_js
+    assert 'contextChips.push(`<span class="label execution-wave-label wave-chip-program">${escapeHtml(`${waveCount}-wave program`)}</span>`);' not in waves_js
+    assert "const sectionChips = [];" in waves_js
+    assert 'sectionChips.push(`<span class="label execution-wave-label wave-status-active">${escapeHtml(`${sectionActiveCount} active`)}</span>`);' in waves_js
     execution_wave_css = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-execution-waves.v1.css")
     base_css = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-base.v1.css")
     expected_stats_grid_css = dashboard_ui_primitives.kpi_grid_layout_css(container_selector=".stats")
@@ -281,14 +298,30 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     ) in base_css
     assert ".digest-link,\n    .brief-inline-link {" in base_css
     assert ".execution-wave-program-stack-release .execution-wave-section-title {" in execution_wave_css
+    assert ".execution-wave-program-stack:not(.execution-wave-program-stack-release) .execution-wave-section {" in execution_wave_css
+    assert "border-color: #dbeafe;" in execution_wave_css
+    assert "background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);" in execution_wave_css
+    assert ".execution-wave-program-stack-release .execution-wave-section {" in execution_wave_css
+    assert "border-color: #dbe9df;" in execution_wave_css
+    assert "background: linear-gradient(180deg, #fbfdfa 0%, #ffffff 100%);" in execution_wave_css
+    assert ".execution-wave-program-stack-release .execution-wave-section-toggle-triangle::before {" in execution_wave_css
+    assert "border-color: transparent transparent transparent #0f766e;" in execution_wave_css
+    assert ".execution-wave-program-stack-release .execution-wave-panel {" in execution_wave_css
+    assert "border-color: #e2ece5;" in execution_wave_css
     assert "font-size: 14px;" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-title {" in execution_wave_css
     assert "font-size: 12px;" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-member-head {" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-member-title-chips {" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-board {" not in execution_wave_css
-    assert ".execution-wave-program-stack-release .execution-wave-section-body {" not in execution_wave_css
+    assert ".execution-wave-program-stack-release .execution-wave-section-body {" in execution_wave_css
     assert ".ws-wave-chip-row {" in execution_wave_css
+    assert ".card.execution-waves-card {" in base_css
+    assert "border-color: #bfd5f3;" in base_css
+    assert "background: linear-gradient(180deg, #edf4ff 0%, #f8fbff 100%);" in base_css
+    assert ".card.release-groups-card {" in base_css
+    assert "border-color: #cfe4d1;" in base_css
+    assert "background: linear-gradient(180deg, #f2faf1 0%, #fbfefb 100%);" in base_css
     assert (
         "padding: "
         f"var({dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}, "
@@ -312,6 +345,7 @@ def test_summary_and_timeline_assets_preserve_risk_and_component_spec_context() 
 
     assert 'riskRows.bugs.length + riskRows.selfHost.length + riskRows.traceCritical.length + riskRows.stale.length' in summary_js
     assert 'rows.push(["Current Release", currentReleaseLabel, "stat-release-only"])' in summary_js
+    assert 'rows.push(["Active Waves"' not in summary_js
     assert 'rows.push(["Next Release", nextReleaseLabel]);' not in summary_js
     assert 'rows.push([null, currentReleaseLabel, "stat-release-only"])' not in summary_js
     assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js

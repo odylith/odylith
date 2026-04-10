@@ -7,6 +7,11 @@
     "D-007",
     "D-010",
     "D-011",
+    "D-002",
+    "D-020",
+    "D-025",
+    "D-030",
+    "D-031",
     "D-028",
     "D-029"
   ],
@@ -15,7 +20,7 @@
     "explicit_event_count": 0,
     "mapped_workstream_evidence_count": 0,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 2,
+    "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
     "timeline_event_count": 1
   },
@@ -29,19 +34,18 @@
   "timeline": [
     {
       "artifacts": [
-        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
-        "odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md"
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py"
       ],
       "confidence": "high",
-      "event_index": 68,
+      "event_index": 65,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "delivery-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/delivery_intelligence_engine.py, odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-09T14:56:17-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/delivery_intelligence_engine.py",
+      "ts_iso": "2026-04-09T21:35:48-07:00",
       "workstreams": []
     }
   ],
@@ -57,6 +61,9 @@
     "B-047",
     "B-061",
     "B-062",
+    "B-072",
+    "B-080",
+    "B-075",
     "B-071"
   ]
 }

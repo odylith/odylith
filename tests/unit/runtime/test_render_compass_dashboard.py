@@ -4,6 +4,8 @@ import datetime as dt
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.surfaces import render_compass_dashboard
 
 
@@ -79,6 +81,11 @@ def test_parse_args_defaults_refresh_profile_to_shell_safe() -> None:
     assert args.refresh_profile == "shell-safe"
 
 
+def test_parse_args_rejects_removed_refresh_profile_flag() -> None:
+    with pytest.raises(SystemExit):
+        render_compass_dashboard._parse_args(["--refresh-profile", "full"])  # noqa: SLF001
+
+
 def test_refresh_runtime_artifacts_reuses_matching_runtime_payload(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     runtime_dir = repo_root / "odylith/compass/runtime"
@@ -107,10 +114,14 @@ def test_refresh_runtime_artifacts_reuses_matching_runtime_payload(tmp_path: Pat
         lambda **_kwargs: "matching-fingerprint",
     )
 
-    def _unexpected_runtime_impl() -> object:
-        raise AssertionError("runtime implementation should not load on fresh fast path")
+    calls: dict[str, object] = {}
 
-    monkeypatch.setattr(render_compass_dashboard, "_load_runtime_impl", _unexpected_runtime_impl)
+    class _FakeRuntimeImpl:
+        def _write_runtime_snapshots(self, **kwargs):  # noqa: ANN003
+            calls["write"] = dict(kwargs)
+            return (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
+
+    monkeypatch.setattr(render_compass_dashboard, "_load_runtime_impl", lambda: _FakeRuntimeImpl())
 
     reused_payload, paths = render_compass_dashboard.refresh_runtime_artifacts(**_refresh_kwargs(repo_root, runtime_dir))
 
@@ -119,6 +130,7 @@ def test_refresh_runtime_artifacts_reuses_matching_runtime_payload(tmp_path: Pat
     assert reused_payload["runtime_contract"]["input_fingerprint"] == "matching-fingerprint"
     assert reused_payload["runtime_contract"]["last_refresh_attempt"]["status"] == "passed"
     assert reused_payload["runtime_contract"]["last_refresh_attempt"]["requested_profile"] == "shell-safe"
+    assert calls["write"]
     assert paths == (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
 
 
@@ -175,8 +187,10 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert rc == 0
     summary_js = (repo_root / "odylith" / "compass" / "compass-summary.v1.js").read_text(encoding="utf-8")
     releases_js = (repo_root / "odylith" / "compass" / "compass-releases.v1.js").read_text(encoding="utf-8")
+    waves_js = (repo_root / "odylith" / "compass" / "compass-waves.v1.js").read_text(encoding="utf-8")
     workstreams_js = (repo_root / "odylith" / "compass" / "compass-workstreams.v1.js").read_text(encoding="utf-8")
     assert 'rows.push(["Current Release", currentReleaseLabel, "stat-release-only"])' in summary_js
+    assert 'rows.push(["Active Waves"' not in summary_js
     assert 'rows.push(["Next Release"' not in summary_js
     assert 'class="stat${cardClass ? ` ${cardClass}` : ""}"' in summary_js
     assert "function releaseHeroLabel(release)" in summary_js
@@ -187,6 +201,7 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'return versionLabel.startsWith("v") ? versionLabel : `v${versionLabel}`;' not in summary_js
     assert "function renderReleaseGroups(payload, state)" in releases_js
     assert "Release Targets" in releases_js
+    assert "<h2>Programs</h2>" in waves_js
     assert "Targeted Workstreams" in releases_js
     assert "Completed Workstreams" in releases_js
     assert 'group.status === "planned"' in releases_js
@@ -203,11 +218,81 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert "Release-owned targeted workstreams for this selection." not in releases_js
     assert "function compassReleaseDisplayName(release)" in releases_js
     assert "row.name || row.version || row.tag || row.display_label || row.effective_name" in releases_js
+    assert 'const openAttr = scopedWorkstream ? " open" : "";' in releases_js
+    assert 'group.is_current || groups.length === 1' not in releases_js
     assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js
+    assert "function compassGovernanceRepresentedWorkstreamIds(payload)" in workstreams_js
     assert "row.name || row.version || row.tag || row.display_label || row.effective_name" in workstreams_js
     assert "Release: ${escapeHtml(selected.releaseLabel)}" not in workstreams_js
     assert "Release ${item.releaseLabel}" not in workstreams_js
     assert "<strong>Release history:</strong>" in workstreams_js
+    assert "All current workstreams are already represented in Programs or Release Targets." in workstreams_js
+    assert "No active workstreams in this scope." in workstreams_js
+    assert "const rows = scopedRows;" not in workstreams_js
+
+
+def test_render_compass_dashboard_writes_source_truth_snapshot_and_shell_href(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path
+    output_path = repo_root / "odylith" / "compass" / "compass.html"
+    runtime_dir = repo_root / "odylith" / "compass" / "runtime"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    _seed_required_render_inputs(repo_root)
+    runtime_paths = _seed_runtime_paths(runtime_dir)
+
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "refresh_runtime_artifacts",
+        lambda **_kwargs: (
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-09T12:00:00Z",
+                "release_summary": {
+                    "catalog": [
+                        {
+                            "release_id": "release-0-1-11",
+                            "display_label": "0.1.11",
+                            "status": "active",
+                            "aliases": ["current"],
+                            "active_workstreams": ["B-072", "B-073", "B-079"],
+                            "completed_workstreams": ["B-061"],
+                        }
+                    ],
+                    "current_release": {
+                        "release_id": "release-0-1-11",
+                        "display_label": "0.1.11",
+                        "status": "active",
+                        "aliases": ["current"],
+                        "active_workstreams": ["B-072", "B-073", "B-079"],
+                        "completed_workstreams": ["B-061"],
+                    },
+                    "next_release": {},
+                    "summary": {"active_assignment_count": 3},
+                },
+                "current_workstreams": [
+                    {"idea_id": "B-072", "title": "Execution Governance Engine Program", "status": "implementation"},
+                    {"idea_id": "B-073", "title": "Task Contract", "status": "queued"},
+                    {"idea_id": "B-079", "title": "Program/Wave Authoring CLI and Agent Ergonomics", "status": "queued"},
+                ],
+                "workstream_catalog": [
+                    {"idea_id": "B-072", "title": "Execution Governance Engine Program", "status": "implementation"},
+                    {"idea_id": "B-073", "title": "Task Contract", "status": "queued"},
+                    {"idea_id": "B-079", "title": "Program/Wave Authoring CLI and Agent Ergonomics", "status": "queued"},
+                    {"idea_id": "B-061", "title": "Older lane", "status": "finished"},
+                ],
+            },
+            runtime_paths,
+        ),
+    )
+
+    rc = render_compass_dashboard.main(["--repo-root", str(repo_root), "--output", str(output_path)])
+
+    assert rc == 0
+    source_truth_path = repo_root / "odylith" / "compass" / "compass-source-truth.v1.json"
+    source_truth = json.loads(source_truth_path.read_text(encoding="utf-8"))
+    assert source_truth["release_summary"]["current_release"]["active_workstreams"] == ["B-072", "B-073", "B-079"]
+    assert [row["idea_id"] for row in source_truth["current_workstreams"]] == ["B-072", "B-073", "B-079"]
+    payload_js = (repo_root / "odylith" / "compass" / "compass-payload.v1.js").read_text(encoding="utf-8")
+    assert "source_truth_href" in payload_js
 
 
 def test_refresh_runtime_artifacts_reuses_matching_payload(tmp_path: Path, monkeypatch) -> None:
@@ -240,11 +325,14 @@ def test_refresh_runtime_artifacts_reuses_matching_payload(tmp_path: Path, monke
         "_compass_runtime_input_fingerprint",
         lambda **_kwargs: "matching-fingerprint",
     )
-    monkeypatch.setattr(
-        render_compass_dashboard,
-        "_load_runtime_impl",
-        lambda: (_ for _ in ()).throw(AssertionError("runtime implementation should not load on matching-payload reuse")),
-    )
+    calls: dict[str, object] = {}
+
+    class _FakeRuntimeImpl:
+        def _write_runtime_snapshots(self, **kwargs):  # noqa: ANN003
+            calls["write"] = dict(kwargs)
+            return (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
+
+    monkeypatch.setattr(render_compass_dashboard, "_load_runtime_impl", lambda: _FakeRuntimeImpl())
 
     reused_payload, _paths = render_compass_dashboard.refresh_runtime_artifacts(
         **_refresh_kwargs(repo_root, runtime_dir),
@@ -253,6 +341,7 @@ def test_refresh_runtime_artifacts_reuses_matching_payload(tmp_path: Path, monke
 
     assert reused_payload["runtime_contract"]["last_refresh_attempt"]["status"] == "passed"
     assert reused_payload["runtime_contract"]["last_refresh_attempt"]["requested_profile"] == "shell-safe"
+    assert calls["write"]
 
 
 def test_payload_satisfies_requested_refresh_accepts_matching_payload_shape() -> None:
@@ -263,6 +352,34 @@ def test_payload_satisfies_requested_refresh_accepts_matching_payload_shape() ->
     }
 
     assert render_compass_dashboard._payload_satisfies_requested_refresh(  # noqa: SLF001
+        payload=payload,
+        requested_profile="shell-safe",
+    )
+
+
+def test_payload_satisfies_requested_refresh_rejects_cached_stock_phrasing() -> None:
+    payload = {
+        "standup_brief": {
+            "24h": {
+                **_brief(source="cache"),
+                "sections": [
+                    {
+                        "key": "current_execution",
+                        "label": "Current execution",
+                        "bullets": [
+                            {
+                                "text": "`B-071` is trying to stop each surface from guessing scope importance on its own. Compass already showed how expensive that gets.",
+                                "fact_ids": ["F-001"],
+                            }
+                        ],
+                    }
+                ],
+            }
+        },
+        "standup_brief_scoped": {"24h": {}, "48h": {}},
+    }
+
+    assert not render_compass_dashboard._payload_satisfies_requested_refresh(  # noqa: SLF001
         payload=payload,
         requested_profile="shell-safe",
     )
@@ -316,10 +433,6 @@ def test_refresh_runtime_artifacts_reuses_matching_payload_even_when_briefs_are_
     calls: dict[str, object] = {}
 
     class _FakeRuntimeImpl:
-        def _build_runtime_payload(self, **kwargs):  # noqa: ANN003
-            calls["build"] = dict(kwargs)
-            return {"version": "v1", "generated_utc": "2026-04-08T00:00:00Z"}
-
         def _write_runtime_snapshots(self, **kwargs):  # noqa: ANN003
             calls["write"] = dict(kwargs)
             return (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
@@ -331,8 +444,8 @@ def test_refresh_runtime_artifacts_reuses_matching_payload_even_when_briefs_are_
         refresh_profile="shell-safe",
     )
 
-    assert "build" not in calls
     assert payload["runtime_contract"]["refresh_profile"] == "shell-safe"
+    assert calls["write"]
 
 
 def test_refresh_runtime_artifacts_rebuilds_when_cache_is_stale(tmp_path: Path, monkeypatch) -> None:
@@ -409,16 +522,14 @@ def test_refresh_runtime_artifacts_persists_postbuild_input_fingerprint_when_bui
     assert paths == expected_paths
 
 
-def test_refresh_runtime_artifacts_rebuilds_when_matching_runtime_payload_is_too_old(tmp_path: Path, monkeypatch) -> None:
+def test_refresh_runtime_artifacts_reuses_matching_runtime_payload_even_when_it_is_old(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     runtime_dir = repo_root / "odylith/compass/runtime"
     runtime_dir.mkdir(parents=True)
     current_json_path, current_js_path, daily_path, history_index_path, history_js_path = _runtime_paths(runtime_dir)
     history_index_path.parent.mkdir(parents=True, exist_ok=True)
 
-    stale_generated = (
-        dt.datetime.now(tz=dt.timezone.utc) - dt.timedelta(seconds=render_compass_dashboard._RUNTIME_REUSE_MAX_AGE_SECONDS + 5)  # noqa: SLF001
-    ).replace(microsecond=0)
+    stale_generated = (dt.datetime.now(tz=dt.timezone.utc) - dt.timedelta(days=7)).replace(microsecond=0)
     current_json_path.write_text(
         json.dumps(
             {
@@ -444,27 +555,63 @@ def test_refresh_runtime_artifacts_rebuilds_when_matching_runtime_payload_is_too
         lambda **_kwargs: "matching-fingerprint",
     )
 
-    calls: dict[str, object] = {}
-
     class _FakeRuntimeImpl:
-        def _build_runtime_payload(self, **kwargs):  # noqa: ANN003
-            calls["build"] = dict(kwargs)
-            return {
-                "version": "v1",
-                "generated_utc": dt.datetime.now(tz=dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-            }
-
         def _write_runtime_snapshots(self, **kwargs):  # noqa: ANN003
-            calls["write"] = dict(kwargs)
             return (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
 
     monkeypatch.setattr(render_compass_dashboard, "_load_runtime_impl", lambda: _FakeRuntimeImpl())
 
     payload, _paths = render_compass_dashboard.refresh_runtime_artifacts(**_refresh_kwargs(repo_root, runtime_dir))
 
-    assert calls["build"]
-    assert calls["write"]
     assert payload["runtime_contract"]["input_fingerprint"] == "matching-fingerprint"
+
+
+def test_refresh_runtime_artifacts_reuses_matching_payload_when_todays_daily_history_file_is_missing(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo_root = tmp_path
+    runtime_dir = repo_root / "odylith/compass/runtime"
+    runtime_dir.mkdir(parents=True)
+    current_json_path, current_js_path, daily_path, history_index_path, history_js_path = _runtime_paths(runtime_dir)
+    history_index_path.parent.mkdir(parents=True, exist_ok=True)
+
+    payload = {
+        "version": "v1",
+        "generated_utc": "2026-04-08T00:00:00Z",
+        "runtime_contract": {
+            "version": "v1",
+            "standup_brief_schema_version": render_compass_dashboard.compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+            "input_fingerprint": "matching-fingerprint",
+        },
+    }
+    current_json_path.write_text(json.dumps(payload), encoding="utf-8")
+    current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
+    history_index_path.write_text("{}\n", encoding="utf-8")
+    history_js_path.write_text("window.__ODYLITH_COMPASS_HISTORY__ = {};\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_compass_runtime_input_fingerprint",
+        lambda **_kwargs: "matching-fingerprint",
+    )
+
+    calls: dict[str, object] = {}
+
+    class _FakeRuntimeImpl:
+        def _write_runtime_snapshots(self, **kwargs):  # noqa: ANN003
+            calls["write"] = dict(kwargs)
+            return (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
+
+    monkeypatch.setattr(render_compass_dashboard, "_load_runtime_impl", lambda: _FakeRuntimeImpl())
+
+    reused_payload, paths = render_compass_dashboard.refresh_runtime_artifacts(
+        **_refresh_kwargs(repo_root, runtime_dir),
+        refresh_profile="shell-safe",
+    )
+
+    assert reused_payload["runtime_contract"]["input_fingerprint"] == "matching-fingerprint"
+    assert calls["write"]
+    assert paths == (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
 
 
 def test_refresh_runtime_artifacts_shell_safe_rebuilds_stale_snapshot_in_bounded_mode(tmp_path: Path, monkeypatch) -> None:
@@ -474,9 +621,7 @@ def test_refresh_runtime_artifacts_shell_safe_rebuilds_stale_snapshot_in_bounded
     current_json_path, current_js_path, daily_path, history_index_path, history_js_path = _runtime_paths(runtime_dir)
     history_index_path.parent.mkdir(parents=True, exist_ok=True)
 
-    stale_generated = (
-        dt.datetime.now(tz=dt.timezone.utc) - dt.timedelta(seconds=render_compass_dashboard._RUNTIME_REUSE_MAX_AGE_SECONDS + 30)  # noqa: SLF001
-    ).replace(microsecond=0)
+    stale_generated = (dt.datetime.now(tz=dt.timezone.utc) - dt.timedelta(days=7)).replace(microsecond=0)
     current_json_path.write_text(
         json.dumps(
             {
@@ -741,11 +886,14 @@ def test_refresh_runtime_artifacts_clears_failed_refresh_warning_when_reusing_ma
         "_compass_runtime_input_fingerprint",
         lambda **_kwargs: "matching-fingerprint",
     )
-    monkeypatch.setattr(
-        render_compass_dashboard,
-        "_load_runtime_impl",
-        lambda: (_ for _ in ()).throw(AssertionError("runtime implementation should not load on fast-path reuse")),
-    )
+    calls: dict[str, object] = {}
+
+    class _FakeRuntimeImpl:
+        def _write_runtime_snapshots(self, **kwargs):  # noqa: ANN003
+            calls["write"] = dict(kwargs)
+            return (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
+
+    monkeypatch.setattr(render_compass_dashboard, "_load_runtime_impl", lambda: _FakeRuntimeImpl())
 
     refreshed_payload, _paths = render_compass_dashboard.refresh_runtime_artifacts(
         **_refresh_kwargs(repo_root, runtime_dir),
@@ -755,3 +903,4 @@ def test_refresh_runtime_artifacts_clears_failed_refresh_warning_when_reusing_ma
     assert "warning" not in refreshed_payload
     assert refreshed_payload["runtime_contract"]["last_refresh_attempt"]["status"] == "passed"
     assert refreshed_payload["runtime_contract"]["last_refresh_attempt"]["requested_profile"] == "shell-safe"
+    assert calls["write"]

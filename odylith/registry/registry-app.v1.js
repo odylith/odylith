@@ -1559,7 +1559,6 @@ initSharedQuickTooltips();
       const liveTimelineEvents = timelineEvents.filter((event) => !isBaselineTimelineEvent(event));
       const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
       const categoryToken = String(row.category || "").trim().toLowerCase();
-      const toneClass = toneClassForCategory(categoryToken);
       const latestEvent = liveTimelineEvents[0] || (timelineEvents.length ? timelineEvents[0] : null);
       const latestSummary = latestEvent
         ? String(latestEvent.summary || "(no summary)").trim()
@@ -1767,7 +1766,6 @@ initSharedQuickTooltips();
           <summary>
             <div class="context-head">
               <span class="detail-disclosure-title context-toggle-label">Topology</span>
-              <span class="detail-chip-label ${escapeHtml(toneClass)}" data-tooltip="${escapeHtml(categoryDescription(categoryToken))}">${escapeHtml(row.component_id)}</span>
             </div>
             <div class="context-head-actions">
               <span class="label" data-tooltip="Linked workstreams count.">Workstreams ${workstreams.length}</span>

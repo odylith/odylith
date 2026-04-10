@@ -326,10 +326,22 @@ def test_render_backlog_ui_promotes_workstream_id_into_detail_kpi_grid() -> None
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     assert 'data-kpi="workstream-id"' in html
+    assert 'data-kpi="workstream-placement"' in html
     assert "Workstream ID" in html
+    assert "Placement" in html
+    assert "function sectionBadgeInfo(row)" in html
+    assert '<header class="detail-header">\n          <h2 class="detail-title">${escapeHtml(selected.title)}</h2>' in html
+    assert '<header class="detail-header">\n          <span class="rank-chip' not in html
+    assert '<div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>' in html
+    assert '<div class="kpi kpi-section ${escapeHtml(sectionBadge.kpiClassName)}" data-kpi="workstream-placement"><div class="k">Placement</div><div class="v">${escapeHtml(sectionBadge.label)}</div></div>' in html
+    assert '.kpi.kpi-section .k,\n    .kpi.kpi-section .v {\n      color: inherit;\n    }' in html
+    assert ".kpi.kpi-section.kpi-section-execution {" in html
+    assert ".kpi.kpi-section.kpi-section-active {" in html
+    assert ".kpi.kpi-section.kpi-section-finished {" in html
+    assert ".kpi.kpi-section.kpi-section-parked {" in html
     assert 'class="detail-id"' not in html
     assert html.index('data-kpi="workstream-id"') < html.index('<div class="chips">')
-    assert html.index('data-kpi="workstream-id"') < html.index("Ordering Score")
+    assert html.index('data-kpi="workstream-placement"') < html.index("Ordering Score")
 
 
 def test_render_backlog_ui_orders_traceability_links_with_spec_first() -> None:
@@ -358,6 +370,17 @@ def test_render_backlog_ui_places_product_view_below_problem() -> None:
 def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_chips() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
+    assert '<select id="type">' in html
+    assert '<option value="umbrella">Umbrella</option>' in html
+    assert '<option value="child">Child</option>' in html
+    assert 'type: "all",' in html
+    assert 'type: document.getElementById("type"),' in html
+    assert 'if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) return false;' in html
+    assert 'if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) {' in html
+    assert 'el.type.value = state.type;' in html
+    assert 'bind(el.type, "type");' in html
+    assert "grid-template-columns: minmax(220px, 1.8fr) repeat(7, minmax(0, 1fr));" in html
+    assert ".controls input,\n    .controls select {\n      min-width: 0;\n    }" in html
     assert 'if (state.release !== "all" && workstreamActiveReleaseId(row) !== state.release) return false;' in html
     assert "seedSelect(\n      el.release," in html
     assert "Active target release for this workstream." in html
@@ -368,10 +391,13 @@ def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_ch
     assert "function releaseCardLabel(row)" in html
     assert 'statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));' in html
     assert 'statRows.push(statBlock("", releaseCardLabel(currentRelease), { releaseOnly: true }));' not in html
+    assert 'statRows.push(statBlock("Wave Programs"' not in html
+    assert 'statRows.push(statBlock("Active Waves", activeWaves));' in html
+    assert 'statRows.push(statBlock("Next Release", releaseCardLabel(nextRelease)));' not in html
     assert "versionLabel.startsWith(\"v\") ? versionLabel : `v${versionLabel}`" not in html
     assert ".stat.stat-release-only {" not in html
     assert ".stat.stat-release-only .value {" not in html
-    assert "Next Release" in html
+    assert "Next Release" not in html
     assert "Release Target" in html
 
 

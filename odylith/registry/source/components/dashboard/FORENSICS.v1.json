@@ -25,18 +25,22 @@
     "D-022",
     "D-023",
     "D-024",
+    "D-032",
     "D-026",
+    "D-025",
     "D-028",
-    "D-029"
+    "D-029",
+    "D-030",
+    "D-031"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 35,
     "mapped_workstream_evidence_count": 4,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 36
+    "timeline_event_count": 35
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -46,23 +50,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
-        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
-      ],
-      "confidence": "high",
-      "event_index": 67,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "dashboard"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/dashboard/CURRENT_SPEC.md, src/odylith/runtime/surfaces/render_tooling_dashboard.py",
-      "ts_iso": "2026-04-09T14:54:33-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/install.json",
@@ -1121,6 +1108,9 @@
     "B-048",
     "B-060",
     "B-062",
-    "B-071"
+    "B-080",
+    "B-071",
+    "B-078",
+    "B-081"
   ]
 }

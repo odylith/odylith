@@ -21,14 +21,16 @@
     "D-016",
     "D-017",
     "D-019",
-    "D-024"
+    "D-024",
+    "D-030",
+    "D-031"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 12,
     "mapped_workstream_evidence_count": 3,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 2,
+    "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
     "timeline_event_count": 13
   },
@@ -41,20 +43,18 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
-        "odylith/skills/subagent-router/SKILL.md",
-        "src/odylith/runtime/orchestration/subagent_router.py"
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 79,
+      "event_index": 74,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/subagent-router/CURRENT_SPEC.md, odylith/skills/subagent-router/SKILL.md +1 more",
-      "ts_iso": "2026-04-09T13:51:28-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-09T20:51:33-07:00",
       "workstreams": []
     },
     {
@@ -426,6 +426,7 @@
   "why_tracked": "Owns the explicit routed execution contract that downstream host adapters and operators rely on.",
   "workstreams": [
     "B-001",
+    "B-072",
     "B-002",
     "B-009",
     "B-016",

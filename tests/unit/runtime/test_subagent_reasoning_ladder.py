@@ -1500,6 +1500,150 @@ def test_orchestrator_local_narrowing_notes_stay_task_first() -> None:
     assert any("narrowing" in note for note in notes)
 
 
+def test_assessment_extracts_execution_governance_fields_from_context_packet() -> None:
+    request = router.route_request_from_mapping(
+        {
+            "prompt": "Verify the active rollout before widening anything.",
+            "task_kind": "analysis",
+            "needs_write": False,
+            "evidence_cone_grounded": True,
+            "context_signals": {
+                "context_packet": {
+                    "route": {"route_ready": True},
+                    "packet_quality": {"i": "analysis", "native_spawn_ready": True},
+                    "execution_governance": {
+                        "present": True,
+                        "outcome": "defer",
+                        "requires_reanchor": True,
+                        "mode": "verify",
+                        "next_move": "verify.selected_matrix",
+                        "current_phase": "status_synthesis",
+                        "last_successful_phase": "submit",
+                        "blocker": "waiting for rollout evidence",
+                        "closure": "incomplete",
+                        "wait_status": "building",
+                        "wait_detail": "deploying cell-01",
+                        "resume_token": "resume:B-072",
+                        "validation_archetype": "deploy",
+                        "validation_minimum_pass_count": 6,
+                        "contradiction_count": 1,
+                        "history_rule_count": 2,
+                        "authoritative_lane": "context_engine.governance_slice.authoritative",
+                        "host_family": "codex",
+                        "model_family": "codex",
+                    },
+                }
+            },
+        }
+    )
+
+    assessment = router.assess_request(request)
+    summary = assessment.context_signal_summary
+
+    assert summary["execution_governance_present"] is True
+    assert summary["execution_governance_outcome"] == "defer"
+    assert summary["execution_governance_requires_reanchor"] is True
+    assert summary["execution_governance_mode"] == "verify"
+    assert summary["execution_governance_next_move"] == "verify.selected_matrix"
+    assert summary["execution_governance_closure"] == "incomplete"
+    assert summary["execution_governance_wait_status"] == "building"
+    assert summary["execution_governance_validation_archetype"] == "deploy"
+    assert summary["execution_governance_contradiction_count"] == 1
+    assert summary["execution_governance_history_rule_count"] == 2
+    assert summary["execution_governance_host_family"] == "codex"
+
+
+def test_router_execution_governance_reanchor_blocks_delegation() -> None:
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        context_signal_summary={
+            "execution_governance_present": True,
+            "execution_governance_requires_reanchor": True,
+            "execution_governance_mode": "recover",
+            "execution_governance_next_move": "recover.current_blocker",
+            "execution_governance_host_family": "codex",
+            "execution_governance_model_family": "codex",
+        },
+    )
+
+    reason = router._odylith_execution_guard_reason(assessment)  # noqa: SLF001
+
+    assert "re-anchor" in reason
+    assert "Odylith" not in reason
+    assert "runtime handoff" not in reason
+
+
+def test_orchestrator_parallel_fanout_stays_serial_while_waiting_on_verify_frontier() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Verify the active rollout before widening execution.",
+        candidate_paths=["src/odylith/runtime/a.py", "src/odylith/runtime/b.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        delegation_readiness=4,
+        earned_depth=4,
+        context_signal_summary={
+            "route_ready": True,
+            "odylith_execution_route_ready": True,
+            "native_spawn_ready": True,
+            "parallelism_hint": "bounded_parallel_candidate",
+            "parallelism_score": 4,
+            "spawn_worthiness_score": 4,
+            "odylith_execution_confidence_score": 4,
+            "execution_governance_present": True,
+            "execution_governance_mode": "verify",
+            "execution_governance_next_move": "resume.external_dependency",
+            "execution_governance_wait_status": "building",
+            "execution_governance_wait_detail": "deploying cell-01",
+            "execution_governance_host_family": "codex",
+            "execution_governance_model_family": "codex",
+        },
+    )
+
+    mode, notes = orchestrator._adaptive_batch_mode(  # noqa: SLF001
+        request,
+        assessment,
+        safety=orchestrator.ParallelSafetyClass.DISJOINT_WRITE_SAFE,
+        groups=[["src/odylith/runtime/a.py"], ["src/odylith/runtime/b.py"]],
+        tuning=orchestrator.TuningState(),
+    )
+
+    assert mode == orchestrator.OrchestrationMode.SERIAL_BATCH
+    assert any("resume the active external dependency" in note for note in notes)
+
+
+def test_orchestrator_keeps_claude_host_local_when_worker_delegation_is_unavailable() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Implement the bounded runtime fix.",
+        candidate_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        context_signal_summary={
+            "route_ready": True,
+            "odylith_execution_route_ready": True,
+            "native_spawn_ready": False,
+            "execution_governance_present": True,
+            "execution_governance_outcome": "admit",
+            "execution_governance_mode": "implement",
+            "execution_governance_host_family": "claude",
+            "execution_governance_model_family": "claude",
+        },
+    )
+
+    reasons, notes = orchestrator._should_keep_local(request, assessment)  # noqa: SLF001
+
+    assert "execution-governance-host-serial" in reasons
+    assert any("Claude Code" in note for note in notes)
+
+
 def test_orchestrator_keeps_consumer_odylith_fix_local_with_handoff_note(tmp_path: Path) -> None:
     request = orchestrator.orchestration_request_from_mapping(
         {

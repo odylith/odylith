@@ -121,6 +121,8 @@ def default_surface_projection_input_fingerprint(*, repo_root: Path) -> str:
                 "backlog_index": _path_fingerprint(radar_source_root / "INDEX.md"),
                 "backlog_archive": _path_fingerprint(radar_source_root / "archive"),
                 "ideas": _path_fingerprint(radar_source_root / "ideas"),
+                "programs": _path_fingerprint(radar_source_root / "programs", glob="*.json"),
+                "releases": _path_fingerprint(radar_source_root / "releases", glob="*.json*"),
             }
         ),
         "plans": odylith_context_cache.fingerprint_payload(

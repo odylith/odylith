@@ -20,9 +20,7 @@ from odylith.install.fs import atomic_write_text
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.context_engine import odylith_context_cache
-from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.surfaces import compass_refresh_contract
-from odylith.runtime.surfaces import render_compass_dashboard
 
 REFRESH_STATE_SCHEMA_VERSION = "odylith_compass_refresh_state.v1"
 REFRESH_STATE_FILENAME = "refresh-state.v1.json"
@@ -163,6 +161,18 @@ def _normalize_runtime_mode(value: str) -> str:
     if token not in {"auto", "standalone", "daemon"}:
         return "auto"
     return token
+
+
+def _context_engine_store():
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    return odylith_context_engine_store
+
+
+def _render_compass_dashboard():
+    from odylith.runtime.surfaces import render_compass_dashboard
+
+    return render_compass_dashboard
 
 
 def _load_state(*, repo_root: Path) -> dict[str, Any]:
@@ -389,7 +399,7 @@ def _finalize_state(
 
 def _resolve_runtime_mode(*, repo_root: Path, requested_runtime_mode: str) -> str:
     normalized = _normalize_runtime_mode(requested_runtime_mode)
-    daemon_available = odylith_context_engine_store.runtime_daemon_transport(repo_root=repo_root) is not None
+    daemon_available = _context_engine_store().runtime_daemon_transport(repo_root=repo_root) is not None
     if normalized == "auto":
         return "daemon" if daemon_available else "standalone"
     if normalized == "daemon" and not daemon_available:
@@ -429,7 +439,7 @@ def _record_failed_live_payload(
     runtime_mode: str,
     reason: str,
 ) -> None:
-    render_compass_dashboard.record_failed_refresh_attempt(
+    _render_compass_dashboard().record_failed_refresh_attempt(
         repo_root=repo_root,
         runtime_dir=runtime_dir(repo_root=repo_root),
         requested_profile=requested_profile,
@@ -507,6 +517,7 @@ def _render_request(
     requested_profile: str,
     resolved_runtime_mode: str,
 ) -> None:
+    render_compass_dashboard = _render_compass_dashboard()
     render_compass_dashboard.render_compass_artifacts(
         repo_root=repo_root,
         output_path=repo_root / "odylith" / "compass" / "compass.html",

@@ -1,0 +1,90 @@
+%% Reviewed 2026-04-09 for B-025 to keep the bounded Compass refresh lane, cold-start narration path, and edge-case recovery truth explicit in Atlas.
+flowchart TB
+  subgraph Entry["1. Canonical Operator Entry"]
+    Prose["Operator asks for a Compass sync or says 'full Compass refresh' in prose"]
+    CLI["odylith compass refresh<br/>--wait for synchronous proof<br/>--status for current refresh state"]
+    OneLane["One bounded refresh contract only<br/>no second deep-refresh or legacy full lane"]
+  end
+
+  subgraph Refresh["2. Bounded Refresh Runtime"]
+    Inputs["Input resolution<br/>repo root, runtime mode, prior runtime"]
+    Projection["Projection inputs loaded<br/>workstreams, plans, bugs, diagrams, shell state"]
+    Events["Activity events collected<br/>commits, local changes, plan/bug rows, Codex stream"]
+    Facts["Window facts and verified scopes built<br/>24h and 48h packets, verified_scoped_workstreams"]
+    Ladder["Scope Signal Ladder applied<br/>R0-R5, promoted_default, budget_class"]
+    Reuse["Reuse fingerprints computed<br/>global + scoped exact/runtime reuse checks"]
+  end
+
+  subgraph Global["3. Global 24h / 48h Brief Path"]
+    GReuse{"Exact narrated runtime or cache reuse valid?"}
+    GCache["Serve narrated cache<br/>hot path stays cheap"]
+    GCold["Cold miss or invalidated cache"]
+    GBound["Bounded sync refresh does not buy<br/>a fresh global provider call on a cold miss"]
+    GFloor["Serve factual floor now<br/>deterministic or unavailable but still current"]
+    GEnqueue["Enqueue maintained-cache warming request<br/>for missing global narrated briefs"]
+  end
+
+  subgraph Scoped["4. Scoped Brief Path By Verified Window Activity"]
+    Verified{"Verified scoped activity in this exact window?"}
+    Quiet["Quiet scoped state<br/>preserve deep link, show honest no-activity brief,<br/>empty timeline, never borrow global cards"]
+    Signal{"Scope rung and budget class?"}
+    R23["R2 verified_local / R3 active_scope<br/>selector visible, exact cache first,<br/>sync path stays cache or deterministic"]
+    R45["R4 actionable_priority / R5 blocking_frontier<br/>eligible for fresh provider work on cold sync miss"]
+    Batch["Fresh scoped narration uses bounded packs<br/>up to 12 scopes per provider batch"]
+  end
+
+  subgraph Maintenance["5. Maintained Narrated-Cache Sidecar"]
+    Request["Request file carries only missing narrated globals<br/>plus scoped R3+ packets that still matter"]
+    Dedupe["Dedupe by fingerprint, terminal state, and active worker pid"]
+    Cheap["Cheap provider-neutral structured profile<br/>Codex => gpt-5.3-codex-spark low<br/>Claude => cheap low-effort structured lane"]
+    WarmGlobal["Warm global briefs one-by-one"]
+    WarmScoped["Warm scoped briefs in bounded packs"]
+    Patch{"Runtime input fingerprint still matches<br/>the current snapshot?"}
+    PatchYes["Patch current runtime payload<br/>replace floor/quiet state with provider or cache"]
+    PatchNo["Do not patch<br/>leave newer runtime truth intact"]
+  end
+
+  subgraph Failures["6. Edge Cases And Failure Truth"]
+    NoProvider["No provider available<br/>record provider_unavailable and stop"]
+    Empty["Provider returned empty or invalid brief<br/>one empty retry, one repair pass, then fail closed"]
+    Drift["Changed fact packet, stricter voice contract, or stale cache<br/>invalidate reuse instead of replaying old prose"]
+    SignalCap["Governance-only churn, broad fanout, and generated-only noise<br/>stay low-rung so Compass does not waste spend or lie about scope"]
+    Targets["Performance and cost contract<br/>hot exact reuse under 50ms internal<br/>cold bounded refresh under 1s internal<br/>default refresh tries to spend 0 fresh model calls"]
+  end
+
+  Prose --> CLI --> OneLane --> Inputs
+  Inputs --> Projection --> Events --> Facts --> Ladder --> Reuse
+
+  Reuse --> GReuse
+  GReuse -->|Yes| GCache
+  GReuse -->|No| GCold --> GBound --> GFloor --> GEnqueue
+
+  Facts --> Verified
+  Verified -->|No| Quiet
+  Verified -->|Yes| Signal
+  Signal -->|R0-R1 or suppressed| Quiet
+  Signal -->|R2-R3| R23
+  Signal -->|R4-R5| R45 --> Batch
+
+  R23 --> Request
+  R45 --> Request
+  GEnqueue --> Request
+  Request --> Dedupe --> Cheap
+  Cheap --> WarmGlobal
+  Cheap --> WarmScoped
+  WarmGlobal --> Patch
+  WarmScoped --> Patch
+  Patch -->|Yes| PatchYes
+  Patch -->|No| PatchNo
+
+  Cheap --> NoProvider
+  WarmGlobal --> Empty
+  WarmScoped --> Empty
+  Reuse --> Drift
+  Ladder --> SignalCap
+  OneLane --> Targets
+
+  Note["Cold reinstall path is truthful but staged:<br/>refresh rebuilds facts first, serves bounded coverage now,<br/>then the sidecar warms narrated cache and patches only if the same runtime snapshot is still current."]:::note
+  PatchYes --> Note
+
+  classDef note fill:#f5f9ff,stroke:#7aa0d6,color:#1f355f

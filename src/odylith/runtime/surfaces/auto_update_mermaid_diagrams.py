@@ -22,12 +22,15 @@ import tempfile
 import time
 from typing import Any, Mapping, Sequence
 
-from odylith.runtime.context_engine import odylith_context_engine_store
+from odylith.runtime.common import diagram_freshness
+from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.surfaces import mermaid_worker_session as _mermaid_worker_session
 from odylith.runtime.surfaces.mermaid_worker_session import MermaidDiagramValidationError
 from odylith.runtime.surfaces.mermaid_worker_session import _MermaidWorkerSession
 
 select = _mermaid_worker_session.select
+_ATLAS_AUTO_UPDATE_GUARD_NAMESPACE = "generated-refresh-guards"
+_ATLAS_AUTO_UPDATE_GUARD_KEY = "atlas-auto-update"
 
 
 @dataclass(frozen=True)
@@ -43,6 +46,14 @@ class AtlasExecutionPlan:
     steps: tuple[AtlasExecutionStep, ...]
     dirty_overlap: tuple[str, ...]
     notes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class AtlasImpactClassification:
+    impacted_items: tuple[dict[str, Any], ...]
+    render_jobs: tuple[dict[str, str], ...]
+    render_ids: tuple[str, ...]
+    review_only_ids: tuple[str, ...]
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -197,38 +208,41 @@ def _build_execution_plan(
     repo_root: Path,
     catalog_repo_path: str,
     render_catalog: bool,
-    impacted_items: Sequence[Mapping[str, Any]],
+    classification: AtlasImpactClassification,
 ) -> AtlasExecutionPlan:
-    source_paths = tuple(
-        dict.fromkeys(
-            str(item.get("source_mmd", "")).strip()
-            for item in impacted_items
-            if str(item.get("source_mmd", "")).strip()
-        )
-    )
     rendered_paths = tuple(
         dict.fromkeys(
             path
-            for item in impacted_items
+            for job in classification.render_jobs
             for path in (
-                str(item.get("source_svg", "")).strip(),
-                str(item.get("source_png", "")).strip(),
+                str(job.get("source_svg", "")).strip(),
+                str(job.get("source_png", "")).strip(),
             )
             if path
         )
     )
     steps = [
         AtlasExecutionStep(
-            label="Refresh explicit review markers for the selected diagram sources and catalog entries.",
+            label="Refresh catalog review markers and freshness fingerprints for the selected diagrams.",
             mutation_classes=("repo_owned_truth",),
-            paths=(*source_paths, catalog_repo_path),
-        ),
-        AtlasExecutionStep(
-            label="Render the selected Mermaid diagram assets.",
-            mutation_classes=("generated_surfaces",),
-            paths=rendered_paths,
+            paths=(catalog_repo_path,),
         ),
     ]
+    notes: list[str] = [
+        "Dry-run previews repo-owned Atlas truth updates separately from generated diagram outputs.",
+    ]
+    if rendered_paths:
+        steps.append(
+            AtlasExecutionStep(
+                label="Render the selected Mermaid diagram assets.",
+                mutation_classes=("generated_surfaces",),
+                paths=rendered_paths,
+            )
+        )
+    elif classification.review_only_ids:
+        notes.append(
+            "Selected diagrams are review-only; Atlas will refresh freshness fingerprints without regenerating SVG or PNG assets."
+        )
     if render_catalog:
         steps.append(
             AtlasExecutionStep(
@@ -239,12 +253,14 @@ def _build_execution_plan(
         )
     all_paths = [path for step in steps for path in step.paths]
     return AtlasExecutionPlan(
-        headline=f"Refresh {len(impacted_items)} impacted Atlas diagram(s).",
+        headline=(
+            "Refresh "
+            f"{len(classification.impacted_items)} impacted Atlas diagram(s) "
+            f"({len(classification.render_jobs)} render, {len(classification.review_only_ids)} review-only)."
+        ),
         steps=tuple(steps),
         dirty_overlap=_dirty_overlap_for_paths(repo_root=repo_root, paths=all_paths),
-        notes=(
-            "Dry-run previews repo-owned Atlas truth updates separately from generated diagram outputs.",
-        ),
+        notes=tuple(notes),
     )
 
 
@@ -294,6 +310,19 @@ def _parse_review_date(value: str) -> dt.date | None:
         return None
 
 
+def _stored_watch_fingerprints(item: Mapping[str, Any]) -> dict[str, str]:
+    raw = item.get("reviewed_watch_fingerprints", {})
+    if not isinstance(raw, Mapping):
+        return {}
+    result: dict[str, str] = {}
+    for key, value in raw.items():
+        token = PurePosixPath(str(key or "").strip()).as_posix()
+        fingerprint = str(value or "").strip()
+        if token and fingerprint:
+            result[token] = fingerprint
+    return result
+
+
 def _max_mtime(path: Path, *, cache: dict[str, float]) -> float:
     key = str(path.resolve())
     if key in cache:
@@ -315,6 +344,20 @@ def _max_mtime(path: Path, *, cache: dict[str, float]) -> float:
     return value
 
 
+def _current_watch_fingerprints(
+    *,
+    repo_root: Path,
+    watch_paths: Sequence[str],
+    cache: diagram_freshness.ContentFingerprintCache,
+) -> dict[str, str]:
+    return diagram_freshness.watched_path_fingerprints(
+        repo_root=repo_root,
+        watched_paths=tuple(watch_paths),
+        resolve_path=lambda token: _resolve(repo_root, token),
+        cache=cache,
+    )
+
+
 def _newest_watch_path(*, repo_root: Path, watch_paths: Sequence[str], cache: dict[str, float]) -> tuple[float, str]:
     newest_mtime = 0.0
     newest_path = ""
@@ -330,6 +373,97 @@ def _newest_watch_path(*, repo_root: Path, watch_paths: Sequence[str], cache: di
     return newest_mtime, newest_path
 
 
+def _git_paths_tracked_and_clean(*, repo_root: Path, paths: Sequence[str]) -> bool:
+    normalized = tuple(dict.fromkeys(str(token or "").strip() for token in paths if str(token or "").strip()))
+    if not normalized or not (repo_root / ".git").exists():
+        return False
+    status = subprocess.run(
+        ["git", "-C", str(repo_root), "status", "--porcelain", "--untracked-files=all", "--", *normalized],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+    if status.returncode != 0 or str(status.stdout or "").strip():
+        return False
+    tracked = subprocess.run(
+        ["git", "-C", str(repo_root), "ls-files", "--error-unmatch", "--", *normalized],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+    return tracked.returncode == 0
+
+
+def _diagram_needs_render(
+    *,
+    repo_root: Path,
+    item: Mapping[str, Any],
+    fingerprint_cache: diagram_freshness.ContentFingerprintCache,
+) -> bool:
+    source_mmd = str(item.get("source_mmd", "")).strip()
+    source_svg = str(item.get("source_svg", "")).strip()
+    source_png = str(item.get("source_png", "")).strip()
+    if not source_mmd or not source_svg or not source_png:
+        return True
+    source_mmd_path = _resolve(repo_root, source_mmd)
+    source_svg_path = _resolve(repo_root, source_svg)
+    source_png_path = _resolve(repo_root, source_png)
+    if not source_mmd_path.is_file() or not source_svg_path.is_file() or not source_png_path.is_file():
+        return True
+    current_render_fingerprint = fingerprint_cache.mermaid_render_fingerprint(source_mmd_path)
+    stored_render_fingerprint = str(item.get("render_source_fingerprint", "")).strip()
+    if stored_render_fingerprint:
+        return stored_render_fingerprint != current_render_fingerprint
+    if _git_paths_tracked_and_clean(
+        repo_root=repo_root,
+        paths=(source_mmd, source_svg, source_png),
+    ):
+        item["render_source_fingerprint"] = current_render_fingerprint
+        return False
+    return True
+
+
+def _classify_diagram_items(
+    *,
+    repo_root: Path,
+    items: Sequence[dict[str, Any]],
+    fingerprint_cache: diagram_freshness.ContentFingerprintCache,
+) -> AtlasImpactClassification:
+    render_jobs: list[dict[str, str]] = []
+    impacted_items: list[dict[str, Any]] = []
+    render_ids: list[str] = []
+    review_only_ids: list[str] = []
+    for item in items:
+        diagram_id = str(item.get("diagram_id", "")).strip() or "unknown-diagram"
+        source_mmd = str(item.get("source_mmd", "")).strip()
+        source_svg = str(item.get("source_svg", "")).strip()
+        source_png = str(item.get("source_png", "")).strip()
+        if not source_mmd or not source_svg or not source_png:
+            raise RuntimeError(f"{diagram_id}: missing source paths (mmd/svg/png)")
+        source_mmd_path = _resolve(repo_root, source_mmd)
+        if not source_mmd_path.is_file():
+            raise RuntimeError(f"{diagram_id}: source mmd missing: {source_mmd}")
+        impacted_items.append(item)
+        if _diagram_needs_render(repo_root=repo_root, item=item, fingerprint_cache=fingerprint_cache):
+            render_jobs.append(
+                {
+                    "diagram_id": diagram_id,
+                    "source_mmd": source_mmd,
+                    "source_svg": source_svg,
+                    "source_png": source_png,
+                }
+            )
+            render_ids.append(diagram_id)
+            continue
+        review_only_ids.append(diagram_id)
+    return AtlasImpactClassification(
+        impacted_items=tuple(impacted_items),
+        render_jobs=tuple(render_jobs),
+        render_ids=tuple(render_ids),
+        review_only_ids=tuple(review_only_ids),
+    )
+
+
 def _select_stale_diagram_indexes(
     *,
     repo_root: Path,
@@ -338,6 +472,7 @@ def _select_stale_diagram_indexes(
 ) -> list[int]:
     today = dt.date.today()
     mtime_cache: dict[str, float] = {}
+    content_fingerprint_cache = diagram_freshness.ContentFingerprintCache()
     selected: list[int] = []
     for idx, raw_item in enumerate(diagrams):
         if not isinstance(raw_item, dict):
@@ -355,7 +490,18 @@ def _select_stale_diagram_indexes(
         review_age_days = (today - review_date).days
         stale_for_review_age = review_age_days > max(0, int(max_review_age_days))
         stale_for_watch_change = False
-        if source_mmd:
+        current_watch_fingerprints = _current_watch_fingerprints(
+            repo_root=repo_root,
+            watch_paths=watch_paths,
+            cache=content_fingerprint_cache,
+        )
+        stored_watch_fingerprints = _stored_watch_fingerprints(raw_item)
+        if stored_watch_fingerprints:
+            stale_for_watch_change = any(
+                stored_watch_fingerprints.get(path, "") != current_watch_fingerprints.get(path, "")
+                for path in watch_paths
+            )
+        elif source_mmd:
             source_mmd_path = _resolve(repo_root, source_mmd)
             mmd_mtime = _max_mtime(source_mmd_path, cache=mtime_cache)
             newest_watch_mtime, _newest_watch_path_token = _newest_watch_path(
@@ -443,6 +589,8 @@ def _render_diagrams_batch(
                 print(f"- render {label} ({index}/{len(render_jobs)})")
                 worker.render_one(job=job)
         return
+    except MermaidDiagramValidationError:
+        raise
     except Exception as exc:
         degraded_start = index if "index" in locals() else 1
         degraded_jobs = list(render_jobs[degraded_start - 1 :]) if "index" in locals() else list(render_jobs)
@@ -480,7 +628,28 @@ def _render_diagrams_batch(
 
 
 def _render_catalog(*, repo_root: Path, fail_on_stale: bool, runtime_mode: str) -> None:
-    cmd = [sys.executable, "-m", "odylith.runtime.surfaces.render_mermaid_catalog", "--repo-root", "."]
+    if str(runtime_mode) != "standalone":
+        from odylith.runtime.surfaces import render_mermaid_catalog_refresh
+
+        argv = ["--repo-root", str(repo_root), "--runtime-mode", str(runtime_mode)]
+        if fail_on_stale:
+            argv.append("--fail-on-stale")
+        rc = render_mermaid_catalog_refresh.main(argv)
+        if rc != 0:
+            raise subprocess.CalledProcessError(
+                returncode=rc,
+                cmd=[
+                    sys.executable,
+                    "-m",
+                    "odylith.runtime.surfaces.render_mermaid_catalog_refresh",
+                    "--repo-root",
+                    str(repo_root),
+                    "--runtime-mode",
+                    str(runtime_mode),
+                ],
+            )
+        return
+    cmd = [sys.executable, "-m", "odylith.runtime.surfaces.render_mermaid_catalog_refresh", "--repo-root", "."]
     if fail_on_stale:
         cmd.append("--fail-on-stale")
     cmd.extend(["--runtime-mode", str(runtime_mode)])
@@ -528,39 +697,105 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"FAILED: malformed catalog diagrams list: {catalog_path}")
         return 2
 
-    today = dt.date.today().isoformat()
-    impacted_indexes: list[int] = []
-    runtime_rows = []
     stale_indexes: list[int] = []
-    if changed and str(args.runtime_mode).strip().lower() != "standalone":
-        runtime_rows = odylith_context_engine_store.select_impacted_diagrams(
-            repo_root=repo_root,
-            changed_paths=changed,
-            runtime_mode=str(args.runtime_mode),
-        )
-    if runtime_rows:
-        impacted_ids = {str(row.get("diagram_id", "")).strip() for row in runtime_rows}
-        impacted_indexes = [
-            idx
-            for idx, item in enumerate(diagrams)
-            if isinstance(item, dict) and str(item.get("diagram_id", "")).strip() in impacted_ids
-        ]
-    else:
-        for idx, item in enumerate(diagrams):
-            if not isinstance(item, dict):
-                continue
-            watch_paths = [PurePosixPath(str(token or "").strip()).as_posix() for token in item.get("change_watch_paths", []) if str(token or "").strip()]
-            if not watch_paths:
-                continue
-            if any(_touches_watch(changed_path=changed_path, watch_path=watch_path) for changed_path in changed for watch_path in watch_paths):
-                impacted_indexes.append(idx)
-
     if bool(args.all_stale):
         stale_indexes = _select_stale_diagram_indexes(
             repo_root=repo_root,
             diagrams=diagrams,
             max_review_age_days=max(0, int(args.max_review_age_days)),
         )
+    provisional_impacted_indexes = list(stale_indexes)
+    for idx, item in enumerate(diagrams):
+        if not isinstance(item, dict):
+            continue
+        watch_paths = [
+            PurePosixPath(str(token or "").strip()).as_posix()
+            for token in item.get("change_watch_paths", [])
+            if str(token or "").strip()
+        ]
+        if not watch_paths:
+            continue
+        if any(_touches_watch(changed_path=changed_path, watch_path=watch_path) for changed_path in changed for watch_path in watch_paths):
+            provisional_impacted_indexes.append(idx)
+    provisional_impacted_indexes = list(dict.fromkeys(provisional_impacted_indexes))
+    today = dt.date.today().isoformat()
+    provisional_items = [
+        dict(diagrams[idx])
+        for idx in provisional_impacted_indexes
+        if isinstance(diagrams[idx], dict)
+    ]
+    provisional_classification = _classify_diagram_items(
+        repo_root=repo_root,
+        items=provisional_items,
+        fingerprint_cache=diagram_freshness.ContentFingerprintCache(),
+    )
+    if provisional_impacted_indexes and not args.dry_run:
+        watched_paths = [
+            *changed,
+            *(
+                str(item.get("source_mmd", "")).strip()
+                for item in provisional_classification.impacted_items
+                if str(item.get("source_mmd", "")).strip()
+            ),
+            str(_as_repo_path(repo_root, catalog_path)).strip(),
+            "src/odylith/runtime/surfaces",
+            "src/odylith/runtime/common",
+        ]
+        output_paths = [
+            catalog_path,
+            *(
+                _resolve(repo_root, str(path).strip())
+                for item in provisional_classification.impacted_items
+                for path in (
+                    str(item.get("source_svg", "")).strip(),
+                    str(item.get("source_png", "")).strip(),
+                )
+                if str(path).strip()
+            ),
+        ]
+        if not args.skip_render_catalog:
+            output_paths.extend(
+                (
+                    _resolve(repo_root, "odylith/atlas/atlas.html"),
+                    _resolve(repo_root, "odylith/atlas/mermaid-payload.v1.js"),
+                    _resolve(repo_root, "odylith/atlas/mermaid-app.v1.js"),
+                )
+            )
+        skip_rebuild, _input_fingerprint, _cached = generated_refresh_guard.should_skip_rebuild(
+            repo_root=repo_root,
+            namespace=_ATLAS_AUTO_UPDATE_GUARD_NAMESPACE,
+            key=_ATLAS_AUTO_UPDATE_GUARD_KEY,
+            watched_paths=tuple(watched_paths),
+            output_paths=tuple(output_paths),
+            extra={
+                "changed_paths": changed,
+                "diagram_ids": [str(item.get("diagram_id", "")).strip() for item in provisional_items],
+                "all_stale": bool(args.all_stale),
+                "skip_render_catalog": bool(args.skip_render_catalog),
+                "runtime_mode": str(args.runtime_mode),
+            },
+        )
+        if skip_rebuild:
+            if changed:
+                print(f"changed paths: {len(changed)}")
+            if bool(args.all_stale):
+                print(f"stale diagrams selected: {len(stale_indexes)}")
+            print(f"impacted diagrams: {len(provisional_impacted_indexes)}")
+            plan = _build_execution_plan(
+                repo_root=repo_root,
+                catalog_repo_path=_as_repo_path(repo_root, catalog_path),
+                render_catalog=not bool(args.skip_render_catalog),
+                classification=provisional_classification,
+            )
+            _print_execution_plan(plan, dry_run=False)
+            print("atlas auto-update completed")
+            print("- outcome: passed")
+            print("- elapsed_seconds: 0.0")
+            return 0
+
+    impacted_indexes = list(provisional_impacted_indexes)
+
+    if bool(args.all_stale):
         impacted_indexes.extend(stale_indexes)
 
     impacted_indexes = list(dict.fromkeys(impacted_indexes))
@@ -583,69 +818,91 @@ def main(argv: Sequence[str] | None = None) -> int:
         for idx in impacted_indexes
         if isinstance(diagrams[idx], dict)
     ]
+    dry_run_classification = _classify_diagram_items(
+        repo_root=repo_root,
+        items=impacted_items,
+        fingerprint_cache=diagram_freshness.ContentFingerprintCache(),
+    )
     plan = _build_execution_plan(
         repo_root=repo_root,
         catalog_repo_path=_as_repo_path(repo_root, catalog_path),
         render_catalog=not bool(args.skip_render_catalog),
-        impacted_items=impacted_items,
+        classification=dry_run_classification,
     )
     _print_execution_plan(plan, dry_run=bool(args.dry_run))
     if args.dry_run:
         return 0
-
-    runtime_by_id = {
-        str(row.get("diagram_id", "")).strip(): dict(row)
-        for row in runtime_rows
-        if str(row.get("diagram_id", "")).strip()
-    }
-    render_jobs: list[dict[str, str]] = []
-    validation_jobs: list[dict[str, str]] = []
-    reviewed_items: list[tuple[dict[str, Any], Path]] = []
+    watched_paths = [
+        *changed,
+        *(
+            str(item.get("source_mmd", "")).strip()
+            for item in dry_run_classification.impacted_items
+            if str(item.get("source_mmd", "")).strip()
+        ),
+        str(_as_repo_path(repo_root, catalog_path)).strip(),
+        "src/odylith/runtime/surfaces",
+        "src/odylith/runtime/common",
+    ]
+    content_fingerprint_cache = diagram_freshness.ContentFingerprintCache()
     started_at = time.perf_counter()
     try:
-        for idx in impacted_indexes:
-            item: dict[str, Any] = diagrams[idx]
-            diagram_id = str(item.get("diagram_id", "")).strip() or f"index-{idx}"
-            source_mmd = str(item.get("source_mmd", "")).strip()
-            source_svg = str(item.get("source_svg", "")).strip()
-            source_png = str(item.get("source_png", "")).strip()
-            if not source_mmd or not source_svg or not source_png:
-                raise RuntimeError(f"{diagram_id}: missing source paths (mmd/svg/png)")
-            source_mmd_path = _resolve(repo_root, source_mmd)
-            if not source_mmd_path.is_file():
-                raise RuntimeError(f"{diagram_id}: source mmd missing: {source_mmd}")
-
-            print(f"- sync {diagram_id}: {source_mmd}")
-            validation_jobs.append(
-                {
-                    "diagram_id": diagram_id,
-                    "source_mmd": source_mmd,
-                }
-            )
-            runtime_row = runtime_by_id.get(diagram_id, {})
-            if bool(runtime_row.get("needs_render", True)):
-                render_jobs.append(
-                    {
-                        "diagram_id": diagram_id,
-                        "source_mmd": source_mmd,
-                        "source_svg": source_svg,
-                        "source_png": source_png,
-                    }
+        reviewed_items = [
+            diagrams[idx]
+            for idx in impacted_indexes
+            if isinstance(diagrams[idx], dict)
+        ]
+        classification = _classify_diagram_items(
+            repo_root=repo_root,
+            items=reviewed_items,
+            fingerprint_cache=content_fingerprint_cache,
+        )
+        if classification.review_only_ids:
+            print(f"review-only diagrams: {len(classification.review_only_ids)}")
+        if classification.render_ids:
+            print(f"render-needed diagrams: {len(classification.render_ids)}")
+        output_paths = [
+            catalog_path,
+            *(
+                _resolve(repo_root, str(path).strip())
+                for item in classification.impacted_items
+                for path in (
+                    str(item.get("source_svg", "")).strip(),
+                    str(item.get("source_png", "")).strip(),
                 )
-            reviewed_items.append((item, source_mmd_path))
-        _validate_diagrams_batch(
-            repo_root=repo_root,
-            validation_jobs=validation_jobs,
-            cli_version=args.mermaid_cli_version,
-        )
-        _render_diagrams_batch(
-            repo_root=repo_root,
-            render_jobs=render_jobs,
-            cli_version=args.mermaid_cli_version,
-        )
-        for item, source_mmd_path in reviewed_items:
-            # Refresh source mtime to record an explicit review/sync event for freshness gating.
-            source_mmd_path.touch()
+                if str(path).strip()
+            ),
+        ]
+        if not args.skip_render_catalog:
+            output_paths.extend(
+                (
+                    _resolve(repo_root, "odylith/atlas/atlas.html"),
+                    _resolve(repo_root, "odylith/atlas/mermaid-payload.v1.js"),
+                    _resolve(repo_root, "odylith/atlas/mermaid-app.v1.js"),
+                )
+            )
+        for item in classification.impacted_items:
+            diagram_id = str(item.get("diagram_id", "")).strip() or "unknown-diagram"
+            source_mmd = str(item.get("source_mmd", "")).strip()
+            print(f"- sync {diagram_id}: {source_mmd}")
+        if classification.render_jobs:
+            _render_diagrams_batch(
+                repo_root=repo_root,
+                render_jobs=classification.render_jobs,
+                cli_version=args.mermaid_cli_version,
+            )
+        for item in classification.impacted_items:
+            source_mmd_path = _resolve(repo_root, str(item.get("source_mmd", "")).strip())
+            watch_paths = [
+                PurePosixPath(str(token or "").strip()).as_posix()
+                for token in item.get("change_watch_paths", [])
+                if str(token or "").strip()
+            ]
+            item["reviewed_watch_fingerprints"] = _current_watch_fingerprints(
+                repo_root=repo_root,
+                watch_paths=watch_paths,
+                cache=content_fingerprint_cache,
+            )
+            item["render_source_fingerprint"] = content_fingerprint_cache.mermaid_render_fingerprint(source_mmd_path)
             item["last_reviewed_utc"] = today
 
         catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
@@ -657,6 +914,28 @@ def main(argv: Sequence[str] | None = None) -> int:
                 fail_on_stale=args.fail_on_stale,
                 runtime_mode=str(args.runtime_mode),
             )
+        final_fingerprint = generated_refresh_guard.compute_input_fingerprint(
+            repo_root=repo_root,
+            watched_paths=tuple(watched_paths),
+            extra={
+                "changed_paths": changed,
+                "diagram_ids": [str(item.get("diagram_id", "")).strip() for item in classification.impacted_items],
+                "all_stale": bool(args.all_stale),
+                "skip_render_catalog": bool(args.skip_render_catalog),
+                "runtime_mode": str(args.runtime_mode),
+            },
+        )
+        generated_refresh_guard.record_rebuild(
+            repo_root=repo_root,
+            namespace=_ATLAS_AUTO_UPDATE_GUARD_NAMESPACE,
+            key=_ATLAS_AUTO_UPDATE_GUARD_KEY,
+            input_fingerprint=final_fingerprint,
+            output_paths=tuple(output_paths),
+            metadata={
+                "impacted_count": len(classification.impacted_items),
+                "changed_count": len(changed),
+            },
+        )
     except Exception as exc:
         elapsed = time.perf_counter() - started_at
         _print_failure_summary(elapsed=elapsed, error=exc)

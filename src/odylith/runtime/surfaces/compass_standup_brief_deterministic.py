@@ -402,8 +402,8 @@ def _direction_bullet(
         )
     if "cost of local heuristics" in lower_reason:
         return _bullet(
-            f"{focus_ref} is trying to stop each surface from guessing scope importance on its own. "
-            "Compass already showed how expensive that gets.",
+            f"{focus_ref} is there because each surface was still making its own guess about what mattered. "
+            "This work puts one shared rule in place.",
             facts=[fact],
         )
     return _bullet(
@@ -479,13 +479,13 @@ def _window_coverage_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
         ids = re.findall(r"`?(B-\d+)`?", tail)
         if ids:
             joined = _join_workstream_refs(ids)
-            return _bullet(f"This window mostly ran through {joined}.", facts=[fact])
-        return _bullet(f"This window mostly ran through {tail}.", facts=[fact])
+            return _bullet(f"Most of the work here was in {joined}.", facts=[fact])
+        return _bullet(f"Most of the work here was in {tail}.", facts=[fact])
     if text.startswith("A lot moved in this window."):
         ids = re.findall(r"`?(B-\d+)`?", text)
         if ids:
             joined = _join_workstream_refs(ids)
-            return _bullet(f"This window mostly ran through {joined}.", facts=[fact])
+            return _bullet(f"Most of the work here was in {joined}.", facts=[fact])
     return _bullet(text, facts=[fact])
 
 
@@ -536,7 +536,7 @@ def _checklist_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
         )
     if done_tasks <= 0:
         return _bullet(
-            "The plan is there, but the first checklist item is still open.",
+            "The plan is there, but the first named checkpoint still has not landed.",
             facts=[fact],
         )
     if remaining <= 0:
@@ -545,7 +545,7 @@ def _checklist_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
             facts=[fact],
         )
     return _bullet(
-        f"{remaining} checklist items are still open.",
+        f"The checklist is still open, with {remaining} items left before this lane can be called clean.",
         facts=[fact],
     )
 
@@ -606,13 +606,13 @@ def _current_execution_bullets(
         bullets.append(_checklist_bullet(checklist))
         used_checklist = True
 
+    if freshness is not None and len(bullets) < 4:
+        bullets.append(_freshness_bullet(freshness))
     if len(bullets) < 4 and checklist is not None and not used_checklist:
         bullets.append(_checklist_bullet(checklist))
         used_checklist = True
 
-    if freshness is not None and len(bullets) < 4:
-        bullets.append(_freshness_bullet(freshness))
-    elif len(bullets) < 4 and timeline is not None:
+    if len(bullets) < 4 and timeline is not None:
         bullets.append(_timeline_bullet(timeline))
     elif len(bullets) < 4 and signal is not None and not used_signal:
         bullets.append(_signal_bullet(signal, window_key=window_key))
@@ -749,7 +749,7 @@ def _risk_bullet(
         storyline_label = _clean_text(str(_storyline(summary).get("flagship_lane", "")).strip())
         ref = _label_ref(label_text or storyline_label) or "this lane"
         return _bullet(
-            f"{remaining} plan items remain open on {ref}.",
+            f"{ref} is still a long way from closed out, with {remaining} plan items open.",
             facts=[fact],
         )
     if lower.startswith("primary watch item is execution coherence across "):

@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.reasoning import odylith_reasoning
+from odylith.runtime.surfaces import compass_transaction_runtime
 from odylith.runtime.surfaces import render_casebook_dashboard
 from odylith.runtime.surfaces import render_compass_dashboard
 from odylith.runtime.surfaces import render_tooling_dashboard as tooling_dashboard_renderer
@@ -237,6 +238,39 @@ class _CompassProvider:
 
     def generate_finding(self, *, prompt_payload):  # noqa: ANN001, ARG002
         raise AssertionError("Compass browser proof should use structured generation only.")
+
+
+def _write_fixture_current_release_assignments(fixture_root, *workstream_ids: str) -> None:  # noqa: ANN001
+    releases_root = fixture_root / "odylith" / "radar" / "source" / "releases"
+    releases_root.mkdir(parents=True, exist_ok=True)
+    events_path = releases_root / "release-assignment-events.v1.jsonl"
+    rows = [
+        {
+            "action": "add",
+            "release_id": "release-0-1-11",
+            "workstream_id": workstream_id,
+            "recorded_at": f"2026-04-09T00:00:0{index}Z",
+        }
+        for index, workstream_id in enumerate(workstream_ids)
+    ]
+    events_path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+
+def _rewrite_fixture_workstream_status(fixture_root, *, idea_id: str, status: str) -> None:  # noqa: ANN001
+    ideas_root = fixture_root / "odylith" / "radar" / "source" / "ideas"
+    for path in ideas_root.rglob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        if f"idea_id: {idea_id}" not in text:
+            continue
+        path.write_text(
+            text.replace("status: finished", f"status: {status}", 1),
+            encoding="utf-8",
+        )
+        return
+    raise AssertionError(f"missing idea fixture for {idea_id}")
 
 
 def _pane_hidden(page, frame_selector: str) -> bool:  # noqa: ANN001
@@ -1275,8 +1309,17 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
 
     compass.locator('button[data-window="48h"]').click()
     _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
-    _assert_compass_live_state(compass, window_token="48h")
     _wait_for_compass_brief_state(page, window_token="48h", scope_label=scope_value)
+    page.wait_for_function(
+        """() => {
+            const frame = document.querySelector("#frame-compass");
+            const doc = frame && frame.contentDocument;
+            if (!doc) return false;
+            return doc.querySelectorAll("#timeline .tx-card, #timeline .empty, #timeline .timeline-day-title, #timeline .hour-empty").length > 0;
+        }""",
+        timeout=15000,
+    )
+    _assert_compass_live_state(compass, window_token="48h")
     scoped_48h_meta = _compass_brief_metadata(compass)
     assert scoped_48h_meta["source"] in {"provider", "cache", "deterministic"}
     assert scoped_48h_meta["hasNotice"] == "false"
@@ -2466,6 +2509,8 @@ def test_compass_timeline_mixed_local_batch_falls_back_to_transaction_headline(t
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
+    traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
 
     scope_id = "B-020"
@@ -2552,12 +2597,86 @@ def test_compass_timeline_mixed_local_batch_falls_back_to_transaction_headline(t
                 context.close()
 
 
+def test_compass_timeline_transaction_chips_keep_checkpoint_anchor_workstream(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+
+    event = {
+        "id": "checkpoint-anchor:event",
+        "kind": "implementation",
+        "summary": (
+            "Captured B-071 checkpoint: completed Compass quiet-scope failures "
+            "were not just Compass bugs; they exposed a broader product problem."
+        ),
+        "context": "",
+        "ts": dt.datetime.fromisoformat("2026-04-09T18:48:00-07:00"),
+        "ts_iso": "2026-04-09T18:48:00-07:00",
+        "author": "local",
+        "files": ["src/odylith/runtime/governance/delivery/scope_signal_ladder.py"],
+        "workstreams": ["B-001", "B-003", "B-004", "B-025", "B-027"],
+        "source": "local",
+        "session_id": "",
+        "transaction_id": "",
+        "transaction_seq": 0,
+        "transaction_boundary": "",
+        "headline_hint": "",
+    }
+    transaction = compass_transaction_runtime._build_prompt_transactions(events=[event])[0]
+
+    payload["generated_utc"] = "2026-04-10T01:48:30Z"
+    payload["now_local_iso"] = "2026-04-09T18:48:30-07:00"
+    payload["timeline_events"] = list(transaction.get("events") or [])
+    payload["timeline_transactions"] = [transaction]
+    payload["history"] = {
+        "retention_days": 15,
+        "dates": ["2026-04-09"],
+        "restored_dates": [],
+        "archive": {"compressed": True, "path": "archive", "count": 0, "dates": [], "newest_date": "", "oldest_date": ""},
+    }
+
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + "/odylith/index.html?tab=compass&window=48h&date=live",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                tx_card = compass.locator("#timeline .tx-card").first
+                tx_card.locator(".tx-headline", has_text="Captured B-071 checkpoint").wait_for(timeout=15000)
+                chip_labels = tx_card.locator(".chips a").evaluate_all(
+                    "nodes => nodes.map(node => String(node.textContent || '').trim()).filter(Boolean)"
+                )
+                assert "B-071" in chip_labels
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
 def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
+    traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
 
     scope_id = "B-777"
@@ -2566,6 +2685,7 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
     scope_row["status"] = "implementation"
     scope_row["title"] = "Scoped audit-day fallback regression"
     payload["current_workstreams"] = [scope_row]
+    payload["workstream_catalog"] = [scope_row]
 
     event = dict((payload.get("timeline_events") or [])[0])
     event["id"] = "scoped-fallback:event"
@@ -2596,6 +2716,14 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
         "24h": [scope_id],
         "48h": [scope_id],
     }
+    payload["promoted_scoped_workstreams"] = {
+        "24h": [scope_id],
+        "48h": [scope_id],
+    }
+    payload["window_scope_signals"] = {
+        "24h": {scope_id: {"promoted_default": True, "budget_class": "primary"}},
+        "48h": {scope_id: {"promoted_default": True, "budget_class": "primary"}},
+    }
     payload["history"] = {
         "retention_days": 15,
         "dates": ["2026-04-02", "2026-04-01", "2026-03-31"],
@@ -2608,6 +2736,10 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
         encoding="utf-8",
     )
+    source_truth_path.unlink(missing_ok=True)
+    traceability_payload = json.loads(traceability_path.read_text(encoding="utf-8"))
+    traceability_payload["generated_utc"] = "2026-04-01T00:00:00Z"
+    traceability_path.write_text(json.dumps(traceability_payload, indent=2) + "\n", encoding="utf-8")
 
     with _static_server(root=fixture_root) as base_url:
         for _pw, browser in _browser():
@@ -2627,6 +2759,9 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
                 compass.locator("#timeline .timeline-day-title", has_text="2026-04-02").wait_for(state="detached", timeout=15000)
                 compass.locator("#timeline", has_text="Scoped fallback implementation event.").wait_for(timeout=15000)
 
+                console_errors[:] = [row for row in console_errors if "compass-source-truth.v1.json" not in row]
+                console_errors[:] = [row for row in console_errors if "404 (File not found)" not in row]
+                bad_responses[:] = [row for row in bad_responses if "compass-source-truth.v1.json" not in row]
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
                 context.close()
@@ -2827,8 +2962,10 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
     traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
 
     traceability_payload = json.loads(traceability_path.read_text(encoding="utf-8"))
+    traceability_payload["generated_utc"] = "2026-04-10T12:00:00Z"
     for release in traceability_payload.get("releases", []):
         if str(release.get("release_id", "")).strip() != "release-0-1-11":
             continue
@@ -2916,11 +3053,13 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
         }
     ]
     runtime_payload["workstream_catalog"] = list(runtime_payload["current_workstreams"])
+    runtime_payload["generated_utc"] = "2026-04-09T12:00:00Z"
     runtime_json_path.write_text(json.dumps(runtime_payload, indent=2) + "\n", encoding="utf-8")
     runtime_js_path.write_text(
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(runtime_payload, separators=(",", ":")) + ";\n",
         encoding="utf-8",
     )
+    source_truth_path.unlink(missing_ok=True)
 
     with _static_server(root=fixture_root) as base_url:
         for _pw, browser in _browser():
@@ -2940,7 +3079,14 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
                 assert "Release truth for 0.1.11 now targets B-068" in banner_text
                 assert "B-067" in banner_text
 
-                release_text = compass.locator("#release-groups").inner_text().strip()
+                release_section = compass.locator("#release-groups details.execution-wave-section").filter(
+                    has=compass.locator(".execution-wave-section-title", has_text="0.1.11")
+                ).first
+                release_section.wait_for(timeout=15000)
+                if release_section.get_attribute("open") is None:
+                    release_section.locator("summary").first.click()
+                release_section.locator(".execution-wave-panel").first.wait_for(timeout=15000)
+                release_text = release_section.inner_text().strip()
                 assert "B-068" in release_text
                 assert "B-067" in release_text
                 b068_card = compass.locator("#release-groups .execution-wave-card", has_text="B-068").first
@@ -2948,6 +3094,9 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
                 b068_text = b068_card.inner_text().strip()
                 assert "0% progress" not in b068_text
 
+                console_errors[:] = [row for row in console_errors if "compass-source-truth.v1.json" not in row]
+                console_errors[:] = [row for row in console_errors if "404 (File not found)" not in row]
+                bad_responses[:] = [row for row in bad_responses if "compass-source-truth.v1.json" not in row]
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
                 context.close()
@@ -2956,6 +3105,8 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
 def test_compass_release_targets_show_checklist_label_instead_of_fake_zero_progress(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _write_fixture_current_release_assignments(fixture_root, "B-068")
+    _rewrite_fixture_workstream_status(fixture_root, idea_id="B-068", status="implementation")
     traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
     plan_path = (
         fixture_root
@@ -3026,7 +3177,14 @@ def test_compass_release_targets_show_checklist_label_instead_of_fake_zero_progr
 
                 compass = page.frame_locator("#frame-compass")
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-                release_text = compass.locator("#release-groups").inner_text().strip()
+                release_section = compass.locator("#release-groups details.execution-wave-section").filter(
+                    has=compass.locator(".execution-wave-section-title", has_text="0.1.11")
+                ).first
+                release_section.wait_for(timeout=15000)
+                if release_section.get_attribute("open") is None:
+                    release_section.locator("summary").first.click()
+                release_section.locator(".execution-wave-panel").first.wait_for(timeout=15000)
+                release_text = release_section.inner_text().strip()
                 assert "B-068" in release_text
                 b068_card = compass.locator("#release-groups .execution-wave-card", has_text="B-068").first
                 b068_card.wait_for(timeout=15000)
@@ -3042,6 +3200,8 @@ def test_compass_release_targets_show_checklist_label_instead_of_fake_zero_progr
 def test_compass_release_targets_show_tracked_execution_percent_for_partial_progress(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _write_fixture_current_release_assignments(fixture_root, "B-068")
+    _rewrite_fixture_workstream_status(fixture_root, idea_id="B-068", status="implementation")
     traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
     plan_path = (
         fixture_root
@@ -3120,7 +3280,14 @@ def test_compass_release_targets_show_tracked_execution_percent_for_partial_prog
 
                 compass = page.frame_locator("#frame-compass")
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-                release_text = compass.locator("#release-groups").inner_text().strip()
+                release_section = compass.locator("#release-groups details.execution-wave-section").filter(
+                    has=compass.locator(".execution-wave-section-title", has_text="0.1.11")
+                ).first
+                release_section.wait_for(timeout=15000)
+                if release_section.get_attribute("open") is None:
+                    release_section.locator("summary").first.click()
+                release_section.locator(".execution-wave-panel").first.wait_for(timeout=15000)
+                release_text = release_section.inner_text().strip()
                 assert "B-068" in release_text
                 b068_card = compass.locator("#release-groups .execution-wave-card", has_text="B-068").first
                 b068_card.wait_for(timeout=15000)

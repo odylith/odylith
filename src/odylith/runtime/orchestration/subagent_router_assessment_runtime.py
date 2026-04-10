@@ -10,6 +10,7 @@ from typing import Sequence
 from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.common.consumer_profile import load_consumer_profile
+from odylith.runtime.execution_engine import runtime_surface_governance
 
 
 def _host():
@@ -73,6 +74,16 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
     context_packet = _mapping_value(context_signals, "context_packet")
     if not isinstance(context_packet, Mapping):
         context_packet = {}
+    execution_governance_payload = _mapping_value(context_signals, "execution_governance")
+    if not isinstance(execution_governance_payload, Mapping):
+        execution_governance_payload = _mapping_value(context_packet, "execution_governance")
+    if not isinstance(execution_governance_payload, Mapping):
+        execution_governance_payload = _mapping_value(root, "execution_governance")
+    if not isinstance(execution_governance_payload, Mapping):
+        execution_governance_payload = {}
+    execution_governance_summary = runtime_surface_governance.summary_fields_from_execution_governance(
+        execution_governance_payload
+    )
     validation_bundle = _validation_bundle_from_context(context_signals, context_packet=context_packet)
     governance_obligations = _governance_obligations_from_context(context_signals, context_packet=context_packet)
     surface_refs = _surface_refs_from_context(context_signals, context_packet=context_packet)
@@ -539,6 +550,120 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
         else 0,
         _context_signal_score(_context_lookup(provenance, "projection_fingerprint")),
     )
+    execution_governance_present = bool(
+        execution_governance_summary.get("execution_governance_present")
+        or _context_signal_bool(_context_lookup(root, "execution_governance_present"))
+        or _context_signal_bool(_context_lookup(context_signals, "execution_governance_present"))
+        or _context_signal_bool(_context_lookup(context_signals, "latest_execution_governance_present"))
+    )
+    execution_governance_outcome = _normalize_token(
+        execution_governance_summary.get("execution_governance_outcome")
+        or _context_lookup(root, "execution_governance_outcome")
+        or _context_lookup(context_signals, "execution_governance_outcome")
+        or _context_lookup(context_signals, "latest_execution_governance_outcome")
+    )
+    execution_governance_requires_reanchor = bool(
+        execution_governance_summary.get("execution_governance_requires_reanchor")
+        or _context_signal_bool(_context_lookup(root, "execution_governance_requires_reanchor"))
+        or _context_signal_bool(_context_lookup(context_signals, "execution_governance_requires_reanchor"))
+        or _context_signal_bool(_context_lookup(context_signals, "latest_execution_governance_requires_reanchor"))
+    )
+    execution_governance_mode = _normalize_token(
+        execution_governance_summary.get("execution_governance_mode")
+        or _context_lookup(root, "execution_governance_mode")
+        or _context_lookup(context_signals, "execution_governance_mode")
+        or _context_lookup(context_signals, "latest_execution_governance_mode")
+    )
+    execution_governance_next_move = _normalize_string(
+        execution_governance_summary.get("execution_governance_next_move")
+        or _context_lookup(root, "execution_governance_next_move")
+        or _context_lookup(context_signals, "execution_governance_next_move")
+        or _context_lookup(context_signals, "latest_execution_governance_next_move")
+    )
+    execution_governance_current_phase = _normalize_string(
+        execution_governance_summary.get("execution_governance_current_phase")
+        or _context_lookup(root, "execution_governance_current_phase")
+        or _context_lookup(context_signals, "execution_governance_current_phase")
+        or _context_lookup(context_signals, "latest_execution_governance_current_phase")
+    )
+    execution_governance_last_successful_phase = _normalize_string(
+        execution_governance_summary.get("execution_governance_last_successful_phase")
+        or _context_lookup(root, "execution_governance_last_successful_phase")
+        or _context_lookup(context_signals, "execution_governance_last_successful_phase")
+        or _context_lookup(context_signals, "latest_execution_governance_last_successful_phase")
+    )
+    execution_governance_blocker = _normalize_string(
+        execution_governance_summary.get("execution_governance_blocker")
+        or _context_lookup(root, "execution_governance_blocker")
+        or _context_lookup(context_signals, "execution_governance_blocker")
+        or _context_lookup(context_signals, "latest_execution_governance_blocker")
+    )
+    execution_governance_closure = _normalize_token(
+        execution_governance_summary.get("execution_governance_closure")
+        or _context_lookup(root, "execution_governance_closure")
+        or _context_lookup(context_signals, "execution_governance_closure")
+        or _context_lookup(context_signals, "latest_execution_governance_closure")
+    )
+    execution_governance_wait_status = _normalize_token(
+        execution_governance_summary.get("execution_governance_wait_status")
+        or _context_lookup(root, "execution_governance_wait_status")
+        or _context_lookup(context_signals, "execution_governance_wait_status")
+        or _context_lookup(context_signals, "latest_execution_governance_wait_status")
+    )
+    execution_governance_wait_detail = _normalize_string(
+        execution_governance_summary.get("execution_governance_wait_detail")
+        or _context_lookup(root, "execution_governance_wait_detail")
+        or _context_lookup(context_signals, "execution_governance_wait_detail")
+        or _context_lookup(context_signals, "latest_execution_governance_wait_detail")
+    )
+    execution_governance_resume_token = _normalize_string(
+        execution_governance_summary.get("execution_governance_resume_token")
+        or _context_lookup(root, "execution_governance_resume_token")
+        or _context_lookup(context_signals, "execution_governance_resume_token")
+        or _context_lookup(context_signals, "latest_execution_governance_resume_token")
+    )
+    execution_governance_validation_archetype = _normalize_token(
+        execution_governance_summary.get("execution_governance_validation_archetype")
+        or _context_lookup(root, "execution_governance_validation_archetype")
+        or _context_lookup(context_signals, "execution_governance_validation_archetype")
+        or _context_lookup(context_signals, "latest_execution_governance_validation_archetype")
+    )
+    execution_governance_validation_minimum_pass_count = _int_value(
+        execution_governance_summary.get("execution_governance_validation_minimum_pass_count")
+        or _context_lookup(root, "execution_governance_validation_minimum_pass_count")
+        or _context_lookup(context_signals, "execution_governance_validation_minimum_pass_count")
+        or _context_lookup(context_signals, "latest_execution_governance_validation_minimum_pass_count")
+    )
+    execution_governance_contradiction_count = _int_value(
+        execution_governance_summary.get("execution_governance_contradiction_count")
+        or _context_lookup(root, "execution_governance_contradiction_count")
+        or _context_lookup(context_signals, "execution_governance_contradiction_count")
+        or _context_lookup(context_signals, "latest_execution_governance_contradiction_count")
+    )
+    execution_governance_history_rule_count = _int_value(
+        execution_governance_summary.get("execution_governance_history_rule_count")
+        or _context_lookup(root, "execution_governance_history_rule_count")
+        or _context_lookup(context_signals, "execution_governance_history_rule_count")
+        or _context_lookup(context_signals, "latest_execution_governance_history_rule_count")
+    )
+    execution_governance_authoritative_lane = _normalize_string(
+        execution_governance_summary.get("execution_governance_authoritative_lane")
+        or _context_lookup(root, "execution_governance_authoritative_lane")
+        or _context_lookup(context_signals, "execution_governance_authoritative_lane")
+        or _context_lookup(context_signals, "latest_execution_governance_authoritative_lane")
+    )
+    execution_governance_host_family = _normalize_token(
+        execution_governance_summary.get("execution_governance_host_family")
+        or _context_lookup(root, "execution_governance_host_family")
+        or _context_lookup(context_signals, "execution_governance_host_family")
+        or _context_lookup(context_signals, "latest_execution_governance_host_family")
+    )
+    execution_governance_model_family = _normalize_token(
+        execution_governance_summary.get("execution_governance_model_family")
+        or _context_lookup(root, "execution_governance_model_family")
+        or _context_lookup(context_signals, "execution_governance_model_family")
+        or _context_lookup(context_signals, "latest_execution_governance_model_family")
+    )
     return {
         "grounding_score": max(
             execution_grounding_score,
@@ -914,6 +1039,25 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
             _context_signal_score(_context_lookup(provenance, "redacted_sensitive_count")),
             _context_signal_score(_context_lookup(provenance_summary, "redacted_sensitive_count")),
         ),
+        "execution_governance_present": execution_governance_present,
+        "execution_governance_outcome": execution_governance_outcome,
+        "execution_governance_requires_reanchor": execution_governance_requires_reanchor,
+        "execution_governance_mode": execution_governance_mode,
+        "execution_governance_next_move": execution_governance_next_move,
+        "execution_governance_current_phase": execution_governance_current_phase,
+        "execution_governance_last_successful_phase": execution_governance_last_successful_phase,
+        "execution_governance_blocker": execution_governance_blocker,
+        "execution_governance_closure": execution_governance_closure,
+        "execution_governance_wait_status": execution_governance_wait_status,
+        "execution_governance_wait_detail": execution_governance_wait_detail,
+        "execution_governance_resume_token": execution_governance_resume_token,
+        "execution_governance_validation_archetype": execution_governance_validation_archetype,
+        "execution_governance_validation_minimum_pass_count": execution_governance_validation_minimum_pass_count,
+        "execution_governance_contradiction_count": execution_governance_contradiction_count,
+        "execution_governance_history_rule_count": execution_governance_history_rule_count,
+        "execution_governance_authoritative_lane": execution_governance_authoritative_lane,
+        "execution_governance_host_family": execution_governance_host_family,
+        "execution_governance_model_family": execution_governance_model_family,
         "odylith_fix_mode": odylith_fix_mode,
         "allow_odylith_mutations": allow_odylith_mutations,
         "odylith_write_protected_roots": odylith_write_protected_roots,

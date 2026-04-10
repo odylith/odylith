@@ -41,6 +41,7 @@ from odylith.runtime.governance.sync_argument_contract import configure_sync_par
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_refresh_runtime
+from odylith.runtime.surfaces import render_mermaid_catalog_refresh
 
 
 _SYNC_PATH_PREFIXES: tuple[str, ...] = (
@@ -593,7 +594,7 @@ def _atlas_render_command(
     command: list[str] = [
         "python",
         "-m",
-        "odylith.runtime.surfaces.render_mermaid_catalog",
+        "odylith.runtime.surfaces.render_mermaid_catalog_refresh",
         "--repo-root",
         str(repo_root),
         "--fail-on-stale",
@@ -640,7 +641,7 @@ def _delivery_intelligence_command(*, repo_root: Path, check_only: bool) -> tupl
     command: list[str] = [
         "python",
         "-m",
-        "odylith.runtime.governance.delivery_intelligence_engine",
+        "odylith.runtime.governance.delivery_intelligence_refresh",
         "--repo-root",
         str(repo_root),
     ]
@@ -693,7 +694,7 @@ def _dashboard_surface_steps(
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
     refresh_command = display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", surface)
     steps: list[ExecutionStep] = []
-    if surface in {"atlas", "registry", "tooling_shell"}:
+    if surface in {"registry", "tooling_shell"}:
         command = _delivery_intelligence_command(repo_root=repo_root, check_only=False)
         steps.append(
             _execution_step(
@@ -774,24 +775,22 @@ def _dashboard_surface_steps(
         )
         return steps
     if surface == "atlas":
-        command = _atlas_render_command(
-            repo_root=repo_root,
-            check_only=False,
-            changed_paths=(),
-            force=True,
-            impact_mode="full",
-            runtime_mode=normalized_runtime_mode,
-        )
         steps.append(
             _execution_step(
                 "Render Atlas from the current Mermaid catalog state.",
                 surface=surface,
-                command=command,
-                standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
                 paths=_surface_render_outputs("atlas"),
+                action=lambda: render_mermaid_catalog_refresh.main(
+                    [
+                        "--repo-root",
+                        str(repo_root),
+                        "--fail-on-stale",
+                        "--runtime-mode",
+                        normalized_runtime_mode,
+                    ]
+                ),
                 next_command_on_failure=refresh_command,
-                timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
         )
         return steps
@@ -1083,7 +1082,7 @@ def _run_dashboard_refresh_step(
     if step.timeout_seconds is not None:
         command_kwargs["timeout_seconds"] = step.timeout_seconds
     rc = _run_command(**command_kwargs)
-    if rc == 0 or str(runtime_mode).strip().lower() != "auto" or not step.standalone_command:
+    if rc == 0 or rc == 3 or str(runtime_mode).strip().lower() != "auto" or not step.standalone_command:
         return {
             "rc": rc,
             "fallback_used": False,

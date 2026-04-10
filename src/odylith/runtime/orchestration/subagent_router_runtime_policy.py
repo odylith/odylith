@@ -4,6 +4,8 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.execution_engine import runtime_lane_policy
+
 def bind(host_module: Any) -> None:
     globals().update({
         "RouterProfile": getattr(host_module, "RouterProfile"),
@@ -187,6 +189,9 @@ def _decision_odylith_execution_profile(
 
 def _odylith_execution_guard_reason(assessment: TaskAssessment) -> str:
     summary = dict(assessment.context_signal_summary or {})
+    governance_guard = runtime_lane_policy.delegation_guard(summary)
+    if governance_guard.blocked:
+        return governance_guard.reason
     recommended = _router_profile_from_token(summary.get("odylith_execution_profile", ""))
     confidence = _clamp_score(summary.get("odylith_execution_confidence_score", 0) or 0)
     source = _normalize_token(summary.get("odylith_execution_source", ""))

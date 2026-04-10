@@ -285,7 +285,9 @@
   is unchanged. Do not spend model or deterministic scoped-brief work just
   because a refresh was requested if the brief story is materially the same.
   Compass now has one bounded refresh contract only; do not revive or
-  advertise a second `full` or deep-refresh mode. Refresh may reuse a warmed
+  advertise a second `full` or deep-refresh mode. If a user says "full"
+  in prose, route that request to `odylith compass refresh --repo-root . --wait`
+  instead of inventing a Compass-specific flag. Refresh may reuse a warmed
   live global brief, and shell-safe global `24h`/`48h` should stay on
   maintained narrated cache before deterministic fallback. It must not pay for
   a fresh provider call on a miss, and it must not let packet-local fact-id

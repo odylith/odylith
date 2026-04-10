@@ -18,10 +18,10 @@ promoted_to_plan: odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith
 execution_model: standard
 workstream_type: standalone
 workstream_parent:
-workstream_children: B-071
+workstream_children: B-071,B-080,B-081
 workstream_depends_on: B-017, B-018, B-023
 workstream_blocks:
-related_diagram_ids:
+related_diagram_ids: D-032
 workstream_reopens:
 workstream_reopened_by:
 workstream_split_from:
@@ -265,12 +265,22 @@ Extend that same model into a balanced live-shell posture:
   cross-surface ladder contract instead of another Compass-only heuristic
   provider-backed again at `27.29s` wall-clock; the measured long pole is now
   upstream window-fact preparation (`10.8s`), not model fan-out
+- implemented on 2026-04-09 for Atlas governance clarity:
+  added diagram `D-032` so Compass refresh now has one explicit architecture
+  map covering the canonical command surface, bounded sync lane, global and
+  scoped brief decisions, cold-start maintenance warming, and the failure
+  edges that must stay fail-closed instead of silently reviving a second
+  deeper refresh mode
 - implemented on 2026-04-09 for scoped-window integrity:
   Compass now publishes `verified_scoped_workstreams` for each rolling window,
   keeps quiet scopes such as `B-040` out of the normal selector when they only
   appear in governance-only churn or broad fanout transactions, and renders an
   empty scoped Timeline Audit instead of borrowing unrelated global cards when
   a preserved deep link points at an inactive local window
+- implemented on 2026-04-09 for current-workstreams clarity:
+  removed the backend `12`-row truncation from Compass `Current Workstreams`
+  so the board now ranks the full eligible set and lets the visible window and
+  scope filters do the narrowing instead of hiding rows ahead of operator focus
 - implemented on 2026-04-08 for Compass closeout governance:
   Compass-specific freshness, fail-closed refresh, stale-disclosure, and
   retained-history claims are now closed; the remaining open workstream scope

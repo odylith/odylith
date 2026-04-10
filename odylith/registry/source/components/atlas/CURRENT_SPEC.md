@@ -72,6 +72,8 @@ implementation activity. Important fields include:
 - title, kind, owner, and summary
 - source/render artifact paths
 - `last_reviewed_utc`
+- `reviewed_watch_fingerprints`
+- `render_source_fingerprint`
 - `change_watch_paths`
 - related workstreams, plans, docs, and code
 - linked components
@@ -92,13 +94,13 @@ enough to recover engineering intent.
 `auto_update_mermaid_diagrams.py`:
 1. collects changed paths from git or explicit input
 2. matches them to diagram `change_watch_paths`
-3. validates impacted Mermaid source before bulk rendering and fails fast on
-   the first real parse error with diagram id, source path, and line context
-   while degrading known Node-parser runtime drift into browser-backed scratch
-   validation
-4. re-renders impacted Mermaid diagrams
-5. refreshes `last_reviewed_utc` by touching the selected `.mmd` review markers
-   and rewriting `odylith/atlas/source/catalog/diagrams.v1.json`
+3. classifies the selected diagrams into render-needed versus review-only work
+   using render-semantic Mermaid fingerprints plus tracked-output truth
+4. re-renders only the diagrams that genuinely need fresh SVG and PNG assets
+5. refreshes `last_reviewed_utc`, `reviewed_watch_fingerprints`, and
+   `render_source_fingerprint` in
+   `odylith/atlas/source/catalog/diagrams.v1.json` without touching `.mmd`,
+   `.svg`, or `.png` files when the run is review-only
 6. re-renders `odylith/atlas/atlas.html`
 
 It also supports `--all-stale` to refresh diagrams selected by the global
@@ -114,13 +116,19 @@ orphan visual assets.
 Atlas tracks freshness explicitly:
 - `last_reviewed_utc`
   Review anchor recorded in catalog metadata.
+- `reviewed_watch_fingerprints`
+  Stored content fingerprints for watched implementation paths at the time of
+  the last honest review.
+- `render_source_fingerprint`
+  Stored render-semantic Mermaid source fingerprint used to skip SVG and PNG
+  regeneration when review comments changed but the rendered topology did not.
 - `max-review-age-days`
   Staleness threshold used by renderer and auto-update tooling.
 - `fail-on-stale`
   Optional mode that turns stale diagrams into a failing validation condition.
 
 This keeps diagrams from drifting silently away from the product topology they
-claim to document.
+claim to document, while avoiding false stale debt from mtime-only churn.
 
 ## Architecture Mode Integration
 `odylith_architecture_mode.py` compiles an architecture bundle under the
@@ -168,10 +176,9 @@ diagram dump.
 - Auto-update must fail before SVG/PNG generation when Mermaid source is
   syntactically invalid, and the failure must name the blocking diagram,
   source path, and line instead of ending as a long opaque render timeout.
-- If the Node-side Mermaid preflight hits known parser-runtime drift rather
-  than a real source error, Atlas should rerun validation in browser-backed
-  scratch mode instead of poisoning tracked diagram assets or falsely blocking
-  refresh.
+- Review-only refresh must not rewrite Mermaid assets just because a watched
+  path churned. Atlas should refresh freshness truth without pretending that
+  unchanged diagrams were regenerated.
 - Stale diagrams can be reported or made to fail validation depending on the
   caller posture.
 - If Atlas evidence is weak, Context Engine architecture packets should surface
@@ -213,3 +220,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-07: Refreshed the broad runtime maps to show the governed memory family, Tribunal-backed delivery flow, and conversation intelligence path, and added the dedicated memory-substrate diagram `D-025` so Registry can deep-link into projection bundle, snapshot, backend, remote retrieval, and memory-contract topology directly. (Plan: [B-059](odylith/radar/radar.html?view=plan&workstream=B-059))
 - 2026-04-09: Moved Atlas workstream pill links onto the shared compact workstream-button contract and added bundle plus browser proof so Atlas pills cannot drift from the product-wide `B-###` control contract. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-080`)
 - 2026-04-09: Bound Atlas default active-workstream promotion to Delivery Intelligence's shared Scope Signal Ladder so low-signal governance churn and broad fanout activity stop masquerading as architecture-relevant active work by default. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
+- 2026-04-09: Added diagram `D-032` so Compass refresh now has a first-class Atlas topology covering the one bounded command lane, cold-start narrated-cache warming, scoped budget gating, and the edge cases that must fail closed instead of reviving a hidden deeper refresh path. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-09: Replaced Atlas watched-path freshness mtimes with stored content fingerprints, taught auto-update to distinguish review-only versus render-needed work before printing its plan, and repaired the persistent Mermaid worker bootstrap so real render jobs work again on the optimized path. Review-only Atlas refresh now updates freshness truth without regenerating unchanged SVG and PNG assets. (Plan: [B-080](odylith/radar/radar.html?view=plan&workstream=B-080); Bugs: `CB-097`, `CB-098`, `CB-099`, `CB-100`)

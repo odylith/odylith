@@ -160,7 +160,7 @@ h1 {
   top: 10px;
   z-index: 20;
   display: grid;
-  grid-template-columns: 2fr repeat(6, minmax(130px, 1fr));
+  grid-template-columns: minmax(220px, 1.8fr) repeat(7, minmax(0, 1fr));
   gap: 8px;
   padding: 10px;
   background: rgba(255, 255, 255, 0.92);
@@ -1355,6 +1355,30 @@ h1 {
   color: #75695d;
 }
 
+.kpi.kpi-section.kpi-section-active {
+  background: #f4f1f9;
+  border-color: #e1dbeb;
+  color: #6a627c;
+}
+
+.kpi.kpi-section.kpi-section-execution {
+  background: #eef2f7;
+  border-color: #d5ddea;
+  color: #5b697d;
+}
+
+.kpi.kpi-section.kpi-section-finished {
+  background: #f3f5ee;
+  border-color: #dce2d2;
+  color: #68725b;
+}
+
+.kpi.kpi-section.kpi-section-parked {
+  background: #f4f3f1;
+  border-color: #e2ddd6;
+  color: #75695d;
+}
+
 .rank-chip {
   --label-bg: #eef2f7;
   --label-border: #d8e1eb;
@@ -1872,6 +1896,11 @@ h1 {
       gap: 10px;
     }
 
+    .kpi.kpi-section .k,
+    .kpi.kpi-section .v {
+      color: inherit;
+    }
+
     .kpi {
   border: 1px solid #dbeafe;
   border-radius: 12px;
@@ -2154,6 +2183,11 @@ h1 {
       margin: 14px;
     }
 
+    .controls input,
+    .controls select {
+      min-width: 0;
+    }
+
     .quick-tooltip {
   position: fixed;
   z-index: 9999;
@@ -2271,6 +2305,11 @@ h1 {
         <option value="active">Idea Stage (Ranked Active)</option>
         <option value="finished">Finished</option>
       </select>
+      <select id="type">
+        <option value="all">All Types</option>
+        <option value="umbrella">Umbrella</option>
+        <option value="child">Child</option>
+      </select>
       <select id="phase">
         <option value="all">All Phases</option>
         <option value="planning">Planning</option>
@@ -2368,7 +2407,7 @@ h1 {
   }
 })();
 </script>
-  <script id="backlogData" src="backlog-payload.v1.js?v=fc8abf6081d7"></script>
-  <script src="backlog-app.v1.js?v=fc8abf6081d7"></script>
+  <script id="backlogData" src="backlog-payload.v1.js?v=ed57894334cb"></script>
+  <script src="backlog-app.v1.js?v=ed57894334cb"></script>
 </body>
 </html>

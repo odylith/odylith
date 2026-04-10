@@ -23,6 +23,7 @@ from odylith.runtime.context_engine.surface_projection_fingerprint import defaul
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
 from odylith.runtime.surfaces import compass_standup_brief_narrator
+from odylith.runtime.surfaces import compass_standup_brief_voice_validation
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import source_bundle_mirror
 
@@ -30,7 +31,6 @@ DEFAULT_HISTORY_RETENTION_DAYS = 15
 _DEFAULT_ACTIVE_WINDOW_MINUTES = 15
 _COMPASS_TZ = ZoneInfo("America/Los_Angeles")
 _RUNTIME_CONTRACT_VERSION = "v1"
-_RUNTIME_REUSE_MAX_AGE_SECONDS = 5 * 60
 _DEFAULT_REFRESH_PROFILE = compass_refresh_contract.DEFAULT_REFRESH_PROFILE
 _EXPORT_MODULES = (
     "odylith.runtime.surfaces.compass_dashboard_base",
@@ -109,6 +109,32 @@ def _write_current_runtime_payload(
         content="window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
         lock_key=str(current_js_path),
     )
+
+
+def _compact_source_truth_payload(*, runtime_payload: Mapping[str, Any]) -> dict[str, Any]:
+    def _mapping(value: Any) -> dict[str, Any]:
+        return dict(value) if isinstance(value, Mapping) else {}
+
+    def _mapping_list(value: Any) -> list[dict[str, Any]]:
+        if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+            return []
+        return [dict(item) for item in value if isinstance(item, Mapping)]
+
+    return {
+        "version": "v1",
+        "generated_utc": str(runtime_payload.get("generated_utc", "")).strip(),
+        "release_summary": {
+            "catalog": _mapping_list(_mapping(runtime_payload.get("release_summary")).get("catalog")),
+            "current_release": _mapping(_mapping(runtime_payload.get("release_summary")).get("current_release")),
+            "next_release": _mapping(_mapping(runtime_payload.get("release_summary")).get("next_release")),
+            "summary": _mapping(_mapping(runtime_payload.get("release_summary")).get("summary")),
+        },
+        "current_workstreams": _mapping_list(runtime_payload.get("current_workstreams")),
+        "workstream_catalog": _mapping_list(runtime_payload.get("workstream_catalog")),
+        "verified_scoped_workstreams": _mapping(runtime_payload.get("verified_scoped_workstreams")),
+        "promoted_scoped_workstreams": _mapping(runtime_payload.get("promoted_scoped_workstreams")),
+        "window_scope_signals": _mapping(runtime_payload.get("window_scope_signals")),
+    }
 
 
 def _refresh_failure_warning(
@@ -301,13 +327,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="auto",
         help="Use the local runtime projection store when available for fast local rendering.",
     )
-    parser.add_argument(
-        "--refresh-profile",
-        choices=(compass_refresh_contract.DEFAULT_REFRESH_PROFILE, compass_refresh_contract.FULL_REFRESH_PROFILE),
-        default=_DEFAULT_REFRESH_PROFILE,
-        help="Compass refresh policy: cheap shell-safe reuse by default, or explicit full refresh when live provider-backed briefs are required.",
-    )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    args.refresh_profile = _DEFAULT_REFRESH_PROFILE
+    return args
 
 
 def refresh_runtime_artifacts(
@@ -384,18 +406,23 @@ def refresh_runtime_artifacts(
             runtime_mode=runtime_mode,
             status="passed",
         )
-        _write_current_runtime_payload(
+        reused_runtime_paths = _load_runtime_impl()._write_runtime_snapshots(
             repo_root=repo_root,
-            current_json_path=current_json_path,
-            current_js_path=current_js_path,
+            runtime_dir=runtime_dir,
             payload=updated_existing_payload,
+            retention_days=retention_days,
         )
         _emit_progress(
             progress_callback,
             stage="runtime_payload_built",
             detail={"message": "reused the current runtime payload because the Compass inputs still match"},
         )
-        return updated_existing_payload, runtime_paths
+        _emit_progress(
+            progress_callback,
+            stage="runtime_snapshots_written",
+            detail={"message": "rewrote the current runtime snapshot and daily history files from the reused payload"},
+        )
+        return updated_existing_payload, reused_runtime_paths
 
     runtime_impl = _load_runtime_impl()
     payload = runtime_impl._build_runtime_payload(
@@ -520,7 +547,10 @@ def _existing_runtime_payload_if_fresh(
     input_fingerprint: str,
     runtime_paths: tuple[Path, Path, Path, Path, Path],
 ) -> dict[str, Any] | None:
-    if not all(path.is_file() for path in runtime_paths):
+    current_js_path, _daily_path, history_index_path, history_js_path = runtime_paths[1:]
+    if not current_json_path.is_file():
+        return None
+    if not current_js_path.is_file() or not history_index_path.is_file() or not history_js_path.is_file():
         return None
     payload = odylith_context_cache.read_json_object(current_json_path)
     if not payload:
@@ -537,12 +567,6 @@ def _existing_runtime_payload_if_fresh(
         return None
     if str(runtime_contract.get("input_fingerprint", "")).strip() != str(input_fingerprint).strip():
         return None
-    generated_utc = _parse_generated_utc(payload)
-    if generated_utc is None:
-        return None
-    age_seconds = (dt.datetime.now(tz=dt.timezone.utc) - generated_utc).total_seconds()
-    if age_seconds < 0 or age_seconds > float(_RUNTIME_REUSE_MAX_AGE_SECONDS):
-        return None
     return payload
 
 
@@ -551,23 +575,43 @@ def _payload_satisfies_requested_refresh(
     payload: Mapping[str, Any],
     requested_profile: str,
 ) -> bool:
-    if not compass_refresh_contract.full_refresh_requested(requested_profile):
-        return True
-    standup = payload.get("standup_brief")
-    if not isinstance(standup, Mapping):
-        return False
-    for window in ("24h", "48h"):
-        if not compass_refresh_contract.brief_satisfies_full_refresh(standup.get(window)):
-            return False
+    del requested_profile
+
+    def _brief_rows(value: Any) -> list[Mapping[str, Any]]:
+        rows: list[Mapping[str, Any]] = []
+        if not isinstance(value, Mapping):
+            return rows
+        for brief in value.values():
+            if isinstance(brief, Mapping):
+                rows.append(brief)
+        return rows
+
+    ready_briefs = [
+        * _brief_rows(payload.get("standup_brief")),
+    ]
     scoped = payload.get("standup_brief_scoped")
-    if not isinstance(scoped, Mapping):
-        return False
-    for window in ("24h", "48h"):
-        briefs = scoped.get(window)
-        if not isinstance(briefs, Mapping):
-            return False
-        if any(not compass_refresh_contract.brief_satisfies_full_refresh(brief) for brief in briefs.values()):
-            return False
+    if isinstance(scoped, Mapping):
+        for window_map in scoped.values():
+            ready_briefs.extend(_brief_rows(window_map))
+    for brief in ready_briefs:
+        if str(brief.get("status", "")).strip().lower() != "ready":
+            continue
+        sections = brief.get("sections")
+        if not isinstance(sections, Sequence):
+            continue
+        for section in sections:
+            if not isinstance(section, Mapping):
+                continue
+            bullets = section.get("bullets")
+            if not isinstance(bullets, Sequence):
+                continue
+            for bullet in bullets:
+                if not isinstance(bullet, Mapping):
+                    continue
+                if compass_standup_brief_voice_validation.contains_rejected_cached_phrase(
+                    str(bullet.get("text", "")).strip()
+                ):
+                    return False
     return True
 
 
@@ -687,6 +731,7 @@ def render_compass_artifacts(
     from odylith.runtime.surfaces.compass_dashboard_shell import _render_shell_html
 
     shell_asset_paths = _compass_shell_asset_paths(output_path=output_path)
+    source_truth_path = output_path.parent / "compass-source-truth.v1.json"
     for asset in (
         *compass_dashboard_frontend_contract.compass_shell_style_assets(),
         *compass_dashboard_frontend_contract.compass_shell_support_js_assets(),
@@ -700,6 +745,12 @@ def render_compass_artifacts(
             ),
             lock_key=str(asset_path),
         )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=source_truth_path,
+        content=json.dumps(_compact_source_truth_payload(runtime_payload=runtime_payload), indent=2) + "\n",
+        lock_key=str(source_truth_path),
+    )
 
     shell_payload: dict[str, Any] = {
         "base_style_href": _versioned_href(output_path=output_path, target=shell_asset_paths["compass-style-base.v1.css"]),
@@ -732,6 +783,7 @@ def render_compass_artifacts(
             output_path=output_path,
             target=shell_asset_paths["compass-ui-runtime.v1.js"],
         ),
+        "source_truth_href": _versioned_href(output_path=output_path, target=source_truth_path),
         "traceability_graph_href": _versioned_href(output_path=output_path, target=traceability_graph_path),
         "runtime_json_href": _versioned_href(output_path=output_path, target=current_json_path),
         "runtime_js_href": _versioned_href(output_path=output_path, target=current_js_path),
@@ -792,6 +844,7 @@ def render_compass_artifacts(
             output_path,
             bundle_paths.payload_js_path,
             bundle_paths.control_js_path,
+            source_truth_path,
             *shell_asset_paths.values(),
         ),
     )

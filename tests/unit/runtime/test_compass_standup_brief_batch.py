@@ -234,6 +234,42 @@ def test_build_scoped_briefs_reuses_context_matched_cache_before_batch_provider(
     assert scoped_packets[0]["scope_id"] == "B-222"
 
 
+def test_build_single_scope_brief_reuses_context_cache_before_composed_fallback(tmp_path: Path) -> None:
+    cached_packet = _fact_packet(idea_id="B-111")
+    changed_packet = json.loads(json.dumps(cached_packet))
+    changed_fact = {
+        "id": "F-099",
+        "section_key": "current_execution",
+        "voice_hint": "operator",
+        "kind": "signal",
+        "text": "Fresh packet drift arrived without invalidating the earlier cited story.",
+    }
+    changed_packet["facts"].append(changed_fact)
+    changed_packet["sections"][1]["facts"].append(changed_fact)
+    generated_utc = _generated_utc()
+    seed_provider = _QueuedProvider([_single_scope_response(cached_packet)])
+    narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=cached_packet,
+        generated_utc=generated_utc,
+        config=_reasoning_config(),
+        provider=seed_provider,
+    )
+
+    provider = _QueuedProvider([None])
+    results = batch._build_single_scope_brief(  # noqa: SLF001
+        repo_root=tmp_path,
+        scope_id="B-111",
+        fact_packet=changed_packet,
+        generated_utc=generated_utc,
+        config=_reasoning_config(),
+        provider=provider,
+    )
+
+    assert results["B-111"]["source"] == "cache"
+    assert provider.calls == 0
+
+
 def test_build_scoped_briefs_batches_cold_scopes_into_bounded_packs(tmp_path: Path) -> None:
     packets = {
         "B-301": _fact_packet(idea_id="B-301"),

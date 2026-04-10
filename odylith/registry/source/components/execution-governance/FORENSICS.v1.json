@@ -1,0 +1,59 @@
+{
+  "component_id": "execution-governance",
+  "diagrams": [
+    "D-002",
+    "D-030",
+    "D-031"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 0,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 2,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 1
+  },
+  "name": "Execution Governance",
+  "path_prefixes": [
+    "src/odylith/runtime/execution_engine"
+  ],
+  "spec_ref": "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+        "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
+      ],
+      "confidence": "high",
+      "event_index": 66,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "execution-governance"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/execution-governance/CURRENT_SPEC.md, src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+      "ts_iso": "2026-04-09T20:51:33-07:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Constraint-aware execution runtime that materializes task contracts, admissibility decisions, frontiers, closure, receipts, contradiction records, and host-aware execution hints before Odylith acts.",
+  "why_tracked": "Owns the boundary that turns grounding into governed next-action control instead of soft prompt advice.",
+  "workstreams": [
+    "B-072",
+    "B-074",
+    "B-077",
+    "B-075",
+    "B-079",
+    "B-076",
+    "B-073",
+    "B-078"
+  ]
+}

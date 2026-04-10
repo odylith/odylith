@@ -11,7 +11,7 @@
         host.innerHTML = "";
       };
       const ensureTarget = () => {
-        host.innerHTML = '<article class="card"><div id="execution-waves" class="muted"></div></article>';
+        host.innerHTML = '<article class="card execution-waves-card"><h2>Programs</h2><div id="execution-waves" class="muted"></div></article>';
         return host.querySelector("#execution-waves");
       };
       const programs = executionWavePrograms(payload);

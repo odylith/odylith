@@ -928,11 +928,6 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     if (waveSpan) contextChips.push(`<span class="label execution-wave-label wave-status-active">${escapeHtml(waveSpan)}</span>`);
     if (roleLabel) contextChips.push(`<span class="label execution-wave-label wave-role-chip">${escapeHtml(roleLabel)}</span>`);
     if (contextMeta.has_next_wave) contextChips.push('<span class="label execution-wave-label wave-status-planned">Next relevant</span>');
-  } else {
-    const waveCount = Number(program.wave_count || 0);
-    if (waveCount > 0) {
-      contextChips.push(`<span class="label execution-wave-label wave-chip-program">${escapeHtml(`${waveCount}-wave program`)}</span>`);
-    }
   }
 
   const cardsHtml = waves.map((wave) => {
@@ -1055,7 +1050,7 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
             <div class="execution-wave-focus-line">${escapeHtml(contextLine)}</div>
             ${summaryLine ? `<div class="execution-wave-focus-line execution-wave-focus-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          <div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>
+          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
       <div class="execution-wave-sequence">${cardsHtml}</div>

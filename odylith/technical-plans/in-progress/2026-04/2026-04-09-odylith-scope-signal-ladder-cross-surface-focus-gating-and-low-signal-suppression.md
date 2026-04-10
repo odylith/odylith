@@ -47,6 +47,9 @@ Related Bugs:
 - [CB-088](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-scoped-selector-can-advertise-unverified-window-activity-and-leak-global-audit-cards.md)
   proved that Compass could still advertise a scope with no verified local
   movement when local heuristics were too loose.
+- [CB-092](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-timeline-audit-cards-can-hide-their-own-anchor-workstream-in-visible-chip-row.md)
+  proved that even after the right scope was inferred, Compass could still let
+  broader linked scopes hide that anchor fix from the visible chip row.
 - [CB-090](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-low-signal-governance-churn-can-outrank-real-execution-across-governance-surfaces.md)
   is the umbrella architecture bug for cross-surface low-signal promotion and
   budget drift.
@@ -120,6 +123,8 @@ Related Bugs:
 - [x] `R0-R3` scopes do not trigger fresh provider or escalated reasoning work
       by default.
 - [x] Browser proof catches cross-surface promotion drift.
+- [x] Timeline Audit keeps the transaction's anchor workstream visible and
+      first in the chip row instead of letting broader linked scopes bury it.
 
 ## Non-Goals
 - [ ] Replacing Radar as the exhaustive workstream source of truth.
@@ -163,6 +168,10 @@ Related Bugs:
 - Radar, Registry, Atlas, and shared delivery readouts now consume the same
   rung and budget-class policy instead of rebuilding urgency locally.
 - Full browser proof is green after the rollout: `91 passed, 1 skipped`.
+- The same ladder cleanup now reaches Timeline Audit prominence too: when a
+  transaction headline or checkpoint anchors on a workstream such as `B-071`,
+  the visible chip row keeps that same workstream first instead of trimming it
+  behind broader linked scope lists.
 - Compass budget note: the ladder itself did not worsen the current shell-safe
   runtime envelope, but Compass still remains above the founder target. The
   measured source-local shell-safe runs after this rollout were `real 2.03`
@@ -173,8 +182,8 @@ Related Bugs:
   rides on top of a bounded narrated-cache contract rather than paying or
   flattening the globals again.
 - Release bar remains open after the next follow-on too. The current bounded
-  hot exact-reuse lane is `0.1s` internal (`0.61s` wall), the current cold
-  shell-safe lane is `0.8s` internal (`1.14s` wall), and the ready-brief mix
-  is now `39 cache / 0 deterministic`. The ladder rollout no longer shares a
-  live-narration blocker with Compass; the remaining miss is cold wall-clock
+  hot exact-reuse lane is `0.3s` internal (`0.73s` wall), the current rebuilt
+  cold shell-safe lane is `1.7s` internal (`2.18s` wall), and the ready-brief
+  mix is now `35 cache / 0 deterministic`. The ladder rollout no longer shares
+  a live-narration blocker with Compass; the remaining miss is cold wall-clock
   overhead upstream of the ladder contract.

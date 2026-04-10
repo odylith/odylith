@@ -31,6 +31,7 @@ Last updated (UTC): 2026-04-09
 | --- | --- | --- | --- | --- |
 | `odylith/technical-plans/done/2026-04/2026-04-09-completed-release-members-source-truth-reconciliation-and-stale-runtime-guardrails.md` | Done | 2026-04-09 | 2026-04-09 | `B-066` |
 | `odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md` | Done | 2026-04-09 | 2026-04-09 | `B-069` |
+| `odylith/technical-plans/done/2026-04/2026-04-09-atlas-sub-second-sync-and-refresh-hot-paths.md` | Done | 2026-04-09 | 2026-04-09 | `B-080` |
 | `odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md` | Done | 2026-04-08 | 2026-04-09 | `B-068` |
 | `odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-module-decomposition-and-boundary-hardening.md` | Done | 2026-04-08 | 2026-04-09 | `B-067` |
 

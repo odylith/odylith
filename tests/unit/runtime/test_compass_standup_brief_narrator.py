@@ -626,8 +626,12 @@ def test_build_standup_brief_requires_freshness_evidence_when_packet_is_stale(tm
     assert brief["source"] == "deterministic"
     assert brief["notice"]["reason"] == "validation_failed"
     current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
-    assert current_execution["bullets"][-1]["fact_ids"] == ["F-009"]
-    assert "latest linked execution proof is more than a day old" in current_execution["bullets"][-1]["text"].lower()
+    freshness_bullet = next(
+        bullet
+        for bullet in current_execution["bullets"]
+        if bullet.get("fact_ids") == ["F-009"]
+    )
+    assert "latest linked execution proof is more than a day old" in freshness_bullet["text"].lower()
 
 
 def test_build_standup_brief_accepts_freshness_evidence_when_packet_is_stale(tmp_path: Path) -> None:
@@ -1277,7 +1281,7 @@ def test_validate_brief_response_injects_global_window_coverage_evidence_when_mi
 
     assert not errors
     current_execution = next(section for section in _sections if section["key"] == "current_execution")
-    assert current_execution["bullets"][-1]["text"] == "This window mostly ran through B-101, B-102, and B-103."
+    assert current_execution["bullets"][-1]["text"] == "Most of the work here was in B-101, B-102, and B-103."
     assert current_execution["bullets"][-1]["fact_ids"] == ["F-010"]
 
 
@@ -1644,7 +1648,7 @@ def test_build_standup_brief_reuses_runtime_snapshot_when_local_cache_is_missing
     assert cached_provider.calls == 0
 
 
-def test_build_standup_brief_ignores_runtime_snapshot_entry_that_fails_current_voice_validation(
+def test_build_standup_brief_salvages_runtime_snapshot_entry_that_fails_current_voice_validation(
     tmp_path: Path,
 ) -> None:
     packet = _fact_packet(include_freshness_fact=True, scope_mode="global", idea_id="", window="48h")
@@ -1692,8 +1696,12 @@ def test_build_standup_brief_ignores_runtime_snapshot_entry_that_fails_current_v
     )
 
     assert brief["status"] == "ready"
-    assert brief["source"] == "provider"
-    assert provider.calls == 1
+    assert brief["source"] == "cache"
+    current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
+    current_execution_text = " ".join(bullet["text"] for bullet in current_execution["bullets"])
+    assert "A lot moved in this window." not in current_execution_text
+    assert "This window mostly ran through" not in current_execution_text
+    assert provider.calls == 0
 
 
 def test_build_standup_brief_ignores_runtime_snapshot_from_older_brief_contract(tmp_path: Path) -> None:
@@ -2116,6 +2124,96 @@ def test_build_standup_brief_salvages_cached_current_execution_section_when_one_
     )
 
 
+def test_build_standup_brief_salvages_cached_current_execution_when_freshness_evidence_is_missing(
+    tmp_path: Path,
+) -> None:
+    seeded_provider = _FakeProvider(_valid_provider_result())
+    seed_packet = _fact_packet()
+    target_packet = _fact_packet(freshness_bucket="aging", include_freshness_fact=True)
+    seeded = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=seed_packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=seeded_provider,
+    )
+    assert seeded["status"] == "ready"
+
+    cache_path = narrator.standup_brief_cache_path(repo_root=tmp_path)
+    cache_payload = json.loads(cache_path.read_text(encoding="utf-8"))
+    seed_fingerprint = narrator.standup_brief_fingerprint(fact_packet=seed_packet)
+    target_fingerprint = narrator.standup_brief_fingerprint(fact_packet=target_packet)
+    entry = dict(cache_payload["entries"][seed_fingerprint])
+    cache_payload["entries"][target_fingerprint] = entry
+    entry["sections"][1]["bullets"] = [
+        {
+            "text": "Compass is being steered around AI-first standup narration.",
+            "fact_ids": ["F-002"],
+        },
+        {
+            "text": "Updated Compass narrative to capture implementation intent.",
+            "fact_ids": ["F-003"],
+        },
+    ]
+    cache_path.write_text(json.dumps(cache_payload, indent=2) + "\n", encoding="utf-8")
+
+    reused = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=target_packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=None,
+        allow_provider=False,
+    )
+
+    assert reused["status"] == "ready"
+    assert reused["source"] == "cache"
+    assert reused["cache_mode"] == "exact"
+    current_execution_bullets = reused["sections"][1]["bullets"]
+    assert any("more than a day old" in bullet["text"] for bullet in current_execution_bullets)
+
+
+def test_build_standup_brief_salvages_cached_risk_section_when_it_degrades_into_counts_only_telemetry(
+    tmp_path: Path,
+) -> None:
+    seeded_provider = _FakeProvider(_valid_provider_result())
+    target_packet = _fact_packet()
+    seeded = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=target_packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=seeded_provider,
+    )
+    assert seeded["status"] == "ready"
+
+    cache_path = narrator.standup_brief_cache_path(repo_root=tmp_path)
+    cache_payload = json.loads(cache_path.read_text(encoding="utf-8"))
+    fingerprint = narrator.standup_brief_fingerprint(fact_packet=target_packet)
+    entry = cache_payload["entries"][fingerprint]
+    entry["sections"][3]["bullets"] = [
+        {
+            "text": "79 workstreams moved, 204 local changes landed, and 330 timeline events were recorded.",
+            "fact_ids": ["F-008"],
+        }
+    ]
+    cache_path.write_text(json.dumps(cache_payload, indent=2) + "\n", encoding="utf-8")
+
+    reused = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=target_packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=None,
+        allow_provider=False,
+    )
+
+    assert reused["status"] == "ready"
+    assert reused["source"] == "cache"
+    assert reused["cache_mode"] == "exact"
+    assert reused["sections"][3]["bullets"][0]["text"] == "No critical blockers are currently surfaced."
+
+
 def test_build_standup_brief_does_not_reuse_stale_last_known_good_cache(tmp_path: Path) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
     seeded = narrator.build_standup_brief(
@@ -2363,7 +2461,7 @@ def test_build_standup_brief_rewrites_cached_global_window_coverage_phrase_when_
     assert brief["status"] == "ready"
     assert brief["source"] == "cache"
     current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
-    assert current_execution["bullets"][-1]["text"] == "This window mostly ran through B-101, B-102, and B-103."
+    assert current_execution["bullets"][-1]["text"] == "Most of the work here was in B-101, B-102, and B-103."
 
 
 def test_build_standup_brief_ignores_disabled_odylith_mode_when_provider_is_runnable(

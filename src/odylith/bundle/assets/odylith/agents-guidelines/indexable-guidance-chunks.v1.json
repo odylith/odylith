@@ -2,6 +2,41 @@
   "version": "v1",
   "chunks": [
     {
+      "chunk_id": "coding-standards-documentation-reuse-robustness",
+      "note_kind": "guardrail",
+      "canonical_source": "odylith/agents-guidelines/CODING_STANDARDS.md",
+      "chunk_path": "odylith/agents-guidelines/CODING_STANDARDS.md",
+      "title": "Coding Standards",
+      "section": "Documentation, reuse, and robustness",
+      "summary": "Treat documentation, reuse, robustness, file-size discipline, refactor-first posture, and focused coding validation as one canonical coding-standards contract.",
+      "tags": [
+        "coding",
+        "documentation",
+        "reuse",
+        "robustness"
+      ],
+      "task_families": [
+        "architecture",
+        "cross_file_feature",
+        "docs_code_closeout",
+        "runtime_refactor"
+      ],
+      "risk_class": "maintainability",
+      "component_affinity": [
+        "odylith"
+      ],
+      "path_prefixes": [
+        "src/odylith/",
+        "odylith/registry/source/components/"
+      ],
+      "path_refs": [
+        "odylith/agents-guidelines/CODING_STANDARDS.md",
+        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+      ],
+      "workstreams": []
+    },
+    {
       "chunk_id": "grounding-and-narrowing-bounded-proof-slices",
       "note_kind": "workflow",
       "canonical_source": "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",

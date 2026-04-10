@@ -305,7 +305,7 @@ def test_force_sync_runs_component_spec_requirements_after_atlas_mutations(tmp_p
     modules = [command[2] for command in executed if len(command) >= 3 and command[0] == "python" and command[1] == "-m"]
     sync_index = modules.index("odylith.runtime.governance.sync_component_spec_requirements")
     atlas_update_index = modules.index("odylith.runtime.surfaces.auto_update_mermaid_diagrams")
-    atlas_render_index = modules.index("odylith.runtime.surfaces.render_mermaid_catalog")
+    atlas_render_index = modules.index("odylith.runtime.surfaces.render_mermaid_catalog_refresh")
     registry_render_index = modules.index("odylith.runtime.surfaces.render_registry_dashboard")
 
     assert atlas_update_index < sync_index
@@ -461,7 +461,7 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
 
     assert rc == 0
     modules = [command[2] for command in executed if len(command) >= 3 and command[0] == "python" and command[1] == "-m"]
-    assert "odylith.runtime.governance.delivery_intelligence_engine" in modules
+    assert "odylith.runtime.governance.delivery_intelligence_refresh" in modules
     assert "odylith.runtime.surfaces.render_backlog_ui" in modules
     assert "odylith.runtime.surfaces.render_tooling_dashboard" in modules
     assert compass_calls == [

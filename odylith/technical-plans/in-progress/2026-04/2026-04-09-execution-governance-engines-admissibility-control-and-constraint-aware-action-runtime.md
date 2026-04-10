@@ -54,7 +54,8 @@ Boundary Conditions:
   external dependency support.
 
 Related Bugs:
-- no related bug found
+- CB-093 - Compass runtime reuse can ignore live release and program source changes
+- CB-094 - Compass current-workstream ranking can hide active release and wave lanes
 
 ## Learnings
 - [ ] Odylith's dominant failure mode is not missing one more document; it is
@@ -68,36 +69,36 @@ Related Bugs:
       second planning system.
 
 ## Must-Ship
-- [ ] Add umbrella workstream `B-072`, child workstreams `B-073` through
+- [x] Add umbrella workstream `B-072`, child workstreams `B-073` through
       `B-079`, and companion program file
       `odylith/radar/source/programs/B-072.execution-waves.v1.json`.
-- [ ] Bind this new in-progress technical plan to `B-072` only; child plans
+- [x] Bind this new in-progress technical plan to `B-072` only; child plans
       remain unopened until their waves go active.
-- [ ] Add one new Registry component `execution-governance` and the new
+- [x] Add one new Registry component `execution-governance` and the new
       `src/odylith/runtime/execution_engine/` package with first-class contracts for
       task execution governance.
-- [ ] Add core execution-governance types for task contract, hard constraints,
+- [x] Add core execution-governance types for task contract, hard constraints,
       admissibility decisions, frontier, closure, external dependency state,
       receipts, resume handles, validation matrix, contradiction records, and
       host-profile aware execution hints.
-- [ ] Add one dedicated Atlas diagram `D-030` for the execution-governance
+- [x] Add one dedicated Atlas diagram `D-030` for the execution-governance
       stack and refresh `D-002` so Context Engine clearly feeds execution
       governance instead of implicitly owning action control.
-- [ ] Land a thin `odylith program ...` and `odylith wave ...` authoring sidecar
+- [x] Land a thin `odylith program ...` and `odylith wave ...` authoring sidecar
       that works directly against the existing execution-wave contract.
-- [ ] Keep the execution-governance system explicitly general across Codex and
+- [x] Keep the execution-governance system explicitly general across Codex and
       Claude Code while detecting the active host/model profile and using those
       nuances only where the capability contract says they are valid.
 
 ## Should-Ship
-- [ ] Add `D-031` to show program/wave authoring and coding-agent command flow
+- [x] Add `D-031` to show program/wave authoring and coding-agent command flow
       without implying it is the main execution engine.
-- [ ] Update the affected component specs so Context Engine stays grounding
+- [x] Update the affected component specs so Context Engine stays grounding
       only, Delivery Intelligence and Proof State become evidence inputs, and
       Router/Orchestrator/Remediator execute through execution governance.
-- [ ] Add focused tests for the program/wave authoring sidecar and the initial
+- [x] Add focused tests for the program/wave authoring sidecar and the initial
       execution-governance contract helpers.
-- [ ] Surface execution-governance outcome, frontier, closure, validation, wait
+- [x] Surface execution-governance outcome, frontier, closure, validation, wait
       state, resume posture, and detected host-family posture in packet
       summaries plus the shared shell/Compass runtime summary.
 
@@ -112,19 +113,19 @@ Related Bugs:
       surface can be phased after the base package and CLI are present.
 
 ## Success Criteria
-- [ ] `B-072` and its child program are valid governed source truth and render
+- [x] `B-072` and its child program are valid governed source truth and render
       through the existing execution-wave contract.
-- [ ] `execution-governance` exists as a first-class Registry component with a
+- [x] `execution-governance` exists as a first-class Registry component with a
       living spec and explicit boundaries against Context Engine, Delivery
       Intelligence, Proof State, Router, Orchestrator, Tribunal, and
       Remediator.
-- [ ] `src/odylith/runtime/execution_engine/` exists and exports typed execution
+- [x] `src/odylith/runtime/execution_engine/` exists and exports typed execution
       governance contracts plus initial policy helpers.
-- [ ] Coding agents can create, inspect, and modify umbrella execution-wave
+- [x] Coding agents can create, inspect, and modify umbrella execution-wave
       programs through `odylith program ...` and `odylith wave ...` commands.
-- [ ] The execution-governance base contract records host/model-family posture
+- [x] The execution-governance base contract records host/model-family posture
       explicitly while keeping shared policy host-general.
-- [ ] Packet summaries and shell/Compass runtime surfaces show one governed next
+- [x] Packet summaries and shell/Compass runtime surfaces show one governed next
       move, closure posture, wait or resume state, validation archetype, and
       re-anchor pressure from the same execution-governance snapshot.
 
@@ -164,21 +165,21 @@ Related Bugs:
 6. Run focused backlog, Registry, CLI, and execution-governance validation.
 
 ## Validation
-- [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_program_wave_authoring.py`
-- [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_context_engine_proof_packet_runtime.py tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_render_tooling_dashboard.py`
-- [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py`
-- [ ] `PYTHONPATH=src python3 -m odylith.cli validate backlog-contract --repo-root .`
-- [ ] `PYTHONPATH=src python3 -m odylith.cli validate component-registry --repo-root .`
-- [ ] `git diff --check`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_program_wave_authoring.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_context_engine_proof_packet_runtime.py tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_render_tooling_dashboard.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py`
+- [x] `PYTHONPATH=src python3 -m odylith.cli validate backlog-contract --repo-root .`
+- [x] `PYTHONPATH=src python3 -m odylith.cli validate component-registry --repo-root .`
+- [x] `git diff --check`
 
 ## Outcome Snapshot
-- [ ] Execution-governance is authored and implemented as a new product
+- [x] Execution-governance is authored and implemented as a new product
       boundary rather than living as prompt-only guidance.
-- [ ] The core contract stays general across Codex and Claude Code, with
+- [x] The core contract stays general across Codex and Claude Code, with
       detected host/model-family nuance isolated behind explicit capability
       fields.
-- [ ] Program and wave authoring becomes a real command surface for coding
+- [x] Program and wave authoring becomes a real command surface for coding
       agents without displacing the execution-engine critical path.
-- [ ] Packet summaries and shared runtime surfaces now carry execution-governance
+- [x] Packet summaries and shared runtime surfaces now carry execution-governance
       posture instead of forcing operators to infer frontier or admissibility
       from unrelated packet metadata.

@@ -54,6 +54,20 @@ standup-level summary should be.
   live traceability release read model, Compass must reconcile `Release
   Targets` and `Current Workstreams` from traceability at page load and warn
   the operator that the runtime snapshot is behind.
+- `Current Workstreams` is a ranked focus view, not a pre-capped shortlist.
+  Compass may rank and narrow that board by the visible window, scope, and
+  focus rules, but the backend is not allowed to truncate it to an arbitrary
+  fixed row count before those visible filters run.
+- In the default unscoped Compass view, `Current Workstreams` is the residual
+  focus board after subtracting workstreams already represented in `Programs`
+  or `Release Targets`. If a workstream is already visible through one of
+  those governance groupings, Compass must not duplicate it in the current
+  table; explicit scoped selection is the exception and may still show the
+  chosen workstream directly.
+- In the default unscoped Compass view, `Release Targets` sections start
+  collapsed. Do not auto-expand the current release, the next release, or a
+  single visible release on initial render. Explicit scoped workstream
+  selection may open the matching release section.
 - That release-truth drift warning belongs in Compass's own subtle in-surface
   status banner, not as a duplicated shell-level warning slab above the page.
 - Source-truth reconciliation must not invent fake plan progress. If a
@@ -75,6 +89,21 @@ standup-level summary should be.
   `Completed Workstreams` stay on the established stacked format unless the
   operator explicitly authorizes a layout change. Shared shell CSS must not
   silently reintroduce side-by-side or auto-fit multi-column release boards.
+- The outer program container should be explicitly titled `Programs`, parallel
+  to the `Release Targets` outer container, so the two governance groupings
+  read as separate sections before the inner cards begin.
+- Those two outer governance containers should also stay subtly tinted by
+  family instead of reading as identical plain-white blocks: `Programs`
+  keeps the cool execution-governance tint and `Release Targets` keeps a
+  distinct release-family tint.
+- Program cards and release cards should remain visually distinct in Compass.
+  Keep programs on the cool execution-governance tint and give `Release
+  Targets` its own subtle release-family surface tint so execution structure
+  and ship targeting are separable at a glance without changing the shared
+  layout or typography contract.
+- Compass program sections must not repeat the program-count chip inside the
+  inner focus panel. If the outer section summary already carries `N-wave
+  program`, the inner program board should not restate the same chip.
 - Within those release-member cards, the ID/status chip row stays first and
   the workstream title stays on a dedicated second row. Do not inline short
   titles back into the first row.
@@ -192,7 +221,10 @@ The runtime builder shapes:
 `refresh_runtime_artifacts(...)` writes current snapshot files, keeps a 15-day
 active daily history lane by default, compresses older daily snapshots into
 `history/archive/`, and honors explicit restore pins for older dates that must
-remain active.
+remain active. Exact runtime reuse is keyed to the current input fingerprint,
+not to a small recency window; when the current payload still matches, Compass
+must reuse it and cheaply rewrite today's daily history files instead of
+forcing a full runtime rebuild just because the date rolled over.
 
 ### 5. Render shell
 The shell renderer externalizes the payload and control script into the checked
@@ -203,7 +235,7 @@ At page load, Compass compares the visible runtime snapshot against the live
 traceability release read model. If the active release id, targeted members,
 completed members, or current-workstream rows drift, Compass patches the view
 from traceability, marks the runtime truth guard, and tells the operator to run
-`odylith compass refresh --repo-root .` for a full snapshot rewrite.
+`odylith compass refresh --repo-root .` for a fresh bounded snapshot rewrite.
 
 ## Scope Signal Ladder Contract
 Compass does not own scope escalation anymore. It consumes Delivery
@@ -236,6 +268,10 @@ present.
   phrases, workstream-title restatement, generic priority or attention
   wrappers, sloganized self-host status, and canned current/next-step wrappers
   are invalid even when the underlying facts are true.
+- Cached narrated sections must pass the current voice validator before they
+  are reused. If old cached prose falls back into stock phrasing, Compass must
+  salvage it through validated cache recovery or deterministic section rebuild
+  rather than replaying the stale wording as if it were still live narration.
 - Templating is broader than stock phrases. Compass briefs must not read like
   four balanced summary cards or interchangeable management bullets; they
   should feel observed, uneven where the evidence is uneven, and specific to
@@ -388,11 +424,17 @@ churn does not drown out meaningful implementation evidence.
   collection, execution projection, window-fact preparation, standup-brief
   build, payload write, snapshot write, and shell-bundle completion, each with
   a short plain detail string.
+- Timeline Audit must keep its primary fix visible. If a transaction headline,
+  checkpoint summary, or primary narrative infers an anchor workstream, the
+  visible chip row must include that workstream and order it first before
+  broader linked scope pills are trimmed for space.
 - Minute-scale `full strict live refresh` is retired. Compass does not expose,
   document, or promise a second deep-refresh mode anymore because the product
-  could not make that contract truthful, cheap, and fast at once. Any old
-  caller or persisted state that still says `full` must normalize onto the one
-  bounded refresh contract instead of reviving a second path.
+  could not make that contract truthful, cheap, and fast at once. The public
+  Compass command surface is just `odylith compass refresh` now. If an agent
+  or operator asks for a "full" Compass refresh in prose, route that intent to
+  `odylith compass refresh --repo-root . --wait` instead of inventing a second
+  noun, flag, or stricter acceptance bar.
 - When live provider narration is needed for Compass briefs or similar simple
   refresh-time brief enrichment, the default model class is the cheap-fast
   coding path: `gpt-5.3-codex-spark` with low reasoning effort, unless a
@@ -527,6 +569,8 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-09: Reaffirmed that the default unscoped `Current Workstreams` board is residual-only. Lanes already visible in `Programs` or `Release Targets` are filtered out there, while explicit scoped selection may still surface the chosen workstream directly. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-095`)
+- 2026-04-09: Removed the backend `12`-row truncation from `Current Workstreams` so Compass now ranks the full eligible set and lets the visible scope/window filters decide what remains on screen instead of hiding rows before the operator's chosen focus rules apply. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Bound Compass scope visibility, promoted focus, and scoped fresh-provider eligibility to Delivery Intelligence's shared Scope Signal Ladder so quiet low-signal scopes stay deep-linkable but no longer masquerade as active window work. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
 - 2026-03-26: Added Odylith-owned Compass runtime roots so the public repo can keep a first-class audit trail for product changes and validation events. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-03-27: Changed Compass history to a 15-day active window with compressed archived daily snapshots and an explicit restore-history command for older dates. (Plan: [B-003](odylith/radar/radar.html?view=plan&workstream=B-003))
@@ -536,6 +580,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-05: Documented the bounded `compass_brief_freshness` benchmark slice so proof stays on Compass runtime, narrator, focused tests, and product-surface guidance instead of widening into unrelated install or repair surfaces. (Plan: [B-038](odylith/radar/radar.html?view=plan&workstream=B-038))
 - 2026-04-08: Clarified that shell-host refresh truth must distinguish wrapper freshness from Compass child-runtime freshness so stale or failed deeper-refresh snapshots stay explicit on the Compass tab. (Plan: [B-060](odylith/radar/radar.html?view=plan&workstream=B-060))
 - 2026-04-09: Retired the old minute-scale Compass `full` refresh contract entirely. Compass now exposes one bounded refresh path, and any legacy `full` request normalizes onto that path instead of reviving a second expensive truth mode. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-086`)
+- 2026-04-09: Added Atlas diagram `D-032` so the bounded Compass refresh contract is explicit about cold reinstall behavior, global narrated-cache warming, scoped rung-gated fresh spend, and the fail-closed edges around unavailable providers, invalid responses, and stale runtime patching. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-08: Finalized stale-runtime disclosure to a single in-frame Compass warning for ordinary stale snapshots and bounded live-history backfill to retained or restored days so stale windows no longer spray 404 history fetches into the shell browser lane. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Re-closed the one-warning contract for failed Compass refresh so the shell stays silent when the Compass frame already carries the same failed-refresh disclosure. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Collapsed Compass shell asset truth back to one canonical frontend-contract path, removed the duplicated execution-wave CSS fork, and required exact live/bundle mirror plus browser proof for compact workstream buttons and stacked `Release Targets`. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-080`)

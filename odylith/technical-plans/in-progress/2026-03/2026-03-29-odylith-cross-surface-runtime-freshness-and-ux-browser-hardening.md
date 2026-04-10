@@ -54,6 +54,10 @@ Related Bugs:
 - [2026-04-09-shared-surface-contract-drift-reopens-workstream-button-and-release-layout-regressions.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-shared-surface-contract-drift-reopens-workstream-button-and-release-layout-regressions.md)
 - [2026-04-09-cross-surface-workstream-buttons-can-reopen-local-scope-instead-of-radar.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-cross-surface-workstream-buttons-can-reopen-local-scope-instead-of-radar.md)
 - [2026-04-09-compass-scoped-selector-can-advertise-unverified-window-activity-and-leak-global-audit-cards.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-scoped-selector-can-advertise-unverified-window-activity-and-leak-global-audit-cards.md)
+- [2026-04-09-compass-runtime-reuse-can-ignore-live-release-and-program-source-changes.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-runtime-reuse-can-ignore-live-release-and-program-source-changes.md)
+- [2026-04-09-compass-current-workstream-ranking-can-hide-active-release-and-wave-lanes.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-current-workstream-ranking-can-hide-active-release-and-wave-lanes.md)
+- [2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md)
+- [2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md)
 - no related Casebook-specific bug record exists yet for detail-view field repetition or header-collapse regressions; keep the failure mode visible in this plan and handoff until it is formalized
 
 ## Context/Problem Statement
@@ -121,11 +125,14 @@ Related Bugs:
       governance-only local churn or broad fanout transactions as if they were
       verified local window movement, which let quiet scopes such as `B-040`
       appear in the dropdown and leak unrelated global audit cards.
+- [x] Timeline Audit could headline a checkpoint on one workstream while the
+      visible workstream chip row still hid that anchor scope behind broader
+      linked ids, which made the most important fix harder to click.
 - [ ] Compass is still below release bar after the maintained-global narration
-      follow-on. The bounded hot exact-reuse lane now measures `0.1s`
-      internal (`0.61s` wall), the bounded cold shell-safe lane measures
-      `0.8s` internal (`1.14s` wall), and the ready-brief source mix is now
-      `39 cache / 0 deterministic`, so the remaining release blocker is cold
+      follow-on. The bounded hot exact-reuse lane now measures `0.3s`
+      internal (`0.73s` wall), the rebuilt cold shell-safe lane measures
+      `1.7s` internal (`2.18s` wall), and the ready-brief source mix is now
+      `35 cache / 0 deterministic`, so the remaining release blocker is cold
       wall-clock and startup overhead rather than deterministic dominance.
 
 ## Success Criteria
@@ -154,6 +161,9 @@ Related Bugs:
 - [x] Compass scope dropdowns and scoped timelines advertise only workstreams
       with verified scoped activity for the selected rolling window; broad
       governance churn and wide fanout transactions stay global-only evidence.
+- [x] Timeline Audit transaction cards keep the anchor workstream visible and
+      first in the chip row whenever the headline or checkpoint text names the
+      primary fix.
 - [x] Explicit `odylith dashboard refresh --surfaces compass` now delegates to
       the same bounded Compass refresh engine instead of advertising a second
       deeper contract.
@@ -167,6 +177,10 @@ Related Bugs:
 - [x] Compass no longer advertises or routes a second `full` refresh mode. One
       bounded refresh contract now owns freshness, failure truth, and brief
       reuse across global and scoped views.
+- [x] Compass command cleanup removes the stale `--refresh-profile` noun from
+      the operator surface entirely. "Full Compass refresh" in prose now maps
+      to `odylith compass refresh --repo-root . --wait`, not a second CLI
+      flag or hidden contract.
 - [ ] Compass hot unchanged refresh reaches `<=50ms` of internal runtime work,
       complete cold shell-safe refresh reaches `<=1s`, and deterministic no
       longer dominates the ready-brief mix.
@@ -197,6 +211,15 @@ Related Bugs:
 - [ ] Governance-surface filters consistently honor exact ids, normalized
       tokens, reset behavior, and deep-link self-healing across Radar,
       Registry, Atlas, Casebook, and Compass.
+- [x] Compass `Current Workstreams` now behaves as the residual focus table in
+      the default unscoped view: workstreams already represented in `Programs`
+      or `Release Targets` are filtered out instead of being duplicated in a
+      third board, while explicit scoped selection still shows the chosen
+      workstream directly.
+- [x] Compass `Release Targets` now starts collapsed in the default unscoped
+      view; current/next/single-release state no longer auto-expands on load,
+      while explicit scoped workstream selection may still open the matching
+      release section.
 - [x] Interactive `B-###` workstream buttons stay on one compact shared
       contract across Radar, Compass, release views, and execution-wave member
       stacks instead of drifting whenever generic identifier styling changes.
@@ -207,6 +230,18 @@ Related Bugs:
 - [x] Compass `Release Targets` stays on the operator-approved stacked format,
       and release-target layout changes now require explicit operator
       authorization instead of renderer or shared-CSS improvisation.
+- [x] Compass keeps program cards and release cards visually distinct with
+      subtle surface tinting, so execution structure and ship targeting stay
+      separable at a glance without forking the shared layout contract.
+- [x] Compass labels the outer program container `Programs`, parallel to
+      `Release Targets`, so the two grouped sections are legible before the
+      inner cards open.
+- [x] Compass outer `Programs` and `Release Targets` containers now keep
+      subtle but distinct surface tints so the two governance families are
+      visually separable without changing the shared layout contract.
+- [x] Compass program focus panels no longer repeat the outer `N-wave
+      program` chip; the inner focus band keeps only additional context that
+      is not already present in the section summary.
 - [x] Shared shell-surface contracts now keep one canonical source path:
       interactive `B-###` controls flow through the shared workstream-button
       primitive, Compass execution-wave CSS composes from the shared generator
@@ -261,6 +296,8 @@ Related Bugs:
 - [ ] Hosted runtime freshness infrastructure.
 
 ## Impacted Areas
+- [x] [odylith-compass-refresh-and-maintained-narration-topology.mmd](/Users/freedom/code/odylith/odylith/atlas/source/odylith-compass-refresh-and-maintained-narration-topology.mmd)
+- [x] [diagrams.v1.json](/Users/freedom/code/odylith/odylith/atlas/source/catalog/diagrams.v1.json)
 - [x] [render_compass_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_compass_dashboard.py)
 - [x] [compass_dashboard_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/compass_dashboard_runtime.py)
 - [x] [compass_runtime_payload_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py)
@@ -315,8 +352,9 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [ ] Risk: stricter invalidation slows Compass too much.
-  - [ ] Mitigation: bound runtime reuse by a small age budget instead of
-    disabling reuse entirely.
+  - [x] Mitigation: reuse the current runtime by exact input fingerprint and
+        rewrite today's daily history files from that reused payload instead of
+        forcing a rebuild on simple date rollover.
 - [x] Risk: a minute-scale `full` refresh path keeps draining time, credits,
       and operator trust while pretending to be a real product contract.
   - [x] Mitigation: retire the second refresh mode entirely and collapse
@@ -479,6 +517,11 @@ Related Bugs:
       ladder for scope visibility, default promotion, and provider-neutral
       compute budgets so Compass, Radar, Registry, Atlas, and shell consumers
       stop re-deriving urgency independently.
+- [x] April 9 current-workstreams follow-on removed the old backend `12`-row
+      truncation from Compass. The current-workstreams board now ranks the
+      full eligible set and relies on the visible scope/window focus filters
+      to narrow what operators see instead of discarding rows before those
+      filters have a chance to act.
 - [x] Compass summary rendering now publishes brief source, scope, window, and
       fingerprint metadata into the DOM, and Playwright proves those values
       switch correctly across global versus scoped selection and `24h` versus
@@ -571,6 +614,11 @@ Related Bugs:
       under `50ms` of internal runtime work and cold complete shell-safe
       refresh under `1s` of internal runtime work. Any third minute-scale or
       deep-refresh lane is now governed as a regression, not a product option.
+- [x] April 9 Atlas follow-on made that refresh contract visible in one
+      architecture map too: diagram `D-032` now shows the canonical refresh
+      command surface, bounded sync path, reinstall/no-cache cold-start
+      behavior, scope-signal gated scoped spend, maintained narrated-cache
+      sidecar, and the failure edges that must stay fail-closed.
 - [x] April 9 live-cache carry-forward follow-on keeps that same bounded lane
       off fresh provider spend after the one-time seed: source-local proof now
       shows global `24h` and `48h` on `cache exact` during shell-safe refresh,

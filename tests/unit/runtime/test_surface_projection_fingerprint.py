@@ -24,6 +24,8 @@ def _seed_projection_tree(repo_root: Path) -> None:
     for relative_dir in (
         "odylith/radar/source/archive",
         "odylith/radar/source/ideas",
+        "odylith/radar/source/programs",
+        "odylith/radar/source/releases",
         "odylith/technical-plans/done",
         "odylith/technical-plans/parked",
         "odylith/casebook/bugs/archive",
@@ -45,6 +47,39 @@ def test_default_surface_projection_input_fingerprint_changes_when_bug_contract_
         "projection_contract_version",
         lambda name: "v999_bug_contract" if str(name) == "bugs" else "v1",
     )
+
+    updated = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
+
+    assert updated != baseline
+
+
+def test_default_surface_projection_input_fingerprint_changes_when_release_source_changes(
+    tmp_path: Path,
+) -> None:
+    _seed_projection_tree(tmp_path)
+
+    baseline = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
+
+    release_events_path = tmp_path / "odylith" / "radar" / "source" / "releases" / "release-assignment-events.v1.jsonl"
+    release_events_path.write_text(
+        '{"action":"add","release_id":"release-0-1-11","workstream_id":"B-072","recorded_at":"2026-04-10T04:11:00Z"}\n',
+        encoding="utf-8",
+    )
+
+    updated = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
+
+    assert updated != baseline
+
+
+def test_default_surface_projection_input_fingerprint_changes_when_program_source_changes(
+    tmp_path: Path,
+) -> None:
+    _seed_projection_tree(tmp_path)
+
+    baseline = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
+
+    program_path = tmp_path / "odylith" / "radar" / "source" / "programs" / "B-072.execution-waves.v1.json"
+    program_path.write_text('{"umbrella_id":"B-072","version":"v1","waves":[]}\n', encoding="utf-8")
 
     updated = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
 

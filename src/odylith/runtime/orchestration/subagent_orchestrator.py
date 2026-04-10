@@ -34,6 +34,7 @@ import uuid
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as compass_timeline
 from odylith.runtime.context_engine import packet_quality_codec
+from odylith.runtime.execution_engine import runtime_lane_policy
 from odylith.runtime.context_engine import odylith_context_engine_store as odylith_store
 from odylith.runtime.evaluation import odylith_evaluation_ledger
 from odylith.runtime.memory import tooling_memory_contracts
@@ -1741,6 +1742,10 @@ def _should_keep_local(
     notes: list[str] = []
     architecture_policy = _architecture_policy_context(request)
     context_summary = dict(assessment.context_signal_summary or {})
+    governance_guard = runtime_lane_policy.delegation_guard(context_summary)
+    if governance_guard.blocked and governance_guard.code not in reasons:
+        reasons.append(governance_guard.code)
+        notes.append(governance_guard.reason)
     odylith_confidence = _clamp_confidence(context_summary.get("odylith_execution_confidence_score", 0) or 0)
     odylith_profile = _normalize_token(context_summary.get("odylith_execution_profile", ""))
     odylith_delegate_preference = _normalize_token(context_summary.get("odylith_execution_delegate_preference", ""))

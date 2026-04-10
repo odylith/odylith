@@ -33,7 +33,9 @@ validated native-spawn host.
   signals.
 - Spawning agents itself. It emits the plan the live agent should execute.
 - Global admissibility policy. Execution Governance decides whether the next
-  move is allowed before orchestration fan-out becomes relevant.
+  move is allowed before orchestration fan-out becomes relevant, and active
+  governed verify or recover posture may force local or serial follow-through
+  even when the slice would otherwise look parallel-safe.
 
 ## Developer Mental Model
 - The orchestrator sits one level above the router.
@@ -191,6 +193,12 @@ Parallelism is intentionally conservative. The orchestrator requires:
 - low coordination burden across leaves
 - bounded merge burden
 - no shared governance bottleneck that really belongs in the main thread
+
+Even with disjoint ownership, execution-governance posture can still force
+serial or local work. Active wait states, re-anchor requirements,
+contradictions, unsafe closure, verify or recover critical-path posture, and
+host-serial constraints are all allowed to suppress fan-out before the
+parallel-safety classifier would otherwise approve it.
 
 Paths under tightly coupled prefixes such as `odylith/`, `docs/`,
 `contracts/`, `skills/`, and similar governance-heavy trees are usually kept

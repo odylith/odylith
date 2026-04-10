@@ -134,6 +134,7 @@ def reuse_ready_brief(
     brief: Mapping[str, Any],
     generated_utc: str,
     fingerprint: str,
+    sections: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     evidence_lookup = brief.get("evidence_lookup")
     cached_source = str(brief.get("source", "")).strip().lower()
@@ -142,7 +143,11 @@ def reuse_ready_brief(
         source="cache",
         fingerprint=str(fingerprint).strip(),
         generated_utc=str(generated_utc or "").strip(),
-        sections=_brief_sections(brief),
+        sections=[
+            dict(item)
+            for item in (sections if isinstance(sections, Sequence) else _brief_sections(brief))
+            if isinstance(item, Mapping)
+        ],
         evidence_lookup=evidence_lookup if isinstance(evidence_lookup, Mapping) else {},
         cache_mode=cache_mode,
     )

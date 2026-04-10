@@ -264,6 +264,7 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
       query: "",
       section: "all",
       phase: "all",
+      type: "all",
       activity: "all",
       priority: "all",
       release: "all",
@@ -278,6 +279,7 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
       section: document.getElementById("lane"),
       legacySection: document.getElementById("section"),
       phase: document.getElementById("phase"),
+      type: document.getElementById("type"),
       activity: document.getElementById("activity"),
       priority: document.getElementById("priority"),
       release: document.getElementById("release"),
@@ -512,6 +514,7 @@ initSharedQuickTooltips();
         if (row.section !== "execution") return false;
         if (stageLabel(row.status) !== state.phase) return false;
       }
+      if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) return false;
       if (state.activity !== "all") {
         if (row.section !== "execution") return false;
         const stateToken = normalizeExecutionState(row.execution_state);
@@ -599,6 +602,7 @@ initSharedQuickTooltips();
       el.section.value = state.section;
       if (el.legacySection) el.legacySection.value = state.section;
       el.phase.value = state.phase;
+      el.type.value = state.type;
       el.activity.value = state.activity;
       el.priority.value = state.priority;
       el.release.value = state.release;
@@ -632,6 +636,9 @@ initSharedQuickTooltips();
           if (row.section !== "execution" || activity !== state.activity) {
             state.activity = "all";
           }
+        }
+        if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) {
+          state.type = "all";
         }
         if (state.priority !== "all" && row.priority !== state.priority) {
           state.priority = "all";
@@ -816,9 +823,6 @@ initSharedQuickTooltips();
       const currentRelease = traceability && traceability.current_release && typeof traceability.current_release === "object"
         ? traceability.current_release
         : {};
-      const nextRelease = traceability && traceability.next_release && typeof traceability.next_release === "object"
-        ? traceability.next_release
-        : {};
       const statRows = [
         statBlock("Index Updated", DATA.index_updated_display || "-"),
         statBlock("Queued", counts.queued),
@@ -829,11 +833,7 @@ initSharedQuickTooltips();
       if (releaseCardLabel(currentRelease)) {
         statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));
       }
-      if (releaseCardLabel(nextRelease)) {
-        statRows.push(statBlock("Next Release", releaseCardLabel(nextRelease)));
-      }
       if (wavePrograms > 0) {
-        statRows.push(statBlock("Wave Programs", wavePrograms));
         statRows.push(statBlock("Active Waves", activeWaves));
       }
       return statRows;
@@ -1450,13 +1450,22 @@ initSharedQuickTooltips();
       return "";
     }
 
+    function sectionBadgeInfo(row) {
+      const section = String(row && row.section ? row.section : "").trim().toLowerCase();
+      if (section === "execution") {
+        return { label: "Pipeline", chipClassName: "rank-chip-execution", kpiClassName: "kpi-section-execution" };
+      }
+      if (section === "finished") {
+        return { label: "Finished", chipClassName: "rank-chip-finished", kpiClassName: "kpi-section-finished" };
+      }
+      if (section === "parked") {
+        return { label: "Parked", chipClassName: "rank-chip-parked", kpiClassName: "kpi-section-parked" };
+      }
+      return { label: `Rank #${row.rank}`, chipClassName: "rank-chip-active", kpiClassName: "kpi-section-active" };
+    }
+
     function rowHtml(row) {
-      const rankLabel = row.section === "execution"
-        ? "Pipeline"
-        : (row.section === "finished" ? "Finished" : (row.section === "parked" ? "Parked" : `Rank #${row.rank}`));
-      const rankChipClass = row.section === "execution"
-        ? "rank-chip-execution"
-        : (row.section === "finished" ? "rank-chip-finished" : (row.section === "parked" ? "rank-chip-parked" : "rank-chip-active"));
+      const sectionBadge = sectionBadgeInfo(row);
       const activeClass = row.idea_id === state.selectedIdeaId ? "active" : "";
       const ageRaw = String(row.idea_age_days || "-");
       const ageLabel = /^\d+$/.test(ageRaw) ? `${ageRaw}d` : ageRaw;
@@ -1497,7 +1506,7 @@ initSharedQuickTooltips();
       return `
         <button class="row ${activeClass}" data-idea-id="${escapeHtml(row.idea_id)}">
           <div class="row-top">
-            <span class="rank-chip ${escapeHtml(rankChipClass)}">${escapeHtml(rankLabel)}</span>
+            <span class="rank-chip ${escapeHtml(sectionBadge.chipClassName)}">${escapeHtml(sectionBadge.label)}</span>
             <strong class="row-title">${escapeHtml(row.title)}</strong>
           </div>
           <div class="row-meta">
@@ -2119,11 +2128,6 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     if (waveSpan) contextChips.push(`<span class="label execution-wave-label wave-status-active">${escapeHtml(waveSpan)}</span>`);
     if (roleLabel) contextChips.push(`<span class="label execution-wave-label wave-role-chip">${escapeHtml(roleLabel)}</span>`);
     if (contextMeta.has_next_wave) contextChips.push('<span class="label execution-wave-label wave-status-planned">Next relevant</span>');
-  } else {
-    const waveCount = Number(program.wave_count || 0);
-    if (waveCount > 0) {
-      contextChips.push(`<span class="label execution-wave-label wave-chip-program">${escapeHtml(`${waveCount}-wave program`)}</span>`);
-    }
   }
 
   const cardsHtml = waves.map((wave) => {
@@ -2246,7 +2250,7 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
             <div class="execution-wave-focus-line">${escapeHtml(contextLine)}</div>
             ${summaryLine ? `<div class="execution-wave-focus-line execution-wave-focus-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          <div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>
+          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
       <div class="execution-wave-sequence">${cardsHtml}</div>
@@ -2879,12 +2883,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         ? { ...selectedSummary, ...loadedDetail }
         : selectedSummary;
 
-      const rankLabel = selected.section === "execution"
-        ? "Pipeline"
-        : (selected.section === "finished" ? "Finished" : (selected.section === "parked" ? "Parked" : `Rank #${selected.rank}`));
-      const rankChipClass = selected.section === "execution"
-        ? "rank-chip-execution"
-        : (selected.section === "finished" ? "rank-chip-finished" : (selected.section === "parked" ? "rank-chip-parked" : "rank-chip-active"));
+      const sectionBadge = sectionBadgeInfo(selected);
       const rankingClass = selected.founder_override === "yes" ? "founder-override" : "score-ordered";
       const rankingText = selected.founder_override === "yes" ? "Priority Override" : "Score Ordered";
       const scoreWidth = Math.max(3, Math.min(100, selected.ordering_score));
@@ -2988,10 +2987,10 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         : "";
       el.detail.innerHTML = `
         <header class="detail-header">
-          <span class="rank-chip ${escapeHtml(rankChipClass)}">${escapeHtml(rankLabel)}</span>
           <h2 class="detail-title">${escapeHtml(selected.title)}</h2>
           <div class="kpis">
             <div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>
+            <div class="kpi kpi-section ${escapeHtml(sectionBadge.kpiClassName)}" data-kpi="workstream-placement"><div class="k">Placement</div><div class="v">${escapeHtml(sectionBadge.label)}</div></div>
             <div class="kpi"><div class="k">Ordering Score</div><div class="v">${escapeHtml(selected.ordering_score)}</div></div>
             <div class="kpi"><div class="k">Created Date</div><div class="v">${escapeHtml(selected.idea_date_display || selected.idea_date || "-")}</div></div>
             <div class="kpi"><div class="k">Age (days)</div><div class="v">${escapeHtml(selected.idea_age_days || "-")}</div></div>
@@ -3129,6 +3128,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
     bind(el.section, "section");
     bind(el.legacySection, "section");
     bind(el.phase, "phase");
+    bind(el.type, "type");
     bind(el.activity, "activity");
     bind(el.priority, "priority");
     bind(el.release, "release");

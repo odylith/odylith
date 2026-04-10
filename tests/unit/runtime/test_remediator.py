@@ -54,6 +54,8 @@ def test_compile_correction_packet_returns_deterministic_refresh_for_render_drif
 
     assert packet["execution_mode"] == "deterministic"
     assert packet["commands"]
+    assert packet["execution_governance"]["admissibility"]["outcome"] == "admit"
+    assert packet["execution_governance"]["contract"]["authoritative_lane"] == "reasoning.remediator.authoritative"
 
 
 def test_compile_correction_packet_returns_ai_engine_for_evaluator_changes(tmp_path: Path) -> None:
@@ -71,6 +73,8 @@ def test_compile_correction_packet_returns_ai_engine_for_evaluator_changes(tmp_p
 
     assert packet["execution_mode"] == "ai_engine"
     assert packet["ai_handoff"]["allowed_paths"]
+    assert packet["execution_governance"]["admissibility"]["outcome"] == "admit"
+    assert packet["execution_governance"]["contract"]["host_profile"]["host_family"]
 
 
 def test_compile_correction_packet_returns_hybrid_for_semantic_closeout_dispute(tmp_path: Path) -> None:
@@ -89,6 +93,7 @@ def test_compile_correction_packet_returns_hybrid_for_semantic_closeout_dispute(
     assert packet["execution_mode"] == "hybrid"
     assert packet["commands"]
     assert packet["ai_handoff"]["allowed_paths"]
+    assert packet["execution_governance"]["validation_matrix"]["archetype"] == "generic"
 
 
 def test_compile_correction_packet_returns_manual_when_no_bounded_fix_exists(tmp_path: Path) -> None:
@@ -104,3 +109,45 @@ def test_compile_correction_packet_returns_manual_when_no_bounded_fix_exists(tmp
 
     assert packet["execution_mode"] == "manual"
     assert packet["commands"] == []
+    assert packet["execution_governance"]["contract"]["execution_mode"] == "recover"
+
+
+def test_packet_summary_exposes_execution_governance_posture(tmp_path: Path) -> None:
+    packet = remediator.compile_correction_packet(
+        repo_root=tmp_path,
+        dossier=_dossier(
+            case_id="case-summary",
+            scenario="stale_authority",
+            code_references=["src/odylith/runtime/surfaces/render_tooling_dashboard.py"],
+            changed_artifacts=["odylith/index.html"],
+            render_drift=True,
+        ),
+        adjudication=_adjudication("case-summary"),
+        prescriber=_prescriber("case-summary"),
+    )
+
+    summary = remediator.packet_summary(packet)
+
+    assert summary["execution_governance_outcome"] == "admit"
+    assert summary["execution_governance_mode"] == "implement"
+    assert summary["execution_governance_authoritative_lane"] == "reasoning.remediator.authoritative"
+
+
+def test_apply_deterministic_packet_refuses_non_admissible_execution(tmp_path: Path) -> None:
+    packet = {
+        "id": "pkt-case-deny",
+        "execution_mode": "deterministic",
+        "commands": [["/usr/bin/true"]],
+        "execution_governance": {
+            "admissibility": {
+                "outcome": "deny",
+                "rationale": "action is outside the contract's allowed move set",
+            }
+        },
+    }
+
+    result = remediator.apply_deterministic_packet(repo_root=tmp_path, packet=packet)
+
+    assert result["ok"] is False
+    assert result["returncode"] == 2
+    assert "not admissible" in result["error"]

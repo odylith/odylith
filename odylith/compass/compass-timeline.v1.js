@@ -80,20 +80,24 @@
     }
 
     function timelineSummaryPlanCompletionIds(transaction) {
-      const ids = new Set();
+      const orderedIds = [];
+      const seen = new Set();
+      const pushId = (token) => {
+        const normalized = String(token || "").trim();
+        if (!WORKSTREAM_RE.test(normalized) || seen.has(normalized)) return;
+        seen.add(normalized);
+        orderedIds.push(normalized);
+      };
       const eventRows = Array.isArray(transaction && transaction.events) ? transaction.events : [];
       eventRows.forEach((row) => {
         if (String(row && row.kind ? row.kind : "").trim() !== "plan_completion") return;
-        const workstreams = Array.isArray(row && row.workstreams) ? row.workstreams : [];
-        workstreams.forEach((workstreamId) => {
-          const token = String(workstreamId || "").trim();
-          if (WORKSTREAM_RE.test(token)) ids.add(token);
-        });
         const summary = String(row && row.summary ? row.summary : "").trim();
         const matches = summary.match(/B-\d{3,}/g) || [];
-        matches.forEach((token) => ids.add(String(token || "").trim()));
+        matches.forEach((token) => pushId(token));
+        const workstreams = Array.isArray(row && row.workstreams) ? row.workstreams : [];
+        workstreams.forEach((workstreamId) => pushId(workstreamId));
       });
-      return Array.from(ids);
+      return orderedIds;
     }
 
     function timelineSummaryPriorityWorkstreamIds(transaction) {
@@ -102,16 +106,20 @@
       for (const kind of priorities) {
         const match = eventRows.find((row) => String(row && row.kind ? row.kind : "").trim() === kind) || null;
         if (!match) continue;
-        const ids = new Set();
-        const workstreams = Array.isArray(match && match.workstreams) ? match.workstreams : [];
-        workstreams.forEach((workstreamId) => {
-          const token = String(workstreamId || "").trim();
-          if (WORKSTREAM_RE.test(token)) ids.add(token);
-        });
+        const orderedIds = [];
+        const seen = new Set();
+        const pushId = (token) => {
+          const normalized = String(token || "").trim();
+          if (!WORKSTREAM_RE.test(normalized) || seen.has(normalized)) return;
+          seen.add(normalized);
+          orderedIds.push(normalized);
+        };
         const sourceText = String(match && (match.summary || match.context) ? (match.summary || match.context) : "").trim();
         const matches = sourceText.match(/B-\d{3,}/g) || [];
-        matches.forEach((token) => ids.add(String(token || "").trim()));
-        if (ids.size) return Array.from(ids);
+        matches.forEach((token) => pushId(token));
+        const workstreams = Array.isArray(match && match.workstreams) ? match.workstreams : [];
+        workstreams.forEach((workstreamId) => pushId(workstreamId));
+        if (orderedIds.length) return orderedIds;
       }
       return [];
     }

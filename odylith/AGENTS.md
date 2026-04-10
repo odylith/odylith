@@ -81,21 +81,12 @@ Scope: applies to Odylith paths under `odylith/`.
 - Codex is the currently validated native-spawn host. In Claude Code, use the same Odylith grounding, memory, and orchestration guidance locally until native spawn support is explicitly proven there.
 
 ## Source File Size Discipline
-- This file-size policy is non-negotiable for Odylith-owned product code in
-  this repo.
-- For hand-maintained Odylith source, follow the repo-root file-size policy:
-  `800` LOC soft limit, `1200` LOC refactor-plan trigger, `2000+` red-zone
-  exception only, and a `1500` LOC ceiling for tests.
-- When an Odylith-owned hand-maintained source file is already beyond those
-  thresholds, treat the next meaningful change as refactor-first work:
-  decompose the file into multiple focused files or modules with robustness,
-  reliability, and reusability as explicit goals instead of extending the
-  oversized file in place.
-- Generated or mirrored bundle assets are excluded from this size discipline;
-  govern their source-of-truth files instead.
-- Prefer `1-2` file decompositions with characterization tests first, and
-  prioritize refactor waves by size x churn x centrality rather than launching
-  repo-wide "all files above X" rewrites.
+- Odylith coding standards now live in
+  `agents-guidelines/CODING_STANDARDS.md`; treat that file as the single
+  agent-guidance source for documentation, reuse, robustness, file-size
+  discipline, refactor-first posture, and coding validation expectations.
+- The repo-root file-size policy remains non-negotiable for Odylith-owned
+  product code in this repo.
 
 ## Governance Contract
 - For non-trivial work touching Odylith governance under `odylith/`, create or update the bound plan under `odylith/technical-plans/` per `technical-plans/AGENTS.md`.
@@ -118,6 +109,7 @@ Scope: applies to Odylith paths under `odylith/`.
 
 ## Routing
 - Context engine behavior: `agents-guidelines/ODYLITH_CONTEXT_ENGINE.md`
+- Coding standards: `agents-guidelines/CODING_STANDARDS.md`
 - Grounding and narrowing: `agents-guidelines/GROUNDING_AND_NARROWING.md`
 - Governance and delivery surfaces: `agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md`
 - Security and trust boundary: `agents-guidelines/SECURITY_AND_TRUST.md`

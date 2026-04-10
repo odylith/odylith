@@ -3,12 +3,19 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.surfaces import compass_refresh_runtime as runtime
 
 
 class _FakeWorker:
     def __init__(self, pid: int) -> None:
         self.pid = pid
+
+
+def test_parse_args_rejects_removed_refresh_profile_flag() -> None:
+    with pytest.raises(SystemExit):
+        runtime._parse_args(["--refresh-profile", "full"])  # noqa: SLF001
 
 
 def test_enqueue_request_writes_refresh_state_and_returns_queued(

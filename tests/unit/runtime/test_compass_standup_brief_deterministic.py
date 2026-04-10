@@ -434,7 +434,7 @@ def test_deterministic_brief_humanizes_scoped_runtime_lane_packet(tmp_path: Path
 
     current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
     assert current_execution["bullets"][1]["text"] == (
-        "58 checklist items are still open."
+        "The checklist is still open, with 58 items left before this lane can be called clean."
     )
     assert current_execution["bullets"][2]["text"] == (
         "Projected at roughly 11 days (high confidence)."
@@ -447,7 +447,7 @@ def test_deterministic_brief_humanizes_scoped_runtime_lane_packet(tmp_path: Path
 
     risks = next(section for section in brief["sections"] if section["key"] == "risks_to_watch")
     assert risks["bullets"][0]["text"] == (
-        "58 plan items remain open on `B-027`."
+        "`B-027` is still a long way from closed out, with 58 plan items open."
     )
 
 
@@ -518,10 +518,70 @@ def test_deterministic_brief_humanizes_scoped_benchmark_lane_packet(tmp_path: Pa
         "Bring Registry and the other benchmark truth surfaces back into line with the README so the "
         "benchmark story stops drifting across surfaces."
     )
-    assert next_planned["bullets"][1]["text"] == (
-        "The corpus still needs more real maintainer coding work in it. Otherwise the benchmark gets cleaner without "
-        "saying much about the work people actually do."
+
+
+def test_deterministic_current_execution_prioritizes_freshness_before_checklist_counts(tmp_path: Path) -> None:
+    fact_packet = {
+        "version": "v1",
+        "window": "48h",
+        "scope": {
+            "mode": "scoped",
+            "idea_id": "B-061",
+            "label": "Reasoning Package Boundary and Benchmark Separation (B-061)",
+            "status": "implementation",
+        },
+        "summary": {
+            "freshness": {
+                "bucket": "aging",
+                "latest_evidence_utc": "2026-04-05T18:10:00Z",
+                "source": "transaction",
+            },
+            "storyline": {
+                "use_story": "Maintainers need to know when the proof is getting old.",
+                "architecture_consequence": "Freshness has to stay visible before checklist accounting.",
+            },
+        },
+        "sections": [
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "facts": [
+                    {
+                        "id": "F-001",
+                        "section_key": "current_execution",
+                        "voice_hint": "executive",
+                        "kind": "direction",
+                        "text": "Reasoning Package Boundary and Benchmark Separation (B-061) is in active implementation because package boundaries still need cleaner proof.",
+                    },
+                    {
+                        "id": "F-002",
+                        "section_key": "current_execution",
+                        "voice_hint": "operator",
+                        "kind": "checklist",
+                        "text": "Plan posture: checklist progress is 0/23; execution checklist closure is underway while implementation execution remains active.",
+                    },
+                    {
+                        "id": "F-003",
+                        "section_key": "current_execution",
+                        "voice_hint": "operator",
+                        "kind": "freshness",
+                        "text": "Freshness signal is stale: latest linked execution proof is more than a day old, so a new checkpoint is needed before momentum claims stay credible.",
+                    },
+                ],
+            },
+        ],
+    }
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=fact_packet,
+        generated_utc="2026-04-05T18:10:00Z",
     )
+
+    current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
+    bullets = [bullet["text"] for bullet in current_execution["bullets"]]
+    assert any("more than a day old" in bullet for bullet in bullets)
+    assert all(not bullet.startswith("23 checklist items") for bullet in bullets)
 
     assert all(section["key"] != "why_this_matters" for section in brief["sections"])
 
@@ -544,6 +604,7 @@ def test_deterministic_brief_does_not_reuse_known_canned_fallback_phrases(tmp_pa
     assert "A lot moved in this window" not in prose
     assert "Most of the movement this window sat in" not in prose
     assert "A lot happened, but most of it came through" not in prose
+    assert "This window mostly ran through" not in prose
     assert "is moving with it too" not in prose
     assert "already proved the cost of local heuristics" not in prose
     assert "It is clearer now which lanes are active again" not in prose
@@ -633,7 +694,7 @@ def test_deterministic_brief_rewrites_current_regression_phrases_into_plainer_co
         "`B-001` is right beside `B-022` too. The repo-boundary cleanup is being finished in the same pass."
     )
     assert current_execution["bullets"][2]["text"] == (
-        "This window mostly ran through `B-063`, `B-001`, `B-020`, `B-022`, `B-038`, and `B-062`."
+        "Most of the work here was in `B-063`, `B-001`, `B-020`, `B-022`, `B-038`, and `B-062`."
     )
 
     next_planned = next(section for section in brief["sections"] if section["key"] == "next_planned")

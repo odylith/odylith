@@ -10,11 +10,10 @@
 - In the final handoff, one short `Odylith Assist:` line is optional if the routed or local result has concrete observed counts, measured deltas, or validation outcomes worth naming. Prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance ids inline when they were actually changed, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual, not promotional. Silence is better than filler, so omit it when there is no clear user-facing delta.
 - Every delegated task needs an owner, goal, validation expectation, and termination condition.
 - When a grounded slice touches a hand-maintained source file that is already
-  beyond policy thresholds, keep the delegated or local plan refactor-first:
-  split the work into multiple focused files or modules with robustness,
-  reliability, and reusability as explicit goals instead of authorizing more
-  in-place growth for the oversized file unless an explicit exception already
-  exists.
+  beyond policy thresholds, keep the delegated or local plan aligned with
+  [CODING_STANDARDS.md](./CODING_STANDARDS.md): refactor-first, bounded, and
+  reuse-oriented instead of authorizing more in-place growth for the
+  oversized file unless an explicit exception already exists.
 - Prefer route-ready execution payloads over ad-hoc task drafting.
 - Stay local when the task is under-specified, shared-write-heavy, or blocked on immediate adjudication.
 

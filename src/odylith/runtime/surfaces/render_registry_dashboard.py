@@ -2538,7 +2538,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const liveTimelineEvents = timelineEvents.filter((event) => !isBaselineTimelineEvent(event));
       const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
       const categoryToken = String(row.category || "").trim().toLowerCase();
-      const toneClass = toneClassForCategory(categoryToken);
       const latestEvent = liveTimelineEvents[0] || (timelineEvents.length ? timelineEvents[0] : null);
       const latestSummary = latestEvent
         ? String(latestEvent.summary || "(no summary)").trim()
@@ -2746,7 +2745,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           <summary>
             <div class="context-head">
               <span class="detail-disclosure-title context-toggle-label">Topology</span>
-              <span class="detail-chip-label ${escapeHtml(toneClass)}" data-tooltip="${escapeHtml(categoryDescription(categoryToken))}">${escapeHtml(row.component_id)}</span>
             </div>
             <div class="context-head-actions">
               <span class="label" data-tooltip="Linked workstreams count.">Workstreams ${workstreams.length}</span>
@@ -2988,18 +2986,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     detail_action_chip_css = dashboard_ui_primitives.detail_action_chip_css(
         selector=".detail-action-chip",
     )
-    detail_label_chip_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.detail_label_chip_css(
-                selector=".detail-chip-label",
-                color="var(--label-text)",
-            ),
-            dashboard_ui_primitives.surface_identifier_chip_typography_css(
-                selector=".detail-chip-label",
-                color="var(--label-text)",
-            ),
-        )
-    )
+    detail_label_chip_css = ""
     detail_action_chip_semantic_css = "\n\n".join(
         (
             dashboard_ui_primitives.subtle_link_label_tone_css(
@@ -3037,30 +3024,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
                 hover_border_color="#eeaa63",
                 hover_background="#ffeacf",
                 hover_color="#b45309",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".detail-chip-label.tone-gov",
-                background="#eaf3ff",
-                border_color="#8cb8f4",
-                color="#1f4795",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".detail-chip-label.tone-infra",
-                background="#e6fbf7",
-                border_color="#7ddfd4",
-                color="#0f766e",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".detail-chip-label.tone-data",
-                background="#f4ecff",
-                border_color="#c8a4f8",
-                color="#7e22ce",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".detail-chip-label.tone-engine",
-                background="#fff3e2",
-                border_color="#f3bf84",
-                color="#b45309",
             ),
         )
     )

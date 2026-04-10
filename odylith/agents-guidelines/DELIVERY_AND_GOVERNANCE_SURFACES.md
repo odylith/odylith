@@ -169,6 +169,11 @@
 - Inside those release-member cards, keep the workstream title on its own
   second row under the ID/status chips. Short titles must not collapse back
   into the first row.
+- In Compass's default unscoped view, `Current Workstreams` is a residual
+  board, not a second copy of governance-grouped work. Filter out any
+  workstream already represented in `Programs` or `Release Targets`, and only
+  keep it in `Current Workstreams` when the operator explicitly scopes to that
+  workstream.
 - Governance KPI/stat cards are operator-facing shared shell contract too.
   Compass hero KPIs, Radar summary stats, Registry summary KPIs, and Casebook
   summary KPIs must consume the shared grid/card/label-value helpers instead
@@ -309,7 +314,9 @@
   is unchanged. Do not spend model or deterministic scoped-brief work just
   because a refresh was requested if the brief story is materially the same.
   Compass now has one bounded refresh contract only; do not revive or
-  advertise a second `full` or deep-refresh mode. Refresh may reuse a warmed
+  advertise a second `full` or deep-refresh mode. If a user says "full"
+  in prose, route that request to `odylith compass refresh --repo-root . --wait`
+  instead of inventing a Compass-specific flag. Refresh may reuse a warmed
   live global brief, and shell-safe global `24h`/`48h` should stay on
   maintained narrated cache before deterministic fallback. It must not pay for
   a fresh provider call on a miss, and it must not let packet-local fact-id
