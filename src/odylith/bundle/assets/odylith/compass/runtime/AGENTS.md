@@ -11,6 +11,8 @@ Scope: applies to all files under `odylith/compass/runtime/`.
 - Do not relocate Compass runtime truth into a shared docs bucket.
 
 ## Contract
-- `odylith/compass/runtime/codex-stream.v1.jsonl` is the append-only execution/event stream.
+- `odylith/compass/runtime/agent-stream.v1.jsonl` is the canonical append-only execution/event stream.
+- `odylith/compass/runtime/codex-stream.v1.jsonl` remains a legacy-compatible input during migration.
 - `odylith/compass/runtime/current.v1.json` and `current.v1.js` are the latest rendered runtime snapshot.
-- `odylith/compass/runtime/history/` preserves historical runtime snapshots.
+- `odylith/compass/runtime/history/` preserves active historical runtime snapshots.
+- `odylith/compass/runtime/history/archive/` keeps compressed older daily snapshots for explicit restore.

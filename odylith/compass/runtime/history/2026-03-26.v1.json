@@ -45,7 +45,6 @@
       "Completed in this window: Operator: Most concrete portfolio movement: Added product code + odylith artifacts. | Operator: Most concrete portfolio movement: Added product code + Tooling dashboard renderer for B-001.",
       "Current execution: Executive: Odylith Product Self-Governance and Consumer Hard Cut (B-001) is the flagship lane and is in active implementation because the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Primary execution signal: Added product code + odylith artifacts. | Operator: Active lanes are converting plans into concrete implementation outcomes Live focus lanes: Odylith Product Self-Governance and Consumer Hard Cut (B-001). | Operator: Timeline signal on the primary lane: projected at roughly 7 days and expected to tighten as execution closes checklist items.",
       "Next planned: Operator: Immediate forcing function is Odylith Product Self-Governance and Consumer Hard Cut (B-001): Source/runtime truth is still duplicated by stale generated outputs, tests, and duplicate root docs/ copies that point back at deleted shared-doc. | Operator: Then move Odylith Product Self-Governance and Consumer Hard Cut (B-001): A downstream consumer repo still carries Odylith product docs or registry truth as local repo truth instead of consuming installed Odylith surface/runtime.",
-      "Why this matters: Executive: For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records. | Operator: The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep consumer-repo truth local to each consumer; - repoint downstream, which gives operators a clearer contract and lower coordination risk.",
       "Risks to watch: Primary watch item is keeping Odylith Product Self-Governance and Consumer Hard Cut (B-001) tight so live execution does not diffuse into portfolio churn."
     ],
     "48h": [
@@ -53,7 +52,6 @@
       "Completed in this window: Operator: Most concrete portfolio movement: Added product code + odylith artifacts. | Operator: Most concrete portfolio movement: Document clean public history policy.",
       "Current execution: Executive: Odylith Product Self-Governance and Consumer Hard Cut (B-001) is the flagship lane and is in active implementation because the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Primary execution signal: Added product code + odylith artifacts. | Operator: Active lanes are converting plans into concrete implementation outcomes Live focus lanes: Odylith Product Self-Governance and Consumer Hard Cut (B-001). | Operator: Timeline signal on the primary lane: projected at roughly 7 days and expected to tighten as execution closes checklist items.",
       "Next planned: Operator: Immediate forcing function is Odylith Product Self-Governance and Consumer Hard Cut (B-001): Source/runtime truth is still duplicated by stale generated outputs, tests, and duplicate root docs/ copies that point back at deleted shared-doc. | Operator: Then move Odylith Product Self-Governance and Consumer Hard Cut (B-001): A downstream consumer repo still carries Odylith product docs or registry truth as local repo truth instead of consuming installed Odylith surface/runtime.",
-      "Why this matters: Executive: For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records. | Operator: The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep consumer-repo truth local to each consumer; - repoint downstream, which gives operators a clearer contract and lower coordination risk.",
       "Risks to watch: Primary watch item is keeping Odylith Product Self-Governance and Consumer Hard Cut (B-001) tight so live execution does not diffuse into portfolio churn."
     ]
   },
@@ -64,7 +62,6 @@
         "Completed in this window: Operator: Most concrete movement: Added product code + Tooling dashboard renderer for B-001. | Operator: Most concrete movement: Added product code for B-001.",
         "Current execution: Executive: Odylith Product Self-Governance and Consumer Hard Cut (B-001) is in active implementation because the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Primary execution signal: Added product code + Tooling dashboard renderer for B-001. | Operator: Plan posture: checklist progress is 5/37; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 7 days and expected to tighten as execution closes checklist items.",
         "Next planned: Operator: Immediate forcing function is to land Source/runtime truth is still duplicated by stale generated outputs, tests, and duplicate root docs/ copies that point back at deleted shared-doc governance paths so the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Then land A downstream consumer repo still carries Odylith product docs or registry truth as local repo truth instead of consuming installed Odylith surface/runtime paths to extend by letting the public repo govern itself, Odylith can ship a cleaner product boundary, cleaner public docs, and a clearer install contract for consumers.",
-        "Why this matters: Executive: For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records. | Operator: The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep consumer-repo truth local to each consumer; - repoint downstream, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 32 plan items remain open for Odylith Product Self-Governance and Consumer Hard Cut (B-001)."
       ]
     },
@@ -74,7 +71,6 @@
         "Completed in this window: Operator: Most concrete movement: Document clean public history policy. | Operator: Most concrete movement: Added product code + Tooling dashboard renderer for B-001.",
         "Current execution: Executive: Odylith Product Self-Governance and Consumer Hard Cut (B-001) is in active implementation because the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Primary execution signal: Document clean public history policy. | Operator: Plan posture: checklist progress is 5/37; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 7 days and expected to tighten as execution closes checklist items.",
         "Next planned: Operator: Immediate forcing function is to land Source/runtime truth is still duplicated by stale generated outputs, tests, and duplicate root docs/ copies that point back at deleted shared-doc governance paths so the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Then land A downstream consumer repo still carries Odylith product docs or registry truth as local repo truth instead of consuming installed Odylith surface/runtime paths to extend by letting the public repo govern itself, Odylith can ship a cleaner product boundary, cleaner public docs, and a clearer install contract for consumers.",
-        "Why this matters: Executive: For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records. | Operator: The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep consumer-repo truth local to each consumer; - repoint downstream, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 32 plan items remain open for Odylith Product Self-Governance and Consumer Hard Cut (B-001)."
       ]
     }
@@ -156,26 +152,6 @@
               "text": "Then move Odylith Product Self-Governance and Consumer Hard Cut (B-001): A downstream consumer repo still carries Odylith product docs or registry truth as local repo truth instead of consuming installed Odylith surface/runtime.",
               "fact_ids": [
                 "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records.",
-              "fact_ids": [
-                "F-010"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep consumer-repo truth local to each consumer; - repoint downstream, which gives operators a clearer contract and lower coordination risk.",
-              "fact_ids": [
-                "F-011"
               ]
             }
           ]
@@ -352,26 +328,6 @@
           ]
         },
         {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records.",
-              "fact_ids": [
-                "F-010"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep consumer-repo truth local to each consumer; - repoint downstream, which gives operators a clearer contract and lower coordination risk.",
-              "fact_ids": [
-                "F-011"
-              ]
-            }
-          ]
-        },
-        {
           "key": "risks_to_watch",
           "label": "Risks to watch",
           "bullets": [
@@ -541,26 +497,6 @@
                 "text": "Then land A downstream consumer repo still carries Odylith product docs or registry truth as local repo truth instead of consuming installed Odylith surface/runtime paths to extend by letting the public repo govern itself, Odylith can ship a cleaner product boundary, cleaner public docs, and a clearer install contract for consumers.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep consumer-repo truth local to each consumer; - repoint downstream, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -761,26 +697,6 @@
                 "text": "Then land A downstream consumer repo still carries Odylith product docs or registry truth as local repo truth instead of consuming installed Odylith surface/runtime paths to extend by letting the public repo govern itself, Odylith can ship a cleaner product boundary, cleaner public docs, and a clearer install contract for consumers.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep consumer-repo truth local to each consumer; - repoint downstream, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]

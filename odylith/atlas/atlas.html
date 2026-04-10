@@ -214,7 +214,7 @@
   align-items: center;
   justify-content: center;
   min-height: 0px;
-  padding: 4px 12px;
+  padding: var(--surface-deep-link-button-padding, 4px 12px);
   border-radius: 999px;
   border: 1px solid var(--chip-link-border);
   background: var(--chip-link-bg);
@@ -242,10 +242,10 @@
 .chip, .tool-btn, .source-link {
   font-family: inherit;
   color: var(--chip-link-text);
-  font-size: 11px;
+  font-size: var(--surface-deep-link-button-font-size, 11px);
   line-height: 1;
   letter-spacing: 0.01em;
-  font-weight: 700;
+  font-weight: var(--surface-deep-link-button-font-weight, 700);
   text-transform: none;
 }
 
@@ -790,7 +790,7 @@
   align-items: center;
   justify-content: center;
   min-height: 0px;
-  padding: 4px 12px;
+  padding: var(--surface-workstream-button-padding, 1px 8px);
   border-radius: 999px;
   border: 1px solid var(--chip-link-border);
   background: var(--chip-link-bg);
@@ -818,10 +818,10 @@
 .artifact-list a.workstream-pill-link {
   font-family: inherit;
   color: #1f4795;
-  font-size: 11px;
+  font-size: var(--surface-workstream-button-font-size, 12px);
   line-height: 1;
   letter-spacing: 0.01em;
-  font-weight: 700;
+  font-weight: var(--surface-workstream-button-font-weight, 500);
   text-transform: none;
 }
 
@@ -1167,7 +1167,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=0201eae52586"></script>
-  <script src="mermaid-app.v1.js?v=0201eae52586"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=932df5bd55ef"></script>
+  <script src="mermaid-app.v1.js?v=932df5bd55ef"></script>
 </body>
 </html>

@@ -12,6 +12,16 @@
       --danger: #b91c1c;
       --ok: #166534;
       --focus: #2563eb;
+      --surface-shell-max-width: 1320px;
+      --surface-identifier-font-size: 14px;
+      --surface-identifier-font-weight: 500;
+      --surface-identifier-chip-padding: 2px 10px;
+      --surface-workstream-button-font-size: 12px;
+      --surface-workstream-button-font-weight: 500;
+      --surface-workstream-button-padding: 1px 8px;
+      --surface-deep-link-button-font-size: 11px;
+      --surface-deep-link-button-font-weight: 700;
+      --surface-deep-link-button-padding: 4px 12px;
     }
     * { box-sizing: border-box; }
     body {
@@ -29,7 +39,7 @@
   color: var(--ink, #0b1324);
 }
     .shell {
-      max-width: 1320px;
+      max-width: var(--surface-shell-max-width, 1320px);
       margin: 0 auto;
       padding: 22px 18px 34px;
       display: grid;
@@ -103,16 +113,7 @@ h1 {
       flex: 1 1 auto;
       min-width: 0;
     }
-    .pill {
-      --chip-link-border: #93c5fd;
-      --chip-link-bg: #eff6ff;
-      --chip-link-text: #1e3a8a;
-      --chip-link-border-hover: #60a5fa;
-      --chip-link-bg-hover: #deebff;
-      --chip-link-text-hover: #1d4ed8;
-      gap: 6px;
-    }
-    .pill, .ws-id-btn, .chip-link {
+    .pill, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link) {
   --chip-link-border: #b9c7db;
   --chip-link-bg: #f3f6fb;
   --chip-link-text: var(--chip-link-text);
@@ -124,7 +125,7 @@ h1 {
   align-items: center;
   justify-content: center;
   min-height: 0px;
-  padding: 4px 12px;
+  padding: var(--surface-deep-link-button-padding, 4px 12px);
   border-radius: 999px;
   border: 1px solid var(--chip-link-border);
   background: var(--chip-link-bg);
@@ -137,25 +138,80 @@ h1 {
   transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
 }
 
-.pill:hover, .ws-id-btn:hover, .chip-link:hover,
-.pill:focus-visible, .ws-id-btn:focus-visible, .chip-link:focus-visible {
+.pill:hover, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link):hover,
+.pill:focus-visible, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link):focus-visible {
   border-color: var(--chip-link-border-hover);
   background: var(--chip-link-bg-hover);
   color: var(--chip-link-text-hover);
 }
 
-.pill:focus-visible, .ws-id-btn:focus-visible, .chip-link:focus-visible {
+.pill:focus-visible, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link):focus-visible {
   outline: 2px solid #bfdbfe;
   outline-offset: 1px;
 }
 
-.pill, .ws-id-btn, .chip-link {
+.pill, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link) {
   font-family: inherit;
   color: var(--chip-link-text);
-  font-size: 11px;
+  font-size: var(--surface-deep-link-button-font-size, 11px);
   line-height: 1;
   letter-spacing: 0.01em;
-  font-weight: 700;
+  font-weight: var(--surface-deep-link-button-font-weight, 700);
+  text-transform: none;
+}
+    .pill {
+      --chip-link-border: #93c5fd;
+      --chip-link-bg: #eff6ff;
+      --chip-link-text: #1e3a8a;
+      --chip-link-border-hover: #60a5fa;
+      --chip-link-bg-hover: #deebff;
+      --chip-link-text-hover: #1d4ed8;
+      gap: 6px;
+    }
+    .ws-id-btn, .workstream-id-chip {
+  --chip-link-border: #b9c7db;
+  --chip-link-bg: #f3f6fb;
+  --chip-link-text: var(--chip-link-text);
+  --chip-link-border-hover: #9aaec9;
+  --chip-link-bg-hover: #e8eef7;
+  --chip-link-text-hover: #1e293b;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0px;
+  padding: var(--surface-workstream-button-padding, 1px 8px);
+  border-radius: 999px;
+  border: 1px solid var(--chip-link-border);
+  background: var(--chip-link-bg);
+  color: var(--chip-link-text);
+  box-shadow: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.ws-id-btn:hover, .workstream-id-chip:hover,
+.ws-id-btn:focus-visible, .workstream-id-chip:focus-visible {
+  border-color: var(--chip-link-border-hover);
+  background: var(--chip-link-bg-hover);
+  color: var(--chip-link-text-hover);
+}
+
+.ws-id-btn:focus-visible, .workstream-id-chip:focus-visible {
+  outline: 2px solid #bfdbfe;
+  outline-offset: 1px;
+}
+
+.ws-id-btn, .workstream-id-chip {
+  font-family: inherit;
+  color: var(--chip-link-text);
+  font-size: var(--surface-workstream-button-font-size, 12px);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-weight: var(--surface-workstream-button-font-weight, 500);
   text-transform: none;
 }
     span.pill, span.chip {
@@ -235,6 +291,16 @@ h1 {
   gap: 8px;
   align-content: start;
 }
+    .card.release-groups-card {
+  padding-bottom: 15px;
+}
+
+.card.release-groups-card .execution-wave-section-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 18px;
+}
     .card h2 {
       margin: 0 0 8px;
     }
@@ -269,7 +335,7 @@ h1 {
 }
     .layout {
       display: grid;
-      gap: 12px;
+      gap: 40px;
       grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
       align-items: start;
     }
@@ -279,6 +345,12 @@ h1 {
     .stack {
       display: grid;
       gap: 12px;
+    }
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+      }
     }
     .bullet-list {
       margin: 0;
@@ -323,7 +395,7 @@ h1 {
     }
     .standup-brief-sheet {
       display: grid;
-      gap: 16px;
+      gap: 10px;
       border: 1px solid #d9e4ee;
       border-radius: 18px;
       padding: 16px 18px;
@@ -358,6 +430,9 @@ h1 {
       padding: 10px 2px;
       min-width: 0;
     }
+    .standup-brief-sections > .brief-section:first-child {
+      padding-top: 4px;
+    }
     .brief-section + .brief-section {
       border-top: 1px solid #d9e4ee;
     }
@@ -378,38 +453,6 @@ h1 {
       color: var(--ink-soft);
       min-width: 0;
       overflow-wrap: anywhere;
-    }
-    .brief-bullet.has-voice {
-      list-style: none;
-      margin-left: -18px;
-      padding-left: 18px;
-      position: relative;
-    }
-    .brief-bullet.has-voice::before {
-      content: "";
-      position: absolute;
-      left: 3px;
-      top: 11px;
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #cbd5e1;
-    }
-    .brief-bullet.has-voice.executive::before {
-      background: #60a5fa;
-    }
-    .brief-bullet.has-voice.operator::before {
-      background: #d4a373;
-    }
-    .brief-bullet-prefix {
-      display: inline;
-      margin-right: 6px;
-      color: var(--ink-muted);
-      font-size: 10px;
-      line-height: 1.15;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 800;
     }
     .brief-bullet-copy {
       color: var(--ink-soft);
@@ -442,7 +485,7 @@ h1 {
       padding: 4px 10px;
       background: #f8fbff;
       color: #35516a;
-      font-size: 11px;
+      font-size: 10px;
       line-height: 1.1;
       letter-spacing: 0.06em;
       text-transform: uppercase;
@@ -579,15 +622,21 @@ h1 {
       color: var(--ink-soft);
       overflow-wrap: anywhere;
     }
-    .digest-link {
+    .digest-link,
+    .brief-inline-link {
       color: #1d4ed8;
       text-decoration: underline dotted #93c5fd;
       text-underline-offset: 2px;
-      font-weight: 700;
+      font-size: var(--surface-identifier-font-size, 14px);
+      font-weight: var(--surface-identifier-font-weight, 500);
     }
-    .digest-link:hover {
+    .digest-link:hover,
+    .digest-link:focus-visible,
+    .brief-inline-link:hover,
+    .brief-inline-link:focus-visible {
       color: #1e3a8a;
       text-decoration-style: solid;
+      outline: none;
     }
 
     .quick-tooltip {
@@ -647,7 +696,7 @@ h1 {
       table-layout: fixed;
     }
     .ws-table .ws-col-id {
-      width: 110px;
+      width: 240px;
     }
     .ws-table .ws-col-wave {
       width: 180px;
@@ -710,6 +759,13 @@ h1 {
       --chip-link-border-hover: #60a5fa;
       --chip-link-bg-hover: #deebff;
       --chip-link-text-hover: #1d4ed8;
+    }
+    .ws-id-stack {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
     }
     .ws-title-cell {
       color: var(--ink);
@@ -789,7 +845,7 @@ h1 {
       gap: 6px;
       flex-wrap: wrap;
     }
-    .execution-wave-board {
+.execution-wave-board {
   display: grid;
   gap: 14px;
 }

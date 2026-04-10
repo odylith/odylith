@@ -350,13 +350,27 @@ churn does not drown out meaningful implementation evidence.
   deterministic narration only after that maintained global reuse path fails.
   Scoped views must stay cheap by serving exact cache or deterministic
   narration when live scoped provider output is deferred, unavailable, or
-  invalid.
+  invalid, but same-scope narrated reuse must not be blocked just because the
+  packet also carries freshness facts for the current window.
+- Cache reuse has to be resilient enough to keep narrated state dominant
+  without buying new provider work. When one current-execution bullet drifts
+  out of the current validation contract but the rest of the narrated cache
+  still fits the live fact packet, Compass may salvage that section from the
+  live deterministic floor and keep the rest of the narrated cache intact
+  rather than dropping the whole brief back to deterministic.
 - Cheapness is part of the product contract, not an implementation detail.
   Compass has only two acceptable runtime lanes now: hot unchanged refresh
   under `50ms` of internal runtime work and complete cold shell-safe refresh
   under `1s` of internal runtime work. There is no separate deep or
   minute-scale truth lane beyond those two budgets. Any regression away from
   that target is a product bug.
+- Release readiness is stricter than "globals look better." Compass is not
+  ready to ship while either bounded runtime lane misses those budgets or
+  while deterministic still dominates the ready-brief source mix. Once the
+  ready-brief population returns to narrated cache, the remaining release
+  blocker narrows to the runtime budgets themselves. In either case, release
+  notes, plans, and Casebook must say Compass is still below bar instead of
+  treating the bounded contract as done.
 - Compass reaches that budget by reusing the last validated brief layer
   when the narrative-relevant window signature still matches. Compass should
   not repay provider or deterministic scoped-brief work just because a new

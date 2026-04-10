@@ -132,9 +132,69 @@ _HANDLER_CASES = [
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root) and getattr(args, "backlog_command", "") == "create",
     },
     {
+        "path": ("release", "list"),
+        "argv": lambda root: ["release", "list", f"--repo-root={root}"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root) and getattr(args, "release_command", "") == "list",
+    },
+    {
+        "path": ("release", "show"),
+        "argv": lambda root: ["release", "show", f"--repo-root={root}", "current"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "show"
+        and list(getattr(args, "forwarded", [])) == ["current"],
+    },
+    {
+        "path": ("release", "create"),
+        "argv": lambda root: ["release", "create", f"--repo-root={root}", "release-0-1-11"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "create"
+        and list(getattr(args, "forwarded", [])) == ["release-0-1-11"],
+    },
+    {
+        "path": ("release", "update"),
+        "argv": lambda root: ["release", "update", f"--repo-root={root}", "current", "--name", "Launch"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "update"
+        and list(getattr(args, "forwarded", [])) == ["current", "--name", "Launch"],
+    },
+    {
+        "path": ("release", "add"),
+        "argv": lambda root: ["release", "add", f"--repo-root={root}", "B-101", "current"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "add"
+        and list(getattr(args, "forwarded", [])) == ["B-101", "current"],
+    },
+    {
+        "path": ("release", "remove"),
+        "argv": lambda root: ["release", "remove", f"--repo-root={root}", "B-101", "current"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "remove"
+        and list(getattr(args, "forwarded", [])) == ["B-101", "current"],
+    },
+    {
+        "path": ("release", "move"),
+        "argv": lambda root: ["release", "move", f"--repo-root={root}", "B-101", "next", "--from-release", "current"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "move"
+        and list(getattr(args, "forwarded", [])) == ["B-101", "next", "--from-release", "current"],
+    },
+    {
         "path": ("compass", "log"),
         "argv": lambda root: ["compass", "log", f"--repo-root={root}"],
         "handler": "_cmd_compass_log",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
+    },
+    {
+        "path": ("compass", "refresh"),
+        "argv": lambda root: ["compass", "refresh", f"--repo-root={root}"],
+        "handler": "_cmd_compass_refresh",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
     },
     {

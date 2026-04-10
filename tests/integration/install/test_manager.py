@@ -841,7 +841,10 @@ def test_install_bundle_creates_root_agents_file_when_missing(tmp_path: Path) ->
     assert summary.repo_guidance_created is True
     assert summary.git_repo_present is False
     assert summary.gitignore_updated is True
-    assert (repo_root / ".gitignore").read_text(encoding="utf-8") == "/.odylith/\n"
+    assert (repo_root / ".gitignore").read_text(encoding="utf-8") == (
+        "/.odylith/\n"
+        "/odylith/compass/runtime/refresh-state.v1.json\n"
+    )
     assert summary.version == "1.2.3"
 
 
@@ -855,7 +858,10 @@ def test_install_bundle_adds_odylith_state_root_to_gitignore_for_git_repo(tmp_pa
 
     assert summary.git_repo_present is True
     assert summary.gitignore_updated is True
-    assert (repo_root / ".gitignore").read_text(encoding="utf-8") == "/.odylith/\n"
+    assert (repo_root / ".gitignore").read_text(encoding="utf-8") == (
+        "/.odylith/\n"
+        "/odylith/compass/runtime/refresh-state.v1.json\n"
+    )
 
 
 def test_install_bundle_does_not_duplicate_existing_odylith_gitignore_entry(tmp_path: Path) -> None:
@@ -869,8 +875,12 @@ def test_install_bundle_does_not_duplicate_existing_odylith_gitignore_entry(tmp_
     summary = install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
 
     assert summary.git_repo_present is True
-    assert summary.gitignore_updated is False
-    assert gitignore_path.read_text(encoding="utf-8") == "node_modules/\n.odylith/\n"
+    assert summary.gitignore_updated is True
+    assert gitignore_path.read_text(encoding="utf-8") == (
+        "node_modules/\n"
+        ".odylith/\n"
+        "/odylith/compass/runtime/refresh-state.v1.json\n"
+    )
 
 
 def test_install_bundle_updates_existing_gitignore_without_git_repo(tmp_path: Path) -> None:
@@ -884,7 +894,11 @@ def test_install_bundle_updates_existing_gitignore_without_git_repo(tmp_path: Pa
 
     assert summary.git_repo_present is False
     assert summary.gitignore_updated is True
-    assert gitignore_path.read_text(encoding="utf-8") == "node_modules/\n/.odylith/\n"
+    assert gitignore_path.read_text(encoding="utf-8") == (
+        "node_modules/\n"
+        "/.odylith/\n"
+        "/odylith/compass/runtime/refresh-state.v1.json\n"
+    )
 
 
 def test_install_bundle_bootstrap_supports_first_consumer_sync(tmp_path: Path) -> None:
@@ -1177,7 +1191,10 @@ def test_upgrade_backfills_odylith_state_root_in_gitignore(tmp_path: Path) -> No
 
     upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
-    assert (repo_root / ".gitignore").read_text(encoding="utf-8") == "/.odylith/\n"
+    assert (repo_root / ".gitignore").read_text(encoding="utf-8") == (
+        "/.odylith/\n"
+        "/odylith/compass/runtime/refresh-state.v1.json\n"
+    )
 
 
 def test_install_bundle_persists_existing_runtime_verification_marker(tmp_path: Path) -> None:

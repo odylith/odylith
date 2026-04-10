@@ -39,7 +39,9 @@ execute the Odylith release benchmark publishing lane.
 - Benchmark changes are only valid when they make the workload more realistic,
   the scoring more conservative, or the proof more reproducible.
 - The honest public pair is `odylith_on` versus `odylith_off`, where both
-  lanes run through the same live Codex CLI model and reasoning contract.
+  lanes run through the same live host CLI model and reasoning contract.
+  Current published release proof remains Codex-host-scoped until another host
+  clears the same publication lane.
 
 ## Metric Order
 Evaluate Odylith benchmark outcomes in this order:
@@ -217,7 +219,7 @@ The benchmark itself must also stay representative:
   live agent runtime, validator overhead, and full-session token spend are
   distinct metrics.
 - `odylith_off` is the reviewer-facing and README-facing name for the raw
-  Codex CLI lane. `raw_agent_baseline` is only the internal report alias.
+  host CLI lane. `raw_agent_baseline` is only the internal report alias.
 - The primary honest benchmark comparison is `odylith_on` versus
   `odylith_off`.
 - If Odylith is named in benchmark prose beyond lane labels, keep that to one

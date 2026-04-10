@@ -45,7 +45,6 @@
       "Completed in this window: Operator: This window finally cleared two lingering obligations: `B-027` finished lane boundary, runtime, and toolchain clarity; `B-028` finished starter launchpad ux and visual redesign. | Operator: The clearest move this window was added pending surface regression tests. It gave the rest of the work something concrete to steer against.",
       "Current execution: Executive: `B-022` is still carrying the main decision load. Once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: `B-038` is the lane keeping this honest alongside it. If Odylith is genuinely better, the benchmark needs to prove that with harder evidence and less wasted work, not stronger narration. | Operator: The schedule still matters here: projected at roughly 5 days (high confidence), so nobody should mistake this for cleanup.",
       "Next planned: Operator: Next up is `B-021`: bring Registry and the other benchmark truth surfaces back into line with the README so the public benchmark story is backed by governed source again. | Operator: After that, the corpus needs more developer-core local coding slices. The benchmark only gets more believable if the workload gets closer to the hard work we actually care about.",
-      "Why this matters: Executive: Once the benchmark starts carrying product claims, it has to stay honest enough that the proof is harder to game than the story is to tell. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
       "Risks to watch: Operator: The sharpest open risk is still the P1 around Hosted installer upgrades runtime without advancing repo pin. | Operator: Release gating stays constrained while the repo is running detached `source-local` instead of the pinned `0.1.9` runtime."
     ],
     "48h": [
@@ -53,7 +52,6 @@
       "Completed in this window: Operator: Over the last 48 hours, two lingering obligations finally cleared: `B-027` finished lane boundary, runtime, and toolchain clarity; `B-028` finished starter launchpad ux and visual redesign. | Operator: Over the last 48 hours, the clearest move was Prepare v0.1.8 release proof. It gave the rest of the work something concrete to steer against.",
       "Current execution: Executive: Over the last 48 hours, `B-022` is still carrying the main decision load. Once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: `B-038` is the lane keeping this honest alongside it. If Odylith is genuinely better, the benchmark needs to prove that with harder evidence and less wasted work, not stronger narration. | Operator: The schedule still matters here: projected at roughly 5 days (high confidence), so nobody should mistake this for cleanup.",
       "Next planned: Operator: Next up is `B-021`: bring Registry and the other benchmark truth surfaces back into line with the README so the public benchmark story is backed by governed source again. | Operator: After that, the corpus needs more developer-core local coding slices. The benchmark only gets more believable if the workload gets closer to the hard work we actually care about.",
-      "Why this matters: Executive: Once the benchmark starts carrying product claims, it has to stay honest enough that the proof is harder to game than the story is to tell. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
       "Risks to watch: Operator: The sharpest open risk is still the P1 around Hosted installer upgrades runtime without advancing repo pin. | Operator: Release gating stays constrained while the repo is running detached `source-local` instead of the pinned `0.1.9` runtime."
     ]
   },
@@ -64,7 +62,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) in the last 24 hours.",
         "Current execution: Executive: `B-021` has moved out of easy-win territory. The compact benchmark already clears; now the question is whether the proof survives a harder repo shape without getting easier to game. | Operator: This lane is still carrying real weight. 67 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: Execution proof is getting stale. Latest known activity for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Operator: Next up is to bring Registry and the other benchmark truth surfaces back into line with the README so the public benchmark story is backed by governed source again. | Operator: After that, the corpus needs more developer-core local coding slices. The benchmark only gets more believable if the workload gets closer to the hard work we actually care about.",
-        "Why this matters: Executive: The benchmark only matters if it reflects the hard work we actually care about. Right now the public proof is still on hold, so the story can still outrun the governed source. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 67 plan items are open on `B-021`, so the next checkpoint needs to land cleanly."
       ],
       "B-022": [
@@ -72,7 +69,6 @@
         "Completed in this window: The clearest move this window was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: `B-022` is still carrying the main decision load. Once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: Right now the clearest signal is Prepare v0.1.9 GA release (#1). | Operator: This lane is still carrying real weight. 51 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 5 days (high confidence), so nobody should mistake this for cleanup.",
         "Next planned: Operator: Next up is to expand the corpus beyond the current suite so the benchmark gets harder where the proof is still weak. | Operator: After that, rerun the proof across both cache profiles so benchmark gains are harder to dismiss.",
-        "Why this matters: Executive: Once the benchmark starts carrying product claims, it has to stay honest enough that the proof is harder to game than the story is to tell. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 51 plan items are open on `B-022`, so the next checkpoint needs to land cleanly."
       ],
       "B-025": [
@@ -80,7 +76,6 @@
         "Completed in this window: The clearest move this window was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: `B-025` is still carrying the main decision load. Odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Right now the clearest signal is Prepare v0.1.9 GA release (#1). | Operator: This lane is still carrying real weight. 56 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 56 plan items are open on `B-025`, so the next checkpoint needs to land cleanly."
       ],
       "B-030": [
@@ -88,7 +83,6 @@
         "Completed in this window: The clearest move this window was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: `B-030` is still carrying the main decision load. The product just shipped GA and the release lifecycle needs to feel both polished and safe: one-step consumer adoption, first-class recovery, and shell refresh that stays legible under failure. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Right now the clearest signal is Prepare v0.1.9 GA release (#1). | Operator: This lane is still carrying real weight. 32 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For consumer-repo operators upgrading Odylith through the supported CLI, consumer upgrades already activate the new runtime, but the local dashboard can stay visually stale until a later sync and the product gives the operator no in-shell celebration or concise readout of what changed. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 32 plan items are open on `B-030`, so the next checkpoint needs to land cleanly."
       ],
       "B-033": [
@@ -96,7 +90,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) in the last 24 hours.",
         "Current execution: Executive: `B-033` is still carrying the main decision load. `v0.1.5` already taught us the right lesson: the product is believable enough that the next failure mode is no longer \"can Odylith do anything useful?\" but \"does the release system deserve the same trust as the product?\". | Operator: This lane is still carrying real weight. 49 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: Execution proof is getting stale. Latest known activity for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith maintainers cutting and proving releases from the product repo, `v0.1.5` shipped with meaningful product gains, but the release showed that the release system still trails the product. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 49 plan items are open on `B-033`, so the next checkpoint needs to land cleanly."
       ],
       "B-038": [
@@ -104,7 +97,6 @@
         "Completed in this window: The clearest move this window was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: `B-038` is still carrying the main decision load. Odylith will not honestly beat `odylith_off` by narrative. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Right now the clearest signal is Prepare v0.1.9 GA release (#1). | Operator: This lane is still carrying real weight. 51 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload, `odylith_on` is currently winning the main proof metrics but still paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, `component_governance`. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 51 plan items are open on `B-038`, so the next checkpoint needs to land cleanly."
       ],
       "B-040": [
@@ -112,7 +104,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) in the last 24 hours.",
         "Current execution: Executive: `B-040` is still carrying the main decision load. Odylith is already making a stronger public trust claim around its managed runtime. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: This lane is still carrying real weight. 50 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: Execution proof is getting stale. Latest known activity for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 50 plan items are open on `B-040`, so the next checkpoint needs to land cleanly."
       ],
       "B-045": [
@@ -120,7 +111,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Registry Source-Mirror Forensic Coverage Alignment (B-045) in the last 24 hours.",
         "Current execution: Executive: `B-045` is still carrying the main decision load. The mismatch is small but operator-visible. | Operator: This lane is still carrying real weight. 30 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: Execution proof is getting stale. Latest known activity for Odylith Registry Source-Mirror Forensic Coverage Alignment (B-045) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith maintainers using Registry to understand which components are actively changing, registry forensic coverage is supposed to show whether a tracked component has live evidence, but source-owned mirrored bundle paths can still fall outside the component's canonical `path_prefixes`. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 30 plan items are open on `B-045`, so the next checkpoint needs to land cleanly."
       ],
       "B-048": [
@@ -128,7 +118,6 @@
         "Completed in this window: The clearest move this window was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: `B-048` is still carrying the main decision load. The migration failure is concrete, recent, and reproducible. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Right now the clearest signal is Prepare v0.1.9 GA release (#1). | Operator: This lane is still carrying real weight. 57 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For consumer-repo operators migrating or reinstalling Odylith on a real repo and expecting repair plus sync to converge without filesystem surgery, odylith itself can install, query memory, and render surfaces, but a real April 6 migration on macOS Apple Silicon still exposed three release-blocking gaps: managed runtime trust is too fragile against OS metadata. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 57 plan items are open on `B-048`, so the next checkpoint needs to land cleanly."
       ],
       "B-005": [
@@ -136,7 +125,6 @@
         "Completed in this window: The clearest move this window was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: `B-005` is still carrying the main decision load. The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Right now the clearest signal is Prepare v0.1.9 GA release (#1). | Operator: The scoped checklist is fully closed, so the remaining work is proving the lane cleanly.",
         "Next planned: Next up is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
-        "Why this matters: Executive: What matters here is For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-020": [
@@ -144,7 +132,6 @@
         "Completed in this window: The clearest move this window was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: `B-020` is still carrying the main decision load. Odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance. | Operator: Right now the clearest signal is Prepare v0.1.9 GA release (#1). | Operator: This lane is still carrying real weight. 5 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 1 days (high confidence), so nobody should mistake this for cleanup.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game, odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 5 plan items are open on `B-020`, so the next checkpoint needs to land cleanly."
       ],
       "B-007": [
@@ -152,7 +139,6 @@
         "Completed in this window: The clearest move this window was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: `B-007` is still carrying the main decision load. The proof lane is already complete. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Right now the clearest signal is Prepare v0.1.9 GA release (#1). | Operator: The scoped checklist is fully closed, so the remaining work is proving the lane cleanly.",
         "Next planned: Next up is to capture the next verified checkpoint for Odylith GA Promotion and Supported Platform Contract (B-007).",
-        "Why this matters: Executive: What matters here is For Odylith maintainers who need source truth to match the actual published product stance, the hosted release exists, the product repo is pinned on the published runtime, and dogfood plus consumer rehearsal plus `ga-gate` all passed. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: No critical blockers are currently surfaced."
       ]
     },
@@ -162,7 +148,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) in the last 48 hours.",
         "Current execution: Executive: Over the last 48 hours, `B-021` has moved out of easy-win territory. The compact benchmark already clears; now the question is whether the proof survives a harder repo shape without getting easier to game. | Operator: This lane is still carrying real weight. 67 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: Execution proof is getting stale. Latest known activity for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Operator: Next up is to bring Registry and the other benchmark truth surfaces back into line with the README so the public benchmark story is backed by governed source again. | Operator: After that, the corpus needs more developer-core local coding slices. The benchmark only gets more believable if the workload gets closer to the hard work we actually care about.",
-        "Why this matters: Executive: The benchmark only matters if it reflects the hard work we actually care about. Right now the public proof is still on hold, so the story can still outrun the governed source. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 67 plan items are open on `B-021`, so the next checkpoint needs to land cleanly."
       ],
       "B-022": [
@@ -170,7 +155,6 @@
         "Completed in this window: Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: Over the last 48 hours, `B-022` is still carrying the main decision load. Once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: Over the last 48 hours, the clearest signal has been Ship v0.1.8 migration recovery and shell updates. | Operator: This lane is still carrying real weight. 51 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 5 days (high confidence), so nobody should mistake this for cleanup.",
         "Next planned: Operator: Next up is to expand the corpus beyond the current suite so the benchmark gets harder where the proof is still weak. | Operator: After that, rerun the proof across both cache profiles so benchmark gains are harder to dismiss.",
-        "Why this matters: Executive: Once the benchmark starts carrying product claims, it has to stay honest enough that the proof is harder to game than the story is to tell. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 51 plan items are open on `B-022`, so the next checkpoint needs to land cleanly."
       ],
       "B-025": [
@@ -178,7 +162,6 @@
         "Completed in this window: Over the last 48 hours, the clearest move was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: Over the last 48 hours, `B-025` is still carrying the main decision load. Odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Over the last 48 hours, the clearest signal has been Prepare v0.1.9 GA release (#1). | Operator: This lane is still carrying real weight. 56 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 56 plan items are open on `B-025`, so the next checkpoint needs to land cleanly."
       ],
       "B-030": [
@@ -186,7 +169,6 @@
         "Completed in this window: Over the last 48 hours, the clearest move was Prepare v0.1.9 GA release (#1). It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: Over the last 48 hours, `B-030` is still carrying the main decision load. The product just shipped GA and the release lifecycle needs to feel both polished and safe: one-step consumer adoption, first-class recovery, and shell refresh that stays legible under failure. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Over the last 48 hours, the clearest signal has been Prepare v0.1.9 GA release (#1). | Operator: This lane is still carrying real weight. 32 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For consumer-repo operators upgrading Odylith through the supported CLI, consumer upgrades already activate the new runtime, but the local dashboard can stay visually stale until a later sync and the product gives the operator no in-shell celebration or concise readout of what changed. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 32 plan items are open on `B-030`, so the next checkpoint needs to land cleanly."
       ],
       "B-033": [
@@ -194,7 +176,6 @@
         "Completed in this window: Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: Over the last 48 hours, `B-033` is still carrying the main decision load. `v0.1.5` already taught us the right lesson: the product is believable enough that the next failure mode is no longer \"can Odylith do anything useful?\" but \"does the release system deserve the same trust as the product?\". | Operator: Over the last 48 hours, the clearest signal has been Ship v0.1.8 migration recovery and shell updates. | Operator: This lane is still carrying real weight. 49 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: Execution proof is getting stale. Latest linked execution proof for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) is more than a day old, so a new checkpoint is needed before momentum claims stay credible.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith maintainers cutting and proving releases from the product repo, `v0.1.5` shipped with meaningful product gains, but the release showed that the release system still trails the product. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 49 plan items are open on `B-033`, so the next checkpoint needs to land cleanly."
       ],
       "B-038": [
@@ -202,7 +183,6 @@
         "Completed in this window: Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: Over the last 48 hours, `B-038` is still carrying the main decision load. Odylith will not honestly beat `odylith_off` by narrative. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Over the last 48 hours, the clearest signal has been Ship v0.1.8 migration recovery and shell updates. | Operator: This lane is still carrying real weight. 51 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload, `odylith_on` is currently winning the main proof metrics but still paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, `component_governance`. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 51 plan items are open on `B-038`, so the next checkpoint needs to land cleanly."
       ],
       "B-040": [
@@ -210,7 +190,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) in the last 48 hours.",
         "Current execution: Executive: Over the last 48 hours, `B-040` is still carrying the main decision load. Odylith is already making a stronger public trust claim around its managed runtime. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: This lane is still carrying real weight. 50 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: Execution proof is getting stale. Latest known activity for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 50 plan items are open on `B-040`, so the next checkpoint needs to land cleanly."
       ],
       "B-045": [
@@ -218,7 +197,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Registry Source-Mirror Forensic Coverage Alignment (B-045) in the last 48 hours.",
         "Current execution: Executive: Over the last 48 hours, `B-045` is still carrying the main decision load. The mismatch is small but operator-visible. | Operator: This lane is still carrying real weight. 30 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: Execution proof is getting stale. Latest known activity for Odylith Registry Source-Mirror Forensic Coverage Alignment (B-045) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith maintainers using Registry to understand which components are actively changing, registry forensic coverage is supposed to show whether a tracked component has live evidence, but source-owned mirrored bundle paths can still fall outside the component's canonical `path_prefixes`. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 30 plan items are open on `B-045`, so the next checkpoint needs to land cleanly."
       ],
       "B-048": [
@@ -226,7 +204,6 @@
         "Completed in this window: Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: Over the last 48 hours, `B-048` is still carrying the main decision load. The migration failure is concrete, recent, and reproducible. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Over the last 48 hours, the clearest signal has been Ship v0.1.8 migration recovery and shell updates. | Operator: This lane is still carrying real weight. 57 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For consumer-repo operators migrating or reinstalling Odylith on a real repo and expecting repair plus sync to converge without filesystem surgery, odylith itself can install, query memory, and render surfaces, but a real April 6 migration on macOS Apple Silicon still exposed three release-blocking gaps: managed runtime trust is too fragile against OS metadata. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 57 plan items are open on `B-048`, so the next checkpoint needs to land cleanly."
       ],
       "B-005": [
@@ -234,7 +211,6 @@
         "Completed in this window: Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: Over the last 48 hours, `B-005` is still carrying the main decision load. The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Over the last 48 hours, the clearest signal has been Ship v0.1.8 migration recovery and shell updates. | Operator: The scoped checklist is fully closed, so the remaining work is proving the lane cleanly.",
         "Next planned: Next up is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
-        "Why this matters: Executive: What matters here is For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-020": [
@@ -242,7 +218,6 @@
         "Completed in this window: Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: Over the last 48 hours, `B-020` is still carrying the main decision load. Odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance. | Operator: Over the last 48 hours, the clearest signal has been Ship v0.1.8 migration recovery and shell updates. | Operator: This lane is still carrying real weight. 5 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy. | Operator: The schedule still matters here: projected at roughly 1 days (high confidence), so nobody should mistake this for cleanup.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game, odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust. | Operator: If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
         "Risks to watch: The lane can still sprawl: 5 plan items are open on `B-020`, so the next checkpoint needs to land cleanly."
       ],
       "B-007": [
@@ -250,7 +225,6 @@
         "Completed in this window: Over the last 48 hours, the clearest move was Ship v0.1.8 migration recovery and shell updates. It gave the rest of the work something concrete to steer against.",
         "Current execution: Executive: Over the last 48 hours, `B-007` is still carrying the main decision load. The proof lane is already complete. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Over the last 48 hours, the clearest signal has been Ship v0.1.8 migration recovery and shell updates. | Operator: The scoped checklist is fully closed, so the remaining work is proving the lane cleanly.",
         "Next planned: Next up is to capture the next verified checkpoint for Odylith GA Promotion and Supported Platform Contract (B-007).",
-        "Why this matters: Executive: What matters here is For Odylith maintainers who need source truth to match the actual published product stance, the hosted release exists, the product repo is pinned on the published runtime, and dogfood plus consumer rehearsal plus `ga-gate` all passed. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: No critical blockers are currently surfaced."
       ]
     }
@@ -333,26 +307,6 @@
               "text": "After that, the corpus needs more developer-core local coding slices. The benchmark only gets more believable if the workload gets closer to the hard work we actually care about.",
               "fact_ids": [
                 "F-010"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "Once the benchmark starts carrying product claims, it has to stay honest enough that the proof is harder to game than the story is to tell.",
-              "fact_ids": [
-                "F-011"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-              "fact_ids": [
-                "F-012"
               ]
             }
           ]
@@ -547,26 +501,6 @@
           ]
         },
         {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "Once the benchmark starts carrying product claims, it has to stay honest enough that the proof is harder to game than the story is to tell.",
-              "fact_ids": [
-                "F-011"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-              "fact_ids": [
-                "F-012"
-              ]
-            }
-          ]
-        },
-        {
           "key": "risks_to_watch",
           "label": "Risks to watch",
           "bullets": [
@@ -745,26 +679,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "The benchmark only matters if it reflects the hard work we actually care about. Right now the public proof is still on hold, so the story can still outrun the governed source.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -936,26 +850,6 @@
                 "text": "After that, rerun the proof across both cache profiles so benchmark gains are harder to dismiss.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Once the benchmark starts carrying product claims, it has to stay honest enough that the proof is harder to game than the story is to tell.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -1154,26 +1048,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1351,26 +1225,6 @@
                 "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For consumer-repo operators upgrading Odylith through the supported CLI, consumer upgrades already activate the new runtime, but the local dashboard can stay visually stale until a later sync and the product gives the operator no in-shell celebration or concise readout of what changed.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -1559,26 +1413,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers cutting and proving releases from the product repo, `v0.1.5` shipped with meaningful product gains, but the release showed that the release system still trails the product.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1735,26 +1569,6 @@
                 "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload, `odylith_on` is currently winning the main proof metrics but still paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, `component_governance`.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -1950,26 +1764,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2124,26 +1918,6 @@
                 "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
                 "fact_ids": [
                   "F-006"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers using Registry to understand which components are actively changing, registry forensic coverage is supposed to show whether a tracked component has live evidence, but source-owned mirrored bundle paths can still fall outside the component's canonical `path_prefixes`.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-008"
                 ]
               }
             ]
@@ -2305,26 +2079,6 @@
                 "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For consumer-repo operators migrating or reinstalling Odylith on a real repo and expecting repair plus sync to converge without filesystem surgery, odylith itself can install, query memory, and render surfaces, but a real April 6 migration on macOS Apple Silicon still exposed three release-blocking gaps: managed runtime trust is too fragile against OS metadata.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -2520,26 +2274,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2722,26 +2456,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game, odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2914,26 +2628,6 @@
                 "text": "Next up is to capture the next verified checkpoint for Odylith GA Promotion and Supported Platform Contract (B-007).",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers who need source truth to match the actual published product stance, the hosted release exists, the product repo is pinned on the published runtime, and dogfood plus consumer rehearsal plus `ga-gate` all passed.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -3123,26 +2817,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "The benchmark only matters if it reflects the hard work we actually care about. Right now the public proof is still on hold, so the story can still outrun the governed source.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -3314,26 +2988,6 @@
                 "text": "After that, rerun the proof across both cache profiles so benchmark gains are harder to dismiss.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Once the benchmark starts carrying product claims, it has to stay honest enough that the proof is harder to game than the story is to tell.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -3532,26 +3186,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -3729,26 +3363,6 @@
                 "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For consumer-repo operators upgrading Odylith through the supported CLI, consumer upgrades already activate the new runtime, but the local dashboard can stay visually stale until a later sync and the product gives the operator no in-shell celebration or concise readout of what changed.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -3944,26 +3558,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers cutting and proving releases from the product repo, `v0.1.5` shipped with meaningful product gains, but the release showed that the release system still trails the product.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4136,26 +3730,6 @@
                 "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload, `odylith_on` is currently winning the main proof metrics but still paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, `component_governance`.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -4351,26 +3925,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4525,26 +4079,6 @@
                 "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
                 "fact_ids": [
                   "F-006"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers using Registry to understand which components are actively changing, registry forensic coverage is supposed to show whether a tracked component has live evidence, but source-owned mirrored bundle paths can still fall outside the component's canonical `path_prefixes`.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-008"
                 ]
               }
             ]
@@ -4706,26 +4240,6 @@
                 "text": "Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For consumer-repo operators migrating or reinstalling Odylith on a real repo and expecting repair plus sync to converge without filesystem surgery, odylith itself can install, query memory, and render surfaces, but a real April 6 migration on macOS Apple Silicon still exposed three release-blocking gaps: managed runtime trust is too fragile against OS metadata.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -4921,26 +4435,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -5123,26 +4617,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game, odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -5315,26 +4789,6 @@
                 "text": "Next up is to capture the next verified checkpoint for Odylith GA Promotion and Supported Platform Contract (B-007).",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For Odylith maintainers who need source truth to match the actual published product stance, the hosted release exists, the product repo is pinned on the published runtime, and dogfood plus consumer rehearsal plus `ga-gate` all passed.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -25030,7 +24484,7 @@
   },
   "runtime_contract": {
     "version": "v1",
-    "standup_brief_schema_version": "v13",
+    "standup_brief_schema_version": "v17",
     "input_fingerprint": "1808807455dee6f4fea8439a837f0e6fe8e1cb645af4b9d920a418e30b28eb60",
     "retention_days": 15,
     "active_window_minutes": 15,

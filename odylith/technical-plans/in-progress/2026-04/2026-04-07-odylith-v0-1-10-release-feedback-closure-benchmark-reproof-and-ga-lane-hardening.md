@@ -246,6 +246,10 @@ Related Bugs:
       truthful status/wait guidance, no duplicate timeout retry loop, and an
       explicit stale-and-failed warning when the bounded refresh does not
       land.
+- [ ] `v0.1.11` stays blocked until Compass itself clears release bar: hot
+      exact reuse `<=50ms` internal, cold complete shell-safe `<=1s`
+      internal, and ready briefs no longer default to deterministic as the
+      primary user-visible source.
 
 ## Non-Goals
 - [ ] Changing the canonical hosted installer entrypoint away from

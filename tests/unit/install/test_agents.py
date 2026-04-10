@@ -82,6 +82,8 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "Use only concrete observed counts, measured deltas, or validation outcomes, and ground the line in concrete observed counts, measured deltas, or validation outcomes" not in block
     assert "Silence is better than filler." in block
     assert "At most one supplemental closeout line may appear" in block
+    assert "never say `fixed`, `cleared`, or `resolved` without qualification" in block
+    assert "same fingerprint as the last falsification or not" in block
     assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in block
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in block
     assert "stop at diagnosis and maintainer-ready feedback" in block

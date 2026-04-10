@@ -1,6 +1,6 @@
 # Odylith Maintainer Release Runbook
 
-Last updated: 2026-04-03
+Last updated: 2026-04-08
 
 ## Purpose
 Use this runbook for the canonical Odylith release lane only.
@@ -42,6 +42,10 @@ release workflow still publishes from `refs/heads/main`.
   bound plan, related bugs, related components, related diagrams, and recent
   Compass/session context first; extend or reopen that truth before creating
   new records.
+- Treat repo-local release-planning truth as part of that same governed slice:
+  inspect `odylith release list` or `odylith release show ...`, reconcile the
+  candidate ship line, and move carry-forward work explicitly instead of
+  hiding release scope in prose or session memory.
 - If the release-adjacent slice is genuinely new, create the missing
   workstream and bound plan before non-trivial implementation; if the work
   spans multiple release tracks, split it with child workstreams or execution
@@ -66,14 +70,36 @@ Run the targets in this order.
    Inspect the active session, the highest existing `vX.Y.Z` tag, and the next
    auto version before you start the lane.
 
-3. Refresh the public Codex benchmark snapshot.
+   Before continuing into benchmark and dispatch proof, reconcile repo-local
+   release planning truth for the candidate lane:
+   - use `odylith release list --repo-root .` and `odylith release show current --repo-root .`
+     to confirm the candidate release record, explicit `current` or `next`
+     alias ownership, and the current workstream scope
+   - use `odylith release create|update` to define the release id, version,
+     tag, and operator-facing name
+   - use `odylith release add|move|remove` to align backlog scope before
+     launch-readiness review; adding an already `finished` workstream records
+     it as a completed member of that release instead of restoring an active
+     target
+   - keep the bound execution checklist honest before using Compass `Release
+     Targets` as progress evidence; active implementation with checked
+     execution tasks now shows tracked percent completion, while active
+     implementation with zero checked execution tasks shows checklist-only or
+     unknown state instead of fake `0%`
+   - if the release record carries `version` and
+     `odylith/runtime/source/release-notes/vX.Y.Z.md` already exists, leave
+     `name` empty to inherit the authored release-note title or set that exact
+     same title explicitly
+
+3. Refresh the public benchmark snapshot.
    Run `./.odylith/bin/odylith benchmark --repo-root . --profile proof`, regenerate
    `docs/benchmarks/*.svg` from
    `.odylith/runtime/odylith-benchmarks/latest.v1.json`, and update the
    repo-root `README.md` benchmark section from that same report before the
    release lane continues. The default `quick` lane is not release proof. This
-   must stay on the warm-plus-cold `proof` Codex lane for the live
-   `odylith_on` versus `odylith_off` pair, and the README must publish the
+   must stay on the warm-plus-cold `proof` host lane for the live
+   `odylith_on` versus `odylith_off` pair. The current published proof host is
+   Codex, and the README must publish the
    conservative benchmark view from that report rather than a warm-only or
    primary-profile-only snapshot. If maintainers need isolated packet or
    prompt tuning, use `--profile diagnostic` separately and keep it out of the
@@ -92,6 +118,9 @@ Run the targets in this order.
    Initialize or reuse the sticky release session, reserve the release tag,
    validate the canonical release contract, build the wheel plus split managed
    runtime assets, and prove the generated installer locally before dispatch.
+   This gate also fails closed when release-facing security docs such as
+   `SECURITY.md` and the product plus bundled `SECURITY_POSTURE.md` files do
+   not mention the candidate version.
    If your active maintainer workspace is dirty or off-main but already points
    at `origin/main`, this target may run from an isolated clean checkout of the
    same commit instead of forcing you to discard the active workspace. That
@@ -126,8 +155,17 @@ Run the targets in this order.
    split managed assets.
 
 10. `make ga-gate [PREVIOUS_VERSION=X.Y.Z]`
-   Re-run the post-publish dog-food and consumer proof lane for the candidate
-   version.
+    Re-run the post-publish dog-food and consumer proof lane for the candidate
+    version.
+
+    Before closing the lane, advance repo-local release planning truth for the
+    shipped line: move unfinished workstreams forward, keep the current
+    release visible until you explicitly transition it to `shipped` or
+    `closed`, and ensure `current` and `next` aliases now point only at
+    non-terminal planning records before or with that terminal lifecycle
+    update. An empty current release is still active planning truth, not
+    implicit GA, and finished work from that release may remain visible in
+    Compass as completed release history until you perform the explicit close.
 
 11. `make release-session-clear`
     Clear the local sticky session after the lane is complete or intentionally
@@ -147,6 +185,15 @@ Run the targets in this order.
   Print the next auto patch version only.
 - `make release-version-show`
   Show session, highest tag, next tag, and effective version state.
+- `odylith release list --repo-root .`
+  Show repo-local release catalog, alias ownership, and active assignment counts.
+- `odylith release show <selector> --repo-root .`
+  Inspect one release by `release_id`, alias, version, tag, or unique exact name.
+- `odylith release create|update|add|remove|move ... --repo-root .`
+  Maintain repo-local release planning truth for backlog targeting, including
+  explicit `--status shipped|closed` updates when a release really reaches GA.
+  Adding a `finished` workstream records completed release membership without
+  reviving active targeting.
 - `make release-session-show`
   Show the raw sticky release-session payload under `.odylith/locks/`.
 - `make release-preflight [VERSION=X.Y.Z]`
@@ -169,10 +216,11 @@ Run the targets in this order.
 - `make release-session-clear`
   Clear the sticky release session intentionally.
 - `./.odylith/bin/odylith benchmark --repo-root . --profile proof`
-  Refresh the canonical Codex benchmark report before release. The default
+  Refresh the canonical benchmark report before release. The default
   quick lane is developer signal only; the release-safe lane is the
   multi-profile `proof` run covering both `warm` and `cold` for the live
-  `odylith_on` versus `odylith_off` pair.
+  `odylith_on` versus `odylith_off` pair. The current published proof host is
+  Codex.
 - `make benchmark-analysis [OUT=/tmp/odylith-benchmark-...]`
   Maintainer helper that runs `diagnostic` then `proof`, copies the resulting
   JSON artifacts into a timestamped local bundle, regenerates both profile SVG
@@ -193,6 +241,9 @@ Run the targets in this order.
   runtime bundles, context-engine pack assets, signed release manifest inputs,
   and a local hosted-style installer proof for
   `install -> version -> doctor -> sync`.
+- `make release-preflight` also fails closed when release-facing security docs
+  drift from the candidate version, including the repo-root GitHub security
+  overview file and bundled security-posture mirrors.
 - The canonical wheel build path is `hatch build`; do not switch the
   maintainer lane back to ad hoc `python -m build` or direct `pip` wheel
   publication flows.
@@ -204,6 +255,25 @@ Run the targets in this order.
   source version in `pyproject.toml`.
 - If `VERSION` is set explicitly, it must be stable semver and cannot be lower
   than the highest published canonical release.
+- Repo-local release planning keeps `current` and `next` as explicit source
+  aliases. They cannot remain attached to `shipped` or `closed` release
+  records, so advance aliases to non-terminal follow-on records before
+  terminal lifecycle updates.
+- The current active release remains visible in Compass until the maintainer
+  explicitly marks it `shipped` or `closed`. Do not treat zero targeted
+  workstreams as an implicit closeout signal.
+- Finished work removed during closeout may still appear under that release as
+  completed release history; that visibility does not mean the work remains an
+  active target.
+- Release-target member badges are execution-truth readouts, not raw plan
+  checkbox math. Expect tracked percent for active implementation with checked
+  execution tasks and checklist-only or unknown state when implementation is
+  underway but execution checklist progress has not been captured yet.
+- Release `name` is explicit planning truth and must never be rewritten from a
+  release-note title without explicit maintainer authorization.
+- If `name` is blank, release-planning surfaces may fall back to `version`,
+  then `tag`, then `release_id`; they must not inherit the release-note title
+  as the release name.
 - If the chosen tag already exists without a published GitHub release,
   preflight must reuse that same tag instead of burning the next patch version.
   If the tag is still unpublished and points at an older retry commit,
@@ -244,12 +314,13 @@ Run the targets in this order.
   suppliers.
 - The canonical maintainer lane must also keep the repo-root `README.md`
   benchmark snapshot and `docs/benchmarks/*.svg` current from the latest
-  Codex benchmark report before release.
-- The README benchmark snapshot must publish the conservative Codex view from
+  published proof-host benchmark report before release.
+- The README benchmark snapshot must publish the conservative current proof-host
+  view from
   `latest.v1.json`; do not publish `primary_comparison` or a warm-only report
   when the conservative published view is weaker.
 - Preserve the current benchmark graph contract across releases: the same four
-  SVGs, the same filenames, and the same Codex-oriented style and tone from
+  SVGs, the same filenames, and the same host-neutral benchmark style and tone from
   `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`, including
   red Odylith-off baseline marks and teal Odylith-on marks.
 - Preserve the repo-root `README.md` benchmark graph order exactly:

@@ -297,6 +297,32 @@ def _assert_registry_selection(page, component_id: str) -> None:  # noqa: ANN001
     registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
 
 
+def test_registry_detail_hides_default_live_status_card(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(
+        base_url + "/odylith/index.html?tab=registry&component=casebook",
+        wait_until="domcontentloaded",
+    )
+    assert response and response.ok
+    _assert_registry_selection(page, "casebook")
+    registry = page.frame_locator("#frame-registry")
+    registry.locator("#detail .component-name").wait_for(timeout=15000)
+    assert registry.locator("#detail .operator-readout-shell").count() == 0
+    detail_text = registry.locator("#detail").inner_text()
+    assert "LIVE STATUS" not in detail_text
+    assert "PRODUCT SUMMARY" not in detail_text
+    assert "Proof Control" not in detail_text
+    assert "Live Blocker" not in detail_text
+    assert "Current blocker:" not in detail_text
+    assert "Fingerprint:" not in detail_text
+    assert "Frontier:" not in detail_text
+    assert "Evidence tier:" not in detail_text
+    assert "Truthful claim:" not in detail_text
+    assert "Deployment truth:" not in detail_text
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def _assert_atlas_selection(page, *, workstream: str, diagram_id: str) -> None:  # noqa: ANN001
     assert page.locator("#tab-atlas").get_attribute("aria-selected") == "true"
     atlas = page.frame_locator("#frame-atlas")
@@ -337,6 +363,18 @@ def _atlas_owner_workstreams(atlas) -> list[str]:  # noqa: ANN001
           .map((node) => (node.textContent || "").trim())
           .filter((token) => token.length > 0)
         """
+    )
+
+
+def _atlas_related_workstreams(atlas) -> list[str]:  # noqa: ANN001
+    return atlas.locator(
+        "#ownerWorkstreamLinks a.workstream-pill-link, "
+        "#activeWorkstreamLinks a.workstream-pill-link, "
+        "#historicalWorkstreamLinks a.workstream-pill-link"
+    ).evaluate_all(
+        """nodes => Array.from(new Set(nodes
+          .map((node) => (node.textContent || "").trim())
+          .filter((token) => token.length > 0)))"""
     )
 
 
@@ -386,7 +424,9 @@ def _compass_kpi_value(compass, label: str) -> int:  # noqa: ANN001
 def _assert_compass_live_state(compass, *, window_token: str) -> None:  # noqa: ANN001
     compass.locator(f'button[data-window="{window_token}"].active').wait_for(timeout=15000)
     compass.get_by_role("heading", name="Standup Brief").wait_for(timeout=15000)
-    brief_chip = compass.locator("#digest-list .standup-brief-chip").first.inner_text().strip().lower()
+    brief_chip = ""
+    if compass.locator("#digest-list .standup-brief-chip").count():
+        brief_chip = compass.locator("#digest-list .standup-brief-chip").first.inner_text().strip().lower()
     brief_notice = ""
     if compass.locator("#digest-list .brief-status-title").count():
         brief_notice = compass.locator("#digest-list .brief-status-title").first.inner_text().strip().lower()
@@ -459,6 +499,94 @@ def test_compass_window_switches_keep_brief_visible(browser_context) -> None:  #
     compass.get_by_role("button", name="48h Window").click()
     page.wait_for_url(re.compile(r".*/odylith/index\.html\?tab=compass(&.*)?window=48h(&.*|$)"), timeout=15000)
     _assert_compass_live_state(compass, window_token="48h")
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_desktop_layout_keeps_main_and_right_rail_separated(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    _assert_compass_live_state(compass, window_token="48h")
+
+    layout = compass.locator(".layout").evaluate(
+        """(node) => {
+            const stacks = Array.from(node.querySelectorAll(':scope > .stack'));
+            const firstBox = stacks[0] ? stacks[0].getBoundingClientRect() : null;
+            const secondBox = stacks[1] ? stacks[1].getBoundingClientRect() : null;
+            return {
+              stackCount: stacks.length,
+              horizontalGap: firstBox && secondBox ? (secondBox.left - firstBox.right) : 0,
+              gridTemplateColumns: getComputedStyle(node).gridTemplateColumns,
+            };
+        }"""
+    )
+    assert layout["stackCount"] >= 2
+    assert layout["horizontalGap"] >= 38
+
+    release_targets = compass.locator("#release-groups-host .release-groups-card").evaluate(
+        """(node) => {
+            const title = node.querySelector('h2');
+            const section = node.querySelector('.execution-wave-section');
+            const body = node.querySelector('.execution-wave-section-body');
+            const board = node.querySelector('.execution-wave-board');
+            const cardBox = node.getBoundingClientRect();
+            const titleBox = title ? title.getBoundingClientRect() : null;
+            const sectionBox = section ? section.getBoundingClientRect() : null;
+            const bodyBox = body ? body.getBoundingClientRect() : null;
+            const boardBox = board ? board.getBoundingClientRect() : null;
+            return {
+              topGap: sectionBox && titleBox ? sectionBox.top - titleBox.bottom : 0,
+              bottomGap: sectionBox ? cardBox.bottom - sectionBox.bottom : 0,
+              bodyTopGap: bodyBox && boardBox ? boardBox.top - bodyBox.top : 0,
+              bodyBottomGap: bodyBox && boardBox ? bodyBox.bottom - boardBox.bottom : 0,
+            };
+        }"""
+    )
+    assert 14 <= release_targets["topGap"] <= 18
+    assert abs(release_targets["bodyTopGap"] - release_targets["bodyBottomGap"]) <= 1
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_and_radar_current_release_cards_show_labeled_release_version(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    page.wait_for_function(
+        """() => {
+            const node = document.querySelector("#shellRuntimeStatus");
+            return Boolean(node && node.hidden && node.getAttribute("aria-hidden") === "true");
+        }""",
+        timeout=15000,
+    )
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    _assert_compass_live_state(compass, window_token="48h")
+    compass_release_label = compass.locator(".stat.stat-release-only .kpi-label").first.inner_text().strip()
+    compass_release = compass.locator(".stat.stat-release-only .kpi-value").first.inner_text().strip()
+    assert compass_release_label == "CURRENT RELEASE"
+    assert compass_release == "0.1.11"
+    assert compass.locator(".stat .kpi-label", has_text="NEXT RELEASE").count() == 0
+    assert compass.locator("#release-groups .execution-wave-section").count() >= 2
+    release_targets_text = compass.locator("#release-groups").inner_text().strip()
+    assert "Current Release" in release_targets_text
+    assert "0.1.12" in release_targets_text
+    assert "Next release target across active workstreams." in release_targets_text
+
+    page.locator("#tab-radar").click()
+    radar = page.frame_locator("#frame-radar")
+    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    radar_release_label = radar.locator(".stats .stat.stat-release-only .label").first.inner_text().strip()
+    radar_release = radar.locator(".stats .stat.stat-release-only .value").first.inner_text().strip()
+    assert radar_release_label == "CURRENT RELEASE"
+    assert radar_release == "0.1.11"
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -856,8 +984,8 @@ def test_atlas_bad_cross_surface_route_self_heals_to_full_catalog(browser_contex
     baseline_total = _atlas_total(atlas)
     assert baseline_total > 1
     selected_diagram = _atlas_selected_diagram(atlas)
-    owner_workstreams = set(_atlas_owner_workstreams(atlas))
-    candidate_workstreams = [token for token in _atlas_workstream_options(atlas) if token not in {"all", *owner_workstreams}]
+    related_workstreams = set(_atlas_related_workstreams(atlas))
+    candidate_workstreams = [token for token in _atlas_workstream_options(atlas) if token not in {"all", *related_workstreams}]
     if not candidate_workstreams:
         pytest.skip("Atlas fixture does not currently expose a mismatched workstream route scenario.")
     mismatched_workstream = candidate_workstreams[0]
@@ -903,8 +1031,8 @@ def test_atlas_tab_switch_restores_atlas_state_instead_of_leaking_radar_scope(br
     baseline_total = _atlas_total(atlas)
     assert baseline_total > 1
     selected_diagram = _atlas_selected_diagram(atlas)
-    owner_workstreams = set(_atlas_owner_workstreams(atlas))
-    candidate_workstreams = [token for token in _atlas_workstream_options(atlas) if token not in {"all", *owner_workstreams}]
+    related_workstreams = set(_atlas_related_workstreams(atlas))
+    candidate_workstreams = [token for token in _atlas_workstream_options(atlas) if token not in {"all", *related_workstreams}]
     if not candidate_workstreams:
         pytest.skip("Atlas fixture does not currently expose a mismatched workstream route scenario.")
     mismatched_workstream = candidate_workstreams[0]

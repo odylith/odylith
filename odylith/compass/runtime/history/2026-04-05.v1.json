@@ -44,14 +44,12 @@
       "Completed in this window: Operator: Three lingering closeouts finally landed, which clears release, packaging, and self-governance from half-finished status and gives the product repo a cleaner operating contract. | Operator: Benchmark publication now matches the April 5 full proof pass, so README, docs, specs, and planning surfaces are telling the same story instead of drifting.",
       "Current execution: Executive: Benchmark integrity is the work that matters right now because once product claims lean on the benchmark, the benchmark has to resist being tuned to flatter those claims. | Operator: The repo is running detached source-local self-host with the launcher present, and release eligibility is still off until runtime moves back to the pinned 0.1.7 path. | Operator: Execution is turning from plan-writing into implementation in the benchmark lanes, with integrity work paired against hot-path and cold-path performance cleanup.",
       "Next planned: Operator: Next up is bringing the neighboring benchmark truth surfaces into line with the README so the corpus-expansion lane stops carrying conflicting explanations. | Operator: After that, the corpus needs more developer-core local coding slices, which is what broadens proof pressure beyond the current shape of the benchmark.",
-      "Why this matters: Executive: For maintainers and evaluators, this is about whether benchmark claims feel auditable instead of promotional when they decide if Odylith evidence is worth trusting. | Operator: Treating honest benchmark improvement as the umbrella lane gives operators one clearer contract: harden runner and corpus under adversarial pressure without quietly moving the benchmark target.",
       "Risks to watch: Operator: A P1 bug is still open around Registry forensics missing source-owned bundle mirror activity, which can hide evidence the benchmark and release story depend on. | Operator: Detached source-local posture is still blocking release gating, so proof can continue but shipped-release confidence cannot close until runtime returns to the repo pin."
     ],
     "48h": [
       "Completed in this window: Operator: Release reset, runtime packaging, hosted-asset proof, and repo-boundary closeouts all landed, and the benchmark publication record now matches the April 5 full proof pass instead of drifting across surfaces. | Operator: The repo also moved into detached source-local self-host mode, which is real execution progress even though it deliberately keeps release gating closed until runtime returns to the pin.",
       "Current execution: Executive: Benchmark integrity is the live bet: once product claims start leaning on benchmark results, the benchmark has to stay harder to game than the story built on top of it. | Operator: Proof is coming from live source-local self-host operation in the product repo, and that posture is authoritative right now: launcher is present, runtime is coming from source checkout, and release eligibility is still off. | Operator: Work is concentrated in two lanes that have to meet cleanly: honest benchmark improvement and lane-boundary/runtime clarity, because credibility breaks if the proof path and the operator path diverge.",
       "Next planned: Operator: Next up is closing the gap between the README and neighboring benchmark truth surfaces, so the corpus story stops depending on one surface being fresher than the rest. | Operator: After that, the corpus needs more developer-core local coding slices, which is what actually broadens frontier proof instead of just polishing the narrative around it.",
-      "Why this matters: Executive: For maintainers and evaluators, this is about whether benchmark claims are auditable enough to survive scrutiny rather than asking for trust on presentation alone. | Operator: At the operator level, putting honest benchmark improvement under one umbrella while hardening runner and corpus without changing the benchmark reduces coordination drag and makes the contract clearer.",
       "Risks to watch: Operator: A live P1 bug is still in the way: Registry forensics are missing source-owned bundle mirror activity, so operators can lose sight of real component movement when they most need it. | Operator: Release gating remains blocked while the product repo runs detached source-local against a pinned release target, so execution can advance but shipment cannot."
     ]
   },
@@ -61,84 +59,72 @@
         "Completed in this window: Operator: The April 5 source-local full proof pass is now reflected across the benchmark story, so the published surfaces are no longer arguing with each other. | Operator: Lineage got merged across 15 workstreams, which matters because execution can now be read as one connected thread instead of scattered updates.",
         "Current execution: Executive: B-021 is still in implementation, but the reason is solid: Odylith has already proved the compact benchmark lane, so the work has moved from viability to expansion. | Operator: What is being worked right now is the benchmark publication story, anchored on the April 5 source-local full proof pass and pushed through the benchmark-facing truth surfaces. | Operator: Checklist closure is underway at 53 of 120 items, with roughly nine days projected at high confidence, so this is a bounded delivery push rather than open-ended exploration.",
         "Next planned: Operator: Next comes closing the gap where neighboring benchmark truth surfaces still lag the README and Registry, because publication trust breaks when those surfaces drift. | Operator: After that, the corpus gets more developer-core local coding slices and benchmark guidance memory returns as a first-class input, which is what unlocks pressure on the weak live families.",
-        "Why this matters: Executive: Evaluators and maintainers need a benchmark that looks like real governed repo work, and that story is stronger than odylith_off now, but both the published diagnostic and live proof reports are still on hold. | Operator: A broader developer-first scenario mix hardens the operator contract around CLI regressions, config compatibility, runtime state, onboarding, repair, and install paths, which lowers coordination risk when things go wrong.",
         "Risks to watch: Closure discipline can still break the story: 67 plan items remain open, so proof can outrun finished execution unless the checklist keeps burning down."
       ],
       "B-022": [
         "Completed in this window: The April 5 source-local full proof pass is now the published benchmark story end to end, so the docs and governance surfaces no longer point readers at an outdated claim set.",
         "Current execution: Executive: Benchmark work is getting real scrutiny now because once product claims lean on this lane, the benchmark has to resist being tuned into a flattering mirror. | Operator: Publication language was reset to the April 5 source-local proof pass, which gives operators one current reference point instead of a split story across benchmark surfaces. | Operator: Checklist closure is moving, but implementation is still open, so this is still a hardening pass rather than a finished proof package. | Operator: Roughly four days is still the timing signal, which is close enough to force decisions now and not close enough to absorb sloppy closure.",
         "Next planned: Operator: Next step is growing the corpus beyond the current 30-scenario suite into deeper weak cases, which is what stops narrow benchmark gaming from looking like product progress. | Operator: Then the proof rerun has to clear both cache profiles, and that is the step that turns anti-gaming and honest improvement into one contract people can actually trust.",
-        "Why this matters: Executive: Maintainers and evaluators need benchmark claims that survive challenge, and this lane matters because it is being shaped to be auditable instead of merely persuasive. | Operator: On the operator side, keeping runner hardening, corpus integrity, and weak-family improvement under one umbrella reduces coordination risk and prevents runtime gains from quietly rewriting the test.",
         "Risks to watch: Closure discipline can still break the story, because 51 open plan items leave room for the proof narrative to outrun the underlying benchmark work."
       ],
       "B-025": [
         "Completed in this window: No milestone closed, but lineage was merged across 15 workstreams and the plan moved forward, which cuts context drift while the hardening work is still underway.",
         "Current execution: Executive: Freshness is the issue to solve: Odylith cannot present a live operating layer while Compass can go stale or the browser suite can miss that regression. | Operator: Lineage was merged across 15 workstreams, giving the team a cleaner execution spine while implementation continues. | Operator: The live posture is source-local in the product repo, so this is maintainer-side hardening work, not shipped proof. | Operator: Checklist closure is moving, but the plan is only partway through, so the pressure remains on finishing the contract before calling it stable.",
         "Next planned: Next is to turn the next open checklist item into a named checkpoint, which makes the freshness work easier to prove and harder to hand-wave.",
-        "Why this matters: Executive: Operators use Compass as the live control surface, so stale briefs, risks, or timelines break trust exactly when current truth matters most. | Operator: The architecture needs a firmer freshness contract across Compass and shell flows so runtime reuse and packet recovery stop creating coordination risk.",
         "Risks to watch: Closure discipline can still break this story: 48 open plan items leave room for the freshness claim to outrun the proof."
       ],
       "B-027": [
         "Completed in this window: Operator: The window changed proof posture, not release status: the product repo is running detached source-local, which surfaced the lane boundary in live use and still blocks release gating until runtime returns to the pin. | Executive: A plan milestone did clear across two workstreams, but B-027 itself did not post a verified closeout in the last 24 hours, so execution moved without finishing the story.",
         "Current execution: Executive: B-027 is getting worked in implementation because the ambiguity hits exactly where Odylith should feel safest: maintainer work in the product repo and consumer work inside repos with their own Python toolchains. | Operator: Live posture is the clearest proof: the product repo is in detached source-local on runtime from the source checkout, the launcher is present, and release eligibility is still off until the pin is restored. | Operator: Checklist closure is underway, but the work is still in execution rather than verification, so the team is proving and tightening the lane contract at the same time.",
         "Next planned: Next comes turning the next open checklist item into a named checkpoint, so the lane ambiguity becomes concrete enough to prove and the rest of the boundary work can close against something explicit.",
-        "Why this matters: Executive: Maintainers need a clean distinction between pinned dogfood proof and detached source-local work; without that, a correct runtime contract still reads as a confusing operator decision at the moment of action. | Operator: Publishing one explicit lane matrix across the governing docs, skills, specs, backlog truth, and diagrams matters because it cuts coordination drag and gives operators one contract instead of several partial ones.",
         "Risks to watch: Closure discipline can still break the story: too many plan items remain open, so the work can stay technically active while the lane boundary still feels unresolved to operators."
       ],
       "B-028": [
         "Completed in this window: No milestone closed in the last 24 hours, but execution did tighten: lineage was merged across 15 workstreams and the redesign plan stayed moving instead of drifting between records.",
         "Current execution: Executive: Now that GA release proof is cleared, the starter launchpad redesign matters more because the first-run shell has become the product's opening move, not a side surface. | Operator: The clearest proof of work is still coordination and closure: lineage merged across 15 workstreams, and the checklist sits at 35 of 46 with execution still underway. | Operator: Live posture stays in detached source-local with a launcher present and release eligibility still off, so this remains active product-repo implementation work rather than release-ready proof.",
         "Next planned: Next comes turning the next open checklist item into a named checkpoint, because this needs a sharper handoff from active buildout into something operators can prove and track cleanly.",
-        "Why this matters: Executive: For a first-time user coming in after install or upgrade, the issue is simple: the shell still reads like an internal dashboard when it needs to feel like a confident starting point. | Operator: The redesign is not cosmetic cleanup; making the prompt dominant and compressing secondary detail into clearer cards gives operators a cleaner contract and lowers coordination risk.",
         "Risks to watch: Closure discipline can still break the story. Eleven plan items remain open, so the risk is a half-shaped launchpad that looks improved but is not yet proved as a coherent operator surface."
       ],
       "B-029": [
         "Completed in this window: No milestone closed in the last 24 hours, but the work stopped looking like loose cleanup: lineage was merged across 15 workstreams and the gitignore bootstrap plan is now active implementation.",
         "Current execution: Executive: The install-time gitignore bootstrap is getting worked now because first-run shell usage has become a front-door path, and that path cannot leave managed state exposed just because Git setup has not happened yet. | Operator: Execution has real shape instead of vague motion: lineage was updated across 15 workstreams, and the checklist has moved to 15 of 22 with closure work underway. | Operator: Timing still looks contained at roughly three days with high confidence, which gives room to finish the remaining closure work before this turns into install-path drift.",
         "Next planned: Next comes turning the next open checklist item into a named checkpoint, so this becomes a proof point that the first-run install path can actually clear.",
-        "Why this matters: Executive: New consumer repos are the user story here: Odylith already knows its managed state should stay untracked, but today that protection arrives too late when install happens before or during initial Git setup. | Operator: The architecture consequence is a cleaner install contract: create the root ignore file when missing, add the managed-state entry when absent, and keep duplicate detection.",
         "Risks to watch: Closure discipline can still break the story; seven plan items remain open, so the risk is leaving the install-path contract half-finished."
       ],
       "B-030": [
         "Completed in this window: Executive: No milestone closed in the last 24 hours, but lineage was merged across 15 workstreams, which clears coordination drift before release-lifecycle work hardens. | Operator: The plan was refreshed in place, so this lane is being steered as live implementation rather than left as GA bookkeeping.",
         "Current execution: Executive: The work in front of the room is the post-GA upgrade and recovery path, because adoption only feels finished if install, reinstall, and shell feedback stay safe under failure. | Operator: Live posture is still detached source-local and not release-eligible, which means the team is proving behavior in maintainer mode, not calling this consumer-ready yet. | Operator: Checklist closure is moving, but execution is still open, so the remaining work is about tightening the contract rather than declaring the lane done. | Operator: The clearest proof of motion remains the lineage merge across 15 workstreams, which reduces the chance that release fixes land against conflicting records.",
         "Next planned: Next step is to turn the next open checklist item into a named checkpoint, so the remaining execution can be judged against a concrete release-safety bar instead of a loose task list.",
-        "Why this matters: Executive: Operators upgrading through the supported CLI can already get the new runtime, but stale dashboard state and weak shell feedback still make a successful upgrade feel ambiguous. | Operator: A one-step reinstall path plus better launcher recovery gives the system a cleaner contract, which cuts coordination risk when installs are damaged or partially updated.",
         "Risks to watch: Closure discipline is still the exposure: 30 plan items remain open, so this story can sprawl unless the team keeps collapsing work into explicit checkpoints."
       ],
       "B-031": [
         "Completed in this window: No milestone closed in the last 24 hours, but the work did move: lineage was merged across 15 workstreams and the B-031 plan/checklist advanced, which keeps implementation coherent instead of drifting.",
         "Current execution: Executive: B-031 is still an implementation job, but the issue is now productization rather than missing capability, which means the remaining work is about making the right path obvious at first contact. | Operator: Lineage cleanup across 15 workstreams is the clearest proof of live execution because it tightens the story the operator sees when this lane gets exercised. | Operator: Checklist closure is underway, but a large share is still open, so progress is real without yet being self-sealing. | Operator: The timing signal still points to roughly 25 days with high confidence, which gives the room a usable planning horizon but not much slack for churn.",
         "Next planned: Next comes turning the next open checklist item into a named checkpoint, because that is what converts scattered implementation into a legible product step operators can follow.",
-        "Why this matters: Executive: For Codex users in consumer repos, the gap is not grounding power but first-turn clarity; install and activation should make Odylith feel obvious instead of insider-only. | Operator: On the operator side, first-class short-form grounding commands on top of the existing Context Engine create a cleaner contract and cut coordination risk at the repo root.",
         "Risks to watch: Closure discipline can still break this story: too many open plan items means implementation may keep moving without yet becoming a dependable operator path."
       ],
       "B-033": [
         "Completed in this window: No milestone closed, but the lineage merge and plan refresh made the release work easier to steer instead of leaving it scattered.",
         "Current execution: Executive: Release hardening is still the live job because v0.1.5 proved the product; the remaining question is whether the release system earns the same trust. | Operator: Lineage is now merged across 15 workstreams, which is the clearest proof that execution is being pulled into one lane instead of splintering. | Operator: Checklist closure is underway, with 43 of 92 items done and the timeline still sitting near seven days, so pace looks real but drift would show quickly.",
         "Next planned: The next move is to turn the next open checklist item into a named checkpoint, which gives the release trust story a concrete proof point instead of one long tail.",
-        "Why this matters: Executive: Maintainers already saw product gains in v0.1.5; what still blocks confidence is a release path that trails the product at the moment it has to be trusted. | Operator: Shipping one umbrella release contract with bounded execution waves lowers coordination risk and gives operators a clearer contract when they have to prove or run the release.",
         "Risks to watch: Closure discipline is still the exposed edge: 49 plan items remain open, and a long tail there would turn a credible window into lingering cleanup."
       ],
       "B-038": [
         "Completed in this window: No benchmark milestone closed in the last 24 hours, but execution did move: one plan milestone cleared and lineage merged across workstreams, which tightens the record before the next proof point.",
         "Current execution: Executive: B-038 is being worked as a proof problem, not a messaging problem: the runtime has to beat `odylith_off` on actual behavior rather than explanation. | Operator: Checklist closure is moving alongside implementation, with one plan milestone done and enough progress to narrow the remaining gaps instead of arguing about them in the abstract. | Operator: Live posture is still detached `source-local` in the product repo, launcher present and release eligibility off, so this remains maintainer proof work rather than something ready to ship.",
         "Next planned: Next is turning the next open checklist item into a named checkpoint, so the team gets a sharper proof step for where the benchmark still fails or clears.",
-        "Why this matters: Executive: Maintainers need `odylith_on` to win the real same-task benchmark honestly; it leads on the main metrics, but cold-start and prompt-cost drag still weaken trust in key families. | Operator: The architecture push is aimed at the runtime slices adding avoidable cost, especially guidance memory restoration, because that lowers coordination risk and gives operators a cleaner contract.",
         "Risks to watch: Closure discipline can still break the story: too many plan items remain open, which lets the benchmark narrative outrun the execution evidence."
       ],
       "B-040": [
         "Completed in this window: No milestone closed this window, but the workstream lineage merge and plan update did tighten execution around B-040, which matters because the security push is now better aligned even without a finished checkpoint.",
         "Current execution: Executive: B-040 is getting real execution now because Odylith is already making a stronger trust claim about its managed runtime, and the product cannot let that promise outrun the hardening work. | Operator: The clearest proof on the ground is lineage consolidation plus a live checklist that has only just started moving, so the work is organized but still early. | Operator: Live posture is still detached source-local and not release-eligible, which keeps this firmly in implementation mode rather than proof that the shipped path is ready.",
         "Next planned: Next comes turning the next open checklist item into a named checkpoint, because this needs a visible proof point before the runtime trust story carries more weight.",
-        "Why this matters: Executive: For consumer-repo operators, the need is simple: the launcher must fail closed on bad local runtime state instead of hanging or trusting staged assets it should reject. | Operator: Architecturally, trust anchors outside mutable runtime state and verification before CLI import tighten the boundary early, which reduces operator guesswork and lowers coordination risk during installs and recovery.",
         "Risks to watch: Closure discipline can still break the story: most of the plan remains open, so the risk is not confusion about direction but failing to turn that direction into durable checkpoints."
       ],
       "B-045": [
         "Completed in this window: No milestone closed in the last 24 hours, but the work did move: lineage was merged across 15 workstreams and the plan is now explicitly in progress, which gives execution a cleaner spine.",
         "Current execution: Executive: The issue on the table is a small Registry mismatch that operators can still see, so implementation remains live until that gap stops leaking into normal use. | Operator: The clearest proof of movement is the lineage merge across 15 workstreams, because it tightens the evidence chain the fix depends on. | Operator: Closure is still thin at 1 of 31 checklist items, which means the plan is real but the finish conditions are not yet carrying the story. | Operator: The working estimate is about four days, with room to tighten once checklist items start closing instead of just staying in motion.",
         "Next planned: Next comes turning the next open checklist item into a named checkpoint, because the work needs a visible proof point before the remaining closure can move faster.",
-        "Why this matters: Executive: For maintainers reading Registry to see what is actually changing, this matters because mirrored bundle paths can still hide live evidence from the component they belong to. | Operator: The architecture move is mirror-aware forensic mapping that still keeps source paths authoritative, which lowers coordination risk and makes the operator contract easier to trust.",
         "Risks to watch: The main thing that can break this story is closure discipline: 30 plan items are still open, so visible movement can outrun verified finish if checkpointing slips."
       ]
     },
@@ -147,70 +133,60 @@
         "Completed in this window: This window aligned the benchmark story to the April 5 source-local proof pass and cleaned up lineage across 15 workstreams, so the published narrative is tighter even without a milestone closeout.",
         "Current execution: Executive: Benchmark expansion is the live work because the compact lane already proved Odylith can carry a smaller benchmark, and now that proof needs to become representative. | Operator: Publication surfaces now point at the April 5 source-local full proof pass, which gives operators one current proof anchor instead of competing benchmark stories. | Operator: Checklist closure is moving, but 53 of 120 items done means execution is still in the middle of the lane rather than near a clean handoff. | Operator: The schedule still reads at roughly nine days with high confidence, so sequencing decisions matter now rather than at the tail end.",
         "Next planned: Operator: Next comes bringing the neighboring benchmark truth surfaces back into line with the README and Registry, because the lane is proven and the surrounding contract still lags it. | Operator: After that, the corpus expands toward more developer-core local coding slices so weak live families get tested against the work people actually expect this product to handle.",
-        "Why this matters: Executive: Evaluators and maintainers need a benchmark that looks like serious governed-repo work, and that trust is not complete while both the published diagnostic report and the live proof report remain on hold. | Operator: Broadening the scenarios around CLI regressions, config compatibility, runtime state, onboarding, repair, and install gives operators a clearer contract and reduces coordination mistakes when the system fails at the edges.",
         "Risks to watch: Closure discipline can still break the story: 67 plan items remain open, so a credible benchmark narrative could slip behind its own implementation tail."
       ],
       "B-022": [
         "Completed in this window: Operator: Publication now matches the April 5 source-local full proof pass, so the benchmark story, specs, plans, and tracking surfaces are aligned to the same evidence instead of drifting. | Operator: No milestone fully closed in this 48-hour window, but one plan milestone did clear across four workstreams, which moved execution forward without overstating the finish line.",
         "Current execution: Executive: The benchmark is being treated as product-shaping infrastructure now, so the work is aimed at making it harder to tune the story around flattering results. | Operator: The clearest proof on hand is the April 5 source-local full pass now reflected across the benchmark narrative and supporting records, which gives the team one authoritative baseline to work from. | Operator: Checklist closure is moving, but 74 of 125 items done still means the implementation lane is active rather than settled. | Operator: Timing still looks controlled at roughly four days, which matters because the remaining hardening can be driven as a bounded push instead of a long tail.",
         "Next planned: Operator: Next comes expanding the corpus beyond the current 30 scenarios, because a benchmark that shapes product claims has to survive broader weak cases instead of just the familiar suite. | Operator: After that, the proof rerun needs to clear both cache profiles; if it does, anti-gaming and product improvement start reading as one contract instead of competing goals.",
-        "Why this matters: Executive: Maintainers and evaluators need benchmark claims they can audit and defend, and this lane is what makes those claims harder to dismiss as internal storytelling. | Operator: By keeping benchmark rules fixed while hardening the runner and corpus, operators get a cleaner contract and lower coordination risk when weak runtime families improve.",
         "Risks to watch: Closure discipline can still break the story: 51 plan items remain open, so the risk is a half-hardened benchmark that sounds finished before the contract actually is."
       ],
       "B-025": [
         "Completed in this window: Operator: No milestone closed this window, but lineage was merged across 15 workstreams, which keeps the fix coherent instead of letting the execution thread split. | Operator: The plan stayed live rather than drifting: B-025 remains in progress and the checklist moved, so closure is being pushed through tracked work, not left implicit.",
         "Current execution: Executive: B-025 remains the unresolved problem because Odylith cannot claim a live operating layer while Compass can still go stale and the browser suite can miss that regression. | Operator: The repo is running in detached source-local posture from the source checkout, with the launcher present and release eligibility off, so the proof lane here is live implementation rather than release readiness. | Operator: Lineage consolidation across 15 workstreams and 56 of 104 checklist items closed show real integration movement, but execution is still in the middle rather than at handoff.",
         "Next planned: The next move is to turn the next open checklist item into a named checkpoint, because this needs an explicit freshness proof instead of another loose task.",
-        "Why this matters: Executive: Operators use Compass as the live blended control surface, so stale brief, risk, or timeline state breaks trust at the moment they need current truth. | Operator: The architecture work tightens the contract across Compass and shell flows by versioning projections, limiting runtime reuse, and removing stale brief recovery paths, which lowers coordination risk.",
         "Risks to watch: Closure discipline can still slip: 48 plan items remain open, and that much unfinished surface can dilute proof unless checkpoints stay sharp."
       ],
       "B-027": [
         "Completed in this window: No milestone closed in this window; the tangible move was shifting the product repo into detached source-local, which exposed that release proof stays blocked until runtime returns to the repo pin.",
         "Current execution: Executive: The unresolved work is lane clarity at execution time: maintainers in the product repo and consumer repos on their own Python toolchains still have too much to infer when they act. | Operator: Live posture is the hard signal here: the product repo is running detached source-local from the source checkout, the launcher is present, and release eligibility remains off until pinned dogfood is restored. | Operator: Checklist closure is moving, but the work is still deep in implementation, so this should be read as active contract-shaping rather than proof that the lane boundary has settled.",
         "Next planned: Next comes turning the next open checklist item into a named checkpoint, which should force the lane boundary into one concrete proof point instead of letting it stay diffuse.",
-        "Why this matters: Executive: Maintainers need a clean answer to whether they are proving pinned dogfood or doing detached source work; the runtime contract is sound, but the language still invites the wrong question. | Operator: Publishing one explicit lane matrix across the governing surfaces lowers coordination risk because operators can execute against one contract instead of reconstructing it from scattered guidance.",
         "Risks to watch: Closure discipline can still break this story; too many open plan items leave room for partial alignment, where the explanation gets cleaner before the governing surfaces actually converge."
       ],
       "B-028": [
         "Completed in this window: Operator: Lineage was tightened across 15 workstreams and the redesign plan moved forward in the same pass, so execution is better aligned around one live implementation track. | Executive: No milestone closed in this 48-hour window, which keeps the story in execution rather than proof of finish.",
         "Current execution: Executive: The redesign is getting real build attention now because GA release proof is done, and that shifts product risk toward the first-run shell users meet after install or upgrade. | Operator: Lineage cleanup and a 35-of-46 checklist position show the work is advancing, but closure is still happening inside an active implementation lane, not after it. | Operator: Live posture is detached source-local on a source checkout and not release-eligible, so this remains product-repo implementation work rather than something ready to ship.",
         "Next planned: Next step is to turn the next open checklist item into a named checkpoint, which gives this redesign a sharper proof point as the first-run shell becomes more important post-GA.",
-        "Why this matters: Executive: New users still land in a first-run shell that feels like a dense internal dashboard, which weakens confidence at the exact moment Odylith needs to feel clear and ready. | Operator: A stronger hero layout with clearer support cards and cleaner hierarchy lowers operator coordination risk because the shell stops competing with itself and starts signaling the intended path.",
         "Risks to watch: Closure discipline can still break the story here: 11 plan items remain open, so the redesign can drift into extended motion without a crisp checkpoint."
       ],
       "B-029": [
         "Completed in this window: No milestone closed in this window, but the work did move: lineage was merged across 15 workstreams and the install-time gitignore bootstrap plan stayed in active execution instead of drifting.",
         "Current execution: Executive: The unresolved issue is install hygiene on first run: the shell is now a front door, so managed state cannot depend on Git already being initialized. | Operator: Execution is not theoretical at this point. Lineage was reconciled across 15 workstreams, and the checklist has moved to 15 of 22 items closed. | Operator: Timing still looks contained at roughly three days with high confidence, which keeps this in a finishable implementation lane rather than open-ended cleanup.",
         "Next planned: Next comes turning the next open checklist item into a named checkpoint, so the install path can prove this first-run case cleanly and move the remaining work toward closure.",
-        "Why this matters: Executive: For new consumer repos, this closes a bad first impression: Odylith knows its managed state should stay untracked, but today that protection arrives too late when Git is not set up yet. | Operator: The architecture consequence is a clearer contract at install time: create the ignore file when missing, add the managed-state entry when absent, and keep duplicate checks so later flows stay safe.",
         "Risks to watch: Closure discipline is still the main risk. Seven plan items remain open, so this story can still slip from a bounded install fix into lingering checklist debt."
       ],
       "B-030": [
         "Completed in this window: No milestone closed in this window, but the workstream lineage merge moved across 15 streams, which clears bookkeeping debt and makes the remaining upgrade and recovery work easier to steer cleanly.",
         "Current execution: Executive: The live work is consumer upgrade, reinstall recovery, and shell refresh because GA only really holds if adoption is one-step, recovery is dependable, and failure states stay readable to operators. | Operator: Proof is still coming from execution discipline rather than feature closeout: lineage was merged across 15 workstreams and the checklist is moving, with closure underway but implementation still open. | Operator: The authoritative posture is product-repo, detached source-local, with the launcher present and release eligibility off, so current proof is about live source behavior rather than a shippable release candidate.",
         "Next planned: Next step is to turn the next open checklist item into a named checkpoint, because the team needs a sharper proof point that converts active execution into a safer upgrade and recovery story.",
-        "Why this matters: Executive: For operators upgrading through the CLI, the gap is not activation of the new runtime; it is that the dashboard can still look stale and the shell does not clearly explain what just changed. | Operator: The architecture consequence is a tighter contract: a one-step reinstall path and better missing-launcher recovery reduce coordination risk and make the supported lane easier to trust under failure.",
         "Risks to watch: Closure discipline can still break the story. Thirty plan items remain open, so without sharper checkpointing this can keep looking busy without proving that the operator experience is actually safer."
       ],
       "B-031": [
         "Completed in this window: Operator: Lineage was reconciled across 15 workstreams and the B-031 plan/checklist moved forward, which keeps the bootstrap work attached to one execution story instead of drifting into parallel bookkeeping. | Executive: No milestone closed in this 48h window, so the signal here is still execution tightening rather than delivered product change.",
         "Current execution: Executive: B-031 is getting worked now because the hard capability is already in place; what remains is turning that into a product path operators can use without insider knowledge. | Operator: The clearest proof of motion is the lineage merge across 15 workstreams, which reduces coordination drag while the bootstrap surface is being tightened. | Operator: Checklist closure is underway, but 13 of 66 items are done, so execution is still in the stage where discipline matters more than volume. | Operator: The working timeline is about 25 days with high confidence, which gives the room a credible delivery horizon but not much slack for drift.",
         "Next planned: Next up is naming the next open checklist item as a checkpoint, because that turns a broad productization push into a proof point the team can close and build from.",
-        "Why this matters: Executive: For Codex users in consumer repos, this is about making install or activation naturally lead into the right first turn instead of asking them to infer the workflow. | Operator: At the operator layer, first-class short-form grounding commands on top of the existing Context Engine would make the contract clearer and cut coordination risk at repo start.",
         "Risks to watch: Closure discipline can still break this story: 53 plan items remain open, so the work could sprawl unless checkpoints keep narrowing the surface."
       ],
       "B-033": [
         "Completed in this window: Operator: Lineage was merged across 15 workstreams and the B-033 plan/checklist was refreshed, which gives the release-hardening lane a cleaner execution map instead of scattered follow-up. | Executive: No milestone closed in the last 48 hours, so this window is about tightening the release story rather than claiming finish lines that are not there.",
         "Current execution: Executive: B-033 is still the live job because v0.1.5 proved the product can carry weight; the open question now is whether release mechanics earn the same trust. | Operator: The clearest proof is the lineage merge and checklist movement: execution is consolidating, but closure work is still in flight rather than done. | Operator: The timeline still points to about seven days with high confidence, which matters because this is shaping into controlled release hardening, not open-ended cleanup.",
         "Next planned: Next step is to turn the next open checklist item into a named checkpoint so the team can prove release trust one concrete obligation at a time.",
-        "Why this matters: Executive: Maintainers need release proof to match the product gains already shipped in v0.1.5; otherwise every cut still carries doubt at the moment it should create confidence. | Operator: Keeping this under one umbrella contract with bounded execution waves gives operators a clearer handoff surface and reduces coordination mistakes while the release gets tightened.",
         "Risks to watch: Closure discipline can still break this story: 49 plan items remain open, so drift or shallow checkpointing would leave the release looking cleaner on paper than in practice."
       ],
       "B-038": [
         "Completed in this window: Planning and lineage both moved forward across the benchmark lane, which tightens execution, but the user-facing story is still incomplete because no verified milestone closed in this 48-hour window.",
         "Current execution: Executive: The unresolved job is still the benchmark itself: Odylith has to beat `odylith_off` on evidence, not explanation, so implementation remains the right place to spend time. | Operator: Execution is being carried by checklist closure and milestone follow-through, with real progress under way but too much of the plan still open to call the lane settled. | Operator: Live posture matters here: the product repo is running `source-local` from the source checkout, launcher present, and not release-eligible, so this is still proof-building work rather than a ship decision.",
         "Next planned: Next up is turning the next open checklist item into a named checkpoint, because the lane needs a proof point that converts implementation motion into something the benchmark can defend.",
-        "Why this matters: Executive: Maintainers need `odylith_on` to win on the real workload, not just on the headline metrics, and the cold-start and prompt-cost drag in weaker families still gets in the way of that trust. | Operator: The technical leverage is in the expensive runtime slices: restoring benchmark guidance memory through the canonical manifest should reduce avoidable cost and give operators a cleaner, lower-risk contract.",
         "Risks to watch: Closure discipline can still break the story. With 51 plan items open, it is easy to mistake motion for proof and carry unresolved cost into the benchmark claim."
       ],
       "B-040": [
@@ -218,14 +194,12 @@
         "Completed in this window: Over the last 48 hours, lineage got cleaned up across 15 workstreams. It is quiet work, but it keeps plans, traceability, and rendered surfaces from drifting apart.",
         "Current execution: Executive: Over the last 48 hours, `B-040` is still carrying the main decision load. Odylith is already making a stronger public trust claim around its managed runtime. | Operator: The live repo posture makes that concrete: the product repo is running detached `source-local`. That is fine for active product work, and it is also why release gating should stay blocked until the pinned runtime is back. | Operator: Over the last 48 hours, the clearest signal has been Workstream lineage merge update across 15 workstreams. | Operator: This lane is still carrying real weight. 50 checklist items are open, so it can still sprawl if the next checkpoint stays fuzzy.",
         "Next planned: Next up is to name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts reading like one clear operator call.",
-        "Why this matters: Executive: What matters here is For consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`. | Operator: Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
         "Risks to watch: The lane can still sprawl: 50 plan items are open on `B-040`, so the next checkpoint needs to land cleanly."
       ],
       "B-045": [
         "Completed in this window: No milestone closed in this 48-hour window, but lineage was consolidated across 15 workstreams, which reduces drift while the coverage fix is still being proven.",
         "Current execution: Executive: The active issue is a small coverage mismatch that operators can still see, so the work remains in implementation instead of getting treated as paperwork. | Operator: Lineage updates across 15 workstreams are the clearest proof of movement, and the plan is still early enough that checklist closure needs to stay deliberate. | Operator: The working timeline is about four days, with room to tighten once open checklist items start collapsing into verified checkpoints.",
         "Next planned: Next up is turning the next open checklist item into a named checkpoint, because that is what converts a visible mismatch into a traceable proof point operators can trust.",
-        "Why this matters: Executive: Maintainers rely on Registry coverage to tell whether a component has live evidence behind it, and that trust breaks when mirrored bundle paths disappear from the component view. | Operator: Mirror-aware normalization keeps canonical source paths authoritative while mapping product-owned mirrors back to the same component, which lowers coordination mistakes and makes forensic reads more consistent.",
         "Risks to watch: Closure discipline is the watch item now: 30 plan items are still open, so the story can stall in partial progress if checkpoints do not start landing cleanly."
       ]
     }
@@ -302,26 +276,6 @@
               "text": "After that, the corpus needs more developer-core local coding slices, which is what broadens proof pressure beyond the current shape of the benchmark.",
               "fact_ids": [
                 "F-010"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "For maintainers and evaluators, this is about whether benchmark claims feel auditable instead of promotional when they decide if Odylith evidence is worth trusting.",
-              "fact_ids": [
-                "F-011"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "Treating honest benchmark improvement as the umbrella lane gives operators one clearer contract: harden runner and corpus under adversarial pressure without quietly moving the benchmark target.",
-              "fact_ids": [
-                "F-012"
               ]
             }
           ]
@@ -506,26 +460,6 @@
           ]
         },
         {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "For maintainers and evaluators, this is about whether benchmark claims are auditable enough to survive scrutiny rather than asking for trust on presentation alone.",
-              "fact_ids": [
-                "F-011"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "At the operator level, putting honest benchmark improvement under one umbrella while hardening runner and corpus without changing the benchmark reduces coordination drag and makes the contract clearer.",
-              "fact_ids": [
-                "F-012"
-              ]
-            }
-          ]
-        },
-        {
           "key": "risks_to_watch",
           "label": "Risks to watch",
           "bullets": [
@@ -702,26 +636,6 @@
                 "text": "After that, the corpus gets more developer-core local coding slices and benchmark guidance memory returns as a first-class input, which is what unlocks pressure on the weak live families.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Evaluators and maintainers need a benchmark that looks like real governed repo work, and that story is stronger than odylith_off now, but both the published diagnostic and live proof reports are still on hold.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "A broader developer-first scenario mix hardens the operator contract around CLI regressions, config compatibility, runtime state, onboarding, repair, and install paths, which lowers coordination risk when things go wrong.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -909,26 +823,6 @@
                 "text": "Then the proof rerun has to clear both cache profiles, and that is the step that turns anti-gaming and honest improvement into one contract people can actually trust.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Maintainers and evaluators need benchmark claims that survive challenge, and this lane matters because it is being shaped to be auditable instead of merely persuasive.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "On the operator side, keeping runner hardening, corpus integrity, and weak-family improvement under one umbrella reduces coordination risk and prevents runtime gains from quietly rewriting the test.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -1125,26 +1019,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Operators use Compass as the live control surface, so stale briefs, risks, or timelines break trust exactly when current truth matters most.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture needs a firmer freshness contract across Compass and shell flows so runtime reuse and packet recovery stop creating coordination risk.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1324,26 +1198,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Maintainers need a clean distinction between pinned dogfood proof and detached source-local work; without that, a correct runtime contract still reads as a confusing operator decision at the moment of action.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Publishing one explicit lane matrix across the governing docs, skills, specs, backlog truth, and diagrams matters because it cuts coordination drag and gives operators one contract instead of several partial ones.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1517,26 +1371,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For a first-time user coming in after install or upgrade, the issue is simple: the shell still reads like an internal dashboard when it needs to feel like a confident starting point.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The redesign is not cosmetic cleanup; making the prompt dominant and compressing secondary detail into clearer cards gives operators a cleaner contract and lowers coordination risk.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1705,26 +1539,6 @@
                 "text": "Next comes turning the next open checklist item into a named checkpoint, so this becomes a proof point that the first-run install path can actually clear.",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "New consumer repos are the user story here: Odylith already knows its managed state should stay untracked, but today that protection arrives too late when install happens before or during initial Git setup.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture consequence is a cleaner install contract: create the root ignore file when missing, add the managed-state entry when absent, and keep duplicate detection.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -1910,26 +1724,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Operators upgrading through the supported CLI can already get the new runtime, but stale dashboard state and weak shell feedback still make a successful upgrade feel ambiguous.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "A one-step reinstall path plus better launcher recovery gives the system a cleaner contract, which cuts coordination risk when installs are damaged or partially updated.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2109,26 +1903,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For Codex users in consumer repos, the gap is not grounding power but first-turn clarity; install and activation should make Odylith feel obvious instead of insider-only.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "On the operator side, first-class short-form grounding commands on top of the existing Context Engine create a cleaner contract and cut coordination risk at the repo root.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2297,26 +2071,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Maintainers already saw product gains in v0.1.5; what still blocks confidence is a release path that trails the product at the moment it has to be trusted.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Shipping one umbrella release contract with bounded execution waves lowers coordination risk and gives operators a clearer contract when they have to prove or run the release.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2480,26 +2234,6 @@
                 "text": "Next is turning the next open checklist item into a named checkpoint, so the team gets a sharper proof step for where the benchmark still fails or clears.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Maintainers need `odylith_on` to win the real same-task benchmark honestly; it leads on the main metrics, but cold-start and prompt-cost drag still weaken trust in key families.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture push is aimed at the runtime slices adding avoidable cost, especially guidance memory restoration, because that lowers coordination risk and gives operators a cleaner contract.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -2686,26 +2420,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For consumer-repo operators, the need is simple: the launcher must fail closed on bad local runtime state instead of hanging or trusting staged assets it should reject.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Architecturally, trust anchors outside mutable runtime state and verification before CLI import tighten the boundary early, which reduces operator guesswork and lowers coordination risk during installs and recovery.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2880,26 +2594,6 @@
                 "text": "Next comes turning the next open checklist item into a named checkpoint, because the work needs a visible proof point before the remaining closure can move faster.",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For maintainers reading Registry to see what is actually changing, this matters because mirrored bundle paths can still hide live evidence from the component they belong to.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is mirror-aware forensic mapping that still keeps source paths authoritative, which lowers coordination risk and makes the operator contract easier to trust.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -3083,26 +2777,6 @@
                 "text": "After that, the corpus expands toward more developer-core local coding slices so weak live families get tested against the work people actually expect this product to handle.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Evaluators and maintainers need a benchmark that looks like serious governed-repo work, and that trust is not complete while both the published diagnostic report and the live proof report remain on hold.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Broadening the scenarios around CLI regressions, config compatibility, runtime state, onboarding, repair, and install gives operators a clearer contract and reduces coordination mistakes when the system fails at the edges.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -3303,26 +2977,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Maintainers and evaluators need benchmark claims they can audit and defend, and this lane is what makes those claims harder to dismiss as internal storytelling.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "By keeping benchmark rules fixed while hardening the runner and corpus, operators get a cleaner contract and lower coordination risk when weak runtime families improve.",
-                "fact_ids": [
-                  "F-012"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -3513,26 +3167,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Operators use Compass as the live blended control surface, so stale brief, risk, or timeline state breaks trust at the moment they need current truth.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture work tightens the contract across Compass and shell flows by versioning projections, limiting runtime reuse, and removing stale brief recovery paths, which lowers coordination risk.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -3700,26 +3334,6 @@
                 "text": "Next comes turning the next open checklist item into a named checkpoint, which should force the lane boundary into one concrete proof point instead of letting it stay diffuse.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Maintainers need a clean answer to whether they are proving pinned dogfood or doing detached source work; the runtime contract is sound, but the language still invites the wrong question.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Publishing one explicit lane matrix across the governing surfaces lowers coordination risk because operators can execute against one contract instead of reconstructing it from scattered guidance.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -3904,26 +3518,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "New users still land in a first-run shell that feels like a dense internal dashboard, which weakens confidence at the exact moment Odylith needs to feel clear and ready.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "A stronger hero layout with clearer support cards and cleaner hierarchy lowers operator coordination risk because the shell stops competing with itself and starts signaling the intended path.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4097,26 +3691,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For new consumer repos, this closes a bad first impression: Odylith knows its managed state should stay untracked, but today that protection arrives too late when Git is not set up yet.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture consequence is a clearer contract at install time: create the ignore file when missing, add the managed-state entry when absent, and keep duplicate checks so later flows stay safe.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4279,26 +3853,6 @@
                 "text": "Next step is to turn the next open checklist item into a named checkpoint, because the team needs a sharper proof point that converts active execution into a safer upgrade and recovery story.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For operators upgrading through the CLI, the gap is not activation of the new runtime; it is that the dashboard can still look stale and the shell does not clearly explain what just changed.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture consequence is a tighter contract: a one-step reinstall path and better missing-launcher recovery reduce coordination risk and make the supported lane easier to trust under failure.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -4489,26 +4043,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For Codex users in consumer repos, this is about making install or activation naturally lead into the right first turn instead of asking them to infer the workflow.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "At the operator layer, first-class short-form grounding commands on top of the existing Context Engine would make the contract clearer and cut coordination risk at repo start.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4683,26 +4217,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Maintainers need release proof to match the product gains already shipped in v0.1.5; otherwise every cut still carries doubt at the moment it should create confidence.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Keeping this under one umbrella contract with bounded execution waves gives operators a clearer handoff surface and reduces coordination mistakes while the release gets tightened.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4866,26 +4380,6 @@
                 "text": "Next up is turning the next open checklist item into a named checkpoint, because the lane needs a proof point that converts implementation motion into something the benchmark can defend.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Maintainers need `odylith_on` to win on the real workload, not just on the headline metrics, and the cold-start and prompt-cost drag in weaker families still gets in the way of that trust.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The technical leverage is in the expensive runtime slices: restoring benchmark guidance memory through the canonical manifest should reduce avoidable cost and give operators a cleaner, lower-risk contract.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -5076,26 +4570,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "What matters here is For consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators act without guessing, and it would clean up release proof at the same time.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -5268,26 +4742,6 @@
                 "text": "Next up is turning the next open checklist item into a named checkpoint, because that is what converts a visible mismatch into a traceable proof point operators can trust.",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "Maintainers rely on Registry coverage to tell whether a component has live evidence behind it, and that trust breaks when mirrored bundle paths disappear from the component view.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "Mirror-aware normalization keeps canonical source paths authoritative while mapping product-owned mirrors back to the same component, which lowers coordination mistakes and makes forensic reads more consistent.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -19094,7 +18548,7 @@
   },
   "runtime_contract": {
     "version": "v1",
-    "standup_brief_schema_version": "v13",
+    "standup_brief_schema_version": "v17",
     "input_fingerprint": "27dae3a4457d89d5689aac98345f5e9301adc817dc64c0f54d0ccb5e5959f815",
     "retention_days": 15,
     "active_window_minutes": 15,

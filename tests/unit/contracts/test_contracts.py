@@ -5,13 +5,18 @@ def test_agent_host_adapter_payload_round_trip_shape() -> None:
     adapter = AgentHostAdapter(
         adapter_id="desktop",
         host_family="codex",
+        model_family="codex",
         supports_native_spawn=True,
         supports_interrupt=True,
         supports_artifact_paths=True,
+        supports_local_structured_reasoning=True,
+        supports_explicit_model_selection=True,
     )
     payload = adapter.to_payload()
     assert payload["adapter_id"] == "desktop"
     assert payload["supports_native_spawn"] is True
+    assert payload["model_family"] == "codex"
+    assert payload["supports_local_structured_reasoning"] is True
 
 
 def test_agent_route_v1_payload_includes_schema() -> None:

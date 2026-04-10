@@ -8,6 +8,7 @@ from odylith.runtime.context_engine import odylith_context_engine_hot_path_packe
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import odylith_context_engine_packet_runtime_bindings
+from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.governance import proof_state as proof_state_runtime
 
 def bind(host: Any) -> None:
@@ -288,6 +289,17 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
     )
     proof_reopen = proof_state_runtime.proof_reopen_signal(proof_state) if proof_state else {}
     proof_resolution_state = str(proof_state_resolution.get("state", "")).strip() or ("resolved" if proof_state else "none")
+    execution_governance_payload = (
+        dict(payload.get("execution_governance", {}))
+        if isinstance(payload.get("execution_governance"), Mapping)
+        else dict(context_packet.get("execution_governance", {}))
+        if isinstance(context_packet.get("execution_governance"), Mapping)
+        else runtime_surface_governance.build_packet_execution_governance_snapshot(
+            payload=payload,
+            context_packet=context_packet,
+            routing_handoff=routing_handoff,
+        )
+    )
     summary = {
         "bootstrapped_at": str(payload.get("bootstrapped_at", "")).strip(),
         "session_id": str(session_payload.get("session_id", "")).strip() or str(scratch.get("session_id", "")).strip(),
@@ -398,6 +410,11 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
         "claimed_paths": claimed_paths,
         "path_tokens": path_tokens,
     }
+    summary.update(
+        runtime_surface_governance.summary_fields_from_execution_governance(
+            execution_governance_payload
+        )
+    )
     degraded_reason = _repo_scan_degraded_reason(summary)
     summary["repo_scan_degraded"] = bool(degraded_reason)
     summary["repo_scan_degraded_reason"] = degraded_reason

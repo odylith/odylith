@@ -8,6 +8,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.governance import authoring_execution_policy
 from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.governance import release_planning_view_model
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -176,6 +177,41 @@ def _ensure_release_mutable(release: release_planning_contract.ReleaseRecord) ->
         )
 
 
+def _release_governance_decision(
+    *,
+    repo_root: Path,
+    action: str,
+    target_scope: Sequence[str],
+    requested_scope: Sequence[str],
+    preferred_alternative: str,
+) -> authoring_execution_policy.GovernedAuthoringDecision:
+    registry_path = release_planning_contract.releases_registry_path(repo_root=repo_root)
+    event_log_path = release_planning_contract.release_assignment_event_log_path(repo_root=repo_root)
+    governed_scope = [str(item).strip() for item in target_scope if str(item).strip()]
+    return authoring_execution_policy.evaluate_governed_authoring_action(
+        action=action,
+        objective="Maintain the authoritative release-planning registry and release assignment history.",
+        authoritative_lane="governance.release_planning.authoritative",
+        target_scope=governed_scope,
+        requested_scope=[str(item).strip() for item in requested_scope if str(item).strip()],
+        governed_scope=governed_scope,
+        resource_set=[
+            str(registry_path.relative_to(repo_root)),
+            str(event_log_path.relative_to(repo_root)),
+        ],
+        success_criteria=[
+            "release-planning truth stays authoritative",
+            "release mutations stay within the governed release scope",
+        ],
+        validation_plan=[
+            "odylith validate backlog-contract --repo-root .",
+        ],
+        allowed_moves=[action, "re_anchor"],
+        critical_path=[action, "validate_backlog_contract"],
+        preferred_alternative=preferred_alternative,
+    )
+
+
 def _print_or_json(*, payload: Mapping[str, Any], as_json: bool) -> None:
     if as_json:
         print(_render_release_payload(payload=payload), end="")
@@ -272,6 +308,14 @@ def _run_create(args: argparse.Namespace) -> dict[str, Any]:
         event_documents=event_documents,
         idea_specs=idea_specs,
     )
+    governance = _release_governance_decision(
+        repo_root=repo_root,
+        action="mutate_release_create",
+        target_scope=[release_id],
+        requested_scope=[release_id],
+        preferred_alternative=f"odylith release show {release_id}",
+    )
+    authoring_execution_policy.enforce_governed_authoring_action(governance)
     if not bool(args.dry_run):
         _write_registry_document(repo_root=repo_root, document=document)
     release = next(row for row in payload["catalog"] if row["release_id"] == release_id)
@@ -280,6 +324,7 @@ def _run_create(args: argparse.Namespace) -> dict[str, Any]:
         "dry_run": bool(args.dry_run),
         "release": release,
         "registry_path": str(state.registry_path),
+        "execution_governance": governance.to_dict(),
     }
 
 
@@ -350,6 +395,14 @@ def _run_update(args: argparse.Namespace) -> dict[str, Any]:
         event_documents=event_documents,
         idea_specs=idea_specs,
     )
+    governance = _release_governance_decision(
+        repo_root=repo_root,
+        action="mutate_release_update",
+        target_scope=[release.release_id],
+        requested_scope=[release.release_id],
+        preferred_alternative=f"odylith release show {release.release_id}",
+    )
+    authoring_execution_policy.enforce_governed_authoring_action(governance)
     if not bool(args.dry_run):
         _write_registry_document(repo_root=repo_root, document=document)
     updated = next(row for row in payload["catalog"] if row["release_id"] == release.release_id)
@@ -358,6 +411,7 @@ def _run_update(args: argparse.Namespace) -> dict[str, Any]:
         "dry_run": bool(args.dry_run),
         "release": updated,
         "registry_path": str(state.registry_path),
+        "execution_governance": governance.to_dict(),
     }
 
 
@@ -431,6 +485,22 @@ def _event_mutation(
     if not bool(args.dry_run):
         _append_event_documents(repo_root=repo_root, events=next_events)
     workstream_id = str(next_events[-1].get("workstream_id", "")).strip().upper()
+    scope_tokens = [
+        workstream_id,
+        str(next_events[-1].get("release_id", "")).strip(),
+        str(next_events[-1].get("from_release_id", "")).strip(),
+        str(next_events[-1].get("to_release_id", "")).strip(),
+    ]
+    scope_tokens = [token for token in scope_tokens if token]
+    show_selector = str(next_events[-1].get("to_release_id", "")).strip() or str(next_events[-1].get("release_id", "")).strip()
+    governance = _release_governance_decision(
+        repo_root=repo_root,
+        action=f"mutate_release_{str(args.release_command).strip()}",
+        target_scope=scope_tokens,
+        requested_scope=scope_tokens,
+        preferred_alternative=f"odylith release show {show_selector}" if show_selector else "odylith release list",
+    )
+    authoring_execution_policy.enforce_governed_authoring_action(governance)
     return {
         "command": str(args.release_command).strip(),
         "dry_run": bool(args.dry_run),
@@ -439,6 +509,7 @@ def _event_mutation(
         "workstream_id": workstream_id,
         "workstream_release": dict(next_payload.get("workstreams", {}).get(workstream_id, {})),
         "event_log_path": str(next_state.event_log_path),
+        "execution_governance": governance.to_dict(),
     }
 
 

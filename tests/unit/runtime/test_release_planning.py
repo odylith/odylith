@@ -380,3 +380,32 @@ def test_release_authoring_json_output_renders_list_and_show(
     assert show_payload["release"]["release_id"] == "release-0-1-11"
     assert show_payload["release"]["effective_name"] == "0.1.11"
     assert show_payload["release"]["inherited_name"] == "Launch Title"
+
+
+def test_release_create_json_emits_execution_governance_payload(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001
+) -> None:
+    _seed_release_repo(tmp_path)
+
+    assert (
+        release_planning_authoring.main(
+            [
+                "--repo-root",
+                str(tmp_path),
+                "create",
+                "release-0-1-11",
+                "--version",
+                "0.1.11",
+                "--alias",
+                "current",
+                "--json",
+            ]
+        )
+        == 0
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["execution_governance"]["admissibility"]["outcome"] == "admit"
+    assert payload["execution_governance"]["contract"]["authoritative_lane"] == "governance.release_planning.authoritative"
+    assert payload["execution_governance"]["contract"]["host_profile"]["host_family"]

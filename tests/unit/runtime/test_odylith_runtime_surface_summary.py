@@ -62,6 +62,25 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
                 "odylith_execution_selection_mode": "critical_accuracy",
                 "odylith_execution_delegate_preference": "delegate",
                 "odylith_execution_source": "odylith_runtime_packet",
+                "execution_governance_present": True,
+                "execution_governance_outcome": "admit",
+                "execution_governance_requires_reanchor": False,
+                "execution_governance_mode": "verify",
+                "execution_governance_next_move": "verify.selected_matrix",
+                "execution_governance_current_phase": "status_synthesis",
+                "execution_governance_last_successful_phase": "submit",
+                "execution_governance_blocker": "waiting for rollout evidence",
+                "execution_governance_closure": "incomplete",
+                "execution_governance_wait_status": "building",
+                "execution_governance_wait_detail": "deploying cell-01",
+                "execution_governance_resume_token": "resume:B-072",
+                "execution_governance_validation_archetype": "deploy",
+                "execution_governance_validation_minimum_pass_count": 6,
+                "execution_governance_contradiction_count": 0,
+                "execution_governance_history_rule_count": 2,
+                "execution_governance_authoritative_lane": "context_engine.governance_slice.authoritative",
+                "execution_governance_host_family": "codex",
+                "execution_governance_model_family": "codex",
             },
             "evaluation_posture": {
                 "packet_events": {"benchmark_satisfaction_rate": 0.78},
@@ -208,6 +227,17 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["latest_budget_mode"] == "spend_when_grounded"
     assert summary["latest_speed_mode"] == "accelerate_grounded"
     assert summary["latest_packet_reliability"] == "reliable"
+    assert summary["latest_execution_governance_present"] is True
+    assert summary["latest_execution_governance_outcome"] == "admit"
+    assert summary["latest_execution_governance_mode"] == "verify"
+    assert summary["latest_execution_governance_next_move"] == "verify.selected_matrix"
+    assert summary["latest_execution_governance_closure"] == "incomplete"
+    assert summary["latest_execution_governance_wait_status"] == "building"
+    assert summary["latest_execution_governance_resume_token"] == "resume:B-072"
+    assert summary["latest_execution_governance_validation_archetype"] == "deploy"
+    assert summary["latest_execution_governance_history_rule_count"] == 2
+    assert summary["latest_execution_governance_host_family"] == "codex"
+    assert summary["latest_execution_governance_model_family"] == "codex"
     assert summary["latest_advised_packet_strategy"] == "density_first"
     assert summary["latest_advised_budget_mode"] == "spend_when_grounded"
     assert summary["effective_yield_score"] == 0.81

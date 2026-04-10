@@ -1,6 +1,6 @@
 # Odylith GTM and Release Checklist
 
-Last updated: 2026-04-03
+Last updated: 2026-04-08
 
 Use this with [Maintainer Release Runbook](../MAINTAINER_RELEASE_RUNBOOK.md).
 The runbook is the canonical command order. This checklist is the reusable
@@ -29,12 +29,23 @@ release.
       cleared.
 - [ ] No one claims write behavior improved unless the report shows it.
 - [ ] Supported-platform claims match the maintained runtime contract exactly.
+- [ ] If the release-planning record carries `version`, its explicit `name`
+      matches the authored release-note title for that version or stays empty
+      so the note title is inherited.
 - [ ] Popup, release note, GitHub release body, README, and launch posts tell
       the same story with the same proof boundary.
 
 ## Product Truth And Release Assets
 - [ ] Version truth is aligned across `pyproject.toml`, generated version
       surfaces, authored release notes, and bundled mirrors.
+- [ ] Release-facing security docs are current for `[version]`, including the
+      repo-root `SECURITY.md` overview and the product plus bundled
+      `SECURITY_POSTURE.md` files.
+- [ ] Repo-local release planning truth is aligned for `[version]`: the target
+      release record exists, `current` and `next` alias ownership is explicit,
+      and workstream scope matches the intended ship lane.
+- [ ] Carried work is explicit: unfinished workstreams are moved to the
+      follow-on release instead of lingering on the shipped line.
 - [ ] The release popup uses a short left-side brief that does not duplicate
       the full release note.
 - [ ] The full release-note page has no clipped copy, duplicate narrative, or
@@ -61,6 +72,8 @@ release.
 ## Canonical Release Lane
 - [ ] `make release-version-preview`
 - [ ] `make release-version-show`
+- [ ] `odylith release list --repo-root .`
+- [ ] `odylith release show current --repo-root .`
 - [ ] `make release-preflight [VERSION=[version]]`
 - [ ] `make release-session-show`
 - [ ] `make release-dispatch`
@@ -69,6 +82,8 @@ release.
 - [ ] `./.odylith/bin/odylith validate self-host-posture --repo-root . --mode local-runtime`
 - [ ] `make consumer-rehearsal PREVIOUS_VERSION=[previous_version]`
 - [ ] `make ga-gate PREVIOUS_VERSION=[previous_version]`
+- [ ] Advance repo-local release aliases and carry-forward work so `current`
+      and `next` no longer point at the shipped terminal record.
 - [ ] `make release-session-clear`
 
 ## GTM Package
@@ -101,6 +116,8 @@ release.
 
 ## No-Ship Conditions
 - [ ] Version truth is still split.
+- [ ] The repo-root security overview or bundled security-posture docs still
+      advertise the wrong release version.
 - [ ] The proof report is still on `hold` without explicit and honest public
       framing.
 - [ ] Consumer rehearsal or GA gate failed.

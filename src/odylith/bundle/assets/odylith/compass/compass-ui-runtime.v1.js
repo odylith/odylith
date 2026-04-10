@@ -1,3 +1,8 @@
+    function markCompassSurfaceReady(isReady) {
+      if (!document.body || !document.body.dataset) return;
+      document.body.dataset.surfaceReady = isReady ? "ready" : "loading";
+    }
+
     function syncControls(state, events, payload) {
       const persistAuditDay = Boolean(state && state.audit_day_pinned && DATE_RE.test(state.audit_day));
       document.querySelectorAll('[data-window]').forEach((btn) => {
@@ -32,11 +37,36 @@
         const optionIds = selectedScope && validIdSet.has(selectedScope) && !ids.includes(selectedScope)
           ? [selectedScope, ...ids]
           : ids;
+        const windowKey = state.window === "24h" ? "24h" : "48h";
+        const scopedBriefMap = payload.standup_brief_scoped && payload.standup_brief_scoped[windowKey] && typeof payload.standup_brief_scoped[windowKey] === "object"
+          ? payload.standup_brief_scoped[windowKey]
+          : {};
+        const originalOrder = new Map(optionIds.map((id, index) => [id, index]));
+        const briefSourceRank = (id) => {
+          const brief = scopedBriefMap[id] && typeof scopedBriefMap[id] === "object" ? scopedBriefMap[id] : null;
+          const status = String(brief && brief.status ? brief.status : "").trim().toLowerCase();
+          if (status !== "ready") return 5;
+          const source = String(brief && brief.source ? brief.source : "").trim().toLowerCase();
+          if (source === "provider") return 0;
+          if (source === "cache") return 1;
+          if (source === "composed") return 2;
+          if (source === "deterministic") return 3;
+          return 4;
+        };
+        const sortedOptionIds = optionIds.slice().sort((left, right) => {
+          const leftId = String(left || "").trim();
+          const rightId = String(right || "").trim();
+          if (selectedScope && leftId === selectedScope) return -1;
+          if (selectedScope && rightId === selectedScope) return 1;
+          const rankDelta = briefSourceRank(leftId) - briefSourceRank(rightId);
+          if (rankDelta !== 0) return rankDelta;
+          return Number(originalOrder.get(leftId) || 0) - Number(originalOrder.get(rightId) || 0);
+        });
         scopeSelect.innerHTML = [
           '<option value="">Global</option>',
-          ...optionIds.map((id) => `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`),
+          ...sortedOptionIds.map((id) => `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`),
         ].join("");
-        scopeSelect.value = optionIds.includes(selectedScope) ? selectedScope : "";
+        scopeSelect.value = sortedOptionIds.includes(selectedScope) ? selectedScope : "";
         if (!scopeSelect.dataset.bound) {
           scopeSelect.dataset.bound = "1";
           scopeSelect.addEventListener('change', () => {
@@ -146,9 +176,12 @@
       document.getElementById("digest-list").innerHTML = '<div class="empty">Runtime data unavailable.</div>';
       const executionWavesHost = document.getElementById("execution-waves-host");
       if (executionWavesHost) executionWavesHost.innerHTML = "";
+      const releaseGroupsHost = document.getElementById("release-groups-host");
+      if (releaseGroupsHost) releaseGroupsHost.innerHTML = "";
       document.getElementById("current-workstreams").innerHTML = '<p class="empty">Run sync to regenerate Compass runtime snapshots.</p>';
       document.getElementById("timeline").innerHTML = '<div class="empty">No timeline data available.</div>';
       document.getElementById("risk-list").innerHTML = '<p class="empty">No risk payload available.</p>';
+      markCompassSurfaceReady(true);
     }
 
     function bindCopyBrief() {
@@ -158,32 +191,28 @@
         const lines = [];
         const brief = CURRENT_STANDUP_BRIEF && typeof CURRENT_STANDUP_BRIEF === "object" ? CURRENT_STANDUP_BRIEF : null;
         if (brief && String(brief.status || "").trim() === "ready") {
-          const notice = brief.notice && typeof brief.notice === "object" ? brief.notice : {};
-          const noticeTitle = String(notice.title || "").trim();
-          const noticeMessage = String(notice.message || "").trim();
-          if (noticeTitle && noticeMessage) {
-            lines.push(`${noticeTitle}: ${noticeMessage}`);
-          } else if (noticeTitle) {
-            lines.push(noticeTitle);
-          } else if (noticeMessage) {
-            lines.push(noticeMessage);
+          const source = String(brief.source || "").trim().toLowerCase();
+          if (source !== "deterministic") {
+            const notice = brief.notice && typeof brief.notice === "object" ? brief.notice : {};
+            const noticeTitle = String(notice.title || "").trim();
+            const noticeMessage = String(notice.message || "").trim();
+            if (noticeTitle && noticeMessage) {
+              lines.push(`${noticeTitle}: ${noticeMessage}`);
+            } else if (noticeTitle) {
+              lines.push(noticeTitle);
+            } else if (noticeMessage) {
+              lines.push(noticeMessage);
+            }
           }
           const sections = Array.isArray(brief.sections) ? brief.sections : [];
           STANDUP_BRIEF_SECTION_SPECS.forEach((spec) => {
             const section = sections.find((row) => row && String(row.key || "").trim() === spec.key);
             const bullets = Array.isArray(section && section.bullets) ? section.bullets : [];
-            const voiceCount = new Set(
-              bullets
-                .map((bullet) => String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase())
-                .filter(Boolean)
-            ).size;
             lines.push(`${spec.label}:`);
             bullets.forEach((bullet) => {
-              const voice = String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase();
               const text = String(bullet && bullet.text ? bullet.text : "").trim();
               if (!text) return;
-              const voiceLabel = voiceCount > 1 ? briefVoiceLabel(voice) : "";
-              lines.push(voiceLabel ? `- ${voiceLabel}: ${text}` : `- ${text}`);
+              lines.push(`- ${text}`);
             });
           });
         } else if (brief) {
@@ -215,6 +244,7 @@
     }
 
     async function init() {
+      markCompassSurfaceReady(false);
       if (shellRedirectInProgress()) {
         return;
       }
@@ -257,7 +287,9 @@
       renderKpis(payload, summaryState, summaryEvents);
       renderDigest(payload, summaryState, summaryEvents);
       renderExecutionWaves(payload, summaryState);
+      renderReleaseGroups(payload, summaryState);
       renderCurrentWorkstreams(payload, summaryState, summaryEvents, summaryTransactions, state);
       renderTimeline(payload, state, timelineEvents, timelineTransactions);
       renderRisks(payload, summaryState);
+      markCompassSurfaceReady(true);
     }

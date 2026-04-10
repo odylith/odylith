@@ -33,6 +33,10 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   beyond those thresholds, the default action is to refactor it into multiple
   focused files or modules with robustness, reliability, and reusability as
   explicit goals instead of continuing to extend the oversized file.
+- For Python engineering in this maintainer lane, clean, simple, and efficient
+  engineering prevails over complex engineering when the outcome is the same.
+  Default to modular, robust, reliable, reusable designs that stay long-term
+  optimal.
 - Odylith's managed runtime may still edit any product-repo files; the lane
   distinction is about execution and validation posture, not file-edit
   authority.
@@ -78,7 +82,7 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   and test workflows on current immutable SHAs that no longer carry scheduled
   runtime deprecation warnings into the release lane.
 - Before GA, keep release-proof unit lanes environment-portable. If a test is
-  supposed to prove Codex host-native spawn behavior or Codex CLI execution,
+  supposed to prove proof-host native spawn behavior or proof-host CLI execution,
   force or mock that contract inside the test instead of inheriting the
   maintainer machine's ambient host/runtime state.
 - Treat parent-shell freshness and child-surface freshness as separate truths.
@@ -117,6 +121,11 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   template runs under `set -euo pipefail`, initialize every optional local
   before testing it and prove the nested fresh-install path in canonical smoke
   before trusting the change for release.
+- Treat verifier-warning cleanup as incomplete unless successful verification
+  stays calm in the full shipped lane: hosted installer, pinned dogfood,
+  consumer rehearsal, and GA gate. If `OK:` asset proof still arrives wrapped
+  in scary trust-warning noise, capture the residual bug for the next release
+  instead of calling the warning story done.
 - Use direct `rg`, source reads, generator inspection, or targeted shell
   inspection only when Odylith explicitly signals fallback or ambiguity, or
   when you are verifying tracked source truth behind a runtime-generated
@@ -138,10 +147,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   human, and factual. Use only concrete observed counts, measured deltas, or
   validation outcomes; if the evidence is thin or the user-facing delta is not
   clear, omit it.
-- In Codex, treat Odylith-routed native spawn as the default execution path
-  for substantive grounded maintainer work in both maintainer postures:
-  pinned dogfood and detached `source-local` maintainer dev, unless Odylith
-  explicitly keeps the slice local.
+- Treat Odylith-routed native delegation as the default execution path for
+  substantive grounded maintainer work in both maintainer postures when the
+  current host supports it. Codex is the currently validated native-spawn
+  host; pinned dogfood and detached `source-local` maintainer dev still keep
+  the slice local when Odylith says so or when another host has not yet
+  proven native spawn.
 - This is the benchmark-safe posture: optimize in this order:
   correctness and non-regression, grounding recall and precision, validation
   and execution fit, robustness across cache states and retries, then speed,

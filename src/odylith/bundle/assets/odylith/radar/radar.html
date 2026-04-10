@@ -47,12 +47,24 @@
   line-height: 1.5;
   color: var(--ink, #0b1324);
 }
+    :root {
+  --surface-shell-max-width: 1320px;
+  --surface-identifier-font-size: 14px;
+  --surface-identifier-font-weight: 500;
+  --surface-identifier-chip-padding: 2px 10px;
+  --surface-workstream-button-font-size: 12px;
+  --surface-workstream-button-font-weight: 500;
+  --surface-workstream-button-padding: 1px 8px;
+  --surface-deep-link-button-font-size: 11px;
+  --surface-deep-link-button-font-weight: 700;
+  --surface-deep-link-button-padding: 4px 12px;
+}
 
     .shell {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 22px 18px 34px;
-    }
+  max-width: var(--surface-shell-max-width, 1320px);
+  margin: 0 auto;
+  padding: 22px 18px 34px;
+}
 
     .hero {
   background: linear-gradient(145deg, #ffffff, #ecfeff 58%, #eff6ff);
@@ -354,27 +366,6 @@ h1 {
       padding: 10px;
       display: grid;
       gap: 10px;
-    }
-
-    .topology-focus {
-      grid-column: 1 / -1;
-      border: 1px solid #bfdbfe;
-      border-radius: 11px;
-      background: #ffffff;
-      padding: 8px 10px;
-      display: grid;
-      grid-template-columns: var(--topology-label-column) var(--topology-count-column) minmax(0, 1fr);
-      align-items: center;
-      gap: 10px;
-    }
-
-    .topology-focus-title {
-      grid-column: 1;
-    }
-
-    .topology-focus .chip-topology-source {
-      grid-column: 3;
-      justify-self: start;
     }
 
     .topology-relations-panel {
@@ -987,7 +978,7 @@ h1 {
   align-items: center;
   justify-content: center;
   min-height: 0px;
-  padding: 4px 12px;
+  padding: var(--surface-workstream-button-padding, 1px 8px);
   border-radius: 999px;
   border: 1px solid var(--chip-link-border);
   background: var(--chip-link-bg);
@@ -1015,10 +1006,10 @@ h1 {
 .execution-wave-chip-link {
   font-family: inherit;
   color: var(--chip-link-text);
-  font-size: 11px;
+  font-size: var(--surface-workstream-button-font-size, 12px);
   line-height: 1;
   letter-spacing: 0.01em;
-  font-weight: 700;
+  font-weight: var(--surface-workstream-button-font-weight, 500);
   text-transform: none;
 }
 
@@ -1135,7 +1126,7 @@ h1 {
 .mix-toggle button {
   font-family: inherit;
   color: #334155;
-  font-size: 11px;
+  font-size: 11;
   line-height: 1;
   letter-spacing: 0.01em;
   font-weight: 700;
@@ -1154,7 +1145,7 @@ h1 {
 
     .workspace {
   display: grid;
-  grid-template-columns: minmax(330px, 420px) minmax(0, 1fr);
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
   gap: 12px;
   align-items: start;
 }
@@ -1234,7 +1225,7 @@ h1 {
   letter-spacing: 0.03em;
 }
 
-.topology-focus-title, .topology-relations-panel > summary, .topology-rel-title {
+.topology-relations-panel > summary, .topology-rel-title {
   margin: 0;
   color: #475569;
   font-size: 11px;
@@ -1404,12 +1395,6 @@ h1 {
   --label-bg: #f7eff6;
   --label-border: #e8d9e7;
   --label-text: #795770;
-}
-
-.chip.chip-lane {
-  --label-bg: #f1f3f9;
-  --label-border: #dce2ee;
-  --label-text: #5b6881;
 }
 
 .chip.chip-sizing {
@@ -1685,9 +1670,9 @@ h1 {
   margin: 0;
   color: var(--ink-muted);
   font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 12px;
+  font-size: var(--surface-identifier-font-size, 14px);
   line-height: 1.2;
-  font-weight: 400;
+  font-weight: var(--surface-identifier-font-weight, 500);
   letter-spacing: 0em;
 }
 
@@ -1739,7 +1724,7 @@ h1 {
   text-transform: none;
 }
 
-    .chip-link {
+    .chip-link:not(.entity-id-chip):not(.execution-wave-chip-link) {
   --chip-link-border: #b9c7db;
   --chip-link-bg: #f3f6fb;
   --chip-link-text: var(--chip-link-text);
@@ -1751,7 +1736,7 @@ h1 {
   align-items: center;
   justify-content: center;
   min-height: 0px;
-  padding: 4px 12px;
+  padding: var(--surface-deep-link-button-padding, 4px 12px);
   border-radius: 999px;
   border: 1px solid var(--chip-link-border);
   background: var(--chip-link-bg);
@@ -1764,36 +1749,85 @@ h1 {
   transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
 }
 
-.chip-link:hover,
-.chip-link:focus-visible {
+.chip-link:not(.entity-id-chip):not(.execution-wave-chip-link):hover,
+.chip-link:not(.entity-id-chip):not(.execution-wave-chip-link):focus-visible {
   border-color: var(--chip-link-border-hover);
   background: var(--chip-link-bg-hover);
   color: var(--chip-link-text-hover);
 }
 
-.chip-link:focus-visible {
+.chip-link:not(.entity-id-chip):not(.execution-wave-chip-link):focus-visible {
   outline: 2px solid #bfdbfe;
   outline-offset: 1px;
 }
 
-.chip-link {
+.chip-link:not(.entity-id-chip):not(.execution-wave-chip-link) {
   font-family: inherit;
   color: var(--chip-link-text);
-  font-size: 11px;
+  font-size: var(--surface-deep-link-button-font-size, 11px);
   line-height: 1;
   letter-spacing: 0.01em;
-  font-weight: 700;
+  font-weight: var(--surface-deep-link-button-font-weight, 700);
+  text-transform: none;
+}
+
+.entity-id-chip {
+  --chip-link-border: #b9c7db;
+  --chip-link-bg: #f3f6fb;
+  --chip-link-text: var(--chip-link-text);
+  --chip-link-border-hover: #9aaec9;
+  --chip-link-bg-hover: #e8eef7;
+  --chip-link-text-hover: #1e293b;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0px;
+  padding: var(--surface-workstream-button-padding, 1px 8px);
+  border-radius: 999px;
+  border: 1px solid var(--chip-link-border);
+  background: var(--chip-link-bg);
+  color: var(--chip-link-text);
+  box-shadow: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.entity-id-chip:hover,
+.entity-id-chip:focus-visible {
+  border-color: var(--chip-link-border-hover);
+  background: var(--chip-link-bg-hover);
+  color: var(--chip-link-text-hover);
+}
+
+.entity-id-chip:focus-visible {
+  outline: 2px solid #bfdbfe;
+  outline-offset: 1px;
+}
+
+.entity-id-chip {
+  font-family: inherit;
+  color: var(--chip-link-text);
+  font-size: var(--surface-workstream-button-font-size, 12px);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-weight: var(--surface-workstream-button-font-weight, 500);
   text-transform: none;
 }
 
     .detail {
-      padding: 14px 16px 16px;
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 14px;
     }
 
     .detail-header {
       border: 1px solid #d7e3f6;
       border-radius: 14px;
-      padding: 12px 12px 10px;
+      padding: 14px 16px;
       background: linear-gradient(170deg, #f8fafc, #ffffff 65%, #eff6ff);
     }
 
@@ -1806,7 +1840,7 @@ h1 {
   font-weight: 700;
 }
 
-.detail-id {
+.detail-header .detail-subtitle {
   margin: 0;
   color: var(--ink-muted, #64748b);
   font-size: 13px;
@@ -1827,15 +1861,15 @@ h1 {
 }
 
     .chips {
-      margin-top: 10px;
-      margin-bottom: 6px;
+      margin-top: 12px;
+      margin-bottom: 0;
     }
 
     .kpis {
-      margin-top: 12px;
+      margin-top: 14px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 8px;
+      gap: 10px;
     }
 
     .kpi {
@@ -1870,7 +1904,7 @@ h1 {
 }
 
     .meter {
-      margin-top: 12px;
+      margin-top: 14px;
     }
 
     .meter-head {
@@ -1893,10 +1927,10 @@ h1 {
     }
 
     .block {
-      margin-top: 14px;
+      margin-top: 0;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
-      padding: 11px 12px;
+      padding: 14px 16px;
       background: #ffffff;
     }
 
@@ -1908,19 +1942,19 @@ h1 {
     .split-grid {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
     .split-card {
       border: 1px solid #e2e8f0;
       border-radius: 10px;
       background: #f8fafc;
-      padding: 10px;
+      padding: 12px 14px;
       min-width: 0;
     }
 
     .block h3 {
-      margin: 0 0 8px;
+      margin: 0 0 10px;
     }
     .block h3 {
   margin: 0 0 8px;
@@ -1971,10 +2005,123 @@ h1 {
       margin-bottom: 6px;
     }
 
-    .meta-row-val, .block p, .block ul, .block li, .bullets, .bullets li, .analytics-toggle-sub, .graph-sub, .graph-empty {
+    .meta-row-val, .block p, .block ul, .block li, .bullets, .bullets li, .detail-copy p, .detail-copy ul, .detail-copy li, .detail-copy .check-text, .analytics-toggle-sub, .graph-sub, .graph-empty {
   font-size: 15px;
   line-height: 1.55;
   color: #27445e;
+}
+
+.detail-copy .code {
+  color: #e2e8f0;
+  font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+
+.block.block-problem {
+  border-color: #bfdbfe;
+  background: linear-gradient(180deg, #f8fbff, #ffffff 70%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.detail-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.detail-copy > * {
+  margin: 0;
+}
+
+.detail-copy > p {
+  max-width: 100%;
+}
+
+.detail-copy ul {
+  margin: 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 10px;
+}
+
+.detail-copy li {
+  margin: 0;
+}
+
+.detail-copy a {
+  color: #1d4ed8;
+  text-decoration: none;
+  border-bottom: 1px solid #bfdbfe;
+}
+
+.detail-copy a:hover {
+  border-bottom-color: #60a5fa;
+}
+
+.detail-copy code {
+  font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+  color: #1e3a8a;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  padding: 0.08em 0.38em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.detail-copy .code {
+  margin: 0;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #0f172a;
+  padding: 12px 13px;
+  overflow: auto;
+}
+
+.detail-copy .code code {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  padding: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.detail-copy .checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-copy .check-item {
+  --level: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding-left: calc(var(--level) * 28px);
+}
+
+.detail-copy .check-text {
+  min-width: 0;
+}
+
+.detail-copy .check-box {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: #0f766e;
+  cursor: default;
+  flex: 0 0 auto;
+}
+
+.detail-copy .check-box:disabled {
+  opacity: 1;
 }
 
     .links {
@@ -2053,13 +2200,10 @@ h1 {
       .controls {
         grid-template-columns: 1fr 1fr;
       }
-      .topology-focus,
       .topology-rel-row {
         grid-template-columns: 1fr;
         align-items: start;
       }
-      .topology-focus-title,
-      .topology-focus .chip-topology-source,
       .topology-rel-title,
       .topology-rel-count,
       .topology-rel-body {
@@ -2113,7 +2257,14 @@ h1 {
 
     <section class="controls">
       <input id="query" placeholder="Search title, ID, rationale, impacted parts..." />
-      <select id="section">
+      <select id="lane">
+        <option value="all">All Sections</option>
+        <option value="execution">Delivery Pipeline</option>
+        <option value="parked">Parked</option>
+        <option value="active">Idea Stage (Ranked Active)</option>
+        <option value="finished">Finished</option>
+      </select>
+      <select id="section" aria-hidden="true" tabindex="-1" style="position:absolute;inline-size:1px;block-size:1px;opacity:0.01;padding:0;border:0">
         <option value="all">All Sections</option>
         <option value="execution">Delivery Pipeline</option>
         <option value="parked">Parked</option>
@@ -2130,11 +2281,11 @@ h1 {
         <option value="active">Signal: Active</option>
         <option value="quiet">Signal: Quiet</option>
       </select>
-      <select id="lane">
-        <option value="all">All Lanes</option>
-      </select>
       <select id="priority">
         <option value="all">All Priorities</option>
+      </select>
+      <select id="release">
+        <option value="all">All Releases</option>
       </select>
       <select id="sort">
         <option value="rank">Sort: Rank</option>
@@ -2217,7 +2368,7 @@ h1 {
   }
 })();
 </script>
-  <script id="backlogData" src="backlog-payload.v1.js?v=82ef9adca1b2"></script>
-  <script src="backlog-app.v1.js?v=82ef9adca1b2"></script>
+  <script id="backlogData" src="backlog-payload.v1.js?v=fc8abf6081d7"></script>
+  <script src="backlog-app.v1.js?v=fc8abf6081d7"></script>
 </body>
 </html>

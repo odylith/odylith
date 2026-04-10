@@ -1,4 +1,4 @@
-# How To Read Odylith's Codex Benchmarks
+# How To Read Odylith's Benchmark Proof
 
 This folder explains the benchmark graphs published in the root
 [README](../../README.md).
@@ -28,15 +28,15 @@ Related docs:
 
 ## What Is Being Compared
 
-The canonical public proof compares two Codex-facing lanes on the same task:
+The canonical public proof compares two host-matched lanes on the same task:
 
 - `odylith_on`
-  Codex runs with Odylith grounding, narrowed evidence, repo-local memory,
+  the proof host runs with Odylith grounding, narrowed evidence, repo-local memory,
   governance surfaces, and runtime guidance.
 - `odylith_off`
-  is the public name for the raw Codex CLI lane. Internally the report may
+  is the public name for the raw host CLI lane. Internally the report may
   still store this as `raw_agent_baseline`, but the lane itself is the same
-  live Codex CLI with no Odylith packet and no auto-consumed repo guidance
+  live host CLI with no Odylith packet and no auto-consumed repo guidance
   entrypoints in the disposable benchmark workspace.
 
 The public headline comparison is:
@@ -55,7 +55,7 @@ Those secondary lanes are not the public headline claim.
 The profiles answer different questions:
 
 - `proof`
-  Does Odylith beat raw Codex CLI on the same live end-to-end task contract?
+  Does Odylith beat the raw host CLI on the same live end-to-end task contract?
 - `diagnostic`
   Does Odylith build a better grounded packet or prompt than `odylith_off`
   before the live run starts?
@@ -63,9 +63,9 @@ The profiles answer different questions:
 `proof` governs the product claim. `diagnostic` only matters when it preserves
 or improves `proof`.
 
-The current published measured proof is Codex-specific. Claude Code may still
-benefit from the same grounding and governance surfaces, but that is not yet
-Claude-native benchmark proof.
+The current published measured proof is Codex-host-scoped. Claude Code may
+still benefit from the same grounding and governance surfaces, but that is not
+yet Claude-host benchmark proof.
 
 ## Closeout Framing
 
@@ -87,7 +87,7 @@ Odylith exposes three benchmark profiles:
 - `proof`
   full publication proof on the live `odylith_on` versus `odylith_off` pair
 - `diagnostic`
-  packet-and-prompt tuning without the live end-to-end Codex pair
+  packet-and-prompt tuning without the live end-to-end host pair
 
 Canonical commands:
 
@@ -192,9 +192,9 @@ To compare Odylith fairly, hold these constant on both sides:
 For the public `odylith_on` versus `odylith_off` pair, the live runner also
 holds these constant explicitly:
 
-- the same Codex CLI binary
-- the same temporary Codex home with copied auth and pinned model or reasoning
-- no personal Codex instructions, plugins, or MCP config in that temporary
+- the same host CLI binary
+- the same temporary host home with copied auth and pinned model or reasoning
+- no personal host instructions, plugins, or MCP config in that temporary
   home
 - no auto-consumed `AGENTS.md`, `CLAUDE.md`, `.cursor/`, `.windsurf/`, or
   `.codex/` surfaces in the disposable benchmark workspace
@@ -204,7 +204,7 @@ Important reading rule:
 
 - live proof timing is matched-pair benchmark wall clock to a valid outcome,
   not solo-user interactive latency
-- live proof token cost is full multi-turn Codex session spend, not just the
+- live proof token cost is full multi-turn host session spend, not just the
   first prompt
 - prompt-bundle efficiency belongs to `diagnostic`, not to the live proof lane
 

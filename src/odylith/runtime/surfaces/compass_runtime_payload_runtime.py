@@ -14,6 +14,7 @@ from odylith.runtime.governance import workstream_progress as workstream_progres
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_execution_focus_runtime
 from odylith.runtime.surfaces import compass_standup_brief_batch
+from odylith.runtime.surfaces import compass_standup_brief_maintenance
 from odylith.runtime.surfaces import compass_standup_runtime_reuse
 from odylith.runtime.surfaces import compass_window_update_index
 
@@ -1687,10 +1688,10 @@ def _build_runtime_payload(
             ),
         )
 
-        return window_kpis, standup_global, standup_scoped, scoped_packet_index, standup_runtime_window
+        return window_kpis, standup_global, standup_scoped, scoped_packet_index, standup_runtime_window, global_fact_packet
 
-    kpi_24h, standup_brief_24h, standup_brief_scoped_24h, scoped_packets_24h, standup_runtime_24h = _summarize_window(24)
-    kpi_48h, standup_brief_48h, standup_brief_scoped_48h, _scoped_packets_48h, standup_runtime_48h = _summarize_window(
+    kpi_24h, standup_brief_24h, standup_brief_scoped_24h, scoped_packets_24h, standup_runtime_24h, global_packet_24h = _summarize_window(24)
+    kpi_48h, standup_brief_48h, standup_brief_scoped_48h, scoped_packets_48h, standup_runtime_48h, global_packet_48h = _summarize_window(
         48,
         reuse_scoped_from={
             ws_id: (packet, standup_brief_scoped_24h[ws_id])
@@ -1708,6 +1709,32 @@ def _build_runtime_payload(
         ws_id: compass_standup_brief_narrator.brief_to_digest_lines(brief)
         for ws_id, brief in standup_brief_scoped_48h.items()
     }
+    if str(refresh_profile).strip().lower() == compass_refresh_contract.DEFAULT_REFRESH_PROFILE:
+        compass_standup_brief_maintenance.enqueue_request(
+            repo_root=repo_root,
+            generated_utc=generated_utc,
+            runtime_input_fingerprint="",
+            global_fact_packets={
+                "24h": global_packet_24h,
+                "48h": global_packet_48h,
+            },
+            global_briefs={
+                "24h": standup_brief_24h,
+                "48h": standup_brief_48h,
+            },
+            scoped_fact_packets={
+                "24h": scoped_packets_24h,
+                "48h": scoped_packets_48h,
+            },
+            scoped_briefs={
+                "24h": standup_brief_scoped_24h,
+                "48h": standup_brief_scoped_48h,
+            },
+            scope_signals={
+                "24h": standup_runtime_24h.get("scope_signals", {}),
+                "48h": standup_runtime_48h.get("scope_signals", {}),
+            },
+        )
     governance_summary = _cached_governance_summary_for_shell_safe(
         repo_root=repo_root,
         refresh_profile=refresh_profile,

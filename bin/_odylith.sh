@@ -270,6 +270,7 @@ run_release_proof_steps() {
   [[ -n "$dist_dir" ]] || die "run_release_proof_steps requires dist_dir"
 
   "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync
+  "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . release-check --expected-version "$resolved_version"
   "$odylith_host_repo_root/bin/validate"
   git diff --quiet --ignore-submodules HEAD -- || die "release proof validation mutated tracked files; commit them before release"
   git diff --quiet --ignore-submodules --cached -- || die "release proof validation staged tracked files; commit them before release"

@@ -20,6 +20,19 @@
         .filter((token) => /^D-\d{3,}$/.test(token));
     }
 
+    function compassWorkstreamReleaseLabel(release) {
+      const row = release && typeof release === "object" ? release : {};
+      const nameLabel = String(row.name || row.version || row.tag || row.display_label || row.effective_name || "").trim();
+      if (nameLabel) return nameLabel;
+      return String(row.release_id || "").trim();
+    }
+
+    function numericProgressOrNull(value) {
+      if (value === null || value === undefined || value === "") return null;
+      const ratio = Number(value);
+      return Number.isFinite(ratio) ? ratio : null;
+    }
+
     function focusAreaSummary(files) {
       const rows = Array.isArray(files) ? files.map((file) => String(file || "").trim()).filter(Boolean) : [];
       const buckets = [
@@ -105,6 +118,7 @@
         || token === "odylith/compass/compass-summary.v1.js"
         || token === "odylith/compass/compass-timeline.v1.js"
         || token === "odylith/compass/compass-waves.v1.js"
+        || token === "odylith/compass/compass-releases.v1.js"
         || token === "odylith/compass/compass-workstreams.v1.js"
         || token === "odylith/compass/compass-ui-runtime.v1.js"
         || token === "odylith/compass/compass-style-base.v1.css"
@@ -184,6 +198,110 @@
       return 4;
     }
 
+    function proofRefHref(ref) {
+      const row = ref && typeof ref === "object" ? ref : {};
+      const surface = String(row.surface || "").trim().toLowerCase();
+      const value = String(row.value || "").trim();
+      if (!value) return "../index.html?tab=compass";
+      if (surface === "casebook") return `../index.html?tab=casebook&bug=${encodeURIComponent(value)}`;
+      if (surface === "registry") return `../index.html?tab=registry&component=${encodeURIComponent(value.replace(/^component:/, ""))}`;
+      if (surface === "atlas") return `../index.html?tab=atlas&diagram=${encodeURIComponent(value)}`;
+      if (surface === "radar") return radarWorkstreamHref(value);
+      if (surface === "compass") return `../index.html?tab=compass&scope=${encodeURIComponent(value)}&date=live`;
+      return `../index.html?tab=compass&scope=${encodeURIComponent(value)}&date=live`;
+    }
+
+    function workstreamProofDetailRows(selected) {
+      const proofState = selected && selected.proof_state && typeof selected.proof_state === "object"
+        ? selected.proof_state
+        : {};
+      const claimGuard = selected && selected.claim_guard && typeof selected.claim_guard === "object"
+        ? selected.claim_guard
+        : {};
+      const proofResolution = selected && selected.proof_state_resolution && typeof selected.proof_state_resolution === "object"
+        ? selected.proof_state_resolution
+        : {};
+      const proofSummaryLines = Array.isArray(selected && selected.proof_summary_lines)
+        ? selected.proof_summary_lines.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const proofRefs = Array.isArray(selected && selected.proof_refs)
+        ? selected.proof_refs.filter((item) => item && typeof item === "object")
+        : [];
+      const deploymentTruth = proofState && proofState.deployment_truth && typeof proofState.deployment_truth === "object"
+        ? proofState.deployment_truth
+        : {};
+      const allowedNextWork = Array.isArray(proofState.allowed_next_work)
+        ? proofState.allowed_next_work.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const deprioritized = Array.isArray(proofState.deprioritized_until_cleared)
+        ? proofState.deprioritized_until_cleared.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const lastFalsification = proofState && proofState.last_falsification && typeof proofState.last_falsification === "object"
+        ? proofState.last_falsification
+        : {};
+      const resolutionState = String(proofResolution.state || "").trim().toLowerCase();
+      const resolutionLaneIds = Array.isArray(proofResolution.lane_ids)
+        ? proofResolution.lane_ids.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const detailRows = [];
+      const pushRow = (label, value) => {
+        const token = String(value || "").trim();
+        if (!token) return;
+        detailRows.push(`<div><strong>${escapeHtml(label)}:</strong> ${escapeHtml(token)}</div>`);
+      };
+      pushRow("Current blocker", proofState.current_blocker);
+      pushRow("Failure fingerprint", proofState.failure_fingerprint);
+      pushRow("Frontier", proofState.frontier_phase);
+      pushRow("Evidence tier", String(proofState.evidence_tier || "").replace(/_/g, " "));
+      pushRow("Clear only when", proofState.clearance_condition);
+      pushRow("Last falsification", lastFalsification.recorded_at);
+      pushRow("Highest truthful claim", claimGuard.highest_truthful_claim);
+      if (!String(proofState.current_blocker || "").trim() && resolutionState === "ambiguous") {
+        pushRow("Proof state", `Ambiguous across ${resolutionLaneIds.join(", ") || "multiple lanes"}`);
+      }
+      if (!String(proofState.current_blocker || "").trim() && resolutionState === "none") {
+        pushRow("Proof state", "No dominant proof lane is resolved for this workstream yet.");
+      }
+      if (allowedNextWork.length) {
+        pushRow("Allowed next work", allowedNextWork.join(", "));
+      }
+      if (deprioritized.length) {
+        pushRow("Deprioritized", deprioritized.join(", "));
+      }
+      const deploymentParts = [
+        `local ${String(deploymentTruth.local_head || "unknown").trim() || "unknown"}`,
+        `pushed ${String(deploymentTruth.pushed_head || "unknown").trim() || "unknown"}`,
+        `published ${String(deploymentTruth.published_source_commit || "unknown").trim() || "unknown"}`,
+        `runner ${String(deploymentTruth.runner_fingerprint || "unknown").trim() || "unknown"}`,
+        `last fail ${String(deploymentTruth.last_live_failing_commit || "unknown").trim() || "unknown"}`,
+      ];
+      pushRow("Deployment truth", deploymentParts.join(" · "));
+      if (!detailRows.length && !proofSummaryLines.length && !proofRefs.length) {
+        return "";
+      }
+      const refsHtml = proofRefs.length
+        ? `<div class="chips">${
+            proofRefs.slice(0, 4).map((ref) => {
+              const label = String(ref.label || ref.value || "Proof").trim() || "Proof";
+              return `<a class="chip chip-link" href="${escapeHtml(proofRefHref(ref))}" target="_top">${escapeHtml(label)}</a>`;
+            }).join("")
+          }</div>`
+        : "";
+      const summaryHtml = proofSummaryLines.length
+        ? `<div>${proofSummaryLines.slice(0, 4).map((line) => `<div>${escapeHtml(line)}</div>`).join("")}</div>`
+        : "";
+      return `
+        <div class="ws-inline-detail">
+          <div class="ws-detail-kicker">Proof Control</div>
+          <div class="ws-detail-grid">
+            ${detailRows.join("")}
+            ${summaryHtml}
+            ${refsHtml ? `<div><strong>Proof links:</strong> ${refsHtml}</div>` : ""}
+          </div>
+        </div>
+      `;
+    }
+
     function renderCurrentWorkstreams(payload, state, events, transactions, navigationState) {
       const rows = scopeWorkstreams(payload, state);
       const target = document.getElementById("current-workstreams");
@@ -235,8 +353,15 @@
         const phase = String(row.status || "").trim().toLowerCase();
         const phaseLabel = phase ? `${phase.charAt(0).toUpperCase()}${phase.slice(1)}` : "Unknown";
         const phaseClass = phaseChipClass(phase);
-        const progress = Number(plan.progress_ratio || 0);
-        const progressPct = Math.round(progress * 100);
+        const progressRatio = numericProgressOrNull(
+          Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")
+            ? plan.display_progress_ratio
+            : (Object.prototype.hasOwnProperty.call(plan, "progress_ratio") ? plan.progress_ratio : null)
+        );
+        const progressLabel = String(plan && plan.display_progress_label ? plan.display_progress_label : "").trim();
+        const progressKnown = progressRatio !== null;
+        const progressPct = progressKnown ? Math.round(progressRatio * 100) : null;
+        const progressCellLabel = progressKnown ? `${progressPct}%` : (progressLabel || "n/a");
         const doneTasks = Number(plan.done_tasks || 0);
         const totalTasks = Number(plan.total_tasks || 0);
         const eta = timeline.eta_days;
@@ -386,6 +511,9 @@
               .join(" · ")
           : "";
         const hasActiveWaveMembership = primaryWaveProgram ? Boolean(primaryWaveProgram.has_active_wave) : false;
+        const release = row && row.release && typeof row.release === "object" ? row.release : {};
+        const releaseLabel = compassWorkstreamReleaseLabel(release);
+        const releaseHistorySummary = String(row.release_history_summary || "").trim();
 
         return {
           ideaId,
@@ -397,6 +525,9 @@
           liveLabel,
           liveIsActive,
           progressPct,
+          progressKnown,
+          progressLabel,
+          progressCellLabel,
           doneTasks,
           totalTasks,
           etaLabel,
@@ -425,8 +556,15 @@
           waveProgramNext,
           waveProgramSummary,
           hasActiveWaveMembership,
+          releaseLabel,
+          releaseHistorySummary,
           relatedDiagramIds,
           planHref,
+          proof_state: row && row.proof_state && typeof row.proof_state === "object" ? row.proof_state : {},
+          proof_state_resolution: row && row.proof_state_resolution && typeof row.proof_state_resolution === "object" ? row.proof_state_resolution : {},
+          claim_guard: row && row.claim_guard && typeof row.claim_guard === "object" ? row.claim_guard : {},
+          proof_refs: Array.isArray(row && row.proof_refs) ? row.proof_refs : [],
+          proof_summary_lines: Array.isArray(row && row.proof_summary_lines) ? row.proof_summary_lines : [],
         };
       });
 
@@ -479,6 +617,7 @@
             }</div>`
           : "";
         const liveWindowClause = `${selected.liveIsActive ? "active inside" : "outside"} ${Math.max(1, Math.round(activeWindowMinutes))}m live window`;
+        const proofControlHtml = workstreamProofDetailRows(selected);
         return `
             <div class="ws-inline-detail">
               <div class="ws-detail-kicker">Selected Workstream Detail</div>
@@ -487,7 +626,12 @@
               <span class="chip"${workstreamTooltipAttrs(selected.ideaId, workstreamTitles, `Workstream ${selected.ideaId}`)}>${escapeHtml(selected.ideaId)}</span>
               <span class="chip ${selected.phaseClass}">Phase: ${escapeHtml(selected.phaseLabel)}</span>
               <span class="chip ${selected.liveIsActive ? "" : "subtle"}">Live: ${escapeHtml(selected.liveLabel)}</span>
-              <span class="chip subtle">Progress: ${escapeHtml(`${selected.progressPct}% (${selected.doneTasks}/${selected.totalTasks})`)}</span>
+              ${selected.releaseLabel ? `<span class="chip subtle">${escapeHtml(selected.releaseLabel)}</span>` : ""}
+              ${selected.progressKnown
+                ? `<span class="chip subtle">Progress: ${escapeHtml(`${selected.progressPct}% (${selected.doneTasks}/${selected.totalTasks})`)}</span>`
+                : (selected.progressLabel
+                  ? `<span class="chip subtle">Progress: ${escapeHtml(selected.progressLabel)}</span>`
+                  : "")}
               <span class="chip subtle">Cost: ${escapeHtml(selected.costLabel)}</span>
               <span class="chip subtle">ETA: ${escapeHtml(selected.etaLabel)}</span>
             </div>
@@ -497,6 +641,7 @@
               <div><strong>Last update:</strong> ${escapeHtml(`${selected.liveLast} (${liveWindowClause})`)}</div>
               <div><strong>Latest context:</strong> ${escapeHtml(selected.latestContext)}</div>
               ${selected.waveProgramSummary ? `<div><strong>Wave posture:</strong> ${escapeHtml(selected.waveProgramSummary)}</div>` : ""}
+              ${selected.releaseHistorySummary ? `<div><strong>Release history:</strong> ${escapeHtml(selected.releaseHistorySummary)}</div>` : ""}
               ${selected.lineageSummary ? `<div><strong>Lineage:</strong> ${escapeHtml(selected.lineageSummary)}</div>` : ""}
               ${selected.implementationFocus ? `<div><strong>Implementation focus:</strong> ${escapeHtml(selected.implementationFocus)}</div>` : ""}
               ${registryComponentLinks ? `<div><strong>Registry components:</strong> ${registryComponentLinks}</div>` : ""}
@@ -504,6 +649,7 @@
               <div><strong>Next checkpoint:</strong> ${escapeHtml(selected.nextCheckpoint)}</div>
             </div>
           </div>
+          ${proofControlHtml}
         `;
       };
 
@@ -520,17 +666,19 @@
 
       const rowHtml = records.map((item) => {
         const isSelected = item.ideaId === initiallyExpandedId;
-        const radarHref = `../index.html?tab=radar&workstream=${encodeURIComponent(item.ideaId)}`;
+        const radarHref = radarWorkstreamHref(item.ideaId);
         return `
         <tr ${renderSummaryRowAttrs(item, "ws-row-title", isSelected)}>
-          <td class="ws-title-cell ws-title-row-cell" colspan="5">${escapeHtml(item.tableTitle || "-")}</td>
+          <td class="ws-title-cell ws-title-row-cell" colspan="5">
+            ${escapeHtml(item.tableTitle || "-")}
+          </td>
         </tr>
         <tr ${renderSummaryRowAttrs(item, "ws-row-meta", isSelected)}>
-          <td class="ws-col-id"><a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</a></td>
+          <td class="ws-col-id"><div class="ws-id-stack"><a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</a>${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}</div></td>
           <td class="ws-col-wave">${renderWaveSummaryCell(item)}</td>
           <td class="ws-col-phase"><span class="chip ${item.phaseClass}">${escapeHtml(item.phaseLabel)}</span></td>
           <td class="ws-col-live"><span class="chip ${item.liveIsActive ? "" : "subtle"}">${escapeHtml(item.liveLabel)}</span></td>
-          <td class="ws-col-progress">${escapeHtml(`${item.progressPct}%`)}</td>
+          <td class="ws-col-progress">${escapeHtml(item.progressCellLabel)}</td>
         </tr>
         <tr class="ws-detail-row${isSelected ? " is-open" : ""}" data-ws-detail="${escapeHtml(item.ideaId)}">
           <td class="ws-detail-cell" colspan="5">${detailMarkup(item)}</td>
@@ -619,10 +767,6 @@
       const workstreamNarratives = workstreamNarrativeLookup(payload);
       const historyDates = knownHistoryDateTokens(payload);
       const missingSnapshot = state.date !== "live" && DATE_RE.test(state.date) && !historyDates.includes(state.date);
-      const persistAuditDay = Boolean(state && state.audit_day_pinned && DATE_RE.test(state.audit_day));
-
-      const timelineScopeHref = (workstreamId) =>
-        `../index.html?tab=compass&scope=${encodeURIComponent(workstreamId)}&window=${encodeURIComponent(state.window)}&date=${encodeURIComponent(state.date)}${persistAuditDay ? `&audit_day=${encodeURIComponent(state.audit_day)}` : ""}`;
 
       const renderTimelineWorkstreamChips = (workstreams, maxItems) => {
         const rows = Array.isArray(workstreams) ? workstreams : [];
@@ -631,8 +775,8 @@
           .filter(Boolean)
           .slice(0, Math.max(0, Number(maxItems || 0)))
           .map((id) => {
-            const tooltipAttrs = workstreamTooltipAttrs(id, workstreamTitles, `Open scope for ${id}`);
-            return `<a class="chip chip-link" href="${escapeHtml(timelineScopeHref(id))}" target="_top"${tooltipAttrs}>${escapeHtml(id)}</a>`;
+            const tooltipAttrs = workstreamTooltipAttrs(id, workstreamTitles, `Open radar for ${id}`);
+            return `<a class="chip chip-link workstream-id-chip" href="${escapeHtml(radarWorkstreamHref(id))}" target="_top"${tooltipAttrs}>${escapeHtml(id)}</a>`;
           });
         return chips.length ? `<div class="chips">${chips.join("")}</div>` : "";
       };
@@ -654,6 +798,15 @@
       const rows = [];
       const txRows = Array.isArray(transactions) ? transactions : [];
       const eventRows = Array.isArray(events) ? events : [];
+      const renderDaySet = new Set(renderDays);
+      const relevantTransactions = txRows.filter((row) => renderDaySet.has(toLocalDateToken(row.end_ts_iso || row.start_ts_iso)));
+      const relevantEvents = eventRows.filter((row) => renderDaySet.has(toLocalDateToken(row.ts_iso)));
+      if (!relevantTransactions.length && !relevantEvents.length) {
+        target.innerHTML = state.workstream
+          ? '<div class="empty">No audit events in this scope and window.</div>'
+          : '<div class="empty">No audit events in this window.</div>';
+        return;
+      }
 
       const renderTimelineEventCard = (eventRow) => {
         const eventTime = toDate(eventRow.ts_iso);

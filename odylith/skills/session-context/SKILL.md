@@ -11,6 +11,8 @@ Use this skill when a session needs a grounded restart, a dirty-session delta, o
 - prefer session-aware packets over broad lexical recall
 - recover active intent, constraints, validation obligations, linked workstreams, components, diagrams, and bugs before substantive edits
 - keep outstanding risks and validation obligations visible
+- when carrying Compass or session memory forward, preserve the non-negotiable Compass voice contract: plainspoken grounded maintainer narration, human, plain, specific, open, clear, spoken maintainer judgment with no stock framing, repeated window leads, canned next/why/timing wrappers, rhetorical benchmark challenges, stagey metaphor, or house phrases
+- preserve the cost contract too: Compass session carry-forward should lean on existing deterministic timeline and runtime memory, and any simple live brief regeneration should use the cheap-fast model lane first
 - refresh session/Compass context after major decisions so later turns inherit real repo memory
 
 ## Canonical Commands

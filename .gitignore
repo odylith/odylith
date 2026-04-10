@@ -6,3 +6,4 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 .odylith/
+odylith/compass/runtime/refresh-state.v1.json

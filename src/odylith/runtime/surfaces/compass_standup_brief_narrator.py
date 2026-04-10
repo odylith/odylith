@@ -158,6 +158,7 @@ _CACHE_TTL_SECONDS_BY_FRESHNESS = {
     "stale": 4 * 60 * 60,
     "unknown": 60 * 60,
 }
+_CONTEXT_CACHE_MAX_AGE_SECONDS = 24 * 60 * 60
 
 
 def _default_compass_reasoning_config() -> odylith_reasoning.ReasoningConfig:
@@ -302,6 +303,20 @@ def _cache_entry_is_reusable(
     return age_seconds <= float(_cache_ttl_seconds(fact_packet=fact_packet))
 
 
+def _cache_entry_within_context_age_limit(
+    *,
+    cached_entry: Mapping[str, Any],
+    now_utc: dt.datetime,
+) -> bool:
+    generated_ts = _parse_iso_datetime(str(cached_entry.get("generated_utc", "")).strip())
+    if generated_ts is None:
+        return False
+    age_seconds = (now_utc - generated_ts).total_seconds()
+    if age_seconds < 0:
+        return False
+    return age_seconds <= float(_CONTEXT_CACHE_MAX_AGE_SECONDS)
+
+
 def _cache_entry_age_seconds(
     *,
     cached_entry: Mapping[str, Any],
@@ -337,8 +352,6 @@ def _cache_entry_matches_context(
     if not isinstance(cached_context, Mapping):
         return False
     target_context = _cache_context(fact_packet=fact_packet)
-    if str(cached_context.get("window", "")).strip() != target_context["window"]:
-        return False
     if str(cached_context.get("scope_mode", "")).strip().lower() != target_context["scope_mode"]:
         return False
     if target_context["scope_mode"] == "scoped":
@@ -1102,13 +1115,7 @@ def _context_cache_ready_brief_if_reusable(
     generated_utc: str,
 ) -> dict[str, Any] | None:
     context = _cache_context(fact_packet=fact_packet)
-    facts = fact_packet.get("facts")
-    if context["scope_mode"] == "scoped" and isinstance(facts, Sequence):
-        for item in facts:
-            if not isinstance(item, Mapping):
-                continue
-            if str(item.get("kind", "")).strip().lower() == "freshness":
-                return None
+    now_utc = dt.datetime.now(tz=dt.timezone.utc)
     best_sections: list[dict[str, Any]] | None = None
     best_generated_utc = ""
     best_generated_dt: dt.datetime | None = None
@@ -1131,6 +1138,11 @@ def _context_cache_ready_brief_if_reusable(
             if not isinstance(entry, Mapping):
                 continue
             if not _cache_entry_matches_context(cached_entry=entry, fact_packet=fact_packet):
+                continue
+            if not _cache_entry_within_context_age_limit(
+                cached_entry=entry,
+                now_utc=now_utc,
+            ):
                 continue
             raw_sections = entry.get("sections")
             if not isinstance(raw_sections, Sequence) or not raw_sections:
@@ -1686,6 +1698,69 @@ def _validated_cached_sections(
     }
     sections, errors = _validate_brief_response(
         response=response,
+        fact_packet=fact_packet,
+        cached_evidence_lookup=cached_evidence_lookup,
+    )
+    if not errors and sections:
+        return sections
+    salvaged = _salvage_cached_sections(
+        raw_sections=normalized_sections,
+        fact_packet=fact_packet,
+        cached_evidence_lookup=cached_evidence_lookup,
+        validation_errors=errors,
+    )
+    if salvaged:
+        return salvaged
+    return None
+
+
+def _recoverable_cached_section_keys(*, validation_errors: Sequence[str]) -> set[str]:
+    recoverable: set[str] = set()
+    for error in validation_errors:
+        message = str(error).strip()
+        match = re.match(r"^section\s+([a-z_]+)\s+bullet\s+\d+\s+", message)
+        if not match:
+            return set()
+        section_key = str(match.group(1)).strip()
+        if message.endswith("drifts away from the cited fact language") or message.endswith(
+            "falls into portable summary cadence"
+        ):
+            recoverable.add(section_key)
+            continue
+        return set()
+    return recoverable
+
+
+def _salvage_cached_sections(
+    *,
+    raw_sections: Sequence[Mapping[str, Any]],
+    fact_packet: Mapping[str, Any],
+    cached_evidence_lookup: Mapping[str, Mapping[str, Any]] | None = None,
+    validation_errors: Sequence[str],
+) -> list[dict[str, Any]] | None:
+    recoverable_section_keys = _recoverable_cached_section_keys(validation_errors=validation_errors)
+    if not recoverable_section_keys:
+        return None
+    deterministic_sections = compass_standup_brief_deterministic.build_sections(
+        fact_packet=fact_packet,
+        section_specs=STANDUP_BRIEF_SECTIONS,
+    )
+    deterministic_by_key = {
+        str(section.get("key", "")).strip(): dict(section)
+        for section in deterministic_sections
+        if isinstance(section, Mapping) and str(section.get("key", "")).strip()
+    }
+    salvaged_sections: list[dict[str, Any]] = []
+    for section in raw_sections:
+        if not isinstance(section, Mapping):
+            continue
+        key = str(section.get("key", "")).strip()
+        if key in recoverable_section_keys and key in deterministic_by_key:
+            salvaged_sections.append(dict(deterministic_by_key[key]))
+        else:
+            salvaged_sections.append(dict(section))
+    sections, errors = _validate_brief_response(
+        response={"sections": salvaged_sections},
         fact_packet=fact_packet,
         cached_evidence_lookup=cached_evidence_lookup,
     )

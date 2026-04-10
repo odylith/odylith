@@ -170,6 +170,21 @@ def test_program_create_scaffolds_program_and_updates_execution_model(tmp_path: 
     assert payload["waves"][1]["depends_on"] == ["W1"]
 
 
+def test_program_create_json_emits_execution_governance_payload(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001
+) -> None:
+    _seed_program_repo(tmp_path)
+
+    rc = program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201", "--json"])
+
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["execution_governance"]["admissibility"]["outcome"] == "admit"
+    assert payload["execution_governance"]["contract"]["authoritative_lane"] == "governance.program_wave.authoritative"
+    assert payload["execution_governance"]["contract"]["host_profile"]["host_family"]
+
+
 def test_program_status_and_next_fail_closed_when_program_file_is_missing(
     tmp_path: Path,
     capsys,  # noqa: ANN001
@@ -239,4 +254,73 @@ def test_wave_assign_rejects_non_child_workstream(tmp_path: Path, capsys) -> Non
     )
 
     assert rc == 2
-    assert "workstream `B-299` is not a child of umbrella `B-201`" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "action `mutate_wave_assign` is `deny`" in output
+    assert "violated precondition: required_scope:HC-authoritative-governed-scope" in output
+    assert "nearest admissible alternative: odylith program status B-201" in output
+
+
+def test_program_update_defers_activation_until_dependencies_are_complete(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001
+) -> None:
+    _seed_program_repo(tmp_path)
+    assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"]) == 0
+    capsys.readouterr()
+
+    rc = program_wave_authoring.run_program(
+        ["--repo-root", str(tmp_path), "update", "B-201", "--activate-wave", "W2"]
+    )
+
+    assert rc == 2
+    output = capsys.readouterr().out
+    assert "action `mutate_program_update` is `defer`" in output
+    assert "violated precondition: wave `W2` depends on `W1`" in output
+    assert "nearest admissible alternative: odylith program status B-201" in output
+
+
+def test_wave_gate_add_denies_when_workstream_is_not_in_the_wave(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001
+) -> None:
+    _seed_program_repo(tmp_path)
+    assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"]) == 0
+    capsys.readouterr()
+
+    rc = program_wave_authoring.run_wave(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "gate-add",
+            "B-201",
+            "W1",
+            "B-203",
+            "--label",
+            "Policy middleware gate",
+        ]
+    )
+
+    assert rc == 2
+    output = capsys.readouterr().out
+    assert "action `mutate_wave_gate_add` is `deny`" in output
+    assert "violated precondition: required_scope:HC-authoritative-governed-scope" in output
+    assert "nearest admissible alternative: odylith wave assign B-201 W1 B-203 --role primary" in output
+
+
+def test_wave_unassign_denies_noop_when_workstream_is_not_in_the_wave(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001
+) -> None:
+    _seed_program_repo(tmp_path)
+    assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"]) == 0
+    capsys.readouterr()
+
+    rc = program_wave_authoring.run_wave(
+        ["--repo-root", str(tmp_path), "unassign", "B-201", "W1", "B-203"]
+    )
+
+    assert rc == 2
+    output = capsys.readouterr().out
+    assert "action `mutate_wave_unassign` is `deny`" in output
+    assert "violated precondition: required_scope:HC-authoritative-governed-scope" in output
+    assert "nearest admissible alternative: odylith wave status B-201 W1" in output

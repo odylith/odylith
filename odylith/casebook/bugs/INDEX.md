@@ -1,6 +1,6 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-09
+Last updated (UTC): 2026-04-10
 
 ## Open Bugs
 
@@ -13,6 +13,11 @@ Last updated (UTC): 2026-04-09
   `src/odylith/runtime/surfaces/render_registry_dashboard.py`,
   `src/odylith/runtime/surfaces/render_mermaid_catalog.py`,
   related specs and governance-surface guidance. | Open | [2026-04-09-low-signal-governance-churn-can-outrank-real-execution-across-governance-surfaces.md](2026-04-09-low-signal-governance-churn-can-outrank-real-execution-across-governance-surfaces.md) |
+| CB-091 | 2026-04-09 | Compass bounded refresh still misses release bar after ready briefs return to narrated cache | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_standup_runtime_reuse.py`,
+  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
+  Compass component spec, `B-025`, `B-071`, and the `v0.1.11` release note. | Open | [2026-04-09-compass-bounded-refresh-still-misses-release-bar-after-ready-briefs-return-to-narrated-cache.md](2026-04-09-compass-bounded-refresh-still-misses-release-bar-after-ready-briefs-return-to-narrated-cache.md) |
 | CB-089 | 2026-04-09 | Benchmark live proof reports still emit codex branded canonical fields | P1 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`,

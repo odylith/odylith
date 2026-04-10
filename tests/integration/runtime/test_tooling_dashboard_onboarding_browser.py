@@ -377,6 +377,28 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         assert writes
         assert writes[-1] == "odylith compass watch-transactions --repo-root . --interval-seconds 10"
 
+        search.fill("ship target")
+        page.locator(".cheatsheet-card-title", has_text="Release planning: pick the ship target").wait_for(timeout=15000)
+        assert page.locator(".cheatsheet-card", has_text="Program/wave planning: sequence umbrella execution").first.is_hidden()
+
+        release_card = page.locator(".cheatsheet-card", has_text="Release planning: pick the ship target").first
+        _click_visible(release_card.locator("button", has_text="Copy CLI"))
+        page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
+        writes = _clipboard_writes(page)
+        assert writes
+        assert writes[-1] == "odylith release add B-067 0.1.11 --repo-root ."
+
+        search.fill("umbrella execution")
+        page.locator(".cheatsheet-card-title", has_text="Program/wave planning: sequence umbrella execution").wait_for(timeout=15000)
+        assert page.locator(".cheatsheet-card", has_text="Release planning: pick the ship target").first.is_hidden()
+
+        wave_card = page.locator(".cheatsheet-card", has_text="Program/wave planning: sequence umbrella execution").first
+        _click_visible(wave_card.locator("button", has_text="Copy route"))
+        page.locator("#agentCheatsheetCopyStatus", has_text="Shell route copied.").wait_for(timeout=15000)
+        writes = _clipboard_writes(page)
+        assert writes
+        assert writes[-1] == "odylith/index.html?tab=radar&workstream=B-021"
+
         search.fill("")
         _click_visible(page.locator('[data-cheatsheet-filter="validate"]'))
         page.locator(".cheatsheet-card-title", has_text="Check self-host posture").wait_for(timeout=15000)
@@ -624,7 +646,7 @@ def test_authored_v0_1_10_release_note_drives_upgrade_popup_copy(tmp_path: Path,
         assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.10"
         assert page.locator(".upgrade-spotlight-title-copy").inner_text().strip() == "Boringly Trustworthy"
         assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.10"
-        assert "Explicit Compass full refresh now fails closed" in page.locator(
+        assert "Compass refresh now sticks to one bounded runtime contract" in page.locator(
             "#shellUpgradeSpotlight"
         ).inner_text()
         assert (

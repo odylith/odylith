@@ -136,6 +136,25 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
             "latest_execution_mode": "",
             "latest_execution_delegate_preference": "",
             "latest_execution_source": "",
+            "latest_execution_governance_present": False,
+            "latest_execution_governance_outcome": "",
+            "latest_execution_governance_requires_reanchor": False,
+            "latest_execution_governance_mode": "",
+            "latest_execution_governance_next_move": "",
+            "latest_execution_governance_current_phase": "",
+            "latest_execution_governance_last_successful_phase": "",
+            "latest_execution_governance_blocker": "",
+            "latest_execution_governance_closure": "",
+            "latest_execution_governance_wait_status": "",
+            "latest_execution_governance_wait_detail": "",
+            "latest_execution_governance_resume_token": "",
+            "latest_execution_governance_validation_archetype": "",
+            "latest_execution_governance_validation_minimum_pass_count": 0,
+            "latest_execution_governance_contradiction_count": 0,
+            "latest_execution_governance_history_rule_count": 0,
+            "latest_execution_governance_authoritative_lane": "",
+            "latest_execution_governance_host_family": "",
+            "latest_execution_governance_model_family": "",
             "advisory_state": "unavailable",
             "advisory_confidence_score": 0,
             "advisory_confidence_level": "",
@@ -376,6 +395,51 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
         "latest_execution_mode": _string(latest_packet.get("odylith_execution_selection_mode")),
         "latest_execution_delegate_preference": _string(latest_packet.get("odylith_execution_delegate_preference")),
         "latest_execution_source": _string(latest_packet.get("odylith_execution_source")),
+        "latest_execution_governance_present": bool(latest_packet.get("execution_governance_present")),
+        "latest_execution_governance_outcome": _string(latest_packet.get("execution_governance_outcome")),
+        "latest_execution_governance_requires_reanchor": bool(
+            latest_packet.get("execution_governance_requires_reanchor")
+        ),
+        "latest_execution_governance_mode": _string(latest_packet.get("execution_governance_mode")),
+        "latest_execution_governance_next_move": _string(latest_packet.get("execution_governance_next_move")),
+        "latest_execution_governance_current_phase": _string(
+            latest_packet.get("execution_governance_current_phase")
+        ),
+        "latest_execution_governance_last_successful_phase": _string(
+            latest_packet.get("execution_governance_last_successful_phase")
+        ),
+        "latest_execution_governance_blocker": _string(latest_packet.get("execution_governance_blocker")),
+        "latest_execution_governance_closure": _string(latest_packet.get("execution_governance_closure")),
+        "latest_execution_governance_wait_status": _string(
+            latest_packet.get("execution_governance_wait_status")
+        ),
+        "latest_execution_governance_wait_detail": _string(
+            latest_packet.get("execution_governance_wait_detail")
+        ),
+        "latest_execution_governance_resume_token": _string(
+            latest_packet.get("execution_governance_resume_token")
+        ),
+        "latest_execution_governance_validation_archetype": _string(
+            latest_packet.get("execution_governance_validation_archetype")
+        ),
+        "latest_execution_governance_validation_minimum_pass_count": _int(
+            latest_packet.get("execution_governance_validation_minimum_pass_count")
+        ),
+        "latest_execution_governance_contradiction_count": _int(
+            latest_packet.get("execution_governance_contradiction_count")
+        ),
+        "latest_execution_governance_history_rule_count": _int(
+            latest_packet.get("execution_governance_history_rule_count")
+        ),
+        "latest_execution_governance_authoritative_lane": _string(
+            latest_packet.get("execution_governance_authoritative_lane")
+        ),
+        "latest_execution_governance_host_family": _string(
+            latest_packet.get("execution_governance_host_family")
+        ),
+        "latest_execution_governance_model_family": _string(
+            latest_packet.get("execution_governance_model_family")
+        ),
         "advisory_state": _string(control_advisories.get("state")) or _string(learning_loop.get("state")),
         "advisory_confidence_score": _int(advisory_confidence.get("score")),
         "advisory_confidence_level": _string(advisory_confidence.get("level")),

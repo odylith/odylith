@@ -496,6 +496,7 @@
         || files.includes("odylith/compass/compass-summary.v1.js")
         || files.includes("odylith/compass/compass-timeline.v1.js")
         || files.includes("odylith/compass/compass-waves.v1.js")
+        || files.includes("odylith/compass/compass-releases.v1.js")
         || files.includes("odylith/compass/compass-workstreams.v1.js")
         || files.includes("odylith/compass/compass-ui-runtime.v1.js")
         || files.includes("odylith/compass/compass-style-base.v1.css")

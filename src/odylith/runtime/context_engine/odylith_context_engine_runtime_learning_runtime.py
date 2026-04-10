@@ -1185,6 +1185,14 @@ def _packet_satisfies_evaluation_expectations(
         "claim_guard_highest_truthful_claim",
         "claim_guard_claim_scope",
         "claim_guard_gate_state",
+        "execution_governance_outcome",
+        "execution_governance_mode",
+        "execution_governance_next_move",
+        "execution_governance_closure",
+        "execution_governance_wait_status",
+        "execution_governance_validation_archetype",
+        "execution_governance_host_family",
+        "execution_governance_model_family",
     ):
         expected = _expected_token_set(expect_spec.get(field_name))
         if not expected:
@@ -1203,6 +1211,8 @@ def _packet_satisfies_evaluation_expectations(
         "claim_guard_hosted_frontier_advanced",
         "claim_guard_same_fingerprint_as_last_falsification",
         "proof_same_fingerprint_reopened",
+        "execution_governance_present",
+        "execution_governance_requires_reanchor",
     ):
         if field_name not in expect_spec:
             continue
@@ -2027,6 +2037,51 @@ def load_runtime_optimization_snapshot(
             "native_spawn_ready": bool(latest_packet.get("native_spawn_ready")),
             "within_budget": bool(latest_packet.get("within_budget")),
             "miss_recovery_mode": str(latest_packet.get("miss_recovery_mode", "")).strip(),
+            "execution_governance_present": bool(latest_packet.get("execution_governance_present")),
+            "execution_governance_outcome": str(latest_packet.get("execution_governance_outcome", "")).strip(),
+            "execution_governance_requires_reanchor": bool(
+                latest_packet.get("execution_governance_requires_reanchor")
+            ),
+            "execution_governance_mode": str(latest_packet.get("execution_governance_mode", "")).strip(),
+            "execution_governance_next_move": str(latest_packet.get("execution_governance_next_move", "")).strip(),
+            "execution_governance_current_phase": str(
+                latest_packet.get("execution_governance_current_phase", "")
+            ).strip(),
+            "execution_governance_last_successful_phase": str(
+                latest_packet.get("execution_governance_last_successful_phase", "")
+            ).strip(),
+            "execution_governance_blocker": str(latest_packet.get("execution_governance_blocker", "")).strip(),
+            "execution_governance_closure": str(latest_packet.get("execution_governance_closure", "")).strip(),
+            "execution_governance_wait_status": str(
+                latest_packet.get("execution_governance_wait_status", "")
+            ).strip(),
+            "execution_governance_wait_detail": str(
+                latest_packet.get("execution_governance_wait_detail", "")
+            ).strip(),
+            "execution_governance_resume_token": str(
+                latest_packet.get("execution_governance_resume_token", "")
+            ).strip(),
+            "execution_governance_validation_archetype": str(
+                latest_packet.get("execution_governance_validation_archetype", "")
+            ).strip(),
+            "execution_governance_validation_minimum_pass_count": int(
+                latest_packet.get("execution_governance_validation_minimum_pass_count", 0) or 0
+            ),
+            "execution_governance_contradiction_count": int(
+                latest_packet.get("execution_governance_contradiction_count", 0) or 0
+            ),
+            "execution_governance_history_rule_count": int(
+                latest_packet.get("execution_governance_history_rule_count", 0) or 0
+            ),
+            "execution_governance_authoritative_lane": str(
+                latest_packet.get("execution_governance_authoritative_lane", "")
+            ).strip(),
+            "execution_governance_host_family": str(
+                latest_packet.get("execution_governance_host_family", "")
+            ).strip(),
+            "execution_governance_model_family": str(
+                latest_packet.get("execution_governance_model_family", "")
+            ).strip(),
             "estimated_tokens": int(latest_packet.get("estimated_tokens", 0) or 0),
         }
         if latest_packet

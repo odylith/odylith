@@ -1,18 +1,18 @@
 # Security Policy
 
-Last updated: 2026-04-07
+Last updated: 2026-04-09
 
 ## Supported Versions
 
-Odylith is GA on supported public install platforms as of 2026-04-07.
+Odylith is GA on supported public install platforms as of 2026-04-08.
 
-Public GitHub releases are now live. The latest published release is `v0.1.9`,
-published on 2026-04-07. Security reports are handled on a best-effort basis,
+Public GitHub releases are now live. The latest published release is `v0.1.10`,
+published on 2026-04-08. Security reports are handled on a best-effort basis,
 with the supported release posture defined below.
 
 | Version | Supported |
 | --- | --- |
-| Latest published release (`v0.1.9` as of 2026-04-07) | Yes, best effort |
+| Latest published release (`v0.1.10` as of 2026-04-08) | Yes, best effort |
 | Older published releases | Upgrade to the latest release before expecting a fix |
 | `main` | Development branch only; may contain unreleased changes |
 

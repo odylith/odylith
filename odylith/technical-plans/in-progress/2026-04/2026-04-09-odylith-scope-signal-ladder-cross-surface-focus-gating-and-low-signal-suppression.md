@@ -172,3 +172,9 @@ Related Bugs:
   `cache exact` instead of dropping back to deterministic, so the ladder now
   rides on top of a bounded narrated-cache contract rather than paying or
   flattening the globals again.
+- Release bar remains open after the next follow-on too. The current bounded
+  hot exact-reuse lane is `0.1s` internal (`0.61s` wall), the current cold
+  shell-safe lane is `0.8s` internal (`1.14s` wall), and the ready-brief mix
+  is now `39 cache / 0 deterministic`. The ladder rollout no longer shares a
+  live-narration blocker with Compass; the remaining miss is cold wall-clock
+  overhead upstream of the ladder contract.

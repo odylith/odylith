@@ -39,7 +39,6 @@
       { key: "completed", label: "Completed in this window" },
       { key: "current_execution", label: "Current execution" },
       { key: "next_planned", label: "Next planned" },
-      { key: "why_this_matters", label: "Why this matters" },
       { key: "risks_to_watch", label: "Risks to watch" },
     ];
     let CURRENT_STANDUP_BRIEF = null;
@@ -220,26 +219,23 @@ initQuickTooltips();
         ? payload.digest_scoped[key]
         : {};
       const scopedList = state.workstream && Array.isArray(scopedMap[state.workstream]) ? scopedMap[state.workstream] : [];
-      return scopedList.length ? scopedList : globalList;
+      if (WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim())) {
+        return scopedList;
+      }
+      return globalList;
     }
 
-    function inferLegacyBulletVoice(sectionKey, bulletText, bulletIndex) {
+    function normalizeLegacyBulletText(bulletText) {
       const source = String(bulletText || "").trim();
       const executiveMatch = source.match(/^(Executive|Product|Business)\s*:\s*(.+)$/i);
       if (executiveMatch) {
-        return { voice: "executive", text: String(executiveMatch[2] || "").trim() };
+        return String(executiveMatch[2] || "").trim();
       }
       const operatorMatch = source.match(/^(Operator|Technical)\s*:\s*(.+)$/i);
       if (operatorMatch) {
-        return { voice: "operator", text: String(operatorMatch[2] || "").trim() };
+        return String(operatorMatch[2] || "").trim();
       }
-      if (sectionKey === "current_execution") {
-        return { voice: bulletIndex === 0 ? "executive" : "operator", text: source };
-      }
-      if (sectionKey === "why_this_matters") {
-        return { voice: bulletIndex === 0 ? "executive" : "operator", text: source };
-      }
-      return { voice: "operator", text: source };
+      return source;
     }
 
     function legacyDigestToBrief(lines, generatedUtc) {
@@ -254,7 +250,9 @@ initQuickTooltips();
         return {
           key: spec.key,
           label: spec.label,
-          bullets: bulletTexts.map((bullet, index) => inferLegacyBulletVoice(spec.key, bullet, index)),
+          bullets: bulletTexts
+            .map((bullet) => ({ text: normalizeLegacyBulletText(bullet) }))
+            .filter((bullet) => String(bullet && bullet.text ? bullet.text : "").trim()),
         };
       });
       return {
@@ -272,19 +270,10 @@ initQuickTooltips();
       return STANDUP_BRIEF_SECTION_SPECS.map((spec) => {
         const section = sections.find((row) => row && String(row.key || "").trim() === spec.key) || {};
         const bullets = Array.isArray(section.bullets) ? section.bullets : [];
-        const voiceCount = new Set(
-          bullets
-            .map((bullet) => String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase())
-            .filter(Boolean)
-        ).size;
         const bulletTexts = bullets
           .map((bullet) => {
-            const voice = String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase();
             const text = String(bullet && bullet.text ? bullet.text : "").trim();
             if (!text) return "";
-            if (voiceCount > 1 && (voice === "executive" || voice === "operator")) {
-              return `${voice.charAt(0).toUpperCase()}${voice.slice(1)}: ${text}`;
-            }
             return text;
           })
           .filter(Boolean);
@@ -311,28 +300,75 @@ initQuickTooltips();
       };
     }
 
+    function scopedWorkstreamRow(payload, workstreamId) {
+      const target = String(workstreamId || "").trim();
+      if (!target) return null;
+      const rows = workstreamRowsForLookup(payload);
+      return rows.find((row) => row && String(row.idea_id || "").trim() === target) || null;
+    }
+
+    function scopedWindowActivity(row, windowKey) {
+      const activity = row && row.activity && typeof row.activity === "object" ? row.activity : {};
+      const windowActivity = activity && activity[windowKey] && typeof activity[windowKey] === "object"
+        ? activity[windowKey]
+        : {};
+      return {
+        commitCount: Number(windowActivity.commit_count || 0),
+        localChangeCount: Number(windowActivity.local_change_count || 0),
+        fileTouchCount: Number(windowActivity.file_touch_count || 0),
+      };
+    }
+
+    function quietWindowStandupBrief(workstreamId, windowKey) {
+      const hourLabel = windowKey === "48h" ? "48" : "24";
+      return unavailableStandupBrief(
+        `${String(workstreamId || "This scope").trim()} was quiet in the last ${hourLabel} hours, so Compass has nothing new to brief for that scope.`,
+        {
+          reason: "scoped_window_inactive",
+          title: "Nothing moved in this window",
+        },
+      );
+    }
+
     function standupBriefForState(payload, state) {
       const key = state.window === "24h" ? "24h" : "48h";
       const legacyLines = legacyDigestLinesForState(payload, state);
       if (hasStructuredStandupBriefPayload(payload)) {
-        const hasScopedSelection = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim());
+        const scopedWorkstream = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim())
+          ? String(state.workstream || "").trim()
+          : "";
+        const hasScopedSelection = Boolean(scopedWorkstream);
         const globalBrief = payload.standup_brief && payload.standup_brief[key] && typeof payload.standup_brief[key] === "object"
           ? payload.standup_brief[key]
           : null;
         const scopedMap = payload.standup_brief_scoped && payload.standup_brief_scoped[key] && typeof payload.standup_brief_scoped[key] === "object"
           ? payload.standup_brief_scoped[key]
           : {};
-        const scopedBrief = state.workstream && scopedMap[state.workstream] && typeof scopedMap[state.workstream] === "object"
-          ? scopedMap[state.workstream]
+        const scopedBrief = scopedWorkstream && scopedMap[scopedWorkstream] && typeof scopedMap[scopedWorkstream] === "object"
+          ? scopedMap[scopedWorkstream]
           : null;
         const scopedReady = scopedBrief && String(scopedBrief.status || "").trim() === "ready" ? scopedBrief : null;
         const globalReady = globalBrief && String(globalBrief.status || "").trim() === "ready" ? globalBrief : null;
         const scopedReadySource = String(scopedReady && scopedReady.source ? scopedReady.source : "").trim();
         const globalReadySource = String(globalReady && globalReady.source ? globalReady.source : "").trim();
         if (hasScopedSelection && scopedReady) return scopedReady;
+        if (hasScopedSelection && scopedBrief) return scopedBrief;
+        if (hasScopedSelection && legacyLines.length) {
+          return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);
+        }
+        if (hasScopedSelection) {
+          const scopedRow = scopedWorkstreamRow(payload, scopedWorkstream);
+          const activity = scopedWindowActivity(scopedRow, key);
+          if (scopedRow && activity.commitCount <= 0 && activity.localChangeCount <= 0 && activity.fileTouchCount <= 0) {
+            return quietWindowStandupBrief(scopedWorkstream, key);
+          }
+          return unavailableStandupBrief(
+            `No scoped standup brief is available for ${scopedWorkstream}.`,
+            { reason: "scoped_brief_missing" },
+          );
+        }
         if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;
         if (globalReady) return globalReady;
-        if (hasScopedSelection && scopedBrief) return scopedBrief;
         if (scopedReady && (scopedReadySource === "provider" || scopedReadySource === "cache")) return scopedReady;
         if (scopedReady) return scopedReady;
         if (legacyLines.length) {
@@ -457,8 +493,19 @@ initQuickTooltips();
 
     function workstreamRowsForLookup(payload) {
       const catalog = Array.isArray(payload && payload.workstream_catalog) ? payload.workstream_catalog : [];
-      if (catalog.length) return catalog;
-      return Array.isArray(payload && payload.current_workstreams) ? payload.current_workstreams : [];
+      const current = Array.isArray(payload && payload.current_workstreams) ? payload.current_workstreams : [];
+      const merged = new Map();
+      catalog.forEach((row) => {
+        const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
+        if (!ideaId) return;
+        merged.set(ideaId, row);
+      });
+      current.forEach((row) => {
+        const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
+        if (!ideaId) return;
+        merged.set(ideaId, row);
+      });
+      return merged.size ? Array.from(merged.values()) : [];
     }
 
     function planLinkLookup(payload) {
@@ -471,11 +518,21 @@ initQuickTooltips();
         const links = row && row.links && typeof row.links === "object" ? row.links : {};
         const planFile = normalizeRepoPath(String(links.plan_file || "").trim());
         if (!planFile) return;
-        const href = `../index.html?tab=radar&workstream=${encodeURIComponent(ideaId)}&view=plan`;
+        const href = radarWorkstreamHref(ideaId, { view: "plan" });
         byWorkstream[ideaId] = href;
         byPlanFile[planFile] = { href, idea_id: ideaId };
       });
       return { byWorkstream, byPlanFile };
+    }
+
+    function radarWorkstreamHref(workstreamId, options = {}) {
+      const token = String(workstreamId || "").trim();
+      const params = new URLSearchParams();
+      params.set("tab", "radar");
+      if (WORKSTREAM_RE.test(token)) params.set("workstream", token);
+      const view = String(options && options.view ? options.view : "").trim().toLowerCase();
+      if (view) params.set("view", view);
+      return `../index.html?${params.toString()}`;
     }
 
     function planHrefLookup(payload) {

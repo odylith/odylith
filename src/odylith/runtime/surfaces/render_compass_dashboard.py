@@ -21,6 +21,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine.surface_projection_fingerprint import default_surface_projection_input_fingerprint
 from odylith.runtime.surfaces import compass_refresh_contract
+from odylith.runtime.surfaces import compass_standup_brief_maintenance
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import source_bundle_mirror
@@ -411,12 +412,26 @@ def refresh_runtime_artifacts(
         refresh_profile=normalized_profile,
         progress_callback=progress_callback,
     )
+    final_input_fingerprint = _compass_runtime_input_fingerprint(
+        repo_root=repo_root,
+        backlog_index_path=backlog_index_path,
+        plan_index_path=plan_index_path,
+        bugs_index_path=bugs_index_path,
+        traceability_graph_path=traceability_graph_path,
+        mermaid_catalog_path=mermaid_catalog_path,
+        codex_stream_path=codex_stream_path,
+        max_review_age_days=max_review_age_days,
+        active_window_minutes=active_window_minutes,
+        runtime_mode=runtime_mode,
+        retention_days=retention_days,
+        refresh_profile=normalized_profile,
+    )
     runtime_contract = payload.get("runtime_contract") if isinstance(payload.get("runtime_contract"), dict) else {}
     runtime_contract.update(
         {
             "version": _RUNTIME_CONTRACT_VERSION,
             "standup_brief_schema_version": compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
-            "input_fingerprint": input_fingerprint,
+            "input_fingerprint": final_input_fingerprint,
             "retention_days": int(retention_days),
             "active_window_minutes": int(active_window_minutes),
             "max_review_age_days": int(max_review_age_days),
@@ -425,6 +440,11 @@ def refresh_runtime_artifacts(
         }
     )
     payload["runtime_contract"] = runtime_contract
+    if normalized_profile == compass_refresh_contract.DEFAULT_REFRESH_PROFILE:
+        compass_standup_brief_maintenance.stamp_request_runtime_input_fingerprint(
+            repo_root=repo_root,
+            runtime_input_fingerprint=final_input_fingerprint,
+        )
     _apply_refresh_attempt_state(
         payload=payload,
         requested_profile=normalized_profile,
@@ -449,6 +469,8 @@ def refresh_runtime_artifacts(
         stage="runtime_snapshots_written",
         detail={"message": "wrote the current runtime snapshot and history files"},
     )
+    if normalized_profile == compass_refresh_contract.DEFAULT_REFRESH_PROFILE:
+        compass_standup_brief_maintenance.maybe_spawn_background(repo_root=repo_root)
     return payload, paths
 
 

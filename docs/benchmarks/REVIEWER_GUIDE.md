@@ -7,7 +7,7 @@ This guide keeps reviewers on Odylith's actual claim.
 Before reviewing Odylith, read these in order:
 
 - [README](../../README.md)
-- [How To Read Odylith's Codex Benchmarks](README.md)
+- [How To Read Odylith's Benchmark Proof](README.md)
 - [Odylith Benchmark Metrics And Priorities](METRICS_AND_PRIORITIES.md)
 
 ## Review Rule
@@ -19,7 +19,7 @@ Odylith's primary claim is simple:
 - on the same task, `odylith_on` should produce a better valid outcome than
   `odylith_off`
 
-`odylith_off` is the public name for the raw Codex CLI lane. The report may
+`odylith_off` is the public name for the raw host CLI lane. The report may
 still store that lane as `raw_agent_baseline`, but reviewer-facing prose
 should prefer `odylith_off`.
 
@@ -37,7 +37,7 @@ publication proof.
 Keep these buckets separate:
 
 - `What Odylith proves today`
-  Codex-first measured proof on `odylith_on` versus `odylith_off`
+  currently published host-scoped proof on `odylith_on` versus `odylith_off`
 - `What Odylith plausibly helps but has not benchmarked yet`
   Claude-facing benefit from the same grounding, memory, and governance
   surfaces
@@ -95,15 +95,15 @@ Rules:
 - Evaluate `odylith_on` versus `odylith_off` on the same tasks before comparing Odylith to any other stack.
 - Treat `raw_agent_baseline` as the internal report alias for `odylith_off`.
 - Treat `odylith_repo_scan_baseline` as a secondary scaffold control, not as "Odylith off."
-- Hold the public pair to the same live Codex CLI model and reasoning contract.
-- Expect the public pair to run in an isolated temporary Codex home with no auto-consumed personal instructions, plugins, or repo guidance entrypoints in the disposable workspace.
+- Hold the public pair to the same live host CLI model and reasoning contract for the proof host under review.
+- Expect the public pair to run in an isolated temporary host home with no auto-consumed personal instructions, plugins, or repo guidance entrypoints in the disposable workspace.
 - Expect truth-bearing repo docs to remain available for explicit reads.
 - Treat `proof` as the governing benchmark and `diagnostic` as mechanism-only evidence.
 - Use this evaluation order: correctness and non-regression, grounding recall and precision, validation success and execution fit, robustness and consistency, latency to a valid outcome, prompt or payload efficiency, bounded budget behavior.
 - Treat tiers 1-4 as the hard quality gate.
 - Treat memory, Registry, Atlas, Compass, orchestration, and related surfaces as mechanisms unless you tie them to an execution consequence.
 - Keep these sections separate: `What Odylith proves today`, `What Odylith plausibly helps but has not benchmarked yet`, and `What is missing or weak in the current product`.
-- Preserve current lane truth: published measured benchmark proof is Codex-first today.
+- Preserve current lane truth: published measured benchmark proof is Codex-host-scoped today.
 
 Required output shape:
 1. Claim being tested

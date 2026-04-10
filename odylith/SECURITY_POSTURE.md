@@ -1,5 +1,5 @@
 # Security Posture
-Last updated: 2026-04-01
+Last updated: 2026-04-09
 
 ## Purpose
 
@@ -7,6 +7,8 @@ Odylith treats runtime trust, release provenance, and process lifetime as
 first-class product boundaries. It hardens `.odylith/` against runtime drift,
 fails closed on insecure consumer-lane overrides, and keeps Odylith-owned
 Python helpers on a tight leash.
+
+This posture reflects shipped release `v0.1.10`, published on 2026-04-08.
 
 ## Threat Model
 

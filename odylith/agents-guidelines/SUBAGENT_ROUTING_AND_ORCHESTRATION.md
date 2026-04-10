@@ -1,8 +1,8 @@
 # Subagent Routing And Orchestration
 
-- Native subagent spawning through Odylith is supported only in Codex today. Treat Claude Code as local-only until Odylith's spawn contract is explicitly tested there.
+- Native subagent spawning through Odylith is capability-gated. Codex is the currently validated native-spawn host; treat Claude Code as local-guidance-only until Odylith's spawn contract is explicitly tested there.
 - For both Codex and Claude Code, Odylith grounding comes before agent-native repo search on substantive repo work; local search is fallback after Odylith signals ambiguity, missing anchors, or widening.
-- Use bounded delegation by default for substantive grounded Codex work across the consumer lane and both Odylith product-repo maintainer postures, including pinned dogfood and detached `source-local` maintainer dev, when it improves correctness, speed, or separation of concerns.
+- Use bounded delegation by default for substantive grounded work when the current host supports native spawn across the consumer lane and both Odylith product-repo maintainer postures, including pinned dogfood and detached `source-local` maintainer dev, when it improves correctness, speed, or separation of concerns.
 - Consumer Odylith-fix requests are the hard exception: delegated leaves must not write under `odylith/` or `.odylith/`, and routed plans should stay local when the proposed fix is local Odylith mutation rather than diagnosis and handoff.
 - Ground the slice through Odylith first, then delegate from retained evidence instead of paraphrasing it.
 - On consumer turns, keep progress updates about the work itself. Do not narrate startup, routing, retained-packet, or fallback history. Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates, and never use control-plane receipt labels. Mention Odylith only when the user explicitly asks for the command, a current blocker requires it, or a lane distinction matters.
@@ -19,7 +19,7 @@
 - Stay local when the task is under-specified, shared-write-heavy, or blocked on immediate adjudication.
 
 ## Prompt-Level Orchestration
-- For substantive grounded Codex work, prompt-level orchestration is the default next step after grounding across the consumer lane, pinned dogfood, and detached `source-local` maintainer-dev posture.
+- For substantive grounded work, prompt-level orchestration is the default next step after grounding across the consumer lane, pinned dogfood, and detached `source-local` maintainer-dev posture.
 - Treat `local_only` as an explicit keep-local decision, not as a hint to manually force spawn anyway.
 - If emitted routing stays `local_only` because consumer write policy blocks an Odylith fix, produce maintainer-ready feedback instead of overriding the route.
 - Use `odylith subagent-orchestrator plan --repo-root . --input-file <file> --json` and follow the emitted `mode` literally.
@@ -31,7 +31,7 @@
 
 ## Delegated Leaf Contract
 - Spawn delegated leaves with the emitted `model` and `reasoning_effort` explicitly; never inherit parent-thread defaults.
-- Let Odylith climb the reasoning ladder judiciously: lighter tiers for scout/support work, Codex tiers for grounded write work, and GPT-5.4 only after risk, validation pressure, or earned depth justify it.
+- Let Odylith climb the reasoning ladder judiciously: lighter tiers for scout/support work, write-focused tiers for grounded implementation, and frontier tiers only after risk, validation pressure, or earned depth justify them.
 - Preserve the emitted owner, goal, expected output, validation expectation, and termination condition.
 - Conservative parallelism is intentional: read-only analysis may fan out, disjoint writes may fan out narrowly, and shared-write or adjudication-heavy slices stay serial or local.
 - Close delegated agents after integration unless an immediate same-scope follow-up is already queued; `waiting on instruction` is an idle state that requires main-thread action.
@@ -44,8 +44,8 @@
 - Accuracy-first model selection remains intentional: lighter tiers for bounded read-only or mechanical work, stronger tiers for bounded implementation, and `xhigh` only for maximum-accuracy cases.
 
 ## Direct Native Spawn Defaults
-- These defaults are Codex-only until the Odylith spawn path is explicitly validated in another agent runtime.
-- If no routed leaf exists and you still need direct delegation:
+- These defaults apply only when the current host supports native spawn. Codex is the validated host today; other runtimes should treat the ladder as local guidance until their native spawn path is proven.
+- If no routed leaf exists and you still need direct delegation on a native-spawn-capable host:
   - bounded read-only exploration or evidence gathering: `gpt-5.4-mini` with `medium`
   - mechanical bounded transforms or fast triage: `gpt-5.3-codex-spark` with `medium`
   - bounded code-write or test repair: `gpt-5.3-codex` with `medium`

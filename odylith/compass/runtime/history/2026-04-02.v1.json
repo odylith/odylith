@@ -45,7 +45,6 @@
       "Completed in this window: Operator: Most concrete portfolio movement: Added product code. | Operator: Most concrete portfolio movement: Added scripts artifacts.",
       "Current execution: Executive: Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is the flagship lane and is in active implementation because once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: Primary execution signal: Added product code. | Operator: Live install posture check: Odylith product repo reports repo role `product_repo`, posture `detached_source_local`, runtime source `source_checkout`, active `source-local`, repo pin `0.1.6`, launcher present, and release eligibility `no`. | Operator: Active lanes are converting plans into concrete implementation outcomes Live focus lanes: Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022), Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038).",
       "Next planned: Operator: Immediate forcing function is Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): The tracked corpus and the published report still drift on truth-contract. | Operator: Then move Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): The machine-readable report still under-publishes the conservative view:.",
-      "Why this matters: Executive: For - Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss, odylith now has a benchmark lane that matters. | Operator: The architecture move is to re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark, which gives operators a clearer contract and lower coordination risk.",
       "Risks to watch: Operator: Primary blocker is an open P0 bug: Benchmark live result recovery drops schema valid agent message when last message file is missing. | Operator: Odylith product repo is running detached source-local runtime `source-local`; release gating stays blocked until the active runtime returns to repo pin `0.1.6`."
     ],
     "48h": [
@@ -53,7 +52,6 @@
       "Completed in this window: Operator: Most concrete portfolio movement: Harden runtime trust and refresh v0.1.7 posture. | Operator: Most concrete portfolio movement: added live benchmark execution guardrails.",
       "Current execution: Executive: Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is the flagship lane and is in active implementation because once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: Primary execution signal: Harden runtime trust and refresh v0.1.7 posture. | Operator: Live install posture check: Odylith product repo reports repo role `product_repo`, posture `detached_source_local`, runtime source `source_checkout`, active `source-local`, repo pin `0.1.6`, launcher present, and release eligibility `no`. | Operator: Active lanes are converting plans into concrete implementation outcomes Live focus lanes: Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022), Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038).",
       "Next planned: Operator: Immediate forcing function is Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): The tracked corpus and the published report still drift on truth-contract. | Operator: Then move Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): The machine-readable report still under-publishes the conservative view:.",
-      "Why this matters: Executive: For - Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss, odylith now has a benchmark lane that matters. | Operator: The architecture move is to re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark, which gives operators a clearer contract and lower coordination risk.",
       "Risks to watch: Operator: Primary blocker is an open P0 bug: Benchmark live result recovery drops schema valid agent message when last message file is missing. | Operator: Odylith product repo is running detached source-local runtime `source-local`; release gating stays blocked until the active runtime returns to repo pin `0.1.6`."
     ]
   },
@@ -64,7 +62,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) in the last 24 hours.",
         "Current execution: Executive: Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) is in active implementation because odylith has already proven a compact benchmark lane. | Operator: Plan posture: checklist progress is 10/44; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 14 days (high confidence). | Operator: Freshness signal is stale: latest known activity for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Operator: Immediate forcing function is to land The tracked corpus and the published report still drift on truth-contract so odylith has already proven a compact benchmark lane. | Operator: Then land The machine-readable report still under-publishes the conservative view: to extend if Odylith expands the benchmark corpus around these high-value complex-repo tasks and then improves the runtime frontier against that harder corpus, the benchmark becomes both harder and more convincing.",
-        "Why this matters: Executive: For - Primary: Odylith evaluators and maintainers who need the benchmark to reflect the real work a serious coding agent performs in a complex governed repo, odylith's current benchmark proof is credible, but the corpus is still too small and too narrow. | Operator: The architecture move is to add a broader set of benchmark scenarios covering install and upgrade hardening, release proof, surface-routing and browser reliability, daemon and repair security, benchmark publication integrity, and cross-surface, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 34 plan items remain open for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021)."
       ],
       "B-022": [
@@ -72,7 +69,6 @@
         "Completed in this window: Operator: Most concrete movement: Updated product code + runtime tests across 3 workstreams. | Operator: Most concrete movement: Updated product code across 3 workstreams.",
         "Current execution: Executive: Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is in active implementation because once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: Primary execution signal: Updated product code + runtime tests across 3 workstreams. | Operator: Plan posture: checklist progress is 51/97; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence).",
         "Next planned: Operator: Immediate forcing function is to land The corpus grows beyond the current 30-scenario suite with deeper weak so once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: Then land Re-run the targeted weak-family proof slice and then the full proof to extend if Odylith treats anti-gaming and honest product improvement as the same contract, the benchmark becomes more trustworthy than a typical internal eval and more useful than a flattering one.",
-        "Why this matters: Executive: For - Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss, odylith now has a benchmark lane that matters. | Operator: The architecture move is to re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 46 plan items remain open for Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022)."
       ],
       "B-025": [
@@ -80,7 +76,6 @@
         "Completed in this window: Operator: Most concrete movement: Implementation checkpoint in odylith cross surface runtime freshness and ux browser hardening: completed Shell-safe Compass dashboard refresh can keep Timeline Audit pinned to an. | Operator: Most concrete movement: Plan updated: odylith cross surface runtime freshness and ux browser hardening (B-025) is In progress; checklist progress updated.",
         "Current execution: Executive: Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) is in active implementation because odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression. | Operator: Primary execution signal: Implementation checkpoint in odylith cross surface runtime freshness and ux browser hardening: completed Shell-safe Compass dashboard refresh can keep Timeline Audit pinned to an. | Operator: Plan posture: checklist progress is 23/78; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 10 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) so odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression.",
-        "Why this matters: Executive: For - Primary: Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh. | Operator: The architecture move is to harden runtime freshness across Compass and related shell flows: version the projection contract, cap Compass runtime reuse by age for rolling windows, remove stale cross-packet global brief recovery, and expand, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 55 plan items remain open for Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025)."
       ],
       "B-027": [
@@ -88,7 +83,6 @@
         "Completed in this window: Operator: Most concrete movement: Updated odylith artifacts across 4 workstreams. | Operator: Most concrete movement: Plan updated: odylith lane boundary runtime and toolchain clarity (B-001) is In progress; checklist progress updated.",
         "Current execution: Executive: Odylith Lane Boundary, Runtime, and Toolchain Clarity (B-027) is in active implementation because the current ambiguity shows up exactly where Odylith should be strongest: maintainer execution in the product repo and consumer execution inside repos with their own Python toolchains. | Operator: Primary execution signal: Updated odylith artifacts across 4 workstreams. | Operator: Plan posture: checklist progress is 33/91; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 6 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Lane Boundary, Runtime, and Toolchain Clarity (B-027) so the current ambiguity shows up exactly where Odylith should be strongest: maintainer execution in the product repo and consumer execution inside repos with their own Python toolchains.",
-        "Why this matters: Executive: For - Primary: Odylith maintainers working in the product repo and needing a crisp distinction between pinned dogfood proof and detached `source-local` source work, odylith's runtime isolation contract is correct, but the language around it is still spread across docs and easy to collapse into one false question. | Operator: The architecture move is to publish one explicit lane matrix across constitutional docs, AGENTS guidance, shared guidelines, shared and maintainer skills, component specs, backlog truth, and Atlas diagrams: - consumer lane - product-repo, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 58 plan items remain open for Odylith Lane Boundary, Runtime, and Toolchain Clarity (B-027)."
       ],
       "B-028": [
@@ -96,7 +90,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Starter Launchpad UX and Visual Redesign (B-028) in the last 24 hours.",
         "Current execution: Executive: Odylith Starter Launchpad UX and Visual Redesign (B-028) is in active implementation because the product just cleared GA release proof, which makes the first-run shell more important than ever. | Operator: Plan posture: checklist progress is 35/46; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 1 days (high confidence). | Operator: Freshness signal is stale: latest known activity for Odylith Starter Launchpad UX and Visual Redesign (B-028) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Starter Launchpad UX and Visual Redesign (B-028) so the product just cleared GA release proof, which makes the first-run shell more important than ever.",
-        "Why this matters: Executive: For - Primary: first-time Odylith users opening `odylith/index.html` immediately after install or upgrade, odylith's first-run shell currently looks and feels like a dense internal dashboard instead of a confident launchpad. | Operator: The architecture move is to redesign the starter launchpad around a real hero layout: - make the starter prompt the dominant action surface - compress secondary information into clearer support cards - improve spacing, type hierarchy, and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 11 plan items remain open for Odylith Starter Launchpad UX and Visual Redesign (B-028)."
       ],
       "B-029": [
@@ -104,7 +97,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) in the last 24 hours.",
         "Current execution: Executive: Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) is in active implementation because the first-run shell is now a front-door workflow, so the install path should not leave managed state hygiene half-done just because the folder has not been turned into a Git repo yet. | Operator: Plan posture: checklist progress is 15/22; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence). | Operator: Freshness signal is stale: latest known activity for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) so the first-run shell is now a front-door workflow, so the install path should not leave managed state hygiene half-done just because the folder has not been turned into a Git repo yet.",
-        "Why this matters: Executive: For - Primary: new consumer repos installing Odylith before or during initial Git setup, odylith already knows that `/.odylith/` should stay untracked, but install, upgrade, and repair only backfill the root `.gitignore` after the folder is already a Git repo. | Operator: The architecture move is to - create the root `.gitignore` during install-time flows when it does not exist - append `/.odylith/` when the file exists but is missing the managed-state entry - keep duplicate detection so install, upgrade, and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 7 plan items remain open for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029)."
       ],
       "B-030": [
@@ -112,7 +104,6 @@
         "Completed in this window: Operator: Most concrete movement: Plan updated: odylith consumer upgrade release spotlight and shell refresh (B-030) is In progress; checklist progress updated. | Operator: Most concrete movement: Implementation checkpoint in odylith consumer upgrade release spotlight and shell refresh: completed Consumer upgrade currently does not guarantee an immediate shell refresh.",
         "Current execution: Executive: Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh (B-030) is in active implementation because the product just shipped GA and the release lifecycle needs to feel both polished and safe: one-step consumer adoption, first-class recovery, and shell refresh that stays legible under failure. | Operator: Primary execution signal: Plan updated: odylith consumer upgrade release spotlight and shell refresh (B-030) is In progress; checklist progress updated. | Operator: Plan posture: checklist progress is 63/92; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh (B-030) so the product just shipped GA and the release lifecycle needs to feel both polished and safe: one-step consumer adoption, first-class recovery, and shell refresh that stays legible under failure.",
-        "Why this matters: Executive: For - Primary: consumer-repo operators upgrading Odylith through the supported CLI, consumer upgrades already activate the new runtime, but the local dashboard can stay visually stale until a later sync and the product gives the operator no in-shell celebration or concise readout of what changed. | Operator: The architecture move is to - add a consumer-lane `odylith reinstall --latest` path that safely adopts the latest verified release and repo pin in one step - improve missing-launcher recovery around the repo-local bootstrap launcher instead of, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 29 plan items remain open for Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh (B-030)."
       ],
       "B-031": [
@@ -120,7 +111,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) in the last 24 hours.",
         "Current execution: Executive: Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) is in active implementation because odylith is already far enough along that the remaining miss is productization, not capability. | Operator: Plan posture: checklist progress is 13/66; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 13 days (high confidence). | Operator: Freshness signal is stale: latest known activity for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) so odylith is already far enough along that the remaining miss is productization, not capability.",
-        "Why this matters: Executive: For - Primary: Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish. | Operator: The architecture move is to add first-class short-form top-level grounding commands backed by the existing Context Engine, starting with `odylith bootstrap` and related top-level grounding verbs, then tighten repo-root managed AGENTS, shared and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 53 plan items remain open for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031)."
       ],
       "B-033": [
@@ -128,7 +118,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) in the last 24 hours.",
         "Current execution: Executive: Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) is in active implementation because `v0.1.5` already taught us the right lesson: the product is believable enough that the next failure mode is no longer \"can Odylith do anything useful?\" but \"does the release system deserve the same trust as the product?\". | Operator: Plan posture: checklist progress is 41/88; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 4 days (high confidence). | Operator: Freshness signal is stale: latest known activity for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) so `v0.1.5` already taught us the right lesson: the product is believable enough that the next failure mode is no longer \"can Odylith do anything useful?\" but \"does the release system deserve the same trust as the product?\".",
-        "Why this matters: Executive: For - Primary: Odylith maintainers cutting and proving releases from the product repo, `v0.1.5` shipped with meaningful product gains, but the release showed that the release system still trails the product. | Operator: The architecture move is to ship this as one umbrella release contract with bounded execution waves, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 47 plan items remain open for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033)."
       ],
       "B-038": [
@@ -136,7 +125,6 @@
         "Completed in this window: Operator: Most concrete movement: Updated product code + runtime tests across 3 workstreams. | Operator: Most concrete movement: Updated product code across 3 workstreams.",
         "Current execution: Executive: Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) is in active implementation because odylith will not honestly beat `odylith_off` by narrative. | Operator: Primary execution signal: Updated product code + runtime tests across 3 workstreams. | Operator: Plan posture: checklist progress is 51/97; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) so odylith will not honestly beat `odylith_off` by narrative.",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload, `odylith_on` is currently paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, because the runtime still scans too much projection truth and keeps more. | Operator: The architecture move is to improve the runtime slices that currently add the most avoidable cost: - add fast deterministic path-scoped selectors and local cache reuse so Odylith stops broad-scanning projection truth on benchmark hot paths, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 46 plan items remain open for Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038)."
       ],
       "B-039": [
@@ -144,7 +132,6 @@
         "Completed in this window: Operator: Most concrete movement: Plan updated: odylith raw codex baseline and four lane benchmark table (B-020) is In progress; checklist progress updated. | Operator: Most concrete movement: Implementation checkpoint in odylith raw codex baseline and four lane benchmark table: completed The current public benchmark snapshot collapses materially different.",
         "Current execution: Executive: Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh (B-039) is in active implementation because an honest benchmark needs both a stronger runtime and a harder scoreboard. | Operator: Primary execution signal: Plan updated: odylith raw codex baseline and four lane benchmark table (B-020) is In progress; checklist progress updated. | Operator: Plan posture: checklist progress is 51/97; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh (B-039) so an honest benchmark needs both a stronger runtime and a harder scoreboard.",
-        "Why this matters: Executive: For - Primary: Odylith maintainers and reviewers who need a broader and harder benchmark before trusting product claims, the current 30-scenario suite is better than the older 24-case floor, but it is still too thin to call a comprehensive proof across the weak families. | Operator: The architecture move is to expand the benchmark suite in the weak families, publish the selector and compaction diagnostics that explain the remaining wins and losses, and refresh README and dashboard surfaces only from the rerun report that, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 46 plan items remain open for Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh (B-039)."
       ],
       "B-040": [
@@ -152,7 +139,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) in the last 24 hours.",
         "Current execution: Executive: Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) is in active implementation because odylith is already making a stronger public trust claim around its managed runtime. | Operator: Plan posture: checklist progress is 1/51; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 8 days and expected to tighten as execution closes checklist items. | Operator: Freshness signal is aging: latest linked execution proof for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) is more than six hours old, so live momentum still needs another proving checkpoint.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) so odylith is already making a stronger public trust claim around its managed runtime.",
-        "Why this matters: Executive: For - Primary: consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`. | Operator: The architecture move is to - Add repo-root managed-runtime trust anchors outside `.odylith/` and verify hot-path managed-runtime files before `odylith.cli` import, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 50 plan items remain open for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040)."
       ]
     },
@@ -162,7 +148,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) in the last 48 hours.",
         "Current execution: Executive: Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) is in active implementation because odylith has already proven a compact benchmark lane. | Operator: Plan posture: checklist progress is 10/44; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 14 days (high confidence). | Operator: Freshness signal is stale: latest known activity for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Operator: Immediate forcing function is to land The tracked corpus and the published report still drift on truth-contract so odylith has already proven a compact benchmark lane. | Operator: Then land The machine-readable report still under-publishes the conservative view: to extend if Odylith expands the benchmark corpus around these high-value complex-repo tasks and then improves the runtime frontier against that harder corpus, the benchmark becomes both harder and more convincing.",
-        "Why this matters: Executive: For - Primary: Odylith evaluators and maintainers who need the benchmark to reflect the real work a serious coding agent performs in a complex governed repo, odylith's current benchmark proof is credible, but the corpus is still too small and too narrow. | Operator: The architecture move is to add a broader set of benchmark scenarios covering install and upgrade hardening, release proof, surface-routing and browser reliability, daemon and repair security, benchmark publication integrity, and cross-surface, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 34 plan items remain open for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021)."
       ],
       "B-022": [
@@ -170,7 +155,6 @@
         "Completed in this window: Operator: Most concrete movement: Harden runtime trust and refresh v0.1.7 posture. | Operator: Most concrete movement: added live benchmark execution guardrails.",
         "Current execution: Executive: Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is in active implementation because once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: Primary execution signal: Harden runtime trust and refresh v0.1.7 posture. | Operator: Plan posture: checklist progress is 51/97; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence).",
         "Next planned: Operator: Immediate forcing function is to land The corpus grows beyond the current 30-scenario suite with deeper weak so once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims. | Operator: Then land Re-run the targeted weak-family proof slice and then the full proof to extend if Odylith treats anti-gaming and honest product improvement as the same contract, the benchmark becomes more trustworthy than a typical internal eval and more useful than a flattering one.",
-        "Why this matters: Executive: For - Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss, odylith now has a benchmark lane that matters. | Operator: The architecture move is to re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 46 plan items remain open for Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022)."
       ],
       "B-025": [
@@ -178,7 +162,6 @@
         "Completed in this window: Operator: Most concrete movement: Harden runtime trust and refresh v0.1.7 posture. | Operator: Most concrete movement: Implementation checkpoint in odylith cross surface runtime freshness and ux browser hardening: completed Shell-safe Compass dashboard refresh can keep Timeline Audit pinned to an.",
         "Current execution: Executive: Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) is in active implementation because odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression. | Operator: Primary execution signal: Harden runtime trust and refresh v0.1.7 posture. | Operator: Plan posture: checklist progress is 23/78; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 10 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) so odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression.",
-        "Why this matters: Executive: For - Primary: Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh. | Operator: The architecture move is to harden runtime freshness across Compass and related shell flows: version the projection contract, cap Compass runtime reuse by age for rolling windows, remove stale cross-packet global brief recovery, and expand, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 55 plan items remain open for Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025)."
       ],
       "B-027": [
@@ -186,7 +169,6 @@
         "Completed in this window: Operator: Most concrete movement: Harden runtime trust and refresh v0.1.7 posture. | Operator: Most concrete movement: added live benchmark execution guardrails.",
         "Current execution: Executive: Odylith Lane Boundary, Runtime, and Toolchain Clarity (B-027) is in active implementation because the current ambiguity shows up exactly where Odylith should be strongest: maintainer execution in the product repo and consumer execution inside repos with their own Python toolchains. | Operator: Primary execution signal: Harden runtime trust and refresh v0.1.7 posture. | Operator: Plan posture: checklist progress is 33/91; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 6 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Lane Boundary, Runtime, and Toolchain Clarity (B-027) so the current ambiguity shows up exactly where Odylith should be strongest: maintainer execution in the product repo and consumer execution inside repos with their own Python toolchains.",
-        "Why this matters: Executive: For - Primary: Odylith maintainers working in the product repo and needing a crisp distinction between pinned dogfood proof and detached `source-local` source work, odylith's runtime isolation contract is correct, but the language around it is still spread across docs and easy to collapse into one false question. | Operator: The architecture move is to publish one explicit lane matrix across constitutional docs, AGENTS guidance, shared guidelines, shared and maintainer skills, component specs, backlog truth, and Atlas diagrams: - consumer lane - product-repo, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 58 plan items remain open for Odylith Lane Boundary, Runtime, and Toolchain Clarity (B-027)."
       ],
       "B-028": [
@@ -194,7 +176,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Starter Launchpad UX and Visual Redesign (B-028) in the last 48 hours.",
         "Current execution: Executive: Odylith Starter Launchpad UX and Visual Redesign (B-028) is in active implementation because the product just cleared GA release proof, which makes the first-run shell more important than ever. | Operator: Plan posture: checklist progress is 35/46; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 1 days (high confidence). | Operator: Freshness signal is stale: latest known activity for Odylith Starter Launchpad UX and Visual Redesign (B-028) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Starter Launchpad UX and Visual Redesign (B-028) so the product just cleared GA release proof, which makes the first-run shell more important than ever.",
-        "Why this matters: Executive: For - Primary: first-time Odylith users opening `odylith/index.html` immediately after install or upgrade, odylith's first-run shell currently looks and feels like a dense internal dashboard instead of a confident launchpad. | Operator: The architecture move is to redesign the starter launchpad around a real hero layout: - make the starter prompt the dominant action surface - compress secondary information into clearer support cards - improve spacing, type hierarchy, and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 11 plan items remain open for Odylith Starter Launchpad UX and Visual Redesign (B-028)."
       ],
       "B-029": [
@@ -202,7 +183,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) in the last 48 hours.",
         "Current execution: Executive: Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) is in active implementation because the first-run shell is now a front-door workflow, so the install path should not leave managed state hygiene half-done just because the folder has not been turned into a Git repo yet. | Operator: Plan posture: checklist progress is 15/22; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence). | Operator: Freshness signal is stale: latest known activity for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) so the first-run shell is now a front-door workflow, so the install path should not leave managed state hygiene half-done just because the folder has not been turned into a Git repo yet.",
-        "Why this matters: Executive: For - Primary: new consumer repos installing Odylith before or during initial Git setup, odylith already knows that `/.odylith/` should stay untracked, but install, upgrade, and repair only backfill the root `.gitignore` after the folder is already a Git repo. | Operator: The architecture move is to - create the root `.gitignore` during install-time flows when it does not exist - append `/.odylith/` when the file exists but is missing the managed-state entry - keep duplicate detection so install, upgrade, and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 7 plan items remain open for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029)."
       ],
       "B-030": [
@@ -210,7 +190,6 @@
         "Completed in this window: Operator: Most concrete movement: Harden runtime trust and refresh v0.1.7 posture. | Operator: Most concrete movement: Plan updated: odylith consumer upgrade release spotlight and shell refresh (B-030) is In progress; checklist progress updated.",
         "Current execution: Executive: Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh (B-030) is in active implementation because the product just shipped GA and the release lifecycle needs to feel both polished and safe: one-step consumer adoption, first-class recovery, and shell refresh that stays legible under failure. | Operator: Primary execution signal: Harden runtime trust and refresh v0.1.7 posture. | Operator: Plan posture: checklist progress is 63/92; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh (B-030) so the product just shipped GA and the release lifecycle needs to feel both polished and safe: one-step consumer adoption, first-class recovery, and shell refresh that stays legible under failure.",
-        "Why this matters: Executive: For - Primary: consumer-repo operators upgrading Odylith through the supported CLI, consumer upgrades already activate the new runtime, but the local dashboard can stay visually stale until a later sync and the product gives the operator no in-shell celebration or concise readout of what changed. | Operator: The architecture move is to - add a consumer-lane `odylith reinstall --latest` path that safely adopts the latest verified release and repo pin in one step - improve missing-launcher recovery around the repo-local bootstrap launcher instead of, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 29 plan items remain open for Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh (B-030)."
       ],
       "B-031": [
@@ -218,7 +197,6 @@
         "Completed in this window: No verified milestone closeout landed for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) in the last 48 hours.",
         "Current execution: Executive: Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) is in active implementation because odylith is already far enough along that the remaining miss is productization, not capability. | Operator: Plan posture: checklist progress is 13/66; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 13 days (high confidence). | Operator: Freshness signal is stale: latest known activity for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) is more than a day old, so Compass needs a new execution checkpoint before claiming live traction.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031) so odylith is already far enough along that the remaining miss is productization, not capability.",
-        "Why this matters: Executive: For - Primary: Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish. | Operator: The architecture move is to add first-class short-form top-level grounding commands backed by the existing Context Engine, starting with `odylith bootstrap` and related top-level grounding verbs, then tighten repo-root managed AGENTS, shared and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 53 plan items remain open for Odylith First-Turn Bootstrap and Short-Form Grounding Commands (B-031)."
       ],
       "B-033": [
@@ -226,7 +204,6 @@
         "Completed in this window: Operator: Most concrete movement: Harden runtime trust and refresh v0.1.7 posture. | Operator: Most concrete movement: Workstream lineage merge update for B-033.",
         "Current execution: Executive: Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) is in active implementation because `v0.1.5` already taught us the right lesson: the product is believable enough that the next failure mode is no longer \"can Odylith do anything useful?\" but \"does the release system deserve the same trust as the product?\". | Operator: Primary execution signal: Harden runtime trust and refresh v0.1.7 posture. | Operator: Plan posture: checklist progress is 41/88; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 4 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) so `v0.1.5` already taught us the right lesson: the product is believable enough that the next failure mode is no longer \"can Odylith do anything useful?\" but \"does the release system deserve the same trust as the product?\".",
-        "Why this matters: Executive: For - Primary: Odylith maintainers cutting and proving releases from the product repo, `v0.1.5` shipped with meaningful product gains, but the release showed that the release system still trails the product. | Operator: The architecture move is to ship this as one umbrella release contract with bounded execution waves, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 47 plan items remain open for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033)."
       ],
       "B-038": [
@@ -234,7 +211,6 @@
         "Completed in this window: Operator: Most concrete movement: Harden runtime trust and refresh v0.1.7 posture. | Operator: Most concrete movement: added live benchmark execution guardrails.",
         "Current execution: Executive: Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) is in active implementation because odylith will not honestly beat `odylith_off` by narrative. | Operator: Primary execution signal: Harden runtime trust and refresh v0.1.7 posture. | Operator: Plan posture: checklist progress is 51/97; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) so odylith will not honestly beat `odylith_off` by narrative.",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload, `odylith_on` is currently paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, because the runtime still scans too much projection truth and keeps more. | Operator: The architecture move is to improve the runtime slices that currently add the most avoidable cost: - add fast deterministic path-scoped selectors and local cache reuse so Odylith stops broad-scanning projection truth on benchmark hot paths, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 46 plan items remain open for Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038)."
       ],
       "B-039": [
@@ -242,7 +218,6 @@
         "Completed in this window: Operator: Most concrete movement: added live benchmark execution guardrails. | Operator: Most concrete movement: Plan updated: odylith raw codex baseline and four lane benchmark table (B-020) is In progress; checklist progress updated.",
         "Current execution: Executive: Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh (B-039) is in active implementation because an honest benchmark needs both a stronger runtime and a harder scoreboard. | Operator: Primary execution signal: added live benchmark execution guardrails. | Operator: Plan posture: checklist progress is 51/97; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days (high confidence).",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh (B-039) so an honest benchmark needs both a stronger runtime and a harder scoreboard.",
-        "Why this matters: Executive: For - Primary: Odylith maintainers and reviewers who need a broader and harder benchmark before trusting product claims, the current 30-scenario suite is better than the older 24-case floor, but it is still too thin to call a comprehensive proof across the weak families. | Operator: The architecture move is to expand the benchmark suite in the weak families, publish the selector and compaction diagnostics that explain the remaining wins and losses, and refresh README and dashboard surfaces only from the rerun report that, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 46 plan items remain open for Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh (B-039)."
       ],
       "B-040": [
@@ -250,7 +225,6 @@
         "Completed in this window: Operator: Most concrete movement: Harden runtime trust and refresh v0.1.7 posture. | Operator: Most concrete movement: Implementation checkpoint in odylith runtime integrity supply chain hardening and security posture: completed B-040 is opened as the child workstream for the runtime-integrity and.",
         "Current execution: Executive: Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) is in active implementation because odylith is already making a stronger public trust claim around its managed runtime. | Operator: Primary execution signal: Harden runtime trust and refresh v0.1.7 posture. | Operator: Plan posture: checklist progress is 1/51; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 8 days and expected to tighten as execution closes checklist items.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) so odylith is already making a stronger public trust claim around its managed runtime.",
-        "Why this matters: Executive: For - Primary: consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`. | Operator: The architecture move is to - Add repo-root managed-runtime trust anchors outside `.odylith/` and verify hot-path managed-runtime files before `odylith.cli` import, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 50 plan items remain open for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040)."
       ]
     }
@@ -332,26 +306,6 @@
               "text": "Then move Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): The machine-readable report still under-publishes the conservative view:.",
               "fact_ids": [
                 "F-010"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "For - Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss, odylith now has a benchmark lane that matters.",
-              "fact_ids": [
-                "F-011"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "The architecture move is to re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark, which gives operators a clearer contract and lower coordination risk.",
-              "fact_ids": [
-                "F-012"
               ]
             }
           ]
@@ -545,26 +499,6 @@
           ]
         },
         {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "For - Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss, odylith now has a benchmark lane that matters.",
-              "fact_ids": [
-                "F-011"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "The architecture move is to re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark, which gives operators a clearer contract and lower coordination risk.",
-              "fact_ids": [
-                "F-012"
-              ]
-            }
-          ]
-        },
-        {
           "key": "risks_to_watch",
           "label": "Risks to watch",
           "bullets": [
@@ -749,26 +683,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith evaluators and maintainers who need the benchmark to reflect the real work a serious coding agent performs in a complex governed repo, odylith's current benchmark proof is credible, but the corpus is still too small and too narrow.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to add a broader set of benchmark scenarios covering install and upgrade hardening, release proof, surface-routing and browser reliability, daemon and repair security, benchmark publication integrity, and cross-surface, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -946,26 +860,6 @@
                 "text": "Then land Re-run the targeted weak-family proof slice and then the full proof to extend if Odylith treats anti-gaming and honest product improvement as the same contract, the benchmark becomes more trustworthy than a typical internal eval and more useful than a flattering one.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss, odylith now has a benchmark lane that matters.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -1170,26 +1064,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to harden runtime freshness across Compass and related shell flows: version the projection contract, cap Compass runtime reuse by age for rolling windows, remove stale cross-packet global brief recovery, and expand, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1373,26 +1247,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers working in the product repo and needing a crisp distinction between pinned dogfood proof and detached `source-local` source work, odylith's runtime isolation contract is correct, but the language around it is still spread across docs and easy to collapse into one false question.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to publish one explicit lane matrix across constitutional docs, AGENTS guidance, shared guidelines, shared and maintainer skills, component specs, backlog truth, and Atlas diagrams: - consumer lane - product-repo, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1569,26 +1423,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: first-time Odylith users opening `odylith/index.html` immediately after install or upgrade, odylith's first-run shell currently looks and feels like a dense internal dashboard instead of a confident launchpad.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to redesign the starter launchpad around a real hero layout: - make the starter prompt the dominant action surface - compress secondary information into clearer support cards - improve spacing, type hierarchy, and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1744,26 +1578,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) so the first-run shell is now a front-door workflow, so the install path should not leave managed state hygiene half-done just because the folder has not been turned into a Git repo yet.",
                 "fact_ids": [
                   "F-006"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: new consumer repos installing Odylith before or during initial Git setup, odylith already knows that `/.odylith/` should stay untracked, but install, upgrade, and repair only backfill the root `.gitignore` after the folder is already a Git repo.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - create the root `.gitignore` during install-time flows when it does not exist - append `/.odylith/` when the file exists but is missing the managed-state entry - keep duplicate detection so install, upgrade, and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-008"
                 ]
               }
             ]
@@ -1931,26 +1745,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh (B-030) so the product just shipped GA and the release lifecycle needs to feel both polished and safe: one-step consumer adoption, first-class recovery, and shell refresh that stays legible under failure.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: consumer-repo operators upgrading Odylith through the supported CLI, consumer upgrades already activate the new runtime, but the local dashboard can stay visually stale until a later sync and the product gives the operator no in-shell celebration or concise readout of what changed.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - add a consumer-lane `odylith reinstall --latest` path that safely adopts the latest verified release and repo pin in one step - improve missing-launcher recovery around the repo-local bootstrap launcher instead of, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -2140,26 +1934,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to add first-class short-form top-level grounding commands backed by the existing Context Engine, starting with `odylith bootstrap` and related top-level grounding verbs, then tighten repo-root managed AGENTS, shared and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2315,26 +2089,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) so `v0.1.5` already taught us the right lesson: the product is believable enough that the next failure mode is no longer \"can Odylith do anything useful?\" but \"does the release system deserve the same trust as the product?\".",
                 "fact_ids": [
                   "F-006"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers cutting and proving releases from the product repo, `v0.1.5` shipped with meaningful product gains, but the release showed that the release system still trails the product.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to ship this as one umbrella release contract with bounded execution waves, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-008"
                 ]
               }
             ]
@@ -2502,26 +2256,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) so odylith will not honestly beat `odylith_off` by narrative.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload, `odylith_on` is currently paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, because the runtime still scans too much projection truth and keeps more.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to improve the runtime slices that currently add the most avoidable cost: - add fast deterministic path-scoped selectors and local cache reuse so Odylith stops broad-scanning projection truth on benchmark hot paths, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -2718,26 +2452,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers and reviewers who need a broader and harder benchmark before trusting product claims, the current 30-scenario suite is better than the older 24-case floor, but it is still too thin to call a comprehensive proof across the weak families.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to expand the benchmark suite in the weak families, publish the selector and compaction diagnostics that explain the remaining wins and losses, and refresh README and dashboard surfaces only from the rerun report that, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2922,26 +2636,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - Add repo-root managed-runtime trust anchors outside `.odylith/` and verify hot-path managed-runtime files before `odylith.cli` import, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -3106,26 +2800,6 @@
                 "text": "Then land The machine-readable report still under-publishes the conservative view: to extend if Odylith expands the benchmark corpus around these high-value complex-repo tasks and then improves the runtime frontier against that harder corpus, the benchmark becomes both harder and more convincing.",
                 "fact_ids": [
                   "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith evaluators and maintainers who need the benchmark to reflect the real work a serious coding agent performs in a complex governed repo, odylith's current benchmark proof is credible, but the corpus is still too small and too narrow.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to add a broader set of benchmark scenarios covering install and upgrade hardening, release proof, surface-routing and browser reliability, daemon and repair security, benchmark publication integrity, and cross-surface, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-009"
                 ]
               }
             ]
@@ -3308,26 +2982,6 @@
                 "text": "Then land Re-run the targeted weak-family proof slice and then the full proof to extend if Odylith treats anti-gaming and honest product improvement as the same contract, the benchmark becomes more trustworthy than a typical internal eval and more useful than a flattering one.",
                 "fact_ids": [
                   "F-010"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss, odylith now has a benchmark lane that matters.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-012"
                 ]
               }
             ]
@@ -3532,26 +3186,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to harden runtime freshness across Compass and related shell flows: version the projection contract, cap Compass runtime reuse by age for rolling windows, remove stale cross-packet global brief recovery, and expand, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -3735,26 +3369,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers working in the product repo and needing a crisp distinction between pinned dogfood proof and detached `source-local` source work, odylith's runtime isolation contract is correct, but the language around it is still spread across docs and easy to collapse into one false question.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to publish one explicit lane matrix across constitutional docs, AGENTS guidance, shared guidelines, shared and maintainer skills, component specs, backlog truth, and Atlas diagrams: - consumer lane - product-repo, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -3931,26 +3545,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: first-time Odylith users opening `odylith/index.html` immediately after install or upgrade, odylith's first-run shell currently looks and feels like a dense internal dashboard instead of a confident launchpad.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to redesign the starter launchpad around a real hero layout: - make the starter prompt the dominant action surface - compress secondary information into clearer support cards - improve spacing, type hierarchy, and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4106,26 +3700,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Install-Time Gitignore Bootstrap for Managed State (B-029) so the first-run shell is now a front-door workflow, so the install path should not leave managed state hygiene half-done just because the folder has not been turned into a Git repo yet.",
                 "fact_ids": [
                   "F-006"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: new consumer repos installing Odylith before or during initial Git setup, odylith already knows that `/.odylith/` should stay untracked, but install, upgrade, and repair only backfill the root `.gitignore` after the folder is already a Git repo.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - create the root `.gitignore` during install-time flows when it does not exist - append `/.odylith/` when the file exists but is missing the managed-state entry - keep duplicate detection so install, upgrade, and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-008"
                 ]
               }
             ]
@@ -4293,26 +3867,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh (B-030) so the product just shipped GA and the release lifecycle needs to feel both polished and safe: one-step consumer adoption, first-class recovery, and shell refresh that stays legible under failure.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: consumer-repo operators upgrading Odylith through the supported CLI, consumer upgrades already activate the new runtime, but the local dashboard can stay visually stale until a later sync and the product gives the operator no in-shell celebration or concise readout of what changed.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - add a consumer-lane `odylith reinstall --latest` path that safely adopts the latest verified release and repo pin in one step - improve missing-launcher recovery around the repo-local bootstrap launcher instead of, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -4502,26 +4056,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Codex users in consumer repos who expect Odylith install or repo activation to make Odylith the obvious first-turn workflow, odylith already has the right grounding packets, but the operator path is still too insiderish.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to add first-class short-form top-level grounding commands backed by the existing Context Engine, starting with `odylith bootstrap` and related top-level grounding verbs, then tighten repo-root managed AGENTS, shared and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4684,26 +4218,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline (B-033) so `v0.1.5` already taught us the right lesson: the product is believable enough that the next failure mode is no longer \"can Odylith do anything useful?\" but \"does the release system deserve the same trust as the product?\".",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers cutting and proving releases from the product repo, `v0.1.5` shipped with meaningful product gains, but the release showed that the release system still trails the product.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to ship this as one umbrella release contract with bounded execution waves, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -4900,26 +4414,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload, `odylith_on` is currently paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, because the runtime still scans too much projection truth and keeps more.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to improve the runtime slices that currently add the most avoidable cost: - add fast deterministic path-scoped selectors and local cache reuse so Odylith stops broad-scanning projection truth on benchmark hot paths, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -5111,26 +4605,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers and reviewers who need a broader and harder benchmark before trusting product claims, the current 30-scenario suite is better than the older 24-case floor, but it is still too thin to call a comprehensive proof across the weak families.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to expand the benchmark suite in the weak families, publish the selector and compaction diagnostics that explain the remaining wins and losses, and refresh README and dashboard surfaces only from the rerun report that, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -5317,26 +4791,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture (B-040) so odylith is already making a stronger public trust claim around its managed runtime.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: consumer-repo operators who need `./.odylith/bin/odylith` to fail closed on bad local runtime state instead of hanging or silently trusting, odylith had already improved install and release verification, but the local runtime trust boundary was still too weak once assets were staged into `.odylith/`.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - Add repo-root managed-runtime trust anchors outside `.odylith/` and verify hot-path managed-runtime files before `odylith.cli` import, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -26267,6 +25721,7 @@
     "active_window_minutes": 15,
     "max_review_age_days": 21,
     "runtime_mode": "auto",
-    "refresh_profile": "shell-safe"
+    "refresh_profile": "shell-safe",
+    "standup_brief_schema_version": "v17"
   }
 }

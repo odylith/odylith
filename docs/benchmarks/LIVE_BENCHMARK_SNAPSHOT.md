@@ -9,9 +9,9 @@ Current Live Benchmark report: `52aa3f76538cf12f` from `2026-04-05T22:51:40Z`
 with status `provisional_pass`.
 
 The latest live benchmark ran `37` seeded scenarios across matched `warm` and
-`cold` cache profiles under the same live Codex CLI model and reasoning
+`cold` cache profiles under the same live host CLI model and reasoning
 contract for `odylith_on` and `odylith_off`, using an isolated temporary
-Codex home and stripped auto-consumed repo guidance surfaces. That produced
+host home and stripped auto-consumed repo guidance surfaces. That produced
 `148` live results, or `74` matched pairs. The published comparison keeps the
 conservative scenario-wise worst-of-warm/cold view at `37` scenario pairs.
 
@@ -34,7 +34,7 @@ Compared with `odylith_off`, Odylith improved:
 - median live agent runtime by `-18.42s`
 - median validator overhead by `-755 ms`
 
-Mean and p95 time remain slower than raw Codex CLI, so tail latency is still
+Mean and p95 time remain slower than the raw host CLI, so tail latency is still
 visible even though the full proof gate now clears.
 
 ## Publication Read

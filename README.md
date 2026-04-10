@@ -241,20 +241,22 @@ Odylith publishes two benchmark views and keeps their claims separate:
 - `Grounding Benchmark` (`--profile diagnostic`): measures how well Odylith
   builds the right grounded context before the live agent run
 - `Live Benchmark` (`--profile proof`): measures how well Odylith completes
-  the real task end to end against raw Codex CLI
+  the real task end to end against the raw host CLI
 
-In README framing, `odylith_off` is the raw Codex CLI lane.
+In README framing, `odylith_off` is the raw host CLI lane.
 
 Current public proof posture is local-first memory on LanceDB plus Tantivy.
 These are first public eval runs and should be read as a baseline, not a
-ceiling. Odylith wins by grounding and operationalizing shared repo truth
-better, not by hiding truth from the baseline lane.
+ceiling. The current published live proof is Codex-host-scoped, but the
+benchmark contract itself is host-neutral. Odylith wins by grounding and
+operationalizing shared repo truth better, not by hiding truth from the
+baseline lane.
 
 ### Grounding Benchmark
 
 > [!NOTE]
 > The Grounding Benchmark (`--profile diagnostic`) is not the product claim.
-> It isolates packet and prompt construction quality before any live Codex
+> It isolates packet and prompt construction quality before any live host
 > session begins.
 
 The Grounding Benchmark answers:
@@ -325,7 +327,7 @@ the raw control lane, and the operating-posture view comes from the sampled
 
 The Live Benchmark answers:
 
-- "Does Odylith beat raw Codex CLI on the same live end-to-end task contract?"
+- "Does Odylith beat the raw host CLI on the same live end-to-end task contract?"
 - "What is the full matched-pair time to valid outcome?"
 - "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
 
@@ -387,7 +389,7 @@ prompt-token cost.
 </p>
 
 Need help reading the graphs, reports, and artifacts? See
-[How To Read Odylith's Codex Benchmarks](docs/benchmarks/README.md).
+[How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md).
 
 ## Best Fit Use Cases
 
@@ -428,5 +430,5 @@ This repo also uses Odylith on itself.
 - [What Gets Installed](docs/specs/odylith-repo-integration-contract.md#what-gets-installed)
 - [Repo Integration Contract](docs/specs/odylith-repo-integration-contract.md)
 - [Install and Upgrade Runbook](odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
-- [How To Read Odylith's Codex Benchmarks](docs/benchmarks/README.md)
+- [How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md)
 - [Project Status And Disclosures](docs/STATUS_AND_DISCLOSURES.md)

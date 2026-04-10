@@ -45,7 +45,6 @@
       "Completed in this window: Operator: Verified plan closeouts landed across the window: Odylith Product Self-Governance and Repo Boundary (B-001) -> odylith product self governance and repo boundary; Compass History Retention, Compressed Archive, and Restore (B-003) -> compass history retention compressed archive and restore. | Operator: Most concrete portfolio movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
       "Current execution: Executive: Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005) is the flagship lane and is in active implementation because the first real public release already happened and exposed the real remaining gap: the public install path still depends on consumer-machine Python. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Active lanes are converting plans into concrete implementation outcomes Live focus lanes: Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005). | Operator: Timeline signal on the primary lane: projected at roughly 2 days and expected to tighten as execution closes checklist items.",
       "Next planned: Operator: Immediate forcing function is Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005): Odylith publishes managed runtime bundle assets for supported macOS. | Operator: Then move Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005): make consumer-rehearsal VERSION=X.Y.Z succeeds from hosted assets on the.",
-      "Why this matters: Executive: For - Primary: Odylith maintainers who need a credible first public release and a truthful dogfood posture in the product repo, odylith's repo-local implementation work is ahead of its operational reality. | Operator: The architecture move is to keep the public release and dog-food activation work already landed, then finish the consumer proof path by replacing the machine-Python bootstrap with Odylith-managed runtime bundles for supported platforms and, which gives operators a clearer contract and lower coordination risk.",
       "Risks to watch: Primary watch item is keeping Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005) tight so live execution does not diffuse into portfolio churn."
     ],
     "48h": [
@@ -53,7 +52,6 @@
       "Completed in this window: Operator: Verified plan closeouts landed across the window: Odylith Product Self-Governance and Repo Boundary (B-001) -> odylith product self governance and repo boundary; Compass History Retention, Compressed Archive, and Restore (B-003) -> compass history retention compressed archive and restore. | Operator: Most concrete portfolio movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
       "Current execution: Executive: Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005) is the flagship lane and is in active implementation because the first real public release already happened and exposed the real remaining gap: the public install path still depends on consumer-machine Python. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Active lanes are converting plans into concrete implementation outcomes Live focus lanes: Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005). | Operator: Timeline signal on the primary lane: projected at roughly 2 days and expected to tighten as execution closes checklist items.",
       "Next planned: Operator: Immediate forcing function is Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005): Odylith publishes managed runtime bundle assets for supported macOS. | Operator: Then move Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005): make consumer-rehearsal VERSION=X.Y.Z succeeds from hosted assets on the.",
-      "Why this matters: Executive: For - Primary: Odylith maintainers who need a credible first public release and a truthful dogfood posture in the product repo, odylith's repo-local implementation work is ahead of its operational reality. | Operator: The architecture move is to keep the public release and dog-food activation work already landed, then finish the consumer proof path by replacing the machine-Python bootstrap with Odylith-managed runtime bundles for supported platforms and, which gives operators a clearer contract and lower coordination risk.",
       "Risks to watch: Primary watch item is keeping Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005) tight so live execution does not diffuse into portfolio churn."
     ]
   },
@@ -64,7 +62,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005): odylith canonical release version session and maintainer runbook. | Operator: Most concrete movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
         "Current execution: Executive: Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005) is in active implementation because the first real public release already happened and exposed the real remaining gap: the public install path still depends on consumer-machine Python. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Plan posture: checklist progress is 69/87; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days and expected to tighten as execution closes checklist items.",
         "Next planned: Operator: Immediate forcing function is to land Odylith publishes managed runtime bundle assets for supported macOS so the first real public release already happened and exposed the real remaining gap: the public install path still depends on consumer-machine Python. | Operator: Then land make consumer-rehearsal VERSION=X.Y.Z succeeds from hosted assets on the to extend by turning the completed repo-local lifecycle work into one real public release rehearsal, Odylith can convert its install/versioning contract from \"locally implemented\" to \"operationally proven.\".",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who need a credible first public release and a truthful dogfood posture in the product repo, odylith's repo-local implementation work is ahead of its operational reality. | Operator: The architecture move is to keep the public release and dog-food activation work already landed, then finish the consumer proof path by replacing the machine-Python bootstrap with Odylith-managed runtime bundles for supported platforms and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 18 plan items remain open for Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005)."
       ],
       "B-004": [
@@ -72,7 +69,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Self-Hosting Posture Hardening (B-004): odylith self hosting posture hardening. | Operator: Most concrete movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
         "Current execution: Executive: Odylith Self-Hosting Posture Hardening (B-004) is completed because odylith is about to depend on versioning, upgrade, rollback, and public release discipline. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Plan posture: checklist progress is 67/67; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Self-Hosting Posture Hardening (B-004).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers cutting releases from the public product repo, odylith now has real install, upgrade, rollback, and release verification mechanics, but the public product repo can still run in detached `source-local` mode without making that posture obvious in all operator surfaces. | Operator: The architecture move is to keep the existing install/versioning model, but derive one authoritative self-host posture from the live runtime pointer, repo pin, and source contract, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-001": [
@@ -80,7 +76,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Product Self-Governance and Repo Boundary (B-001): odylith product self governance and repo boundary. | Operator: Most concrete movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
         "Current execution: Executive: Odylith Product Self-Governance and Repo Boundary (B-001) is completed because the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Plan posture: checklist progress is 44/44; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Product Self-Governance and Repo Boundary (B-001).",
-        "Why this matters: Executive: For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records. | Operator: The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep host-repo truth local to each repo; - repoint downstream repos to, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-003": [
@@ -88,7 +83,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Compass History Retention, Compressed Archive, and Restore (B-003): compass history retention compressed archive and restore. | Operator: Most concrete movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
         "Current execution: Executive: Compass History Retention, Compressed Archive, and Restore (B-003) is completed because compass already accumulates materially sized daily runtime snapshots. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Plan posture: checklist progress is 50/50; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers and operators using Compass as the local audit and standup history surface, compass currently keeps a 30-day active history window and hard-deletes older daily snapshots. | Operator: The architecture move is to keep only the most recent 15 days active in `odylith/compass/runtime/history/`, compress older daily snapshots into an archive lane, and add an explicit restore command that rehydrates selected dates back into active, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ]
     },
@@ -98,7 +92,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005): odylith canonical release version session and maintainer runbook. | Operator: Most concrete movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
         "Current execution: Executive: Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005) is in active implementation because the first real public release already happened and exposed the real remaining gap: the public install path still depends on consumer-machine Python. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Plan posture: checklist progress is 69/87; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days and expected to tighten as execution closes checklist items.",
         "Next planned: Operator: Immediate forcing function is to land Odylith publishes managed runtime bundle assets for supported macOS so the first real public release already happened and exposed the real remaining gap: the public install path still depends on consumer-machine Python. | Operator: Then land make consumer-rehearsal VERSION=X.Y.Z succeeds from hosted assets on the to extend by turning the completed repo-local lifecycle work into one real public release rehearsal, Odylith can convert its install/versioning contract from \"locally implemented\" to \"operationally proven.\".",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who need a credible first public release and a truthful dogfood posture in the product repo, odylith's repo-local implementation work is ahead of its operational reality. | Operator: The architecture move is to keep the public release and dog-food activation work already landed, then finish the consumer proof path by replacing the machine-Python bootstrap with Odylith-managed runtime bundles for supported platforms and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 18 plan items remain open for Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005)."
       ],
       "B-004": [
@@ -106,7 +99,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Self-Hosting Posture Hardening (B-004): odylith self hosting posture hardening. | Operator: Most concrete movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
         "Current execution: Executive: Odylith Self-Hosting Posture Hardening (B-004) is completed because odylith is about to depend on versioning, upgrade, rollback, and public release discipline. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Plan posture: checklist progress is 67/67; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Self-Hosting Posture Hardening (B-004).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers cutting releases from the public product repo, odylith now has real install, upgrade, rollback, and release verification mechanics, but the public product repo can still run in detached `source-local` mode without making that posture obvious in all operator surfaces. | Operator: The architecture move is to keep the existing install/versioning model, but derive one authoritative self-host posture from the live runtime pointer, repo pin, and source contract, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-001": [
@@ -114,7 +106,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Product Self-Governance and Repo Boundary (B-001): odylith product self governance and repo boundary. | Operator: Most concrete movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
         "Current execution: Executive: Odylith Product Self-Governance and Repo Boundary (B-001) is completed because the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Plan posture: checklist progress is 44/44; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Product Self-Governance and Repo Boundary (B-001).",
-        "Why this matters: Executive: For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records. | Operator: The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep host-repo truth local to each repo; - repoint downstream repos to, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-003": [
@@ -122,7 +113,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Compass History Retention, Compressed Archive, and Restore (B-003): compass history retention compressed archive and restore. | Operator: Most concrete movement: added canonical release session, dogfood activation, and consumer rehearsal lane.",
         "Current execution: Executive: Compass History Retention, Compressed Archive, and Restore (B-003) is completed because compass already accumulates materially sized daily runtime snapshots. | Operator: Primary execution signal: added canonical release session, dogfood activation, and consumer rehearsal lane. | Operator: Plan posture: checklist progress is 50/50; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers and operators using Compass as the local audit and standup history surface, compass currently keeps a 30-day active history window and hard-deletes older daily snapshots. | Operator: The architecture move is to keep only the most recent 15 days active in `odylith/compass/runtime/history/`, compress older daily snapshots into an archive lane, and add an explicit restore command that rehydrates selected dates back into active, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ]
     }
@@ -204,26 +194,6 @@
               "text": "Then move Odylith Public Release, Dogfood Activation, and Consumer Rehearsal (B-005): make consumer-rehearsal VERSION=X.Y.Z succeeds from hosted assets on the.",
               "fact_ids": [
                 "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "For - Primary: Odylith maintainers who need a credible first public release and a truthful dogfood posture in the product repo, odylith's repo-local implementation work is ahead of its operational reality.",
-              "fact_ids": [
-                "F-010"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "The architecture move is to keep the public release and dog-food activation work already landed, then finish the consumer proof path by replacing the machine-Python bootstrap with Odylith-managed runtime bundles for supported platforms and, which gives operators a clearer contract and lower coordination risk.",
-              "fact_ids": [
-                "F-011"
               ]
             }
           ]
@@ -400,26 +370,6 @@
           ]
         },
         {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "For - Primary: Odylith maintainers who need a credible first public release and a truthful dogfood posture in the product repo, odylith's repo-local implementation work is ahead of its operational reality.",
-              "fact_ids": [
-                "F-010"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "The architecture move is to keep the public release and dog-food activation work already landed, then finish the consumer proof path by replacing the machine-Python bootstrap with Odylith-managed runtime bundles for supported platforms and, which gives operators a clearer contract and lower coordination risk.",
-              "fact_ids": [
-                "F-011"
-              ]
-            }
-          ]
-        },
-        {
           "key": "risks_to_watch",
           "label": "Risks to watch",
           "bullets": [
@@ -589,26 +539,6 @@
                 "text": "Then land make consumer-rehearsal VERSION=X.Y.Z succeeds from hosted assets on the to extend by turning the completed repo-local lifecycle work into one real public release rehearsal, Odylith can convert its install/versioning contract from \"locally implemented\" to \"operationally proven.\".",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who need a credible first public release and a truthful dogfood posture in the product repo, odylith's repo-local implementation work is ahead of its operational reality.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep the public release and dog-food activation work already landed, then finish the consumer proof path by replacing the machine-Python bootstrap with Odylith-managed runtime bundles for supported platforms and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -805,26 +735,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers cutting releases from the public product repo, odylith now has real install, upgrade, rollback, and release verification mechanics, but the public product repo can still run in detached `source-local` mode without making that posture obvious in all operator surfaces.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep the existing install/versioning model, but derive one authoritative self-host posture from the live runtime pointer, repo pin, and source contract, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1008,26 +918,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep host-repo truth local to each repo; - repoint downstream repos to, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1206,26 +1096,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers and operators using Compass as the local audit and standup history surface, compass currently keeps a 30-day active history window and hard-deletes older daily snapshots.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep only the most recent 15 days active in `odylith/compass/runtime/history/`, compress older daily snapshots into an archive lane, and add an explicit restore command that rehydrates selected dates back into active, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -1423,26 +1293,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who need a credible first public release and a truthful dogfood posture in the product repo, odylith's repo-local implementation work is ahead of its operational reality.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep the public release and dog-food activation work already landed, then finish the consumer proof path by replacing the machine-Python bootstrap with Odylith-managed runtime bundles for supported platforms and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1634,26 +1484,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers cutting releases from the public product repo, odylith now has real install, upgrade, rollback, and release verification mechanics, but the public product repo can still run in detached `source-local` mode without making that posture obvious in all operator surfaces.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep the existing install/versioning model, but derive one authoritative self-host posture from the live runtime pointer, repo pin, and source contract, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1837,26 +1667,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep host-repo truth local to each repo; - repoint downstream repos to, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2035,26 +1845,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers and operators using Compass as the local audit and standup history surface, compass currently keeps a 30-day active history window and hard-deletes older daily snapshots.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep only the most recent 15 days active in `odylith/compass/runtime/history/`, compress older daily snapshots into an archive lane, and add an explicit restore command that rehydrates selected dates back into active, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]

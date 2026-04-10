@@ -8,7 +8,7 @@ The source of truth is
 ## Coverage At A Glance
 
 - Tracked corpus:
-  `33` implementation scenarios plus `4` architecture scenarios, `37` total
+  `39` implementation scenarios plus `5` architecture scenarios, `44` total
 - Latest published proof snapshot:
   report `52aa3f76538cf12f`, status `provisional_pass`, `37` scenarios
 - Latest published diagnostic snapshot:
@@ -26,9 +26,9 @@ author sorts by token delta.
 | Runtime / Install / Security | 6 | `install_upgrade_runtime`, `agent_activation`, `daemon_security`, `consumer_profile_compatibility`, `runtime_state_integrity` | High-value because install, activation, runtime integrity, and repair are real developer pain. |
 | Surface / UI Reliability | 2 | `dashboard_surface`, `compass_brief_freshness` | Browser-backed product behavior, not static HTML edits. |
 | Docs + Code Closeout | 5 | `docs_code_closeout`, `governed_surface_sync`, `cross_surface_governance_sync` | Keeps code, docs, specs, and mirrors aligned. |
-| Governance / Release Integrity | 4 | `component_governance`, `release_publication` | Important to product truth, but not the first public developer story. |
+| Governance / Release Integrity | 6 | `component_governance`, `live_proof_discipline`, `release_publication` | Important to product truth, and now explicitly measures whether live blocker lanes stay honest instead of being cleared early. |
 | Architecture Review | 4 | `architecture` | Keeps grounded design-review quality visible after direct coding work. |
-| Grounding / Orchestration Control | 9 | `broad_shared_scope`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains Odylith's mechanism without dominating the public story. |
+| Grounding / Orchestration Control | 13 | `broad_shared_scope`, `context_engine_grounding`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains Odylith's mechanism without dominating the public story, including direct Context Engine packet-lane and scope-resolution quality. |
 
 ## Current Published Attention Areas
 
@@ -66,6 +66,7 @@ The current expansion wave is biased toward developer-legible shapes:
 | `browser_surface_reliability` | 2 | shell and onboarding browser reliability with headless proof |
 | `cli_contract_regression` | 1 | public CLI regression repair with unit-test-backed operator contract |
 | `compass_brief_freshness` | 1 | freshness and reactivity of Compass brief generation |
+| `context_engine_grounding` | 4 | Context Engine packet-lane selection, scope resolution, and fail-closed ambiguity behavior |
 | `component_governance` | 2 | Registry and Atlas alignment for benchmark or component truth |
 | `consumer_profile_compatibility` | 1 | consumer config and truth-root compatibility repair |
 | `cross_file_feature` | 1 | multi-file implementation with bounded packet discipline |
@@ -78,6 +79,7 @@ The current expansion wave is biased toward developer-legible shapes:
 | `explicit_workstream` | 1 | explicit workstream grounding with compact route-ready packet shape |
 | `governed_surface_sync` | 1 | lifecycle closeout propagation across governed surfaces |
 | `install_upgrade_runtime` | 2 | install or upgrade regressions across runtime activation and release truth |
+| `live_proof_discipline` | 2 | live blocker proof control, claim-tier enforcement, and no-fake-precision packet behavior |
 | `merge_heavy_change` | 1 | coordination-heavy multi-owner change with validation pressure |
 | `orchestration_feedback` | 1 | closed-loop advisory posture for routing and leaf shaping |
 | `orchestration_intelligence` | 1 | delegation and inspection-ledger visibility as system behavior |
@@ -96,6 +98,7 @@ The current expansion wave is biased toward developer-legible shapes:
 | `browser_surface_reliability` | `shell-and-compass-browser-reliability`, `tooling-dashboard-onboarding-browser-contract` |
 | `cli_contract_regression` | `cli-install-first-run-onboarding-contract` |
 | `compass_brief_freshness` | `compass-brief-freshness-and-reactivity` |
+| `context_engine_grounding` | `context-engine-split-adaptive-grounding`, `context-engine-governance-boundary-grounding`, `context-engine-broad-scope-fail-closed`, `context-engine-release-resolution-grounding` |
 | `component_governance` | `benchmark-component-governance-truth`, `benchmark-component-honesty-governance` |
 | `consumer_profile_compatibility` | `consumer-profile-truth-root-compatibility` |
 | `cross_file_feature` | `cross-file-feature-budget-discipline` |
@@ -108,6 +111,7 @@ The current expansion wave is biased toward developer-legible shapes:
 | `explicit_workstream` | `wave3-explicit-workstream` |
 | `governed_surface_sync` | `closeout-surface-path-normalization` |
 | `install_upgrade_runtime` | `consumer-install-upgrade-runtime-contract`, `managed-runtime-repair-and-rollback-contract` |
+| `live_proof_discipline` | `live-proof-frontier-verified-control-panel`, `live-proof-no-fake-precision-without-a-lane` |
 | `merge_heavy_change` | `merge-heavy-router-doc-sync` |
 | `orchestration_feedback` | `orchestration-control-advisory-loop` |
 | `orchestration_intelligence` | `orchestrator-ledger-closeout` |
@@ -122,6 +126,7 @@ These come from `architecture_scenarios` rather than the implementation-family
 list:
 
 - `architecture-odylith-self-grounding`
+- `architecture-context-engine-split-boundary-contract`
 - `architecture-release-install-runtime-boundary`
 - `architecture-benchmark-proof-publication-lane`
 - `architecture-benchmark-honest-baseline-contract`

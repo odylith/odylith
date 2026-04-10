@@ -425,26 +425,6 @@ initSharedQuickTooltips();
       return "Low";
     }
 
-    function intelligenceConfidenceBasis(confidence, explicitCount, syntheticCount, workstreamCount, baselineCount = 0) {
-      const explicit = Number(explicitCount || 0);
-      const synthetic = Number(syntheticCount || 0);
-      const workstreams = Number(workstreamCount || 0);
-      const baseline = Number(baselineCount || 0);
-      if (confidence === "High") {
-        return `High confidence because ${explicit} explicit checkpoint${explicit === 1 ? "" : "s"} and ${workstreams} linked workstream${workstreams === 1 ? "" : "s"} are present.`;
-      }
-      if (confidence === "Medium") {
-        return `Medium confidence because explicit evidence exists, but the picture still relies on a limited checkpoint set${synthetic > 0 ? " mixed with inferred local change" : ""}.`;
-      }
-      if (synthetic > 0) {
-        return "Low confidence because the read is driven mainly by inferred local change rather than explicit governance checkpoints.";
-      }
-      if (baseline > 0) {
-        return `Low confidence because Registry currently has ${baseline} documented spec history ${pluralize(baseline, "checkpoint", "checkpoints")} but no live mapped forensic evidence yet.`;
-      }
-      return "Low confidence because Registry does not yet have enough mapped evidence to form a strong narrative.";
-    }
-
     function latestExplicitEvent(events) {
       return (Array.isArray(events) ? events : []).find((event) => isExplicitTimelineEvent(event)) || null;
     }
@@ -658,261 +638,24 @@ initSharedQuickTooltips();
       return intelligenceScope("component", componentId);
     }
 
-    function operatorReadout(snapshot) {
-      const readout = snapshot && typeof snapshot.operator_readout === "object" ? snapshot.operator_readout : {};
-      return readout && typeof readout === "object" ? readout : {};
+    function scopeSignal(snapshot) {
+      const value = snapshot && typeof snapshot.scope_signal === "object" ? snapshot.scope_signal : {};
+      return value && typeof value === "object" ? value : {};
     }
 
-    function humanizeOperatorReadoutToken(value) {
-  const raw = String(value || "").replace(/[_-]+/g, " ").trim().replace(/\s+/g, " ");
-  if (!raw) return "";
-  return raw.split(" ").map((segment) => {
-    const lower = String(segment || "").toLowerCase();
-    if (!lower) return "";
-    if (lower === "llm") return "LLM";
-    return `${lower.charAt(0).toUpperCase()}${lower.slice(1)}`;
-  }).join(" ");
-}
-
-const OPERATOR_SCENARIO_SUMMARIES = {"unsafe_closeout": "Closeout is ahead of trusted proof.", "cross_surface_conflict": "Linked surfaces disagree on the current state.", "orphan_activity": "Recent activity is not anchored to a clear controlling scope.", "stale_authority": "The controlling checkpoint is behind current activity.", "false_priority": "A linked blocker matters more than the local urgency signal.", "clear_path": "No intervention is required right now."};
-
-function compactOperatorText(value, options = {}) {
-  const fallback = String(options.fallback || "").trim();
-  const limit = Number(options.limit || 120);
-  let token = String(value || "").replace(/`/g, "").replace(/\s+/g, " ").trim();
-  if (!token) token = fallback;
-  token = token
-    .replace(/Latest workspace activity signal at [0-9T:+\-]+ is newer than the last explicit checkpoint at [0-9T:+\-]+\./gi, "Recent activity is newer than the last explicit checkpoint.")
-    .replace(/Finished workstream has newer activity than its last explicit checkpoint\./gi, "Finished scope has newer activity than its last explicit checkpoint.")
-    .replace(/Shell clearance state is pending\./gi, "Shell clearance is pending.")
-    .replace(/Clearance is marked cleared and .* has no newer activity than (?:its|the) last explicit checkpoint\./gi, "Clearance is marked cleared and no newer activity remains.")
-    .replace(/If ignored, .* can be closed against stale proof and force re-clearance later\./gi, "Ignoring this risks closeout against stale proof.");
-  token = token.replace(/\s+/g, " ").trim();
-  if (!limit || token.length <= limit) return token;
-  let clipped = token.slice(0, Math.max(0, limit - 3)).trimEnd();
-  const lastSpace = clipped.lastIndexOf(" ");
-  if (lastSpace > 0) clipped = clipped.slice(0, lastSpace);
-  return `${clipped.replace(/[ .,:;]+$/g, "")}...`;
-}
-
-function operatorQueueProblemTitle(item) {
-  const row = item && typeof item === "object" ? item : {};
-  const scenario = String(row.primary_scenario || "").trim();
-  const fallback = String(OPERATOR_SCENARIO_SUMMARIES[scenario] || "Path is clear. Keep the latest checkpoint and proof current.").trim() || "Path is clear. Keep the latest checkpoint and proof current.";
-  const issue = compactOperatorText(row.issue, { fallback: "", limit: 132 });
-  if (issue && issue.length <= 88) return issue;
-  return fallback;
-}
-
-function operatorQueueScopeCaption(item, limit = 96) {
-  const row = item && typeof item === "object" ? item : {};
-  const scopeId = String(row.scope_id || "").trim();
-  const scopeLabel = String(row.scope_label || "").replace(/\s+/g, " ").trim();
-  if (!scopeId && !scopeLabel) return "Linked scope";
-  if (scopeId && scopeLabel) {
-    if (scopeLabel.startsWith(`${scopeId} `)) return compactOperatorText(scopeLabel, { limit });
-    return compactOperatorText(`${scopeId} · ${scopeLabel}`, { limit });
-  }
-  return compactOperatorText(scopeLabel || scopeId, { limit });
-}
-
-function operatorQueueSignalSummaries(item, limit = 3) {
-  const rows = [];
-  for (const raw of normalizeOperatorTextList(item && item.proof_highlights, 4)) {
-    const token = compactOperatorText(raw, { limit: 88 });
-    if (!token || rows.includes(token)) continue;
-    rows.push(token);
-    if (rows.length >= limit) break;
-  }
-  if (!rows.length) rows.push("Open Shell for proof and clearance details.");
-  return rows;
-}
-
-function operatorQueueRiskText(item) {
-  const highlights = normalizeOperatorTextList(item && item.proof_highlights, 4);
-  for (const raw of highlights) {
-    if (/^If ignored,/i.test(String(raw || "").trim())) {
-      return compactOperatorText(raw, { limit: 124 });
-    }
-  }
-  return "";
-}
-
-function renderOperatorReadoutMeta(readout) {
-  const row = readout && typeof readout === "object" ? readout : {};
-  const items = [
-    { label: "Scenario", value: humanizeOperatorReadoutToken(row.primary_scenario || "clear_path") || "Clear Path", tone: "operator-readout-meta-scenario" },
-    { label: "Severity", value: humanizeOperatorReadoutToken(row.severity || "clear") || "Clear", tone: "operator-readout-meta-severity" },
-    { label: "Source", value: humanizeOperatorReadoutToken(row.source || "deterministic") || "Deterministic", tone: "operator-readout-meta-source" },
-  ];
-  return items.map((item) => `<span class="operator-readout-meta-item ${item.tone}">${escapeHtml(`${item.label}: ${item.value}`)}</span>`).join("");
-}
-
-function renderOperatorReadoutProofLinks(refs, hrefBuilder, emptyText = "No proof routes are currently mapped.") {
-  const rows = Array.isArray(refs) ? refs.filter((row) => row && typeof row === "object") : [];
-  if (!rows.length) {
-    return `<span class="operator-readout-copy">${escapeHtml(String(emptyText || "No proof routes are currently mapped."))}</span>`;
-  }
-  const resolver = typeof hrefBuilder === "function" ? hrefBuilder : (() => "#");
-  return rows.map((row) => {
-    const label = String(row && row.label || row && row.value || "Proof").trim() || "Proof";
-    const href = String(resolver(row) || "#").trim() || "#";
-    return `<a class="operator-readout-proof-link" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${escapeHtml(label)}</a>`;
-  }).join("");
-}
-
-function renderOperatorReadoutArticle(readout, options = {}) {
-  const row = readout && typeof readout === "object" ? readout : {};
-  const isClearPath = String(row.primary_scenario || "").trim() === "clear_path";
-  const issueText = String(row.issue || options.issueFallback || "Path is clear. Keep the latest checkpoint and proof current.").trim() || "Path is clear. Keep the latest checkpoint and proof current.";
-  const whyHiddenText = String(row.why_hidden || options.whyHiddenFallback || "No hidden operator context is currently resolved.").trim() || "No hidden operator context is currently resolved.";
-  const actionText = String(row.action || options.actionFallback || "No operator action is currently mapped.").trim() || "No operator action is currently mapped.";
-  const proofHtml = String(
-    options.proofHtml
-    || `<span class="operator-readout-copy">${escapeHtml(String(options.proofFallback || "No proof routes are currently mapped."))}</span>`
-  );
-  const metaHtml = String(options.metaHtml || renderOperatorReadoutMeta(row));
-  const detailsHtml = isClearPath
-    ? `
-      <div class="operator-readout-details">
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Go To Proof</p>
-          <div class="operator-readout-proof">${proofHtml}</div>
-        </div>
-      </div>
-    `
-    : `
-      <div class="operator-readout-details">
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Why Hidden</p>
-          <p class="operator-readout-copy">${escapeHtml(whyHiddenText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Do This</p>
-          <p class="operator-readout-copy">${escapeHtml(actionText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Go To Proof</p>
-          <div class="operator-readout-proof">${proofHtml}</div>
-        </div>
-      </div>
-    `;
-  return `
-    <article class="operator-readout${isClearPath ? " is-clear" : ""}">
-      <div class="operator-readout-meta">${metaHtml}</div>
-      <div class="operator-readout-main">
-        <p class="operator-readout-label">Issue</p>
-        <p class="operator-readout-copy">${escapeHtml(issueText)}</p>
-      </div>
-      ${detailsHtml}
-    </article>
-  `;
-}
-
-function normalizeOperatorTextList(values, limit = 4) {
-  if (!Array.isArray(values)) return [];
-  const rows = [];
-  for (const raw of values) {
-    const token = String(raw || "").trim();
-    if (!token) continue;
-    rows.push(token);
-    if (rows.length >= limit) break;
-  }
-  return rows;
-}
-
-function renderOperatorHighlightList(values, emptyText = "No proof highlights are currently mapped.") {
-  const rows = normalizeOperatorTextList(values, 4);
-  if (!rows.length) {
-    return `<span class="operator-readout-copy">${escapeHtml(String(emptyText || "No proof highlights are currently mapped."))}</span>`;
-  }
-  return rows.map((token) => `<span class="operator-readout-copy">${escapeHtml(token)}</span>`).join("");
-}
-
-function renderOperatorQueueMeta(item) {
-  const row = item && typeof item === "object" ? item : {};
-  const rank = Number(row.rank || 0);
-  const items = [
-    { label: "Rank", value: rank > 0 ? `#${rank}` : "#-", tone: "operator-readout-meta-rank" },
-    { label: "Severity", value: humanizeOperatorReadoutToken(row.severity || "watch") || "Watch", tone: "operator-readout-meta-severity" },
-    { label: "Scenario", value: humanizeOperatorReadoutToken(row.primary_scenario || "clear_path") || "Clear Path", tone: "operator-readout-meta-scenario" },
-  ];
-  return items.map((item) => `<span class="operator-readout-meta-item ${item.tone}">${escapeHtml(`${item.label}: ${item.value}`)}</span>`).join("");
-}
-
-function renderOperatorQueueItem(item, options = {}) {
-  const row = item && typeof item === "object" ? item : {};
-  const issueText = String(row.issue || options.issueFallback || "Path is clear. Keep the latest checkpoint and proof current.").trim() || "Path is clear. Keep the latest checkpoint and proof current.";
-  const whyNowText = String(row.why_now || options.whyNowFallback || "No immediate operator forcing function is currently mapped.").trim() || "No immediate operator forcing function is currently mapped.";
-  const actionText = String(row.action || options.actionFallback || "No operator action is currently mapped.").trim() || "No operator action is currently mapped.";
-  const successCheckText = String(row.success_check || options.successCheckFallback || "No explicit success check is currently mapped.").trim() || "No explicit success check is currently mapped.";
-  const metaHtml = String(options.metaHtml || renderOperatorQueueMeta(row));
-  const highlightsHtml = String(options.highlightsHtml || renderOperatorHighlightList(row.proof_highlights, options.highlightFallback || "No proof highlights are currently mapped."));
-  const openHref = String(options.openHref || "").trim();
-  const openLabel = String(options.openLabel || "Open in Shell").trim() || "Open in Shell";
-  const openSection = openHref
-    ? `
-      <div class="operator-readout-section">
-        <p class="operator-readout-label">Open in Shell</p>
-        <div class="operator-readout-proof">
-          <a class="operator-readout-proof-link" href="${escapeHtml(openHref)}" target="_top">${escapeHtml(openLabel)}</a>
-        </div>
-      </div>
-    `
-    : "";
-  return `
-    <article class="operator-readout operator-inbox-item">
-      <div class="operator-readout-meta">${metaHtml}</div>
-      <div class="operator-readout-main">
-        <p class="operator-readout-label">Issue</p>
-        <p class="operator-readout-copy">${escapeHtml(issueText)}</p>
-      </div>
-      <div class="operator-readout-details">
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Why Now</p>
-          <p class="operator-readout-copy">${escapeHtml(whyNowText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Do This Now</p>
-          <p class="operator-readout-copy">${escapeHtml(actionText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Success Check</p>
-          <p class="operator-readout-copy">${escapeHtml(successCheckText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Proof Highlights</p>
-          <div class="operator-readout-proof">${highlightsHtml}</div>
-        </div>
-        ${openSection}
-      </div>
-    </article>
-  `;
-}
-
-    function proofHref(ref, componentId, primaryWorkstream) {
-      const row = ref && typeof ref === "object" ? ref : {};
-      const surface = String(row.surface || "").trim().toLowerCase();
-      const value = String(row.value || "").trim();
-      if (surface === "shell" || surface === "tooling") return "../index.html";
-      if (surface === "compass") return hrefCompass(primaryWorkstream || value);
-      if (surface === "atlas") return hrefAtlas(primaryWorkstream || "", value);
-      if (surface === "radar") return hrefRadar(primaryWorkstream || value);
-      if (surface === "registry") return hrefRegistry(componentId || value.replace(/^component:/, ""));
-      return "../index.html?tab=registry";
+    function scopeSignalRank(snapshot) {
+      const signal = scopeSignal(snapshot);
+      const numeric = Number(signal.rank);
+      if (Number.isFinite(numeric)) return numeric;
+      const rung = String(signal.rung || "").trim().toUpperCase();
+      if (/^R\d+$/.test(rung)) return Number.parseInt(rung.slice(1), 10);
+      return 0;
     }
 
     function registryComponentHref(componentId) {
       const token = String(componentId || "").trim();
       if (!token) return "../index.html?tab=registry";
       return `../index.html?tab=registry&component=${encodeURIComponent(token)}`;
-    }
-
-    function renderProofRefs(refs, componentId, primaryWorkstream) {
-      return renderOperatorReadoutProofLinks(
-        refs,
-        (row) => proofHref(row, componentId, primaryWorkstream),
-      );
     }
 
     function toneClassForCategory(category) {
@@ -1164,6 +907,9 @@ function renderOperatorQueueItem(item, options = {}) {
           const leftCategory = String(left.category || "");
           const rightCategory = String(right.category || "");
           if (leftCategory !== rightCategory) return leftCategory.localeCompare(rightCategory);
+          const leftRank = scopeSignalRank(componentIntelligenceSnapshot(left.component_id));
+          const rightRank = scopeSignalRank(componentIntelligenceSnapshot(right.component_id));
+          if (leftRank !== rightRank) return rightRank - leftRank;
           const leftName = String(left.name || left.component_id || "");
           const rightName = String(right.name || right.component_id || "");
           return leftName.localeCompare(rightName);
@@ -1869,18 +1615,6 @@ function renderOperatorQueueItem(item, options = {}) {
         specRunbooks: Array.isArray(row.spec_runbooks) ? row.spec_runbooks : [],
         specDeveloperDocs: Array.isArray(row.spec_developer_docs) ? row.spec_developer_docs : [],
       };
-      const intelligenceSnapshot = componentIntelligenceSnapshot(row.component_id);
-      const confidenceToken = String(intelligenceSnapshot && intelligenceSnapshot.confidence || confidence).trim() || confidence;
-      const confidenceSummary = intelligenceConfidenceBasis(
-        confidenceToken,
-        explicitExecutiveEvents.length,
-        syntheticExecutiveEvents.length,
-        allWorkstreams.length,
-        baselineExecutiveEvents.length,
-      );
-      const postureMode = humanizeToken(String(intelligenceSnapshot && intelligenceSnapshot.posture_mode || "converging"));
-      const trajectory = humanizeToken(String(intelligenceSnapshot && intelligenceSnapshot.trajectory || "converging"));
-
       const metadata = [
         staticLabel(`Category: ${humanizeToken(row.category)}`, categoryDescription(row.category)),
         staticLabel(`Qualification: ${humanizeToken(row.qualification)}`, qualificationDescription(row.qualification)),

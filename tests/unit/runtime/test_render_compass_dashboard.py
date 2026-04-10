@@ -374,6 +374,41 @@ def test_refresh_runtime_artifacts_rebuilds_when_cache_is_stale(tmp_path: Path, 
     assert paths == expected_paths
 
 
+def test_refresh_runtime_artifacts_persists_postbuild_input_fingerprint_when_build_mutates_tracked_inputs(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo_root = tmp_path
+    runtime_dir = repo_root / "odylith/compass/runtime"
+    runtime_dir.mkdir(parents=True)
+    expected_paths = _runtime_paths(runtime_dir)
+    calls: dict[str, object] = {}
+    fingerprints = iter(("prebuild-fingerprint", "postbuild-fingerprint"))
+
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_compass_runtime_input_fingerprint",
+        lambda **_kwargs: next(fingerprints),
+    )
+
+    class _FakeRuntimeImpl:
+        def _build_runtime_payload(self, **kwargs):  # noqa: ANN003
+            calls["build"] = dict(kwargs)
+            return {"version": "v1", "history": {}}
+
+        def _write_runtime_snapshots(self, **kwargs):  # noqa: ANN003
+            calls["write"] = dict(kwargs)
+            return expected_paths
+
+    monkeypatch.setattr(render_compass_dashboard, "_load_runtime_impl", lambda: _FakeRuntimeImpl())
+
+    payload, paths = render_compass_dashboard.refresh_runtime_artifacts(**_refresh_kwargs(repo_root, runtime_dir))
+
+    assert calls["build"]
+    assert calls["write"]
+    assert payload["runtime_contract"]["input_fingerprint"] == "postbuild-fingerprint"
+    assert paths == expected_paths
+
+
 def test_refresh_runtime_artifacts_rebuilds_when_matching_runtime_payload_is_too_old(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     runtime_dir = repo_root / "odylith/compass/runtime"
@@ -580,6 +615,53 @@ def test_refresh_runtime_artifacts_shell_safe_builds_without_existing_snapshot(t
     assert calls["build"]["refresh_profile"] == "shell-safe"
     assert calls["write"]
     assert payload["runtime_contract"]["refresh_profile"] == "shell-safe"
+    assert paths == expected_paths
+
+
+def test_refresh_runtime_artifacts_shell_safe_stamps_and_spawns_narration_maintenance(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo_root = tmp_path
+    runtime_dir = repo_root / "odylith/compass/runtime"
+    runtime_dir.mkdir(parents=True)
+    expected_paths = _runtime_paths(runtime_dir)
+    stamped: list[str] = []
+    spawned: list[Path] = []
+
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_compass_runtime_input_fingerprint",
+        lambda **_kwargs: "fresh-fingerprint",
+    )
+
+    class _FakeRuntimeImpl:
+        def _build_runtime_payload(self, **_kwargs):  # noqa: ANN003
+            return {"version": "v1"}
+
+        def _write_runtime_snapshots(self, **_kwargs):  # noqa: ANN003
+            return expected_paths
+
+    monkeypatch.setattr(render_compass_dashboard, "_load_runtime_impl", lambda: _FakeRuntimeImpl())
+    monkeypatch.setattr(
+        render_compass_dashboard.compass_standup_brief_maintenance,
+        "stamp_request_runtime_input_fingerprint",
+        lambda **kwargs: stamped.append(str(kwargs["runtime_input_fingerprint"])),
+    )
+    monkeypatch.setattr(
+        render_compass_dashboard.compass_standup_brief_maintenance,
+        "maybe_spawn_background",
+        lambda **kwargs: spawned.append(Path(kwargs["repo_root"]).resolve()) or 4321,
+    )
+
+    payload, paths = render_compass_dashboard.refresh_runtime_artifacts(
+        **_refresh_kwargs(repo_root, runtime_dir),
+        refresh_profile="shell-safe",
+    )
+
+    assert payload["runtime_contract"]["input_fingerprint"] == "fresh-fingerprint"
+    assert stamped == ["fresh-fingerprint"]
+    assert spawned == [repo_root.resolve()]
     assert paths == expected_paths
 
 

@@ -80,6 +80,8 @@ resumes, and contradictions explicit.
 - one umbrella-bound technical plan for the authoring slice
 - execution-governance runtime types, policy helpers, and minimal host-profile
   aware admissibility primitives
+- initial packet-summary plus shared shell or Compass runtime read models for
+  execution-governance posture
 - sidecar `odylith program ...` and `odylith wave ...` authoring commands that
   sit on top of the existing execution-wave contract
 - Atlas refresh for the context/execution split and one dedicated execution
@@ -141,8 +143,10 @@ resumes, and contradictions explicit.
    topology refresh.
 3. Land the thin program/wave authoring sidecar on the existing execution-wave
    contract.
-4. Extend downstream consumers and validations as later child waves become
-   active.
+4. Extend packet summaries and shared shell or Compass runtime surfaces with
+   the base execution-governance posture fields.
+5. Continue deeper downstream consumer and adapter coverage as later child
+   waves become active.
 
 ## Why Now
 Odylith's next-order product problem is no longer "find one more document."
@@ -187,6 +191,9 @@ wrong moves.
 - validate umbrella metadata, execution-wave file integrity, and plan binding
 - add focused unit coverage for execution-governance contracts and authoring
   commands
+- prove packet-summary and shared runtime-surface carry-through for execution
+  governance outcome, frontier, closure, wait state, resume posture, and
+  detected host-family posture
 - preserve existing execution-wave read-model coverage so Radar and Compass
   keep rendering the same source of truth
 

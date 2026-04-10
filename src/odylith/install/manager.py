@@ -14,6 +14,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, Sequence
 
 from odylith import __version__
+from odylith.runtime.common import agent_runtime_contract
 from odylith.install.fs import atomic_write_text
 from odylith.install.managed_runtime import (
     CONTEXT_ENGINE_FEATURE_PACK_ID,
@@ -80,13 +81,21 @@ WRAPPED_RUNTIME_SOURCE = "wrapped_runtime"
 INSTALL_STATE_ONLY_RUNTIME_SOURCE = "install_state_only"
 MISSING_RUNTIME_SOURCE = "missing_runtime"
 _ODYLITH_GITIGNORE_ENTRY = "/.odylith/"
+_COMPASS_REFRESH_STATE_GITIGNORE_ENTRY = "/odylith/compass/runtime/refresh-state.v1.json"
 _ODYLITH_GITIGNORE_PATTERNS = {
     ".odylith",
     ".odylith/",
     "/.odylith",
     "/.odylith/",
 }
-_ODYLITH_GITIGNORE_ENTRIES = (_ODYLITH_GITIGNORE_ENTRY,)
+_COMPASS_REFRESH_STATE_GITIGNORE_PATTERNS = {
+    "odylith/compass/runtime/refresh-state.v1.json",
+    "/odylith/compass/runtime/refresh-state.v1.json",
+}
+_ODYLITH_GITIGNORE_ENTRIES = (
+    _ODYLITH_GITIGNORE_ENTRY,
+    _COMPASS_REFRESH_STATE_GITIGNORE_ENTRY,
+)
 _FIRST_RUN_SURFACE_TARGETS: tuple[str, ...] = (
     "odylith/index.html",
     "odylith/radar/radar.html",
@@ -255,6 +264,8 @@ def _ensure_odylith_gitignore_entry(*, repo_root: Path, git_repo_present: bool |
     missing_entries: list[str] = []
     if not normalized_lines.intersection(_ODYLITH_GITIGNORE_PATTERNS):
         missing_entries.append(_ODYLITH_GITIGNORE_ENTRY)
+    if not normalized_lines.intersection(_COMPASS_REFRESH_STATE_GITIGNORE_PATTERNS):
+        missing_entries.append(_COMPASS_REFRESH_STATE_GITIGNORE_ENTRY)
     if not missing_entries:
         return False
     updated = existing
@@ -1075,9 +1086,10 @@ def _customer_bootstrap_guidance() -> str:
             "- Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable.",
             "- Start substantive turns with `./.odylith/bin/odylith start --repo-root .`; it chooses the safe first lane and prints the exact next command when Odylith cannot narrow the slice yet.",
             "- When you already know the exact workstream, component, path, or id, use `./.odylith/bin/odylith context --repo-root . <ref>` before raw repo search. Use `./.odylith/bin/odylith query --repo-root . \"<terms>\"` only after concrete anchors already exist.",
-            "- In Codex commentary, keep startup, fallback, routing, and packet-selection internals implicit. Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight. If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history. Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates, and never prefix commentary with control-plane receipt labels. Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters.",
+            "- In coding-agent commentary, keep startup, fallback, routing, and packet-selection internals implicit. Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight. If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history. Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates, and never prefix commentary with control-plane receipt labels. Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters.",
             "- Keep normal commentary task-first and human. Weave Odylith-grounded facts into ordinary updates when they change the next move, and reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels for rare high-signal moments. Pick the strongest one or stay quiet.",
             "- At closeout, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance ids inline when they were actually changed, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real.",
+            "- For live blocker lanes, never say `fixed`, `cleared`, or `resolved` without qualification unless the hosted proof moved past the prior failing phase. Force three checks first: same fingerprint as the last falsification or not, hosted frontier advanced or not, and whether the claim is code-only, preview-only, or live.",
             "- For substantive tasks, follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step; identify the active workstream, component, or packet; then move into repo scan, tests, and edits.",
             "- In consumer repos, grounding Odylith is diagnosis authority, not blanket write authority: if the issue target is Odylith itself, stop at diagnosis and maintainer-ready feedback unless the operator explicitly authorizes Odylith mutation.",
             "- Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes when they change `odylith/` or `.odylith/`; do not run them autonomously as Odylith fixes in consumer repos.",
@@ -1086,8 +1098,8 @@ def _customer_bootstrap_guidance() -> str:
             "- Search existing workstream, plan, bug, component, diagram, and recent session/Compass context first; for consumer Odylith-fix requests, cite that evidence and hand it off to the platform maintainer instead of extending or creating Odylith truth locally.",
             "- If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation; if the issue is Odylith itself in a consumer repo, produce a maintainer-ready feedback packet instead.",
             "- Use Odylith packets and managed skills to narrow the slice, gather proof, and keep intent plus constraints alive across turns, but do not treat grounding as permission to patch `odylith/` for consumer Odylith-fix requests.",
-            "- In Codex, treat routed or orchestrated native spawn as the default execution path for substantive grounded consumer-lane work unless Odylith explicitly keeps the slice local.",
-            "- In Claude Code, use Odylith grounding, memory, surfaces, and local orchestration guidance, but do not assume native spawn support.",
+            "- Treat routed or orchestrated native delegation as the default execution path for substantive grounded consumer-lane work when the current host supports it unless Odylith explicitly keeps the slice local.",
+            "- Codex is the currently validated native-spawn host. In Claude Code, use Odylith grounding, memory, surfaces, and local orchestration guidance until native spawn support is explicitly proven there.",
             "- Treat the managed guidance files under `odylith/AGENTS.md`, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer; keep repo-specific truth in the governance surfaces beside them.",
             "",
             "## Routing",
@@ -1245,23 +1257,23 @@ def _customer_backlog_index_source(*, repo_root: Path) -> str:
             "",
             "## Ranked Active Backlog",
             "",
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
             "",
             "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)",
             "",
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
             "",
             "## Parked (No Active Plan)",
             "",
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
             "",
             "## Finished (Linked to `odylith/technical-plans/done`)",
             "",
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
             "",
             "## Reorder Rationale Log",
             "",
@@ -1619,7 +1631,7 @@ def _append_self_host_timeline_event(
 
         timeline_logger.append_event(
             repo_root=repo_root,
-            stream_path=repo_root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl",
+            stream_path=agent_runtime_contract.resolve_agent_stream_path(repo_root=repo_root),
             kind="statement",
             summary=summary,
             workstream_values=[],

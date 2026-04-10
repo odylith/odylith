@@ -8,6 +8,7 @@ from odylith.runtime.context_engine import odylith_context_engine_hot_path_packe
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import path_bundle_codec
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bindings
+from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.governance import proof_state as proof_state_runtime
 
 _BENCHMARK_RUNNER_REVIEWER_GUIDE = "docs/benchmarks/REVIEWER_GUIDE.md"
@@ -373,6 +374,17 @@ def _compact_hot_path_runtime_packet(
             context_packet_payload["execution_profile"] = compact_execution_profile_payload
         else:
             context_packet_payload.pop("execution_profile", None)
+        execution_governance = runtime_surface_governance.compact_execution_governance_snapshot(
+            runtime_surface_governance.build_packet_execution_governance_snapshot(
+                payload=payload,
+                context_packet=context_packet_payload,
+                routing_handoff=dict(compact.get("routing_handoff", {}))
+                if isinstance(compact.get("routing_handoff"), Mapping)
+                else {},
+            )
+        )
+        if execution_governance:
+            context_packet_payload["execution_governance"] = execution_governance
         compact["context_packet"] = context_packet_payload
     compact = _trim_route_ready_hot_path_prompt_payload(
         compact=compact,
@@ -602,6 +614,17 @@ def _update_compact_hot_path_runtime_packet(
         context_packet_payload["execution_profile"] = compact_execution_profile_payload
     else:
         context_packet_payload.pop("execution_profile", None)
+    execution_governance = runtime_surface_governance.compact_execution_governance_snapshot(
+        runtime_surface_governance.build_packet_execution_governance_snapshot(
+            payload=merged,
+            context_packet=context_packet_payload,
+            routing_handoff=dict(compact.get("routing_handoff", {}))
+            if isinstance(compact.get("routing_handoff"), Mapping)
+            else {},
+        )
+    )
+    if execution_governance:
+        context_packet_payload["execution_governance"] = execution_governance
     compact["context_packet"] = context_packet_payload
     return odylith_context_engine_hot_path_packet_core_runtime._drop_redundant_hot_path_routing_handoff(
         _trim_route_ready_hot_path_prompt_payload(

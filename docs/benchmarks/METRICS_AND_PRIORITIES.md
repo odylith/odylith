@@ -50,6 +50,21 @@ Current diagnostic-lane efficiency guardrails:
 - median prompt-bundle delta `<= +64` tokens
 - median total-payload delta `<= +96` tokens
 
+Current live-proof discipline metrics when proof-backed benchmark scenarios are present:
+
+- `false_clearance_rate = 0.0`
+- `proof_frontier_gate_accuracy_rate = 1.0`
+- `proof_claim_guard_accuracy_rate = 1.0`
+- `proof_same_fingerprint_reuse_rate = 1.0` whenever the sampled corpus actually includes same-fingerprint proof rows
+
+Current Context Engine grounding metrics when Context Engine benchmark scenarios are present:
+
+- `context_engine_packet_source_accuracy_rate = 1.0`
+- `context_engine_selection_state_accuracy_rate = 1.0`
+- `context_engine_workstream_accuracy_rate = 1.0`
+- `context_engine_fail_closed_ambiguity_rate = 1.0`
+- `context_engine_session_namespace_rate = 1.0` whenever the sampled corpus actually includes runtime-backed Context Engine rows
+
 ## What Each Tier Means
 
 | Tier | What It Asks |
@@ -61,6 +76,21 @@ Current diagnostic-lane efficiency guardrails:
 | Latency to a valid outcome | How long did the live run take to reach a validated answer? |
 | Prompt and payload efficiency | How much prompt or session budget did Odylith require to get there? |
 | Bounded behavior under tighter token budgets | Does Odylith degrade gracefully when the token budget tightens? |
+
+For live blocker lanes, those tiers are supplemented by proof-discipline checks:
+
+- Does the packet expose a real proof lane when one resolves?
+- Does it avoid claiming `fixed live` before the hosted frontier advances?
+- Does claim-guard labeling match the actual proof tier?
+- Does a repeated fingerprint stay pinned to the same blocker seam?
+
+For Context Engine architecture work, those tiers are also supplemented by
+grounding-control checks:
+
+- Did the adaptive or explicit packet choose the right lane for the slice?
+- Did the packet resolve the right workstream or say `none` explicitly?
+- Did ambiguous scope stay fail-closed instead of becoming route-ready by accident?
+- Did runtime-backed slices keep session scope namespaced?
 
 ## Release Rule
 

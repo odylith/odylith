@@ -121,6 +121,12 @@ Related Bugs:
       governance-only local churn or broad fanout transactions as if they were
       verified local window movement, which let quiet scopes such as `B-040`
       appear in the dropdown and leak unrelated global audit cards.
+- [ ] Compass is still below release bar after the maintained-global narration
+      follow-on. The bounded hot exact-reuse lane now measures `0.1s`
+      internal (`0.61s` wall), the bounded cold shell-safe lane measures
+      `0.8s` internal (`1.14s` wall), and the ready-brief source mix is now
+      `39 cache / 0 deterministic`, so the remaining release blocker is cold
+      wall-clock and startup overhead rather than deterministic dominance.
 
 ## Success Criteria
 - [x] Compass runtime reuse is bounded by both input change and age.
@@ -161,6 +167,9 @@ Related Bugs:
 - [x] Compass no longer advertises or routes a second `full` refresh mode. One
       bounded refresh contract now owns freshness, failure truth, and brief
       reuse across global and scoped views.
+- [ ] Compass hot unchanged refresh reaches `<=50ms` of internal runtime work,
+      complete cold shell-safe refresh reaches `<=1s`, and deterministic no
+      longer dominates the ready-brief mix.
 - [x] Provider and deterministic Compass briefs no longer reuse stock
       lead-ins across sections, windows, and workstreams, and validation now
       rejects those canned openings before they reach the live payload.

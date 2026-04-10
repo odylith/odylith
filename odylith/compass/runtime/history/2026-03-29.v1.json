@@ -44,14 +44,12 @@
       "Completed in this window: I closed out memory-area and operator-readout work, locked benchmark truth and adoption parity, and pushed source truth forward so the GA release story and live risk posture rest on cleaner evidence.",
       "Current execution: Executive: I am driving the complex-repo benchmark expansion now because the compact lane already proved the concept, and the next step is proving Odylith against the harder governed-repo work we actually expect. | Operator: The working proof is still source-truth promotion plus Compass risk hardening, because that keeps the benchmark narrative tied to live operational evidence instead of drifting into planning-only claims. | Operator: The portfolio is still moving through setup in parallel, so I am keeping the benchmark expansion and runtime-freshness/browser-hardening lanes tightly steered while closure work starts to convert plans into execution. | Operator: This lane is tracking at roughly eight days, and that window should compress as checklist items close, so the pressure right now is on turning scope into verified execution quickly.",
       "Next planned: Next I need to widen the benchmark corpus beyond the small internal set; that unlocks the missing complex-repo workloads and gives us a benchmark that matches the work Odylith is supposed to carry.",
-      "Why this matters: Executive: This matters because evaluators and maintainers need proof that reflects serious coding-agent work in a governed repo, and today the benchmark is credible but still too narrow to justify that claim cleanly. | Operator: Architecturally, broader scenarios turn the benchmark into an operator contract across install, upgrade, release proof, routing, browser reliability, security, and publication integrity, which cuts coordination risk and ambiguity.",
       "Risks to watch: The main risk is losing execution coherence between the benchmark-expansion lane and the runtime-freshness/browser-hardening lane while shared dependencies are still open, because that would weaken both proof and delivery timing."
     ],
     "48h": [
       "Completed in this window: Operator: We closed the release reset, runtime packaging, hosted-asset proof, and GA promotion work, then aligned package versioning so the supported platform contract now reads consistently to maintainers and operators. | Operator: We merged lineage updates across six workstreams, which clears stale execution assumptions before deeper benchmark and runtime changes land.",
       "Current execution: Executive: I am driving benchmark corpus expansion as the flagship lane because we already proved the compact benchmark path; now we have to broaden it until it represents serious governed-repo work. | Operator: The strongest proof of movement is the lineage merge update across six workstreams, because it cuts drift before we push deeper benchmark and runtime changes. | Operator: The live focus is benchmark expansion plus runtime freshness and browser hardening, but both lanes are still coming out of setup, so operator attention stays on scope and dependency discipline. | Operator: The primary lane is tracking at roughly eight days and should compress as checklist items close, so execution quality matters more than opening adjacent work.",
       "Next planned: Next I need to widen the benchmark corpus because it is still too small and too internally focused; that unlocks the missing complex-repo workloads Odylith needs to prove.",
-      "Why this matters: Executive: This matters because evaluators and maintainers need a benchmark that matches real governed-repo work, and the current proof is credible but still too narrow to support that claim. | Operator: Architecturally, adding scenarios across install, upgrade, release proof, routing, browser reliability, security, publication integrity, and cross-surface behavior gives operators a clearer contract and lowers coordination risk.",
       "Risks to watch: The watch item is execution coherence between benchmark expansion and runtime freshness plus browser hardening, because shared open dependencies can break the story if the lanes move on mismatched assumptions."
     ]
   },
@@ -62,7 +60,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Plan status updated across 2 workstreams.",
         "Current execution: Executive: Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) is in active implementation because odylith has already proven a compact benchmark lane. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 0/32; execution checklist is defined, but closure work has not started yet. | Operator: Timeline signal: projected at roughly 8 days and expected to tighten as execution closes checklist items.",
         "Next planned: Operator: Immediate forcing function is to land The benchmark corpus is still too small and too internally focused so odylith has already proven a compact benchmark lane. | Operator: Then land Several complex-repo workloads Odylith should help with are still missing to extend if Odylith expands the benchmark corpus around these high-value complex-repo tasks and then improves the runtime frontier against that harder corpus, the benchmark becomes both harder and more convincing.",
-        "Why this matters: Executive: For - Primary: Odylith evaluators and maintainers who need the benchmark to reflect the real work a serious coding agent performs in a complex governed repo, odylith's current benchmark proof is credible, but the corpus is still too small and too narrow. | Operator: The architecture move is to add a broader set of benchmark scenarios covering install and upgrade hardening, release proof, surface-routing and browser reliability, daemon and repair security, benchmark publication integrity, and cross-surface, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 32 plan items remain open for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021)."
       ],
       "B-025": [
@@ -70,7 +67,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Plan status updated across 2 workstreams.",
         "Current execution: Executive: Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) is in active implementation because odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 0/35; execution checklist is defined, but closure work has not started yet. | Operator: Timeline signal: projected at roughly 6 days and expected to tighten as execution closes checklist items.",
         "Next planned: Operator: Immediate forcing function is to land Compass can reuse stale runtime snapshots for rolling 24h/48h windows so odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression. | Operator: Then land Warmed bug projection state can stay stale after parser-contract changes to extend if Compass and the broader shell invalidate stale runtime state correctly and the browser suite proves cross-tab, reload, and rolling-window behavior, then the Odylith UX feels reactive, trustworthy, and much harder to regress.",
-        "Why this matters: Executive: For - Primary: Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh. | Operator: The architecture move is to harden runtime freshness across Compass and related shell flows: version the projection contract, cap Compass runtime reuse by age for rolling windows, remove stale cross-packet global brief recovery, and expand, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 35 plan items remain open for Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025)."
       ],
       "B-005": [
@@ -78,7 +74,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: fixed release tag reuse and restore truthful v0.1.3 state.",
         "Current execution: Executive: Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed because the release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 94/94; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. | Operator: The architecture move is to restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-007": [
@@ -86,7 +81,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: fixed release tag reuse and restore truthful v0.1.3 state.",
         "Current execution: Executive: Odylith GA Promotion and Supported Platform Contract (B-007) is completed because the proof lane is already complete. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 41/41; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith GA Promotion and Supported Platform Contract (B-007).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who need source truth to match the actual published product stance, the hosted release exists, the product repo is pinned on the published runtime, and dogfood plus consumer rehearsal plus `ga-gate` all passed. | Operator: The architecture move is to treat `v0.1.0` as the GA baseline for the supported platform matrix, carry the latest release-reset hardening into the GA branch, and rewrite the checked-in product docs/specs so they no longer claim preview posture, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-004": [
@@ -94,7 +88,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Promote v0.1.3 source truth and harden Compass live risk posture.",
         "Current execution: Executive: Odylith Self-Hosting Posture Hardening (B-004) is completed because odylith is about to depend on versioning, upgrade, rollback, and public release discipline. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 67/67; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Self-Hosting Posture Hardening (B-004).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers cutting releases from the public product repo, odylith now has real install, upgrade, rollback, and release verification mechanics, but the public product repo can still run in detached `source-local` mode without making that posture obvious in all operator surfaces. | Operator: The architecture move is to keep the existing install/versioning model, but derive one authoritative self-host posture from the live runtime pointer, repo pin, and source contract, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-020": [
@@ -102,7 +95,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020): odylith benchmark integrity conservative multi profile proof and readme hardening. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) is completed because odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 45/50; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days and expected to tighten as execution closes checklist items.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) so odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance.",
-        "Why this matters: Executive: For - Primary: Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game, odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust. | Operator: The architecture move is to harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary across those profiles, carries explicit robustness metadata, and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 5 plan items remain open for Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020)."
       ],
       "B-001": [
@@ -110,7 +102,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Promote v0.1.3 source truth and harden Compass live risk posture.",
         "Current execution: Executive: Odylith Product Self-Governance and Repo Boundary (B-001) is completed because the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 44/44; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Product Self-Governance and Repo Boundary (B-001).",
-        "Why this matters: Executive: For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records. | Operator: The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep host-repo truth local to each repo; - repoint downstream repos to, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-026": [
@@ -118,7 +109,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Release Tag Reuse and Published Release Anchoring (B-026): odylith release tag reuse and published release anchoring. | Operator: Most concrete movement: fixed release tag reuse and restore truthful v0.1.3 state.",
         "Current execution: Executive: Odylith Release Tag Reuse and Published Release Anchoring (B-026) is completed because odylith was about to normalize an incorrect GA history. | Operator: Primary execution signal: fixed release tag reuse and restore truthful v0.1.3 state. | Operator: Plan posture: checklist progress is 35/35; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Release Tag Reuse and Published Release Anchoring (B-026).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers cutting canonical GA releases, odylith's release lane treated raw semver tags as canonical release truth. | Operator: The architecture move is to make published GitHub releases the canonical auto-version anchor, not raw tags, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-010": [
@@ -126,7 +116,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Durable Judgment Memory and Memory Backend Productization (B-010): odylith durable judgment memory and memory backend productization. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith Durable Judgment Memory and Memory Backend Productization (B-010) is completed because odylith's first-run UX and benchmark story are both stronger now, which makes the lack of durable judgment memory stand out more sharply. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 58/58; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Durable Judgment Memory and Memory Backend Productization (B-010).",
-        "Why this matters: Executive: For - Primary: Odylith operators and maintainers who expect the product to remember what mattered, what drifted, and what worked without replaying raw thread, odylith can already compile repo truth, retrieval state, and optimization signals, but it still forgets too much judgment. | Operator: The architecture move is to persist a compact judgment-memory snapshot under `.odylith/runtime/odylith-memory/`, derive it from repo truth plus runtime evidence, expose decision/workspace/, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-003": [
@@ -134,7 +123,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Promote v0.1.3 source truth and harden Compass live risk posture.",
         "Current execution: Executive: Compass History Retention, Compressed Archive, and Restore (B-003) is completed because compass already accumulates materially sized daily runtime snapshots. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 50/50; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers and operators using Compass as the local audit and standup history surface, compass currently keeps a 30-day active history window and hard-deletes older daily snapshots. | Operator: The architecture move is to keep only the most recent 15 days active in `odylith/compass/runtime/history/`, compress older daily snapshots into an archive lane, and add an explicit restore command that rehydrates selected dates back into active, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-008": [
@@ -142,7 +130,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Memory Areas and Operator Readout (B-008): odylith memory areas and operator readout. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith Memory Areas and Operator Readout (B-008) is completed because odylith\u2019s install and shell experience improved, which made the remaining memory-story ambiguity more obvious. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 48/48; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Memory Areas and Operator Readout (B-008).",
-        "Why this matters: Executive: For - Primary: Odylith operators and maintainers trying to understand what memory Odylith really has on a fresh install or active repo, odylith could describe its local backend, compiler bundle, and evaluation posture, but it still did not tell an operator which memory areas actually exist today, which ones are only partial, and which ones are still. | Operator: The architecture move is to add a first-class `memory_areas.v1` section to the runtime memory snapshot, surface it in `odylith context-engine status`, and render it in the shared shell telemetry drawer as a concise operator readout, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-009": [
@@ -150,7 +137,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Benchmark Corpus Truth and Adoption Proof Parity (B-009): odylith benchmark corpus truth and adoption proof parity. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith Benchmark Corpus Truth and Adoption Proof Parity (B-009) is completed because odylith's product UX and memory posture improved, so the benchmark contract now needs to catch up. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 47/47; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Benchmark Corpus Truth and Adoption Proof Parity (B-009).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who rely on the benchmark gate to prove the product is actually stronger than Codex-alone or raw repo scan behavior, odylith's local benchmark already shows better recall, validation success, and prompt-token cost than the raw full-scan lane. | Operator: The architecture move is to repair stale benchmark workstream anchors, recognize Odylith-owned docs and skills paths as declared write surfaces during orchestration validation, rerun the benchmark, and refresh the public benchmark snapshot from, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ]
     },
@@ -160,7 +146,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Plan status updated across 2 workstreams.",
         "Current execution: Executive: Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021) is in active implementation because odylith has already proven a compact benchmark lane. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 0/32; execution checklist is defined, but closure work has not started yet. | Operator: Timeline signal: projected at roughly 8 days and expected to tighten as execution closes checklist items.",
         "Next planned: Operator: Immediate forcing function is to land The benchmark corpus is still too small and too internally focused so odylith has already proven a compact benchmark lane. | Operator: Then land Several complex-repo workloads Odylith should help with are still missing to extend if Odylith expands the benchmark corpus around these high-value complex-repo tasks and then improves the runtime frontier against that harder corpus, the benchmark becomes both harder and more convincing.",
-        "Why this matters: Executive: For - Primary: Odylith evaluators and maintainers who need the benchmark to reflect the real work a serious coding agent performs in a complex governed repo, odylith's current benchmark proof is credible, but the corpus is still too small and too narrow. | Operator: The architecture move is to add a broader set of benchmark scenarios covering install and upgrade hardening, release proof, surface-routing and browser reliability, daemon and repair security, benchmark publication integrity, and cross-surface, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 32 plan items remain open for Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021)."
       ],
       "B-025": [
@@ -168,7 +153,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Plan status updated across 2 workstreams.",
         "Current execution: Executive: Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) is in active implementation because odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 0/35; execution checklist is defined, but closure work has not started yet. | Operator: Timeline signal: projected at roughly 6 days and expected to tighten as execution closes checklist items.",
         "Next planned: Operator: Immediate forcing function is to land Compass can reuse stale runtime snapshots for rolling 24h/48h windows so odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression. | Operator: Then land Warmed bug projection state can stay stale after parser-contract changes to extend if Compass and the broader shell invalidate stale runtime state correctly and the browser suite proves cross-tab, reload, and rolling-window behavior, then the Odylith UX feels reactive, trustworthy, and much harder to regress.",
-        "Why this matters: Executive: For - Primary: Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh. | Operator: The architecture move is to harden runtime freshness across Compass and related shell flows: version the projection contract, cap Compass runtime reuse by age for rolling windows, remove stale cross-packet global brief recovery, and expand, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 35 plan items remain open for Odylith Cross-Surface Runtime Freshness and UX Browser Hardening (B-025)."
       ],
       "B-005": [
@@ -176,7 +160,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005): odylith canonical release version session and maintainer runbook and odylith managed runtime bundles and supported platform contract. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed because the release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 94/94; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. | Operator: The architecture move is to restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-007": [
@@ -184,7 +167,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith GA Promotion and Supported Platform Contract (B-007): odylith ga promotion and supported platform contract. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith GA Promotion and Supported Platform Contract (B-007) is completed because the proof lane is already complete. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 41/41; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith GA Promotion and Supported Platform Contract (B-007).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who need source truth to match the actual published product stance, the hosted release exists, the product repo is pinned on the published runtime, and dogfood plus consumer rehearsal plus `ga-gate` all passed. | Operator: The architecture move is to treat `v0.1.0` as the GA baseline for the supported platform matrix, carry the latest release-reset hardening into the GA branch, and rewrite the checked-in product docs/specs so they no longer claim preview posture, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-004": [
@@ -192,7 +174,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Workstream lineage merge update across 6 workstreams.",
         "Current execution: Executive: Odylith Self-Hosting Posture Hardening (B-004) is completed because odylith is about to depend on versioning, upgrade, rollback, and public release discipline. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 67/67; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Self-Hosting Posture Hardening (B-004).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers cutting releases from the public product repo, odylith now has real install, upgrade, rollback, and release verification mechanics, but the public product repo can still run in detached `source-local` mode without making that posture obvious in all operator surfaces. | Operator: The architecture move is to keep the existing install/versioning model, but derive one authoritative self-host posture from the live runtime pointer, repo pin, and source contract, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-020": [
@@ -200,7 +181,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020): odylith benchmark integrity conservative multi profile proof and readme hardening. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) is completed because odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 45/50; execution checklist closure is underway while implementation execution remains active. | Operator: Timeline signal: projected at roughly 2 days and expected to tighten as execution closes checklist items.",
         "Next planned: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) so odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance.",
-        "Why this matters: Executive: For - Primary: Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game, odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust. | Operator: The architecture move is to harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary across those profiles, carries explicit robustness metadata, and, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: Primary watch item is closure discipline: 5 plan items remain open for Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020)."
       ],
       "B-001": [
@@ -208,7 +188,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Workstream lineage merge update across 6 workstreams.",
         "Current execution: Executive: Odylith Product Self-Governance and Repo Boundary (B-001) is completed because the runtime extraction is already far enough along that the missing piece is authority, not scaffolding. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 44/44; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Product Self-Governance and Repo Boundary (B-001).",
-        "Why this matters: Executive: For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records. | Operator: The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep host-repo truth local to each repo; - repoint downstream repos to, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-026": [
@@ -216,7 +195,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Release Tag Reuse and Published Release Anchoring (B-026): odylith release tag reuse and published release anchoring. | Operator: Most concrete movement: fixed release tag reuse and restore truthful v0.1.3 state.",
         "Current execution: Executive: Odylith Release Tag Reuse and Published Release Anchoring (B-026) is completed because odylith was about to normalize an incorrect GA history. | Operator: Primary execution signal: fixed release tag reuse and restore truthful v0.1.3 state. | Operator: Plan posture: checklist progress is 35/35; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Release Tag Reuse and Published Release Anchoring (B-026).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers cutting canonical GA releases, odylith's release lane treated raw semver tags as canonical release truth. | Operator: The architecture move is to make published GitHub releases the canonical auto-version anchor, not raw tags, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-010": [
@@ -224,7 +202,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Durable Judgment Memory and Memory Backend Productization (B-010): odylith durable judgment memory and memory backend productization. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith Durable Judgment Memory and Memory Backend Productization (B-010) is completed because odylith's first-run UX and benchmark story are both stronger now, which makes the lack of durable judgment memory stand out more sharply. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 58/58; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Durable Judgment Memory and Memory Backend Productization (B-010).",
-        "Why this matters: Executive: For - Primary: Odylith operators and maintainers who expect the product to remember what mattered, what drifted, and what worked without replaying raw thread, odylith can already compile repo truth, retrieval state, and optimization signals, but it still forgets too much judgment. | Operator: The architecture move is to persist a compact judgment-memory snapshot under `.odylith/runtime/odylith-memory/`, derive it from repo truth plus runtime evidence, expose decision/workspace/, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-003": [
@@ -232,7 +209,6 @@
         "Completed in this window: Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Most concrete movement: Workstream lineage merge update across 6 workstreams.",
         "Current execution: Executive: Compass History Retention, Compressed Archive, and Restore (B-003) is completed because compass already accumulates materially sized daily runtime snapshots. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 50/50; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers and operators using Compass as the local audit and standup history surface, compass currently keeps a 30-day active history window and hard-deletes older daily snapshots. | Operator: The architecture move is to keep only the most recent 15 days active in `odylith/compass/runtime/history/`, compress older daily snapshots into an archive lane, and add an explicit restore command that rehydrates selected dates back into active, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-008": [
@@ -240,7 +216,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Memory Areas and Operator Readout (B-008): odylith memory areas and operator readout. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith Memory Areas and Operator Readout (B-008) is completed because odylith\u2019s install and shell experience improved, which made the remaining memory-story ambiguity more obvious. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 48/48; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Memory Areas and Operator Readout (B-008).",
-        "Why this matters: Executive: For - Primary: Odylith operators and maintainers trying to understand what memory Odylith really has on a fresh install or active repo, odylith could describe its local backend, compiler bundle, and evaluation posture, but it still did not tell an operator which memory areas actually exist today, which ones are only partial, and which ones are still. | Operator: The architecture move is to add a first-class `memory_areas.v1` section to the runtime memory snapshot, surface it in `odylith context-engine status`, and render it in the shared shell telemetry drawer as a concise operator readout, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ],
       "B-009": [
@@ -248,7 +223,6 @@
         "Completed in this window: Operator: Verified milestone closure landed for Odylith Benchmark Corpus Truth and Adoption Proof Parity (B-009): odylith benchmark corpus truth and adoption proof parity. | Operator: Most concrete movement: Ship Odylith runtime, benchmark, and surface hardening.",
         "Current execution: Executive: Odylith Benchmark Corpus Truth and Adoption Proof Parity (B-009) is completed because odylith's product UX and memory posture improved, so the benchmark contract now needs to catch up. | Operator: Primary execution signal: Ship Odylith runtime, benchmark, and surface hardening. | Operator: Plan posture: checklist progress is 47/47; execution checklist closure is complete for the scoped plan. | Operator: Timeline signal: projected at roughly 0 days (high confidence).",
         "Next planned: Immediate forcing function is to capture the next verified checkpoint for Odylith Benchmark Corpus Truth and Adoption Proof Parity (B-009).",
-        "Why this matters: Executive: For - Primary: Odylith maintainers who rely on the benchmark gate to prove the product is actually stronger than Codex-alone or raw repo scan behavior, odylith's local benchmark already shows better recall, validation success, and prompt-token cost than the raw full-scan lane. | Operator: The architecture move is to repair stale benchmark workstream anchors, recognize Odylith-owned docs and skills paths as declared write surfaces during orchestration validation, rerun the benchmark, and refresh the public benchmark snapshot from, which gives operators a clearer contract and lower coordination risk.",
         "Risks to watch: No critical blockers are currently surfaced."
       ]
     }
@@ -319,26 +293,6 @@
               "fact_ids": [
                 "F-008",
                 "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "This matters because evaluators and maintainers need proof that reflects serious coding-agent work in a governed repo, and today the benchmark is credible but still too narrow to justify that claim cleanly.",
-              "fact_ids": [
-                "F-010"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "Architecturally, broader scenarios turn the benchmark into an operator contract across install, upgrade, release proof, routing, browser reliability, security, and publication integrity, which cuts coordination risk and ambiguity.",
-              "fact_ids": [
-                "F-011"
               ]
             }
           ]
@@ -501,26 +455,6 @@
               "fact_ids": [
                 "F-008",
                 "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "why_this_matters",
-          "label": "Why this matters",
-          "bullets": [
-            {
-              "voice": "executive",
-              "text": "This matters because evaluators and maintainers need a benchmark that matches real governed-repo work, and the current proof is credible but still too narrow to support that claim.",
-              "fact_ids": [
-                "F-010"
-              ]
-            },
-            {
-              "voice": "operator",
-              "text": "Architecturally, adding scenarios across install, upgrade, release proof, routing, browser reliability, security, publication integrity, and cross-surface behavior gives operators a clearer contract and lowers coordination risk.",
-              "fact_ids": [
-                "F-011"
               ]
             }
           ]
@@ -691,26 +625,6 @@
                 "text": "Then land Several complex-repo workloads Odylith should help with are still missing to extend if Odylith expands the benchmark corpus around these high-value complex-repo tasks and then improves the runtime frontier against that harder corpus, the benchmark becomes both harder and more convincing.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith evaluators and maintainers who need the benchmark to reflect the real work a serious coding agent performs in a complex governed repo, odylith's current benchmark proof is credible, but the corpus is still too small and too narrow.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to add a broader set of benchmark scenarios covering install and upgrade hardening, release proof, surface-routing and browser reliability, daemon and repair security, benchmark publication integrity, and cross-surface, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -914,26 +828,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to harden runtime freshness across Compass and related shell flows: version the projection contract, cap Compass runtime reuse by age for rolling windows, remove stale cross-packet global brief recovery, and expand, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1125,26 +1019,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1323,26 +1197,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Odylith GA Promotion and Supported Platform Contract (B-007).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who need source truth to match the actual published product stance, the hosted release exists, the product repo is pinned on the published runtime, and dogfood plus consumer rehearsal plus `ga-gate` all passed.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to treat `v0.1.0` as the GA baseline for the supported platform matrix, carry the latest release-reset hardening into the GA branch, and rewrite the checked-in product docs/specs so they no longer claim preview posture, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -1531,26 +1385,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers cutting releases from the public product repo, odylith now has real install, upgrade, rollback, and release verification mechanics, but the public product repo can still run in detached `source-local` mode without making that posture obvious in all operator surfaces.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep the existing install/versioning model, but derive one authoritative self-host posture from the live runtime pointer, repo pin, and source contract, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -1729,26 +1563,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) so odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance.",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game, odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary across those profiles, carries explicit robustness metadata, and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -1937,26 +1751,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep host-repo truth local to each repo; - repoint downstream repos to, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2135,26 +1929,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Odylith Release Tag Reuse and Published Release Anchoring (B-026).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers cutting canonical GA releases, odylith's release lane treated raw semver tags as canonical release truth.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to make published GitHub releases the canonical auto-version anchor, not raw tags, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -2343,26 +2117,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith operators and maintainers who expect the product to remember what mattered, what drifted, and what worked without replaying raw thread, odylith can already compile repo truth, retrieval state, and optimization signals, but it still forgets too much judgment.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to persist a compact judgment-memory snapshot under `.odylith/runtime/odylith-memory/`, derive it from repo truth plus runtime evidence, expose decision/workspace/, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2541,26 +2295,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers and operators using Compass as the local audit and standup history surface, compass currently keeps a 30-day active history window and hard-deletes older daily snapshots.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep only the most recent 15 days active in `odylith/compass/runtime/history/`, compress older daily snapshots into an archive lane, and add an explicit restore command that rehydrates selected dates back into active, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -2749,26 +2483,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith operators and maintainers trying to understand what memory Odylith really has on a fresh install or active repo, odylith could describe its local backend, compiler bundle, and evaluation posture, but it still did not tell an operator which memory areas actually exist today, which ones are only partial, and which ones are still.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to add a first-class `memory_areas.v1` section to the runtime memory snapshot, surface it in `odylith context-engine status`, and render it in the shared shell telemetry drawer as a concise operator readout, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -2947,26 +2661,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Odylith Benchmark Corpus Truth and Adoption Proof Parity (B-009).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who rely on the benchmark gate to prove the product is actually stronger than Codex-alone or raw repo scan behavior, odylith's local benchmark already shows better recall, validation success, and prompt-token cost than the raw full-scan lane.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to repair stale benchmark workstream anchors, recognize Odylith-owned docs and skills paths as declared write surfaces during orchestration validation, rerun the benchmark, and refresh the public benchmark snapshot from, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -3159,26 +2853,6 @@
                 "text": "Then land Several complex-repo workloads Odylith should help with are still missing to extend if Odylith expands the benchmark corpus around these high-value complex-repo tasks and then improves the runtime frontier against that harder corpus, the benchmark becomes both harder and more convincing.",
                 "fact_ids": [
                   "F-009"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith evaluators and maintainers who need the benchmark to reflect the real work a serious coding agent performs in a complex governed repo, odylith's current benchmark proof is credible, but the corpus is still too small and too narrow.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to add a broader set of benchmark scenarios covering install and upgrade hardening, release proof, surface-routing and browser reliability, daemon and repair security, benchmark publication integrity, and cross-surface, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
                 ]
               }
             ]
@@ -3382,26 +3056,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith operators using Compass as the live blended control surface, compass can still present stale brief, risk, and timeline state even when the current Odylith source truth is fresh.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to harden runtime freshness across Compass and related shell flows: version the projection contract, cap Compass runtime reuse by age for rolling windows, remove stale cross-packet global brief recovery, and expand, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-011"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -3593,26 +3247,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on, odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -3791,26 +3425,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Odylith GA Promotion and Supported Platform Contract (B-007).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who need source truth to match the actual published product stance, the hosted release exists, the product repo is pinned on the published runtime, and dogfood plus consumer rehearsal plus `ga-gate` all passed.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to treat `v0.1.0` as the GA baseline for the supported platform matrix, carry the latest release-reset hardening into the GA branch, and rewrite the checked-in product docs/specs so they no longer claim preview posture, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -3999,26 +3613,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers cutting releases from the public product repo, odylith now has real install, upgrade, rollback, and release verification mechanics, but the public product repo can still run in detached `source-local` mode without making that posture obvious in all operator surfaces.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep the existing install/versioning model, but derive one authoritative self-host posture from the live runtime pointer, repo pin, and source contract, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4197,26 +3791,6 @@
                 "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) so odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance.",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game, odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary across those profiles, carries explicit robustness metadata, and, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -4405,26 +3979,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: maintainers shipping Odylith as a real installable product, odylith's runtime code already lives in the public repo, but the public repo still does not own the product's component registry, product component specs, or local governance records.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to - add Odylith-owned product governance truth to the public repo; - publish Odylith-owned component specs and registry data from the public repo; - keep host-repo truth local to each repo; - repoint downstream repos to, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -4603,26 +4157,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Odylith Release Tag Reuse and Published Release Anchoring (B-026).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers cutting canonical GA releases, odylith's release lane treated raw semver tags as canonical release truth.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to make published GitHub releases the canonical auto-version anchor, not raw tags, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -4811,26 +4345,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith operators and maintainers who expect the product to remember what mattered, what drifted, and what worked without replaying raw thread, odylith can already compile repo truth, retrieval state, and optimization signals, but it still forgets too much judgment.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to persist a compact judgment-memory snapshot under `.odylith/runtime/odylith-memory/`, derive it from repo truth plus runtime evidence, expose decision/workspace/, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -5009,26 +4523,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers and operators using Compass as the local audit and standup history surface, compass currently keeps a 30-day active history window and hard-deletes older daily snapshots.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to keep only the most recent 15 days active in `odylith/compass/runtime/history/`, compress older daily snapshots into an archive lane, and add an explicit restore command that rehydrates selected dates back into active, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -5217,26 +4711,6 @@
             ]
           },
           {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith operators and maintainers trying to understand what memory Odylith really has on a fresh install or active repo, odylith could describe its local backend, compiler bundle, and evaluation posture, but it still did not tell an operator which memory areas actually exist today, which ones are only partial, and which ones are still.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to add a first-class `memory_areas.v1` section to the runtime memory snapshot, surface it in `odylith context-engine status`, and render it in the shared shell telemetry drawer as a concise operator readout, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
-                ]
-              }
-            ]
-          },
-          {
             "key": "risks_to_watch",
             "label": "Risks to watch",
             "bullets": [
@@ -5415,26 +4889,6 @@
                 "text": "Immediate forcing function is to capture the next verified checkpoint for Odylith Benchmark Corpus Truth and Adoption Proof Parity (B-009).",
                 "fact_ids": [
                   "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "why_this_matters",
-            "label": "Why this matters",
-            "bullets": [
-              {
-                "voice": "executive",
-                "text": "For - Primary: Odylith maintainers who rely on the benchmark gate to prove the product is actually stronger than Codex-alone or raw repo scan behavior, odylith's local benchmark already shows better recall, validation success, and prompt-token cost than the raw full-scan lane.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              },
-              {
-                "voice": "operator",
-                "text": "The architecture move is to repair stale benchmark workstream anchors, recognize Odylith-owned docs and skills paths as declared write surfaces during orchestration validation, rerun the benchmark, and refresh the public benchmark snapshot from, which gives operators a clearer contract and lower coordination risk.",
-                "fact_ids": [
-                  "F-010"
                 ]
               }
             ]
@@ -15929,6 +15383,7 @@
     "retention_days": 15,
     "active_window_minutes": 15,
     "max_review_age_days": 21,
-    "runtime_mode": "standalone"
+    "runtime_mode": "standalone",
+    "standup_brief_schema_version": "v17"
   }
 }

@@ -50,7 +50,7 @@
 - If `selection_state=ambiguous|none`, `working_tree_scope_degraded=true`, `diagram_watch_gaps` is present, or `full_scan_recommended=true`, widen back to raw discovery before acting.
 
 ## Runtime Contract
-- The Odylith context-engine runtime is the canonical compiler for local maintainer projections built from the component registry, knowledge-base docs, code/test structure, Codex events, and advisory local pytest/session state.
+- The Odylith context-engine runtime is the canonical compiler for local maintainer projections built from the component registry, knowledge-base docs, code/test structure, agent events, and advisory local pytest/session state.
 - `odylith context-engine` is the only supported daemon/client surface for querying those projections.
 - Daemon request/response payloads, local projection/session schemas, and cache-backed lookup inputs must evolve additively and fail open to standalone parsing.
 - Local state under `.odylith/runtime/` and `.odylith/cache/odylith-context-engine/` is advisory maintainer state only and must never become tracked or canonical repo truth.

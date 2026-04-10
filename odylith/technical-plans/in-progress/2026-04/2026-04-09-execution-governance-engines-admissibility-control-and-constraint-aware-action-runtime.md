@@ -47,10 +47,11 @@ Boundary Conditions:
   admissibility helpers, frontier/closure/receipt primitives, the umbrella and
   child workstream source records, the `B-072` program file, Registry component
   truth, Atlas diagrams `D-030` and `D-031`, the `D-002` refresh, and direct
-  program/wave authoring commands.
-- Scope excludes full downstream packet/shell/Compass UX completion for every
-  execution-governance contract field in this first slice, release-targeting
-  changes, and any claim of provider-complete external dependency support.
+  program/wave authoring commands, plus initial packet-summary, shell, and
+  Compass read-model exposure for execution-governance posture.
+- Scope excludes field-complete UX for every possible execution-governance
+  artifact, release-targeting changes, and any claim of provider-complete
+  external dependency support.
 
 Related Bugs:
 - no related bug found
@@ -96,10 +97,14 @@ Related Bugs:
       Router/Orchestrator/Remediator execute through execution governance.
 - [ ] Add focused tests for the program/wave authoring sidecar and the initial
       execution-governance contract helpers.
+- [ ] Surface execution-governance outcome, frontier, closure, validation, wait
+      state, resume posture, and detected host-family posture in packet
+      summaries plus the shared shell/Compass runtime summary.
 
 ## Defer
-- [ ] Full Shell, Compass, and packet UX integration for every
-      execution-governance contract field can continue in later waves.
+- [ ] Full-fidelity Shell, Compass, and packet UX for every
+      execution-governance artifact can continue in later waves after the base
+      summary and posture fields are proven stable.
 - [ ] Rich external dependency adapters beyond local long-running commands,
       Compass/agent-stream state, and GitHub Actions are not required in this
       first slice.
@@ -119,6 +124,9 @@ Related Bugs:
       programs through `odylith program ...` and `odylith wave ...` commands.
 - [ ] The execution-governance base contract records host/model-family posture
       explicitly while keeping shared policy host-general.
+- [ ] Packet summaries and shell/Compass runtime surfaces show one governed next
+      move, closure posture, wait or resume state, validation archetype, and
+      re-anchor pressure from the same execution-governance snapshot.
 
 ## Non-Goals
 - [ ] Replacing release planning with execution waves.
@@ -151,10 +159,13 @@ Related Bugs:
    helpers.
 4. Add the thin program/wave authoring commands on top of the existing
    execution-wave contract.
-5. Run focused backlog, Registry, CLI, and execution-governance validation.
+5. Expose the base execution-governance snapshot through packet summaries and
+   shared shell/Compass runtime surfaces.
+6. Run focused backlog, Registry, CLI, and execution-governance validation.
 
 ## Validation
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_program_wave_authoring.py`
+- [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_context_engine_proof_packet_runtime.py tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_render_tooling_dashboard.py`
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py`
 - [ ] `PYTHONPATH=src python3 -m odylith.cli validate backlog-contract --repo-root .`
 - [ ] `PYTHONPATH=src python3 -m odylith.cli validate component-registry --repo-root .`
@@ -168,3 +179,6 @@ Related Bugs:
       fields.
 - [ ] Program and wave authoring becomes a real command surface for coding
       agents without displacing the execution-engine critical path.
+- [ ] Packet summaries and shared runtime surfaces now carry execution-governance
+      posture instead of forcing operators to infer frontier or admissibility
+      from unrelated packet metadata.

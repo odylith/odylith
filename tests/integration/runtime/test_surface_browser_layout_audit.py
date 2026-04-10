@@ -50,6 +50,8 @@ def _casebook_header_layout(casebook) -> dict[str, object]:  # noqa: ANN001
               summaryFactsClientWidth: factsNode ? factsNode.clientWidth : 0,
               summaryFactsScrollWidth: factsNode ? factsNode.scrollWidth : 0,
               summaryFactCount: facts.length,
+              factFields: facts.map((fact) => fact.field),
+              detailKickerCount: node.querySelectorAll(".detail-kicker").length,
               childOrder: children.map((child) => child.name),
               factsBeforeSummary: Boolean(!factsNode || !summaryNode || factsNode.compareDocumentPosition(summaryNode) & Node.DOCUMENT_POSITION_FOLLOWING),
               sequenceOverlaps,
@@ -99,6 +101,8 @@ def test_casebook_detail_header_stays_readable_in_desktop_view(browser_context) 
     assert "summary-facts" in layout["childOrder"]
     assert layout["childOrder"].index("summary-facts") < layout["childOrder"].index("detail-summary")
     assert layout["factsBeforeSummary"], "Casebook primary fact cards should render before the supporting summary copy"
+    assert layout["detailKickerCount"] == 0, "Casebook detail should not render a standalone bug-id kicker above the title"
+    assert "Bug ID" in layout["factFields"], "Casebook detail should keep Bug ID in the summary fact cards"
     assert layout["sequenceOverlaps"] == [], f"detail header rows overlapped on desktop: {layout['sequenceOverlaps']}"
     assert layout["unstackedFields"] == [], f"summary fact labels and values collapsed inline: {layout['unstackedFields']}"
     assert int(layout["detailHeadScrollWidth"]) - int(layout["detailHeadClientWidth"]) <= 4
@@ -127,6 +131,8 @@ def test_casebook_detail_header_stays_readable_in_compact_view(compact_browser_c
     assert "summary-facts" in layout["childOrder"]
     assert layout["childOrder"].index("summary-facts") < layout["childOrder"].index("detail-summary")
     assert layout["factsBeforeSummary"], "Casebook primary fact cards should stay ahead of the supporting summary copy in compact view"
+    assert layout["detailKickerCount"] == 0, "Casebook detail should not render a standalone bug-id kicker above the title in compact view"
+    assert "Bug ID" in layout["factFields"], "Casebook detail should keep Bug ID in the summary fact cards in compact view"
     assert layout["sequenceOverlaps"] == [], f"detail header rows overlapped in compact view: {layout['sequenceOverlaps']}"
     assert layout["unstackedFields"] == [], f"summary fact labels and values collapsed inline: {layout['unstackedFields']}"
     assert int(layout["detailHeadScrollWidth"]) - int(layout["detailHeadClientWidth"]) <= 4
@@ -348,3 +354,447 @@ def test_radar_detail_header_keeps_kpi_grid_readable_in_compact_view(compact_bro
     assert int(layout["kpisScrollWidth"]) - int(layout["kpisClientWidth"]) <= 4
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def _workstream_button_style(locator, selector: str) -> dict[str, str]:  # noqa: ANN001
+    return locator.locator(selector).first.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            return {
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight,
+              paddingTop: style.paddingTop,
+              paddingRight: style.paddingRight,
+              paddingBottom: style.paddingBottom,
+              paddingLeft: style.paddingLeft,
+            };
+        }"""
+    )
+
+
+def _deep_link_button_style(locator, selector: str) -> dict[str, str]:  # noqa: ANN001
+    return locator.locator(selector).first.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            return {
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight,
+              paddingTop: style.paddingTop,
+              paddingRight: style.paddingRight,
+              paddingBottom: style.paddingBottom,
+              paddingLeft: style.paddingLeft,
+              borderRadius: style.borderRadius,
+            };
+        }"""
+    )
+
+
+def _synthetic_anchor_button_style(locator, host_selector: str, class_name: str) -> dict[str, str]:  # noqa: ANN001
+    return locator.locator(host_selector).first.evaluate(
+        """(node, className) => {
+            const anchor = node.ownerDocument.createElement("a");
+            anchor.href = "#";
+            anchor.className = className;
+            anchor.textContent = "Registry";
+            node.appendChild(anchor);
+            const style = window.getComputedStyle(anchor);
+            const result = {
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight,
+              paddingTop: style.paddingTop,
+              paddingRight: style.paddingRight,
+              paddingBottom: style.paddingBottom,
+              paddingLeft: style.paddingLeft,
+              borderRadius: style.borderRadius,
+            };
+            anchor.remove();
+            return result;
+        }""",
+        class_name,
+    )
+
+
+def _governance_kpi_style(locator, card_selector: str, label_selector: str, value_selector: str) -> dict[str, str]:  # noqa: ANN001
+    return locator.locator(card_selector).first.evaluate(
+        """(node, selectors) => {
+            const label = node.querySelector(selectors.label);
+            const value = node.querySelector(selectors.value);
+            const cardStyle = window.getComputedStyle(node);
+            const labelStyle = label ? window.getComputedStyle(label) : null;
+            const valueStyle = value ? window.getComputedStyle(value) : null;
+            return {
+              cardPaddingTop: cardStyle.paddingTop,
+              cardPaddingRight: cardStyle.paddingRight,
+              cardPaddingBottom: cardStyle.paddingBottom,
+              cardPaddingLeft: cardStyle.paddingLeft,
+              cardBorderRadius: cardStyle.borderRadius,
+              cardDisplay: cardStyle.display,
+              labelFontSize: labelStyle ? labelStyle.fontSize : "",
+              labelFontWeight: labelStyle ? labelStyle.fontWeight : "",
+              labelTextTransform: labelStyle ? labelStyle.textTransform : "",
+              valueFontSize: valueStyle ? valueStyle.fontSize : "",
+              valueFontWeight: valueStyle ? valueStyle.fontWeight : "",
+              valueMarginTop: valueStyle ? valueStyle.marginTop : "",
+            };
+        }""",
+        {"label": label_selector, "value": value_selector},
+    )
+
+
+def _select_radar_workstream_chip_for_style_audit(page):  # noqa: ANN001
+    radar = page.frame_locator("#frame-radar")
+    row_buttons = radar.locator("button[data-idea-id]")
+    count = row_buttons.count()
+    for index in range(count):
+        button = row_buttons.nth(index)
+        idea_id = str(button.get_attribute("data-idea-id") or "").strip()
+        if not idea_id:
+            continue
+        button.click()
+        _wait_for_shell_query_param(page, tab="radar", key="workstream", value=idea_id)
+        radar.locator("#detail .detail-title").wait_for(timeout=15000)
+        chips = radar.locator("#detail button.execution-wave-chip-link, #detail button.entity-id-chip")
+        if chips.count():
+            return radar
+    raise AssertionError("expected a Radar detail with at least one rendered workstream chip")
+
+
+def _open_radar_topology_relations_for_style_audit(radar) -> bool:  # noqa: ANN001
+    panel = radar.locator("#detail details.topology-relations-panel").first
+    if not panel.count():
+        return False
+    panel.wait_for(timeout=15000)
+    if panel.get_attribute("open") is None:
+        panel.evaluate("node => { node.open = true; }")
+    panel.locator(".topology-relations").wait_for(timeout=15000)
+    return True
+
+
+def _select_radar_deep_link_chip_for_style_audit(page):  # noqa: ANN001
+    radar = page.frame_locator("#frame-radar")
+    row_buttons = radar.locator("button[data-idea-id]")
+    count = row_buttons.count()
+    for index in range(count):
+        button = row_buttons.nth(index)
+        idea_id = str(button.get_attribute("data-idea-id") or "").strip()
+        if not idea_id:
+            continue
+        button.click()
+        _wait_for_shell_query_param(page, tab="radar", key="workstream", value=idea_id)
+        radar.locator("#detail .detail-title").wait_for(timeout=15000)
+        if not _open_radar_topology_relations_for_style_audit(radar):
+            continue
+        links = radar.locator("#detail a.chip-topology-diagram, #detail a.chip-registry-component")
+        if links.count():
+            return radar
+    raise AssertionError("expected a Radar detail with at least one deep-link chip")
+
+
+def _select_atlas_workstream_pill_for_style_audit(page):  # noqa: ANN001
+    atlas = page.frame_locator("#frame-atlas")
+    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+    _select_atlas_layout_stress_diagram(page)
+    pill_locator = atlas.locator(
+        "#activeWorkstreamLinks a.workstream-pill-link, "
+        "#ownerWorkstreamLinks a.workstream-pill-link, "
+        "#historicalWorkstreamLinks a.workstream-pill-link"
+    )
+    assert pill_locator.count() > 0, "expected Atlas workstream pills for style audit"
+    return atlas
+
+
+def _select_compass_deep_link_chip_for_style_audit(page):  # noqa: ANN001
+    compass = page.frame_locator("#frame-compass")
+    rows = compass.locator("tr.ws-summary-row.ws-row-title")
+    count = rows.count()
+    for index in range(count):
+        row = rows.nth(index)
+        workstream = str(row.get_attribute("data-ws-id") or "").strip()
+        if not workstream:
+            continue
+        row.evaluate("node => node.click()")
+        detail = compass.locator(f'tr.ws-detail-row.is-open[data-ws-detail="{workstream}"]')
+        detail.wait_for(timeout=15000)
+        links = detail.locator("a.chip-link")
+        if links.count():
+            return detail
+    raise AssertionError("expected a Compass workstream detail with at least one deep-link chip")
+
+
+def _select_registry_deep_link_chip_for_style_audit(page):  # noqa: ANN001
+    registry = page.frame_locator("#frame-registry")
+    buttons = registry.locator("button[data-component]")
+    count = buttons.count()
+    for index in range(count):
+        button = buttons.nth(index)
+        component_id = str(button.get_attribute("data-component") or "").strip()
+        if not component_id:
+            continue
+        button.click()
+        registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
+        registry.locator("#detail .component-name").wait_for(timeout=15000)
+        if registry.locator("#detail a.detail-action-chip").count():
+            return registry
+    raise AssertionError("expected a Registry detail with at least one deep-link chip")
+
+
+def _select_casebook_deep_link_chip_for_style_audit(page):  # noqa: ANN001
+    casebook = page.frame_locator("#frame-casebook")
+    rows = casebook.locator("button.bug-row")
+    count = rows.count()
+    for index in range(count):
+        row = rows.nth(index)
+        bug_id = str(row.get_attribute("data-bug") or "").strip()
+        if not bug_id:
+            continue
+        row.click()
+        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=bug_id)
+        casebook.locator("#detailPane .detail-title").wait_for(timeout=15000)
+        if casebook.locator("#detailPane a.action-chip").count():
+            return casebook
+    raise AssertionError("expected a Casebook detail with at least one deep-link chip")
+
+
+def _assert_shared_workstream_buttons_keep_compact_style_contract(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    compass.locator("a.ws-id-btn").first.wait_for(timeout=15000)
+    compass.locator("#release-groups-host a.execution-wave-chip-link").first.wait_for(timeout=15000)
+
+    compass_current_style = _workstream_button_style(compass, "a.ws-id-btn")
+    compass_release_style = _workstream_button_style(compass, "#release-groups-host a.execution-wave-chip-link")
+
+    response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    atlas = _select_atlas_workstream_pill_for_style_audit(page)
+    atlas_style = _workstream_button_style(
+        atlas,
+        "#activeWorkstreamLinks a.workstream-pill-link, "
+        "#ownerWorkstreamLinks a.workstream-pill-link, "
+        "#historicalWorkstreamLinks a.workstream-pill-link",
+    )
+
+    response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    radar = _select_radar_workstream_chip_for_style_audit(page)
+    radar_style = _workstream_button_style(
+        radar,
+        "#detail button.execution-wave-chip-link, #detail button.entity-id-chip",
+    )
+
+    for style in (compass_current_style, compass_release_style, atlas_style, radar_style):
+        assert style["fontSize"] == "12px"
+        assert style["fontWeight"] == "500"
+        assert style["paddingTop"] == "1px"
+        assert style["paddingRight"] == "8px"
+        assert style["paddingBottom"] == "1px"
+        assert style["paddingLeft"] == "8px"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_shared_workstream_buttons_keep_compact_style_contract_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_shared_workstream_buttons_keep_compact_style_contract(*browser_context)
+
+
+def test_shared_workstream_buttons_keep_compact_style_contract_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_shared_workstream_buttons_keep_compact_style_contract(*compact_browser_context)
+
+
+def _assert_shared_deep_link_buttons_keep_style_contract(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    compass_style = _synthetic_anchor_button_style(compass, "body", "chip chip-link")
+
+    response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    radar = page.frame_locator("#frame-radar")
+    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    radar_style = _synthetic_anchor_button_style(radar, "body", "chip chip-link chip-registry-component")
+
+    response = page.goto(base_url + "/odylith/index.html?tab=registry", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    registry = page.frame_locator("#frame-registry")
+    registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+    registry_style = _synthetic_anchor_button_style(registry, "body", "detail-action-chip")
+
+    response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    casebook = page.frame_locator("#frame-casebook")
+    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook_style = _synthetic_anchor_button_style(casebook, "body", "action-chip")
+
+    for style in (compass_style, radar_style, registry_style, casebook_style):
+        assert style["fontSize"] == "11px"
+        assert style["fontWeight"] == "700"
+        assert style["paddingTop"] == "4px"
+        assert style["paddingRight"] == "12px"
+        assert style["paddingBottom"] == "4px"
+        assert style["paddingLeft"] == "12px"
+        assert style["borderRadius"] == "999px"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_shared_deep_link_buttons_keep_style_contract_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_shared_deep_link_buttons_keep_style_contract(*browser_context)
+
+
+def test_shared_deep_link_buttons_keep_style_contract_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_shared_deep_link_buttons_keep_style_contract(*compact_browser_context)
+
+
+def _assert_shared_governance_kpi_cards_keep_compact_style_contract(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    compass.locator("#kpi-grid .stat").first.wait_for(timeout=15000)
+    compass_style = _governance_kpi_style(compass, "#kpi-grid .stat", ".kpi-label", ".kpi-value")
+
+    page.locator("#tab-radar").click()
+    radar = page.frame_locator("#frame-radar")
+    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    radar.locator(".stats .stat").first.wait_for(timeout=15000)
+    radar_style = _governance_kpi_style(radar, ".stats .stat", ".label", ".value")
+    radar_release_style = _governance_kpi_style(radar, ".stats .stat.stat-release-only", ".label", ".value")
+
+    page.locator("#tab-registry").click()
+    registry = page.frame_locator("#frame-registry")
+    registry.locator("h1", has_text="Registry").wait_for(timeout=15000)
+    registry.locator(".kpis .kpi-card").first.wait_for(timeout=15000)
+    registry_style = _governance_kpi_style(registry, ".kpis .kpi-card", ".kpi-label", ".kpi-value")
+
+    page.locator("#tab-casebook").click()
+    casebook = page.frame_locator("#frame-casebook")
+    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".kpis .kpi-card").first.wait_for(timeout=15000)
+    casebook_style = _governance_kpi_style(casebook, ".kpis .kpi-card", ".kpi-label", ".kpi-value")
+
+    for style in (compass_style, radar_style, radar_release_style, registry_style, casebook_style):
+        assert style["cardDisplay"] == "grid"
+        assert style["cardPaddingTop"] == "10px"
+        assert style["cardPaddingRight"] == "12px"
+        assert style["cardPaddingBottom"] == "10px"
+        assert style["cardPaddingLeft"] == "12px"
+        assert style["cardBorderRadius"] == "12px"
+        assert style["labelFontSize"] == "12px"
+        assert style["labelFontWeight"] == "400"
+        assert style["labelTextTransform"] == "uppercase"
+        assert style["valueFontSize"] == "23px"
+        assert style["valueFontWeight"] == "700"
+        assert style["valueMarginTop"] == "4px"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_shared_governance_kpi_cards_keep_compact_style_contract_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_shared_governance_kpi_cards_keep_compact_style_contract(*browser_context)
+
+
+def test_shared_governance_kpi_cards_keep_compact_style_contract_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_shared_governance_kpi_cards_keep_compact_style_contract(*compact_browser_context)
+
+
+def _assert_compass_release_member_title_stays_on_second_row(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    card = compass.locator("#release-groups .execution-wave-card").first
+    card.wait_for(timeout=15000)
+    layout = card.evaluate(
+        """(node) => {
+            const chips = node.querySelector(".execution-wave-member-title-chips");
+            const title = node.querySelector(".execution-wave-title");
+            const chipsBox = chips ? chips.getBoundingClientRect() : null;
+            const titleBox = title ? title.getBoundingClientRect() : null;
+            return {
+              chipsBottom: chipsBox ? chipsBox.bottom : 0,
+              titleTop: titleBox ? titleBox.top : 0,
+            };
+        }"""
+    )
+
+    assert float(layout["titleTop"]) >= float(layout["chipsBottom"]) - 1
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_release_member_title_stays_on_second_row_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_release_member_title_stays_on_second_row(*browser_context)
+
+
+def test_compass_release_member_title_stays_on_second_row_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_release_member_title_stays_on_second_row(*compact_browser_context)
+
+
+def _assert_compass_release_targets_keep_single_column_board_layout(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    board = compass.locator("#release-groups .execution-wave-board").first
+    board.wait_for(timeout=15000)
+    layout = board.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            const panels = Array.from(node.querySelectorAll(":scope > .execution-wave-panel")).map((panel) => {
+              const box = panel.getBoundingClientRect();
+              return { top: box.top, bottom: box.bottom };
+            });
+            return {
+              display: style.display,
+              gridTemplateColumns: style.gridTemplateColumns,
+              gridColumnCount: String(style.gridTemplateColumns || "none")
+                .split(/\\s+/)
+                .filter(Boolean)
+                .length,
+              panels,
+            };
+        }"""
+    )
+
+    assert layout["display"] == "grid"
+    assert int(layout["gridColumnCount"]) == 1
+    if len(layout["panels"]) >= 2:
+        assert layout["panels"][1]["top"] >= layout["panels"][0]["bottom"] - 1
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_release_targets_keep_single_column_board_layout_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_release_targets_keep_single_column_board_layout(*browser_context)
+
+
+def test_compass_release_targets_keep_single_column_board_layout_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_release_targets_keep_single_column_board_layout(*compact_browser_context)

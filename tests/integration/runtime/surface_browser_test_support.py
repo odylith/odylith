@@ -444,7 +444,9 @@ def _compass_kpi_value(compass, label: str) -> int:  # noqa: ANN001
 def _assert_compass_live_state(compass, *, window_token: str) -> None:  # noqa: ANN001
     compass.locator(f'button[data-window="{window_token}"].active').wait_for(timeout=15000)
     compass.get_by_role("heading", name="Standup Brief").wait_for(timeout=15000)
-    brief_chip = compass.locator("#digest-list .standup-brief-chip").first.inner_text().strip().lower()
+    brief_chip = ""
+    if compass.locator("#digest-list .standup-brief-chip").count():
+        brief_chip = compass.locator("#digest-list .standup-brief-chip").first.inner_text().strip().lower()
     brief_notice = ""
     if compass.locator("#digest-list .brief-status-title").count():
         brief_notice = compass.locator("#digest-list .brief-status-title").first.inner_text().strip().lower()

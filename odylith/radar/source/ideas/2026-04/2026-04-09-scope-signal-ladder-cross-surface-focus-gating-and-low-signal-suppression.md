@@ -121,6 +121,10 @@ fresh provider or reasoning work is reserved for the top rungs only.
 - explicit deep links still preserve quiet low-signal scopes without lying
   about local activity
 - browser proof catches cross-surface promotion drift before release
+- Compass itself also clears the founder release bar instead of merely avoiding
+  regression: hot exact reuse `<=50ms` internal, cold shell-safe `<=1s`
+  internal, and ready briefs no longer lean primarily on deterministic
+  fallback
 
 ## Validation
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_scope_signal_ladder.py tests/unit/runtime/test_delivery_intelligence_engine.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_render_backlog_ui_payload_runtime.py tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_odylith_assist_closeout.py`

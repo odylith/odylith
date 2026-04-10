@@ -23,7 +23,7 @@
 - Recovery should restore a healthy install without manual file surgery.
 - Use the reset-local-state repair path when cache, tuning, or derived runtime state looks compromised.
 - `off`/`on` are the lightweight switch for coding agents; uninstall removes `.odylith/` runtime integration but keeps the `odylith/` context tree.
-  `off` detaches Odylith-first repo-root guidance so Codex falls back to the surrounding repo's default behavior; `on` restores Odylith as the default first path.
+  `off` detaches Odylith-first repo-root guidance so the current coding host falls back to the surrounding repo's default behavior; `on` restores Odylith as the default first path.
 - Consumer lane:
   - stays on the installed pinned Odylith-managed runtime
   - never activates `source-local`

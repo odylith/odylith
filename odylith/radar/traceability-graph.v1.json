@@ -3,12 +3,13 @@
   "source": {
     "ideas_root": "odylith/radar/source/ideas",
     "catalog": "odylith/atlas/source/catalog/diagrams.v1.json",
-    "execution_programs_root": "odylith/radar/source/programs"
+    "execution_programs_root": "odylith/radar/source/programs",
+    "release_planning_root": "odylith/radar/source/releases"
   },
   "workstreams": [
     {
       "idea_id": "B-001",
-      "title": "Odylith Product Self-Governance and Repo Boundary",
+      "title": "Product Self-Governance and Repo Boundary",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -60,6 +61,10 @@
           "src/odylith/runtime/governance/sync_workstream_artifacts.py"
         ]
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 20,
@@ -71,7 +76,7 @@
     },
     {
       "idea_id": "B-002",
-      "title": "Odylith Multi-Developer Repo Collaboration Architecture",
+      "title": "Multi-Developer Repo Collaboration Architecture",
       "status": "queued",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -100,6 +105,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 5,
@@ -144,6 +153,10 @@
           "src/odylith/runtime/surfaces/update_compass.py"
         ]
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -155,7 +168,7 @@
     },
     {
       "idea_id": "B-004",
-      "title": "Odylith Self-Hosting Posture Hardening",
+      "title": "Self-Hosting Posture Hardening",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -195,6 +208,10 @@
           "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
         ]
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -206,7 +223,7 @@
     },
     {
       "idea_id": "B-005",
-      "title": "Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
+      "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -256,6 +273,10 @@
           "tests/unit/test_cli.py"
         ]
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 5,
@@ -267,7 +288,7 @@
     },
     {
       "idea_id": "B-006",
-      "title": "Odylith Dark Theme and Adaptive Surface Tokens",
+      "title": "Dark Theme and Adaptive Surface Tokens",
       "status": "queued",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -290,6 +311,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -301,7 +326,7 @@
     },
     {
       "idea_id": "B-007",
-      "title": "Odylith GA Promotion and Supported Platform Contract",
+      "title": "GA Promotion and Supported Platform Contract",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -339,6 +364,10 @@
           "tests/integration/install/test_manager.py"
         ]
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 5,
@@ -350,7 +379,7 @@
     },
     {
       "idea_id": "B-008",
-      "title": "Odylith Memory Areas and Operator Readout",
+      "title": "Memory Areas and Operator Readout",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -371,6 +400,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -382,7 +415,7 @@
     },
     {
       "idea_id": "B-009",
-      "title": "Odylith Benchmark Corpus Truth and Adoption Proof Parity",
+      "title": "Benchmark Corpus Truth and Adoption Proof Parity",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -408,6 +441,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -419,7 +456,7 @@
     },
     {
       "idea_id": "B-010",
-      "title": "Odylith Durable Judgment Memory and Memory Backend Productization",
+      "title": "Durable Judgment Memory and Memory Backend Productization",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -448,6 +485,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 3,
@@ -459,7 +500,7 @@
     },
     {
       "idea_id": "B-011",
-      "title": "Odylith Memory Coherence, Contradiction Retention, and Onboarding Continuity",
+      "title": "Memory Coherence, Contradiction Retention, and Onboarding Continuity",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -484,6 +525,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -495,7 +540,7 @@
     },
     {
       "idea_id": "B-012",
-      "title": "Odylith Local Provider Autodetect and Compass AI Brief Recovery",
+      "title": "Local Provider Autodetect and Compass AI Brief Recovery",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -518,6 +563,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -529,7 +578,7 @@
     },
     {
       "idea_id": "B-013",
-      "title": "Odylith Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles",
+      "title": "Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -552,6 +601,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -563,7 +616,7 @@
     },
     {
       "idea_id": "B-014",
-      "title": "Odylith Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening",
+      "title": "Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -590,6 +643,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 3,
@@ -601,7 +658,7 @@
     },
     {
       "idea_id": "B-015",
-      "title": "Odylith Subagent Reasoning Ladder and Grounded Spawn Defaults",
+      "title": "Subagent Reasoning Ladder and Grounded Spawn Defaults",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -626,6 +683,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -637,7 +698,7 @@
     },
     {
       "idea_id": "B-016",
-      "title": "Odylith Install-Time Agent Activation and Dogfood Guidance Split",
+      "title": "Install-Time Agent Activation and Dogfood Guidance Split",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -661,6 +722,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -672,7 +737,7 @@
     },
     {
       "idea_id": "B-017",
-      "title": "Odylith Surface Browser Stability and End-to-End Hardening",
+      "title": "Surface Browser Stability and End-to-End Hardening",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -697,6 +762,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -708,7 +777,7 @@
     },
     {
       "idea_id": "B-018",
-      "title": "Odylith Query-State Reload and Standalone Surface Browser Proof",
+      "title": "Query-State Reload and Standalone Surface Browser Proof",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -731,6 +800,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -742,7 +815,7 @@
     },
     {
       "idea_id": "B-019",
-      "title": "Odylith Benchmark Frontier Compaction and README Refresh",
+      "title": "Benchmark Frontier Compaction and README Refresh",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -768,6 +841,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -779,7 +856,7 @@
     },
     {
       "idea_id": "B-020",
-      "title": "Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
+      "title": "Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -805,6 +882,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -816,11 +897,13 @@
     },
     {
       "idea_id": "B-021",
-      "title": "Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement",
+      "title": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement",
       "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
-      "workstream_children": [],
+      "workstream_children": [
+        "B-068"
+      ],
       "workstream_depends_on": [
         "B-009",
         "B-019",
@@ -843,6 +926,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -854,7 +941,7 @@
     },
     {
       "idea_id": "B-022",
-      "title": "Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
+      "title": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
       "status": "implementation",
       "workstream_type": "umbrella",
       "workstream_parent": "",
@@ -896,6 +983,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -907,7 +998,7 @@
     },
     {
       "idea_id": "B-023",
-      "title": "Odylith Atlas Tab-State Isolation, Query Self-Healing, and Browser Hardening",
+      "title": "Atlas Tab-State Isolation, Query Self-Healing, and Browser Hardening",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -930,6 +1021,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -941,7 +1036,7 @@
     },
     {
       "idea_id": "B-024",
-      "title": "Odylith Governance Autopilot and Prebaked Consumer Change Management",
+      "title": "Governance Autopilot and Prebaked Consumer Change Management",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -966,6 +1061,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -977,11 +1076,13 @@
     },
     {
       "idea_id": "B-025",
-      "title": "Odylith Cross-Surface Runtime Freshness and UX Browser Hardening",
+      "title": "Cross-Surface Runtime Freshness and UX Browser Hardening",
       "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
-      "workstream_children": [],
+      "workstream_children": [
+        "B-071"
+      ],
       "workstream_depends_on": [
         "B-017",
         "B-018",
@@ -1002,6 +1103,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -1013,7 +1118,7 @@
     },
     {
       "idea_id": "B-026",
-      "title": "Odylith Release Tag Reuse and Published Release Anchoring",
+      "title": "Release Tag Reuse and Published Release Anchoring",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1036,6 +1141,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -1047,7 +1156,7 @@
     },
     {
       "idea_id": "B-027",
-      "title": "Odylith Lane Boundary, Runtime, and Toolchain Clarity",
+      "title": "Lane Boundary, Runtime, and Toolchain Clarity",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1076,6 +1185,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 3,
@@ -1087,7 +1200,7 @@
     },
     {
       "idea_id": "B-028",
-      "title": "Odylith Starter Launchpad UX and Visual Redesign",
+      "title": "Starter Launchpad UX and Visual Redesign",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1112,6 +1225,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -1123,7 +1240,7 @@
     },
     {
       "idea_id": "B-029",
-      "title": "Odylith Install-Time Gitignore Bootstrap for Managed State",
+      "title": "Install-Time Gitignore Bootstrap for Managed State",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1146,6 +1263,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -1157,7 +1278,7 @@
     },
     {
       "idea_id": "B-030",
-      "title": "Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh",
+      "title": "Consumer Upgrade, Reinstall Recovery, and Shell Refresh",
       "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1181,6 +1302,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -1192,7 +1317,7 @@
     },
     {
       "idea_id": "B-031",
-      "title": "Odylith First-Turn Bootstrap and Short-Form Grounding Commands",
+      "title": "First-Turn Bootstrap and Short-Form Grounding Commands",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1221,6 +1346,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 3,
@@ -1232,7 +1361,7 @@
     },
     {
       "idea_id": "B-032",
-      "title": "Odylith v0.1.5 Agent-First Operator Workflow and Recovery Polish",
+      "title": "v0.1.5 Agent-First Operator Workflow and Recovery Polish",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1257,6 +1386,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -1268,13 +1401,14 @@
     },
     {
       "idea_id": "B-033",
-      "title": "Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline",
+      "title": "v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline",
       "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [
         "B-040",
-        "B-048"
+        "B-048",
+        "B-067"
       ],
       "workstream_depends_on": [
         "B-006",
@@ -1298,6 +1432,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -1309,7 +1447,7 @@
     },
     {
       "idea_id": "B-034",
-      "title": "Odylith Constitution Tab for Non-Negotiable Product Truth",
+      "title": "Constitution Tab for Non-Negotiable Product Truth",
       "status": "queued",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1333,6 +1471,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -1344,7 +1486,7 @@
     },
     {
       "idea_id": "B-035",
-      "title": "Odylith Decisions Tab and Architecture Decision Ledger",
+      "title": "Decisions Tab and Architecture Decision Ledger",
       "status": "queued",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1368,6 +1510,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -1379,7 +1525,7 @@
     },
     {
       "idea_id": "B-036",
-      "title": "Odylith Product Canon Tab for Feature Narrative",
+      "title": "Product Canon Tab for Feature Narrative",
       "status": "queued",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1403,6 +1549,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -1414,7 +1564,7 @@
     },
     {
       "idea_id": "B-037",
-      "title": "Odylith Live Benchmarks Drawer and Dynamic Metric Readout",
+      "title": "Live Benchmarks Drawer and Dynamic Metric Readout",
       "status": "queued",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1439,6 +1589,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -1450,7 +1604,7 @@
     },
     {
       "idea_id": "B-038",
-      "title": "Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
+      "title": "Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-022",
@@ -1475,6 +1629,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -1486,7 +1644,7 @@
     },
     {
       "idea_id": "B-039",
-      "title": "Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh",
+      "title": "Benchmark Corpus Expansion, Diagnostics, and Publication Refresh",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-022",
@@ -1513,6 +1671,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 1,
@@ -1524,7 +1686,7 @@
     },
     {
       "idea_id": "B-040",
-      "title": "Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture",
+      "title": "Runtime Integrity, Supply-Chain Hardening, and Security Posture",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-033",
@@ -1549,6 +1711,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -1560,7 +1726,7 @@
     },
     {
       "idea_id": "B-041",
-      "title": "Odylith SWE-bench External Harness, Predictions Contract, and Reproducible Verified Adapter",
+      "title": "SWE-bench External Harness, Predictions Contract, and Reproducible Verified Adapter",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-022",
@@ -1586,6 +1752,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 1,
@@ -1597,7 +1767,7 @@
     },
     {
       "idea_id": "B-042",
-      "title": "Odylith Zero-Governance External-Repo Grounding and SWE-bench Verified Frontier",
+      "title": "Zero-Governance External-Repo Grounding and SWE-bench Verified Frontier",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-022",
@@ -1623,6 +1793,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 1,
@@ -1634,7 +1808,7 @@
     },
     {
       "idea_id": "B-043",
-      "title": "Odylith Bootstrapped Consumer Governance Lane for SWE-bench Verified",
+      "title": "Bootstrapped Consumer Governance Lane for SWE-bench Verified",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-022",
@@ -1661,6 +1835,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 1,
@@ -1672,7 +1850,7 @@
     },
     {
       "idea_id": "B-044",
-      "title": "Odylith External Benchmark Failure Taxonomy, Slice Analytics, and Publication Discipline",
+      "title": "External Benchmark Failure Taxonomy, Slice Analytics, and Publication Discipline",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-022",
@@ -1700,6 +1878,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 1,
@@ -1711,7 +1893,7 @@
     },
     {
       "idea_id": "B-045",
-      "title": "Odylith Registry Source-Mirror Forensic Coverage Alignment",
+      "title": "Registry Source-Mirror Forensic Coverage Alignment",
       "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1736,6 +1918,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 3,
@@ -1747,7 +1933,7 @@
     },
     {
       "idea_id": "B-046",
-      "title": "Odylith Tribunal Benchmark Families, No-Tribunal Ablation, and Diagnosis-Proof Publication",
+      "title": "Tribunal Benchmark Families, No-Tribunal Ablation, and Diagnosis-Proof Publication",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-022",
@@ -1773,6 +1959,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 1,
@@ -1784,7 +1974,7 @@
     },
     {
       "idea_id": "B-047",
-      "title": "Odylith Tribunal Default Diagnosis Triggers, Two-Speed Execution, and Cached Case Reuse",
+      "title": "Tribunal Default Diagnosis Triggers, Two-Speed Execution, and Cached Case Reuse",
       "status": "queued",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -1810,6 +2000,35 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-047",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-08T23:53:48Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-047",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T00:50:29Z",
+          "note": "Removed from v0.1.11 closeout; remains queued follow-on work.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 4,
@@ -1821,7 +2040,7 @@
     },
     {
       "idea_id": "B-048",
-      "title": "Odylith v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock",
+      "title": "v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-033",
@@ -1858,6 +2077,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 3,
@@ -1869,7 +2092,7 @@
     },
     {
       "idea_id": "B-049",
-      "title": "Odylith macOS Runtime Trust Ignores OS Metadata Noise",
+      "title": "macOS Runtime Trust Ignores OS Metadata Noise",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-048",
@@ -1897,6 +2120,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 2,
@@ -1908,7 +2135,7 @@
     },
     {
       "idea_id": "B-050",
-      "title": "Odylith Repair and Reinstall Converge After Partial Runtime Failure",
+      "title": "Repair and Reinstall Converge After Partial Runtime Failure",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-048",
@@ -1936,6 +2163,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 2,
@@ -1947,7 +2178,7 @@
     },
     {
       "idea_id": "B-051",
-      "title": "Odylith Runtime Posture Reporting Explains Wrapped Runtime Degradation",
+      "title": "Runtime Posture Reporting Explains Wrapped Runtime Degradation",
       "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-048",
@@ -1974,6 +2205,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 2,
@@ -1985,7 +2220,7 @@
     },
     {
       "idea_id": "B-052",
-      "title": "Odylith Legacy Migration Stale Reference Audit",
+      "title": "Legacy Migration Stale Reference Audit",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-048",
@@ -2011,6 +2246,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 2,
@@ -2022,7 +2261,7 @@
     },
     {
       "idea_id": "B-053",
-      "title": "Odylith Legacy Radar Index Normalization Before Sync Validation",
+      "title": "Legacy Radar Index Normalization Before Sync Validation",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-048",
@@ -2050,6 +2289,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 2,
@@ -2061,7 +2304,7 @@
     },
     {
       "idea_id": "B-054",
-      "title": "Odylith Sync Failure Summary Dedup and Next-Action Routing",
+      "title": "Sync Failure Summary Dedup and Next-Action Routing",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-048",
@@ -2087,6 +2330,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 2,
@@ -2098,7 +2345,7 @@
     },
     {
       "idea_id": "B-055",
-      "title": "Odylith Lifecycle Plan Dirty Overlap Summary Defaults",
+      "title": "Lifecycle Plan Dirty Overlap Summary Defaults",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-048",
@@ -2124,6 +2371,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 1,
@@ -2135,7 +2386,7 @@
     },
     {
       "idea_id": "B-056",
-      "title": "Odylith Trust Bootstrap Warning Suppression and Success Clarity",
+      "title": "Trust Bootstrap Warning Suppression and Success Clarity",
       "status": "queued",
       "workstream_type": "child",
       "workstream_parent": "B-048",
@@ -2161,6 +2412,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 2,
@@ -2172,7 +2427,7 @@
     },
     {
       "idea_id": "B-057",
-      "title": "Odylith Machine-Level Verified Runtime Store for Cross-Repo Reuse",
+      "title": "Machine-Level Verified Runtime Store for Cross-Repo Reuse",
       "status": "queued",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -2199,6 +2454,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 2,
@@ -2210,7 +2469,7 @@
     },
     {
       "idea_id": "B-058",
-      "title": "Odylith Memory Substrate Registry Componentization and Spec Deepening",
+      "title": "Memory Substrate Registry Componentization and Spec Deepening",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -2240,6 +2499,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 4,
@@ -2251,7 +2514,7 @@
     },
     {
       "idea_id": "B-059",
-      "title": "Odylith Atlas Memory Substrate and Runtime Topology Refresh",
+      "title": "Atlas Memory Substrate and Runtime Topology Refresh",
       "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -2280,6 +2543,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 4,
@@ -2291,7 +2558,7 @@
     },
     {
       "idea_id": "B-060",
-      "title": "Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening",
+      "title": "v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening",
       "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -2315,6 +2582,10 @@
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -2326,8 +2597,8 @@
     },
     {
       "idea_id": "B-061",
-      "title": "Odylith Reasoning Package Boundary and Benchmark Separation",
-      "status": "implementation",
+      "title": "Reasoning Package Boundary and Benchmark Separation",
+      "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -2347,12 +2618,664 @@
         "D-024"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-061",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-08T23:53:52Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-061",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T00:50:29Z",
+          "note": "Closed in v0.1.11 closeout.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-062",
+      "title": "Live Proof-State Control Plane and Blocker Frontier Discipline",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-004",
+        "D-026"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-062",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-08T23:53:54Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-062",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T00:50:29Z",
+          "note": "Closed in v0.1.11 closeout.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-063",
+      "title": "Release Planning and Workstream Targeting",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-026",
+        "B-030",
+        "B-033"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "B-065",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-027"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-063",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-08T22:50:44Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-063",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T00:50:29Z",
+          "note": "Closed in v0.1.11 closeout.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-064",
+      "title": "Radar Workstream Title Prefix Normalization",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-065",
+      "title": "Current Active Release Visibility Until Explicit GA",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-063"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "B-063",
+      "workstream_reopened_by": "B-066",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-current-active-release-visibility-until-explicit-ga.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-08-current-active-release-visibility-until-explicit-ga.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-066",
+      "title": "Completed Release Members Stay Visible Until Explicit GA",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-063"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "B-065",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-completed-release-members-stay-visible-until-explicit-ga.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-09-completed-release-members-source-truth-reconciliation-and-stale-runtime-guardrails.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-066",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T17:57:32Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-066",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T17:57:32Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-067",
+      "title": "Context Engine Module Decomposition and Boundary Hardening",
+      "status": "finished",
+      "workstream_type": "child",
+      "workstream_parent": "B-033",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-014",
+        "B-033",
+        "B-062",
+        "B-063"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-context-engine-module-decomposition-and-boundary-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-module-decomposition-and-boundary-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-067",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T03:40:01Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-067",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T15:21:45Z",
+          "note": "Closed in v0.1.11 closeout after final Context Engine regression proof.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-068",
+      "title": "Context Engine Benchmark Family and Grounding Quality Gates",
+      "status": "finished",
+      "workstream_type": "child",
+      "workstream_parent": "B-021",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-021",
+        "B-063",
+        "B-067"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-068",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T05:25:54Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-068",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T21:20:00Z",
+          "note": "Closed on 2026-04-09 after the Context Engine benchmark family, architecture coverage, and grounding quality gates passed validation.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-069",
+      "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
+      "status": "finished",
+      "workstream_type": "umbrella",
+      "workstream_parent": "",
+      "workstream_children": [
+        "B-070"
+      ],
+      "workstream_depends_on": [
+        "B-027",
+        "B-061",
+        "B-067"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [
+        "B-070"
+      ],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-012",
+        "D-014",
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-069",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T21:06:33Z",
+          "note": "Retrospective release-membership capture for the finished cross-host contract hardening slice completed in v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-069",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T21:06:33Z",
+          "note": "Retrospective release-membership capture for the finished cross-host contract hardening slice completed in v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 4,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-070",
+      "title": "Benchmark Host-Family Proof Canon and Live Runner Schema Normalization",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-069",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-060",
+        "B-069"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "B-069",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-benchmark-host-family-proof-canon-and-live-runner-schema-normalization.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 1,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-070",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T21:06:33Z",
+          "note": "Added as the benchmark-only follow-up to the closed cross-host contract hardening slice.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-070",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T21:20:01Z",
+          "note": "Removed from v0.1.11 closeout because this queued benchmark follow-up was split from B-069 and was not completed in the release.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "add",
+          "workstream_id": "B-070",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-09T21:11:45Z",
+          "note": "Carried forward from the v0.1.11 closeout into the explicit next release lane.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-071",
+      "title": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-025",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-025",
+        "B-062",
+        "B-063"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-028",
+        "D-029"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 2,
@@ -2363,19 +3286,196 @@
       "execution_wave_refs": []
     }
   ],
+  "releases": [
+    {
+      "release_id": "release-0-1-11",
+      "status": "active",
+      "version": "0.1.11",
+      "tag": "v0.1.11",
+      "name": "",
+      "inherited_name": "Proof Without Drift",
+      "effective_name": "0.1.11",
+      "display_label": "0.1.11",
+      "notes": "",
+      "created_utc": "2026-04-08",
+      "shipped_utc": "",
+      "closed_utc": "",
+      "aliases": [
+        "current"
+      ],
+      "active_workstreams": [],
+      "completed_workstreams": [
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-066",
+        "B-067",
+        "B-068",
+        "B-069"
+      ],
+      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "terminal": false,
+      "active_workstream_count": 0,
+      "completed_workstream_count": 7
+    },
+    {
+      "release_id": "release-0-1-12",
+      "status": "planning",
+      "version": "0.1.12",
+      "tag": "v0.1.12",
+      "name": "",
+      "inherited_name": "",
+      "effective_name": "0.1.12",
+      "display_label": "0.1.12",
+      "notes": "",
+      "created_utc": "2026-04-09",
+      "shipped_utc": "",
+      "closed_utc": "",
+      "aliases": [
+        "next"
+      ],
+      "active_workstreams": [
+        "B-070"
+      ],
+      "completed_workstreams": [],
+      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "terminal": false,
+      "active_workstream_count": 1,
+      "completed_workstream_count": 0
+    }
+  ],
+  "release_aliases": {
+    "current": {
+      "release_id": "release-0-1-11",
+      "status": "active",
+      "version": "0.1.11",
+      "tag": "v0.1.11",
+      "name": "",
+      "inherited_name": "Proof Without Drift",
+      "effective_name": "0.1.11",
+      "display_label": "0.1.11",
+      "notes": "",
+      "created_utc": "2026-04-08",
+      "shipped_utc": "",
+      "closed_utc": "",
+      "aliases": [
+        "current"
+      ],
+      "active_workstreams": [],
+      "completed_workstreams": [
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-066",
+        "B-067",
+        "B-068",
+        "B-069"
+      ],
+      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "terminal": false,
+      "active_workstream_count": 0,
+      "completed_workstream_count": 7
+    },
+    "next": {
+      "release_id": "release-0-1-12",
+      "status": "planning",
+      "version": "0.1.12",
+      "tag": "v0.1.12",
+      "name": "",
+      "inherited_name": "",
+      "effective_name": "0.1.12",
+      "display_label": "0.1.12",
+      "notes": "",
+      "created_utc": "2026-04-09",
+      "shipped_utc": "",
+      "closed_utc": "",
+      "aliases": [
+        "next"
+      ],
+      "active_workstreams": [
+        "B-070"
+      ],
+      "completed_workstreams": [],
+      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "terminal": false,
+      "active_workstream_count": 1,
+      "completed_workstream_count": 0
+    }
+  },
+  "current_release": {
+    "release_id": "release-0-1-11",
+    "status": "active",
+    "version": "0.1.11",
+    "tag": "v0.1.11",
+    "name": "",
+    "inherited_name": "Proof Without Drift",
+    "effective_name": "0.1.11",
+    "display_label": "0.1.11",
+    "notes": "",
+    "created_utc": "2026-04-08",
+    "shipped_utc": "",
+    "closed_utc": "",
+    "aliases": [
+      "current"
+    ],
+    "active_workstreams": [],
+    "completed_workstreams": [
+      "B-061",
+      "B-062",
+      "B-063",
+      "B-066",
+      "B-067",
+      "B-068",
+      "B-069"
+    ],
+    "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+    "terminal": false,
+    "active_workstream_count": 0,
+    "completed_workstream_count": 7
+  },
+  "next_release": {
+    "release_id": "release-0-1-12",
+    "status": "planning",
+    "version": "0.1.12",
+    "tag": "v0.1.12",
+    "name": "",
+    "inherited_name": "",
+    "effective_name": "0.1.12",
+    "display_label": "0.1.12",
+    "notes": "",
+    "created_utc": "2026-04-09",
+    "shipped_utc": "",
+    "closed_utc": "",
+    "aliases": [
+      "next"
+    ],
+    "active_workstreams": [
+      "B-070"
+    ],
+    "completed_workstreams": [],
+    "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+    "terminal": false,
+    "active_workstream_count": 1,
+    "completed_workstream_count": 0
+  },
+  "release_summary": {
+    "release_count": 2,
+    "alias_count": 2,
+    "active_assignment_count": 1
+  },
   "execution_programs": [],
   "nodes": [
     {
       "id": "B-001",
       "type": "workstream",
-      "label": "Odylith Product Self-Governance and Repo Boundary",
+      "label": "Product Self-Governance and Repo Boundary",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md"
     },
     {
       "id": "B-002",
       "type": "workstream",
-      "label": "Odylith Multi-Developer Repo Collaboration Architecture",
+      "label": "Multi-Developer Repo Collaboration Architecture",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md"
     },
@@ -2389,408 +3489,478 @@
     {
       "id": "B-004",
       "type": "workstream",
-      "label": "Odylith Self-Hosting Posture Hardening",
+      "label": "Self-Hosting Posture Hardening",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md"
     },
     {
       "id": "B-005",
       "type": "workstream",
-      "label": "Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
+      "label": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md"
     },
     {
       "id": "B-006",
       "type": "workstream",
-      "label": "Odylith Dark Theme and Adaptive Surface Tokens",
+      "label": "Dark Theme and Adaptive Surface Tokens",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md"
     },
     {
       "id": "B-007",
       "type": "workstream",
-      "label": "Odylith GA Promotion and Supported Platform Contract",
+      "label": "GA Promotion and Supported Platform Contract",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md"
     },
     {
       "id": "B-008",
       "type": "workstream",
-      "label": "Odylith Memory Areas and Operator Readout",
+      "label": "Memory Areas and Operator Readout",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md"
     },
     {
       "id": "B-009",
       "type": "workstream",
-      "label": "Odylith Benchmark Corpus Truth and Adoption Proof Parity",
+      "label": "Benchmark Corpus Truth and Adoption Proof Parity",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-benchmark-corpus-truth-and-adoption-proof-parity.md"
     },
     {
       "id": "B-010",
       "type": "workstream",
-      "label": "Odylith Durable Judgment Memory and Memory Backend Productization",
+      "label": "Durable Judgment Memory and Memory Backend Productization",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md"
     },
     {
       "id": "B-011",
       "type": "workstream",
-      "label": "Odylith Memory Coherence, Contradiction Retention, and Onboarding Continuity",
+      "label": "Memory Coherence, Contradiction Retention, and Onboarding Continuity",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-memory-coherence-contradiction-retention-and-onboarding-continuity.md"
     },
     {
       "id": "B-012",
       "type": "workstream",
-      "label": "Odylith Local Provider Autodetect and Compass AI Brief Recovery",
+      "label": "Local Provider Autodetect and Compass AI Brief Recovery",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md"
     },
     {
       "id": "B-013",
       "type": "workstream",
-      "label": "Odylith Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles",
+      "label": "Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-shared-runtime-contract-reuse-for-surface-bundles-and-execution-profiles.md"
     },
     {
       "id": "B-014",
       "type": "workstream",
-      "label": "Odylith Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening",
+      "label": "Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-context-engine-daemon-lifecycle-transport-security-and-repair-hardening.md"
     },
     {
       "id": "B-015",
       "type": "workstream",
-      "label": "Odylith Subagent Reasoning Ladder and Grounded Spawn Defaults",
+      "label": "Subagent Reasoning Ladder and Grounded Spawn Defaults",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-subagent-reasoning-ladder-and-grounded-spawn-defaults.md"
     },
     {
       "id": "B-016",
       "type": "workstream",
-      "label": "Odylith Install-Time Agent Activation and Dogfood Guidance Split",
+      "label": "Install-Time Agent Activation and Dogfood Guidance Split",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-install-time-agent-activation-and-dogfood-guidance-split.md"
     },
     {
       "id": "B-017",
       "type": "workstream",
-      "label": "Odylith Surface Browser Stability and End-to-End Hardening",
+      "label": "Surface Browser Stability and End-to-End Hardening",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-surface-browser-stability-and-end-to-end-hardening.md"
     },
     {
       "id": "B-018",
       "type": "workstream",
-      "label": "Odylith Query-State Reload and Standalone Surface Browser Proof",
+      "label": "Query-State Reload and Standalone Surface Browser Proof",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-query-state-reload-and-standalone-surface-browser-proof.md"
     },
     {
       "id": "B-019",
       "type": "workstream",
-      "label": "Odylith Benchmark Frontier Compaction and README Refresh",
+      "label": "Benchmark Frontier Compaction and README Refresh",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-frontier-compaction-and-readme-refresh.md"
     },
     {
       "id": "B-020",
       "type": "workstream",
-      "label": "Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
+      "label": "Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md"
     },
     {
       "id": "B-021",
       "type": "workstream",
-      "label": "Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement",
+      "label": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md"
     },
     {
       "id": "B-022",
       "type": "workstream",
-      "label": "Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
+      "label": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md"
     },
     {
       "id": "B-023",
       "type": "workstream",
-      "label": "Odylith Atlas Tab-State Isolation, Query Self-Healing, and Browser Hardening",
+      "label": "Atlas Tab-State Isolation, Query Self-Healing, and Browser Hardening",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-atlas-tab-state-isolation-query-self-healing-and-browser-hardening.md"
     },
     {
       "id": "B-024",
       "type": "workstream",
-      "label": "Odylith Governance Autopilot and Prebaked Consumer Change Management",
+      "label": "Governance Autopilot and Prebaked Consumer Change Management",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-governance-autopilot-and-prebaked-consumer-change-management.md"
     },
     {
       "id": "B-025",
       "type": "workstream",
-      "label": "Odylith Cross-Surface Runtime Freshness and UX Browser Hardening",
+      "label": "Cross-Surface Runtime Freshness and UX Browser Hardening",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md"
     },
     {
       "id": "B-026",
       "type": "workstream",
-      "label": "Odylith Release Tag Reuse and Published Release Anchoring",
+      "label": "Release Tag Reuse and Published Release Anchoring",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md"
     },
     {
       "id": "B-027",
       "type": "workstream",
-      "label": "Odylith Lane Boundary, Runtime, and Toolchain Clarity",
+      "label": "Lane Boundary, Runtime, and Toolchain Clarity",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
     },
     {
       "id": "B-028",
       "type": "workstream",
-      "label": "Odylith Starter Launchpad UX and Visual Redesign",
+      "label": "Starter Launchpad UX and Visual Redesign",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-starter-launchpad-ux-and-visual-redesign.md"
     },
     {
       "id": "B-029",
       "type": "workstream",
-      "label": "Odylith Install-Time Gitignore Bootstrap for Managed State",
+      "label": "Install-Time Gitignore Bootstrap for Managed State",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-install-time-gitignore-bootstrap-for-managed-state.md"
     },
     {
       "id": "B-030",
       "type": "workstream",
-      "label": "Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh",
+      "label": "Consumer Upgrade, Reinstall Recovery, and Shell Refresh",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md"
     },
     {
       "id": "B-031",
       "type": "workstream",
-      "label": "Odylith First-Turn Bootstrap and Short-Form Grounding Commands",
+      "label": "First-Turn Bootstrap and Short-Form Grounding Commands",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md"
     },
     {
       "id": "B-032",
       "type": "workstream",
-      "label": "Odylith v0.1.5 Agent-First Operator Workflow and Recovery Polish",
+      "label": "v0.1.5 Agent-First Operator Workflow and Recovery Polish",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md"
     },
     {
       "id": "B-033",
       "type": "workstream",
-      "label": "Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline",
+      "label": "v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md"
     },
     {
       "id": "B-034",
       "type": "workstream",
-      "label": "Odylith Constitution Tab for Non-Negotiable Product Truth",
+      "label": "Constitution Tab for Non-Negotiable Product Truth",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md"
     },
     {
       "id": "B-035",
       "type": "workstream",
-      "label": "Odylith Decisions Tab and Architecture Decision Ledger",
+      "label": "Decisions Tab and Architecture Decision Ledger",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md"
     },
     {
       "id": "B-036",
       "type": "workstream",
-      "label": "Odylith Product Canon Tab for Feature Narrative",
+      "label": "Product Canon Tab for Feature Narrative",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md"
     },
     {
       "id": "B-037",
       "type": "workstream",
-      "label": "Odylith Live Benchmarks Drawer and Dynamic Metric Readout",
+      "label": "Live Benchmarks Drawer and Dynamic Metric Readout",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md"
     },
     {
       "id": "B-038",
       "type": "workstream",
-      "label": "Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
+      "label": "Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md"
     },
     {
       "id": "B-039",
       "type": "workstream",
-      "label": "Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh",
+      "label": "Benchmark Corpus Expansion, Diagnostics, and Publication Refresh",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-corpus-expansion-diagnostics-and-publication-refresh.md"
     },
     {
       "id": "B-040",
       "type": "workstream",
-      "label": "Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture",
+      "label": "Runtime Integrity, Supply-Chain Hardening, and Security Posture",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md"
     },
     {
       "id": "B-041",
       "type": "workstream",
-      "label": "Odylith SWE-bench External Harness, Predictions Contract, and Reproducible Verified Adapter",
+      "label": "SWE-bench External Harness, Predictions Contract, and Reproducible Verified Adapter",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-swe-bench-external-harness-predictions-contract-and-reproducible-verified-adapter.md"
     },
     {
       "id": "B-042",
       "type": "workstream",
-      "label": "Odylith Zero-Governance External-Repo Grounding and SWE-bench Verified Frontier",
+      "label": "Zero-Governance External-Repo Grounding and SWE-bench Verified Frontier",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-zero-governance-external-repo-grounding-and-swe-bench-verified-frontier.md"
     },
     {
       "id": "B-043",
       "type": "workstream",
-      "label": "Odylith Bootstrapped Consumer Governance Lane for SWE-bench Verified",
+      "label": "Bootstrapped Consumer Governance Lane for SWE-bench Verified",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md"
     },
     {
       "id": "B-044",
       "type": "workstream",
-      "label": "Odylith External Benchmark Failure Taxonomy, Slice Analytics, and Publication Discipline",
+      "label": "External Benchmark Failure Taxonomy, Slice Analytics, and Publication Discipline",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-external-benchmark-failure-taxonomy-slice-analytics-and-publication-discipline.md"
     },
     {
       "id": "B-045",
       "type": "workstream",
-      "label": "Odylith Registry Source-Mirror Forensic Coverage Alignment",
+      "label": "Registry Source-Mirror Forensic Coverage Alignment",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md"
     },
     {
       "id": "B-046",
       "type": "workstream",
-      "label": "Odylith Tribunal Benchmark Families, No-Tribunal Ablation, and Diagnosis-Proof Publication",
+      "label": "Tribunal Benchmark Families, No-Tribunal Ablation, and Diagnosis-Proof Publication",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-benchmark-families-no-tribunal-ablation-and-diagnosis-proof-publication.md"
     },
     {
       "id": "B-047",
       "type": "workstream",
-      "label": "Odylith Tribunal Default Diagnosis Triggers, Two-Speed Execution, and Cached Case Reuse",
+      "label": "Tribunal Default Diagnosis Triggers, Two-Speed Execution, and Cached Case Reuse",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-default-diagnosis-triggers-two-speed-execution-and-cached-case-reuse.md"
     },
     {
       "id": "B-048",
       "type": "workstream",
-      "label": "Odylith v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock",
+      "label": "v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md"
     },
     {
       "id": "B-049",
       "type": "workstream",
-      "label": "Odylith macOS Runtime Trust Ignores OS Metadata Noise",
+      "label": "macOS Runtime Trust Ignores OS Metadata Noise",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-macos-runtime-trust-ignores-os-metadata-noise.md"
     },
     {
       "id": "B-050",
       "type": "workstream",
-      "label": "Odylith Repair and Reinstall Converge After Partial Runtime Failure",
+      "label": "Repair and Reinstall Converge After Partial Runtime Failure",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md"
     },
     {
       "id": "B-051",
       "type": "workstream",
-      "label": "Odylith Runtime Posture Reporting Explains Wrapped Runtime Degradation",
+      "label": "Runtime Posture Reporting Explains Wrapped Runtime Degradation",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md"
     },
     {
       "id": "B-052",
       "type": "workstream",
-      "label": "Odylith Legacy Migration Stale Reference Audit",
+      "label": "Legacy Migration Stale Reference Audit",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-migration-stale-reference-audit.md"
     },
     {
       "id": "B-053",
       "type": "workstream",
-      "label": "Odylith Legacy Radar Index Normalization Before Sync Validation",
+      "label": "Legacy Radar Index Normalization Before Sync Validation",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-radar-index-normalization-before-sync-validation.md"
     },
     {
       "id": "B-054",
       "type": "workstream",
-      "label": "Odylith Sync Failure Summary Dedup and Next-Action Routing",
+      "label": "Sync Failure Summary Dedup and Next-Action Routing",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-sync-failure-summary-dedup-and-next-action-routing.md"
     },
     {
       "id": "B-055",
       "type": "workstream",
-      "label": "Odylith Lifecycle Plan Dirty Overlap Summary Defaults",
+      "label": "Lifecycle Plan Dirty Overlap Summary Defaults",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-lifecycle-plan-dirty-overlap-summary-defaults.md"
     },
     {
       "id": "B-056",
       "type": "workstream",
-      "label": "Odylith Trust Bootstrap Warning Suppression and Success Clarity",
+      "label": "Trust Bootstrap Warning Suppression and Success Clarity",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-trust-bootstrap-warning-suppression-and-success-clarity.md"
     },
     {
       "id": "B-057",
       "type": "workstream",
-      "label": "Odylith Machine-Level Verified Runtime Store for Cross-Repo Reuse",
+      "label": "Machine-Level Verified Runtime Store for Cross-Repo Reuse",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md"
     },
     {
       "id": "B-058",
       "type": "workstream",
-      "label": "Odylith Memory Substrate Registry Componentization and Spec Deepening",
+      "label": "Memory Substrate Registry Componentization and Spec Deepening",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md"
     },
     {
       "id": "B-059",
       "type": "workstream",
-      "label": "Odylith Atlas Memory Substrate and Runtime Topology Refresh",
+      "label": "Atlas Memory Substrate and Runtime Topology Refresh",
       "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
     },
     {
       "id": "B-060",
       "type": "workstream",
-      "label": "Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening",
+      "label": "v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
     },
     {
       "id": "B-061",
       "type": "workstream",
-      "label": "Odylith Reasoning Package Boundary and Benchmark Separation",
-      "status": "implementation",
+      "label": "Reasoning Package Boundary and Benchmark Separation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md"
+    },
+    {
+      "id": "B-062",
+      "type": "workstream",
+      "label": "Live Proof-State Control Plane and Blocker Frontier Discipline",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md"
+    },
+    {
+      "id": "B-063",
+      "type": "workstream",
+      "label": "Release Planning and Workstream Targeting",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+    },
+    {
+      "id": "B-064",
+      "type": "workstream",
+      "label": "Radar Workstream Title Prefix Normalization",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md"
+    },
+    {
+      "id": "B-065",
+      "type": "workstream",
+      "label": "Current Active Release Visibility Until Explicit GA",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-08-current-active-release-visibility-until-explicit-ga.md"
+    },
+    {
+      "id": "B-066",
+      "type": "workstream",
+      "label": "Completed Release Members Stay Visible Until Explicit GA",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-08-completed-release-members-stay-visible-until-explicit-ga.md"
+    },
+    {
+      "id": "B-067",
+      "type": "workstream",
+      "label": "Context Engine Module Decomposition and Boundary Hardening",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-context-engine-module-decomposition-and-boundary-hardening.md"
+    },
+    {
+      "id": "B-068",
+      "type": "workstream",
+      "label": "Context Engine Benchmark Family and Grounding Quality Gates",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md"
+    },
+    {
+      "id": "B-069",
+      "type": "workstream",
+      "label": "Cross-Host Contract Hardening and Codex-Claude Separation",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
+    },
+    {
+      "id": "B-070",
+      "type": "workstream",
+      "label": "Benchmark Host-Family Proof Canon and Live Runner Schema Normalization",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-09-benchmark-host-family-proof-canon-and-live-runner-schema-normalization.md"
+    },
+    {
+      "id": "B-071",
+      "type": "workstream",
+      "label": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
     },
     {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
@@ -3005,177 +4175,205 @@
     {
       "id": "diagram:D-001",
       "type": "diagram",
-      "label": "Odylith Product Governance Loop",
+      "label": "Product Governance Loop",
       "diagram_id": "D-001",
       "file": "odylith/atlas/source/odylith-product-governance-loop.mmd"
     },
     {
       "id": "diagram:D-002",
       "type": "diagram",
-      "label": "Odylith Context And Agent Execution Stack",
+      "label": "Context And Agent Execution Stack",
       "diagram_id": "D-002",
       "file": "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd"
     },
     {
       "id": "diagram:D-003",
       "type": "diagram",
-      "label": "Odylith Diagnosis And Remediation Loop",
+      "label": "Diagnosis And Remediation Loop",
       "diagram_id": "D-003",
       "file": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.mmd"
     },
     {
       "id": "diagram:D-004",
       "type": "diagram",
-      "label": "Odylith Delivery Governance Topology",
+      "label": "Delivery Governance Topology",
       "diagram_id": "D-004",
       "file": "odylith/atlas/source/odylith-delivery-governance-topology.mmd"
     },
     {
       "id": "diagram:D-005",
       "type": "diagram",
-      "label": "Odylith Delivery Intelligence Closed Loop",
+      "label": "Delivery Intelligence Closed Loop",
       "diagram_id": "D-005",
       "file": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.mmd"
     },
     {
       "id": "diagram:D-006",
       "type": "diagram",
-      "label": "Odylith Operator Inbox and Evidence Routing",
+      "label": "Operator Inbox and Evidence Routing",
       "diagram_id": "D-006",
       "file": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.mmd"
     },
     {
       "id": "diagram:D-007",
       "type": "diagram",
-      "label": "Odylith Tribunal Multi-Actor Reasoning Engine",
+      "label": "Tribunal Multi-Actor Reasoning Engine",
       "diagram_id": "D-007",
       "file": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.mmd"
     },
     {
       "id": "diagram:D-008",
       "type": "diagram",
-      "label": "Odylith Tribunal Dossier and Remediation Lifecycle",
+      "label": "Tribunal Dossier and Remediation Lifecycle",
       "diagram_id": "D-008",
       "file": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.mmd"
     },
     {
       "id": "diagram:D-009",
       "type": "diagram",
-      "label": "Odylith Delivery Intelligence Signal Journal and Observer Pipeline",
+      "label": "Delivery Intelligence Signal Journal and Observer Pipeline",
       "diagram_id": "D-009",
       "file": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.mmd"
     },
     {
       "id": "diagram:D-010",
       "type": "diagram",
-      "label": "Odylith Tribunal Selection Funnel and Queue Formation",
+      "label": "Tribunal Selection Funnel and Queue Formation",
       "diagram_id": "D-010",
       "file": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd"
     },
     {
       "id": "diagram:D-011",
       "type": "diagram",
-      "label": "Odylith Tribunal Adjudication, Editorial Merge, and Packet Assembly",
+      "label": "Tribunal Adjudication, Editorial Merge, and Packet Assembly",
       "diagram_id": "D-011",
       "file": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.mmd"
     },
     {
       "id": "diagram:D-012",
       "type": "diagram",
-      "label": "Odylith Subagent Router Decision and Escalation Flow",
+      "label": "Subagent Router Decision and Escalation Flow",
       "diagram_id": "D-012",
       "file": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.mmd"
     },
     {
       "id": "diagram:D-013",
       "type": "diagram",
-      "label": "Odylith Subagent Router Governance and Audit Topology",
+      "label": "Subagent Router Governance and Audit Topology",
       "diagram_id": "D-013",
       "file": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.mmd"
     },
     {
       "id": "diagram:D-014",
       "type": "diagram",
-      "label": "Odylith Subagent Orchestrator Prompt Triage and Routing Flow",
+      "label": "Subagent Orchestrator Prompt Triage and Routing Flow",
       "diagram_id": "D-014",
       "file": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.mmd"
     },
     {
       "id": "diagram:D-015",
       "type": "diagram",
-      "label": "Odylith Subagent Orchestrator Safe Fan-Out and Parallel Safety",
+      "label": "Subagent Orchestrator Safe Fan-Out and Parallel Safety",
       "diagram_id": "D-015",
       "file": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.mmd"
     },
     {
       "id": "diagram:D-016",
       "type": "diagram",
-      "label": "Odylith Subagent Orchestrator Merge Barrier and Adjudication Ownership",
+      "label": "Subagent Orchestrator Merge Barrier and Adjudication Ownership",
       "diagram_id": "D-016",
       "file": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.mmd"
     },
     {
       "id": "diagram:D-017",
       "type": "diagram",
-      "label": "Odylith Subagent Orchestrator Governance and Adaptive Learning Topology",
+      "label": "Subagent Orchestrator Governance and Adaptive Learning Topology",
       "diagram_id": "D-017",
       "file": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.mmd"
     },
     {
       "id": "diagram:D-018",
       "type": "diagram",
-      "label": "Odylith Installable Product Layered Topology",
+      "label": "Installable Product Layered Topology",
       "diagram_id": "D-018",
       "file": "odylith/atlas/source/odylith-installable-product-layered-topology.mmd"
     },
     {
       "id": "diagram:D-019",
       "type": "diagram",
-      "label": "Odylith Installable Product Bootstrap and Validation Flow",
+      "label": "Installable Product Bootstrap and Validation Flow",
       "diagram_id": "D-019",
       "file": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.mmd"
     },
     {
       "id": "diagram:D-020",
       "type": "diagram",
-      "label": "Odylith Product Runtime Boundary Map",
+      "label": "Product Runtime Boundary Map",
       "diagram_id": "D-020",
       "file": "odylith/atlas/source/odylith-product-runtime-boundary-map.mmd"
     },
     {
       "id": "diagram:D-021",
       "type": "diagram",
-      "label": "Odylith Self-Host Runtime And Release Gate",
+      "label": "Self-Host Runtime And Release Gate",
       "diagram_id": "D-021",
       "file": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.mmd"
     },
     {
       "id": "diagram:D-022",
       "type": "diagram",
-      "label": "Odylith Canonical Release Version Session And Publish Lane",
+      "label": "Canonical Release Version Session And Publish Lane",
       "diagram_id": "D-022",
       "file": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.mmd"
     },
     {
       "id": "diagram:D-023",
       "type": "diagram",
-      "label": "Odylith Managed Runtime Release And Install Flow",
+      "label": "Managed Runtime Release And Install Flow",
       "diagram_id": "D-023",
       "file": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd"
     },
     {
       "id": "diagram:D-024",
       "type": "diagram",
-      "label": "Odylith Benchmark Proof And Publication Lane",
+      "label": "Benchmark Proof And Publication Lane",
       "diagram_id": "D-024",
       "file": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd"
     },
     {
       "id": "diagram:D-025",
       "type": "diagram",
-      "label": "Odylith Memory Substrate Compile, Retrieval, and Packet Topology",
+      "label": "Memory Substrate Compile, Retrieval, and Packet Topology",
       "diagram_id": "D-025",
       "file": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.mmd"
+    },
+    {
+      "id": "diagram:D-026",
+      "type": "diagram",
+      "label": "Live Proof-State Control Plane",
+      "diagram_id": "D-026",
+      "file": "odylith/atlas/source/odylith-live-proof-state-control-plane.mmd"
+    },
+    {
+      "id": "diagram:D-027",
+      "type": "diagram",
+      "label": "Release Planning And Workstream Targeting",
+      "diagram_id": "D-027",
+      "file": "odylith/atlas/source/odylith-release-planning-and-workstream-targeting.mmd"
+    },
+    {
+      "id": "diagram:D-028",
+      "type": "diagram",
+      "label": "Scope Signal Ladder And Escalation Topology",
+      "diagram_id": "D-028",
+      "file": "odylith/atlas/source/odylith-scope-signal-ladder-and-escalation-topology.mmd"
+    },
+    {
+      "id": "diagram:D-029",
+      "type": "diagram",
+      "label": "Governance Surface Focus And Budget Gating Flow",
+      "diagram_id": "D-029",
+      "file": "odylith/atlas/source/odylith-governance-surface-focus-and-budget-gating-flow.mmd"
     },
     {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -3352,6 +4550,54 @@
       "file": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md"
     },
     {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-08-current-active-release-visibility-until-explicit-ga.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-08-current-active-release-visibility-until-explicit-ga.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-08-current-active-release-visibility-until-explicit-ga.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-module-decomposition-and-boundary-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-module-decomposition-and-boundary-hardening.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-module-decomposition-and-boundary-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-09-completed-release-members-source-truth-reconciliation-and-stale-runtime-guardrails.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-09-completed-release-members-source-truth-reconciliation-and-stale-runtime-guardrails.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-09-completed-release-members-source-truth-reconciliation-and-stale-runtime-guardrails.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
+    },
+    {
       "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
@@ -3400,16 +4646,36 @@
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md"
     },
     {
-      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
-      "type": "plan",
-      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
-      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md"
-    },
-    {
       "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
+    },
+    {
+      "id": "release:release-0-1-12",
+      "type": "release",
+      "label": "0.1.12",
+      "release_id": "release-0-1-12",
+      "status": "planning",
+      "version": "0.1.12",
+      "tag": "v0.1.12",
+      "name": "0.1.12",
+      "aliases": [
+        "next"
+      ],
+      "file": "odylith/radar/source/releases/releases.v1.json"
     }
   ],
   "edges": [
@@ -4105,6 +5371,11 @@
     },
     {
       "source": "B-014",
+      "target": "B-067",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-014",
       "target": "diagram:D-002",
       "edge_type": "diagram_linkage"
     },
@@ -4285,6 +5556,16 @@
     },
     {
       "source": "B-021",
+      "target": "B-068",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-021",
+      "target": "B-068",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-021",
       "target": "diagram:D-024",
       "edge_type": "diagram_linkage"
     },
@@ -4445,8 +5726,23 @@
     },
     {
       "source": "B-025",
+      "target": "B-071",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-025",
+      "target": "B-071",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-025",
       "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-026",
+      "target": "B-063",
+      "edge_type": "depends_on"
     },
     {
       "source": "B-026",
@@ -4471,6 +5767,11 @@
     {
       "source": "B-027",
       "target": "B-040",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-027",
+      "target": "B-069",
       "edge_type": "depends_on"
     },
     {
@@ -4570,6 +5871,11 @@
     },
     {
       "source": "B-030",
+      "target": "B-063",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-030",
       "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
       "edge_type": "promoted_to_plan"
     },
@@ -4626,6 +5932,21 @@
     {
       "source": "B-033",
       "target": "B-048",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-033",
+      "target": "B-063",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-033",
+      "target": "B-067",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-033",
+      "target": "B-067",
       "edge_type": "parent_child"
     },
     {
@@ -5045,8 +6366,18 @@
     },
     {
       "source": "B-060",
+      "target": "B-070",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-060",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-061",
+      "target": "B-069",
+      "edge_type": "depends_on"
     },
     {
       "source": "B-061",
@@ -5060,7 +6391,192 @@
     },
     {
       "source": "B-061",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-062",
+      "target": "B-067",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-062",
+      "target": "B-071",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-062",
+      "target": "diagram:D-004",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-062",
+      "target": "diagram:D-026",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-062",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-063",
+      "target": "B-065",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-063",
+      "target": "B-066",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-063",
+      "target": "B-067",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-063",
+      "target": "B-068",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-063",
+      "target": "B-071",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-063",
+      "target": "diagram:D-027",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-063",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-064",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-065",
+      "target": "B-063",
+      "edge_type": "reopens"
+    },
+    {
+      "source": "B-065",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-08-current-active-release-visibility-until-explicit-ga.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-066",
+      "target": "B-065",
+      "edge_type": "reopens"
+    },
+    {
+      "source": "B-066",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-09-completed-release-members-source-truth-reconciliation-and-stale-runtime-guardrails.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-067",
+      "target": "B-068",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-067",
+      "target": "B-069",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-067",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-067",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-module-decomposition-and-boundary-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-068",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-068",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-068",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-069",
+      "target": "B-070",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-069",
+      "target": "B-070",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-069",
+      "target": "B-070",
+      "edge_type": "split"
+    },
+    {
+      "source": "B-069",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-069",
+      "target": "diagram:D-012",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-069",
+      "target": "diagram:D-014",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-069",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-069",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-070",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-070",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-071",
+      "target": "diagram:D-028",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-071",
+      "target": "diagram:D-029",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-071",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
       "edge_type": "promoted_to_plan"
     }
   ],
@@ -5491,6 +7007,76 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-062": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-063": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-064": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-065": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-066": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-067": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-068": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-069": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 4,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-070": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-071": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -5520,13 +7106,15 @@
     "B-058: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 61,
+    "workstream_count": 71,
+    "release_count": 2,
+    "active_release_assignment_count": 1,
     "execution_program_count": 0,
     "execution_wave_count": 0,
-    "node_count": 155,
-    "edge_count": 330,
+    "node_count": 179,
+    "edge_count": 380,
     "warning_count": 2,
     "warning_item_count": 2
   },
-  "generated_utc": "2026-04-08 07:50:53Z"
+  "generated_utc": "2026-04-09 22:10:17Z"
 }

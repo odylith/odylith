@@ -1866,7 +1866,7 @@ def test_build_standup_brief_full_refresh_fails_closed_when_no_exact_cache_is_av
     assert brief["diagnostics"]["reason"] == "provider_empty"
 
 
-def test_build_standup_brief_uses_current_deterministic_brief_when_provider_returns_empty_for_changed_packet(
+def test_build_standup_brief_reuses_current_cached_brief_when_provider_returns_empty_for_changed_packet(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -1890,13 +1890,13 @@ def test_build_standup_brief_uses_current_deterministic_brief_when_provider_retu
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "deterministic"
-    assert fallback["notice"]["reason"] == "provider_empty"
-    assert fallback["notice"]["title"] == "Showing deterministic local brief"
-    assert fallback_provider.calls == 2
+    assert fallback["source"] == "cache"
+    assert fallback["cache_mode"] == "exact"
+    assert "notice" not in fallback
+    assert fallback_provider.calls == 0
 
 
-def test_build_standup_brief_uses_current_deterministic_brief_when_live_provider_is_deferred_and_fingerprint_changes(
+def test_build_standup_brief_reuses_current_cached_brief_when_live_provider_is_deferred_and_fingerprint_changes(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -1920,9 +1920,9 @@ def test_build_standup_brief_uses_current_deterministic_brief_when_live_provider
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "deterministic"
-    assert fallback["notice"]["reason"] == "provider_deferred"
-    assert fallback["notice"]["title"] == "Showing deterministic local brief"
+    assert fallback["source"] == "cache"
+    assert fallback["cache_mode"] == "exact"
+    assert "notice" not in fallback
     assert deferred_provider.calls == 0
 
 
@@ -2010,6 +2010,110 @@ def test_build_standup_brief_does_not_reuse_cache_for_different_scope_or_window(
     assert no_window_match["status"] == "ready"
     assert no_window_match["source"] == "deterministic"
     assert no_window_match["notice"]["reason"] == "provider_unavailable"
+
+
+def test_build_standup_brief_reuses_global_cache_across_windows_when_sections_still_validate(tmp_path: Path) -> None:
+    seeded_provider = _FakeProvider(_valid_provider_result())
+    seeded = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(scope_mode="global", idea_id="", window="48h"),
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=seeded_provider,
+    )
+
+    reused = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(scope_mode="global", idea_id="", window="24h"),
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=None,
+        allow_provider=False,
+    )
+
+    assert seeded["status"] == "ready"
+    assert reused["status"] == "ready"
+    assert reused["source"] == "cache"
+    assert reused["cache_mode"] == "exact"
+
+
+def test_build_standup_brief_reuses_scoped_cache_across_windows_when_scope_matches_and_no_freshness_guard(
+    tmp_path: Path,
+) -> None:
+    seeded_provider = _FakeProvider(_valid_provider_result())
+    seeded = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(scope_mode="scoped", idea_id="B-101", window="48h"),
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=seeded_provider,
+    )
+
+    reused = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(
+            scope_mode="scoped",
+            idea_id="B-101",
+            window="24h",
+            include_freshness_fact=True,
+        ),
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=None,
+        allow_provider=False,
+    )
+
+    assert seeded["status"] == "ready"
+    assert reused["status"] == "ready"
+    assert reused["source"] == "cache"
+    assert reused["cache_mode"] == "exact"
+
+
+def test_build_standup_brief_salvages_cached_current_execution_section_when_one_bullet_goes_stale(
+    tmp_path: Path,
+) -> None:
+    seeded_provider = _FakeProvider(_valid_provider_result())
+    seeded = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(scope_mode="global", idea_id="", window="48h"),
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=seeded_provider,
+    )
+    assert seeded["status"] == "ready"
+    assert seeded["source"] == "provider"
+
+    cache_path = narrator.standup_brief_cache_path(repo_root=tmp_path)
+    cache_payload = json.loads(cache_path.read_text(encoding="utf-8"))
+    entries = cache_payload["entries"]
+    entry = next(
+        value
+        for value in entries.values()
+        if isinstance(value, dict)
+        and value.get("context", {}).get("scope_mode") == "global"
+        and value.get("context", {}).get("window") == "48h"
+    )
+    entry["sections"][1]["bullets"][1]["text"] = (
+        "Current execution target is the local repo posture: runtime 0.1.9 with repo pin 0.1.9, which is what operators and tests should be measuring against today."
+    )
+    cache_path.write_text(json.dumps(cache_payload, indent=2) + "\n", encoding="utf-8")
+
+    reused = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(scope_mode="global", idea_id="", window="24h"),
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=None,
+        allow_provider=False,
+    )
+
+    assert reused["status"] == "ready"
+    assert reused["source"] == "cache"
+    assert reused["cache_mode"] == "exact"
+    current_execution_bullets = reused["sections"][1]["bullets"]
+    assert current_execution_bullets[1]["text"] == (
+        "Updated Compass narrative to capture implementation intent."
+    )
 
 
 def test_build_standup_brief_does_not_reuse_stale_last_known_good_cache(tmp_path: Path) -> None:

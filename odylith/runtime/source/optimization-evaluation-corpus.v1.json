@@ -346,6 +346,225 @@
       }
     },
     {
+      "case_id": "context-engine-split-adaptive-grounding",
+      "label": "Context Engine split slice keeps the adaptive lane honest",
+      "family": "context_engine_grounding",
+      "priority": "high",
+      "summary": "Adaptive Context Engine packets should keep split-boundary slices on the exact component and workstream instead of widening into generic repo search.",
+      "benchmark": {
+        "prompt": "Inspect the Context Engine split boundary and keep the adaptive packet grounded on the exact component and workstream without broadening into unrelated surfaces.",
+        "packet_source": "adaptive",
+        "paths": [
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_query_runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+          "tests/unit/runtime/test_context_engine_split_hardening.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_query_runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+          "tests/unit/runtime/test_context_engine_split_hardening.py",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_context_engine_split_hardening.py tests/unit/runtime/test_context_engine_topology_contract.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_context_engine_split_hardening.py tests/unit/runtime/test_context_engine_topology_contract.py"
+        ],
+        "intent": "implementation validation",
+        "allow_noop_completion": true,
+        "workstream": "B-067",
+        "component": "odylith-context-engine"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_query_runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py"
+        ]
+      },
+      "expect": {
+        "packet_source": [
+          "impact"
+        ],
+        "packet_kind": [
+          "impact"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "native_spawn_ready": true,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-067"
+        ]
+      }
+    },
+    {
+      "case_id": "context-engine-governance-boundary-grounding",
+      "label": "Context Engine governance slice stays exact",
+      "family": "context_engine_grounding",
+      "priority": "high",
+      "summary": "Governance packets for Context Engine boundary work should resolve the same component and workstream truth without drifting into unrelated governance surfaces.",
+      "benchmark": {
+        "prompt": "Build the Context Engine governance slice and keep the packet grounded on the exact component, workstream, and operator contract.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+          "tests/unit/runtime/test_context_engine_topology_contract.py"
+        ],
+        "required_paths": [
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+          "tests/unit/runtime/test_context_engine_topology_contract.py",
+          "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_context_engine_topology_contract.py tests/unit/runtime/test_tooling_context_packet_builder.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_context_engine_topology_contract.py tests/unit/runtime/test_tooling_context_packet_builder.py"
+        ],
+        "intent": "governance validation",
+        "allow_noop_completion": true,
+        "workstream": "B-067",
+        "component": "odylith-context-engine"
+      },
+      "match": {
+        "paths_any": [
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ]
+      },
+      "expect": {
+        "packet_source": [
+          "governance_slice"
+        ],
+        "packet_kind": [
+          "governance_slice"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "native_spawn_ready": true,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-067"
+        ]
+      }
+    },
+    {
+      "case_id": "context-engine-broad-scope-fail-closed",
+      "label": "Context Engine broad scope stays fail-closed",
+      "family": "context_engine_grounding",
+      "priority": "high",
+      "summary": "Broad shared-path Context Engine slices must stay explicit about no resolved workstream instead of inventing a route-ready anchor.",
+      "benchmark": {
+        "prompt": "Inspect a broad Context Engine-adjacent shared-path slice and keep the adaptive packet fail-closed instead of inventing a resolved workstream.",
+        "packet_source": "adaptive",
+        "paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ],
+        "required_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ],
+        "allow_noop_completion": true
+      },
+      "match": {
+        "paths_all": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ]
+      },
+      "expect": {
+        "packet_source": [
+          "impact"
+        ],
+        "packet_kind": [
+          "impact"
+        ],
+        "packet_state": [
+          "gated_broad_scope"
+        ],
+        "within_budget": true,
+        "route_ready": false,
+        "native_spawn_ready": false,
+        "selection_state": [
+          "none"
+        ]
+      }
+    },
+    {
+      "case_id": "context-engine-release-resolution-grounding",
+      "label": "Context Engine release-resolution slice keeps the right anchor",
+      "family": "context_engine_grounding",
+      "priority": "medium",
+      "summary": "Release-resolution Context Engine work should keep the adaptive packet pinned to the release-planning lane instead of drifting into generic runtime context.",
+      "benchmark": {
+        "prompt": "Inspect the Context Engine release-resolution path and keep the adaptive packet grounded on the release-planning workstream instead of widening into generic runtime context.",
+        "packet_source": "adaptive",
+        "paths": [
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_query_runtime.py",
+          "tests/unit/runtime/test_context_engine_release_resolution.py",
+          "odylith/runtime/source/release-notes/v0.1.11.md"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_query_runtime.py",
+          "tests/unit/runtime/test_context_engine_release_resolution.py",
+          "odylith/runtime/source/release-notes/v0.1.11.md",
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+          "odylith/registry/source/components/release/CURRENT_SPEC.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_context_engine_release_resolution.py tests/unit/runtime/test_release_planning.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_context_engine_release_resolution.py tests/unit/runtime/test_release_planning.py"
+        ],
+        "intent": "implementation validation",
+        "allow_noop_completion": true,
+        "workstream": "B-063",
+        "component": "odylith-context-engine"
+      },
+      "match": {
+        "paths_any": [
+          "tests/unit/runtime/test_context_engine_release_resolution.py",
+          "odylith/runtime/source/release-notes/v0.1.11.md"
+        ]
+      },
+      "expect": {
+        "packet_source": [
+          "impact"
+        ],
+        "packet_kind": [
+          "impact"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "native_spawn_ready": true,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-063"
+        ]
+      }
+    },
+    {
       "case_id": "cross-file-feature-budget-discipline",
       "label": "Cross-file feature slices stay budget-disciplined",
       "family": "cross_file_feature",
@@ -836,6 +1055,106 @@
         "intent_family": [
           "implementation",
           "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "live-proof-frontier-verified-control-panel",
+      "label": "Live proof control panel stays truthful when the frontier clears",
+      "family": "live_proof_discipline",
+      "priority": "high",
+      "summary": "Proof-state benchmark slices should expose the current blocker lane truthfully and only allow live-cleared language when the hosted frontier has actually advanced.",
+      "benchmark": {
+        "prompt": "Inspect the live proof-state lane and keep the blocker control panel truthful: the packet must carry the resolved proof lane and live-cleared claim tier only when the hosted frontier has actually moved past the prior failing phase.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "src/odylith/runtime/governance/proof_state/contract.py",
+          "src/odylith/runtime/governance/proof_state/resolver.py",
+          "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+          "odylith/casebook/bugs/2026-04-08-live-proof-lanes-do-not-pin-the-primary-blocker-frontier-or-falsification-memory.md"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/governance/proof_state/contract.py",
+          "src/odylith/runtime/governance/proof_state/resolver.py",
+          "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+          "odylith/technical-plans/done/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md",
+          "odylith/casebook/bugs/2026-04-08-live-proof-lanes-do-not-pin-the-primary-blocker-frontier-or-falsification-memory.md",
+          "tests/unit/runtime/test_proof_state_runtime.py",
+          "tests/unit/runtime/test_tooling_context_packet_builder.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_proof_state_runtime.py tests/unit/runtime/test_tooling_context_packet_builder.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_proof_state_runtime.py tests/unit/runtime/test_tooling_context_packet_builder.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": false,
+        "workstream": "B-062",
+        "component": "proof-state"
+      },
+      "match": {
+        "workstream": "B-062",
+        "component": "proof-state"
+      },
+      "expect": {
+        "within_budget": true,
+        "proof_state_present": true,
+        "proof_resolution_state": [
+          "resolved"
+        ],
+        "proof_status": [
+          "live_verified"
+        ],
+        "claim_guard_highest_truthful_claim": [
+          "fixed live"
+        ],
+        "claim_guard_hosted_frontier_advanced": true,
+        "claim_guard_claim_scope": [
+          "live"
+        ]
+      }
+    },
+    {
+      "case_id": "live-proof-no-fake-precision-without-a-lane",
+      "label": "Live proof packet stays explicit when no blocker lane resolves",
+      "family": "live_proof_discipline",
+      "priority": "medium",
+      "summary": "Proof-state benchmark slices must say there is no dominant live blocker lane instead of inventing one when the selected benchmark scope does not resolve a proof lane.",
+      "benchmark": {
+        "prompt": "Inspect a benchmark-governance slice that has no dominant live blocker lane and keep the packet honest: show that no proof lane resolved instead of fabricating blocker precision.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "docs/benchmarks/FAMILIES_AND_EVALS.md",
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
+        ],
+        "required_paths": [
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "docs/benchmarks/FAMILIES_AND_EVALS.md",
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_corpus.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_corpus.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_corpus.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": false,
+        "workstream": "B-021",
+        "component": "benchmark"
+      },
+      "match": {
+        "workstream": "B-021",
+        "component": "benchmark"
+      },
+      "expect": {
+        "within_budget": true,
+        "proof_state_present": false,
+        "proof_resolution_state": [
+          "none"
         ]
       }
     },
@@ -1467,6 +1786,39 @@
           "high"
         ],
         "contract_touchpoints_min": 1
+      }
+    },
+    {
+      "case_id": "architecture-context-engine-split-boundary-contract",
+      "label": "Context Engine split boundary stays architecture-grounded",
+      "summary": "Architecture mode over the split Context Engine should stay grounded against the real component contract, operator guide, and execution-stack diagram instead of free-form module narration.",
+      "benchmark": {
+        "prompt": "Audit the Context Engine split boundary and keep the architecture dossier grounded against the real component contract, operator guide, and execution-stack diagram.",
+        "paths": [
+          "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+          "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd"
+        ]
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+          "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "domains_any": [
+          "odylith-context-engine"
+        ]
+      },
+      "expect": {
+        "confidence_tier": [
+          "medium",
+          "high"
+        ],
+        "contract_touchpoints_min": 2
       }
     },
     {

@@ -515,6 +515,10 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
 
     function matchesSearch(row, term) {
       if (!term) return true;
+      const canonicalBugId = canonicalizeBugIdToken(term);
+      if (canonicalBugId) {
+        return bugExactMatch(row, term);
+      }
       if (bugExactMatch(row, term)) return true;
       const searchText = bugSearchText(row);
       if (searchText.includes(term)) return true;
@@ -561,6 +565,21 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       ].filter(([, value]) => String(value || "").trim() && String(value || "").trim() !== "-");
     }
 
+    function proofResolutionMessage(resolution) {
+      const value = resolution && typeof resolution === "object" ? resolution : {};
+      const state = String(value.state || "").trim().toLowerCase();
+      const laneIds = Array.isArray(value.lane_ids)
+        ? value.lane_ids.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      if (state === "ambiguous") {
+        return `Proof state is ambiguous across multiple blocker lanes${laneIds.length ? `: ${laneIds.join(", ")}` : ""}.`;
+      }
+      if (state === "none") {
+        return "No dominant proof lane is resolved for this bug yet.";
+      }
+      return "";
+    }
+
     async function renderDetail(row) {
       if (!row) {
         detailRenderToken += 1;
@@ -578,6 +597,11 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         ? { ...row, ...loadedDetail }
         : row;
       const fields = detail.fields && typeof detail.fields === "object" ? detail.fields : {};
+      const proofState = detail.proof_state && typeof detail.proof_state === "object" ? detail.proof_state : {};
+      const proofResolution = detail.proof_state_resolution && typeof detail.proof_state_resolution === "object"
+        ? detail.proof_state_resolution
+        : {};
+      const claimGuard = detail.claim_guard && typeof detail.claim_guard === "object" ? detail.claim_guard : {};
       const coverage = detail.intelligence_coverage && typeof detail.intelligence_coverage === "object" ? detail.intelligence_coverage : {};
       const capturedCount = Number(coverage.captured_count || 0);
       const totalFields = Number(coverage.total_fields || 0);
@@ -685,6 +709,87 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           </div>
         `)
         .join("");
+      const deploymentTruth = proofState.deployment_truth && typeof proofState.deployment_truth === "object"
+        ? proofState.deployment_truth
+        : {};
+      const deploymentTruthRows = [
+        ["Local HEAD", deploymentTruth.local_head],
+        ["Pushed HEAD", deploymentTruth.pushed_head],
+        ["Published source commit", deploymentTruth.published_source_commit],
+        ["Runner fingerprint", deploymentTruth.runner_fingerprint],
+        ["Last live failing commit", deploymentTruth.last_live_failing_commit],
+      ]
+        .filter(([, value]) => {
+          const token = String(value || "").trim();
+          return token && token !== "unknown";
+        })
+        .map(([label, value]) => ({
+          label,
+          value: String(value || "").trim(),
+        }));
+      const lastFalsification = proofState.last_falsification && typeof proofState.last_falsification === "object"
+        ? proofState.last_falsification
+        : {};
+      const lastFalsificationBits = [
+        String(lastFalsification.recorded_at || "").trim(),
+        String(lastFalsification.failure_fingerprint || "").trim(),
+        String(lastFalsification.frontier_phase || "").trim(),
+      ].filter(Boolean);
+      const proofRows = [
+        proofState.lane_id ? { label: "Proof lane", value: String(proofState.lane_id || "").trim() } : null,
+        proofState.current_blocker ? { label: "Current blocker", value: String(proofState.current_blocker || "").trim() } : null,
+        proofState.failure_fingerprint ? { label: "Failure fingerprint", value: String(proofState.failure_fingerprint || "").trim() } : null,
+        proofState.first_failing_phase ? { label: "First failing phase", value: String(proofState.first_failing_phase || "").trim() } : null,
+        proofState.frontier_phase ? { label: "Frontier", value: String(proofState.frontier_phase || "").trim() } : null,
+        proofState.clearance_condition ? { label: "Clear only when", value: String(proofState.clearance_condition || "").trim() } : null,
+        proofState.proof_status ? { label: "Proof status", value: String(proofState.proof_status || "").trim().replace(/_/g, " ") } : null,
+        proofState.evidence_tier ? { label: "Evidence tier", value: String(proofState.evidence_tier || "").trim().replace(/_/g, " ") } : null,
+        claimGuard.highest_truthful_claim ? { label: "Highest truthful claim", value: String(claimGuard.highest_truthful_claim || "").trim() } : null,
+        lastFalsificationBits.length ? { label: "Last falsification", value: lastFalsificationBits.join(" / ") } : null,
+      ].filter(Boolean);
+      const allowedNextWork = Array.isArray(proofState.allowed_next_work)
+        ? proofState.allowed_next_work.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const deprioritizedWork = Array.isArray(proofState.deprioritized_until_cleared)
+        ? proofState.deprioritized_until_cleared.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const proofWarnings = Array.isArray(proofState.warnings)
+        ? proofState.warnings.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const proofResolutionText = proofResolutionMessage(proofResolution);
+      const proofContextRows = [
+        proofState.resolution_state === "inferred"
+          ? { label: "Resolution source", value: "Inferred from live proof memory because tracked truth did not pin a single lane." }
+          : null,
+        allowedNextWork.length ? { label: "Allowed next work", value: allowedNextWork.join(" / ") } : null,
+        deprioritizedWork.length ? { label: "Deprioritized until cleared", value: deprioritizedWork.join(" / ") } : null,
+      ].filter(Boolean);
+      const proofOverview = renderLabeledNarratives(proofRows);
+      const proofContext = renderLabeledNarratives(proofContextRows);
+      const proofDeployment = renderLabeledNarratives(deploymentTruthRows);
+      const proofWarningsHtml = proofWarnings.length
+        ? `
+          <div class="agent-band-block">
+            <p class="agent-band-title">Proof drift warnings</p>
+            <div class="detail-copy">${renderPlainList(proofWarnings)}</div>
+          </div>
+        `
+        : "";
+      const proofSection = (proofResolutionText || proofOverview || proofContext || proofDeployment || proofWarningsHtml)
+        ? `
+          <article class="detail-section detail-section-proof">
+            <h2 class="section-heading">Proof Control Panel</h2>
+            <p class="section-lede">Pinned blocker, frontier, and proof tier for this bug lane.</p>
+            <div class="agent-band">
+              ${proofResolutionText ? `<div class="agent-band-block"><p class="coverage-note proof-resolution-note">${escapeHtml(proofResolutionText)}</p></div>` : ""}
+              ${proofOverview ? `<div class="agent-band-block"><p class="agent-band-title">Primary blocker lane</p>${proofOverview}</div>` : ""}
+              ${proofContext ? `<div class="agent-band-block"><p class="agent-band-title">Proof discipline</p>${proofContext}</div>` : ""}
+              ${proofDeployment ? `<div class="agent-band-block"><p class="agent-band-title">Deployed vs local truth</p>${proofDeployment}</div>` : ""}
+              ${proofWarningsHtml}
+            </div>
+          </article>
+        `
+        : "";
       const componentNarrative = detail.components && String(detail.components).trim() && String(detail.components).trim() !== "-"
         ? `
           <div class="narrative-row">
@@ -838,12 +943,12 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         : "";
       const sectionBlocks = [
         humanSection,
+        proofSection,
         agentSection,
       ].filter(Boolean).join("");
       detailPane.innerHTML = `
         <section class="detail-head">
           <div class="detail-headline">
-            ${detail.bug_id ? `<p class="detail-kicker">${escapeHtml(detail.bug_id)}</p>` : ""}
             <h1 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h1>
           </div>
           ${summaryFacts ? `<div class="summary-facts" role="list">${summaryFacts}</div>` : ""}

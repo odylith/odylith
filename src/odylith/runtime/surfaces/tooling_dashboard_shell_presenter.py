@@ -2068,12 +2068,39 @@ def build_odylith_drawer_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
             "state": _humanize_display(str(latest_packet.get("packet_state", "")).strip() or "unknown", title_case=True),
             "execution": _humanize_display(str(latest_packet.get("odylith_execution_profile", "")).strip() or "unknown", title_case=True),
             "mode": _humanize_display(str(latest_packet.get("odylith_execution_selection_mode", "")).strip() or str(latest_packet.get("intent_mode", "")).strip() or "unknown", title_case=True),
+            "governance": _humanize_display(
+                str(latest_packet.get("execution_governance_outcome", "")).strip() or "unknown",
+                title_case=True,
+            ),
+            "governance_mode": _humanize_display(
+                str(latest_packet.get("execution_governance_mode", "")).strip() or "unknown",
+                title_case=True,
+            ),
+            "governance_host": _humanize_display(
+                str(latest_packet.get("execution_governance_host_family", "")).strip() or "unknown",
+                title_case=True,
+            ),
             "tokens": _safe_int(latest_packet.get("estimated_tokens", 0), minimum=0, maximum=250000),
             "packet_strategy": _humanize_display(str(latest_packet.get("packet_strategy", "")).strip(), title_case=True) or "Balanced",
             "budget_mode": _humanize_display(str(latest_packet.get("budget_mode", "")).strip(), title_case=True) or "Balanced",
             "retrieval_focus": _humanize_display(str(latest_packet.get("retrieval_focus", "")).strip(), title_case=True) or "Balanced",
             "speed_mode": _humanize_display(str(latest_packet.get("speed_mode", "")).strip(), title_case=True) or "Balanced",
             "reliability": _humanize_display(str(latest_packet.get("reliability", "")).strip(), title_case=True) or "Unknown",
+            "next_move": str(latest_packet.get("execution_governance_next_move", "")).strip() or "unknown",
+            "closure": _humanize_display(
+                str(latest_packet.get("execution_governance_closure", "")).strip() or "unknown",
+                title_case=True,
+            ),
+            "wait_status": _humanize_display(
+                str(latest_packet.get("execution_governance_wait_status", "")).strip() or "none",
+                title_case=True,
+            ),
+            "resume_token": str(latest_packet.get("execution_governance_resume_token", "")).strip(),
+            "validation": _humanize_display(
+                str(latest_packet.get("execution_governance_validation_archetype", "")).strip() or "unknown",
+                title_case=True,
+            ),
+            "requires_reanchor": bool(latest_packet.get("execution_governance_requires_reanchor")),
             "yield_state": _humanize_display(
                 str(latest_packet.get("advised_yield_state", "")).strip()
                 or str(control_advisories.get("yield_state", "")).strip(),
