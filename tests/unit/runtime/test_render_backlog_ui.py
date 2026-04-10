@@ -393,6 +393,7 @@ def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_ch
     assert 'statRows.push(statBlock("", releaseCardLabel(currentRelease), { releaseOnly: true }));' not in html
     assert 'statRows.push(statBlock("Wave Programs"' not in html
     assert 'statRows.push(statBlock("Active Waves", activeWaves));' in html
+    assert html.index('statRows.push(statBlock("Active Waves", activeWaves));') < html.index('statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));')
     assert 'statRows.push(statBlock("Next Release", releaseCardLabel(nextRelease)));' not in html
     assert "versionLabel.startsWith(\"v\") ? versionLabel : `v${versionLabel}`" not in html
     assert ".stat.stat-release-only {" not in html

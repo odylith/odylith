@@ -1,8 +1,8 @@
 # Odylith Chatter
-Last updated: 2026-04-09
+Last updated: 2026-04-10
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-10
 
 ## Purpose
 Odylith Chatter is Odylith's cross-posture narration contract. It governs how
@@ -27,6 +27,9 @@ end-of-work outcomes instead of canned self-promotion.
   and runtime explanation templates.
 - Cross-surface mirror alignment across source, bundle, and generated Registry
   surfaces for this narration policy.
+- Structured `presentation_policy` carry-through from packets so task-first
+  narration, routing-receipt suppression, and surface-fast-lane behavior stay
+  driven by explicit runtime policy instead of prose heuristics.
 
 ### Odylith Chatter does not own
 - Grounding, routing, or orchestration decisions themselves.
@@ -40,6 +43,9 @@ end-of-work outcomes instead of canned self-promotion.
 - Mid-task updates stay task-first: describe scope, progress, blockers, and
   evidence, not startup chatter or fallback mechanics, unless a literal
   command or live blocker matters to the user.
+- Packet-driven commentary should honor structured `presentation_policy`
+  fields such as `commentary_mode`, `suppress_routing_receipts`, and
+  `surface_fast_lane`.
 - Ambient intelligence is the default UX: weave Odylith-grounded facts into
   ordinary commentary when they change the next move.
 - The strongest ambient beats should prefer already-available Tribunal-backed
@@ -213,3 +219,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-07: Wired ambient chatter to cached delivery-intelligence scope signals and systemic brief data when governed anchors exist, while keeping no-anchor turns on the old zero-extra-work path. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-07: Hardened Tribunal-fed chatter so explicit and cached payloads are normalized before narration, malformed signal shapes degrade quietly, and supplemental closeout lines cannot appear without an `Odylith Assist:` line. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-07: Tightened the hot path so one conversation-bundle pass reuses the same request metrics and context-artifact scan across ambient and closeout composition instead of rescanning the same packet inside closeout. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
+- 2026-04-10: Bound commentary policy to structured `presentation_policy` fields so consumer and maintainer turns suppress receipts and narrate task-first behavior from the same packet truth. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))

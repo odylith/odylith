@@ -171,6 +171,8 @@
 - Keep shared tooltip, date/time, chip/button, and operator-readout behavior in the Odylith runtime surface primitives instead of renderer-local copies.
 - Keep displayed dates and the related day-bucket arithmetic on the shared dashboard time helpers instead of mixing local UTC slicing with Pacific-normalized display.
 - Do not reintroduce renderer-local compact chip/button styling, tooltip runtimes, or proof-link shells that fork the shared surface contract.
+- For alignment, spacing, overflow, symmetry, and similar visual UX refinements on Odylith surfaces, verify the rendered result in headless Chromium before closeout; CSS or DOM inspection alone is not enough.
+- When a visual bug is fixed, prefer adding or extending a Playwright/browser assertion in the surface browser suites so the layout contract stays proved at the rendered page level.
 
 ## Runtime Cadence And Overhead
 - Cheap observer polling stays adaptive and fingerprint-based.

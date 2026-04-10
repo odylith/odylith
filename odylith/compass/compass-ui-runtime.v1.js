@@ -184,6 +184,36 @@
       markCompassSurfaceReady(true);
     }
 
+    let briefCopyStatusTimer = null;
+
+    function showBriefCopyStatus(message, tone = "info") {
+      const notice = document.getElementById("brief-copy-status");
+      if (!notice) return;
+      const text = String(message || "").trim();
+      if (briefCopyStatusTimer) {
+        window.clearTimeout(briefCopyStatusTimer);
+        briefCopyStatusTimer = null;
+      }
+      if (!text) {
+        notice.classList.add("hidden");
+        notice.classList.remove("warn");
+        notice.textContent = "";
+        notice.title = "";
+        return;
+      }
+      notice.classList.remove("hidden");
+      notice.classList.toggle("warn", tone === "warn");
+      notice.textContent = text;
+      notice.title = text;
+      briefCopyStatusTimer = window.setTimeout(() => {
+        notice.classList.add("hidden");
+        notice.classList.remove("warn");
+        notice.textContent = "";
+        notice.title = "";
+        briefCopyStatusTimer = null;
+      }, 3200);
+    }
+
     function bindCopyBrief() {
       const button = document.getElementById("copy-brief");
       if (!button) return;
@@ -235,10 +265,10 @@
         const payload = lines.join("\n");
         try {
           await navigator.clipboard.writeText(payload);
-          showStatus("Standup brief copied to clipboard.", "info");
+          showBriefCopyStatus("Standup brief copied to clipboard.", "info");
         } catch (error) {
           console.warn("clipboard write failed", error);
-          showStatus("Clipboard write failed. You can still copy from the Standup Brief panel.", "warn");
+          showBriefCopyStatus("Clipboard write failed. You can still copy from the Standup Brief panel.", "warn");
         }
       });
     }
@@ -248,6 +278,7 @@
       if (shellRedirectInProgress()) {
         return;
       }
+      showBriefCopyStatus("");
       bindCopyBrief();
       const rawState = params();
 

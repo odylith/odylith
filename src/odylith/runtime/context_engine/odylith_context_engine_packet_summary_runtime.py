@@ -141,6 +141,23 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
             else {}
         )
     session_payload = dict(payload.get("session", {})) if isinstance(payload.get("session"), Mapping) else {}
+    turn_context = (
+        dict(payload.get("turn_context", {}))
+        if isinstance(payload.get("turn_context"), Mapping)
+        else dict(session_payload.get("turn_context", {}))
+        if isinstance(session_payload.get("turn_context"), Mapping)
+        else {}
+    )
+    target_resolution = (
+        dict(payload.get("target_resolution", {}))
+        if isinstance(payload.get("target_resolution"), Mapping)
+        else {}
+    )
+    presentation_policy = (
+        dict(payload.get("presentation_policy", {}))
+        if isinstance(payload.get("presentation_policy"), Mapping)
+        else {}
+    )
     anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), Mapping) else {}
     selection_payload = dict(context_packet.get("selection", {})) if isinstance(context_packet.get("selection"), Mapping) else {}
     working_memory = dict(context_packet.get("working_memory", {})) if isinstance(context_packet.get("working_memory"), Mapping) else {}
@@ -404,6 +421,29 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
         "strict_gate_command_count": strict_gate_command_count,
         "plan_binding_required": bool(validation_bundle.get("plan_binding_required")),
         "governed_surface_sync_required": bool(validation_bundle.get("governed_surface_sync_required")),
+        "turn_intent": str(turn_context.get("intent", "")).strip(),
+        "turn_surface_count": len(_normalized_string_list(turn_context.get("surfaces"))),
+        "turn_visible_text_count": len(_normalized_string_list(turn_context.get("visible_text"))),
+        "turn_active_tab": str(turn_context.get("active_tab", "")).strip(),
+        "turn_user_turn_id": str(turn_context.get("user_turn_id", "")).strip(),
+        "turn_supersedes_turn_id": str(turn_context.get("supersedes_turn_id", "")).strip(),
+        "target_resolution_lane": str(target_resolution.get("lane", "")).strip(),
+        "target_resolution_candidate_count": len(
+            [row for row in target_resolution.get("candidate_targets", []) if isinstance(row, Mapping)]
+        ),
+        "target_resolution_diagnostic_anchor_count": len(
+            [row for row in target_resolution.get("diagnostic_anchors", []) if isinstance(row, Mapping)]
+        ),
+        "target_resolution_has_writable_targets": bool(target_resolution.get("has_writable_targets")),
+        "target_resolution_requires_more_consumer_context": bool(
+            target_resolution.get("requires_more_consumer_context")
+        ),
+        "target_resolution_consumer_failover": str(target_resolution.get("consumer_failover", "")).strip(),
+        "presentation_policy_commentary_mode": str(presentation_policy.get("commentary_mode", "")).strip(),
+        "presentation_policy_suppress_routing_receipts": bool(
+            presentation_policy.get("suppress_routing_receipts")
+        ),
+        "presentation_policy_surface_fast_lane": bool(presentation_policy.get("surface_fast_lane")),
         "full_scan_reason": full_scan_reason,
         "changed_paths": changed_paths,
         "explicit_paths": explicit_paths,

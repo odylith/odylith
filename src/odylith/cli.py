@@ -550,6 +550,57 @@ def _print_retention_warnings(summary: object) -> None:
         print(f"Retention cleanup warning: {warning}", file=sys.stderr)
 
 
+def _configure_turn_context_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--intent", default="", help="Optional short turn intent summary.")
+    parser.add_argument(
+        "--surface",
+        action="append",
+        default=[],
+        help="Turn-visible surfaces or tabs relevant to this turn (repeatable).",
+    )
+    parser.add_argument(
+        "--visible-text",
+        action="append",
+        default=[],
+        help="Copied UI or screenshot-visible text to treat as grounding literals (repeatable).",
+    )
+    parser.add_argument("--active-tab", default="", help="Optional active dashboard tab or route hint.")
+    parser.add_argument("--user-turn-id", default="", help="Optional stable upstream turn identifier.")
+    parser.add_argument(
+        "--supersedes-turn-id",
+        default="",
+        help="Optional prior turn id this turn supersedes for narration purposes.",
+    )
+
+
+def _turn_context_kwargs_from_args(args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "intent": str(getattr(args, "intent", "") or "").strip(),
+        "surfaces": [str(token).strip() for token in getattr(args, "surface", []) if str(token).strip()],
+        "visible_text": [str(token).strip() for token in getattr(args, "visible_text", []) if str(token).strip()],
+        "active_tab": str(getattr(args, "active_tab", "") or "").strip(),
+        "user_turn_id": str(getattr(args, "user_turn_id", "") or "").strip(),
+        "supersedes_turn_id": str(getattr(args, "supersedes_turn_id", "") or "").strip(),
+    }
+
+
+def _append_turn_context_forwarded(*, forwarded: list[str], args: argparse.Namespace) -> list[str]:
+    turn_context = _turn_context_kwargs_from_args(args)
+    if str(turn_context["intent"]).strip():
+        forwarded.extend(["--intent", str(turn_context["intent"])])
+    for token in turn_context["surfaces"]:
+        forwarded.extend(["--surface", str(token)])
+    for token in turn_context["visible_text"]:
+        forwarded.extend(["--visible-text", str(token)])
+    if str(turn_context["active_tab"]).strip():
+        forwarded.extend(["--active-tab", str(turn_context["active_tab"])])
+    if str(turn_context["user_turn_id"]).strip():
+        forwarded.extend(["--user-turn-id", str(turn_context["user_turn_id"])])
+    if str(turn_context["supersedes_turn_id"]).strip():
+        forwarded.extend(["--supersedes-turn-id", str(turn_context["supersedes_turn_id"])])
+    return forwarded
+
+
 def _start_bootstrap_payload(args: argparse.Namespace) -> dict[str, object]:
     from odylith.runtime.context_engine import odylith_context_engine_store
 
@@ -557,6 +608,12 @@ def _start_bootstrap_payload(args: argparse.Namespace) -> dict[str, object]:
         repo_root=Path(args.repo_root).expanduser().resolve(),
         use_working_tree=bool(args.working_tree),
         working_tree_scope=str(args.working_tree_scope),
+        intent=str(getattr(args, "intent", "") or "").strip(),
+        surfaces=[str(token).strip() for token in getattr(args, "surface", []) if str(token).strip()],
+        visible_text=[str(token).strip() for token in getattr(args, "visible_text", []) if str(token).strip()],
+        active_tab=str(getattr(args, "active_tab", "") or "").strip(),
+        user_turn_id=str(getattr(args, "user_turn_id", "") or "").strip(),
+        supersedes_turn_id=str(getattr(args, "supersedes_turn_id", "") or "").strip(),
     )
 
 
@@ -1243,6 +1300,7 @@ def _cmd_bootstrap(args: argparse.Namespace) -> int:
         forwarded.append("--working-tree")
         if str(args.working_tree_scope) != "session":
             forwarded.extend(["--working-tree-scope", str(args.working_tree_scope)])
+    forwarded = _append_turn_context_forwarded(forwarded=forwarded, args=args)
     try:
         return _dispatch_context_engine_shortcut(
             repo_root=args.repo_root,
@@ -1451,6 +1509,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="session",
         help="When working-tree grounding is included, use the full repo dirty set or only this session's scoped paths.",
     )
+    _configure_turn_context_args(start)
 
     lane = subparsers.add_parser("lane", help="Inspect maintainer lane posture and next action.")
     lane_subparsers = lane.add_subparsers(dest="lane_command", required=True)
@@ -1577,6 +1636,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="session",
         help="When working-tree grounding is included, use the full repo dirty set or only this session's scoped paths.",
     )
+    _configure_turn_context_args(bootstrap)
     bootstrap.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
     context_shortcut = subparsers.add_parser(

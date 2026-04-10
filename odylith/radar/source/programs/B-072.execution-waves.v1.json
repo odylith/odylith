@@ -6,14 +6,15 @@
       "wave_id": "W1",
       "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
       "status": "active",
-      "summary": "Stand up the event-sourced execution contract, host-profile envelope, and hard-constraint promotion while carrying the thin program/wave authoring sidecar in band.",
+      "summary": "Stand up the event-sourced execution contract, host-profile envelope, and hard-constraint promotion while carrying the thin program/wave authoring sidecar and structured turn-intake lane in band.",
       "depends_on": [],
       "primary_workstreams": [
         "B-073"
       ],
       "carried_workstreams": [],
       "in_band_workstreams": [
-        "B-079"
+        "B-079",
+        "B-082"
       ],
       "gate_refs": []
     },

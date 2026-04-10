@@ -91,6 +91,45 @@ def _field(value: Any, name: str) -> Any:
     return getattr(value, name, None)
 
 
+def _first_present(*values: Any) -> Any:
+    for value in values:
+        if isinstance(value, str):
+            if _normalize_string(value):
+                return value
+            continue
+        if value is not None:
+            return value
+    return None
+
+
+def _bool_value(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    token = _normalize_token(value)
+    if token in {"1", "true", "yes", "on"}:
+        return True
+    if token in {"", "0", "false", "no", "off"}:
+        return False
+    return bool(value)
+
+
+def _mapping_lookup(payload: Mapping[str, Any], key: str) -> Any:
+    wanted = _normalize_token(key)
+    for raw_key, raw_value in payload.items():
+        if _normalize_token(raw_key) == wanted:
+            return raw_value
+    return None
+
+
+def _nested_mapping(payload: Mapping[str, Any], *path: str) -> dict[str, Any]:
+    current: Any = payload
+    for key in path:
+        if not isinstance(current, Mapping):
+            return {}
+        current = _mapping_lookup(current, key)
+    return dict(current) if isinstance(current, Mapping) else {}
+
+
 def _count_phrase(count: int, singular: str, plural: str | None = None) -> str:
     noun = singular if count == 1 else (plural or f"{singular}s")
     return f"{count} {noun}"
@@ -319,6 +358,49 @@ def _request_context_payload(request: Any) -> dict[str, Any]:
     return dict(payload) if isinstance(payload, Mapping) else {}
 
 
+def _presentation_policy_snapshot(*, request: Any, adoption: Mapping[str, Any]) -> dict[str, Any]:
+    context_payload = _request_context_payload(request)
+    execution_governance_summary = _nested_mapping(context_payload, "execution_governance_summary")
+    packet_summary = _nested_mapping(context_payload, "packet_summary")
+    presentation_policy = _nested_mapping(context_payload, "presentation_policy")
+    context_packet_presentation_policy = _nested_mapping(context_payload, "context_packet", "presentation_policy")
+    return {
+        "commentary_mode": _normalize_token(
+            _first_present(
+                adoption.get("execution_governance_commentary_mode"),
+                _mapping_lookup(execution_governance_summary, "execution_governance_commentary_mode"),
+                _mapping_lookup(context_payload, "execution_governance_commentary_mode"),
+                _mapping_lookup(context_payload, "latest_execution_governance_commentary_mode"),
+                _mapping_lookup(packet_summary, "presentation_policy_commentary_mode"),
+                _mapping_lookup(presentation_policy, "commentary_mode"),
+                _mapping_lookup(context_packet_presentation_policy, "commentary_mode"),
+            )
+        ),
+        "suppress_routing_receipts": _bool_value(
+            _first_present(
+                adoption.get("execution_governance_suppress_routing_receipts"),
+                _mapping_lookup(execution_governance_summary, "execution_governance_suppress_routing_receipts"),
+                _mapping_lookup(context_payload, "execution_governance_suppress_routing_receipts"),
+                _mapping_lookup(context_payload, "latest_execution_governance_suppress_routing_receipts"),
+                _mapping_lookup(packet_summary, "presentation_policy_suppress_routing_receipts"),
+                _mapping_lookup(presentation_policy, "suppress_routing_receipts"),
+                _mapping_lookup(context_packet_presentation_policy, "suppress_routing_receipts"),
+            )
+        ),
+        "surface_fast_lane": _bool_value(
+            _first_present(
+                adoption.get("execution_governance_surface_fast_lane"),
+                _mapping_lookup(execution_governance_summary, "execution_governance_surface_fast_lane"),
+                _mapping_lookup(context_payload, "execution_governance_surface_fast_lane"),
+                _mapping_lookup(context_payload, "latest_execution_governance_surface_fast_lane"),
+                _mapping_lookup(packet_summary, "presentation_policy_surface_fast_lane"),
+                _mapping_lookup(presentation_policy, "surface_fast_lane"),
+                _mapping_lookup(context_packet_presentation_policy, "surface_fast_lane"),
+            )
+        ),
+    }
+
+
 def _proof_ref_artifact(row: Mapping[str, Any]) -> dict[str, Any] | None:
     kind = _normalize_token(row.get("kind"))
     value = _normalize_string(row.get("value"))
@@ -532,6 +614,7 @@ def _evidence_metrics(
     decision: Any,
     adoption: Mapping[str, Any],
 ) -> dict[str, Any]:
+    presentation_policy = _presentation_policy_snapshot(request=request, adoption=adoption)
     candidate_path_count = _sequence_count(_field(request, "candidate_paths"))
     claimed_path_count = _sequence_count(_field(request, "claimed_paths"))
     workstream_count = _sequence_count(_field(request, "workstreams"))
@@ -558,6 +641,9 @@ def _evidence_metrics(
         "grounded_delegate": grounded_delegate,
         "requires_widening": requires_widening,
         "mode": _normalize_token(_field(decision, "mode")),
+        "commentary_mode": str(presentation_policy.get("commentary_mode", "")).strip(),
+        "suppress_routing_receipts": bool(presentation_policy.get("suppress_routing_receipts")),
+        "surface_fast_lane": bool(presentation_policy.get("surface_fast_lane")),
     }
 
 
@@ -991,6 +1077,11 @@ def compose_closeout_assist(
         if metrics["delegated_leaf_count"] > 0
         else ""
     )
+    bounded_execution_phrase = (
+        f"keeping execution bounded across {_count_phrase(metrics['delegated_leaf_count'], 'focused slice')}"
+        if metrics["delegated_leaf_count"] > 0
+        else ""
+    )
     artifact_markdown_phrase, artifact_plain_phrase = _artifact_phrase(updated_artifacts)
 
     style = ""
@@ -1010,8 +1101,12 @@ def compose_closeout_assist(
             proof_parts_plain.append(artifact_plain_phrase)
         proof_parts_markdown.append(f"keeping the slice to {focus_phrase}")
         proof_parts_plain.append(f"keeping the slice to {focus_phrase}")
-        proof_parts_markdown.append(f"routing {leaf_phrase}")
-        proof_parts_plain.append(f"routing {leaf_phrase}")
+        if metrics["suppress_routing_receipts"]:
+            proof_parts_markdown.append(bounded_execution_phrase)
+            proof_parts_plain.append(bounded_execution_phrase)
+        else:
+            proof_parts_markdown.append(f"routing {leaf_phrase}")
+            proof_parts_plain.append(f"routing {leaf_phrase}")
         if validation_phrase:
             proof_parts_markdown.append(f"closing with {validation_phrase}")
             proof_parts_plain.append(f"closing with {validation_phrase}")
@@ -1225,6 +1320,9 @@ def compose_conversation_bundle(
                 "one_signal_at_a_time": True,
                 "priority": list(_EXPLICIT_SIGNAL_PRIORITY),
                 "claim_terms_require_lint": bool(claim_lint.get("blocked_terms")),
+                "commentary_mode": str(metrics.get("commentary_mode", "")).strip(),
+                "suppress_routing_receipts": bool(metrics.get("suppress_routing_receipts")),
+                "surface_fast_lane": bool(metrics.get("surface_fast_lane")),
             },
         },
         "closeout_bundle": {
@@ -1247,6 +1345,9 @@ def compose_conversation_bundle(
                 "changed_path_source": assist.get("changed_path_source", ""),
                 "claim_terms_require_lint": bool(claim_lint.get("blocked_terms")),
                 "highest_truthful_claim": str(claim_lint.get("highest_truthful_claim", "")).strip(),
+                "commentary_mode": str(metrics.get("commentary_mode", "")).strip(),
+                "suppress_routing_receipts": bool(metrics.get("suppress_routing_receipts")),
+                "surface_fast_lane": bool(metrics.get("surface_fast_lane")),
             },
         },
     }

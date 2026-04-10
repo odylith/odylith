@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from odylith.runtime.context_engine import turn_context_runtime
 from odylith.runtime.context_engine import tooling_context_routing as routing
 
 
@@ -310,11 +311,21 @@ def _intent_matches(value: str, phrases: tuple[str, ...]) -> bool:
 
 
 def _explicit_intent(payload: Mapping[str, Any]) -> str:
+    turn_context = payload.get("turn_context", {})
+    if isinstance(turn_context, Mapping):
+        operator_ask = turn_context_runtime.operator_ask_text(turn_context)
+        if operator_ask:
+            return operator_ask
     direct = str(payload.get("intent", "")).strip()
     if direct:
         return direct
     session_payload = payload.get("session", {})
     if isinstance(session_payload, Mapping):
+        turn_context = session_payload.get("turn_context", {})
+        if isinstance(turn_context, Mapping):
+            operator_ask = turn_context_runtime.operator_ask_text(turn_context)
+            if operator_ask:
+                return operator_ask
         return str(session_payload.get("intent", "")).strip()
     return ""
 
@@ -393,6 +404,7 @@ def _compact_packet_quality_payload(payload: Mapping[str, Any], *, packet_kind: 
 
 def _derive_intent_profile(
     *,
+    payload: Mapping[str, Any],
     explicit_intent: str,
     packet_kind: str,
     packet_state: str,
@@ -408,7 +420,29 @@ def _derive_intent_profile(
     explicit = bool(normalized_intent)
     source = "explicit" if explicit else "derived"
     family = ""
-    if _intent_matches(normalized_intent, ("validate", "validation", "verify", "regression", "test", "proof")):
+    turn_context = payload.get("turn_context", {})
+    if not isinstance(turn_context, Mapping):
+        session_payload = payload.get("session", {})
+        turn_context = session_payload.get("turn_context", {}) if isinstance(session_payload, Mapping) else {}
+    fast_lane_family = turn_context_runtime.infer_turn_family(
+        turn_context if isinstance(turn_context, Mapping) and turn_context else {"intent": explicit_intent}
+    )
+    if fast_lane_family == "ui_layout" or _intent_matches(
+        normalized_intent,
+        ("align", "full width", "layout", "move", "next to", "spacing", "truncate", "width"),
+    ):
+        family = "ui_layout"
+    elif fast_lane_family == "surface_copy" or _intent_matches(
+        normalized_intent,
+        ("copy", "label", "rename", "text", "title", "wording"),
+    ):
+        family = "surface_copy"
+    elif fast_lane_family == "surface_binding" or _intent_matches(
+        normalized_intent,
+        ("active item", "binding", "bound", "current release", "stale", "wrong release", "wrong status"),
+    ):
+        family = "surface_binding"
+    elif _intent_matches(normalized_intent, ("validate", "validation", "verify", "regression", "test", "proof")):
         family = "validation"
     elif _intent_matches(normalized_intent, ("diagnose", "debug", "triage", "root cause", "investigate")):
         family = "diagnosis"
@@ -460,7 +494,7 @@ def _derive_intent_profile(
     if family in {"analysis", "diagnosis", "review"} and grounded_write_shape and (not explicit or explicit_write_signal):
         family = "implementation" if (selected_commands or selected_guidance_chunks) else "validation"
 
-    if family == "implementation":
+    if family in {"implementation", "ui_layout", "surface_copy", "surface_binding"}:
         mode = "write_execution"
     elif family == "validation":
         mode = "validation_proof"
@@ -479,7 +513,7 @@ def _derive_intent_profile(
 
     if full_scan_recommended or str(packet_state or "").strip().startswith("gated_"):
         critical_path = "narrow_first"
-    elif family == "implementation":
+    elif family in {"implementation", "ui_layout", "surface_copy", "surface_binding"}:
         critical_path = "implementation_first"
     elif family == "validation":
         critical_path = "validation_first"
@@ -695,6 +729,7 @@ def summarize_packet_quality(
         compaction_pressure_score=compaction_pressure_score,
     )
     intent_profile = _derive_intent_profile(
+        payload=payload,
         explicit_intent=_explicit_intent(payload),
         packet_kind=str(packet_kind or "").strip(),
         packet_state=str(packet_state or "").strip(),

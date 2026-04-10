@@ -974,6 +974,7 @@ def register_session_state(
     analysis_paths: Sequence[str],
     generated_surfaces: Sequence[str],
     intent: str,
+    turn_context: Mapping[str, Any] | None = None,
     claim_mode: str = "shared",
     selection_state: str = "",
     selection_reason: str = "",
@@ -994,6 +995,13 @@ def register_session_state(
         "updated_utc": _utc_now(),
         "workstream": str(workstream or "").strip().upper(),
         "intent": str(intent or "").strip(),
+        "turn_context": {
+            str(key): value
+            for key, value in dict(turn_context or {}).items()
+            if value not in ("", [], {}, None)
+        }
+        if isinstance(turn_context, Mapping)
+        else {},
         "touched_paths": _dedupe_strings([str(token) for token in touched_paths]),
         "explicit_paths": _dedupe_strings([str(token) for token in explicit_paths]),
         "repo_dirty_paths": _dedupe_strings([str(token) for token in repo_dirty_paths]),

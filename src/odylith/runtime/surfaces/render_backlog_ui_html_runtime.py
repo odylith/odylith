@@ -1520,11 +1520,11 @@ def _render_html(*, payload: dict[str, object]) -> str:
         statBlock("Parked", counts.parked),
         statBlock("Finished", counts.finished),
       ];
-      if (releaseCardLabel(currentRelease)) {
-        statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));
-      }
       if (wavePrograms > 0) {
         statRows.push(statBlock("Active Waves", activeWaves));
+      }
+      if (releaseCardLabel(currentRelease)) {
+        statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));
       }
       return statRows;
     }

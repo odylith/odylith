@@ -46,6 +46,12 @@ def test_render_shell_references_split_compass_assets_and_inline_bootstrap() -> 
     assert "Delivery Posture and Risk Brief" not in html
     assert "Current workstream direction, risks, and runtime evidence across Radar, plans, bugs, and Atlas traceability." in html
     assert 'id="release-groups-host"' in html
+    assert '<div class="card-title-row standup-brief-title-row">' in html
+    assert '<button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>' in html
+    assert '<div id="brief-copy-status" class="brief-copy-status hidden" role="status" aria-live="polite"></div>' in html
+    assert html.index('<h2>Standup Brief</h2>') < html.index('id="copy-brief"')
+    assert html.index('id="copy-brief"') < html.index('id="brief-copy-status"')
+    assert html.index('id="brief-copy-status"') < html.index('id="digest-list"')
     assert "Repo-Aware Generated View" not in html
     assert 'const SHELL = JSON.parse(document.getElementById("compassShellData").textContent);' in html
     assert 'window.__ODYLITH_COMPASS_SHELL__ = SHELL && typeof SHELL === "object" ? SHELL : {};' in html
@@ -111,6 +117,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     ).read_text(encoding="utf-8")
 
     assert "function radarWorkstreamHref(workstreamId, options = {})" in shared_js
+    assert 'execution-wave-card-shell execution-wave-card-shell-full-copy' in shared_js
     assert 'const radarHref = radarWorkstreamHref(item.ideaId);' in workstreams_js
     assert '<td class="ws-col-id"><div class="ws-id-stack"><a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
     assert 'workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)' in workstreams_js

@@ -396,7 +396,7 @@ def _hot_path_auto_escalation_trigger(
     if (
         validation_count > 0
         and not bool(payload.get("route_ready"))
-        and str(packet_quality.get("intent_family", "")).strip() in {"implementation", "write", "validation"}
+        and str(packet_quality.get("intent_family", "")).strip() in {"implementation", "write", "validation", "ui_layout", "surface_copy", "surface_binding"}
     ):
         return "validation_grounding_thin"
     if (

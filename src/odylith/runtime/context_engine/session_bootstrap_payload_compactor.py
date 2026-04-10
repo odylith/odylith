@@ -70,7 +70,22 @@ def _compact_narrowing_guidance(guidance: Mapping[str, Any]) -> dict[str, Any]:
                 "If narrowing still fails, run the printed fallback command and then read the named source directly.": "Use the printed fallback command if narrowing fails.",
             }.get(first, first)
         ]
-    if compact.get("reason") in {"Need one code path.", "Need one code or contract path."}:
+    next_best_anchors = [
+        {
+            key: value
+            for key, value in {
+                "kind": str(row.get("kind", "")).strip(),
+                "value": str(row.get("value", "")).strip(),
+                "label": str(row.get("label", "")).strip(),
+            }.items()
+            if value not in ("", [], {}, None)
+        }
+        for row in guidance.get("next_best_anchors", [])
+        if isinstance(row, Mapping) and str(row.get("value", "")).strip()
+    ]
+    if next_best_anchors:
+        compact["next_best_anchors"] = next_best_anchors[:3]
+    if compact.get("reason") in {"Need one code path.", "Need one code or contract path."} and not next_best_anchors:
         compact.pop("suggested_inputs", None)
     return compact
 
@@ -87,7 +102,75 @@ def _compact_session_payload(session: Mapping[str, Any]) -> dict[str, Any]:
     claimed_paths = _string_rows(session.get("claimed_paths"))
     if claimed_paths:
         compact["claimed_paths"] = claimed_paths[:4]
+    turn_context = _mapping(session.get("turn_context"))
+    if turn_context:
+        compact["turn_context"] = {
+            key: value
+            for key, value in {
+                "intent": str(turn_context.get("intent", "")).strip(),
+                "surfaces": _string_rows(turn_context.get("surfaces")),
+                "visible_text": _string_rows(turn_context.get("visible_text")),
+                "active_tab": str(turn_context.get("active_tab", "")).strip(),
+                "user_turn_id": str(turn_context.get("user_turn_id", "")).strip(),
+                "supersedes_turn_id": str(turn_context.get("supersedes_turn_id", "")).strip(),
+            }.items()
+            if value not in ("", [], {}, None)
+        }
     return compact
+
+
+def _compact_target_resolution(resolution: Mapping[str, Any]) -> dict[str, Any]:
+    candidate_targets = [
+        {
+            "path": str(row.get("path", "")).strip(),
+            **({"source": str(row.get("source", "")).strip()} if str(row.get("source", "")).strip() else {}),
+            **({"surface": str(row.get("surface", "")).strip()} if str(row.get("surface", "")).strip() else {}),
+            "writable": bool(row.get("writable")),
+        }
+        for row in resolution.get("candidate_targets", [])
+        if isinstance(row, Mapping) and str(row.get("path", "")).strip()
+    ]
+    diagnostic_anchors = [
+        {
+            key: value
+            for key, value in {
+                "kind": str(row.get("kind", "")).strip(),
+                "value": str(row.get("value", "")).strip(),
+                "label": str(row.get("label", "")).strip(),
+                "path": str(row.get("path", "")).strip(),
+                "surface": str(row.get("surface", "")).strip(),
+            }.items()
+            if value not in ("", [], {}, None)
+        }
+        for row in resolution.get("diagnostic_anchors", [])
+        if isinstance(row, Mapping) and str(row.get("value", "")).strip()
+    ]
+    compact: dict[str, Any] = {}
+    lane = str(resolution.get("lane", "")).strip()
+    if lane:
+        compact["lane"] = lane
+    if candidate_targets:
+        compact["candidate_targets"] = candidate_targets[:4]
+    if diagnostic_anchors:
+        compact["diagnostic_anchors"] = diagnostic_anchors[:4]
+    compact["has_writable_targets"] = bool(resolution.get("has_writable_targets"))
+    compact["requires_more_consumer_context"] = bool(resolution.get("requires_more_consumer_context"))
+    consumer_failover = str(resolution.get("consumer_failover", "")).strip()
+    if consumer_failover:
+        compact["consumer_failover"] = consumer_failover
+    return compact
+
+
+def _compact_presentation_policy(policy: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        key: value
+        for key, value in {
+            "commentary_mode": str(policy.get("commentary_mode", "")).strip(),
+            "suppress_routing_receipts": bool(policy.get("suppress_routing_receipts")),
+            "surface_fast_lane": bool(policy.get("surface_fast_lane")),
+        }.items()
+        if value not in ("", [], {}, None, False)
+    }
 
 
 def _compact_workstream_selection(selection: Mapping[str, Any]) -> dict[str, Any]:
@@ -369,6 +452,29 @@ def _compact_bootstrap_delivery_payload(payload: Mapping[str, Any]) -> dict[str,
     }
     if isinstance(payload.get("session"), Mapping):
         compact["session"] = _compact_session_payload(_mapping(payload.get("session")))
+    if isinstance(payload.get("turn_context"), Mapping):
+        turn_context = _mapping(payload.get("turn_context"))
+        if turn_context:
+            compact["turn_context"] = {
+                key: value
+                for key, value in {
+                    "intent": str(turn_context.get("intent", "")).strip(),
+                    "surfaces": _string_rows(turn_context.get("surfaces")),
+                    "visible_text": _string_rows(turn_context.get("visible_text")),
+                    "active_tab": str(turn_context.get("active_tab", "")).strip(),
+                    "user_turn_id": str(turn_context.get("user_turn_id", "")).strip(),
+                    "supersedes_turn_id": str(turn_context.get("supersedes_turn_id", "")).strip(),
+                }.items()
+                if value not in ("", [], {}, None)
+            }
+    if isinstance(payload.get("target_resolution"), Mapping):
+        resolution = _compact_target_resolution(_mapping(payload.get("target_resolution")))
+        if resolution:
+            compact["target_resolution"] = resolution
+    if isinstance(payload.get("presentation_policy"), Mapping):
+        policy = _compact_presentation_policy(_mapping(payload.get("presentation_policy")))
+        if policy:
+            compact["presentation_policy"] = policy
     if isinstance(payload.get("workstream_selection"), Mapping):
         compact["workstream_selection"] = _compact_workstream_selection(_mapping(payload.get("workstream_selection")))
     if isinstance(payload.get("adaptive_packet_profile"), Mapping):
@@ -483,6 +589,29 @@ def _compact_session_brief_delivery_payload(payload: Mapping[str, Any]) -> dict[
     }
     if isinstance(payload.get("session"), Mapping):
         compact["session"] = _compact_session_payload(_mapping(payload.get("session")))
+    if isinstance(payload.get("turn_context"), Mapping):
+        turn_context = _mapping(payload.get("turn_context"))
+        if turn_context:
+            compact["turn_context"] = {
+                key: value
+                for key, value in {
+                    "intent": str(turn_context.get("intent", "")).strip(),
+                    "surfaces": _string_rows(turn_context.get("surfaces")),
+                    "visible_text": _string_rows(turn_context.get("visible_text")),
+                    "active_tab": str(turn_context.get("active_tab", "")).strip(),
+                    "user_turn_id": str(turn_context.get("user_turn_id", "")).strip(),
+                    "supersedes_turn_id": str(turn_context.get("supersedes_turn_id", "")).strip(),
+                }.items()
+                if value not in ("", [], {}, None)
+            }
+    if isinstance(payload.get("target_resolution"), Mapping):
+        resolution = _compact_target_resolution(_mapping(payload.get("target_resolution")))
+        if resolution:
+            compact["target_resolution"] = resolution
+    if isinstance(payload.get("presentation_policy"), Mapping):
+        policy = _compact_presentation_policy(_mapping(payload.get("presentation_policy")))
+        if policy:
+            compact["presentation_policy"] = policy
     if isinstance(payload.get("workstream_selection"), Mapping):
         compact["workstream_selection"] = _compact_workstream_selection(_mapping(payload.get("workstream_selection")))
     if isinstance(payload.get("adaptive_packet_profile"), Mapping):

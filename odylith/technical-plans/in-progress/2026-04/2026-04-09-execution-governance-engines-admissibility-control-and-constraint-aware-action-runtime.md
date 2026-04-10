@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-04-09
 
-Updated: 2026-04-09
+Updated: 2026-04-10
 
 Backlog: B-072
 
@@ -45,10 +45,11 @@ without rewriting existing Radar, Registry, or release-planning truth.
 Boundary Conditions:
 - Scope includes the new execution-governance package, typed contracts,
   admissibility helpers, frontier/closure/receipt primitives, the umbrella and
-  child workstream source records, the `B-072` program file, Registry component
-  truth, Atlas diagrams `D-030` and `D-031`, the `D-002` refresh, and direct
-  program/wave authoring commands, plus initial packet-summary, shell, and
-  Compass read-model exposure for execution-governance posture.
+  child workstream source records including `B-082`, the `B-072` program file,
+  Registry component truth, Atlas diagrams `D-030` and `D-031`, the `D-002`
+  refresh, and direct program/wave authoring commands, plus initial
+  packet-summary, shell, and Compass read-model exposure for
+  execution-governance posture.
 - Scope excludes field-complete UX for every possible execution-governance
   artifact, release-targeting changes, and any claim of provider-complete
   external dependency support.
@@ -70,7 +71,7 @@ Related Bugs:
 
 ## Must-Ship
 - [x] Add umbrella workstream `B-072`, child workstreams `B-073` through
-      `B-079`, and companion program file
+      `B-079` and `B-082`, and companion program file
       `odylith/radar/source/programs/B-072.execution-waves.v1.json`.
 - [x] Bind this new in-progress technical plan to `B-072` only; child plans
       remain unopened until their waves go active.

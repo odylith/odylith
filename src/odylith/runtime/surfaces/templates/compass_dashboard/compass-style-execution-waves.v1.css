@@ -25,6 +25,22 @@
   font-size: 14px;
 }
 
+.execution-wave-section-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.execution-wave-section-title-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
 .execution-wave-program-stack-release .execution-wave-title {
   font-size: 12px;
 }

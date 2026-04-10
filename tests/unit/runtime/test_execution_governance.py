@@ -6,6 +6,7 @@ from odylith.runtime.execution_engine import policy
 from odylith.runtime.execution_engine import receipts
 from odylith.runtime.execution_engine import resource_closure
 from odylith.runtime.execution_engine import runtime_lane_policy
+from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.execution_engine import validation
 from odylith.runtime.execution_engine.contract import ExecutionContract
 from odylith.runtime.execution_engine.contract import ExecutionEvent
@@ -171,3 +172,93 @@ def test_runtime_lane_policy_blocks_wait_state_and_claude_parallelism() -> None:
     assert "resume the active external dependency" in wait_guard.reason
     assert claude_guard.blocked is True
     assert "Claude Code" in claude_guard.reason
+
+
+def test_execution_governance_snapshot_carries_turn_target_and_presentation_policy() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_packet_state": "compact",
+            "changed_paths": ["odylith/compass/compass.html"],
+            "session": {
+                "session_id": "sess-1",
+                "workstream": "B-082",
+                "turn_context": {
+                    "intent": "Move the current release label next to 0.1.11 title",
+                    "surfaces": ["compass"],
+                    "active_tab": "releases",
+                    "user_turn_id": "turn-2",
+                    "supersedes_turn_id": "turn-1",
+                },
+            },
+            "turn_context": {
+                "intent": "Move the current release label next to 0.1.11 title",
+                "surfaces": ["compass"],
+                "active_tab": "releases",
+                "user_turn_id": "turn-2",
+                "supersedes_turn_id": "turn-1",
+            },
+            "target_resolution": {
+                "lane": "consumer",
+                "candidate_targets": [
+                    {
+                        "path": "odylith/compass/compass.html",
+                        "source": "path_scope",
+                        "writable": False,
+                    }
+                ],
+                "diagnostic_anchors": [
+                    {
+                        "kind": "workstream",
+                        "value": "B-073",
+                        "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+                    }
+                ],
+                "has_writable_targets": False,
+                "requires_more_consumer_context": True,
+                "consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+            },
+            "presentation_policy": {
+                "commentary_mode": "task_first_minimal",
+                "suppress_routing_receipts": True,
+                "surface_fast_lane": True,
+            },
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "packet_state": "compact",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        }
+    )
+
+    contract = snapshot["contract"]
+    assert contract["turn_context"]["supersedes_turn_id"] == "turn-1"
+    assert contract["target_resolution"]["lane"] == "consumer"
+    assert contract["presentation_policy"]["commentary_mode"] == "task_first_minimal"
+
+    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+
+    assert summary["execution_governance_target_lane"] == "consumer"
+    assert summary["execution_governance_has_writable_targets"] is False
+    assert summary["execution_governance_requires_more_consumer_context"] is True
+    assert summary["execution_governance_consumer_failover"] == "maintainer_ready_feedback_plus_bounded_narrowing"
+    assert summary["execution_governance_commentary_mode"] == "task_first_minimal"
+    assert summary["execution_governance_suppress_routing_receipts"] is True
+    assert summary["execution_governance_surface_fast_lane"] is True
+
+
+def test_runtime_lane_policy_blocks_consumer_lane_without_writable_targets() -> None:
+    guard = runtime_lane_policy.delegation_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_target_lane": "consumer",
+            "execution_governance_has_writable_targets": False,
+            "execution_governance_requires_more_consumer_context": True,
+            "execution_governance_consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+        }
+    )
+
+    assert guard.blocked is True
+    assert guard.code == "execution-governance-consumer-fence"
+    assert "does not yet have writable consumer targets" in guard.reason

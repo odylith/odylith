@@ -64,6 +64,12 @@ def _guard_fields(summary: Mapping[str, Any]) -> dict[str, Any]:
         "history_rule_count": _int(summary.get("execution_governance_history_rule_count")),
         "host_family": _token(summary.get("execution_governance_host_family")),
         "model_family": _token(summary.get("execution_governance_model_family")),
+        "target_lane": _token(summary.get("execution_governance_target_lane")),
+        "has_writable_targets": _bool(summary.get("execution_governance_has_writable_targets")),
+        "requires_more_consumer_context": _bool(
+            summary.get("execution_governance_requires_more_consumer_context")
+        ),
+        "consumer_failover": _text(summary.get("execution_governance_consumer_failover")),
         "native_spawn_ready": _bool(summary.get("native_spawn_ready")),
     }
 
@@ -122,6 +128,18 @@ def _action_guard(summary: Mapping[str, Any], *, action_label: str) -> LaneGover
             reason=(
                 f"the truthful next move is to resume the active external dependency{detail_suffix} "
                 f"before any new {action_label}"
+            ),
+        )
+
+    if fields["target_lane"] == "consumer" and not fields["has_writable_targets"]:
+        failover = fields["consumer_failover"]
+        failover_suffix = f" ({failover})" if failover else ""
+        return LaneGovernanceGuard(
+            blocked=True,
+            code="execution-governance-consumer-fence",
+            reason=(
+                f"the consumer lane does not yet have writable consumer targets{failover_suffix}, "
+                f"so keep {action_label} local until the slice narrows to admissible repo-owned paths"
             ),
         )
 

@@ -81,6 +81,21 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
                 "execution_governance_authoritative_lane": "context_engine.governance_slice.authoritative",
                 "execution_governance_host_family": "codex",
                 "execution_governance_model_family": "codex",
+                "execution_governance_target_lane": "consumer",
+                "execution_governance_candidate_target_count": 2,
+                "execution_governance_diagnostic_anchor_count": 2,
+                "execution_governance_has_writable_targets": False,
+                "execution_governance_requires_more_consumer_context": True,
+                "execution_governance_consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+                "execution_governance_commentary_mode": "task_first_minimal",
+                "execution_governance_suppress_routing_receipts": True,
+                "execution_governance_surface_fast_lane": True,
+                "turn_intent": 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
+                "turn_surface_count": 1,
+                "turn_visible_text_count": 1,
+                "turn_active_tab": "releases",
+                "turn_user_turn_id": "turn-2",
+                "turn_supersedes_turn_id": "turn-1",
             },
             "evaluation_posture": {
                 "packet_events": {"benchmark_satisfaction_rate": 0.78},
@@ -238,6 +253,27 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["latest_execution_governance_history_rule_count"] == 2
     assert summary["latest_execution_governance_host_family"] == "codex"
     assert summary["latest_execution_governance_model_family"] == "codex"
+    assert summary["latest_execution_governance_target_lane"] == "consumer"
+    assert summary["latest_execution_governance_candidate_target_count"] == 2
+    assert summary["latest_execution_governance_diagnostic_anchor_count"] == 2
+    assert summary["latest_execution_governance_has_writable_targets"] is False
+    assert summary["latest_execution_governance_requires_more_consumer_context"] is True
+    assert (
+        summary["latest_execution_governance_consumer_failover"]
+        == "maintainer_ready_feedback_plus_bounded_narrowing"
+    )
+    assert summary["latest_execution_governance_commentary_mode"] == "task_first_minimal"
+    assert summary["latest_execution_governance_suppress_routing_receipts"] is True
+    assert summary["latest_execution_governance_surface_fast_lane"] is True
+    assert (
+        summary["latest_turn_intent"]
+        == 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"'
+    )
+    assert summary["latest_turn_surface_count"] == 1
+    assert summary["latest_turn_visible_text_count"] == 1
+    assert summary["latest_turn_active_tab"] == "releases"
+    assert summary["latest_turn_user_turn_id"] == "turn-2"
+    assert summary["latest_turn_supersedes_turn_id"] == "turn-1"
     assert summary["latest_advised_packet_strategy"] == "density_first"
     assert summary["latest_advised_budget_mode"] == "spend_when_grounded"
     assert summary["effective_yield_score"] == 0.81

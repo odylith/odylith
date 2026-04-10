@@ -1888,7 +1888,7 @@ def build_routing_handoff(
                 else agent_runtime_contract.WRITE_MEDIUM_PROFILE
             )
             selection_mode = "validation_focused"
-        elif intent_family in {"implementation", "write", "bugfix"} or actionability_score >= 3:
+        elif intent_family in {"implementation", "write", "bugfix", "ui_layout", "surface_copy", "surface_binding"} or actionability_score >= 3:
             if risk_score >= 3 or (deep_reasoning_ready and _int_value(context_density.get("score")) >= 3):
                 profile = agent_runtime_contract.FRONTIER_HIGH_PROFILE
                 selection_mode = "critical_accuracy"

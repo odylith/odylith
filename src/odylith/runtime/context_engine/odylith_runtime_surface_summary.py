@@ -155,6 +155,21 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
             "latest_execution_governance_authoritative_lane": "",
             "latest_execution_governance_host_family": "",
             "latest_execution_governance_model_family": "",
+            "latest_execution_governance_target_lane": "",
+            "latest_execution_governance_candidate_target_count": 0,
+            "latest_execution_governance_diagnostic_anchor_count": 0,
+            "latest_execution_governance_has_writable_targets": False,
+            "latest_execution_governance_requires_more_consumer_context": False,
+            "latest_execution_governance_consumer_failover": "",
+            "latest_execution_governance_commentary_mode": "",
+            "latest_execution_governance_suppress_routing_receipts": False,
+            "latest_execution_governance_surface_fast_lane": False,
+            "latest_turn_intent": "",
+            "latest_turn_surface_count": 0,
+            "latest_turn_visible_text_count": 0,
+            "latest_turn_active_tab": "",
+            "latest_turn_user_turn_id": "",
+            "latest_turn_supersedes_turn_id": "",
             "advisory_state": "unavailable",
             "advisory_confidence_score": 0,
             "advisory_confidence_level": "",
@@ -440,6 +455,39 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
         "latest_execution_governance_model_family": _string(
             latest_packet.get("execution_governance_model_family")
         ),
+        "latest_execution_governance_target_lane": _string(
+            latest_packet.get("execution_governance_target_lane")
+        ),
+        "latest_execution_governance_candidate_target_count": _int(
+            latest_packet.get("execution_governance_candidate_target_count")
+        ),
+        "latest_execution_governance_diagnostic_anchor_count": _int(
+            latest_packet.get("execution_governance_diagnostic_anchor_count")
+        ),
+        "latest_execution_governance_has_writable_targets": bool(
+            latest_packet.get("execution_governance_has_writable_targets")
+        ),
+        "latest_execution_governance_requires_more_consumer_context": bool(
+            latest_packet.get("execution_governance_requires_more_consumer_context")
+        ),
+        "latest_execution_governance_consumer_failover": _string(
+            latest_packet.get("execution_governance_consumer_failover")
+        ),
+        "latest_execution_governance_commentary_mode": _string(
+            latest_packet.get("execution_governance_commentary_mode")
+        ),
+        "latest_execution_governance_suppress_routing_receipts": bool(
+            latest_packet.get("execution_governance_suppress_routing_receipts")
+        ),
+        "latest_execution_governance_surface_fast_lane": bool(
+            latest_packet.get("execution_governance_surface_fast_lane")
+        ),
+        "latest_turn_intent": _string(latest_packet.get("turn_intent")),
+        "latest_turn_surface_count": _int(latest_packet.get("turn_surface_count")),
+        "latest_turn_visible_text_count": _int(latest_packet.get("turn_visible_text_count")),
+        "latest_turn_active_tab": _string(latest_packet.get("turn_active_tab")),
+        "latest_turn_user_turn_id": _string(latest_packet.get("turn_user_turn_id")),
+        "latest_turn_supersedes_turn_id": _string(latest_packet.get("turn_supersedes_turn_id")),
         "advisory_state": _string(control_advisories.get("state")) or _string(learning_loop.get("state")),
         "advisory_confidence_score": _int(advisory_confidence.get("score")),
         "advisory_confidence_level": _string(advisory_confidence.get("level")),

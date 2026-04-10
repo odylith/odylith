@@ -267,6 +267,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   align-items: start;
 }
 
+.execution-wave-card-shell-full-copy {
+  grid-template-areas:
+    "title meta"
+    "sub sub"
+    "compact compact";
+  row-gap: 8px;
+}
+
 .execution-wave-card-copy {
   display: grid;
   gap: 8px;
@@ -280,12 +288,18 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   flex-wrap: wrap;
 }
 
+.execution-wave-card-shell-full-copy .execution-wave-title-row {
+  grid-area: title;
+  min-width: 0;
+}
+
 .execution-wave-title {
   color: var(--ink);
   font-size: 15px;
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.01em;
+  min-width: 0;
 }
 
 .execution-wave-sub {
@@ -294,11 +308,22 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   max-width: 72ch;
 }
 
+.execution-wave-card-shell-full-copy .execution-wave-sub {
+  grid-area: sub;
+  max-width: none;
+  min-width: 0;
+}
+
 .execution-wave-compact {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 12px;
   align-items: center;
+}
+
+.execution-wave-card-shell-full-copy .execution-wave-compact {
+  grid-area: compact;
+  min-width: 0;
 }
 
 .execution-wave-compact-line {
@@ -322,6 +347,10 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   justify-items: end;
   align-content: start;
   min-width: 180px;
+}
+
+.execution-wave-card-shell-full-copy .execution-wave-card-meta {
+  grid-area: meta;
 }
 
 .execution-wave-card-stat-rail {
@@ -452,6 +481,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   .execution-wave-focus-grid,
   .execution-wave-card-shell {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-card-shell-full-copy {
+    grid-template-areas:
+      "title"
+      "meta"
+      "sub"
+      "compact";
   }
 
   .execution-wave-body-grid-members {
@@ -916,15 +953,11 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     return `
       <details class="${cardClassNames.join(" ")}"${openAttr}>
         <summary class="execution-wave-card-summary">
-          <div class="execution-wave-card-shell">
-            <div class="execution-wave-card-copy">
-              <div class="execution-wave-title-row">
-                <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
-                <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
-                ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
-              </div>
-              <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
-              ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
+          <div class="execution-wave-card-shell execution-wave-card-shell-full-copy">
+            <div class="execution-wave-title-row">
+              <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
+              <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
+              ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
             </div>
             <div class="execution-wave-card-meta">
               <div class="execution-wave-card-stat-rail">
@@ -935,6 +968,8 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
                 ${isSelectedMember ? `<span class="label execution-wave-label wave-role-chip">${escapeHtml(selectedBadgeLabel)}</span>` : ""}
               </div>
             </div>
+            <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
+            ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
           </div>
         </summary>
         <div class="execution-wave-card-body">

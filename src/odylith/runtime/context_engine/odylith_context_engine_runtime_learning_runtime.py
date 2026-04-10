@@ -2082,6 +2082,39 @@ def load_runtime_optimization_snapshot(
             "execution_governance_model_family": str(
                 latest_packet.get("execution_governance_model_family", "")
             ).strip(),
+            "execution_governance_target_lane": str(
+                latest_packet.get("execution_governance_target_lane", "")
+            ).strip(),
+            "execution_governance_candidate_target_count": int(
+                latest_packet.get("execution_governance_candidate_target_count", 0) or 0
+            ),
+            "execution_governance_diagnostic_anchor_count": int(
+                latest_packet.get("execution_governance_diagnostic_anchor_count", 0) or 0
+            ),
+            "execution_governance_has_writable_targets": bool(
+                latest_packet.get("execution_governance_has_writable_targets")
+            ),
+            "execution_governance_requires_more_consumer_context": bool(
+                latest_packet.get("execution_governance_requires_more_consumer_context")
+            ),
+            "execution_governance_consumer_failover": str(
+                latest_packet.get("execution_governance_consumer_failover", "")
+            ).strip(),
+            "execution_governance_commentary_mode": str(
+                latest_packet.get("execution_governance_commentary_mode", "")
+            ).strip(),
+            "execution_governance_suppress_routing_receipts": bool(
+                latest_packet.get("execution_governance_suppress_routing_receipts")
+            ),
+            "execution_governance_surface_fast_lane": bool(
+                latest_packet.get("execution_governance_surface_fast_lane")
+            ),
+            "turn_intent": str(latest_packet.get("turn_intent", "")).strip(),
+            "turn_surface_count": int(latest_packet.get("turn_surface_count", 0) or 0),
+            "turn_visible_text_count": int(latest_packet.get("turn_visible_text_count", 0) or 0),
+            "turn_active_tab": str(latest_packet.get("turn_active_tab", "")).strip(),
+            "turn_user_turn_id": str(latest_packet.get("turn_user_turn_id", "")).strip(),
+            "turn_supersedes_turn_id": str(latest_packet.get("turn_supersedes_turn_id", "")).strip(),
             "estimated_tokens": int(latest_packet.get("estimated_tokens", 0) or 0),
         }
         if latest_packet

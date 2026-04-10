@@ -11,6 +11,7 @@ from typing import Sequence
 from odylith.runtime.context_engine import odylith_context_engine_packet_runtime_bindings
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
 from odylith.runtime.context_engine import session_bootstrap_payload_compactor
+from odylith.runtime.context_engine import turn_context_runtime
 
 def bind(host: Any) -> None:
     odylith_context_engine_packet_runtime_bindings.bind_packet_runtime(globals(), host)
@@ -26,6 +27,10 @@ def build_session_brief(
     workstream: str = "",
     generated_surfaces: Sequence[str] = (),
     intent: str = "",
+    visible_text: Sequence[str] = (),
+    active_tab: str = "",
+    user_turn_id: str = "",
+    supersedes_turn_id: str = "",
     claim_mode: str = "shared",
     claimed_paths: Sequence[str] = (),
     lease_seconds: int = 15 * 60,
@@ -41,6 +46,15 @@ def build_session_brief(
     started_at = time.perf_counter()
     stage_timings: dict[str, float] = {}
     hot_path = _delivery_profile_hot_path(delivery_profile)
+    normalized_turn_context = turn_context_runtime.normalize_turn_context(
+        intent=intent,
+        surfaces=generated_surfaces,
+        visible_text=visible_text,
+        active_tab=active_tab,
+        user_turn_id=user_turn_id,
+        supersedes_turn_id=supersedes_turn_id,
+    )
+    semantic_intent = turn_context_runtime.operator_ask_text(normalized_turn_context) or str(intent or "").strip()
     stage_started = time.perf_counter()
     guidance_catalog = tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
     optimization_snapshot = {} if hot_path else load_runtime_optimization_snapshot(repo_root=root)
@@ -76,7 +90,7 @@ def build_session_brief(
             "session_id": effective_session_id,
             "claimed_paths": claimed_paths,
             "runtime_mode": runtime_mode,
-            "intent": intent,
+            "intent": semantic_intent,
             "delivery_profile": delivery_profile,
             "family_hint": family_hint,
             "workstream_hint": workstream,
@@ -192,6 +206,7 @@ def build_session_brief(
             "session_id": effective_session_id if track_hot_path_session_state else "",
             "workstream": inferred_workstream,
             "intent": str(intent or "").strip(),
+            "turn_context": turn_context_runtime.compact_turn_context(normalized_turn_context),
             "claim_mode": _normalize_claim_mode(claim_mode),
             "explicit_paths": explicit,
             "claimed_paths": _dedupe_strings([*auto_claim_paths, *explicit_claim_paths, *effective_paths]),
@@ -216,6 +231,7 @@ def build_session_brief(
             analysis_paths=effective_paths,
             generated_surfaces=generated_surfaces,
             intent=intent,
+            turn_context=turn_context_runtime.compact_turn_context(normalized_turn_context),
             claim_mode=claim_mode,
             selection_state=selection_state,
             selection_reason=str(selection.get("reason", "")).strip(),
@@ -255,6 +271,23 @@ def build_session_brief(
         )
     )
     packet_selection = _compact_workstream_selection_for_packet(selection)
+    compact_turn_context = turn_context_runtime.compact_turn_context(normalized_turn_context)
+    target_resolution = turn_context_runtime.compact_target_resolution(
+        turn_context_runtime.resolve_turn_targets(
+            repo_root=root,
+            turn_context=normalized_turn_context,
+            changed_paths=effective_paths,
+            explicit_paths=explicit,
+            claimed_paths=session_state.get("claimed_paths", [])
+            if isinstance(session_state.get("claimed_paths"), list)
+            else [],
+            inferred_workstream=inferred_workstream,
+            runtime_mode=runtime_mode,
+        )
+    )
+    presentation_policy = turn_context_runtime.compact_presentation_policy(
+        turn_context_runtime.derive_presentation_policy(normalized_turn_context)
+    )
     session_seed_paths = (
         list(path_scope["session_seed_paths"])
         if (
@@ -273,6 +306,9 @@ def build_session_brief(
         "working_tree_scope": str(path_scope.get("working_tree_scope", "")).strip(),
         "working_tree_scope_degraded": bool(path_scope.get("working_tree_scope_degraded")),
         "session_seed_paths": session_seed_paths,
+        "turn_context": compact_turn_context,
+        "target_resolution": target_resolution,
+        "presentation_policy": presentation_policy,
         "inferred_workstream": inferred_workstream,
         "selection_state": selection_state,
         "selection_reason": str(selection.get("reason", "")).strip(),
@@ -398,6 +434,10 @@ def build_session_bootstrap(
     workstream: str = "",
     generated_surfaces: Sequence[str] = (),
     intent: str = "",
+    visible_text: Sequence[str] = (),
+    active_tab: str = "",
+    user_turn_id: str = "",
+    supersedes_turn_id: str = "",
     claim_mode: str = "shared",
     claimed_paths: Sequence[str] = (),
     lease_seconds: int = 15 * 60,
@@ -429,6 +469,10 @@ def build_session_bootstrap(
         workstream=workstream,
         generated_surfaces=generated_surfaces,
         intent=intent,
+        visible_text=visible_text,
+        active_tab=active_tab,
+        user_turn_id=user_turn_id,
+        supersedes_turn_id=supersedes_turn_id,
         claim_mode=claim_mode,
         claimed_paths=claimed_paths,
         lease_seconds=lease_seconds,
@@ -482,6 +526,9 @@ def build_session_bootstrap(
     payload = {
         "bootstrapped_at": _utc_now(),
         "session": dict(brief.get("session", {})) if isinstance(brief.get("session"), Mapping) else {},
+        "turn_context": dict(brief.get("turn_context", {})) if isinstance(brief.get("turn_context"), Mapping) else {},
+        "target_resolution": dict(brief.get("target_resolution", {})) if isinstance(brief.get("target_resolution"), Mapping) else {},
+        "presentation_policy": dict(brief.get("presentation_policy", {})) if isinstance(brief.get("presentation_policy"), Mapping) else {},
         "changed_paths": list(brief.get("changed_paths", []))
         if isinstance(brief.get("changed_paths"), list) and brief.get("changed_paths")
         else [str(token).strip() for token in changed_paths if str(token).strip()],

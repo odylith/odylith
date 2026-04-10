@@ -391,6 +391,102 @@ def test_finalized_bootstrap_payload_compactor_drops_duplicate_views() -> None:
     }
 
 
+def test_finalized_bootstrap_payload_compactor_preserves_turn_targets_and_anchor_followup() -> None:
+    payload = session_bootstrap_payload_compactor.compact_finalized_bootstrap_payload(
+        {
+            "context_packet_state": "gated_ambiguous",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "packet_state": "gated_ambiguous",
+                "anchors": {"has_non_shared_anchor": True},
+            },
+            "turn_context": {
+                "intent": 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
+                "surfaces": ["compass"],
+                "visible_text": ["Task Contract, Event Ledger, and Hard-Constraint Promotion"],
+                "active_tab": "releases",
+                "user_turn_id": "turn-2",
+                "supersedes_turn_id": "turn-1",
+            },
+            "target_resolution": {
+                "lane": "consumer",
+                "candidate_targets": [
+                    {
+                        "path": "odylith/compass/compass.html",
+                        "source": "path_scope",
+                        "writable": False,
+                    }
+                ],
+                "diagnostic_anchors": [
+                    {
+                        "kind": "workstream",
+                        "value": "B-073",
+                        "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+                    }
+                ],
+                "has_writable_targets": False,
+                "requires_more_consumer_context": True,
+                "consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+            },
+            "presentation_policy": {
+                "commentary_mode": "task_first_minimal",
+                "suppress_routing_receipts": True,
+                "surface_fast_lane": True,
+            },
+            "narrowing_guidance": {
+                "required": True,
+                "reason": "No workstream evidence matched the current changed-path set.",
+                "suggested_inputs": ["Open the consumer route component first."],
+                "next_best_anchors": [
+                    {
+                        "kind": "workstream",
+                        "value": "B-073",
+                        "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+                    }
+                ],
+            },
+        }
+    )
+
+    assert payload["narrowing_guidance"] == {
+        "required": True,
+        "reason": "Need one code path.",
+        "suggested_inputs": ["Open the consumer route component first."],
+        "next_best_anchors": [
+            {
+                "kind": "workstream",
+                "value": "B-073",
+                "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+            }
+        ],
+    }
+    assert payload["target_resolution"] == {
+        "lane": "consumer",
+        "candidate_targets": [
+            {
+                "path": "odylith/compass/compass.html",
+                "source": "path_scope",
+                "writable": False,
+            }
+        ],
+        "diagnostic_anchors": [
+            {
+                "kind": "workstream",
+                "value": "B-073",
+                "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+            }
+        ],
+        "has_writable_targets": False,
+        "requires_more_consumer_context": True,
+        "consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+    }
+    assert payload["presentation_policy"] == {
+        "commentary_mode": "task_first_minimal",
+        "suppress_routing_receipts": True,
+        "surface_fast_lane": True,
+    }
+
+
 def test_finalized_session_brief_payload_compactor_drops_runtime_scaffolding() -> None:
     payload = session_bootstrap_payload_compactor.compact_finalized_session_brief_payload(
         {

@@ -193,6 +193,117 @@ class ExecutionEvent:
 
 
 @dataclass(frozen=True)
+class TurnContext:
+    intent: str = ""
+    surfaces: tuple[str, ...] = field(default_factory=tuple)
+    visible_text: tuple[str, ...] = field(default_factory=tuple)
+    active_tab: str = ""
+    user_turn_id: str = ""
+    supersedes_turn_id: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            key: value
+            for key, value in {
+                "intent": self.intent,
+                "surfaces": list(self.surfaces),
+                "visible_text": list(self.visible_text),
+                "active_tab": self.active_tab,
+                "user_turn_id": self.user_turn_id,
+                "supersedes_turn_id": self.supersedes_turn_id,
+            }.items()
+            if value not in ("", [], {}, None)
+        }
+
+
+@dataclass(frozen=True)
+class TurnPresentationPolicy:
+    commentary_mode: str = ""
+    suppress_routing_receipts: bool = False
+    surface_fast_lane: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = {
+            "suppress_routing_receipts": self.suppress_routing_receipts,
+            "surface_fast_lane": self.surface_fast_lane,
+        }
+        if self.commentary_mode:
+            payload["commentary_mode"] = self.commentary_mode
+        return payload
+
+
+@dataclass(frozen=True)
+class TargetCandidate:
+    path: str
+    source: str = ""
+    reason: str = ""
+    surface: str = ""
+    writable: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = {
+            "path": self.path,
+            "writable": self.writable,
+        }
+        if self.source:
+            payload["source"] = self.source
+        if self.reason:
+            payload["reason"] = self.reason
+        if self.surface:
+            payload["surface"] = self.surface
+        return payload
+
+
+@dataclass(frozen=True)
+class DiagnosticAnchor:
+    kind: str
+    value: str
+    label: str = ""
+    path: str = ""
+    surface: str = ""
+    source: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            key: value
+            for key, value in {
+                "kind": self.kind,
+                "value": self.value,
+                "label": self.label,
+                "path": self.path,
+                "surface": self.surface,
+                "source": self.source,
+            }.items()
+            if value not in ("", [], {}, None)
+        }
+
+
+@dataclass(frozen=True)
+class TargetResolution:
+    lane: str
+    candidate_targets: tuple[TargetCandidate, ...] = field(default_factory=tuple)
+    diagnostic_anchors: tuple[DiagnosticAnchor, ...] = field(default_factory=tuple)
+    has_writable_targets: bool = False
+    requires_more_consumer_context: bool = False
+    consumer_failover: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = {
+            "has_writable_targets": self.has_writable_targets,
+            "requires_more_consumer_context": self.requires_more_consumer_context,
+        }
+        if self.lane:
+            payload["lane"] = self.lane
+        if self.candidate_targets:
+            payload["candidate_targets"] = [row.to_dict() for row in self.candidate_targets]
+        if self.diagnostic_anchors:
+            payload["diagnostic_anchors"] = [row.to_dict() for row in self.diagnostic_anchors]
+        if self.consumer_failover:
+            payload["consumer_failover"] = self.consumer_failover
+        return payload
+
+
+@dataclass(frozen=True)
 class ExecutionContract:
     objective: str
     authoritative_lane: str
@@ -207,6 +318,9 @@ class ExecutionContract:
     critical_path: tuple[str, ...]
     hard_constraints: tuple[HardConstraint, ...] = field(default_factory=tuple)
     host_profile: ExecutionHostProfile | None = None
+    turn_context: TurnContext | None = None
+    target_resolution: TargetResolution | None = None
+    presentation_policy: TurnPresentationPolicy | None = None
     execution_mode: ExecutionMode = "implement"
 
     def __post_init__(self) -> None:
@@ -231,6 +345,12 @@ class ExecutionContract:
         }
         if self.host_profile is not None:
             payload["host_profile"] = self.host_profile.to_dict()
+        if self.turn_context is not None:
+            payload["turn_context"] = self.turn_context.to_dict()
+        if self.target_resolution is not None:
+            payload["target_resolution"] = self.target_resolution.to_dict()
+        if self.presentation_policy is not None:
+            payload["presentation_policy"] = self.presentation_policy.to_dict()
         return payload
 
     @classmethod
@@ -250,6 +370,9 @@ class ExecutionContract:
         critical_path: tuple[str, ...] | list[str],
         hard_constraints: tuple[HardConstraint, ...] | list[HardConstraint] | None = None,
         host_profile: ExecutionHostProfile | None = None,
+        turn_context: TurnContext | None = None,
+        target_resolution: TargetResolution | None = None,
+        presentation_policy: TurnPresentationPolicy | None = None,
         execution_mode: ExecutionMode = "implement",
     ) -> "ExecutionContract":
         return cls(
@@ -266,6 +389,9 @@ class ExecutionContract:
             critical_path=_dedupe(list(critical_path)),
             hard_constraints=tuple(hard_constraints or ()),
             host_profile=host_profile,
+            turn_context=turn_context,
+            target_resolution=target_resolution,
+            presentation_policy=presentation_policy,
             execution_mode=execution_mode,
         )
 

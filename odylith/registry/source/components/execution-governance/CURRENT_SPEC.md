@@ -1,8 +1,8 @@
 # Execution Governance
-Last updated: 2026-04-09
+Last updated: 2026-04-10
 
 
-Last updated (UTC): 2026-04-09
+Last updated (UTC): 2026-04-10
 
 ## Purpose
 Execution Governance is Odylith's constraint-aware execution runtime. It
@@ -71,7 +71,9 @@ runtime profile; it must not redefine the shared execution policy surface.
   Contradiction detection across contract, evidence, and intended action.
 - `src/odylith/runtime/execution_engine/runtime_surface_governance.py`
   Shared summary extraction so packet, shell, Compass, and router-consumable
-  read models all carry the same compact execution-governance posture.
+  read models all carry the same compact execution-governance posture,
+  including lane-fenced `target_resolution`, `turn_context`, and
+  `presentation_policy` carry-through.
 - `src/odylith/runtime/execution_engine/runtime_lane_policy.py`
   Local or serial follow-through guards for delegation and parallel fan-out
   when the active governed frontier says the next move is re-anchor, wait,
@@ -91,6 +93,9 @@ runtime profile; it must not redefine the shared execution policy surface.
 - `ResumeHandle`
 - `ValidationMatrix`
 - `ContradictionRecord`
+- `TurnContext`
+- `TargetResolution`
+- `TurnPresentationPolicy`
 
 ## Contract Highlights
 ### `ExecutionHostProfile`
@@ -119,6 +124,9 @@ The active machine-readable task contract. Important fields include:
 - `critical_path`
 - `hard_constraints`
 - `host_profile`
+- `turn_context`
+- `target_resolution`
+- `presentation_policy`
 
 ### `AdmissibilityDecision`
 Every screened action resolves to one of:
@@ -166,7 +174,9 @@ program schema.
 ## Composition
 - [Odylith Context Engine](../odylith-context-engine/CURRENT_SPEC.md) supplies
   grounded evidence, bounded packets, and resolved entity context, including
-  the compact execution-governance snapshot exported through packet summaries.
+  the compact execution-governance snapshot exported through packet summaries
+  with structured turn intake, lane-fenced target resolution, and
+  presentation policy.
 - [Delivery Intelligence](../delivery-intelligence/CURRENT_SPEC.md) supplies
   shared posture and scope signals.
 - [Proof State](../proof-state/CURRENT_SPEC.md) supplies blocker frontier and
@@ -185,6 +195,9 @@ program schema.
 ## What To Change Together
 - If execution-contract fields change, update contract types, policy helpers,
   validation synthesis, and affected surfaces together.
+- If turn-intake or lane-fenced target-resolution fields change, update the
+  context-engine packet/session compaction and the compact surface summaries
+  together so consumer fencing and maintainer targeting stay truthful.
 - If host-profile fields change, keep them aligned with the host-neutral
   contract established by cross-host runtime work; never smuggle Codex-only
   assumptions into the shared shape.
@@ -207,3 +220,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-04-09: Promoted execution governance into a first-class Registry component so Odylith can turn grounded truth into admissible next-action control, preserve hard user constraints, and keep the shared execution contract host-general across Codex and Claude Code. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-09: Added shared runtime-lane policy and compact surface summaries so packet reads, router or orchestrator guards, shell or Compass posture, and deterministic remediation all consume the same execution-governance snapshot instead of re-deriving local policy. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-10: Expanded the runtime contract so packet summaries can carry structured `turn_context`, lane-fenced `target_resolution`, and `presentation_policy` through the shared execution-governance snapshot. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))

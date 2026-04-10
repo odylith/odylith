@@ -120,6 +120,43 @@ def test_closeout_assist_includes_linked_updated_governance_artifacts() -> None:
     assert "governed record" in assist["markdown_text"]
 
 
+def test_closeout_assist_suppresses_routing_receipts_for_task_first_fast_lane() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt='Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion".',
+        candidate_paths=[
+            "src/app/release_card.tsx",
+            "src/app/release_card.css",
+        ],
+        validation_commands=["pytest -q tests/unit/app/test_release_card.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+        context_signals={
+            "execution_governance_commentary_mode": "task_first_minimal",
+            "execution_governance_suppress_routing_receipts": True,
+            "execution_governance_surface_fast_lane": True,
+        },
+    )
+
+    assist = odylith_chatter_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(mode="parallel_write", delegated_leaf_count=2),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": True,
+            "requires_widening": False,
+        },
+    )
+
+    assert assist["eligible"] is True
+    assert assist["metrics"]["commentary_mode"] == "task_first_minimal"
+    assert assist["metrics"]["suppress_routing_receipts"] is True
+    assert assist["metrics"]["surface_fast_lane"] is True
+    assert "routing 2 bounded leaves" not in assist["markdown_text"]
+    assert "bounded leaves" not in assist["markdown_text"]
+    assert "keeping execution bounded across 2 focused slices" in assist["markdown_text"]
+
+
 def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> None:
     request = orchestrator.OrchestrationRequest(
         prompt="Tighten the governed slice.",
@@ -859,3 +896,57 @@ def test_orchestrator_threads_conversation_bundle_into_odylith_adoption(tmp_path
     assert adoption["ambient_signals"]["selected_signal"] in {"", "insight", "history", "risks"}
     assert bundle["closeout_bundle"]["assist"]["label"] == "Odylith Assist:"
     assert bundle["closeout_bundle"]["render_policy"]["benchmark_safe"] is True
+
+
+def test_orchestrator_adoption_carries_execution_governance_targeting_and_presentation_policy(
+    tmp_path: Path,
+) -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Patch the consumer-safe UI binding slice.",
+        acceptance_criteria=[
+            "Keep the release-card UI binding change constrained to src/app/release_card.tsx.",
+        ],
+        candidate_paths=["src/app/release_card.tsx"],
+        validation_commands=["pytest -q tests/unit/app/test_release_card.py"],
+        task_kind="implementation",
+        phase="implementation",
+        needs_write=True,
+        evidence_cone_grounded=True,
+        context_signals={
+            "routing_handoff": {
+                "grounding": {"grounded": True, "score": 4},
+                "routing_confidence": "high",
+                "route_ready": True,
+                "native_spawn_ready": True,
+                "narrowing_required": False,
+            },
+            "target_resolution": {
+                "lane": "consumer",
+                "candidate_targets": [
+                    {"path": "src/app/release_card.tsx", "writable": True},
+                ],
+                "diagnostic_anchors": [
+                    {"kind": "workstream", "value": "B-073"},
+                ],
+                "has_writable_targets": True,
+                "requires_more_consumer_context": False,
+                "consumer_failover": "",
+            },
+            "presentation_policy": {
+                "commentary_mode": "task_first_minimal",
+                "suppress_routing_receipts": True,
+                "surface_fast_lane": True,
+            },
+        },
+    )
+
+    decision = orchestrator.orchestrate_prompt(request, repo_root=tmp_path)
+    adoption = dict(decision.odylith_adoption)
+
+    assert adoption["execution_governance_target_lane"] == "consumer"
+    assert adoption["execution_governance_has_writable_targets"] is True
+    assert adoption["execution_governance_requires_more_consumer_context"] is False
+    assert adoption["execution_governance_consumer_failover"] == ""
+    assert adoption["execution_governance_commentary_mode"] == "task_first_minimal"
+    assert adoption["execution_governance_suppress_routing_receipts"] is True
+    assert adoption["execution_governance_surface_fast_lane"] is True

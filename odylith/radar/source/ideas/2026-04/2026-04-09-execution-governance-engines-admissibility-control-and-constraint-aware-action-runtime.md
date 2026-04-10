@@ -18,7 +18,7 @@ promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-09-executi
 execution_model: umbrella_waves
 workstream_type: umbrella
 workstream_parent:
-workstream_children: B-073,B-074,B-075,B-076,B-077,B-078,B-079
+workstream_children: B-073,B-074,B-075,B-076,B-077,B-078,B-079,B-082
 workstream_depends_on: B-062,B-063,B-069,B-071
 workstream_blocks:
 related_diagram_ids: D-002,D-030,D-031
@@ -74,6 +74,7 @@ resumes, and contradictions explicit.
 
 ## Scope
 - umbrella workstream `B-072` plus child workstreams `B-073` through `B-079`
+  and `B-082`
 - one new execution-governance Registry component and runtime package boundary
 - one canonical execution-wave program file under
   `odylith/radar/source/programs/`

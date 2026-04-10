@@ -830,11 +830,11 @@ initSharedQuickTooltips();
         statBlock("Parked", counts.parked),
         statBlock("Finished", counts.finished),
       ];
-      if (releaseCardLabel(currentRelease)) {
-        statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));
-      }
       if (wavePrograms > 0) {
         statRows.push(statBlock("Active Waves", activeWaves));
+      }
+      if (releaseCardLabel(currentRelease)) {
+        statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));
       }
       return statRows;
     }

@@ -25,7 +25,6 @@
           <option value="">Global</option>
         </select>
         <button class="pill subtle" id="scope-global" type="button">Global</button>
-        <button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>
         <span class="grow"></span>
         <span class="pill subtle" id="scope-pill">Scope: Global</span>
         <span class="pill subtle" id="audit-day-pill">Audit Day: -</span>
@@ -36,7 +35,11 @@
     <section class="layout">
       <div class="stack">
         <article class="card">
-          <h2>Standup Brief</h2>
+          <div class="card-title-row standup-brief-title-row">
+            <h2>Standup Brief</h2>
+            <button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>
+          </div>
+          <div id="brief-copy-status" class="brief-copy-status hidden" role="status" aria-live="polite"></div>
           <div class="bullet-list standup-brief-panel" id="digest-list"></div>
         </article>
 

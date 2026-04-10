@@ -311,9 +311,69 @@ def test_deterministic_global_brief_lists_all_touched_window_workstreams(tmp_pat
     current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
     bullet_texts = [bullet["text"] for bullet in current_execution["bullets"]]
     assert any(
-        text == "Work moved across 3 workstreams: B-027, B-022, and B-021."
+        text == "Most of the work here was in `B-027`, `B-022`, and `B-021`."
         for text in bullet_texts
     )
+
+
+def test_deterministic_brief_humanizes_generic_fact_packet_without_provider_style_scaffolding(
+    tmp_path: Path,
+) -> None:
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet={
+            "version": "v1",
+            "window": "24h",
+            "scope": {"mode": "global", "idea_id": "", "label": "Global"},
+            "summary": {"window_hours": 24, "storyline": {"use_story": "Compass needs readable live narration."}},
+            "sections": [
+                {
+                    "key": "completed",
+                    "label": "Completed in this window",
+                    "facts": [{"id": "F-001", "section_key": "completed", "kind": "plan_completion", "text": "Verified milestone closeout landed for Compass."}],
+                },
+                {
+                    "key": "current_execution",
+                    "label": "Current execution",
+                    "facts": [
+                        {"id": "F-002", "section_key": "current_execution", "kind": "direction", "text": "Compass is being steered around AI-first standup narration."},
+                        {"id": "F-003", "section_key": "current_execution", "kind": "window_coverage", "text": "Work moved across 3 workstreams: B-101, B-102, and B-103."},
+                    ],
+                },
+                {
+                    "key": "next_planned",
+                    "label": "Next planned",
+                    "facts": [{"id": "F-004", "section_key": "next_planned", "kind": "forcing_function", "text": "Immediate forcing function is to land implement compass renderer."}],
+                },
+                {
+                    "key": "risks_to_watch",
+                    "label": "Risks to watch",
+                    "facts": [{"id": "F-005", "section_key": "risks_to_watch", "kind": "risk_posture", "text": "No critical blockers are currently surfaced."}],
+                },
+            ],
+            "facts": [
+                {"id": "F-001", "section_key": "completed", "kind": "plan_completion", "text": "Verified milestone closeout landed for Compass."},
+                {"id": "F-002", "section_key": "current_execution", "kind": "direction", "text": "Compass is being steered around AI-first standup narration."},
+                {"id": "F-003", "section_key": "current_execution", "kind": "window_coverage", "text": "Work moved across 3 workstreams: B-101, B-102, and B-103."},
+                {"id": "F-004", "section_key": "next_planned", "kind": "forcing_function", "text": "Immediate forcing function is to land implement compass renderer."},
+                {"id": "F-005", "section_key": "risks_to_watch", "kind": "risk_posture", "text": "No critical blockers are currently surfaced."},
+            ],
+        },
+        generated_utc="2026-04-10T20:05:00Z",
+    )
+
+    completed = next(section for section in brief["sections"] if section["key"] == "completed")
+    current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
+    next_planned = next(section for section in brief["sections"] if section["key"] == "next_planned")
+    risks = next(section for section in brief["sections"] if section["key"] == "risks_to_watch")
+
+    assert completed["bullets"][0]["text"] == "Compass milestone closeout landed."
+    assert current_execution["bullets"][0]["text"] == (
+        "AI-first standup narration still needs care. If this drifts, Compass starts sounding like a dashboard again."
+    )
+    assert current_execution["bullets"][1]["text"] == "Most of the work here was in `B-101`, `B-102`, and `B-103`."
+    assert next_planned["bullets"][0]["text"] == "Land the Compass renderer cleanly."
+    assert risks["bullets"][0]["text"] == "No hard blocker is surfaced right now."
 
 
 def test_deterministic_brief_humanizes_scoped_runtime_lane_packet(tmp_path: Path) -> None:

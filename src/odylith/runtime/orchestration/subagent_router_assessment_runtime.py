@@ -19,6 +19,17 @@ def _host():
     return host
 
 
+def _bool_value(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    token = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    if token in {"1", "true", "yes", "on"}:
+        return True
+    if token in {"", "0", "false", "no", "off"}:
+        return False
+    return bool(value)
+
+
 def request_with_consumer_write_policy(
     request: RouteRequest,
     *,
@@ -664,6 +675,48 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
         or _context_lookup(context_signals, "execution_governance_model_family")
         or _context_lookup(context_signals, "latest_execution_governance_model_family")
     )
+    execution_governance_target_lane = _normalize_token(
+        execution_governance_summary.get("execution_governance_target_lane")
+        or _context_lookup(root, "execution_governance_target_lane")
+        or _context_lookup(context_signals, "execution_governance_target_lane")
+        or _context_lookup(context_signals, "latest_execution_governance_target_lane")
+    )
+    execution_governance_has_writable_targets = _bool_value(
+        execution_governance_summary.get("execution_governance_has_writable_targets")
+        or _context_lookup(root, "execution_governance_has_writable_targets")
+        or _context_lookup(context_signals, "execution_governance_has_writable_targets")
+        or _context_lookup(context_signals, "latest_execution_governance_has_writable_targets")
+    )
+    execution_governance_requires_more_consumer_context = _bool_value(
+        execution_governance_summary.get("execution_governance_requires_more_consumer_context")
+        or _context_lookup(root, "execution_governance_requires_more_consumer_context")
+        or _context_lookup(context_signals, "execution_governance_requires_more_consumer_context")
+        or _context_lookup(context_signals, "latest_execution_governance_requires_more_consumer_context")
+    )
+    execution_governance_consumer_failover = _normalize_string(
+        execution_governance_summary.get("execution_governance_consumer_failover")
+        or _context_lookup(root, "execution_governance_consumer_failover")
+        or _context_lookup(context_signals, "execution_governance_consumer_failover")
+        or _context_lookup(context_signals, "latest_execution_governance_consumer_failover")
+    )
+    execution_governance_commentary_mode = _normalize_token(
+        execution_governance_summary.get("execution_governance_commentary_mode")
+        or _context_lookup(root, "execution_governance_commentary_mode")
+        or _context_lookup(context_signals, "execution_governance_commentary_mode")
+        or _context_lookup(context_signals, "latest_execution_governance_commentary_mode")
+    )
+    execution_governance_suppress_routing_receipts = _bool_value(
+        execution_governance_summary.get("execution_governance_suppress_routing_receipts")
+        or _context_lookup(root, "execution_governance_suppress_routing_receipts")
+        or _context_lookup(context_signals, "execution_governance_suppress_routing_receipts")
+        or _context_lookup(context_signals, "latest_execution_governance_suppress_routing_receipts")
+    )
+    execution_governance_surface_fast_lane = _bool_value(
+        execution_governance_summary.get("execution_governance_surface_fast_lane")
+        or _context_lookup(root, "execution_governance_surface_fast_lane")
+        or _context_lookup(context_signals, "execution_governance_surface_fast_lane")
+        or _context_lookup(context_signals, "latest_execution_governance_surface_fast_lane")
+    )
     return {
         "grounding_score": max(
             execution_grounding_score,
@@ -1058,6 +1111,13 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
         "execution_governance_authoritative_lane": execution_governance_authoritative_lane,
         "execution_governance_host_family": execution_governance_host_family,
         "execution_governance_model_family": execution_governance_model_family,
+        "execution_governance_target_lane": execution_governance_target_lane,
+        "execution_governance_has_writable_targets": execution_governance_has_writable_targets,
+        "execution_governance_requires_more_consumer_context": execution_governance_requires_more_consumer_context,
+        "execution_governance_consumer_failover": execution_governance_consumer_failover,
+        "execution_governance_commentary_mode": execution_governance_commentary_mode,
+        "execution_governance_suppress_routing_receipts": execution_governance_suppress_routing_receipts,
+        "execution_governance_surface_fast_lane": execution_governance_surface_fast_lane,
         "odylith_fix_mode": odylith_fix_mode,
         "allow_odylith_mutations": allow_odylith_mutations,
         "odylith_write_protected_roots": odylith_write_protected_roots,

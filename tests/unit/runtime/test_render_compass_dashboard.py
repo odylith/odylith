@@ -211,6 +211,8 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'Current Release</span>' in releases_js
     assert "No targeted workstreams." in releases_js
     assert "execution-wave-focus-title" not in releases_js
+    assert '<div class="execution-wave-section-title-row">' in releases_js
+    assert '<div class="execution-wave-section-title-meta">' in releases_js
     assert '<div class="execution-wave-member-head">' in releases_js
     assert '<div class="execution-wave-member-title-chips">' in releases_js
     assert '<div class="execution-wave-title-row">' not in releases_js

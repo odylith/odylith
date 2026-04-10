@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" sizes="256x256" href="../surfaces/brand/icon/odylith-icon-256x256.png" />
   <link rel="mask-icon" href="../surfaces/brand/icon/odylith-icon-monochrome.svg" color="#173f83" />
   <link rel="stylesheet" href="compass-style-base.v1.css?v=1775797012858466689" />
-  <link rel="stylesheet" href="compass-style-execution-waves.v1.css?v=1775795531854221788" />
+  <link rel="stylesheet" href="compass-style-execution-waves.v1.css?v=1775843811233253306" />
   <link rel="stylesheet" href="compass-style-surface.v1.css?v=1775757431138420548" />
 </head>
 <body data-surface-ready="loading">
@@ -33,7 +33,6 @@
           <option value="">Global</option>
         </select>
         <button class="pill subtle" id="scope-global" type="button">Global</button>
-        <button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>
         <span class="grow"></span>
         <span class="pill subtle" id="scope-pill">Scope: Global</span>
         <span class="pill subtle" id="audit-day-pill">Audit Day: -</span>
@@ -44,7 +43,11 @@
     <section class="layout">
       <div class="stack">
         <article class="card">
-          <h2>Standup Brief</h2>
+          <div class="card-title-row standup-brief-title-row">
+            <h2>Standup Brief</h2>
+            <button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>
+          </div>
+          <div id="brief-copy-status" class="brief-copy-status hidden" role="status" aria-live="polite"></div>
           <div class="bullet-list standup-brief-panel" id="digest-list"></div>
         </article>
 
@@ -125,11 +128,11 @@
   <script src="compass-summary.v1.js?v=1775795670680939805"></script>
   <script src="compass-timeline.v1.js?v=1775792032862262699"></script>
   <script src="compass-waves.v1.js?v=1775796521480640761"></script>
-  <script src="compass-releases.v1.js?v=1775798630517063422"></script>
+  <script src="compass-releases.v1.js?v=1775843663695571835"></script>
   <script src="compass-workstreams.v1.js?v=1775800929588130832"></script>
   <script src="compass-ui-runtime.v1.js?v=1775757431157995253"></script>
-  <script src="runtime/current.v1.js?v=1775838845750994367"></script>
-  <script id="compassShellData" src="compass-payload.v1.js?v=b98663102bcb"></script>
-  <script src="compass-app.v1.js?v=b98663102bcb"></script>
+  <script src="runtime/current.v1.js?v=1775843810902778233"></script>
+  <script id="compassShellData" src="compass-payload.v1.js?v=f68e07c21e4b"></script>
+  <script src="compass-app.v1.js?v=f68e07c21e4b"></script>
 </body>
 </html>

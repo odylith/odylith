@@ -1441,6 +1441,49 @@ def test_start_bootstrap_lane_emits_payload(monkeypatch, tmp_path: Path, capsys)
     assert '"packet_kind": "bootstrap_session"' in captured
 
 
+def test_start_bootstrap_payload_forwards_turn_context(monkeypatch, tmp_path: Path) -> None:
+    from odylith.runtime.context_engine import odylith_context_engine_store as context_store
+
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        context_store,
+        "build_session_bootstrap",
+        lambda **kwargs: captured.update(kwargs) or {"packet_kind": "bootstrap_session"},
+    )
+
+    parser = cli.build_parser()
+    args = parser.parse_args(
+        [
+            "start",
+            "--repo-root",
+            str(tmp_path),
+            "--intent",
+            "Why doesn't this admin panel take full width?",
+            "--surface",
+            "compass",
+            "--visible-text",
+            "Current release",
+            "--active-tab",
+            "releases",
+            "--user-turn-id",
+            "turn-3",
+            "--supersedes-turn-id",
+            "turn-2",
+        ]
+    )
+
+    payload = cli._start_bootstrap_payload(args)
+
+    assert payload == {"packet_kind": "bootstrap_session"}
+    assert captured["intent"] == "Why doesn't this admin panel take full width?"
+    assert captured["surfaces"] == ["compass"]
+    assert captured["visible_text"] == ["Current release"]
+    assert captured["active_tab"] == "releases"
+    assert captured["user_turn_id"] == "turn-3"
+    assert captured["supersedes_turn_id"] == "turn-2"
+
+
 def test_start_fallback_lane_prints_exact_next_command(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
         cli,
@@ -1760,6 +1803,56 @@ def test_bootstrap_shortcut_defaults_to_clean_first_turn_command(monkeypatch, tm
 
     assert rc == 0
     assert captured["argv"] == ["--repo-root", str(tmp_path), "bootstrap-session", "--working-tree"]
+
+
+def test_bootstrap_shortcut_forwards_turn_context(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli.odylith_context_engine,
+        "main",
+        lambda argv: captured.update({"argv": argv}) or 0,
+    )
+
+    rc = cli.main(
+        [
+            "bootstrap",
+            "--repo-root",
+            str(tmp_path),
+            "--intent",
+            'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
+            "--surface",
+            "compass",
+            "--visible-text",
+            "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+            "--active-tab",
+            "releases",
+            "--user-turn-id",
+            "turn-2",
+            "--supersedes-turn-id",
+            "turn-1",
+        ]
+    )
+
+    assert rc == 0
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "bootstrap-session",
+        "--working-tree",
+        "--intent",
+        'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
+        "--surface",
+        "compass",
+        "--visible-text",
+        "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+        "--active-tab",
+        "releases",
+        "--user-turn-id",
+        "turn-2",
+        "--supersedes-turn-id",
+        "turn-1",
+    ]
 
 
 def test_context_shortcut_dispatches_to_context_engine(monkeypatch, tmp_path: Path) -> None:

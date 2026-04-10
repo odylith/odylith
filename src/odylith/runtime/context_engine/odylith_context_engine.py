@@ -258,6 +258,19 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Generated/dashboard surfaces this session expects to touch (repeatable).",
     )
     session_brief.add_argument(
+        "--visible-text",
+        action="append",
+        default=[],
+        help="Copied UI or screenshot-visible text to treat as grounding literals (repeatable).",
+    )
+    session_brief.add_argument("--active-tab", default="", help="Optional active dashboard tab or route hint.")
+    session_brief.add_argument("--user-turn-id", default="", help="Optional stable upstream turn identifier.")
+    session_brief.add_argument(
+        "--supersedes-turn-id",
+        default="",
+        help="Optional prior turn id this turn supersedes for narration purposes.",
+    )
+    session_brief.add_argument(
         "--claim-mode",
         choices=("shared", "exclusive"),
         default="shared",
@@ -296,6 +309,19 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="append",
         default=[],
         help="Generated/dashboard surfaces this session expects to touch (repeatable).",
+    )
+    bootstrap.add_argument(
+        "--visible-text",
+        action="append",
+        default=[],
+        help="Copied UI or screenshot-visible text to treat as grounding literals (repeatable).",
+    )
+    bootstrap.add_argument("--active-tab", default="", help="Optional active dashboard tab or route hint.")
+    bootstrap.add_argument("--user-turn-id", default="", help="Optional stable upstream turn identifier.")
+    bootstrap.add_argument(
+        "--supersedes-turn-id",
+        default="",
+        help="Optional prior turn id this turn supersedes for narration purposes.",
     )
     bootstrap.add_argument(
         "--claim-mode",
@@ -1847,6 +1873,10 @@ def _run_session_brief(
     workstream: str,
     intent: str,
     surfaces: Sequence[str],
+    visible_text: Sequence[str],
+    active_tab: str,
+    user_turn_id: str,
+    supersedes_turn_id: str,
     claim_mode: str,
     claim_paths: Sequence[str],
     lease_seconds: int,
@@ -1860,6 +1890,10 @@ def _run_session_brief(
         workstream=workstream,
         intent=intent,
         generated_surfaces=surfaces,
+        visible_text=visible_text,
+        active_tab=active_tab,
+        user_turn_id=user_turn_id,
+        supersedes_turn_id=supersedes_turn_id,
         claim_mode=claim_mode,
         claimed_paths=claim_paths,
         lease_seconds=max(60, int(lease_seconds)),
@@ -1878,6 +1912,10 @@ def _run_bootstrap_session(
     workstream: str,
     intent: str,
     surfaces: Sequence[str],
+    visible_text: Sequence[str],
+    active_tab: str,
+    user_turn_id: str,
+    supersedes_turn_id: str,
     claim_mode: str,
     claim_paths: Sequence[str],
     lease_seconds: int,
@@ -1894,6 +1932,10 @@ def _run_bootstrap_session(
         workstream=workstream,
         intent=intent,
         generated_surfaces=surfaces,
+        visible_text=visible_text,
+        active_tab=active_tab,
+        user_turn_id=user_turn_id,
+        supersedes_turn_id=supersedes_turn_id,
         claim_mode=claim_mode,
         claimed_paths=claim_paths,
         lease_seconds=max(60, int(lease_seconds)),
@@ -2060,6 +2102,12 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             generated_surfaces=[str(token).strip() for token in payload.get("surfaces", []) if str(token).strip()]
             if isinstance(payload.get("surfaces"), list)
             else [],
+            visible_text=[str(token).strip() for token in payload.get("visible_text", []) if str(token).strip()]
+            if isinstance(payload.get("visible_text"), list)
+            else [],
+            active_tab=str(payload.get("active_tab", "")).strip(),
+            user_turn_id=str(payload.get("user_turn_id", "")).strip(),
+            supersedes_turn_id=str(payload.get("supersedes_turn_id", "")).strip(),
             claim_mode=str(payload.get("claim_mode", "shared")).strip() or "shared",
             claimed_paths=[str(token).strip() for token in payload.get("claim_paths", []) if str(token).strip()]
             if isinstance(payload.get("claim_paths"), list)
@@ -2090,6 +2138,12 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             generated_surfaces=[str(token).strip() for token in payload.get("surfaces", []) if str(token).strip()]
             if isinstance(payload.get("surfaces"), list)
             else [],
+            visible_text=[str(token).strip() for token in payload.get("visible_text", []) if str(token).strip()]
+            if isinstance(payload.get("visible_text"), list)
+            else [],
+            active_tab=str(payload.get("active_tab", "")).strip(),
+            user_turn_id=str(payload.get("user_turn_id", "")).strip(),
+            supersedes_turn_id=str(payload.get("supersedes_turn_id", "")).strip(),
             claim_mode=str(payload.get("claim_mode", "shared")).strip() or "shared",
             claimed_paths=[str(token).strip() for token in payload.get("claim_paths", []) if str(token).strip()]
             if isinstance(payload.get("claim_paths"), list)
@@ -2860,6 +2914,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "workstream": str(args.workstream),
                     "intent": str(args.intent),
                     "surfaces": [str(token).strip() for token in args.surface if str(token).strip()],
+                    "visible_text": [str(token).strip() for token in args.visible_text if str(token).strip()],
+                    "active_tab": str(args.active_tab),
+                    "user_turn_id": str(args.user_turn_id),
+                    "supersedes_turn_id": str(args.supersedes_turn_id),
                     "claim_mode": str(args.claim_mode),
                     "claim_paths": [str(token).strip() for token in args.claim_path if str(token).strip()],
                     "lease_seconds": max(60, int(args.lease_seconds)),
@@ -2882,6 +2940,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 workstream=str(args.workstream),
                 intent=str(args.intent),
                 surfaces=[str(token).strip() for token in args.surface if str(token).strip()],
+                visible_text=[str(token).strip() for token in args.visible_text if str(token).strip()],
+                active_tab=str(args.active_tab),
+                user_turn_id=str(args.user_turn_id),
+                supersedes_turn_id=str(args.supersedes_turn_id),
                 claim_mode=str(args.claim_mode),
                 claim_paths=[str(token).strip() for token in args.claim_path if str(token).strip()],
                 lease_seconds=max(60, int(args.lease_seconds)),
@@ -2900,6 +2962,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "workstream": str(args.workstream),
                     "intent": str(args.intent),
                     "surfaces": [str(token).strip() for token in args.surface if str(token).strip()],
+                    "visible_text": [str(token).strip() for token in args.visible_text if str(token).strip()],
+                    "active_tab": str(args.active_tab),
+                    "user_turn_id": str(args.user_turn_id),
+                    "supersedes_turn_id": str(args.supersedes_turn_id),
                     "claim_mode": str(args.claim_mode),
                     "claim_paths": [str(token).strip() for token in args.claim_path if str(token).strip()],
                     "lease_seconds": max(60, int(args.lease_seconds)),
@@ -2925,6 +2991,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 workstream=str(args.workstream),
                 intent=str(args.intent),
                 surfaces=[str(token).strip() for token in args.surface if str(token).strip()],
+                visible_text=[str(token).strip() for token in args.visible_text if str(token).strip()],
+                active_tab=str(args.active_tab),
+                user_turn_id=str(args.user_turn_id),
+                supersedes_turn_id=str(args.supersedes_turn_id),
                 claim_mode=str(args.claim_mode),
                 claim_paths=[str(token).strip() for token in args.claim_path if str(token).strip()],
                 lease_seconds=max(60, int(args.lease_seconds)),

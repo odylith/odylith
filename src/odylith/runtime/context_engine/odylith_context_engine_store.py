@@ -3691,6 +3691,11 @@ def build_session_brief(
     workstream: str = "",
     generated_surfaces: Sequence[str] = (),
     intent: str = "",
+    surfaces: Sequence[str] = (),
+    visible_text: Sequence[str] = (),
+    active_tab: str = "",
+    user_turn_id: str = "",
+    supersedes_turn_id: str = "",
     claim_mode: str = "shared",
     claimed_paths: Sequence[str] = (),
     lease_seconds: int = 15 * 60,
@@ -3702,7 +3707,8 @@ def build_session_brief(
     skip_impact_runtime_warmup: bool = False,
 ) -> dict[str, Any]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_packet_session_runtime.build_session_brief(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=generated_surfaces, intent=intent, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, impact_override=impact_override, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
+    effective_surfaces = tuple(str(token).strip() for token in [*generated_surfaces, *surfaces] if str(token).strip())
+    return odylith_context_engine_packet_session_runtime.build_session_brief(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=effective_surfaces, intent=intent, visible_text=visible_text, active_tab=active_tab, user_turn_id=user_turn_id, supersedes_turn_id=supersedes_turn_id, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, impact_override=impact_override, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
 
 
 
@@ -3717,6 +3723,11 @@ def build_session_bootstrap(
     workstream: str = "",
     generated_surfaces: Sequence[str] = (),
     intent: str = "",
+    surfaces: Sequence[str] = (),
+    visible_text: Sequence[str] = (),
+    active_tab: str = "",
+    user_turn_id: str = "",
+    supersedes_turn_id: str = "",
     claim_mode: str = "shared",
     claimed_paths: Sequence[str] = (),
     lease_seconds: int = 15 * 60,
@@ -3730,7 +3741,8 @@ def build_session_bootstrap(
     skip_impact_runtime_warmup: bool = False,
 ) -> dict[str, Any]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_packet_session_runtime.build_session_bootstrap(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=generated_surfaces, intent=intent, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, doc_limit=doc_limit, command_limit=command_limit, test_limit=test_limit, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
+    effective_surfaces = tuple(str(token).strip() for token in [*generated_surfaces, *surfaces] if str(token).strip())
+    return odylith_context_engine_packet_session_runtime.build_session_bootstrap(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=effective_surfaces, intent=intent, visible_text=visible_text, active_tab=active_tab, user_turn_id=user_turn_id, supersedes_turn_id=supersedes_turn_id, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, doc_limit=doc_limit, command_limit=command_limit, test_limit=test_limit, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
 
 
 

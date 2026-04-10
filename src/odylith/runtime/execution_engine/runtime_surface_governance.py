@@ -12,12 +12,17 @@ from odylith.runtime.execution_engine import resource_closure as resource_closur
 from odylith.runtime.execution_engine import validation as validation_engine
 from odylith.runtime.execution_engine.contract import AdmissibilityDecision
 from odylith.runtime.execution_engine.contract import ContradictionRecord
+from odylith.runtime.execution_engine.contract import DiagnosticAnchor
 from odylith.runtime.execution_engine.contract import ExecutionContract
 from odylith.runtime.execution_engine.contract import ExecutionEvent
 from odylith.runtime.execution_engine.contract import ExecutionMode
 from odylith.runtime.execution_engine.contract import ExternalDependencyState
 from odylith.runtime.execution_engine.contract import ResourceClosure
 from odylith.runtime.execution_engine.contract import SemanticReceipt
+from odylith.runtime.execution_engine.contract import TargetCandidate
+from odylith.runtime.execution_engine.contract import TargetResolution
+from odylith.runtime.execution_engine.contract import TurnContext
+from odylith.runtime.execution_engine.contract import TurnPresentationPolicy
 from odylith.runtime.execution_engine.contract import ValidationMatrix
 from odylith.runtime.execution_engine.contract import detect_execution_host_profile
 from odylith.runtime.governance import proof_state as proof_state_runtime
@@ -44,6 +49,68 @@ def _strings(*values: Any) -> tuple[str, ...]:
             seen.add(token)
             ordered.append(token)
     return tuple(ordered)
+
+
+def _turn_context(value: Any) -> TurnContext | None:
+    payload = _mapping(value)
+    if not payload:
+        return None
+    return TurnContext(
+        intent=_string(payload.get("intent")),
+        surfaces=_strings(payload.get("surfaces")),
+        visible_text=_strings(payload.get("visible_text")),
+        active_tab=_string(payload.get("active_tab")),
+        user_turn_id=_string(payload.get("user_turn_id")),
+        supersedes_turn_id=_string(payload.get("supersedes_turn_id")),
+    )
+
+
+def _presentation_policy(value: Any) -> TurnPresentationPolicy | None:
+    payload = _mapping(value)
+    if not payload:
+        return None
+    return TurnPresentationPolicy(
+        commentary_mode=_string(payload.get("commentary_mode")),
+        suppress_routing_receipts=bool(payload.get("suppress_routing_receipts")),
+        surface_fast_lane=bool(payload.get("surface_fast_lane")),
+    )
+
+
+def _target_resolution(value: Any) -> TargetResolution | None:
+    payload = _mapping(value)
+    if not payload:
+        return None
+    candidate_targets = tuple(
+        TargetCandidate(
+            path=_string(row.get("path")),
+            source=_string(row.get("source")),
+            reason=_string(row.get("reason")),
+            surface=_string(row.get("surface")),
+            writable=bool(row.get("writable")),
+        )
+        for row in payload.get("candidate_targets", [])
+        if isinstance(row, Mapping) and _string(row.get("path"))
+    )
+    diagnostic_anchors = tuple(
+        DiagnosticAnchor(
+            kind=_string(row.get("kind")),
+            value=_string(row.get("value")),
+            label=_string(row.get("label")),
+            path=_string(row.get("path")),
+            surface=_string(row.get("surface")),
+            source=_string(row.get("source")),
+        )
+        for row in payload.get("diagnostic_anchors", [])
+        if isinstance(row, Mapping) and _string(row.get("value"))
+    )
+    return TargetResolution(
+        lane=_string(payload.get("lane")),
+        candidate_targets=candidate_targets,
+        diagnostic_anchors=diagnostic_anchors,
+        has_writable_targets=bool(payload.get("has_writable_targets")),
+        requires_more_consumer_context=bool(payload.get("requires_more_consumer_context")),
+        consumer_failover=_string(payload.get("consumer_failover")),
+    )
 
 
 def _event_id(index: int, suffix: str) -> str:
@@ -303,6 +370,9 @@ def build_packet_execution_governance_snapshot(
     session = _mapping(payload.get("session"))
     anchors = _mapping(context.get("anchors"))
     route = _mapping(context.get("route"))
+    turn_context = _turn_context(payload.get("turn_context") or session.get("turn_context"))
+    presentation_policy = _presentation_policy(payload.get("presentation_policy"))
+    target_resolution = _target_resolution(payload.get("target_resolution"))
     proof_state = proof_state_runtime.normalize_proof_state(
         payload.get("proof_state")
     ) or proof_state_runtime.normalize_proof_state(context.get("proof_state"))
@@ -415,6 +485,9 @@ def build_packet_execution_governance_snapshot(
         external_dependencies=list([external_state.source] if external_state is not None else []),
         critical_path=list(path_tokens[:4] or ([workstream] if workstream else [packet_kind])),
         host_profile=host_profile,
+        turn_context=turn_context,
+        target_resolution=target_resolution,
+        presentation_policy=presentation_policy,
         execution_mode=execution_mode,
     )
     contradictions = contradictions_engine.detect_contradictions(
@@ -456,6 +529,18 @@ def build_packet_execution_governance_snapshot(
             receipt=receipt,
         )
     ]
+    if turn_context is not None and turn_context.supersedes_turn_id:
+        events.insert(
+            0,
+            ExecutionEvent(
+                event_id=_event_id(0, "superseded"),
+                event_type="turn_superseded",
+                phase="supersession",
+                successful=True,
+                next_move=primary_action,
+                execution_mode=execution_mode,
+            ),
+        )
     if _string(proof_state.get("first_failing_phase")):
         events.insert(
             0,
@@ -522,6 +607,9 @@ def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[s
     external_dependency = _mapping(snapshot.get("external_dependency"))
     receipt = _mapping(snapshot.get("receipt"))
     host_profile = _mapping(contract.get("host_profile"))
+    turn_context = _mapping(contract.get("turn_context"))
+    target_resolution = _mapping(contract.get("target_resolution"))
+    presentation_policy = _mapping(contract.get("presentation_policy"))
     nearby_denials = [
         {
             key: value
@@ -568,6 +656,25 @@ def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[s
                 token for token in snapshot.get("history_rule_hits", []) if _string(token)
             ][:3],
             "nearby_denials": nearby_denials[:2],
+            "turn_intent": _string(turn_context.get("intent")),
+            "turn_active_tab": _string(turn_context.get("active_tab")),
+            "turn_user_turn_id": _string(turn_context.get("user_turn_id")),
+            "turn_supersedes_turn_id": _string(turn_context.get("supersedes_turn_id")),
+            "turn_surface_count": len(_strings(turn_context.get("surfaces"))),
+            "turn_visible_text_count": len(_strings(turn_context.get("visible_text"))),
+            "target_lane": _string(target_resolution.get("lane")),
+            "candidate_target_count": len(
+                [row for row in target_resolution.get("candidate_targets", []) if isinstance(row, Mapping)]
+            ),
+            "diagnostic_anchor_count": len(
+                [row for row in target_resolution.get("diagnostic_anchors", []) if isinstance(row, Mapping)]
+            ),
+            "has_writable_targets": bool(target_resolution.get("has_writable_targets")),
+            "requires_more_consumer_context": bool(target_resolution.get("requires_more_consumer_context")),
+            "consumer_failover": _string(target_resolution.get("consumer_failover")),
+            "commentary_mode": _string(presentation_policy.get("commentary_mode")),
+            "suppress_routing_receipts": bool(presentation_policy.get("suppress_routing_receipts")),
+            "surface_fast_lane": bool(presentation_policy.get("surface_fast_lane")),
         }.items()
         if value not in ("", [], {}, None, 0)
     }
@@ -603,6 +710,31 @@ def summary_fields_from_execution_governance(snapshot: Mapping[str, Any]) -> dic
         "execution_governance_history_rule_count": int(compact.get("history_rule_count", 0) or 0),
         "execution_governance_host_family": _string(compact.get("host_family")),
         "execution_governance_model_family": _string(compact.get("model_family")),
+        "execution_governance_turn_intent": _string(compact.get("turn_intent")),
+        "execution_governance_turn_active_tab": _string(compact.get("turn_active_tab")),
+        "execution_governance_turn_user_turn_id": _string(compact.get("turn_user_turn_id")),
+        "execution_governance_turn_supersedes_turn_id": _string(compact.get("turn_supersedes_turn_id")),
+        "execution_governance_turn_surface_count": int(compact.get("turn_surface_count", 0) or 0),
+        "execution_governance_turn_visible_text_count": int(
+            compact.get("turn_visible_text_count", 0) or 0
+        ),
+        "execution_governance_target_lane": _string(compact.get("target_lane")),
+        "execution_governance_candidate_target_count": int(
+            compact.get("candidate_target_count", 0) or 0
+        ),
+        "execution_governance_diagnostic_anchor_count": int(
+            compact.get("diagnostic_anchor_count", 0) or 0
+        ),
+        "execution_governance_has_writable_targets": bool(compact.get("has_writable_targets")),
+        "execution_governance_requires_more_consumer_context": bool(
+            compact.get("requires_more_consumer_context")
+        ),
+        "execution_governance_consumer_failover": _string(compact.get("consumer_failover")),
+        "execution_governance_commentary_mode": _string(compact.get("commentary_mode")),
+        "execution_governance_suppress_routing_receipts": bool(
+            compact.get("suppress_routing_receipts")
+        ),
+        "execution_governance_surface_fast_lane": bool(compact.get("surface_fast_lane")),
     }
 
 

@@ -364,7 +364,7 @@ def _hot_path_synthesized_execution_profile(
     reasoning_effort = "medium"
     agent_role = "explorer"
     selection_mode = "analysis_scout"
-    if family in {"implementation", "write", "bugfix"}:
+    if family in {"implementation", "write", "bugfix", "ui_layout", "surface_copy", "surface_binding"}:
         if governance_contract and strict_gate_command_count > 0:
             profile = agent_runtime_contract.FRONTIER_HIGH_PROFILE
             model = "gpt-5.4"

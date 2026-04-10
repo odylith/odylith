@@ -195,10 +195,21 @@ h1 {
   justify-content: center;
   padding: 16px 18px;
 }
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 0 0 8px;
+      min-width: 0;
+    }
+    .card-title-row h2 {
+      margin: 0;
+    }
     .card h2 {
       margin: 0 0 8px;
     }
-    .card h2 {
+.card h2 {
   margin: 0 0 8px;
   color: #1e436b;
   font-size: 14px;
@@ -207,6 +218,33 @@ h1 {
   font-weight: 700;
   text-transform: uppercase;
 }
+    .standup-brief-title-row {
+      align-items: baseline;
+      column-gap: 10px;
+      row-gap: 6px;
+    }
+    .standup-brief-title-row .pill {
+      flex: 0 0 auto;
+    }
+    .brief-copy-status {
+      display: inline-flex;
+      align-items: center;
+      justify-self: start;
+      max-width: 100%;
+      margin: 0 0 10px;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: #1e40af;
+      padding: 6px 10px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .brief-copy-status.warn {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      color: #92400e;
+    }
     __ODYLITH_COMPASS_KPI_TYPOGRAPHY_CONTRACT__
     .layout {
       display: grid;

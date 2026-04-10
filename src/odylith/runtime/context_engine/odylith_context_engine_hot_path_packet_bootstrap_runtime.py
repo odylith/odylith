@@ -273,6 +273,14 @@ def _compact_bootstrap_or_brief_hot_path_delivery(
         if isinstance(payload.get("narrowing_guidance"), Mapping)
         else {}
     )
+    target_resolution = (
+        dict(payload.get("target_resolution", {}))
+        if isinstance(payload.get("target_resolution"), Mapping)
+        else {}
+    )
+    actionable_target_resolution = bool(
+        target_resolution.get("candidate_targets") or target_resolution.get("diagnostic_anchors")
+    )
     if str(narrowing_guidance.get("reason", "")).strip() in {
         "selection_ambiguous",
         "The current slice is still too broad to…",
@@ -281,8 +289,10 @@ def _compact_bootstrap_or_brief_hot_path_delivery(
         narrowing_guidance["reason"] = (
             "Need one code path." if has_non_shared_anchor else "Need one code or contract path."
         )
-        narrowing_guidance.pop("suggested_inputs", None)
-        narrowing_guidance.pop("next_best_anchors", None)
+        if not actionable_target_resolution:
+            narrowing_guidance.pop("suggested_inputs", None)
+        if not actionable_target_resolution:
+            narrowing_guidance.pop("next_best_anchors", None)
 
     compact: dict[str, Any] = {}
     if changed_paths:
@@ -291,6 +301,24 @@ def _compact_bootstrap_or_brief_hot_path_delivery(
         compact["context_packet"] = compact_context_packet
     if narrowing_guidance:
         compact["narrowing_guidance"] = narrowing_guidance
+    if isinstance(payload.get("turn_context"), Mapping):
+        compact["turn_context"] = {
+            key: value
+            for key, value in dict(payload.get("turn_context", {})).items()
+            if value not in ("", [], {}, None)
+        }
+    if target_resolution:
+        compact["target_resolution"] = {
+            key: value
+            for key, value in target_resolution.items()
+            if value not in ("", [], {}, None)
+        }
+    if isinstance(payload.get("presentation_policy"), Mapping):
+        compact["presentation_policy"] = {
+            key: value
+            for key, value in dict(payload.get("presentation_policy", {})).items()
+            if value not in ("", [], {}, None, False)
+        }
     relevant_docs = _normalized_string_list(payload.get("relevant_docs"))
     if relevant_docs:
         compact["relevant_docs"] = relevant_docs[:2]

@@ -135,6 +135,7 @@ _FACT_ID_RE = re.compile(r"F-\d{3}")
 _PAREN_FACT_ID_RE = re.compile(r"(?:\(\s*F-\d{3}\s*\)\s*)+")
 _PAREN_FACT_ID_LIST_RE = re.compile(r"\(\s*F-\d{3}(?:\s*[,/&+|]\s*F-\d{3})+\s*\)")
 _STANDALONE_FACT_ID_RE = re.compile(r"(?<![A-Za-z0-9])F-\d{3}(?![A-Za-z0-9])")
+_WORKSTREAM_TOKEN_RE = re.compile(r"\bB-\d{3,}\b")
 _VOLATILE_FRESHNESS_TEXT_RE = re.compile(r"^Freshness signal is (?:aging|stale):", re.IGNORECASE)
 _MAX_BULLET_WORDS = 48
 _EMPTY_PROVIDER_MAX_ATTEMPTS = 2
@@ -158,9 +159,6 @@ _CACHE_TTL_SECONDS_BY_FRESHNESS = {
     "stale": 4 * 60 * 60,
     "unknown": 60 * 60,
 }
-_CONTEXT_CACHE_MAX_AGE_SECONDS = 24 * 60 * 60
-
-
 def _default_compass_reasoning_config() -> odylith_reasoning.ReasoningConfig:
     return odylith_reasoning.ReasoningConfig(
         mode="auto",
@@ -303,34 +301,6 @@ def _cache_entry_is_reusable(
     return age_seconds <= float(_cache_ttl_seconds(fact_packet=fact_packet))
 
 
-def _cache_entry_within_context_age_limit(
-    *,
-    cached_entry: Mapping[str, Any],
-    now_utc: dt.datetime,
-) -> bool:
-    generated_ts = _parse_iso_datetime(str(cached_entry.get("generated_utc", "")).strip())
-    if generated_ts is None:
-        return False
-    age_seconds = (now_utc - generated_ts).total_seconds()
-    if age_seconds < 0:
-        return False
-    return age_seconds <= float(_CONTEXT_CACHE_MAX_AGE_SECONDS)
-
-
-def _cache_entry_age_seconds(
-    *,
-    cached_entry: Mapping[str, Any],
-    now_utc: dt.datetime,
-) -> float | None:
-    generated_ts = _parse_iso_datetime(str(cached_entry.get("generated_utc", "")).strip())
-    if generated_ts is None:
-        return None
-    age_seconds = (now_utc - generated_ts).total_seconds()
-    if age_seconds < 0:
-        return None
-    return age_seconds
-
-
 def _cache_context(*, fact_packet: Mapping[str, Any]) -> dict[str, str]:
     scope = fact_packet.get("scope")
     scope_mapping = scope if isinstance(scope, Mapping) else {}
@@ -341,22 +311,6 @@ def _cache_context(*, fact_packet: Mapping[str, Any]) -> dict[str, str]:
         "scope_mode": scope_mode,
         "scope_id": scope_id,
     }
-
-
-def _cache_entry_matches_context(
-    *,
-    cached_entry: Mapping[str, Any],
-    fact_packet: Mapping[str, Any],
-) -> bool:
-    cached_context = cached_entry.get("context")
-    if not isinstance(cached_context, Mapping):
-        return False
-    target_context = _cache_context(fact_packet=fact_packet)
-    if str(cached_context.get("scope_mode", "")).strip().lower() != target_context["scope_mode"]:
-        return False
-    if target_context["scope_mode"] == "scoped":
-        return str(cached_context.get("scope_id", "")).strip() == target_context["scope_id"]
-    return True
 
 
 def _provider_system_prompt(*, compact_retry: bool = False) -> str:
@@ -1063,127 +1017,6 @@ def _persist_current_cache_entry(
     )
 
 
-def _legacy_cache_ready_brief_if_reusable(
-    *,
-    repo_root: Path,
-    cache_entries: dict[str, Any],
-    fingerprint: str,
-    fact_packet: Mapping[str, Any],
-    generated_utc: str,
-) -> dict[str, Any] | None:
-    for path in _legacy_cache_paths(repo_root=repo_root):
-        for entry in _load_cache_entries_from_path(path).values():
-            if not isinstance(entry, Mapping):
-                continue
-            if not _cache_entry_matches_context(cached_entry=entry, fact_packet=fact_packet):
-                continue
-            raw_sections = entry.get("sections")
-            if not isinstance(raw_sections, Sequence) or not raw_sections:
-                continue
-            sections = _validated_cached_sections(
-                raw_sections=raw_sections,
-                fact_packet=fact_packet,
-                cached_evidence_lookup=entry.get("evidence_lookup", {}),
-            )
-            if not sections:
-                continue
-            _persist_current_cache_entry(
-                repo_root=repo_root,
-                cache_entries=cache_entries,
-                fingerprint=fingerprint,
-                generated_utc=generated_utc,
-                sections=sections,
-                fact_packet=fact_packet,
-            )
-            return _ready_brief(
-                source="cache",
-                fingerprint=fingerprint,
-                generated_utc=generated_utc,
-                sections=sections,
-                evidence_lookup=_brief_evidence_lookup(fact_packet=fact_packet),
-                cache_mode="exact",
-            )
-    return None
-
-
-def _context_cache_ready_brief_if_reusable(
-    *,
-    repo_root: Path,
-    cache_entries: Mapping[str, Any],
-    fingerprint: str,
-    fact_packet: Mapping[str, Any],
-    generated_utc: str,
-) -> dict[str, Any] | None:
-    context = _cache_context(fact_packet=fact_packet)
-    now_utc = dt.datetime.now(tz=dt.timezone.utc)
-    best_sections: list[dict[str, Any]] | None = None
-    best_generated_utc = ""
-    best_generated_dt: dt.datetime | None = None
-    mutable_entries = {
-        str(key).strip(): dict(value)
-        for key, value in cache_entries.items()
-        if str(key).strip() and isinstance(value, Mapping)
-    }
-    candidate_entry_sets: list[Mapping[str, Any]] = [mutable_entries]
-    if context["scope_mode"] == "global":
-        candidate_entry_sets.extend(
-            _load_cache_entries_from_path(path)
-            for path in _legacy_cache_paths(repo_root=repo_root)
-        )
-
-    for entry_set in candidate_entry_sets:
-        for candidate_fingerprint, entry in entry_set.items():
-            if candidate_fingerprint == fingerprint and context["scope_mode"] == "scoped":
-                continue
-            if not isinstance(entry, Mapping):
-                continue
-            if not _cache_entry_matches_context(cached_entry=entry, fact_packet=fact_packet):
-                continue
-            if not _cache_entry_within_context_age_limit(
-                cached_entry=entry,
-                now_utc=now_utc,
-            ):
-                continue
-            raw_sections = entry.get("sections")
-            if not isinstance(raw_sections, Sequence) or not raw_sections:
-                continue
-            sections = _validated_cached_sections(
-                raw_sections=raw_sections,
-                fact_packet=fact_packet,
-                cached_evidence_lookup=entry.get("evidence_lookup", {}),
-            )
-            if not sections:
-                continue
-            candidate_generated_utc = str(entry.get("generated_utc", "")).strip()
-            candidate_generated_dt = _parse_iso_datetime(candidate_generated_utc)
-            if best_sections is not None:
-                if candidate_generated_dt is None:
-                    continue
-                if best_generated_dt is not None and candidate_generated_dt <= best_generated_dt:
-                    continue
-            best_sections = sections
-            best_generated_utc = candidate_generated_utc
-            best_generated_dt = candidate_generated_dt
-    if not best_sections:
-        return None
-    _persist_current_cache_entry(
-        repo_root=repo_root,
-        cache_entries=mutable_entries,
-        fingerprint=fingerprint,
-        generated_utc=generated_utc,
-        sections=best_sections,
-        fact_packet=fact_packet,
-    )
-    return _ready_brief(
-        source="cache",
-        fingerprint=fingerprint,
-        generated_utc=generated_utc,
-        sections=best_sections,
-        evidence_lookup=_brief_evidence_lookup(fact_packet=fact_packet),
-        cache_mode="exact",
-    )
-
-
 def _unavailable_brief(
     *,
     fingerprint: str,
@@ -1211,7 +1044,7 @@ def _provider_deferred_diagnostics(*, config: odylith_reasoning.ReasoningConfig)
             "reason": "provider_deferred",
             "message": (
                 "Compass deferred live scoped AI narration during dashboard refresh to keep sync bounded. "
-                "If a warmed brief is already available for this scope, Compass will reuse it automatically."
+                "If an exact same-packet brief is already available for this scope, Compass will reuse it automatically."
             ),
         }
     )
@@ -1599,6 +1432,20 @@ def _normalized_fact_text_for_reuse(text: str) -> str:
     return " ".join(normalized.split()).strip()
 
 
+def _workstream_ids_from_text(text: str) -> set[str]:
+    return {match.group(0) for match in _WORKSTREAM_TOKEN_RE.finditer(str(text or ""))}
+
+
+def _fact_workstream_ids(fact: Mapping[str, Any]) -> set[str]:
+    ids = {
+        str(token).strip()
+        for token in fact.get("workstreams", [])
+        if str(token).strip()
+    }
+    ids |= _workstream_ids_from_text(str(fact.get("text", "")).strip())
+    return ids
+
+
 def _remap_cached_fact_id_for_current_packet(
     *,
     fact_id: str,
@@ -1664,6 +1511,15 @@ def _validated_cached_sections(
     cached_evidence_lookup: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> list[dict[str, Any]] | None:
     current_window_coverage_text = ""
+    cached_window_coverage_fact_ids: set[str] = set()
+    if isinstance(cached_evidence_lookup, Mapping):
+        cached_window_coverage_fact_ids = {
+            str(fact_id).strip()
+            for fact_id, row in cached_evidence_lookup.items()
+            if str(fact_id).strip()
+            and isinstance(row, Mapping)
+            and str(row.get("kind", "")).strip() == "window_coverage"
+        }
     for fact in _section_facts(fact_packet=fact_packet, section_key="current_execution"):
         if str(fact.get("kind", "")).strip() == "window_coverage":
             current_window_coverage_text = _global_window_coverage_bullet_text(
@@ -1686,7 +1542,10 @@ def _validated_cached_sections(
                     continue
                 bullet_row = dict(bullet)
                 text = str(bullet_row.get("text", "")).strip()
-                if text.startswith("Most of the movement this window sat in ") or text.startswith(
+                bullet_fact_ids = set(_normalized_fact_id_values(bullet_row.get("fact_ids")))
+                if current_window_coverage_text and cached_window_coverage_fact_ids & bullet_fact_ids:
+                    bullet_row["text"] = current_window_coverage_text
+                elif text.startswith("Most of the movement this window sat in ") or text.startswith(
                     "A lot happened, but most of it came through "
                 ):
                     bullet_row["text"] = current_window_coverage_text
@@ -1733,6 +1592,10 @@ def _recoverable_cached_section_keys(*, validation_errors: Sequence[str]) -> set
             "slides back into dashboard-polished summary language"
         ) or message.endswith(
             "reuses cached stock phrasing instead of plainspoken maintainer narration"
+        ) or message.endswith(
+            "names workstreams that do not appear in the cited fact"
+        ) or message.endswith(
+            "does not match the cited whole-window coverage"
         ) or message.endswith(
             "leads with counts-only telemetry"
         ):
@@ -1926,6 +1789,15 @@ def _validate_brief_response(
                 for fact_id in (local_fact_ids or normalized_fact_ids)
                 if fact_id in fact_lookup and str(fact_lookup[fact_id].get("text", "")).strip()
             ]
+            cited_facts = [
+                fact_lookup[fact_id]
+                for fact_id in (local_fact_ids or normalized_fact_ids)
+                if fact_id in fact_lookup
+            ]
+            bullet_workstream_ids = _workstream_ids_from_text(text)
+            cited_workstream_ids: set[str] = set()
+            for cited_fact in cited_facts:
+                cited_workstream_ids |= _fact_workstream_ids(cited_fact)
             errors.extend(
                 compass_standup_brief_voice_validation.bullet_shape_errors(
                     section_key=key,
@@ -1934,6 +1806,19 @@ def _validate_brief_response(
                     fact_texts=cited_fact_texts,
                 )
             )
+            if bullet_workstream_ids and cited_workstream_ids and not (bullet_workstream_ids & cited_workstream_ids):
+                errors.append(
+                    f"section {key} bullet {bullet_index} names workstreams that do not appear in the cited fact"
+                )
+            if (
+                bullet_workstream_ids
+                and any(str(fact.get("kind", "")).strip() == "window_coverage" for fact in cited_facts)
+                and cited_workstream_ids
+                and bullet_workstream_ids != cited_workstream_ids
+            ):
+                errors.append(
+                    f"section {key} bullet {bullet_index} does not match the cited whole-window coverage"
+                )
             if normalized_fact_ids and not local_fact_ids:
                 errors.append(f"section {key} bullet {bullet_index} did not cite a section-local fact")
             bullets.append(
@@ -2130,27 +2015,6 @@ def build_standup_brief(
         )
         if cached_ready is not None:
             return cached_ready
-    if not prefer_provider or not allow_provider:
-        context_cached_ready = _context_cache_ready_brief_if_reusable(
-            repo_root=repo_root,
-            cache_entries=cache_entries,
-            fingerprint=fingerprint,
-            fact_packet=fact_packet,
-            generated_utc=generated_utc,
-        )
-        if context_cached_ready is not None:
-            return context_cached_ready
-    if allow_legacy_cache_recovery:
-        legacy_ready = _legacy_cache_ready_brief_if_reusable(
-            repo_root=repo_root,
-            cache_entries=cache_entries,
-            fingerprint=fingerprint,
-            fact_packet=fact_packet,
-            generated_utc=generated_utc,
-        )
-        if legacy_ready is not None:
-            return legacy_ready
-
     resolved_config = config or odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
     if not allow_provider:
         if allow_cache_recovery:

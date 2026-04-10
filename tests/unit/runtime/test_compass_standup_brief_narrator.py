@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 from pathlib import Path
+import time
 
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
 from odylith.runtime.reasoning import odylith_reasoning
@@ -204,6 +205,11 @@ def _set_fact_text(
 def _now_utc_iso() -> str:
     current = dt.datetime.now(tz=dt.timezone.utc).replace(microsecond=0)
     return current.isoformat().replace("+00:00", "Z")
+
+
+def _median_ms(samples: list[float]) -> float:
+    ordered = sorted(samples)
+    return ordered[len(ordered) // 2]
 
 
 def _valid_provider_result() -> dict[str, object]:
@@ -1414,7 +1420,7 @@ def test_build_standup_brief_retries_empty_provider_with_compact_request(tmp_pat
     assert provider.requests[1].schema_name == "compass_standup_brief_compact_retry"
 
 
-def test_build_standup_brief_reuses_validated_legacy_cache_entry(tmp_path: Path) -> None:
+def test_build_standup_brief_does_not_reuse_non_exact_validated_legacy_cache_entry(tmp_path: Path) -> None:
     packet = _fact_packet(include_freshness_fact=True, scope_mode="global", idea_id="", window="24h")
     legacy_path = tmp_path / ".odylith" / "compass" / "standup-brief-cache.v18.json"
     legacy_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1450,15 +1456,16 @@ def test_build_standup_brief_reuses_validated_legacy_cache_entry(tmp_path: Path)
         allow_deterministic_fallback=False,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "cache"
-    assert brief["cache_mode"] == "exact"
+    assert brief["status"] == "unavailable"
+    assert brief["source"] == "unavailable"
     assert provider.calls == 0
     migrated = narrator._load_cache(repo_root=tmp_path)["entries"]  # noqa: SLF001
-    assert narrator.standup_brief_fingerprint(fact_packet=packet) in migrated
+    assert narrator.standup_brief_fingerprint(fact_packet=packet) not in migrated
 
 
-def test_build_standup_brief_reuses_context_matched_current_cache_entry(tmp_path: Path) -> None:
+def test_build_standup_brief_does_not_reuse_context_matched_current_cache_entry_when_packet_changes(
+    tmp_path: Path,
+) -> None:
     packet = _fact_packet(scope_mode="scoped", idea_id="B-025", window="24h")
     generated_utc = _now_utc_iso()
     seed_provider = _FakeProvider(_valid_provider_result())
@@ -1492,12 +1499,11 @@ def test_build_standup_brief_reuses_context_matched_current_cache_entry(tmp_path
         allow_deterministic_fallback=False,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "cache"
-    assert brief["cache_mode"] == "exact"
+    assert brief["status"] == "unavailable"
+    assert brief["source"] == "unavailable"
     assert provider.calls == 0
     migrated = narrator._load_cache(repo_root=tmp_path)["entries"]  # noqa: SLF001
-    assert narrator.standup_brief_fingerprint(fact_packet=changed_packet) in migrated
+    assert narrator.standup_brief_fingerprint(fact_packet=changed_packet) not in migrated
 
 
 def test_build_standup_brief_ignores_invalid_legacy_cache_entry(tmp_path: Path) -> None:
@@ -1874,7 +1880,7 @@ def test_build_standup_brief_full_refresh_fails_closed_when_no_exact_cache_is_av
     assert brief["diagnostics"]["reason"] == "provider_empty"
 
 
-def test_build_standup_brief_reuses_current_cached_brief_when_provider_returns_empty_for_changed_packet(
+def test_build_standup_brief_uses_deterministic_fallback_when_provider_returns_empty_for_changed_packet(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -1898,13 +1904,12 @@ def test_build_standup_brief_reuses_current_cached_brief_when_provider_returns_e
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "cache"
-    assert fallback["cache_mode"] == "exact"
-    assert "notice" not in fallback
-    assert fallback_provider.calls == 0
+    assert fallback["source"] == "deterministic"
+    assert fallback["notice"]["reason"] == "provider_empty"
+    assert fallback_provider.calls == 2
 
 
-def test_build_standup_brief_reuses_current_cached_brief_when_live_provider_is_deferred_and_fingerprint_changes(
+def test_build_standup_brief_uses_deterministic_fallback_when_live_provider_is_deferred_and_fingerprint_changes(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -1928,13 +1933,12 @@ def test_build_standup_brief_reuses_current_cached_brief_when_live_provider_is_d
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "cache"
-    assert fallback["cache_mode"] == "exact"
-    assert "notice" not in fallback
+    assert fallback["source"] == "deterministic"
+    assert fallback["notice"]["reason"] == "provider_deferred"
     assert deferred_provider.calls == 0
 
 
-def test_build_standup_brief_reuses_cached_global_brief_when_changed_self_host_state_does_not_alter_cited_facts(
+def test_build_standup_brief_uses_deterministic_fallback_when_global_packet_changes_even_if_old_copy_still_reads_ok(
     tmp_path: Path,
 ) -> None:
     baseline_packet = _fact_packet(
@@ -1981,9 +1985,8 @@ def test_build_standup_brief_reuses_cached_global_brief_when_changed_self_host_s
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "cache"
-    assert fallback["cache_mode"] == "exact"
-    assert "notice" not in fallback
+    assert fallback["source"] == "deterministic"
+    assert fallback["notice"]["reason"] == "provider_deferred"
 
 
 def test_build_standup_brief_does_not_reuse_cache_for_different_scope_or_window(tmp_path: Path) -> None:
@@ -2020,7 +2023,7 @@ def test_build_standup_brief_does_not_reuse_cache_for_different_scope_or_window(
     assert no_window_match["notice"]["reason"] == "provider_unavailable"
 
 
-def test_build_standup_brief_reuses_global_cache_across_windows_when_sections_still_validate(tmp_path: Path) -> None:
+def test_build_standup_brief_does_not_reuse_global_cache_across_windows(tmp_path: Path) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
     seeded = narrator.build_standup_brief(
         repo_root=tmp_path,
@@ -2041,11 +2044,11 @@ def test_build_standup_brief_reuses_global_cache_across_windows_when_sections_st
 
     assert seeded["status"] == "ready"
     assert reused["status"] == "ready"
-    assert reused["source"] == "cache"
-    assert reused["cache_mode"] == "exact"
+    assert reused["source"] == "deterministic"
+    assert reused["notice"]["reason"] == "provider_deferred"
 
 
-def test_build_standup_brief_reuses_scoped_cache_across_windows_when_scope_matches_and_no_freshness_guard(
+def test_build_standup_brief_does_not_reuse_scoped_cache_across_windows(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -2073,17 +2076,17 @@ def test_build_standup_brief_reuses_scoped_cache_across_windows_when_scope_match
 
     assert seeded["status"] == "ready"
     assert reused["status"] == "ready"
-    assert reused["source"] == "cache"
-    assert reused["cache_mode"] == "exact"
+    assert reused["source"] == "deterministic"
+    assert reused["notice"]["reason"] == "provider_deferred"
 
 
-def test_build_standup_brief_salvages_cached_current_execution_section_when_one_bullet_goes_stale(
+def test_build_standup_brief_salvages_exact_cached_current_execution_section_when_one_bullet_goes_stale(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
     seeded = narrator.build_standup_brief(
         repo_root=tmp_path,
-        fact_packet=_fact_packet(scope_mode="global", idea_id="", window="48h"),
+        fact_packet=_fact_packet(scope_mode="global", idea_id="", window="24h"),
         generated_utc=_now_utc_iso(),
         config=_reasoning_config(),
         provider=seeded_provider,
@@ -2099,7 +2102,7 @@ def test_build_standup_brief_salvages_cached_current_execution_section_when_one_
         for value in entries.values()
         if isinstance(value, dict)
         and value.get("context", {}).get("scope_mode") == "global"
-        and value.get("context", {}).get("window") == "48h"
+        and value.get("context", {}).get("window") == "24h"
     )
     entry["sections"][1]["bullets"][1]["text"] = (
         "Current execution target is the local repo posture: runtime 0.1.9 with repo pin 0.1.9, which is what operators and tests should be measuring against today."
@@ -2211,7 +2214,7 @@ def test_build_standup_brief_salvages_cached_risk_section_when_it_degrades_into_
     assert reused["status"] == "ready"
     assert reused["source"] == "cache"
     assert reused["cache_mode"] == "exact"
-    assert reused["sections"][3]["bullets"][0]["text"] == "No critical blockers are currently surfaced."
+    assert reused["sections"][3]["bullets"][0]["text"] == "No hard blocker is surfaced right now."
 
 
 def test_build_standup_brief_does_not_reuse_stale_last_known_good_cache(tmp_path: Path) -> None:
@@ -2240,7 +2243,7 @@ def test_build_standup_brief_does_not_reuse_stale_last_known_good_cache(tmp_path
     assert stale_fallback["notice"]["title"] == "Showing deterministic local brief"
 
 
-def test_build_standup_brief_reuses_live_global_cache_when_exact_cache_is_stale(
+def test_build_standup_brief_uses_deterministic_fallback_when_exact_global_cache_is_stale(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
 ) -> None:
@@ -2271,12 +2274,11 @@ def test_build_standup_brief_reuses_live_global_cache_when_exact_cache_is_stale(
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "cache"
-    assert fallback["cache_mode"] == "exact"
-    assert "notice" not in fallback
+    assert fallback["source"] == "deterministic"
+    assert fallback["notice"]["reason"] == "provider_empty"
 
 
-def test_build_standup_brief_reuses_recent_live_global_cache_when_exact_cache_is_stale(
+def test_build_standup_brief_uses_deterministic_fallback_when_recent_exact_global_cache_is_stale(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
 ) -> None:
@@ -2307,12 +2309,11 @@ def test_build_standup_brief_reuses_recent_live_global_cache_when_exact_cache_is
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "cache"
-    assert fallback["cache_mode"] == "exact"
-    assert "notice" not in fallback
+    assert fallback["source"] == "deterministic"
+    assert fallback["notice"]["reason"] == "provider_empty"
 
 
-def test_build_standup_brief_reuses_live_global_cache_when_window_fingerprint_changes_but_context_matches(
+def test_build_standup_brief_does_not_reuse_live_global_cache_when_window_fingerprint_changes(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
 ) -> None:
@@ -2355,12 +2356,11 @@ def test_build_standup_brief_reuses_live_global_cache_when_window_fingerprint_ch
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "cache"
-    assert fallback["cache_mode"] == "exact"
-    assert "notice" not in fallback
+    assert fallback["source"] == "deterministic"
+    assert fallback["notice"]["reason"] == "provider_empty"
 
 
-def test_build_standup_brief_recovers_live_global_cache_from_legacy_epoch_when_provider_is_deferred(
+def test_build_standup_brief_does_not_recover_non_exact_legacy_global_cache_when_provider_is_deferred(
     tmp_path: Path,
 ) -> None:
     legacy_packet = _fact_packet(scope_mode="global", idea_id="", window="24h")
@@ -2408,9 +2408,8 @@ def test_build_standup_brief_recovers_live_global_cache_from_legacy_epoch_when_p
     )
 
     assert recovered["status"] == "ready"
-    assert recovered["source"] == "cache"
-    assert recovered["cache_mode"] == "exact"
-    assert "notice" not in recovered
+    assert recovered["source"] == "deterministic"
+    assert recovered["notice"]["reason"] == "provider_deferred"
 
 
 def test_build_standup_brief_rewrites_cached_global_window_coverage_phrase_when_reusing_live_cache(
@@ -2430,7 +2429,7 @@ def test_build_standup_brief_rewrites_cached_global_window_coverage_phrase_when_
                 "version": narrator.STANDUP_BRIEF_SCHEMA_VERSION,
                 "entries": {
                     narrator.standup_brief_fingerprint(fact_packet=packet): {
-                        "generated_utc": "2026-04-09T15:00:00Z",
+                        "generated_utc": _now_utc_iso(),
                         "sections": sections,
                         "evidence_lookup": {
                             "LEGACY-COVERAGE": {
@@ -2462,6 +2461,218 @@ def test_build_standup_brief_rewrites_cached_global_window_coverage_phrase_when_
     assert brief["source"] == "cache"
     current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
     assert current_execution["bullets"][-1]["text"] == "Most of the work here was in B-101, B-102, and B-103."
+
+
+def test_build_standup_brief_salvages_exact_cache_when_current_execution_workstream_anchor_drifted(
+    tmp_path: Path,
+) -> None:
+    packet = {
+        "version": "v1",
+        "window": "24h",
+        "scope": {"mode": "global", "idea_id": "", "label": "Global"},
+        "summary": {
+            "window_hours": 24,
+            "freshness": {
+                "bucket": "recent",
+                "latest_evidence_utc": "2026-04-10T17:56:49Z",
+                "source": "transaction",
+            },
+            "self_host": {
+                "repo_role": "product_repo",
+                "posture": "pinned_release",
+                "runtime_source": "pinned_runtime",
+                "pinned_version": "0.1.10",
+                "active_version": "0.1.10",
+                "launcher_present": True,
+                "release_eligible": True,
+            },
+        },
+        "sections": [
+            {
+                "key": "completed",
+                "label": "Completed in this window",
+                "facts": [
+                    {
+                        "id": "F-001",
+                        "section_key": "completed",
+                        "voice_hint": "operator",
+                        "kind": "plan_completion",
+                        "text": (
+                            "Verified plan closeouts landed across the window: Context Engine Benchmark Family and "
+                            "Grounding Quality Gates (B-068) -> odylith context engine benchmark family and grounding "
+                            "quality gates; Cross-Host Contract Hardening and Codex-Claude Separation (B-069) -> "
+                            "cross host contract hardening and codex claude separation."
+                        ),
+                    },
+                    {
+                        "id": "F-002",
+                        "section_key": "completed",
+                        "voice_hint": "operator",
+                        "kind": "execution_highlight",
+                        "text": "Most concrete portfolio movement: Harden Compass refresh and trust warning handling.",
+                    },
+                ],
+            },
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "facts": [
+                    {
+                        "id": "F-004",
+                        "section_key": "current_execution",
+                        "voice_hint": "operator",
+                        "kind": "direction",
+                        "text": (
+                            "Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) is the flagship lane "
+                            "and is in active implementation because odylith cannot claim a live operating layer if "
+                            "Compass can go stale or if the browser suite misses that regression."
+                        ),
+                        "workstreams": ["B-025"],
+                    },
+                    {
+                        "id": "F-006",
+                        "section_key": "current_execution",
+                        "voice_hint": "operator",
+                        "kind": "self_host_status",
+                        "text": (
+                            "Live self-host posture check passed: Odylith product repo is on pinned dogfood runtime "
+                            "`0.1.10` with repo pin `0.1.10`, and the repo-local launcher is present."
+                        ),
+                    },
+                    {
+                        "id": "F-007",
+                        "section_key": "current_execution",
+                        "voice_hint": "operator",
+                        "kind": "portfolio_posture",
+                        "text": (
+                            "Planning and implementation are running in parallel across active lanes, and some "
+                            "implementation lanes still lack captured checklist progress Live focus lanes: "
+                            "Cross-Surface Runtime Freshness and UX Browser Hardening (B-025), Scope Signal Ladder, "
+                            "Cross-Surface Focus Gating, and Low-Signal Suppression (B-071)."
+                        ),
+                    },
+                    {
+                        "id": "F-008",
+                        "section_key": "current_execution",
+                        "voice_hint": "operator",
+                        "kind": "window_coverage",
+                        "text": "Most of the movement this window sat in B-025, B-071, B-048, B-060, B-068, and B-069.",
+                        "workstreams": ["B-025", "B-071", "B-048", "B-060", "B-068", "B-069"],
+                    },
+                ],
+            },
+            {
+                "key": "next_planned",
+                "label": "Next planned",
+                "facts": [
+                    {
+                        "id": "F-010",
+                        "section_key": "next_planned",
+                        "voice_hint": "operator",
+                        "kind": "forcing_function",
+                        "text": (
+                            "Immediate forcing function is Odylith Complex-Repo Benchmark Corpus Expansion and "
+                            "Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark "
+                            "docs back into."
+                        ),
+                    },
+                    {
+                        "id": "F-011",
+                        "section_key": "next_planned",
+                        "voice_hint": "operator",
+                        "kind": "follow_on",
+                        "text": (
+                            "Then move Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement "
+                            "(B-021): Add more real maintainer coding work to the tracked corpus: CLI contract."
+                        ),
+                    },
+                ],
+            },
+            {
+                "key": "risks_to_watch",
+                "label": "Risks to watch",
+                "facts": [
+                    {
+                        "id": "F-012",
+                        "section_key": "risks_to_watch",
+                        "voice_hint": "operator",
+                        "kind": "risk_posture",
+                        "text": (
+                            "Primary watch item is execution coherence across Odylith Complex-Repo Benchmark Corpus "
+                            "Expansion and Frontier Improvement (B-021) and Odylith Honest Benchmark Improvement, "
+                            "Anti-Gaming Integrity, and Independent Proof (B-022) while shared dependencies remain open."
+                        ),
+                    }
+                ],
+            },
+        ],
+    }
+    packet["facts"] = [fact for section in packet["sections"] for fact in section["facts"]]
+
+    sections = narrator.compass_standup_brief_deterministic.build_sections(
+        fact_packet=packet,
+        section_specs=narrator.STANDUP_BRIEF_SECTIONS,
+    )
+    current_execution = next(section for section in sections if section["key"] == "current_execution")
+    current_execution["bullets"] = [
+        {
+            "text": "`B-071` is there because each surface was still making its own guess about what mattered. This work puts one shared rule in place.",
+            "fact_ids": ["F-004"],
+        },
+        {
+            "text": "The product repo is on pinned dogfood runtime `0.1.10`. The release gate is using the same path maintainers are meant to use.",
+            "fact_ids": ["F-006"],
+        },
+        {
+            "text": "`B-071` and `B-025` are still moving together.",
+            "fact_ids": ["F-007"],
+        },
+        {
+            "text": "Most of the work here was in `B-071`, `B-025`, `B-080`, `B-021`, `B-060`, and `B-063`.",
+            "fact_ids": ["F-008"],
+        },
+    ]
+
+    cache_path = tmp_path / ".odylith" / "compass" / "standup-brief-cache.v22.json"
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    cache_path.write_text(
+        json.dumps(
+            {
+                "version": narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+                "entries": {
+                    narrator.standup_brief_fingerprint(fact_packet=packet): {
+                        "generated_utc": _now_utc_iso(),
+                        "sections": sections,
+                        "evidence_lookup": narrator._brief_evidence_lookup(fact_packet=packet),  # noqa: SLF001
+                        "context": {"window": "24h", "scope_mode": "global", "scope_id": ""},
+                    }
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=None,
+        allow_provider=False,
+    )
+
+    assert brief["status"] == "ready"
+    assert brief["source"] == "cache"
+    assert brief["cache_mode"] == "exact"
+    current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
+    assert current_execution["bullets"][0]["text"].startswith("`B-025`:")
+    assert "B-071` is there because each surface" not in current_execution["bullets"][0]["text"]
+    assert current_execution["bullets"][-1]["text"] == (
+        "Most of the work here was in `B-025`, `B-071`, `B-048`, `B-060`, `B-068`, and `B-069`."
+    )
+    assert "B-021" not in current_execution["bullets"][-1]["text"]
 
 
 def test_build_standup_brief_ignores_disabled_odylith_mode_when_provider_is_runnable(
@@ -2548,3 +2759,46 @@ def test_build_standup_brief_can_defer_live_provider_and_use_deterministic_fallb
     assert brief["notice"]["title"] == "Showing deterministic local brief"
     assert "deferred during this refresh" in brief["notice"]["message"].lower()
     assert provider.calls == 0
+
+
+def test_build_standup_brief_meets_hot_and_cold_latency_budgets(tmp_path: Path) -> None:
+    packet = _fact_packet(include_freshness_fact=True, scope_mode="global", idea_id="", window="24h")
+    seeded = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=_FakeProvider(_valid_provider_result()),
+    )
+    assert seeded["source"] == "provider"
+
+    hot_samples_ms: list[float] = []
+    for _ in range(25):
+        started = time.perf_counter()
+        hot = narrator.build_standup_brief(
+            repo_root=tmp_path,
+            fact_packet=packet,
+            generated_utc=_now_utc_iso(),
+            config=_reasoning_config(),
+            provider=None,
+            allow_provider=False,
+        )
+        hot_samples_ms.append((time.perf_counter() - started) * 1000.0)
+    assert hot["source"] == "cache"
+    assert _median_ms(hot_samples_ms) < 50.0
+
+    cold_root = tmp_path / "cold"
+    cold_samples_ms: list[float] = []
+    for _ in range(10):
+        started = time.perf_counter()
+        cold = narrator.build_standup_brief(
+            repo_root=cold_root,
+            fact_packet=packet,
+            generated_utc=_now_utc_iso(),
+            config=_reasoning_config(),
+            provider=None,
+            allow_provider=False,
+        )
+        cold_samples_ms.append((time.perf_counter() - started) * 1000.0)
+    assert cold["source"] == "deterministic"
+    assert _median_ms(cold_samples_ms) < 1000.0

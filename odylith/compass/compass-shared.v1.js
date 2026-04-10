@@ -999,15 +999,11 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     return `
       <details class="${cardClassNames.join(" ")}"${openAttr}>
         <summary class="execution-wave-card-summary">
-          <div class="execution-wave-card-shell">
-            <div class="execution-wave-card-copy">
-              <div class="execution-wave-title-row">
-                <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
-                <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
-                ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
-              </div>
-              <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
-              ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
+          <div class="execution-wave-card-shell execution-wave-card-shell-full-copy">
+            <div class="execution-wave-title-row">
+              <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
+              <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
+              ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
             </div>
             <div class="execution-wave-card-meta">
               <div class="execution-wave-card-stat-rail">
@@ -1018,6 +1014,8 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
                 ${isSelectedMember ? `<span class="label execution-wave-label wave-role-chip">${escapeHtml(selectedBadgeLabel)}</span>` : ""}
               </div>
             </div>
+            <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
+            ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
           </div>
         </summary>
         <div class="execution-wave-card-body">

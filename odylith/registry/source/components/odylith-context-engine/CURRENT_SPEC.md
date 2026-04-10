@@ -1,8 +1,8 @@
 # Odylith Context Engine
-Last updated: 2026-04-09
+Last updated: 2026-04-10
 
 
-Last updated (UTC): 2026-04-09
+Last updated (UTC): 2026-04-10
 
 ## Purpose
 Odylith Context Engine is the deterministic local grounding runtime for the
@@ -19,6 +19,9 @@ claims, and optionally materializes faster local and remote retrieval layers.
   `governance-slice`, `session-brief`, and `bootstrap-session`.
 - Optional local LanceDB + Tantivy materialization and optional Vespa sync.
 - Runtime optimization and evaluation snapshots derived from recent packets.
+- Structured turn-intake normalization for `turn_context`, lane-fenced
+  `target_resolution`, and `presentation_policy` fields carried through packet
+  assembly and compaction.
 
 ### The Context Engine does not own
 - Authoritative repo truth. It compiles truth; it does not replace it.
@@ -40,6 +43,10 @@ claims, and optionally materializes faster local and remote retrieval layers.
   a managed context-engine pack that is installed by default as part of the
   full-stack Odylith runtime, even though the base runtime and memory overlay
   travel as separate release assets.
+- The first-turn intake path is lane-aware: consumer turns may ground from
+  visible text and anchors without returning Odylith-owned write targets, while
+  maintainer mode can keep the same pipeline writable in the Odylith product
+  repo.
 - Packet builders and budgeting helpers are explicit modules, not incidental
   string assembly:
   `tooling_context_packet_builder.py`,
@@ -100,6 +107,8 @@ Public entrypoint: `odylith context-engine`
 - `bootstrap-session`
   Build a compact fresh-session bootstrap packet with docs, commands, and test
   recommendations.
+  Both session packet forms carry structured turn context, lane-fenced target
+  resolution, and presentation policy.
 
 ### Snapshot, switch, and remote operations
 - `benchmark`
@@ -134,9 +143,11 @@ Operational guidance lives in
 - `odylith_context_engine_projection_registry_runtime.py`
   Component index, registry snapshot, and registry-detail projection reads.
 - `odylith_context_engine_packet_summary_runtime.py`
-  Packet-summary extraction and compact bootstrap-packet readback.
+  Packet-summary extraction and compact bootstrap-packet readback, including
+  turn-context, target-resolution, and presentation-policy carry-through.
 - `odylith_context_engine_packet_session_runtime.py`
-  Session-brief and bootstrap packet assembly.
+  Session-brief and bootstrap packet assembly, including first-turn intake and
+  lane-aware target resolution.
 - `odylith_context_engine_packet_architecture_runtime.py`
   Architecture-audit packet assembly.
 - `odylith_context_engine_packet_adaptive_runtime.py`
@@ -191,6 +202,10 @@ Operational guidance lives in
 - Benchmark-facing impact, governance-slice, session-brief, and
   bootstrap-session packets must pass family hints through finalization so
   retrieval and packet compaction can stay family-aware.
+- Session-brief and bootstrap-session packets must preserve structured
+  `turn_context`, lane-fenced `target_resolution`, and `presentation_policy`
+  so the router and chatter layers consume the same truth as the context
+  engine.
 - On already-grounded proof slices, `required_paths` are authoritative and
   family-aware ceilings must suppress support-doc spillover and miss recovery
   before prompt rendering.
@@ -237,6 +252,15 @@ Operational guidance lives in
   Recent bootstrap packets.
 - `.odylith/runtime/odylith-benchmarks/`
   Benchmark history and latest reports.
+
+## Turn Intake And Lane Fencing
+- The context engine's first-turn intake path should preserve structured
+  `turn_context` and quoted visible text separately from semantic intent so
+  consumer-lane packets can resolve diagnostic anchors without exposing
+  Odylith-owned writable targets.
+- Maintainer-authorized turns in the Odylith product repo may reuse the same
+  intake and resolution pipeline while keeping Odylith-owned targets writable
+  when lane policy permits mutations.
 
 ## Core Read Models
 ### [Odylith Projection Bundle](../odylith-projection-bundle/CURRENT_SPEC.md)
@@ -486,3 +510,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-07: Promoted the hidden memory-substrate seams into governed sibling components so projection bundle, projection snapshot, remote retrieval, and packet contracts become explicit Registry truth instead of broad Context Engine footnotes. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
 - 2026-04-08: Added first-class release entities and selector resolution to the projection model so `context`, `query`, and governed read surfaces can resolve release ids, aliases, versions, tags, and unique exact names from one repo-local contract. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
 - 2026-04-09: Clarified the product boundary that Context Engine grounds repo truth and packets, while Execution Governance owns admissibility and next-action control. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-10: Added structured turn-intake carry-through so session packets can preserve `turn_context`, lane-fenced target resolution, and presentation policy across consumer and maintainer lanes. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))

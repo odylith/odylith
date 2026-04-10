@@ -277,8 +277,10 @@
             ? `${releaseCompletion.completeCount}/${releaseCompletion.totalCount} complete`
             : "",
         ].filter(Boolean);
-        const sectionChips = [
+        const titleChips = [
           group.is_current ? '<span class="label execution-wave-label wave-current-chip">Current Release</span>' : "",
+        ].filter(Boolean);
+        const sectionChips = [
           group.is_next ? '<span class="label execution-wave-label wave-status-planned">Next</span>' : "",
           compassReleaseStatusLabel(group.status)
             ? `<span class="label execution-wave-label ${compassReleaseStatusChipClass(group.status)}">${escapeHtml(compassReleaseStatusLabel(group.status))}</span>`
@@ -315,7 +317,10 @@
           <details class="execution-wave-section"${openAttr}>
             <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
               <div class="execution-wave-section-copy">
-                <div class="execution-wave-section-title">${escapeHtml(group.display_label)}</div>
+                <div class="execution-wave-section-title-row">
+                  <div class="execution-wave-section-title">${escapeHtml(group.display_label)}</div>
+                  ${titleChips.length ? `<div class="execution-wave-section-title-meta">${titleChips.join("")}</div>` : ""}
+                </div>
                 <div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>
                 <div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(lifecycleBits.join(" · "))}</div>
               </div>

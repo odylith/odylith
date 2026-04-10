@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.surfaces import compass_standup_brief_rewrites
+
 _WORKSTREAM_ID_RE = re.compile(r"\((B-\d+)\)")
 _WORKSTREAM_LABEL_RE = re.compile(r"^(?P<label>.+?)\s*\((?P<id>B-\d+)\)\s*$")
 _WORKSTREAM_FRAGMENT_RE = re.compile(r"([A-Z][^()]*?\(B-\d+\))")
@@ -281,7 +283,7 @@ def _completed_bullets(
         else:
             bullets.append(
                 _bullet(
-                    text,
+                    compass_standup_brief_rewrites.rewrite_verified_completion(text),
                     facts=[plan_completion],
                 )
             )
@@ -352,6 +354,8 @@ def _completed_bullets(
             text = "Odylith artifacts were refreshed alongside the code they describe."
         elif lower.startswith("prepare "):
             text = f"{summary[8:].strip()} is in place."
+        elif lower.startswith("verified ") and " landed for " in lower:
+            text = compass_standup_brief_rewrites.rewrite_verified_completion(summary)
         else:
             text = f"{summary}."
         bullets.append(_bullet(text, facts=[highlight]))
@@ -365,6 +369,12 @@ def _direction_bullet(
     window_key: str,
 ) -> dict[str, Any]:
     text = _fact_text(fact)
+    rewritten = compass_standup_brief_rewrites.rewrite_live_narration_direction(text)
+    if rewritten is not None:
+        return _bullet(
+            rewritten,
+            facts=[fact],
+        )
     match = re.match(r"(?P<label>.+?) is .*? because (?P<reason>.+)$", text)
     if not match:
         return _bullet(text, facts=[fact])
@@ -474,6 +484,9 @@ def _portfolio_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
 
 def _window_coverage_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
     text = _fact_text(fact)
+    rewritten = compass_standup_brief_rewrites.rewrite_window_coverage(text)
+    if rewritten is not None:
+        return _bullet(rewritten, facts=[fact])
     if text.startswith("Most of the movement this window sat in "):
         tail = text.split("Most of the movement this window sat in ", 1)[1].rstrip(".")
         ids = re.findall(r"`?(B-\d+)`?", tail)
@@ -638,6 +651,9 @@ def _next_detail(detail: str) -> str:
     cleaned = _clean_text(detail).rstrip(" .;:,")
     cleaned = re.sub(r"^(?:to|then)\s+", "", cleaned, count=1, flags=re.IGNORECASE)
     lower = cleaned.lower()
+    rewritten = compass_standup_brief_rewrites.rewrite_next_detail(cleaned)
+    if rewritten is not None:
+        return rewritten
     if "turn the next open checklist item into a named checkpoint" in lower:
         detail_tail = re.sub(
             r"^turn\s+the\s+next\s+open\s+checklist\s+item\s+into\s+a\s+named\s+checkpoint(?:\s+for\s+.+?)?\s+so\s+",
@@ -725,6 +741,9 @@ def _risk_bullet(
 ) -> dict[str, Any]:
     text = _fact_text(fact)
     lower = text.lower()
+    rewritten = compass_standup_brief_rewrites.rewrite_risk(text)
+    if rewritten is not None:
+        return _bullet(rewritten, facts=[fact])
     blocker_match = re.match(r"Primary blocker is an open\s+(P\d+)\s+bug:\s*(?P<detail>.+)$", text, re.IGNORECASE)
     if blocker_match is not None:
         severity = str(blocker_match.group(1)).upper()

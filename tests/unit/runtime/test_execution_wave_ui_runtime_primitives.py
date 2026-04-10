@@ -16,6 +16,7 @@ def test_execution_wave_component_css_matches_shared_contract() -> None:
     assert ".execution-wave-card.is-current-wave" in css
     assert ".execution-wave-focus-grid" in css
     assert ".execution-wave-card-shell" in css
+    assert ".execution-wave-card-shell-full-copy" in css
     assert ".execution-wave-panel" in css
     assert ".execution-wave-chip-link" in css
     assert ".execution-wave-chip-link.wave-member-selected" in css
@@ -37,6 +38,16 @@ def test_execution_wave_component_css_matches_shared_contract() -> None:
     )
     assert re.search(
         rf"\.execution-wave-chip-link\s*\{{[^}}]*font-family:\s*inherit;[^}}]*color:\s*var\(--chip-link-text\);[^}}]*font-size:\s*var\({re.escape(dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR)},\s*{re.escape(dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE)}\);[^}}]*line-height:\s*1;[^}}]*letter-spacing:\s*0\.01em;[^}}]*font-weight:\s*var\({re.escape(dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR)},\s*{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT}\);",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-card-shell-full-copy\s*\{[^}]*grid-template-areas:\s*\"title meta\"\s*\"sub sub\"\s*\"compact compact\";[^}]*row-gap:\s*8px;",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-card-shell-full-copy \.execution-wave-sub\s*\{[^}]*grid-area:\s*sub;[^}]*max-width:\s*none;",
         css,
         flags=re.S,
     )
