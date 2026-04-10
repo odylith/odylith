@@ -112,5 +112,16 @@ system actually verified. Right now those two states blur together.
   cleanup as end-to-end completion.
 - Bound residual bug: [CB-076](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md)
 
+## 2026-04-10 Resolution
+- The remaining pinned-runtime warning leak turned out to be stderr wrapping,
+  not a missing allowlist entry. `release_assets.py` already knew
+  `unsupported key type: 7` was benign, but Sigstore split the warning across
+  two lines in `trust.py`, so line-by-line matching still printed the scary
+  block.
+- Successful verification now folds wrapped stderr continuations before
+  allowlist matching and still preserves unexpected verifier chatter.
+- Bound bug closed:
+  [CB-076](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md)
+
 ## Outcome
 - Bound to `B-056` under `B-048`.

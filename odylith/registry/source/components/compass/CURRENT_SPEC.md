@@ -190,7 +190,11 @@ Compass is exposed through the top-level CLI:
 
 `odylith dashboard refresh --repo-root . --surfaces compass` remains supported
 as a compatibility wrapper over the same refresh engine. It is not a separate
-Compass orchestration path.
+Compass orchestration path. The wrapper must finish Compass to a terminal
+result before returning control, and any recovery hint from that wrapper must
+stay on `odylith dashboard refresh --repo-root . --surfaces compass` rather
+than assuming the newly activated launcher already exposes the direct
+`odylith compass refresh` subcommand surface.
 
 ## Runtime Pipeline
 ### 1. Collect evidence
@@ -453,7 +457,9 @@ churn does not drown out meaningful implementation evidence.
   must carry the concrete failure detail when render fails.
 - Compatibility `odylith dashboard refresh --repo-root . --surfaces compass`
   must delegate to the same request engine. It is a wrapper over the same
-  bounded Compass refresh, not a second Compass contract.
+  bounded Compass refresh, not a second Compass contract, and it must wait for
+  a terminal Compass result instead of returning a queued follow-up that can
+  outlive the launcher command surface that invoked it.
 - When the top-level shell refreshes without rerendering Compass, ordinary
   stale-snapshot disclosure belongs inside Compass itself.
 - The shell should reserve runtime-status cards for failed deeper-refresh
@@ -583,6 +589,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Added Atlas diagram `D-032` so the bounded Compass refresh contract is explicit about cold reinstall behavior, global narrated-cache warming, scoped rung-gated fresh spend, and the fail-closed edges around unavailable providers, invalid responses, and stale runtime patching. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-08: Finalized stale-runtime disclosure to a single in-frame Compass warning for ordinary stale snapshots and bounded live-history backfill to retained or restored days so stale windows no longer spray 404 history fetches into the shell browser lane. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Re-closed the one-warning contract for failed Compass refresh so the shell stays silent when the Compass frame already carries the same failed-refresh disclosure. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-10: Fixed the dashboard/lane-switch wrapper so Compass no longer returns control in a queued state with a dead follow-up command after a pinned-runtime activation. The wrapper now waits Compass to a terminal result and routes any retry back through `odylith dashboard refresh --repo-root . --surfaces compass`. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-101`)
 - 2026-04-09: Collapsed Compass shell asset truth back to one canonical frontend-contract path, removed the duplicated execution-wave CSS fork, and required exact live/bundle mirror plus browser proof for compact workstream buttons and stacked `Release Targets`. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-080`)
 - 2026-04-09: Removed Compass-local KPI/stat-card forks from the shell base CSS so hero KPIs and current-release tiles now load through Dashboard's shared card contract and browser proof can audit the same computed styling as Radar, Registry, and Casebook. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-085`)
 - 2026-04-08: Added current and next release summaries, grouped release-member views, and per-workstream release chips and history summaries so Compass shows target ship lanes without pretending release planning is the publication lane itself. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))

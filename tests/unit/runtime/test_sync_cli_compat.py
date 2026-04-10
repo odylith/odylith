@@ -469,7 +469,7 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
             "repo_root": tmp_path,
             "requested_profile": "shell-safe",
             "requested_runtime_mode": "auto",
-            "wait": False,
+            "wait": True,
             "status_only": False,
             "emit_output": True,
         }
@@ -663,7 +663,7 @@ def test_dashboard_refresh_continues_after_surface_failure_and_returns_non_zero(
             "status": "failed",
             "request_id": "compass-1",
             "state": {
-                "next_command": "odylith compass refresh --repo-root . --wait"
+                "next_command": "odylith dashboard refresh --repo-root . --surfaces compass"
             },
         },
     )
@@ -682,10 +682,10 @@ def test_dashboard_refresh_continues_after_surface_failure_and_returns_non_zero(
     assert "- compass: failed" in output
     assert "- radar: passed" in output
     assert "- tooling_shell: passed" in output
-    assert "next: odylith compass refresh --repo-root . --wait" in output
+    assert "next: odylith dashboard refresh --repo-root . --surfaces compass" in output
 
 
-def test_dashboard_refresh_compass_uses_shared_engine_queue_and_reports_failure(
+def test_dashboard_refresh_compass_waits_for_shared_engine_and_reports_failure(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     refresh_calls: list[dict[str, object]] = []
@@ -703,7 +703,7 @@ def test_dashboard_refresh_compass_uses_shared_engine_queue_and_reports_failure(
             "status": "failed",
             "request_id": "compass-refresh",
             "state": {
-                "next_command": "odylith compass refresh --repo-root . --wait"
+                "next_command": "odylith dashboard refresh --repo-root . --surfaces compass"
             },
         },
     )
@@ -721,12 +721,53 @@ def test_dashboard_refresh_compass_uses_shared_engine_queue_and_reports_failure(
             "repo_root": tmp_path,
             "requested_profile": "shell-safe",
             "requested_runtime_mode": "standalone",
-            "wait": False,
+            "wait": True,
             "status_only": False,
             "emit_output": True,
         }
     ]
-    assert "next: odylith compass refresh --repo-root . --wait" in output
+    assert "next: odylith dashboard refresh --repo-root . --surfaces compass" in output
+
+
+def test_dashboard_refresh_compass_waits_for_terminal_success(tmp_path: Path, monkeypatch, capsys) -> None:
+    refresh_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_run_command",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Compass compatibility path should not shell out directly")),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.compass_refresh_runtime,
+        "run_refresh",
+        lambda **kwargs: refresh_calls.append(dict(kwargs))
+        or {
+            "rc": 0,
+            "status": "passed",
+            "request_id": "compass-refresh",
+            "state": {},
+        },
+    )
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("compass",),
+        runtime_mode="auto",
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert refresh_calls == [
+        {
+            "repo_root": tmp_path,
+            "requested_profile": "shell-safe",
+            "requested_runtime_mode": "auto",
+            "wait": True,
+            "status_only": False,
+            "emit_output": True,
+        }
+    ]
+    assert "- compass: passed" in output
+    assert "- compass: queued" not in output
 
 
 def test_run_command_terminates_timed_out_child_process(tmp_path: Path, monkeypatch, capsys) -> None:

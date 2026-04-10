@@ -734,13 +734,13 @@ def _dashboard_surface_steps(
     if surface == "compass":
         steps.append(
             _execution_step(
-                "Queue or run Compass through the shared Compass refresh engine.",
+                "Run Compass through the shared refresh engine and wait for the bounded result.",
                 surface=surface,
                 action=lambda: compass_refresh_runtime.run_refresh(
                     repo_root=repo_root,
                     requested_profile=compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
                     requested_runtime_mode=normalized_runtime_mode,
-                    wait=False,
+                    wait=True,
                     status_only=False,
                     emit_output=True,
                 ),

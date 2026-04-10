@@ -27,10 +27,6 @@ Last updated (UTC): 2026-04-10
   `src/odylith/runtime/surfaces/mermaid_worker_session.py`,
   `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`,
   Mermaid CLI integration, and `B-080`. | Open | [2026-04-09-atlas-real-render-lane-still-misses-sub-second-bar-after-review-only-fast-path.md](2026-04-09-atlas-real-render-lane-still-misses-sub-second-bar-after-review-only-fast-path.md) |
-| CB-076 | 2026-04-08 | Successful pinned runtime verification still prints scary trusted root key warning noise | P1 | pinned-runtime release verification messaging,
-  `src/odylith/install/release_assets.py`, shipped-runtime trust bootstrap
-  output, `make dogfood-activate`, `make consumer-rehearsal`,
-  `make ga-gate`, release component contract. | Open | [2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md](2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md) |
 | CB-069 | 2026-04-08 | Pinned dogfood proof benchmark can wedge mid corpus and block release proof | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   benchmark progress finalization, benchmark cleanup/interruption handling,
@@ -135,6 +131,10 @@ Last updated (UTC): 2026-04-10
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-101 | 2026-04-10 | Dashboard and upgrade can queue compass behind a command the activated launcher does not expose | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  `src/odylith/runtime/governance/dashboard_refresh_contract.py`,
+  `tests/unit/runtime/test_sync_cli_compat.py`, Compass component spec, and
+  active Compass hardening governance under `B-025`. | Closed | [2026-04-10-dashboard-and-upgrade-can-queue-compass-behind-a-command-the-activated-launcher-does-not-expose.md](2026-04-10-dashboard-and-upgrade-can-queue-compass-behind-a-command-the-activated-launcher-does-not-expose.md) |
 | CB-087 | 2026-04-09 | Workstream progress badges can treat raw checklist zero as zero percent execution progress | P1 | `src/odylith/runtime/governance/plan_progress.py`,
   `src/odylith/runtime/governance/workstream_progress.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
@@ -259,6 +259,10 @@ Last updated (UTC): 2026-04-10
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, tooling shell
   refresh contract, Compass child-runtime freshness projection, shell runtime
   status messaging. | Closed | [2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md](2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md) |
+| CB-076 | 2026-04-08 | Successful pinned runtime verification still prints scary trusted root key warning noise | P1 | pinned-runtime release verification messaging,
+  `src/odylith/install/release_assets.py`, shipped-runtime trust bootstrap
+  output, `make dogfood-activate`, `make consumer-rehearsal`,
+  `make ga-gate`, release component contract. | Closed | [2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md](2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md) |
 | CB-071 | 2026-04-08 | Release workflows still pin first party actions on node 20 runtime | P1 | `.github/workflows/release.yml`,
   `.github/workflows/release-candidate.yml`, `.github/workflows/test.yml`,
   maintainer release workflow pin policy, release component contract. | Closed | [2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md](2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md) |

@@ -13,5 +13,5 @@ def dashboard_refresh_timeout_seconds(*, surface: str) -> float:
 def dashboard_refresh_failure_command(*, surface: str) -> str:
     normalized_surface = str(surface).strip().lower()
     if normalized_surface == "compass":
-        return display_command("compass", "refresh", "--repo-root", ".", "--wait")
+        return display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", "compass")
     return display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", normalized_surface)

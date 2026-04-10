@@ -181,6 +181,10 @@ Related Bugs:
       the operator surface entirely. "Full Compass refresh" in prose now maps
       to `odylith compass refresh --repo-root . --wait`, not a second CLI
       flag or hidden contract.
+- [x] Dashboard-triggered Compass refresh now waits for the bounded terminal
+      result instead of returning a queued follow-up that the just-activated
+      pinned launcher may not be able to run; wrapper recovery stays on
+      `odylith dashboard refresh --repo-root . --surfaces compass`.
 - [ ] Compass hot unchanged refresh reaches `<=50ms` of internal runtime work,
       complete cold shell-safe refresh reaches `<=1s`, and deterministic no
       longer dominates the ready-brief mix.
@@ -614,6 +618,11 @@ Related Bugs:
       under `50ms` of internal runtime work and cold complete shell-safe
       refresh under `1s` of internal runtime work. Any third minute-scale or
       deep-refresh lane is now governed as a regression, not a product option.
+- [x] April 10 lane-switch wrapper follow-on removed a dead post-switch handoff:
+      `odylith upgrade` and `odylith dashboard refresh --surfaces compass` now
+      wait Compass through to a terminal bounded result, and failure recovery
+      stays on the stable dashboard wrapper command instead of assuming the
+      newly activated pinned launcher already exposes `odylith compass refresh`.
 - [x] April 9 Atlas follow-on made that refresh contract visible in one
       architecture map too: diagram `D-032` now shows the canonical refresh
       command surface, bounded sync path, reinstall/no-cache cold-start

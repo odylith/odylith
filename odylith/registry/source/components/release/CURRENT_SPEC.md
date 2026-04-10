@@ -341,7 +341,11 @@ governed subsystem.
   lane, not only the hosted installer shell. If pinned dogfood, consumer
   rehearsal, or GA gate still prints allowlisted trust-warning noise such as
   `unsupported key type: 7` before healthy `OK:` asset lines, the warning
-  suppression slice is incomplete and stays open for the next release.
+  suppression slice is incomplete and stays open for the next release. Wrapped
+  verifier stderr continuations must be folded before benign-warning matching
+  so `Failed to load a trusted root key: unsupported ...` followed by
+  `key type: 7` stays quiet on successful verification instead of scaring
+  operators.
 - Release assets are authoritative only when the signed manifest, provenance,
   and SBOM all verify for the canonical signer identity.
 - Consumer posture must reject maintainer-only localhost asset overrides and

@@ -1,6 +1,6 @@
 - Bug ID: CB-076
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-08
 
@@ -34,21 +34,21 @@
 
 - Root Cause: The `v0.1.10` cleanup filtered allowlisted benign verifier noise
   in the hosted installer shell path, but the pinned-runtime proof lanes still
-  emit raw successful verifier stderr before the `OK:` lines. The benign
-  warning classification is therefore not yet enforced consistently across all
-  shipped verification entrypoints.
+  emitted wrapped successful verifier stderr before the `OK:` lines. The
+  benign warning allowlist in `release_assets.py` checked one stderr line at a
+  time, so `Failed to load a trusted root key: unsupported ...` on one line
+  and `key type: 7` on the next line escaped suppression even though the whole
+  warning block was already classified as non-fatal.
 
-- Solution: Extend the benign-warning suppression or translation contract to
-  the pinned-runtime verification paths used by dogfood activation, consumer
-  rehearsal, and GA gate, while preserving fatal verifier stderr and explicit
-  success proof for real failures.
+- Solution: Fold wrapped Sigstore stderr continuations into one warning chunk
+  before allowlist matching, then keep suppressing only the known non-fatal
+  trust bootstrap warnings while preserving any unexpected or fatal verifier
+  stderr.
 
-- Verification: Re-observed on 2026-04-08 during `make dogfood-activate`,
-  `make consumer-rehearsal PREVIOUS_VERSION=0.1.9`, and
-  `make ga-gate PREVIOUS_VERSION=0.1.9`, where the warning
-  `Failed to load a trusted root key: unsupported key type: 7` appeared
-  immediately before `OK:` lines for verified release assets and the release
-  lane still completed successfully to GA.
+- Verification: Fixed on 2026-04-10 with focused install-verification proof in
+  `tests/unit/install/test_release_assets.py`, including the real wrapped
+  warning shape from `trust.py` and a mixed benign-plus-unexpected-warning
+  case to prove only allowlisted chatter is suppressed.
 
 - Prevention: Warning suppression for successful verification is not complete
   until the same calm success contract holds across hosted installer bootstrap,
@@ -99,16 +99,17 @@
   the managed runtime, then replay dogfood activation and consumer rehearsal
   with real published assets before claiming the noise is fixed.
 
-- Regression Tests Added: None yet. The next release should add direct proof
-  for successful pinned-runtime verification output, not just hosted
-  install-script filtering.
+- Regression Tests Added: `tests/unit/install/test_release_assets.py` now
+  proves both the wrapped `unsupported ... key type: 7` warning suppression
+  path and the preservation of unexpected verifier warnings alongside the same
+  benign wrapped warning.
 
 - Monitoring Updates: Watch `dogfood-activate`, consumer rehearsal, and GA gate
-  logs for `unsupported key type: 7` and similar benign verifier chatter after
-  the next cleanup lands.
+  logs for any reappearance of wrapped trust-root warnings such as
+  `unsupported ... key type: 7` after successful verification.
 
-- Residual Risk: Consumers may still be spooked by healthy verification output
-  until the pinned-runtime lanes are cleaned up too.
+- Residual Risk: Low. The remaining risk is future benign-warning shape drift
+  in Sigstore/TUF output; unexpected stderr still prints in full.
 
 - Related Incidents/Bugs:
   [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md)
@@ -128,4 +129,4 @@
 - Runbook References: `odylith/MAINTAINER_RELEASE_RUNBOOK.md`,
   `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending next-release release-verification noise cleanup.
+- Fix Commit/PR: Pending local branch integration.

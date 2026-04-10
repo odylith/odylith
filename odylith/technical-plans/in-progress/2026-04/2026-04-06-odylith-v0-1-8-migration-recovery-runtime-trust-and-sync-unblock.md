@@ -172,9 +172,13 @@ Related Bugs:
 - [x] Child workstreams `B-049` through `B-056` and bugs `CB-054` through
       `CB-061` are now the explicit execution slices for this feedback set.
 - [x] Hosted installer suppression improved the shell bootstrap path, but the
-      same warning class still leaks through pinned-runtime proof lanes; that
-      residual next-release scope is now captured under `CB-076` and folded
-      back into `B-056`.
+  same warning class still leaks through pinned-runtime proof lanes; that
+  residual next-release scope is now captured under `CB-076` and folded
+  back into `B-056`.
+- [x] The remaining pinned-runtime trust-noise leak was the wrapped `trust.py`
+      stderr shape, not missing benign-warning classification. Successful
+      release verification now folds wrapped continuations before allowlist
+      matching, and `CB-076` is closed with focused install-verifier proof.
 - [x] `B-051` is landed: trust-only managed-runtime drift now stays on one
       shared wrapped-runtime posture path, and doctor no longer degrades into
       a generic failure summary when version reports trust-degraded detail.

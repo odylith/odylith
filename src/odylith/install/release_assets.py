@@ -58,7 +58,7 @@ _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_RETRY_ATTEMPTS = 3
 _DOWNLOAD_RETRYABLE_HTTP_CODES = {408, 429, 500, 502, 503, 504}
 _BENIGN_SIGSTORE_WARNING_PATTERNS = (
-    re.compile(r"unsupported key type:\s*7", re.IGNORECASE),
+    re.compile(r"unsupported(?:\s+\S+:\d+)?\s+key type:\s*7", re.IGNORECASE),
     re.compile(r"\btuf\b.*\boffline\b", re.IGNORECASE),
     re.compile(r"\boffline\b.*\btuf\b", re.IGNORECASE),
 )
@@ -568,15 +568,28 @@ def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_pat
     stderr = completed.stderr.strip()
     if not stderr:
         return SigstoreVerificationResult(warnings_suppressed=False)
-    stderr_lines = [line.strip() for line in stderr.splitlines() if line.strip()]
+    stderr_lines = _fold_sigstore_warning_lines(stderr)
     if all(_is_benign_sigstore_warning(line) for line in stderr_lines):
         return SigstoreVerificationResult(warnings_suppressed=True)
     print(stderr, file=sys.stderr)
     return SigstoreVerificationResult(warnings_suppressed=False)
 
 
+def _fold_sigstore_warning_lines(stderr: str) -> list[str]:
+    folded: list[str] = []
+    for raw_line in str(stderr or "").splitlines():
+        stripped = raw_line.strip()
+        if not stripped:
+            continue
+        if folded and raw_line[:1].isspace():
+            folded[-1] = f"{folded[-1]} {stripped}"
+            continue
+        folded.append(stripped)
+    return folded
+
+
 def _is_benign_sigstore_warning(line: str) -> bool:
-    normalized = str(line or "").strip()
+    normalized = re.sub(r"\s+", " ", str(line or "").strip())
     return any(pattern.search(normalized) is not None for pattern in _BENIGN_SIGSTORE_WARNING_PATTERNS)
 
 
