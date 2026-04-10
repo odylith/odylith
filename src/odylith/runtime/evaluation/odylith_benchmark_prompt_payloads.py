@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.evaluation.odylith_benchmark_prompt_family_rules import (
     family_anchors_all_required_docs,
@@ -834,7 +835,7 @@ def supplement_live_prompt_payload(
             changed_paths=[str(token).strip() for token in changed_paths if str(token).strip()],
             runtime_mode="local",
             intent=str(scenario.get("intent", "")).strip(),
-            delivery_profile="codex_hot_path",
+            delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
             family_hint=str(scenario.get("family", "")).strip(),
             workstream_hint=str(scenario.get("workstream", "")).strip(),
             validation_command_hints=[

@@ -59,6 +59,8 @@ _LEGACY_CODEX_MODEL_ALIASES: frozenset[str] = frozenset(
         "codex spark 5.3",
     }
 )
+_CHEAP_STRUCTURED_CODEX_MODEL = "gpt-5.3-codex-spark"
+_CHEAP_STRUCTURED_REASONING_EFFORT = "low"
 
 
 class ReasoningProvider(Protocol):
@@ -99,8 +101,18 @@ class StructuredReasoningRequest:
     schema_name: str
     output_schema: Mapping[str, Any]
     prompt_payload: Mapping[str, Any]
+    model: str = ""
     reasoning_effort: str = ""
     timeout_seconds: float = 0.0
+
+
+@dataclass(frozen=True)
+class StructuredReasoningProfile:
+    """Provider-aware model/effort overrides for bounded structured work."""
+
+    provider: str
+    model: str = ""
+    reasoning_effort: str = ""
 
 
 def reasoning_config_path(*, repo_root: Path) -> Path:
@@ -318,6 +330,44 @@ def persisted_reasoning_config_payload(config: ReasoningConfig) -> dict[str, Any
     return payload
 
 
+def cheap_structured_reasoning_profile(
+    config: ReasoningConfig,
+    *,
+    environ: Mapping[str, str] | None = None,
+) -> StructuredReasoningProfile:
+    """Return the cheap provider-aware profile for bounded structured narration.
+
+    This keeps lightweight structured update jobs fast and cheap across local
+    providers while preserving an explicit override path when a repo or
+    operator has already pinned a model.
+    """
+
+    env = dict(os.environ if environ is None else environ)
+    provider = _normalize_provider(getattr(config, "provider", ""))
+    if provider == "auto-local" and _allow_implicit_local_provider(environ=env):
+        provider = _implicit_local_provider_name(
+            environ=env,
+            codex_bin=getattr(config, "codex_bin", "codex"),
+            claude_bin=getattr(config, "claude_bin", "claude"),
+        )
+    model = _normalize_local_provider_model(provider, getattr(config, "model", ""))
+    if provider == "codex-cli":
+        return StructuredReasoningProfile(
+            provider=provider,
+            model=model or _CHEAP_STRUCTURED_CODEX_MODEL,
+            reasoning_effort=_CHEAP_STRUCTURED_REASONING_EFFORT,
+        )
+    if provider == "claude-cli":
+        return StructuredReasoningProfile(
+            provider=provider,
+            model=model,
+            reasoning_effort=_CHEAP_STRUCTURED_REASONING_EFFORT,
+        )
+    if provider == "openai-compatible":
+        return StructuredReasoningProfile(provider=provider, model=model, reasoning_effort="")
+    return StructuredReasoningProfile(provider=provider, model=model, reasoning_effort="")
+
+
 def _provider_system_prompt() -> str:
     return (
         "You are an expert reasoning editor assisting Tribunal. "
@@ -457,7 +507,8 @@ class OpenAICompatibleReasoningProvider:
         self.last_failure_detail = str(detail or "").strip()
 
     def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
-        if not self._base_url or not self._api_key or not self._model:
+        request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
+        if not self._base_url or not self._api_key or not request_model:
             self._record_failure(
                 "unavailable",
                 "OpenAI-compatible provider is unconfigured for base_url, api_key, or model.",
@@ -468,7 +519,7 @@ class OpenAICompatibleReasoningProvider:
             default=self._timeout_seconds,
         )
         request_payload = {
-            "model": self._model,
+            "model": request_model,
             "temperature": 0,
             "messages": [
                 {
@@ -582,6 +633,7 @@ class CodexCliReasoningProvider:
         reasoning_effort = _normalize_codex_reasoning_effort(
             _normalize_string(getattr(request, "reasoning_effort", ""), default=self._reasoning_effort)
         )
+        request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
         timeout_seconds = _resolved_request_timeout_seconds(
             getattr(request, "timeout_seconds", 0.0),
             default=self._timeout_seconds,
@@ -619,8 +671,8 @@ class CodexCliReasoningProvider:
                 "-C",
                 str(self._repo_root),
             ]
-            if self._model:
-                command.extend(["--model", self._model])
+            if request_model:
+                command.extend(["--model", request_model])
             command.append("-")
             try:
                 completed = subprocess.run(
@@ -696,6 +748,7 @@ class ClaudeCliReasoningProvider:
         reasoning_effort = _normalize_claude_reasoning_effort(
             _normalize_string(getattr(request, "reasoning_effort", ""), default=self._reasoning_effort)
         )
+        request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
         timeout_seconds = _resolved_request_timeout_seconds(
             getattr(request, "timeout_seconds", 0.0),
             default=self._timeout_seconds,
@@ -724,8 +777,8 @@ class ClaudeCliReasoningProvider:
             "1",
             "--no-session-persistence",
         ]
-        if self._model:
-            command.extend(["--model", self._model])
+        if request_model:
+            command.extend(["--model", request_model])
         if reasoning_effort:
             command.extend(["--effort", reasoning_effort])
         try:
@@ -983,8 +1036,10 @@ __all__ = [
     "OpenAICompatibleReasoningProvider",
     "ReasoningConfig",
     "ReasoningProvider",
+    "StructuredReasoningProfile",
     "StructuredReasoningRequest",
     "build_reasoning_payload",
+    "cheap_structured_reasoning_profile",
     "persisted_reasoning_config_payload",
     "provider_from_config",
     "resolve_claude_bin",

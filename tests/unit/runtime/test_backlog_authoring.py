@@ -32,6 +32,17 @@ def _repo_rel(root: Path, path: Path) -> str:
     return path.resolve().relative_to(root.resolve()).as_posix()
 
 
+def _seed_product_repo_shape(root: Path) -> None:
+    (root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+    registry_root = root / "odylith" / "registry" / "source"
+    registry_root.mkdir(parents=True, exist_ok=True)
+    (root / "pyproject.toml").write_text(
+        "[project]\nname = \"odylith\"\nversion = \"0.1.11\"\n",
+        encoding="utf-8",
+    )
+    (registry_root / "component_registry.v1.json").write_text("{\"components\": []}\n", encoding="utf-8")
+
+
 def _idea_text(
     *,
     idea_id: str,
@@ -49,7 +60,6 @@ def _idea_text(
         "commercial_value: 4\n\n"
         "product_impact: 4\n\n"
         "market_value: 3\n\n"
-        "impacted_lanes: both\n\n"
         "impacted_parts: odylith\n\n"
         "sizing: M\n\n"
         "complexity: Medium\n\n"
@@ -78,6 +88,7 @@ def _idea_text(
 
 
 def _seed_backlog_repo(root: Path) -> Path:
+    _seed_product_repo_shape(root)
     idea_dir = root / "odylith" / "radar" / "source" / "ideas" / "2026-03"
     idea_dir.mkdir(parents=True, exist_ok=True)
     seed_path = idea_dir / "2026-03-30-seed-workstream.md"
@@ -97,15 +108,15 @@ def _seed_backlog_repo(root: Path) -> Path:
             "# Backlog Index\n\n"
             "Last updated (UTC): 2026-03-30\n\n"
             "## Ranked Active Backlog\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
-            f"| 1 | B-101 | Seed Workstream | P1 | 100 | 4 | 4 | 3 | M | Medium | both | queued | [seed]({_repo_rel(root, seed_path)}) |\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            f"| 1 | B-101 | Seed Workstream | P1 | 100 | 4 | 4 | 3 | M | Medium | queued | [seed]({_repo_rel(root, seed_path)}) |\n\n"
             "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
             "## Finished (Linked to `odylith/technical-plans/done`)\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
             "## Reorder Rationale Log\n\n"
             "### B-101 (rank 1)\n"
             "- why now: seed baseline.\n"
@@ -191,7 +202,7 @@ def test_backlog_create_writes_queued_item_and_updates_index(tmp_path: Path) -> 
     assert "title: Portable guidance cleanup" in created_text
 
     index_text = backlog_index.read_text(encoding="utf-8")
-    assert "| 1 | B-102 | Portable guidance cleanup | P1 | 101 | 3 | 3 | 3 | M | Medium | both | queued |" in index_text
+    assert "| 1 | B-102 | Portable guidance cleanup | P1 | 101 | 3 | 3 | 3 | M | Medium | queued |" in index_text
     assert "[portable-guidance-cleanup](odylith/radar/source/ideas/" in index_text
     assert "### B-102 (rank 1)" in index_text
     assert "Review checkpoint: 2026-04-15." in index_text
@@ -238,3 +249,29 @@ def test_backlog_create_rejects_non_governed_ideas_root_override(tmp_path: Path,
 
     assert rc == 2
     assert "--ideas-root must resolve to `odylith/radar/source/ideas`" in output
+
+
+def test_backlog_create_normalizes_product_repo_title_prefix(tmp_path: Path) -> None:
+    backlog_index = _seed_backlog_repo(tmp_path)
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Odylith Radar Workstream Title Prefix Normalization",
+        ]
+    )
+
+    assert rc == 0
+    created_paths = sorted(
+        (tmp_path / "odylith" / "radar" / "source" / "ideas").rglob("*radar-workstream-title-prefix-normalization*.md")
+    )
+    assert len(created_paths) == 1
+    created_text = created_paths[0].read_text(encoding="utf-8")
+    assert "title: Radar Workstream Title Prefix Normalization" in created_text
+    assert "title: Odylith Radar Workstream Title Prefix Normalization" not in created_text
+
+    index_text = backlog_index.read_text(encoding="utf-8")
+    assert "| B-102 | Radar Workstream Title Prefix Normalization |" in index_text
+    assert "| B-102 | Odylith Radar Workstream Title Prefix Normalization |" not in index_text

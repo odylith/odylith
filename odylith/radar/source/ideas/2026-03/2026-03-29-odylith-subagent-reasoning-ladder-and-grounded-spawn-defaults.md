@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-015
-title: Odylith Subagent Reasoning Ladder and Grounded Spawn Defaults
+title: Subagent Reasoning Ladder and Grounded Spawn Defaults
 date: 2026-03-29
 priority: P0
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: Subagent Router, Subagent Orchestrator, Context Engine hot-path execution profiles, consumer agent guidance, consumer skills, and benchmark proof
 sizing: M
 complexity: High
@@ -30,8 +29,16 @@ workstream_split_into:
 workstream_merged_into:
 workstream_merged_from:
 supersedes:
-superseded_by:
+superseded_by: B-069
 ---
+
+## Historical Note
+This slice established the first validated native-spawn delegated reasoning
+ladder.
+Treat any language here that reads like the whole product contract as
+historical. `B-069` supersedes the normative host-separation contract and
+keeps native spawn as an explicit capability boundary instead of the shared
+default.
 
 ## Problem
 Odylith already has a routed delegation stack, but it is not yet as disciplined
@@ -39,12 +46,12 @@ or as leveraged as it should be. Deeper reasoning promotion is still too
 additive instead of explicitly earned, the runtime execution profile does not
 always align cleanly with router selection, prompt-level orchestration is still
 more conservative than necessary on some grounded slices, and the consumer
-guidance does not yet make "ground, then delegate by default in Codex" feel
-like the obvious happy path.
+guidance does not yet make "ground, then delegate by default on validated
+native-spawn hosts" feel like the obvious happy path.
 
 ## Customer
-- Primary: Odylith consumers using Codex who want delegation to feel faster,
-  sharper, and more reliable out of the box.
+- Primary: Odylith consumers who want delegation to feel faster, sharper, and
+  more reliable out of the box.
 - Secondary: Odylith maintainers who need a tighter shared contract between the
   Context Engine, Router, Orchestrator, consumer guidance, and benchmark proof.
 
@@ -60,8 +67,8 @@ Add explicit earned-depth and delegation-readiness posture to routed task
 assessment, use that posture to tighten Router profile selection and
 Orchestrator fan-out decisions, align the Context Engine's synthesized
 execution-profile hints with the stronger routing ladder, and update consumer
-guidance so Codex users default to Odylith-grounded delegation for most
-substantive bounded prompts.
+guidance so validated native-spawn hosts default to Odylith-grounded
+delegation for most substantive bounded prompts.
 
 ## Scope
 - add explicit earned-depth and delegation-readiness signals to routed task
@@ -72,14 +79,15 @@ substantive bounded prompts.
   more often while guarded slices stay serial or local
 - align hot-path execution-profile synthesis with the Router's stronger routing
   ladder
-- update consumer-facing subagent guidance and skills so Codex users default to
-  Odylith-backed delegation for most grounded prompts
+- update consumer-facing subagent guidance and skills so validated
+  native-spawn hosts default to Odylith-backed delegation for most grounded
+  prompts
 - prove the change with focused router/orchestrator tests and benchmark runs
 
 ## Non-Goals
-- enabling native subagent spawning in Claude Code
+- enabling native subagent spawning on additional hosts before validation
 - broad redesign of the benchmark corpus
-- changing the public surface contract away from Codex-only native spawn
+- changing the public surface contract away from capability-gated native spawn
 
 ## Risks
 - over-promoting grounded slices into heavier models and giving back token or
@@ -94,10 +102,11 @@ substantive bounded prompts.
   contract can be tightened once instead of in parallel local variants
 
 ## Success Metrics
-- grounded delegated Codex slices climb the reasoning ladder more predictably
+- grounded delegated slices climb the reasoning ladder more predictably on the
+  validated native-spawn host
 - guarded or low-yield slices stay on lighter or local lanes more often
-- consumer guidance clearly defaults to Odylith-backed Codex delegation for
-  most grounded substantive prompts
+- consumer guidance clearly defaults to Odylith-backed delegation for most
+  grounded substantive prompts when the current host supports native spawn
 - benchmark proof stays green and improves on at least one measured adoption,
   token, or latency signal without regressing recall or validation
 
@@ -106,9 +115,10 @@ substantive bounded prompts.
 - `odylith benchmark --repo-root .`
 
 ## Rollout
-Ship as a product-contract tightening slice. Keep the public native spawn
-boundary Codex-only, align the consumer guidance to that contract, and close
-the slice only after benchmark proof and source truth are updated together.
+Ship as a product-contract tightening slice. Keep native spawn gated to the
+validated host set for the time of this slice, align the consumer guidance to
+that contract, and close the slice only after benchmark proof and source truth
+are updated together.
 
 ## Why Now
 Odylith's biggest compounding advantage comes from grounded delegation. Leaving
@@ -127,14 +137,15 @@ and strong when it must be.
 - `odylith`
 
 ## Interface Changes
-- grounded Codex slices now promote into stronger delegated posture more
+- grounded route-ready slices now promote into stronger delegated posture more
   deliberately
-- consumer guidance now defaults to Odylith-backed Codex delegation more often
-- Claude Code remains guidance-compatible but not native-spawn-enabled
+- consumer guidance now defaults to Odylith-backed delegation more often when
+  the current host supports native spawn
+- hosts without validated native spawn remain guidance-compatible and local
 
 ## Migration/Compatibility
 - no migration required
-- Codex remains the only supported native spawn target
+- native spawn remains limited to the validated host set for this slice
 - existing local-only fallback posture remains available for guarded slices
 
 ## Test Strategy

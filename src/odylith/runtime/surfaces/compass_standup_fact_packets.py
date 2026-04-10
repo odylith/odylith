@@ -7,6 +7,8 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
+
 
 def _host():
     from odylith.runtime.surfaces import compass_dashboard_runtime as host
@@ -21,6 +23,8 @@ def _build_scoped_standup_fact_packet(
     recent_completed: Sequence[Mapping[str, str]],
     window_events: Sequence[Mapping[str, Any]],
     window_transactions: Sequence[Mapping[str, Any]],
+    execution_updates: Sequence[Mapping[str, Any]] | None = None,
+    transaction_updates: Sequence[Mapping[str, Any]] | None = None,
     window_hours: int,
     risk_rows: Mapping[str, Sequence[Mapping[str, Any]]],
     risk_summary: str,
@@ -80,8 +84,16 @@ def _build_scoped_standup_fact_packet(
         for item in completed_match
     ]
     deliverables = [item for item in deliverables if item]
-    transaction_updates = host._collect_window_transaction_updates(window_transactions, ws_id=idea_id, max_items=2)
-    execution_updates = _collect_window_execution_updates(window_events, ws_id=idea_id, max_items=2)
+    transaction_updates = (
+        [dict(item) for item in transaction_updates if isinstance(item, Mapping)]
+        if isinstance(transaction_updates, Sequence)
+        else host._collect_window_transaction_updates(window_transactions, ws_id=idea_id, max_items=2)
+    )
+    execution_updates = (
+        [dict(item) for item in execution_updates if isinstance(item, Mapping)]
+        if isinstance(execution_updates, Sequence)
+        else _collect_window_execution_updates(window_events, ws_id=idea_id, max_items=2)
+    )
     execution_highlights = [
         str(item.get("summary", "")).strip()
         for item in (list(transaction_updates) + list(execution_updates))
@@ -320,30 +332,6 @@ def _build_scoped_standup_fact_packet(
             )
         )
 
-    section_candidates["why_this_matters"].append(
-        _standup_fact(
-            section_key="why_this_matters",
-            voice_hint="executive",
-            priority=100,
-            text=use_story or f"{label} is a prerequisite lane for dependent execution.",
-            source="workstream_metadata",
-            kind="executive_impact",
-            workstreams=[idea_id],
-        )
-    )
-    section_candidates["why_this_matters"].append(
-        _standup_fact(
-            section_key="why_this_matters",
-            voice_hint="operator",
-            priority=92,
-            text=architecture_consequence
-            or f"{label} gives operators a clearer contract and lowers coordination risk for adjacent workstreams.",
-            source="workstream_metadata",
-            kind="operator_leverage",
-            workstreams=[idea_id],
-        )
-    )
-
     section_candidates["risks_to_watch"].extend(
         _risk_facts(
             ws_id=idea_id,
@@ -420,6 +408,8 @@ def _build_global_standup_fact_packet(
     recent_completed: Sequence[Mapping[str, str]],
     window_events: Sequence[Mapping[str, Any]],
     window_transactions: Sequence[Mapping[str, Any]],
+    execution_updates: Sequence[Mapping[str, Any]] | None = None,
+    transaction_updates: Sequence[Mapping[str, Any]] | None = None,
     window_hours: int,
     risk_rows: Mapping[str, Sequence[Mapping[str, Any]]],
     risk_summary: str,
@@ -465,8 +455,16 @@ def _build_global_standup_fact_packet(
     primary_plan = focused_primary.get("plan", {}) if isinstance(focused_primary.get("plan"), Mapping) else {}
     primary_progress_ratio = float(primary_plan.get("progress_ratio", 0.0) or 0.0)
     eta_days, eta_source = _estimate_remaining_days(focused_primary if focused_primary else {})
-    execution_updates = host._collect_window_execution_updates(window_events, max_items=3)
-    transaction_updates = host._collect_window_transaction_updates(window_transactions, max_items=3)
+    execution_updates = (
+        [dict(item) for item in execution_updates if isinstance(item, Mapping)]
+        if isinstance(execution_updates, Sequence)
+        else host._collect_window_execution_updates(window_events, max_items=3)
+    )
+    transaction_updates = (
+        [dict(item) for item in transaction_updates if isinstance(item, Mapping)]
+        if isinstance(transaction_updates, Sequence)
+        else host._collect_window_transaction_updates(window_transactions, max_items=3)
+    )
     execution_highlights = [
         str(item.get("summary", "")).strip()
         for item in (list(transaction_updates) + list(execution_updates))
@@ -499,23 +497,23 @@ def _build_global_standup_fact_packet(
         source_kind=freshness_source,
     )
     completed_group_lines = _build_completed_group_lines(recent_completed, ws_index=ws_index)
-    active_ids = {
+    focus_row_ids = {
         str(row.get("idea_id", "")).strip()
-        for row in active_ws_rows
+        for row in ws_rows
         if isinstance(row, Mapping) and str(row.get("idea_id", "")).strip()
     }
     ranked_activity = sorted(
-        [(ws_id, int(count)) for ws_id, count in event_counts_by_ws.items() if ws_id and ws_id in active_ids],
+        [(ws_id, int(count)) for ws_id, count in event_counts_by_ws.items() if ws_id and ws_id in focus_row_ids],
         key=lambda item: (-item[1], item[0]),
     )
     if not ranked_activity:
-        focus_row_ids = {
+        active_ids = {
             str(row.get("idea_id", "")).strip()
-            for row in ws_rows
+            for row in active_ws_rows
             if isinstance(row, Mapping) and str(row.get("idea_id", "")).strip()
         }
         ranked_activity = sorted(
-            [(ws_id, int(count)) for ws_id, count in event_counts_by_ws.items() if ws_id and ws_id in focus_row_ids],
+            [(ws_id, int(count)) for ws_id, count in event_counts_by_ws.items() if ws_id and ws_id in active_ids],
             key=lambda item: (-item[1], item[0]),
         )
     top_activity_labels: list[str] = []
@@ -523,15 +521,41 @@ def _build_global_standup_fact_packet(
         ws_row = ws_index.get(ws_id, {})
         label = _ws_label(ws_row) if ws_row else ws_id
         top_activity_labels.append(_narrative_excerpt(label, max_sentences=1, max_chars=120))
+    window_coverage_ids = [
+        ws_id
+        for ws_id, _count in ranked_activity
+        if ws_id
+    ]
+    if not window_coverage_ids:
+        window_coverage_ids = [ws_id for ws_id in focus_row_ids if ws_id]
+    window_coverage_ids = list(dict.fromkeys(window_coverage_ids))
+    window_coverage_sample = window_coverage_ids[:6]
+    if len(window_coverage_ids) <= 1:
+        window_coverage_text = (
+            f"Work stayed inside {window_coverage_sample[0]}."
+            if window_coverage_sample
+            else "Work stayed inside the primary lane."
+        )
+    elif len(window_coverage_ids) <= len(window_coverage_sample):
+        if len(window_coverage_sample) == 2:
+            joined_sample = " and ".join(window_coverage_sample)
+        else:
+            joined_sample = ", ".join(window_coverage_sample[:-1]) + f", and {window_coverage_sample[-1]}"
+        window_coverage_text = f"Work moved across {len(window_coverage_ids)} workstreams: {joined_sample}."
+    else:
+        if len(window_coverage_sample) == 1:
+            sample_text = window_coverage_sample[0]
+        elif len(window_coverage_sample) == 2:
+            sample_text = " and ".join(window_coverage_sample)
+        else:
+            sample_text = ", ".join(window_coverage_sample[:-1]) + f", and {window_coverage_sample[-1]}"
+        window_coverage_text = f"Most of the movement this window sat in {sample_text}."
     active_count = len([row for row in active_ws_rows if isinstance(row, Mapping)])
-    progressed_count = 0
-    for row in active_ws_rows:
-        if not isinstance(row, Mapping):
-            continue
-        plan = row.get("plan", {})
-        progress_ratio = float(plan.get("progress_ratio", 0.0) or 0.0) if isinstance(plan, Mapping) else 0.0
-        if progress_ratio > 0:
-            progressed_count += 1
+    progress_summary = workstream_progress_runtime.summarize_active_progress(
+        [row for row in active_ws_rows if isinstance(row, Mapping)]
+    )
+    progressed_count = int(progress_summary.get("tracked", 0) or 0) + int(progress_summary.get("closed", 0) or 0)
+    active_untracked_count = int(progress_summary.get("active_untracked", 0) or 0)
     fallback_next_text = _global_fallback_next_text(
         primary_label=primary_label,
         primary_purpose=primary_purpose,
@@ -577,7 +601,7 @@ def _build_global_standup_fact_packet(
         )
 
     executive_direction = _decapitalize_clause(
-        primary_purpose or "focused execution remains prerequisite for dependent platform lanes"
+        primary_purpose or "focused execution remains prerequisite for dependent follow-on workstreams"
     )
     section_candidates["current_execution"].append(
         _standup_fact(
@@ -612,9 +636,15 @@ def _build_global_standup_fact_packet(
     elif progressed_count >= active_count and active_count > 0:
         portfolio_posture = "Active lanes are converting plans into concrete implementation outcomes."
     elif progressed_count > 0:
-        portfolio_posture = "Planning and implementation are running in parallel across active lanes."
+        if active_untracked_count > 0:
+            portfolio_posture = "Planning and implementation are running in parallel across active lanes, and some implementation lanes still lack captured checklist progress."
+        else:
+            portfolio_posture = "Planning and implementation are running in parallel across active lanes."
     else:
-        portfolio_posture = "Active lanes are still in planning setup and closure work is just starting."
+        if active_untracked_count > 0:
+            portfolio_posture = "Active lanes are in implementation, but checklist progress is not yet captured."
+        else:
+            portfolio_posture = "Active lanes are still in planning setup and closure work is just starting."
     if top_activity_labels:
         portfolio_posture = portfolio_posture.rstrip(".") + f" Live focus lanes: {', '.join(top_activity_labels)}."
     section_candidates["current_execution"].append(
@@ -627,6 +657,18 @@ def _build_global_standup_fact_packet(
             kind="portfolio_posture",
         )
     )
+    if top_activity_labels:
+        section_candidates["current_execution"].append(
+            _standup_fact(
+                section_key="current_execution",
+                voice_hint="operator",
+                priority=88,
+                text=window_coverage_text,
+                source="portfolio",
+                kind="window_coverage",
+                workstreams=window_coverage_ids,
+            )
+        )
     section_candidates["current_execution"].append(
         _standup_fact(
             section_key="current_execution",
@@ -677,7 +719,7 @@ def _build_global_standup_fact_packet(
                 section_key="next_planned",
                 voice_hint="operator",
                 priority=100,
-                text=f"Immediate forcing function is {next_action_tokens[0]}.",
+                text=f"{next_action_tokens[0]}.",
                 source="plan",
                 kind="forcing_function",
             )
@@ -688,7 +730,7 @@ def _build_global_standup_fact_packet(
                 section_key="next_planned",
                 voice_hint="operator",
                 priority=92,
-                text=f"Then move {next_action_tokens[1]}.",
+                text=f"{next_action_tokens[1]}.",
                 source="plan",
                 kind="follow_on",
             )
@@ -704,34 +746,6 @@ def _build_global_standup_fact_packet(
                 kind="fallback_next",
             )
         )
-
-    section_candidates["why_this_matters"].append(
-        _standup_fact(
-            section_key="why_this_matters",
-            voice_hint="executive",
-            priority=100,
-            text=primary_use_story or "Focused execution remains prerequisite for dependent platform lanes.",
-            source="workstream_metadata",
-            kind="executive_impact",
-            workstreams=[
-                str(focused_primary.get("idea_id", "")).strip()
-            ] if focused_primary else [],
-        )
-    )
-    section_candidates["why_this_matters"].append(
-        _standup_fact(
-            section_key="why_this_matters",
-            voice_hint="operator",
-            priority=92,
-            text=primary_architecture_consequence
-            or "The active lane gives operators a clearer contract and lower coordination risk across dependent lanes.",
-            source="workstream_metadata",
-            kind="operator_leverage",
-            workstreams=[
-                str(focused_primary.get("idea_id", "")).strip()
-            ] if focused_primary else [],
-        )
-    )
 
     section_candidates["risks_to_watch"].extend(
         _risk_facts(

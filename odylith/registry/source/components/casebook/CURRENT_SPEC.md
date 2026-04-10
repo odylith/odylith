@@ -1,5 +1,5 @@
 # Casebook
-Last updated: 2026-04-07
+Last updated: 2026-04-09
 
 
 Last updated (UTC): 2026-04-07
@@ -97,6 +97,9 @@ builds:
   migration aliases
 - source links back to markdown bug files
 - workstream, component, and diagram links into Radar, Registry, and Atlas
+- shared deep-link buttons for component, spec, proof, and diagram actions;
+  those chips must reuse Dashboard's centralized deep-link button contract
+  instead of Casebook-local button styling
 
 The renderer is intentionally read-only with respect to bug truth.
 
@@ -112,6 +115,9 @@ The renderer should not echo the same field content in both bands unless the
 copy is materially transformed for a different audience.
 - It should also dedupe overlapping proof and evidence links across those
   bands so the same path is not rendered twice under adjacent headings.
+- The selected bug id should appear in the detail-header summary-facts band,
+  and the renderer must not also emit a separate `CB-###` kicker above the
+  title.
 
 ## Intent Behind Casebook
 Casebook exists so a developer can answer:

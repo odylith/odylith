@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-008
 
-title: Odylith Memory Areas and Operator Readout
+title: Memory Areas and Operator Readout
 
 date: 2026-03-28
 
@@ -13,8 +13,6 @@ commercial_value: 4
 product_impact: 5
 
 market_value: 4
-
-impacted_lanes: both
 
 impacted_parts: context-engine memory snapshot contract, runtime status output, shell telemetry drawer, and context-engine source truth
 

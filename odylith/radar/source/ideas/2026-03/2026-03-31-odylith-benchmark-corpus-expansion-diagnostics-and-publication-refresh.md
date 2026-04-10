@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-039
-title: Odylith Benchmark Corpus Expansion, Diagnostics, and Publication Refresh
+title: Benchmark Corpus Expansion, Diagnostics, and Publication Refresh
 date: 2026-03-31
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: benchmark corpus, benchmark report diagnostics, README publication, dashboard freshness, and benchmark review guidance
 sizing: M
 complexity: High

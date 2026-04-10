@@ -2,7 +2,7 @@ status: queued
 
 idea_id: B-002
 
-title: Odylith Multi-Developer Repo Collaboration Architecture
+title: Multi-Developer Repo Collaboration Architecture
 
 date: 2026-03-27
 
@@ -13,8 +13,6 @@ commercial_value: 5
 product_impact: 5
 
 market_value: 4
-
-impacted_lanes: both
 
 impacted_parts: project/repo/workspace scope identity, stable actor attribution, collaboration contracts, local runtime state isolation, governance surface projections, comment durability, agent memory hygiene, and optional hosted collaboration augmentation
 

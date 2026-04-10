@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-046
-title: Odylith Tribunal Benchmark Families, No-Tribunal Ablation, and Diagnosis-Proof Publication
+title: Tribunal Benchmark Families, No-Tribunal Ablation, and Diagnosis-Proof Publication
 date: 2026-04-04
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: internal benchmark corpus, Tribunal-specific evaluation families, benchmark ablation lanes, diagnosis and recovery proof, and README benchmark publication discipline
 sizing: M
 complexity: High

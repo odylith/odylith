@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 from pathlib import Path
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as projection_compiler_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime as hot_path_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime as hot_path_scope
@@ -175,7 +176,7 @@ def test_session_scope_caps_dirty_paths_to_high_signal_subset(tmp_path: Path, mo
             "odylith/atlas/atlas.html",
             "README.md",
             "docs/specs/odylith-repo-integration-contract.md",
-            "src/odylith/runtime/context_engine/odylith_context_engine_projection_surface_runtime.py",
+            "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
             "src/odylith/runtime/governance/backlog_authoring.py",
             "src/odylith/runtime/governance/sync_workstream_artifacts.py",
             "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
@@ -1209,7 +1210,7 @@ def test_compact_context_dossier_for_delivery_uses_tight_defaults() -> None:
             "related_entities": {
                 "plans": [{"entity_id": "P-1"}, {"entity_id": "P-2"}, {"entity_id": "P-3"}],
             },
-            "recent_codex_events": [
+            agent_runtime_contract.AGENT_EVENT_KEY: [
                 {"event_id": "1", "summary": "one"},
                 {"event_id": "2", "summary": "two"},
                 {"event_id": "3", "summary": "three"},
@@ -1224,7 +1225,8 @@ def test_compact_context_dossier_for_delivery_uses_tight_defaults() -> None:
 
     assert compact["entity"]["diagram_id_count"] == 2
     assert compact["related_entities"]["plans"] == [{"entity_id": "P-1"}, {"entity_id": "P-2"}]
-    assert len(compact["recent_codex_events"]) == 2
+    assert len(compact[agent_runtime_contract.AGENT_EVENT_KEY]) == 2
+    assert "recent_codex_events" not in compact
     assert len(compact["delivery_scope_summaries"]) == 1
     assert compact["relation_count"] == 3
 

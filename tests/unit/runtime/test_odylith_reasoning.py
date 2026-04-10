@@ -1158,6 +1158,7 @@ def test_codex_cli_provider_generate_structured_writes_custom_schema(
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         assert schema["required"] == ["ok"]
         assert 'model_reasoning_effort="medium"' in command
+        assert command[command.index("--model") + 1] == "gpt-5.3-codex-spark"
         assert kwargs["timeout"] == 17.0
         output_path.write_text(json.dumps({"ok": True}), encoding="utf-8")
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
@@ -1175,6 +1176,7 @@ def test_codex_cli_provider_generate_structured_writes_custom_schema(
                 "properties": {"ok": {"type": "boolean"}},
             },
             prompt_payload={"scope": "B-101"},
+            model="gpt-5.3-codex-spark",
             reasoning_effort="medium",
             timeout_seconds=17.0,
         )

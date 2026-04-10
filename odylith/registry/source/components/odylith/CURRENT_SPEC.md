@@ -1,8 +1,8 @@
 # Odylith
-Last updated: 2026-04-07
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-08
 
 ## Purpose
 Odylith is the installable local governance and execution agent and platform
@@ -92,6 +92,7 @@ remediation, and rendering.
 ### Governance and surface materialization
 - `odylith sync`
 - `odylith dashboard refresh`
+- `odylith release ...`
 - `odylith governance ...`
 - `odylith validate ...`
 - `odylith validate self-host-posture ...`
@@ -121,6 +122,9 @@ Public docs should describe these commands, not direct module entrypoints.
   Canonical product component inventory.
 - `odylith/radar/source/`
   Product workstream backlog and ideas.
+- `odylith/radar/source/releases/`
+  Product repo-local release-planning truth for release catalog, alias
+  ownership, and append-only workstream targeting history.
 - `odylith/technical-plans/`
   Product implementation-plan record.
 - `odylith/casebook/bugs/`
@@ -427,3 +431,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-02: Clarified the core product claim as control-plane leverage around the same base coding model, explicitly tying Odylith's value to improved context quality, search, validation, and recovery rather than any claim of beating model weights. (Plan: [B-033](odylith/radar/radar.html?view=plan&workstream=B-033))
 - 2026-04-05: Promoted the canonical benchmark guidance manifest into tracked product truth so benchmark and runtime guidance memory resolve from one family-tagged source instead of an implicit zero-guidance fallback. (Plan: [B-021](odylith/radar/radar.html?view=plan&workstream=B-021))
 - 2026-04-07: Split the hidden memory substrate into explicit governed subcomponents for projection bundle, projection snapshot, remote retrieval, and packet contracts so Registry can show the real memory topology instead of one coarse silhouette. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
+- 2026-04-08: Added `odylith release ...` and the repo-local release-planning contract so workstreams can target explicit ship lanes without smuggling release scope into prose, execution waves, or publication-only lore. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))

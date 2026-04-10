@@ -20,8 +20,11 @@ from typing import Callable
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
+from odylith.runtime.context_engine import odylith_context_engine_projection_backlog_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_entity_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_registry_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
-from odylith.runtime.context_engine import odylith_context_engine_projection_surface_runtime
 
 
 def bind(host: Any) -> None:
@@ -34,7 +37,9 @@ def bind(host: Any) -> None:
             if hasattr(host, name):
                 globals()[name] = getattr(host, name)
     odylith_context_engine_projection_search_runtime.bind(globals())
-    odylith_context_engine_projection_surface_runtime.bind(globals())
+    odylith_context_engine_projection_entity_runtime.bind(globals())
+    odylith_context_engine_projection_backlog_runtime.bind(globals())
+    odylith_context_engine_projection_registry_runtime.bind(globals())
 
 
 _HOST_BIND_NAMES = (
@@ -198,6 +203,8 @@ _raw_text = odylith_context_engine_projection_search_runtime._raw_text
 _load_codex_event_projection = odylith_context_engine_projection_search_runtime._load_codex_event_projection
 
 _load_traceability_projection = odylith_context_engine_projection_search_runtime._load_traceability_projection
+
+_load_release_projection = odylith_context_engine_projection_runtime._load_release_projection
 
 _load_diagram_projection = odylith_context_engine_projection_search_runtime._load_diagram_projection
 
@@ -622,8 +629,43 @@ def _workstream_lookup_aliases(row: Mapping[str, Any], *, repo_root: Path) -> se
             str(row.get("source_path", "")).strip(),
             str(row.get("idea_file", "")).strip(),
             str(row.get("promoted_to_plan", "")).strip(),
+            str(metadata.get("active_release_id", "")).strip(),
+            str(metadata.get("active_release_label", "")).strip(),
+            str(metadata.get("active_release_version", "")).strip(),
+            str(metadata.get("active_release_tag", "")).strip(),
+            str(metadata.get("active_release_name", "")).strip(),
+            *(
+                [str(item).strip() for item in metadata.get("active_release_aliases", []) if str(item).strip()]
+                if isinstance(metadata.get("active_release_aliases"), list)
+                else []
+            ),
         ),
     )
+
+
+def _release_lookup_aliases(row: Mapping[str, Any], *, repo_root: Path) -> set[str]:
+    metadata = _json_dict(row.get("metadata_json"))
+    aliases = _json_list(str(row.get("aliases_json", "")))
+    values = [
+        str(row.get("release_id", "")).strip(),
+        str(row.get("version", "")).strip(),
+        str(row.get("tag", "")).strip(),
+        str(row.get("effective_name", "")).strip(),
+        str(row.get("display_label", "")).strip(),
+        str(row.get("source_path", "")).strip(),
+        *aliases,
+    ]
+    release_id = str(row.get("release_id", "")).strip()
+    if release_id:
+        values.append(f"release:{release_id}")
+    if "current" in aliases:
+        values.extend(("current release", "release current"))
+    if "next" in aliases:
+        values.extend(("next release", "release next"))
+    if metadata:
+        values.append(str(metadata.get("name", "")).strip())
+        values.append(str(metadata.get("notes", "")).strip())
+    return _context_lookup_aliases(repo_root=repo_root, values=values)
 
 
 def _component_lookup_aliases(row: Mapping[str, Any], *, repo_root: Path) -> set[str]:
@@ -1123,56 +1165,56 @@ def _summarize_entity(entity: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-_entity_from_row = odylith_context_engine_projection_surface_runtime._entity_from_row
+_entity_from_row = odylith_context_engine_projection_entity_runtime._entity_from_row
 
-_entity_by_kind_id = odylith_context_engine_projection_surface_runtime._entity_by_kind_id
+_entity_by_kind_id = odylith_context_engine_projection_entity_runtime._entity_by_kind_id
 
-_entity_by_path = odylith_context_engine_projection_surface_runtime._entity_by_path
+_entity_by_path = odylith_context_engine_projection_entity_runtime._entity_by_path
 
-_unique_entity_by_path_alias = odylith_context_engine_projection_surface_runtime._unique_entity_by_path_alias
+_unique_entity_by_path_alias = odylith_context_engine_projection_entity_runtime._unique_entity_by_path_alias
 
-_projection_exact_search_results = odylith_context_engine_projection_surface_runtime._projection_exact_search_results
+_projection_exact_search_results = odylith_context_engine_projection_entity_runtime._projection_exact_search_results
 
-_repo_scan_candidate_search_results = odylith_context_engine_projection_surface_runtime._repo_scan_candidate_search_results
+_repo_scan_candidate_search_results = odylith_context_engine_projection_entity_runtime._repo_scan_candidate_search_results
 
-_resolve_context_entity = odylith_context_engine_projection_surface_runtime._resolve_context_entity
+_resolve_context_entity = odylith_context_engine_projection_entity_runtime._resolve_context_entity
 
-_relation_rows = odylith_context_engine_projection_surface_runtime._relation_rows
+_relation_rows = odylith_context_engine_projection_entity_runtime._relation_rows
 
-_related_entities = odylith_context_engine_projection_surface_runtime._related_entities
+_related_entities = odylith_context_engine_projection_entity_runtime._related_entities
 
-_recent_context_events = odylith_context_engine_projection_surface_runtime._recent_context_events
+_recent_context_events = odylith_context_engine_projection_entity_runtime._recent_context_events
 
-_delivery_context_rows = odylith_context_engine_projection_surface_runtime._delivery_context_rows
+_delivery_context_rows = odylith_context_engine_projection_entity_runtime._delivery_context_rows
 
-load_context_dossier = odylith_context_engine_projection_surface_runtime.load_context_dossier
+load_context_dossier = odylith_context_engine_projection_entity_runtime.load_context_dossier
 
-load_backlog_rows = odylith_context_engine_projection_surface_runtime.load_backlog_rows
+load_backlog_rows = odylith_context_engine_projection_backlog_runtime.load_backlog_rows
 
-_markdown_section_bodies = odylith_context_engine_projection_surface_runtime._markdown_section_bodies
+_markdown_section_bodies = odylith_context_engine_projection_backlog_runtime._markdown_section_bodies
 
-load_backlog_list = odylith_context_engine_projection_surface_runtime.load_backlog_list
+load_backlog_list = odylith_context_engine_projection_backlog_runtime.load_backlog_list
 
-_runtime_backlog_detail_rows = odylith_context_engine_projection_surface_runtime._runtime_backlog_detail_rows
+_runtime_backlog_detail_rows = odylith_context_engine_projection_backlog_runtime._runtime_backlog_detail_rows
 
-_runtime_backlog_detail = odylith_context_engine_projection_surface_runtime._runtime_backlog_detail
+_runtime_backlog_detail = odylith_context_engine_projection_backlog_runtime._runtime_backlog_detail
 
-load_backlog_detail = odylith_context_engine_projection_surface_runtime.load_backlog_detail
+load_backlog_detail = odylith_context_engine_projection_backlog_runtime.load_backlog_detail
 
-load_backlog_document = odylith_context_engine_projection_surface_runtime.load_backlog_document
+load_backlog_document = odylith_context_engine_projection_backlog_runtime.load_backlog_document
 
-load_plan_rows = odylith_context_engine_projection_surface_runtime.load_plan_rows
+load_plan_rows = odylith_context_engine_projection_backlog_runtime.load_plan_rows
 
-load_bug_rows = odylith_context_engine_projection_surface_runtime.load_bug_rows
+load_bug_rows = odylith_context_engine_projection_backlog_runtime.load_bug_rows
 
-load_bug_snapshot = odylith_context_engine_projection_surface_runtime.load_bug_snapshot
+load_bug_snapshot = odylith_context_engine_projection_backlog_runtime.load_bug_snapshot
 
-_component_entry_from_runtime_row = odylith_context_engine_projection_surface_runtime._component_entry_from_runtime_row
+_component_entry_from_runtime_row = odylith_context_engine_projection_registry_runtime._component_entry_from_runtime_row
 
-load_component_index = odylith_context_engine_projection_surface_runtime.load_component_index
+load_component_index = odylith_context_engine_projection_registry_runtime.load_component_index
 
-load_registry_list = odylith_context_engine_projection_surface_runtime.load_registry_list
+load_registry_list = odylith_context_engine_projection_registry_runtime.load_registry_list
 
-load_component_registry_snapshot = odylith_context_engine_projection_surface_runtime.load_component_registry_snapshot
+load_component_registry_snapshot = odylith_context_engine_projection_registry_runtime.load_component_registry_snapshot
 
-load_registry_detail = odylith_context_engine_projection_surface_runtime.load_registry_detail
+load_registry_detail = odylith_context_engine_projection_registry_runtime.load_registry_detail

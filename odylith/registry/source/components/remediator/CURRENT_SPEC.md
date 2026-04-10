@@ -1,8 +1,8 @@
 # Remediator
-Last updated: 2026-04-08
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-04-08
+Last updated (UTC): 2026-04-09
 
 ## Purpose
 Remediator is Odylith's bounded correction-packet compiler. It converts an
@@ -20,6 +20,9 @@ scope, validation contract, rollback posture, and stale guards.
 - Diagnosing cases. That belongs to Tribunal.
 - Approving packets. Approval is an external policy decision.
 - Performing unrestricted semantic code edits directly.
+- Next-action admissibility. Execution Governance may screen a packet's
+  intended move before execution, but Remediator itself only compiles bounded
+  correction plans.
 
 ## Developer Mental Model
 - Remediator is intentionally conservative.
@@ -187,3 +190,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Promoted Remediator into Odylith's own product registry and component-spec set so bounded corrective guidance is documented and governed inside the public repo. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-08: Moved Remediator into the dedicated `src/odylith/runtime/reasoning/` package, removed the legacy eval-path module, and aligned the governed Atlas and delivery-intelligence path truth so sync and surface consumers no longer claim the deleted package shape. (Plan: [B-061](odylith/radar/radar.html?view=plan&workstream=B-061))
+- 2026-04-09: Clarified that Remediator compiles bounded correction packets, while Execution Governance owns whether the intended next move is admissible. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

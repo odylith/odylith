@@ -85,8 +85,12 @@ def assert_tooling_shell_header_contract() -> None:
 
 @lru_cache(maxsize=1)
 def load_tooling_shell_style_css() -> str:
-    base_css = _template_asset_path("style.css").read_text(encoding="utf-8").rstrip("\n")
-    cheatsheet_css = _template_asset_path("cheatsheet_drawer.css").read_text(encoding="utf-8").rstrip("\n")
+    base_css = dashboard_ui_primitives.resolve_surface_shell_template_tokens(
+        _template_asset_path("style.css").read_text(encoding="utf-8")
+    ).rstrip("\n")
+    cheatsheet_css = dashboard_ui_primitives.resolve_surface_shell_template_tokens(
+        _template_asset_path("cheatsheet_drawer.css").read_text(encoding="utf-8")
+    ).rstrip("\n")
     tooltip_surface_css, _tooltip_runtime_js = _tooling_shell_quick_tooltip_bundle()
     return "\n\n".join(
         (
@@ -223,6 +227,14 @@ def _tooling_shell_shared_typography_css() -> str:
                 size_px=12,
                 line_height=1.25,
                 weight=700,
+            ),
+            dashboard_ui_primitives.surface_identifier_link_css(
+                selector=".operator-readout .operator-readout-copy a.brief-inline-link",
+                color="#1b4e9f",
+                hover_color="#173b74",
+                border_color="#b9cff7",
+                hover_border_color="#5f95e6",
+                line_height="inherit",
             ),
         )
     )

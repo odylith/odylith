@@ -24,6 +24,9 @@ def _scope(
     governance_lag: int = 60,
     blast_radius_severity: int = 0,
     severity: str | None = None,
+    proof_state: dict[str, object] | None = None,
+    proof_state_resolution: dict[str, object] | None = None,
+    claim_guard: dict[str, object] | None = None,
 ) -> dict[str, object]:
     return {
         "scope_key": f"{scope_type}:{scope_id}",
@@ -79,6 +82,9 @@ def _scope(
             "source": "deterministic",
         },
         "evidence_refs": evidence_refs or [],
+        "proof_state": proof_state or {},
+        "proof_state_resolution": proof_state_resolution or {},
+        "claim_guard": claim_guard or {},
     }
 
 
@@ -216,6 +222,91 @@ def test_build_tribunal_payload_disables_provider_after_timeout_in_same_run(tmp_
     assert payload["cases"][1]["reasoning"]["provider_used"] is False
     assert payload["cases"][1]["reasoning"]["deterministic_reason"] == "provider unavailable"
     assert "earlier provider failure" in payload["cases"][1]["reasoning"]["deterministic_reason_detail"].lower()
+
+
+def test_build_tribunal_payload_carries_proof_state_into_case_queue(tmp_path: Path) -> None:
+    payload = tribunal_engine.build_tribunal_payload(
+        repo_root=tmp_path,
+        delivery_payload=_delivery_payload(
+            scopes=[
+                _scope(
+                    scope_id="B-062",
+                    status="implementation",
+                    scenario="false_priority",
+                    proof_state={
+                        "lane_id": "proof-state-control-plane",
+                        "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                        "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                        "frontier_phase": "manifests-deploy",
+                        "proof_status": "fixed_in_code",
+                    },
+                    proof_state_resolution={
+                        "state": "resolved",
+                        "lane_ids": ["proof-state-control-plane"],
+                    },
+                    claim_guard={
+                        "highest_truthful_claim": "fixed in code",
+                        "blocked_terms": ["fixed", "cleared", "resolved"],
+                    },
+                )
+            ]
+        ),
+        posture={"clearance": {"state": "pending"}, "policy": {"breaches": []}},
+    )
+
+    case_row = payload["case_queue"][0]
+    assert case_row["proof_state"]["lane_id"] == "proof-state-control-plane"
+    assert case_row["proof_state_resolution"] == {
+        "state": "resolved",
+        "lane_ids": ["proof-state-control-plane"],
+    }
+    assert case_row["claim_guard"]["highest_truthful_claim"] == "fixed in code"
+
+
+def test_build_tribunal_payload_marks_same_fingerprint_reopen_for_case_reuse(tmp_path: Path) -> None:
+    payload = tribunal_engine.build_tribunal_payload(
+        repo_root=tmp_path,
+        delivery_payload=_delivery_payload(
+            scopes=[
+                _scope(
+                    scope_id="B-062",
+                    status="implementation",
+                    scenario="false_priority",
+                    proof_state={
+                        "lane_id": "proof-state-control-plane",
+                        "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                        "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                        "frontier_phase": "manifests-deploy",
+                        "proof_status": "falsified_live",
+                        "last_falsification": {
+                            "recorded_at": "2026-04-08T18:42:00Z",
+                            "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                            "frontier_phase": "manifests-deploy",
+                        },
+                        "linked_bug_id": "CB-077",
+                        "repeated_fingerprint_count": 2,
+                    },
+                    proof_state_resolution={
+                        "state": "resolved",
+                        "lane_ids": ["proof-state-control-plane"],
+                    },
+                    claim_guard={
+                        "highest_truthful_claim": "falsified live",
+                        "blocked_terms": ["fixed", "cleared", "resolved"],
+                        "same_fingerprint_as_last_falsification": True,
+                    },
+                )
+            ]
+        ),
+        posture={"clearance": {"state": "pending"}, "policy": {"breaches": []}},
+    )
+
+    case_row = payload["case_queue"][0]
+    assert case_row["proof_reopen"]["same_fingerprint_reopened"] is True
+    assert case_row["proof_reopen"]["linked_bug_id"] == "CB-077"
+    assert case_row["proof_reopen"]["repeated_fingerprint_count"] == 2
+    assert "Reuse Casebook bug CB-077" in case_row["proof_reopen"]["summary"]
+    assert payload["cases"][0]["proof_reopen"]["same_fingerprint_reopened"] is True
 
 
 def test_build_tribunal_payload_can_emit_insufficient_evidence_form(tmp_path: Path) -> None:

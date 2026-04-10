@@ -1,0 +1,32 @@
+{
+  "version": "v1",
+  "updated_utc": "2026-04-09",
+  "aliases": {
+    "current": "release-0-1-11",
+    "next": "release-0-1-12"
+  },
+  "releases": [
+    {
+      "release_id": "release-0-1-11",
+      "status": "active",
+      "version": "0.1.11",
+      "tag": "v0.1.11",
+      "name": "",
+      "notes": "",
+      "created_utc": "2026-04-08",
+      "shipped_utc": "",
+      "closed_utc": ""
+    },
+    {
+      "release_id": "release-0-1-12",
+      "status": "planning",
+      "version": "0.1.12",
+      "tag": "v0.1.12",
+      "name": "",
+      "notes": "",
+      "created_utc": "2026-04-09",
+      "shipped_utc": "",
+      "closed_utc": ""
+    }
+  ]
+}

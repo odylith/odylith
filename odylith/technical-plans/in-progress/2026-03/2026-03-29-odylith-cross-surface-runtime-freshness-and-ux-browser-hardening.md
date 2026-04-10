@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-08
+Updated: 2026-04-09
 
 Backlog: B-025
 
@@ -50,6 +50,10 @@ Related Bugs:
 - [2026-04-02-compass-dashboard-refresh-shell-safe-keeps-timeline-audit-pinned-to-stale-snapshot.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-02-compass-dashboard-refresh-shell-safe-keeps-timeline-audit-pinned-to-stale-snapshot.md)
 - [2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-03-compass-explicit-refresh-fans-into-slow-live-scoped-narration-and-leaves-old-deterministic-brief-visible-on-interrupt.md)
 - [2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md)
+- [2026-04-09-compass-release-target-layout-regresses-to-unauthorized-multi-column-board.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-release-target-layout-regresses-to-unauthorized-multi-column-board.md)
+- [2026-04-09-shared-surface-contract-drift-reopens-workstream-button-and-release-layout-regressions.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-shared-surface-contract-drift-reopens-workstream-button-and-release-layout-regressions.md)
+- [2026-04-09-cross-surface-workstream-buttons-can-reopen-local-scope-instead-of-radar.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-cross-surface-workstream-buttons-can-reopen-local-scope-instead-of-radar.md)
+- [2026-04-09-compass-scoped-selector-can-advertise-unverified-window-activity-and-leak-global-audit-cards.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-scoped-selector-can-advertise-unverified-window-activity-and-leak-global-audit-cards.md)
 - no related Casebook-specific bug record exists yet for detail-view field repetition or header-collapse regressions; keep the failure mode visible in this plan and handoff until it is formalized
 
 ## Context/Problem Statement
@@ -76,6 +80,18 @@ Related Bugs:
 - [ ] The release browser lane still does not brutalize filter edge cases
       across every governance surface, so exact-id search, compact id tokens,
       filter resets, and invalid deep-link combinations can regress quietly.
+- [x] Compass `Release Targets` can regress back to a side-by-side release
+      board when stale shared shell CSS overrides still impose an auto-fit
+      multi-column layout after the operator already restored the prior stacked
+      format.
+- [x] Shared shell-surface contracts can still split into duplicated source
+      template CSS, generated shared CSS, live checked-in assets, and bundled
+      mirrors, which lets later rebuilds silently reopen workstream-button and
+      release-layout regressions that were already fixed once.
+- [x] Interactive `B-###` controls can still disagree on destination across
+      product surfaces, with Compass release-member, execution-wave, and
+      timeline chips reopening Compass-local scope instead of the canonical
+      Radar workstream route.
 - [x] Radar topology relation chips and disclosure-gated traceability links
       could route to the wrong record when selected detail and visible filters
       drifted, and the browser lane did not open that UI before release proof.
@@ -99,10 +115,12 @@ Related Bugs:
 - [x] Timeline Audit still stays pinned to the prior runtime snapshot when an
       explicit live refresh does not finish, because the refresh writes one
       coupled runtime payload after the standup brief stage completes.
-- [x] Explicit Compass `full` refresh still lacks one fail-closed contract
-      across the valid five-minute runtime reuse clamp, standup-brief
-      fallback, and shell/browser proof, so a passing rerender can still leave
-      deterministic or stale Compass state visible.
+- [x] Compass still carried a second minute-scale `full` refresh idea that the
+      product could not make truthful, cheap, and fast at the same time.
+- [x] Compass scope selection and scoped Timeline Audit could still treat
+      governance-only local churn or broad fanout transactions as if they were
+      verified local window movement, which let quiet scopes such as `B-040`
+      appear in the dropdown and leak unrelated global audit cards.
 
 ## Success Criteria
 - [x] Compass runtime reuse is bounded by both input change and age.
@@ -127,10 +145,12 @@ Related Bugs:
 - [x] Shell-safe Compass global `24h` and `48h` briefs opportunistically use
       the provider when it is available, while scoped shell-safe briefs stay
       bounded.
-- [x] Explicit `odylith dashboard refresh --surfaces compass` uses the full
-      provider-backed global and scoped refresh path without leaving selected
-      workstreams pinned to deterministic local briefs after a completed
-      rerender.
+- [x] Compass scope dropdowns and scoped timelines advertise only workstreams
+      with verified scoped activity for the selected rolling window; broad
+      governance churn and wide fanout transactions stay global-only evidence.
+- [x] Explicit `odylith dashboard refresh --surfaces compass` now delegates to
+      the same bounded Compass refresh engine instead of advertising a second
+      deeper contract.
 - [x] Fresh rerenders publish new bundle and frame URLs so browsers cannot keep
       serving old shell or Compass assets after a live refresh.
 - [x] Scoped deterministic 24h and 48h briefs no longer collapse into the same
@@ -138,12 +158,20 @@ Related Bugs:
 - [x] Browser proof can observe Compass brief source, scope, window, and
       fingerprint directly instead of inferring stale selection changes from
       narrative text alone.
-- [x] A passing explicit Compass `full` refresh never lands on deterministic
-      local brief state or warmed stale payload reuse across global 24h/48h and
-      current-workstream scoped views.
+- [x] Compass no longer advertises or routes a second `full` refresh mode. One
+      bounded refresh contract now owns freshness, failure truth, and brief
+      reuse across global and scoped views.
 - [x] Provider and deterministic Compass briefs no longer reuse stock
       lead-ins across sections, windows, and workstreams, and validation now
       rejects those canned openings before they reach the live payload.
+- [x] Compass voice is now treated as a product invariant instead of polish:
+      queue-label restatement, generic priority wrappers, canned current/next
+      scaffolding, and warmed-cache replay of stock prose are all contract
+      failures even when the underlying facts are current.
+- [x] Compass voice is now explicitly named and enforced as plainspoken
+      grounded maintainer narration: open, natural, clear, lightly soulful,
+      ordinary-language brief writing with validator coverage against stagey
+      metaphors, dashboard-polished abstractions, and rhythmic summary prose.
 - [x] Explicit Radar relation and traceability deep links resolve to the exact
       requested target even when stale list filters would otherwise hide it.
 - [x] Release-gating browser proof opens disclosure-gated shell UI and audits
@@ -160,6 +188,62 @@ Related Bugs:
 - [ ] Governance-surface filters consistently honor exact ids, normalized
       tokens, reset behavior, and deep-link self-healing across Radar,
       Registry, Atlas, Casebook, and Compass.
+- [x] Interactive `B-###` workstream buttons stay on one compact shared
+      contract across Radar, Compass, release views, and execution-wave member
+      stacks instead of drifting whenever generic identifier styling changes.
+- [x] Interactive `B-###` workstream buttons across Compass, Registry, Atlas,
+      Casebook, and Radar all deep-link to the same Radar workstream route;
+      local surface scoping stays a separate row-selection or disclosure
+      behavior instead of changing the destination of those controls.
+- [x] Compass `Release Targets` stays on the operator-approved stacked format,
+      and release-target layout changes now require explicit operator
+      authorization instead of renderer or shared-CSS improvisation.
+- [x] Shared shell-surface contracts now keep one canonical source path:
+      interactive `B-###` controls flow through the shared workstream-button
+      primitive, Compass execution-wave CSS composes from the shared generator
+      plus thin overrides only, surface renders refresh live checked-in assets
+      and source-owned bundle mirrors in the same pass, live and bundle
+      Compass shell assets must exactly match the source loader output, and
+      browser proof audits the computed button contract plus the stacked
+      release board.
+- [x] Governance KPI/stat cards across Compass, Radar, Registry, and Casebook
+      now consume one shared contract for grid, card surface, and label/value
+      typography; local stat-card CSS forks in source templates are forbidden,
+      browser proof audits computed KPI-card styling plus labeled
+      current-release values, and Radar release-only tiles no longer carry
+      local alignment or value-spacing overrides on top of that shared
+      contract.
+- [x] Generic deep-link buttons such as `Registry`, `Spec`, proof refs, and
+      `D-###` diagram links now consume one shared contract across Compass,
+      Radar, Registry, Casebook, and Atlas; local button CSS forks are
+      forbidden, and browser proof audits the computed font, padding, and
+      radius across representative deep-link buttons in those surfaces.
+- [x] Registry component detail no longer renders a default proof-state or
+      live-status card; proof-state internals such as `Proof Control`,
+      `Live Blocker`, `Fingerprint`, `Frontier`, `Evidence tier`,
+      `Truthful claim`, and commit-hash deployment rows stay out of the
+      default detail view entirely.
+- [x] Casebook detail headers keep the selected bug id in the summary-facts
+      band and must not also render a standalone `CB-###` kicker above the
+      title.
+- [x] Compass `Release Targets` member cards keep the workstream title on a
+      dedicated second row under the ID/status chip row; short titles must not
+      collapse back into the first row.
+- [x] Compass operator release UI now stays current-release-only: the hero KPI
+      lane does not render a separate `Next Release` box, while `Release
+      Targets` still shows the governed planned release set and the current
+      release group carries an explicit `Current Release` indicator.
+- [x] Release-truth drift uses Compass's subtle in-surface status banner only;
+      shell-level runtime status must not duplicate that drift as a second top
+      warning slab.
+- [x] Radar topology no longer renders a separate selected-workstream focus
+      strip above the relations disclosure; the detail header already carries
+      the identity, so the relations board opens directly into relation
+      content.
+- [x] The shell cheatsheet now teaches release planning and program/wave
+      planning as separate operator workflows with explicit examples instead
+      of blurring ship targeting and umbrella execution into one planning
+      concept.
 - [ ] Benchmark proof remains green after the fix.
 
 ## Non-Goals
@@ -176,12 +260,18 @@ Related Bugs:
 - [ ] [auto_update_mermaid_diagrams.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py)
 - [ ] [agents.py](/Users/freedom/code/odylith/src/odylith/install/agents.py)
 - [ ] [odylith_context_engine_store.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_store.py)
-- [ ] [render_backlog_ui.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui.py)
+- [x] [render_backlog_ui.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui.py)
 - [x] [build_traceability_graph.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/build_traceability_graph.py)
 - [x] [render_backlog_ui_html_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py)
-- [ ] [render_registry_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_registry_dashboard.py)
-- [ ] [render_mermaid_catalog.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_mermaid_catalog.py)
-- [ ] [render_tooling_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_tooling_dashboard.py)
+- [x] [dashboard_ui_primitives.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/dashboard_ui_primitives.py)
+- [x] [execution_wave_ui_runtime_primitives.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/execution_wave_ui_runtime_primitives.py)
+- [x] [compass_dashboard_frontend_contract.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/compass_dashboard_frontend_contract.py)
+- [x] [dashboard_shell_links.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/dashboard_shell_links.py)
+- [x] [render_registry_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_registry_dashboard.py)
+- [x] [render_mermaid_catalog.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_mermaid_catalog.py)
+- [x] [render_tooling_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_tooling_dashboard.py)
+- [x] [tooling_dashboard_cheatsheet_presenter.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_cheatsheet_presenter.py)
+- [x] [source_bundle_mirror.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/source_bundle_mirror.py)
 - [x] [dashboard_surface_bundle.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/dashboard_surface_bundle.py)
 - [x] [tooling_dashboard_runtime_builder.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_runtime_builder.py)
 - [ ] [tooling_dashboard_shell_presenter.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py)
@@ -197,14 +287,20 @@ Related Bugs:
 - [ ] [test_auto_update_mermaid_diagrams.py](/Users/freedom/code/odylith/tests/unit/runtime/test_auto_update_mermaid_diagrams.py)
 - [ ] [test_cli.py](/Users/freedom/code/odylith/tests/unit/test_cli.py)
 - [ ] [test_agents.py](/Users/freedom/code/odylith/tests/unit/install/test_agents.py)
-- [ ] [render_casebook_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_casebook_dashboard.py)
+- [x] [render_casebook_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_casebook_dashboard.py)
 - [ ] [test_render_casebook_dashboard.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_casebook_dashboard.py)
+- [x] [test_dashboard_shell_links.py](/Users/freedom/code/odylith/tests/unit/runtime/test_dashboard_shell_links.py)
+- [x] [test_source_bundle_mirror.py](/Users/freedom/code/odylith/tests/unit/runtime/test_source_bundle_mirror.py)
 - [ ] [test_render_registry_dashboard.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_registry_dashboard.py)
-- [ ] [test_render_backlog_ui.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_backlog_ui.py)
-- [ ] [test_render_mermaid_catalog.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_mermaid_catalog.py)
+- [x] [test_render_backlog_ui.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_backlog_ui.py)
+- [x] [test_execution_wave_ui_runtime_primitives.py](/Users/freedom/code/odylith/tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py)
+- [x] [test_render_mermaid_catalog.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_mermaid_catalog.py)
+- [x] [test_dashboard_ui_primitives.py](/Users/freedom/code/odylith/tests/unit/runtime/test_dashboard_ui_primitives.py)
+- [x] [test_surface_shell_contracts.py](/Users/freedom/code/odylith/tests/unit/runtime/test_surface_shell_contracts.py)
 - [x] [test_surface_browser_smoke.py](/Users/freedom/code/odylith/tests/integration/runtime/test_surface_browser_smoke.py)
 - [x] [test_surface_browser_deep.py](/Users/freedom/code/odylith/tests/integration/runtime/test_surface_browser_deep.py)
 - [x] [test_surface_browser_ux_audit.py](/Users/freedom/code/odylith/tests/integration/runtime/test_surface_browser_ux_audit.py)
+- [x] [test_surface_browser_layout_audit.py](/Users/freedom/code/odylith/tests/integration/runtime/test_surface_browser_layout_audit.py)
 - [ ] [test_surface_browser_filter_audit.py](/Users/freedom/code/odylith/tests/integration/runtime/test_surface_browser_filter_audit.py)
 
 ## Risks & Mitigations
@@ -212,16 +308,10 @@ Related Bugs:
 - [ ] Risk: stricter invalidation slows Compass too much.
   - [ ] Mitigation: bound runtime reuse by a small age budget instead of
     disabling reuse entirely.
-- [ ] Risk: provider-backed scoped full refresh becomes too slow to trust as a
-    shell action.
-  - [x] Mitigation: fan scoped provider warming through a small worker pool
-    instead of a fully serial per-workstream render.
-- [x] Risk: explicit `full` refresh still reports success via deterministic or
-      stale fallback semantics that are acceptable only in `shell-safe`, or it
-      reuses a recent payload that is not actually deep-refresh-clean.
-  - [x] Mitigation: give explicit full refresh one fail-closed contract across
-        runtime reuse, exact-cache reuse, deterministic fallback, and browser
-        proof.
+- [x] Risk: a minute-scale `full` refresh path keeps draining time, credits,
+      and operator trust while pretending to be a real product contract.
+  - [x] Mitigation: retire the second refresh mode entirely and collapse
+        Compass onto one bounded refresh engine.
 - [ ] Risk: global brief freshness fix reduces resilience when provider is
     unavailable.
   - [ ] Mitigation: keep exact-cache reuse and deterministic fallback from the
@@ -261,7 +351,6 @@ Related Bugs:
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_filter_audit.py`
 - [ ] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime tests/integration/runtime/test_surface_browser_smoke.py`
-- [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_compass_dashboard --repo-root . --refresh-profile full`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_tooling_dashboard --repo-root . --output odylith/index.html`
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_compass_dashboard.py tests/integration/runtime/test_surface_browser_smoke.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/test_cli.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_compass_refresh_contract.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/runtime/test_sync_cli_compat.py`
@@ -270,6 +359,7 @@ Related Bugs:
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_casebook_dashboard.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_layout_audit.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py -k casebook_detail_stacks_cleanly_in_compact_viewport`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_surface_shell_contracts.py`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output odylith/casebook/casebook.html`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output src/odylith/bundle/assets/odylith/casebook/casebook.html`
 - [x] `python -m py_compile src/odylith/runtime/surfaces/render_casebook_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/integration/runtime/test_surface_browser_layout_audit.py`
@@ -330,20 +420,93 @@ Related Bugs:
       version tokens, and the shell preserves those tokens when query state is
       merged so a rerender cannot stay hidden behind browser cache.
 - [x] Compass shell assets and runtime script refs now carry version tokens,
-      global `48h` is back on the live provider path during full refresh, and
-      deterministic scoped `48h` narration widens its wording instead of
+      and deterministic scoped `48h` narration widens its wording instead of
       reusing the exact `24h` brief.
-- [x] Full Compass refresh now warms scoped workstream briefs through the live
-      provider path as well, but does it in parallel so the completed rerender
-      stops leaving selected scopes on deterministic local narration.
+- [x] April 8 cost-bleed guardrails and the April 9 follow-on cuts collapsed
+      Compass back onto one bounded refresh contract: cold refresh no longer
+      fans out across every active scoped brief, global narration reuses
+      warmed truth first, and there is no second `full` path left to burn
+      minutes or credits behind the operator's back.
+- [x] April 8 refresh-state truth now records concrete render-failure detail,
+      and `--wait` repairs dead worker state into explicit terminal failure
+      instead of hanging on a stale `running` record.
+- [x] April 9 shell-safe refresh/runtime hardening turns the default path back
+      into an operator-safe budgeted refresh: shell-safe now keeps live
+      provider cost on the two global windows only, status derives dead-worker
+      failure truth without mutating state, progress splits the heavy runtime
+      build into named phases with plain detail, then reused deterministic
+      timeline/window material upstream, moved simple live brief narration to
+      `gpt-5.3-codex-spark` with low reasoning, bumped the brief cache to
+      `v21`, invalidated warmed runtime-snapshot prose that no longer passes
+      the current voice validator, and brought source-local proof down to
+      `0.78s` warm wall-clock with about `1.63s` on a tmpdir cold shell-safe
+      render.
+- [x] April 9 live-voice recovery cleaned the remaining upstream phrasing leak:
+      whole-window coverage facts now use plain wording, plan-fed next-action
+      facts no longer relay raw checklist fragments, and a source-local
+      shell-safe refresh returned both global windows provider-backed again at
+      `27.29s` wall-clock. The remaining measured long pole is
+      `window facts prepared` at `10.8s`, so the next latency cut belongs in
+      incremental fact-packet reuse rather than more model trimming.
+- [x] April 9 shell-safe reuse architecture now cuts the remaining latency
+      spike by persisting `standup_runtime` window fingerprints into
+      `current.v1.json`, reusing prior validated live brief sections when the
+      narrative-relevant window signature still matches, and rebuilding only
+      the scopes that actually changed. Source-local proof after this cut:
+      first shell-safe CLI refresh dropped to `1.38s` wall-clock with
+      `window facts prepared` at `0.107s` and `standup briefs built` at
+      `0.014s`; the immediate hot rerun now takes the runtime-reuse fast path
+      in `0.47s` wall-clock with `elapsed_seconds: 0.1`.
+- [x] April 9 scoped-activity follow-on re-closes the local-scope contract:
+      Compass now publishes `verified_scoped_workstreams` per rolling window,
+      excludes governance-only local-change rows plus broad fanout
+      transactions from scoped verification, keeps quiet scopes such as
+      `B-040` out of the normal selector, and renders an empty scoped timeline
+      instead of inheriting unrelated global audit cards when a preserved deep
+      link points at an inactive local window. Headless browser proof now
+      covers that exact regression directly.
+- [x] April 9 scope-signal follow-on split the broader promotion problem into
+      child workstream `B-071`: Delivery Intelligence now owns one shared
+      ladder for scope visibility, default promotion, and provider-neutral
+      compute budgets so Compass, Radar, Registry, Atlas, and shell consumers
+      stop re-deriving urgency independently.
 - [x] Compass summary rendering now publishes brief source, scope, window, and
       fingerprint metadata into the DOM, and Playwright proves those values
       switch correctly across global versus scoped selection and `24h` versus
       `48h` toggles.
-- [x] Compass standup brief contract is now `v13`: provider narration is told
-      to avoid house phrases, deterministic fallback rewrites the same facts in
-      plainer spoken language, and validation rejects overused stock openings
-      so cached or regenerated briefs cannot slide back into the robotic voice.
+- [x] Compass standup brief contract is now `v17`: provider narration, warmed
+      cache reuse, deterministic fallback, and legacy compatibility rendering
+      all share the same no-stock-framing bar; the dedicated `Why this
+      matters` section is gone, consequence must be woven into the remaining
+      four sections, and validation now rejects fact-detached portable summary
+      prose, repetitive polished claim-then-consequence cadence, repeated
+      window leads, canned `next/why/timing` wrappers, rhetorical benchmark
+      challenges, second-wave house phrasing, and the old `Executive/Product`
+      versus `Operator/Technical` bullet split before a stored brief can replay
+      into Compass again.
+- [x] April 9 `v22` follow-on hardened the deterministic floor too: warmed
+      runtime reuse now rolls to the new brief epoch, the deterministic writer
+      no longer blesses `A lot happened`, `moving with it too`, `already
+      proved the cost of local heuristics`, or similar stock fallback prose,
+      and the governance contract now says plainly that any test locking those
+      lines in should be rewritten or removed instead of preserved.
+- [x] April 9 maintained-global narration follow-on stopped shell-safe from
+      demoting the globals back to deterministic on ordinary packet drift:
+      global cache reuse now searches the maintained narrated layer instead of
+      only exact current-packet hits, cached fact ids can remap through stored
+      evidence lookup when the current packet regenerated ids, old whole-window
+      coverage lines are rewritten into plainer current wording before reuse,
+      and the checked-in runtime now serves both global windows from `cache`
+      on the bounded path instead of `provider_deferred` deterministic.
+- [x] Compass governance, skills, and session-memory guidance now all carry
+      the same non-negotiable voice rule: no stock framing, no house style,
+      and no provider-, cache-, or deterministic-backed replay of canned prose
+      in Compass-facing summaries.
+- [x] The April 8 Compass brief hardening follow-on is now tagged to release
+      `v0.1.11`: scoped `24h`/`48h` fail closed instead of borrowing global
+      text, the old `Executive/Product` versus `Operator/Technical` split is
+      gone across narration and rendering, and both brief paths reject the
+      internal stock wrappers that kept replaying into Compass after refresh.
 - [x] April 7 follow-on keeps `B-025` active for the Casebook detail polish:
       repeated proof/evidence links stay deduped, summary metadata now renders
       as stacked fact cards instead of one non-wrapping strip, and the
@@ -367,6 +530,14 @@ Related Bugs:
       Casebook, Atlas, and Radar, while supporting prose, chips, links, and
       controls render below that grid; the Dashboard spec now carries that
       contract and the layout/browser proof enforces it.
+- [x] April 9 follow-on removes the stale Compass base-CSS release-board
+      override, keeps `Release Targets` on the prior stacked format, records
+      the regression in Casebook, and codifies that future release-target
+      layout changes require explicit operator authorization.
+- [x] April 9 follow-on collapses the remaining Compass and Registry
+      top-line KPI/stat-card CSS forks into the shared Dashboard KPI contract
+      and adds browser proof that Compass, Radar, Registry, and Casebook keep
+      the same computed card, label, and value styling.
 - [x] April 7 diagnostics follow-on keeps maintainer autofix conflict notes in
       shared traceability artifacts but removes them from default Radar warning
       cards so default surfaces agree on operator-facing warning semantics.
@@ -382,12 +553,20 @@ Related Bugs:
       to real retained history dates, closing a browser-visible 404 path that
       appeared when the old synthetic 30-day bounds offered non-existent
       historical snapshots.
-- [x] April 8 full-refresh follow-on closed the fail-closed contract: explicit
-      Compass `full` keeps the valid five-minute reuse clamp, only reuses
-      recent payloads that are already deep-refresh-clean, refuses to pass
-      with deterministic local narration or stale fallback truth, and now has
-      targeted contract/runtime/render/narrator proof plus a headless browser
-      regression for the deterministic-brief banner path.
+- [x] April 9 Compass refresh retirement follow-on removed the remaining
+      minute-scale `full` contract from the product. Legacy callers normalize
+      onto the bounded refresh engine, and browser or runtime proof no longer
+      needs a second deep-refresh truth lane.
+- [x] April 9 performance follow-on tightened the runtime lane contract too:
+      Compass now has only two acceptable refresh budgets, hot exact-reuse
+      under `50ms` of internal runtime work and cold complete shell-safe
+      refresh under `1s` of internal runtime work. Any third minute-scale or
+      deep-refresh lane is now governed as a regression, not a product option.
+- [x] April 9 live-cache carry-forward follow-on keeps that same bounded lane
+      off fresh provider spend after the one-time seed: source-local proof now
+      shows global `24h` and `48h` on `cache exact` during shell-safe refresh,
+      `standup briefs built` stays sub-`0.1s`, and the remaining wall-clock
+      miss is upstream input/startup cost rather than Compass narration cost.
 - [x] April 8 browser-resume follow-on fixed the tooling-shell bootstrap path:
       shell-computed Compass stale/failure posture now survives first load and
       later runtime probes, and the resumed headless browser lane proves both
@@ -401,6 +580,10 @@ Related Bugs:
       disclosure in the Compass frame itself, drops the `Show status` recovery
       dock button, and centralizes that one-warning shell contract in the
       Dashboard spec.
+- [x] April 9 follow-on re-closes that shell-warning contract for failed
+      Compass refresh too: if Compass already carries the failed-refresh
+      warning inside the frame, the shell must not add a second wrapper banner
+      above it, and browser proof now watches that exact regression directly.
 - [x] April 7 Compass closeout follow-on reconciles the remaining open Compass
       claims with code-level proof: global changed-packet cache recovery stays
       disabled, self-host/install posture remains part of the standup-brief

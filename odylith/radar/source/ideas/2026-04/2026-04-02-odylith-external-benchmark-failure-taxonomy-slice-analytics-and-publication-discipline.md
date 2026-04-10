@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-044
-title: Odylith External Benchmark Failure Taxonomy, Slice Analytics, and Publication Discipline
+title: External Benchmark Failure Taxonomy, Slice Analytics, and Publication Discipline
 date: 2026-04-02
 priority: P1
 commercial_value: 4
 product_impact: 4
 market_value: 5
-impacted_lanes: both
 impacted_parts: external benchmark telemetry, failure taxonomy, slice analytics, publication fairness, score reproducibility, and benchmark narrative discipline
 sizing: M
 complexity: High

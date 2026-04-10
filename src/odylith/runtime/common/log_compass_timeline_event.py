@@ -1,4 +1,4 @@
-"""Append Codex decision/implementation timeline events for Compass audits.
+"""Append local decision/implementation timeline events for Compass audits.
 
 This command writes local-only newline-delimited JSON records that are consumed
 by the installed Compass renderer and rendered inside the Compass timeline.
@@ -17,9 +17,16 @@ import json
 import os
 from pathlib import Path
 import re
+from typing import Any
+from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance.proof_state.contract import DEPLOYMENT_TRUTH_FIELDS
+from odylith.runtime.governance.proof_state.contract import PROOF_STATUSES
+from odylith.runtime.governance.proof_state.contract import WORK_CATEGORIES
 
 
 _WORKSTREAM_RE = re.compile(r"^B-\d{3,}$")
@@ -40,12 +47,12 @@ _SOFT_REGISTRY_DIAGNOSTIC_PREFIXES: tuple[str, ...] = (
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith compass log",
-        description="Append a Compass timeline stream event for Codex audit visibility.",
+        description="Append a Compass timeline stream event for host-aware audit visibility.",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root.")
     parser.add_argument(
         "--stream",
-        default="odylith/compass/runtime/codex-stream.v1.jsonl",
+        default=agent_runtime_contract.AGENT_STREAM_PATH,
         help="Output JSONL stream path (local runtime artifact).",
     )
     parser.add_argument("--kind", required=True, choices=_KIND_CHOICES, help="Event kind.")
@@ -83,8 +90,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=component_registry.DEFAULT_IDEAS_ROOT,
         help="Backlog ideas root for impacted-component inference.",
     )
-    parser.add_argument("--author", default="codex", help="Author label in timeline metadata.")
-    parser.add_argument("--source", default="codex", help="Source label in timeline metadata.")
+    detected_capabilities = host_runtime_contract.resolve_host_capabilities()
+    default_author = str(detected_capabilities.get("model_family", "")).strip() or "agent"
+    default_source = str(detected_capabilities.get("host_family", "")).strip() or "agent"
+    parser.add_argument("--author", default=default_author, help="Author label in timeline metadata.")
+    parser.add_argument("--source", default=default_source, help="Source label in timeline metadata.")
     parser.add_argument(
         "--session-id",
         default="",
@@ -122,6 +132,17 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="",
         help="Optional ISO timestamp (defaults to now in local timezone).",
     )
+    parser.add_argument("--proof-lane", default="", help="Optional proof lane id for live-proof tracking.")
+    parser.add_argument("--proof-fingerprint", default="", help="Optional live failure fingerprint for this event.")
+    parser.add_argument("--proof-phase", default="", help="Optional proof frontier or phase label.")
+    parser.add_argument("--evidence-tier", default="", help="Optional evidence tier for this event.")
+    parser.add_argument("--proof-status", default="", choices=("", *PROOF_STATUSES), help="Optional proof status carried by this event.")
+    parser.add_argument("--work-category", default="", choices=("", *WORK_CATEGORIES), help="Optional proof work category for this event.")
+    parser.add_argument("--local-head", default="", help="Optional deployment-truth local HEAD.")
+    parser.add_argument("--pushed-head", default="", help="Optional deployment-truth pushed branch HEAD.")
+    parser.add_argument("--published-source-commit", default="", help="Optional deployment-truth published source commit.")
+    parser.add_argument("--runner-fingerprint", default="", help="Optional deployment-truth runner fingerprint.")
+    parser.add_argument("--last-live-failing-commit", default="", help="Optional deployment-truth last live failing commit.")
     return parser.parse_args(argv)
 
 
@@ -251,6 +272,13 @@ def append_event(
     headline_hint: str = "",
     transaction_boundary: str = "",
     ts_iso: str = "",
+    proof_lane: str = "",
+    proof_fingerprint: str = "",
+    proof_phase: str = "",
+    evidence_tier: str = "",
+    proof_status: str = "",
+    work_category: str = "",
+    deployment_truth: Mapping[str, Any] | None = None,
 ) -> dict[str, object]:
     canonical_kind = _canonical_kind(kind)
     if not canonical_kind:
@@ -326,6 +354,12 @@ def append_event(
     resolved_transaction = _normalize_summary(transaction_id)
     resolved_context = _normalize_summary(context)
     resolved_headline_hint = _normalize_summary(headline_hint)
+    resolved_proof_lane = _normalize_summary(proof_lane)
+    resolved_proof_fingerprint = _normalize_summary(proof_fingerprint)
+    resolved_proof_phase = _normalize_summary(proof_phase)
+    resolved_evidence_tier = _normalize_summary(evidence_tier)
+    resolved_proof_status = _normalize_summary(proof_status)
+    resolved_work_category = _normalize_summary(work_category)
     payload: dict[str, object] = {
         "version": "v1",
         "kind": canonical_kind,
@@ -350,6 +384,29 @@ def append_event(
         payload["headline_hint"] = resolved_headline_hint
     if boundary:
         payload["transaction_boundary"] = boundary
+    if resolved_proof_lane:
+        payload["proof_lane"] = resolved_proof_lane
+    if resolved_proof_fingerprint:
+        payload["proof_fingerprint"] = resolved_proof_fingerprint
+    if resolved_proof_phase:
+        payload["proof_phase"] = resolved_proof_phase
+    if resolved_evidence_tier:
+        payload["evidence_tier"] = resolved_evidence_tier
+    if resolved_proof_status:
+        payload["proof_status"] = resolved_proof_status
+    if resolved_work_category:
+        payload["work_category"] = resolved_work_category
+    raw_truth = dict(deployment_truth) if isinstance(deployment_truth, Mapping) else {}
+    normalized_truth = {
+        field: _normalize_summary(raw_truth.get(field))
+        for field in DEPLOYMENT_TRUTH_FIELDS
+    }
+    if any(value for value in normalized_truth.values()):
+        payload["deployment_truth"] = {
+            key: value
+            for key, value in normalized_truth.items()
+            if value
+        }
 
     line = json.dumps(payload, sort_keys=True)
     stream_path.parent.mkdir(parents=True, exist_ok=True)
@@ -390,6 +447,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             headline_hint=str(args.headline_hint),
             transaction_boundary=str(args.transaction_boundary),
             ts_iso=str(args.ts_iso),
+            proof_lane=str(args.proof_lane),
+            proof_fingerprint=str(args.proof_fingerprint),
+            proof_phase=str(args.proof_phase),
+            evidence_tier=str(args.evidence_tier),
+            proof_status=str(args.proof_status),
+            work_category=str(args.work_category),
+            deployment_truth={
+                "local_head": str(args.local_head),
+                "pushed_head": str(args.pushed_head),
+                "published_source_commit": str(args.published_source_commit),
+                "runner_fingerprint": str(args.runner_fingerprint),
+                "last_live_failing_commit": str(args.last_live_failing_commit),
+            },
         )
     except ValueError as exc:
         print("compass timeline stream append FAILED")

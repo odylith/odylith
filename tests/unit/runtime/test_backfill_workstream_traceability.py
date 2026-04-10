@@ -55,7 +55,6 @@ def _idea_text(
         "commercial_value: 5\n\n"
         "product_impact: 5\n\n"
         "market_value: 5\n\n"
-        "impacted_lanes: both\n\n"
         "impacted_parts: control grid\n\n"
         "sizing: L\n\n"
         "complexity: VeryHigh\n\n"

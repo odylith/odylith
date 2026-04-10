@@ -26,6 +26,7 @@ from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import shell_onboarding
+from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.surfaces import tooling_dashboard_surface_status
 from odylith.runtime.surfaces import tooling_dashboard_runtime_builder
 from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
@@ -470,6 +471,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     output_path.write_text(bundled_html, encoding="utf-8")
     bundle_paths.payload_js_path.write_text(payload_js, encoding="utf-8")
     bundle_paths.control_js_path.write_text(control_js, encoding="utf-8")
+    source_bundle_mirror.sync_live_paths(
+        repo_root=repo_root,
+        live_paths=(output_path, bundle_paths.payload_js_path, bundle_paths.control_js_path),
+    )
     print("tooling dashboard render passed")
     print(f"- output: {output_path}")
     return 0

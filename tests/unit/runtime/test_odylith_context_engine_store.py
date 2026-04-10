@@ -2,13 +2,16 @@ import json
 from pathlib import Path
 
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime as grounding_runtime
-from odylith.runtime.context_engine import odylith_context_engine_session_packet_runtime as session_packet_runtime
-from odylith.runtime.context_engine import odylith_context_engine_projection_surface_runtime as surface_runtime
+from odylith.runtime.context_engine import odylith_context_engine_store as store
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as session_packet_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_registry_runtime as surface_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime as projection_search_runtime
 from odylith.runtime.context_engine import projection_repo_state_runtime
-from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.common.consumer_profile import write_consumer_profile
 from odylith.runtime.governance import component_registry_intelligence as component_registry
+
+session_packet_runtime.bind(store.__dict__)
+surface_runtime.bind(store.__dict__)
 
 
 def test_load_backlog_detail_uses_cached_runtime_projection_rows(monkeypatch, tmp_path: Path) -> None:
@@ -481,7 +484,7 @@ def test_build_session_brief_forwards_retain_impact_internal_context(monkeypatch
         repo_root=tmp_path,
         changed_paths=["odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"],
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="exact_path_ambiguity",
         retain_impact_internal_context=False,
         skip_impact_runtime_warmup=True,
@@ -505,7 +508,7 @@ def test_build_session_bootstrap_forwards_retain_impact_internal_context(monkeyp
         repo_root=tmp_path,
         changed_paths=["AGENTS.md", "odylith/AGENTS.md"],
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="broad_shared_scope",
         retain_impact_internal_context=False,
         skip_impact_runtime_warmup=True,
@@ -549,7 +552,7 @@ def test_build_session_brief_hot_path_requests_unfinalized_impact(monkeypatch, t
         repo_root=tmp_path,
         changed_paths=["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="release_publication",
     )
 
@@ -601,7 +604,7 @@ def test_build_governance_slice_hot_path_requests_unfinalized_impact(monkeypatch
         repo_root=tmp_path,
         changed_paths=["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="release_publication",
     )
 
@@ -661,7 +664,7 @@ def test_build_governance_slice_hot_path_uses_grounding_light_workstream_detail(
         changed_paths=["odylith/registry/source/components/benchmark/CURRENT_SPEC.md"],
         workstream="B-020",
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="component_governance",
     )
 
@@ -727,7 +730,7 @@ def test_build_governance_slice_hot_path_prefers_authoritative_governance_docs_b
         workstream="B-020",
         component="benchmark",
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="component_governance",
     )
 

@@ -36,7 +36,6 @@ _METADATA_ORDER: tuple[str, ...] = (
     "commercial_value",
     "product_impact",
     "market_value",
-    "impacted_lanes",
     "impacted_parts",
     "sizing",
     "complexity",

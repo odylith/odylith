@@ -76,14 +76,12 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
         "--force",
         "--impact-mode",
         "full",
-        "--compass-refresh-profile",
-        "shell-safe",
     ]
     assert "Odylith 1.2.3 is ready" in output.out
     assert "Rendering first-run Odylith surfaces" in output.out
     assert "Dashboard:" in output.out
-    assert "Added `/.odylith/` to the root `.gitignore`" in output.out
-    assert "Repo-root AGENTS now activates Odylith guidance, skills, and the Codex-native spawn path for most grounded work." in output.out
+    assert "Added Odylith local-state ignore rules to the root `.gitignore`" in output.out
+    assert "Repo-root AGENTS now activates Odylith guidance, skills, and native delegation when the current host supports it for most grounded work." in output.out
     assert "Full Odylith is installed by default." in output.out
     assert "later repairs and upgrades" in output.out
     assert "Odylith is used through an AI coding agent" in output.out
@@ -138,7 +136,6 @@ def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch
     assert refresh_capture["surfaces"] == ("tooling_shell",)
     assert refresh_capture["runtime_mode"] == "auto"
     assert refresh_capture["atlas_sync"] is False
-    assert refresh_capture["compass_refresh_profile"] == "shell-safe"
     assert opened["url"] == (tmp_path / "odylith" / "index.html").resolve().as_uri()
     assert opened["new"] == 2
     assert "Opened `odylith/index.html` in your browser." in output.out
@@ -740,7 +737,7 @@ def test_install_reports_created_guidance_and_non_git_caveat(monkeypatch, tmp_pa
 
     assert rc == 0
     assert "Created root AGENTS.md" in captured.out
-    assert "Added `/.odylith/` to the root `.gitignore`" in captured.out
+    assert "Added Odylith local-state ignore rules to the root `.gitignore`" in captured.out
     assert "This folder is not backed by Git yet." in captured.out
     assert "working-tree intelligence, background autospawn, and git-fsmonitor watcher help" in captured.out
 
@@ -810,8 +807,6 @@ def test_install_fails_when_first_run_full_sync_fails(monkeypatch, tmp_path: Pat
         "--force",
         "--impact-mode",
         "full",
-        "--compass-refresh-profile",
-        "shell-safe",
     ]
     assert "Odylith runtime install succeeded, but the first-run Odylith shell is incomplete." in captured.err
     assert "odylith sync --repo-root . --force --impact-mode full" in captured.err
@@ -973,6 +968,156 @@ def test_governance_reconcile_dispatch_accepts_plain_forwarded_flags(monkeypatch
     ]
 
 
+def test_release_show_dispatch_accepts_plain_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 31
+
+    monkeypatch.setattr(cli.release_planning_authoring, "main", fake_main)
+    rc = cli.main(["release", "show", "--repo-root", str(tmp_path), "current", "--json"])
+
+    assert rc == 31
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "show", "current", "--json"]
+
+
+def test_context_engine_help_dispatches_to_context_engine_parser(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 313
+
+    monkeypatch.setattr(cli.odylith_context_engine, "main", fake_main)
+    rc = cli.main(["context-engine", "--repo-root", str(tmp_path), "--help"])
+
+    assert rc == 313
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "--help"]
+
+
+def test_release_list_dispatch_accepts_option_only_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 311
+
+    monkeypatch.setattr(cli.release_planning_authoring, "main", fake_main)
+    rc = cli.main(["release", "list", "--repo-root", str(tmp_path), "--json"])
+
+    assert rc == 311
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "list", "--json"]
+
+
+def test_release_show_dispatch_accepts_option_before_positional(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 312
+
+    monkeypatch.setattr(cli.release_planning_authoring, "main", fake_main)
+    rc = cli.main(["release", "show", "--repo-root", str(tmp_path), "--json", "current"])
+
+    assert rc == 312
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "show", "--json", "current"]
+
+
+def test_release_mutation_dry_run_skips_main_branch_guard(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli,
+        "_guard_product_repo_main_branch",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("dry-run release mutation should not hit main-branch guard")),
+    )
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 32
+
+    monkeypatch.setattr(cli.release_planning_authoring, "main", fake_main)
+    rc = cli.main(["release", "create", "--repo-root", str(tmp_path), "release-1", "--dry-run"])
+
+    assert rc == 32
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "create", "release-1", "--dry-run"]
+
+
+def test_release_mutation_blocks_on_main_branch_before_authoring(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(cli, "_guard_product_repo_main_branch", lambda **_kwargs: 17)
+    monkeypatch.setattr(
+        cli.release_planning_authoring,
+        "main",
+        lambda argv: (_ for _ in ()).throw(AssertionError(f"release authoring should not run when guard blocks: {argv}")),
+    )
+
+    rc = cli.main(["release", "create", "--repo-root", str(tmp_path), "release-1"])
+
+    assert rc == 17
+
+
+def test_program_status_dispatch_accepts_plain_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_run(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 41
+
+    monkeypatch.setattr(cli.program_wave_authoring, "run_program", fake_run)
+    rc = cli.main(["program", "status", "--repo-root", str(tmp_path), "B-201", "--json"])
+
+    assert rc == 41
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "status", "B-201", "--json"]
+
+
+def test_wave_status_dispatch_accepts_plain_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_run(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 42
+
+    monkeypatch.setattr(cli.program_wave_authoring, "run_wave", fake_run)
+    rc = cli.main(["wave", "status", "--repo-root", str(tmp_path), "B-201", "W1", "--json"])
+
+    assert rc == 42
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "status", "B-201", "W1", "--json"]
+
+
+def test_program_mutation_dry_run_skips_main_branch_guard(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli,
+        "_guard_product_repo_main_branch",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("dry-run program mutation should not hit main-branch guard")),
+    )
+
+    def fake_run(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 43
+
+    monkeypatch.setattr(cli.program_wave_authoring, "run_program", fake_run)
+    rc = cli.main(["program", "create", "--repo-root", str(tmp_path), "B-201", "--dry-run"])
+
+    assert rc == 43
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "create", "B-201", "--dry-run"]
+
+
+def test_wave_mutation_blocks_on_main_branch_before_authoring(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(cli, "_guard_product_repo_main_branch", lambda **_kwargs: 18)
+    monkeypatch.setattr(
+        cli.program_wave_authoring,
+        "run_wave",
+        lambda argv: (_ for _ in ()).throw(AssertionError(f"wave authoring should not run when guard blocks: {argv}")),
+    )
+
+    rc = cli.main(["wave", "assign", "--repo-root", str(tmp_path), "B-201", "W1", "B-202"])
+
+    assert rc == 18
+
+
 def test_governance_sync_component_spec_requirements_dispatch_accepts_plain_forwarded_flags(
     monkeypatch,
     tmp_path: Path,
@@ -1067,6 +1212,35 @@ def test_compass_update_dispatch_accepts_forwarded_flags(monkeypatch, tmp_path: 
     rc = cli.main(["compass", "update", "--repo-root", str(tmp_path), "--statement", "hello"])
     assert rc == 29
     assert captured["argv"] == ["--repo-root", str(tmp_path), "--statement", "hello"]
+
+
+def test_compass_refresh_dispatch_accepts_structured_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 28
+
+    monkeypatch.setattr(cli.compass_refresh_runtime, "main", fake_main)
+    rc = cli.main(
+        [
+            "compass",
+            "refresh",
+            "--repo-root",
+            str(tmp_path),
+            "--runtime-mode",
+            "standalone",
+            "--wait",
+        ]
+    )
+    assert rc == 28
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "--wait",
+        "--runtime-mode",
+        "standalone",
+    ]
 
 
 def test_compass_restore_history_dispatch_accepts_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
@@ -1525,7 +1699,7 @@ def test_off_prints_default_behavior_guidance(monkeypatch, tmp_path: Path, capsy
     captured = capsys.readouterr()
 
     assert rc == 0
-    assert "Codex falls back to the surrounding repo's default behavior" in captured.out
+    assert "The current coding host falls back to the surrounding repo's default behavior" in captured.out
     assert "./.odylith/bin/odylith on --repo-root ." in captured.out
     assert "runtime and `odylith/` context stay installed" in captured.out
 

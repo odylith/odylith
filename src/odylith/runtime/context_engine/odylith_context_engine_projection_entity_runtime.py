@@ -2,18 +2,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
-from odylith.runtime.context_engine import odylith_context_engine_registry_detail_runtime
-
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.governance import release_planning_contract
+from odylith.runtime.context_engine import odylith_context_engine_projection_runtime_bindings
 
 def bind(host: Any) -> None:
-    getter = host.__getitem__ if isinstance(host, dict) else lambda name: getattr(host, name)
-    for name in ('Any', 'Mapping', 'Path', 'Sequence', '_BUG_CRITICAL_SEVERITIES', '_DIAGRAM_ID_RE', '_ENGINEERING_NOTE_KINDS', '_ENGINEERING_NOTE_KIND_SET', '_HEADER_RE', '_PROCESS_WARM_CACHE_FINGERPRINTS', '_WORKSTREAM_ID_RE', '_apply_odylith_component_index_ablation', '_apply_odylith_registry_snapshot_ablation', '_available_full_scan_roots', '_bug_agent_guidance', '_bug_archive_bucket_from_link_target', '_bug_intelligence_coverage', '_bug_is_open', '_bug_summary_from_fields', '_build_bug_reference_lookup', '_cached_projection_rows', '_classify_bug_path_refs', '_component_entry_from_runtime_row', '_component_lookup_aliases', '_component_matches_for_bug_paths', '_component_rows_from_index', '_connect', '_context_lookup_key', '_dedupe_strings', '_delivery_context_rows', '_diagram_refs_for_bug_components', '_entity_by_kind_id', '_entity_by_path', '_entity_from_row', '_extract_path_refs', '_extract_workstream_refs', '_full_scan_guidance', '_full_scan_terms', '_is_bug_placeholder_row', '_json_list', '_load_backlog_projection', '_load_bug_projection', '_load_diagram_projection', '_load_idea_specs', '_load_plan_projection', '_markdown_section_bodies', '_normalize_bug_link_target', '_normalize_entity_kind', '_normalize_repo_token', '_odylith_ablation_active', '_odylith_query_targets_disabled', '_odylith_runtime_entity_suppressed', '_odylith_switch_snapshot', '_ordered_bug_detail_sections', '_parse_bug_entry_fields', '_parse_component_tokens', '_parse_link_target', '_path_signal_profile', '_plan_lookup_aliases', '_raw_text', '_recent_context_events', '_related_bug_refs_from_text', '_related_entities', '_relation_rows', '_repo_scan_inferred_kind', '_resolve_context_entity', '_runtime_backlog_detail', '_runtime_backlog_detail_rows', '_search_row_from_entity', '_summarize_entity', '_unique_entity_by_path_alias', '_warm_runtime', '_workstream_lookup_aliases', 'canonicalize_bug_status', 'component_registry', 'entity', 'entity_id', 'entity_kind', 'json', 'load_backlog_detail', 'load_backlog_rows', 'load_bug_rows', 'load_component_index', 'load_component_registry_snapshot', 're', 'record_runtime_timing', 'search_entities_payload', 'summary', 'time'):
-        try:
-            globals()[name] = getter(name)
-        except (AttributeError, KeyError):
-            continue
-
+    odylith_context_engine_projection_runtime_bindings.bind_projection_runtime(globals(), host)
 
 def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
     if kind == "workstream":
@@ -41,6 +35,21 @@ def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
             "created": str(row["created"]),
             "updated": str(row["updated"]),
             "backlog": str(row["backlog"]),
+        }
+    if kind == "release":
+        metadata = json.loads(str(row["metadata_json"] or "{}"))
+        return {
+            "kind": "release",
+            "entity_id": str(row["release_id"]),
+            "title": str(row["display_label"] or row["release_id"]),
+            "status": str(row["status"]),
+            "path": str(row["source_path"]),
+            "version": str(row.get("version", "")),
+            "tag": str(row.get("tag", "")),
+            "effective_name": str(row.get("effective_name", "")),
+            "aliases": _json_list(str(row.get("aliases_json", ""))),
+            "active_workstreams": _json_list(str(row.get("active_workstreams_json", ""))),
+            "metadata": metadata if isinstance(metadata, Mapping) else {},
         }
     if kind == "bug":
         bug_id = str(row.get("bug_id", "")).strip()
@@ -125,6 +134,26 @@ def _entity_by_kind_id(
     token = str(entity_id or "").strip()
     if normalized_kind == "workstream":
         row = connection.execute("SELECT * FROM workstreams WHERE idea_id = ?", (token.upper(),)).fetchone()
+    elif normalized_kind == "release":
+        selector = release_planning_contract.normalize_release_selector(token)
+        selector_key = str(selector or "").strip().casefold()
+        row = None
+        if selector_key:
+            matches: list[Mapping[str, Any]] = []
+            for candidate in connection.execute("SELECT * FROM releases").fetchall():
+                aliases = {item.casefold() for item in _json_list(str(candidate.get("aliases_json", "")))}
+                candidate_keys = {
+                    str(candidate.get("release_id", "")).strip().casefold(),
+                    str(candidate.get("version", "")).strip().casefold(),
+                    str(candidate.get("tag", "")).strip().casefold(),
+                    str(candidate.get("effective_name", "")).strip().casefold(),
+                }
+                if selector_key.startswith("release:"):
+                    candidate_keys.add(selector_key.partition(":")[2])
+                if selector_key in aliases or selector_key in candidate_keys:
+                    matches.append(candidate)
+            if len(matches) == 1:
+                row = matches[0]
     elif normalized_kind == "plan":
         row = connection.execute("SELECT * FROM plans WHERE plan_path = ?", (token,)).fetchone()
     elif normalized_kind == "bug":
@@ -364,6 +393,7 @@ def _projection_exact_search_results(
     allowed = {str(kind).strip().lower() for kind in kinds if str(kind).strip()}
     candidate_kinds = tuple(allowed) if allowed else (
         "workstream",
+        "release",
         "plan",
         "bug",
         "diagram",
@@ -578,6 +608,11 @@ def _resolve_context_entity(
 
     lowered = raw_ref.casefold()
     compact_lookup = _context_lookup_key(raw_ref)
+    for row in connection.execute("SELECT * FROM releases").fetchall():
+        aliases = _release_lookup_aliases(dict(row), repo_root=repo_root)
+        if lowered in aliases or (compact_lookup and compact_lookup in aliases):
+            return _entity_from_row(kind="release", row=row), [], {"resolution_mode": "release_alias"}
+
     for row in connection.execute("SELECT * FROM workstreams").fetchall():
         aliases = _workstream_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
@@ -930,7 +965,15 @@ def load_context_dossier(
             }
         relations = _relation_rows(connection, entity=entity, relation_limit=relation_limit)
         related = _related_entities(connection, entity=entity, relations=relations)
+        delivery_scopes = _delivery_context_rows(
+            connection,
+            entity=entity,
+            related=related,
+        )
+        from odylith.runtime.governance import proof_state as proof_state_runtime
+
         return {
+            **proof_state_runtime.resolve_scope_collection_proof_state(delivery_scopes),
             "query": str(ref or "").strip(),
             "requested_kind": _normalize_entity_kind(kind),
             "resolved": True,
@@ -951,17 +994,13 @@ def load_context_dossier(
             },
             "relations": relations,
             "related_entities": related,
-            "recent_codex_events": _recent_context_events(
+            agent_runtime_contract.AGENT_EVENT_KEY: _recent_context_events(
                 connection,
                 entity=entity,
                 related=related,
                 event_limit=event_limit,
             ),
-            "delivery_scopes": _delivery_context_rows(
-                connection,
-                entity=entity,
-                related=related,
-            ),
+            "delivery_scopes": delivery_scopes,
         }
     finally:
         connection.close()
@@ -975,838 +1014,3 @@ def load_context_dossier(
                 "requested_kind": _normalize_entity_kind(kind),
             },
         )
-
-def load_backlog_rows(
-    *,
-    repo_root: Path,
-    runtime_mode: str = "auto",
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="backlog_rows"):
-        connection = _connect(root)
-        try:
-            result: dict[str, Any] = {
-                "updated_utc": str(
-                    json.loads(
-                        (
-                            connection.execute(
-                                "SELECT payload_json FROM projection_state WHERE name = 'workstreams'"
-                            ).fetchone() or {"payload_json": "{}"}
-                        )["payload_json"]
-                    ).get("updated_utc", "")
-                ).strip(),
-                "rationale_map": _load_backlog_projection(repo_root=root).get("rationale_map", {}),
-            }
-            for section in ("active", "execution", "finished", "parked"):
-                rows = connection.execute(
-                    """
-                    SELECT rank, idea_id, title, priority, ordering_score, metadata_json, idea_file
-                    FROM workstreams
-                    WHERE section = ?
-                    ORDER BY
-                        CASE
-                            WHEN rank = '-' THEN 999999
-                            WHEN rank GLOB '[0-9]*' THEN CAST(rank AS INTEGER)
-                            ELSE 999999
-                        END,
-                        idea_id
-                    """,
-                    (section,),
-                ).fetchall()
-                values: list[dict[str, str]] = []
-                for row in rows:
-                    metadata = json.loads(str(row["metadata_json"] or "{}"))
-                    values.append(
-                        {
-                            "rank": str(row["rank"]),
-                            "idea_id": str(row["idea_id"]),
-                            "title": str(row["title"]),
-                            "priority": str(row["priority"]),
-                            "ordering_score": str(row["ordering_score"]),
-                            "commercial_value": str(metadata.get("commercial_value", "")).strip(),
-                            "product_impact": str(metadata.get("product_impact", "")).strip(),
-                            "market_value": str(metadata.get("market_value", "")).strip(),
-                            "sizing": str(metadata.get("sizing", "")).strip(),
-                            "complexity": str(metadata.get("complexity", "")).strip(),
-                            "impacted_lanes": str(metadata.get("impacted_lanes", "")).strip(),
-                            "status": str(metadata.get("status", "")).strip(),
-                            "link": (
-                                f"[{Path(str(row['idea_file'])).stem}]({str(row['idea_file'])})"
-                                if str(row["idea_file"]).strip()
-                                else ""
-                            ),
-                        }
-                    )
-                result[section] = values
-            return result
-        finally:
-            connection.close()
-    return _load_backlog_projection(repo_root=root)
-
-def _markdown_section_bodies(text: str) -> dict[str, str]:
-    sections: dict[str, str] = {}
-    current: str | None = None
-    lines: list[str] = []
-    for raw_line in str(text or "").splitlines():
-        match = _HEADER_RE.match(raw_line)
-        if match:
-            if current is not None:
-                sections[current] = "\n".join(lines).strip()
-            current = str(match.group(1) or "").strip()
-            lines = []
-            continue
-        if current is not None:
-            lines.append(raw_line.rstrip())
-    if current is not None:
-        sections[current] = "\n".join(lines).strip()
-    return sections
-
-def load_backlog_list(
-    *,
-    repo_root: Path,
-    runtime_mode: str = "auto",
-) -> dict[str, Any]:
-    return load_backlog_rows(repo_root=repo_root, runtime_mode=runtime_mode)
-
-def _runtime_backlog_detail_rows(
-    *,
-    repo_root: Path,
-) -> dict[str, dict[str, Any]]:
-    root = Path(repo_root).resolve()
-
-    def _load() -> dict[str, dict[str, Any]]:
-        connection = _connect(root)
-        try:
-            rows = connection.execute(
-                """
-                SELECT idea_id, metadata_json, idea_file
-                FROM workstreams
-                ORDER BY idea_id
-                """
-            ).fetchall()
-        finally:
-            connection.close()
-        payload: dict[str, dict[str, Any]] = {}
-        for row in rows:
-            token = str(row["idea_id"] or "").strip().upper()
-            if not _WORKSTREAM_ID_RE.fullmatch(token):
-                continue
-            try:
-                metadata = json.loads(str(row["metadata_json"] or "{}"))
-            except json.JSONDecodeError:
-                metadata = {}
-            payload[token] = {
-                "metadata": dict(metadata) if isinstance(metadata, Mapping) else {},
-                "idea_file": str(row["idea_file"] or "").strip(),
-            }
-        return payload
-
-    cache_key = f"{root}:default"
-    if _PROCESS_WARM_CACHE_FINGERPRINTS.get(cache_key, ""):
-        rows = _cached_projection_rows(
-            repo_root=root,
-            cache_name="workstream_detail_rows",
-            loader=_load,
-            scope="default",
-        )
-    else:
-        rows = _load()
-    return dict(rows) if isinstance(rows, Mapping) else {}
-
-def _runtime_backlog_detail(
-    *,
-    repo_root: Path,
-    workstream_id: str,
-) -> dict[str, Any] | None:
-    root = Path(repo_root).resolve()
-    row = _runtime_backlog_detail_rows(repo_root=root).get(str(workstream_id or "").strip().upper())
-    if not isinstance(row, Mapping):
-        return None
-    idea_token = str(row.get("idea_file", "")).strip()
-    if not idea_token:
-        return None
-    idea_path = (root / idea_token).resolve() if not Path(idea_token).is_absolute() else Path(idea_token).resolve()
-    if not idea_path.is_file():
-        return None
-    raw_text = _raw_text(idea_path)
-    metadata = dict(row.get("metadata", {})) if isinstance(row.get("metadata"), Mapping) else {}
-    metadata.setdefault("idea_id", str(workstream_id or "").strip().upper())
-    promoted_to_plan = str(metadata.get("promoted_to_plan", "")).strip()
-    if promoted_to_plan:
-        metadata["promoted_to_plan"] = _normalize_repo_token(promoted_to_plan, repo_root=root)
-    return {
-        "idea_id": str(workstream_id or "").strip().upper(),
-        "idea_file": str(idea_path.relative_to(root)) if idea_path.is_relative_to(root) else str(idea_path),
-        "metadata": metadata,
-        "sections": _markdown_section_bodies(raw_text),
-        "search_body": raw_text,
-        "promoted_to_plan": str(metadata.get("promoted_to_plan", "")).strip(),
-    }
-
-def load_backlog_detail(
-    *,
-    repo_root: Path,
-    workstream_id: str,
-    runtime_mode: str = "auto",
-) -> dict[str, Any] | None:
-    root = Path(repo_root).resolve()
-    token = str(workstream_id or "").strip().upper()
-    if not _WORKSTREAM_ID_RE.fullmatch(token):
-        return None
-    del runtime_mode
-    if not _odylith_ablation_active(repo_root=root):
-        try:
-            runtime_detail = _runtime_backlog_detail(repo_root=root, workstream_id=token)
-        except RuntimeError:
-            runtime_detail = None
-        if runtime_detail is not None:
-            return runtime_detail
-    spec = _load_idea_specs(repo_root=root).get(token)
-    if spec is None:
-        return None
-    raw_text = _raw_text(spec.path)
-    metadata = dict(spec.metadata)
-    if str(metadata.get("promoted_to_plan", "")).strip():
-        metadata["promoted_to_plan"] = _normalize_repo_token(str(metadata.get("promoted_to_plan", "")).strip(), repo_root=root)
-    return {
-        "idea_id": token,
-        "idea_file": str(spec.path.relative_to(root)) if spec.path.is_relative_to(root) else str(spec.path),
-        "metadata": metadata,
-        "sections": _markdown_section_bodies(raw_text),
-        "search_body": raw_text,
-        "promoted_to_plan": str(metadata.get("promoted_to_plan", "")).strip(),
-    }
-
-def load_backlog_document(
-    *,
-    repo_root: Path,
-    workstream_id: str,
-    view: str,
-    runtime_mode: str = "auto",
-) -> dict[str, Any] | None:
-    del runtime_mode  # detail/document bodies are still sourced from markdown contracts today.
-    root = Path(repo_root).resolve()
-    token = str(workstream_id or "").strip().upper()
-    mode = str(view or "").strip().lower()
-    detail = load_backlog_detail(repo_root=root, workstream_id=token)
-    if detail is None:
-        return None
-    if mode == "spec":
-        spec_token = str(detail.get("idea_file", "")).strip()
-        spec_path = (root / spec_token).resolve() if spec_token and not Path(spec_token).is_absolute() else Path(spec_token).resolve()
-        return {
-            "idea_id": token,
-            "view": "spec",
-            "path": str(spec_path.relative_to(root)) if spec_path.is_relative_to(root) else str(spec_path),
-            "markdown": _raw_text(spec_path),
-        }
-    if mode == "plan":
-        plan_token = str(detail.get("promoted_to_plan", "")).strip()
-        if not plan_token:
-            return None
-        plan_path = (root / plan_token).resolve() if not Path(plan_token).is_absolute() else Path(plan_token).resolve()
-        if not plan_path.is_file():
-            return None
-        return {
-            "idea_id": token,
-            "view": "plan",
-            "path": str(plan_path.relative_to(root)) if plan_path.is_relative_to(root) else str(plan_path),
-            "markdown": _raw_text(plan_path),
-        }
-    return None
-
-def load_plan_rows(
-    *,
-    repo_root: Path,
-    runtime_mode: str = "auto",
-) -> dict[str, list[dict[str, str]]]:
-    root = Path(repo_root).resolve()
-    if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="plan_rows"):
-        connection = _connect(root)
-        try:
-            result: dict[str, list[dict[str, str]]] = {}
-            for section in ("active", "parked", "done"):
-                rows = connection.execute(
-                    """
-                    SELECT plan_path, status, created, updated, backlog
-                    FROM plans
-                    WHERE section = ?
-                    ORDER BY updated DESC, plan_path
-                    """,
-                    (section,),
-                ).fetchall()
-                result[section] = [
-                    {
-                        "Plan": f"`{row['plan_path']}`",
-                        "Status": str(row["status"]),
-                        "Created": str(row["created"]),
-                        "Updated": str(row["updated"]),
-                        "Backlog": f"`{row['backlog']}`" if str(row["backlog"]) else "`-`",
-                    }
-                    for row in rows
-                ]
-            return result
-        finally:
-            connection.close()
-    return _load_plan_projection(repo_root=root)
-
-def load_bug_rows(
-    *,
-    repo_root: Path,
-    runtime_mode: str = "auto",
-) -> list[dict[str, str]]:
-    root = Path(repo_root).resolve()
-    if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="bug_rows"):
-        connection = _connect(root)
-        try:
-            rows = connection.execute(
-                """
-                SELECT bug_id, date, title, severity, components, status, link_target, source_path
-                FROM bugs
-                ORDER BY date DESC, title
-                """
-            ).fetchall()
-            payload_rows: list[dict[str, str]] = []
-            for row in rows:
-                source_path = str(row["source_path"] or "").strip()
-                index_path = (root / source_path).resolve() if source_path else root / "bugs" / "INDEX.md"
-                normalized_link = _normalize_bug_link_target(
-                    repo_root=root,
-                    index_path=index_path,
-                    link_target=str(row["link_target"] or "").strip(),
-                )
-                if normalized_link and not (root / normalized_link).is_file():
-                    continue
-                bug_id = resolve_casebook_bug_id(
-                    explicit_bug_id=str(row["bug_id"] or "").strip(),
-                    seed=normalized_link or f"{row['date']}::{row['title']}",
-                )
-                payload = {
-                    BUG_ID_FIELD: bug_id,
-                    "Date": str(row["date"]),
-                    "Title": str(row["title"]),
-                    "Severity": str(row["severity"]),
-                    "Components": str(row["components"]),
-                    "Status": canonicalize_bug_status(str(row["status"])),
-                    "Link": f"[bug]({normalized_link})" if normalized_link else "",
-                    "IndexPath": source_path or "odylith/casebook/bugs/INDEX.md",
-                }
-                if _is_bug_placeholder_row(payload):
-                    continue
-                payload_rows.append(payload)
-            return payload_rows
-        finally:
-            connection.close()
-    return _load_bug_projection(repo_root=root)
-
-def load_bug_snapshot(
-    *,
-    repo_root: Path,
-    runtime_mode: str = "auto",
-) -> list[dict[str, Any]]:
-    root = Path(repo_root).resolve()
-    rows = load_bug_rows(repo_root=root, runtime_mode=runtime_mode)
-    bug_lookup = _build_bug_reference_lookup(rows=rows, repo_root=root)
-    component_index = load_component_index(repo_root=root, runtime_mode=runtime_mode)
-    component_rows = _component_rows_from_index(component_index)
-    diagram_lookup = {
-        str(row.get("diagram_id", "")).strip().upper(): {
-            "diagram_id": str(row.get("diagram_id", "")).strip().upper(),
-            "title": str(row.get("title", "")).strip(),
-            "slug": str(row.get("slug", "")).strip(),
-        }
-        for row in _load_diagram_projection(repo_root=root)
-        if str(row.get("diagram_id", "")).strip()
-    }
-    snapshot: list[dict[str, Any]] = []
-    for row in rows:
-        if not isinstance(row, Mapping):
-            continue
-        if _is_bug_placeholder_row(row):
-            continue
-        link_target = _parse_link_target(str(row.get("Link", "")))
-        bug_id = resolve_casebook_bug_id(
-            explicit_bug_id=str(row.get(BUG_ID_FIELD, "")).strip(),
-            seed=link_target or f"{row.get('Date', '')}::{row.get('Title', '')}",
-        )
-        bug_key = link_target or f"{row.get('Date', '')}::{row.get('Title', '')}"
-        bug_path = (root / link_target).resolve() if link_target else None
-        raw_text = _raw_text(bug_path) if bug_path is not None else ""
-        lines = raw_text.splitlines() if raw_text else []
-        fields = _parse_bug_entry_fields(lines) if lines else {}
-
-        date = str(row.get("Date", "")).strip() or str(fields.get("Created", "")).strip()
-        title = str(row.get("Title", "")).strip()
-        severity = str(row.get("Severity", "")).strip() or str(fields.get("Severity", "")).strip()
-        status = canonicalize_bug_status(str(row.get("Status", "")).strip() or str(fields.get("Status", "")).strip())
-        if status:
-            fields["Status"] = status
-        components_raw = str(row.get("Components", "")).strip() or str(fields.get("Components Affected", "")).strip()
-        components = _parse_component_tokens(components_raw)
-        path_refs = _extract_path_refs(
-            text="\n".join(
-                token
-                for token in (
-                    raw_text,
-                    str(fields.get("Code References", "")).strip(),
-                    str(fields.get("Runbook References", "")).strip(),
-                    str(fields.get("Components Affected", "")).strip(),
-                )
-                if token
-            ),
-            repo_root=root,
-        )
-        ref_buckets = _classify_bug_path_refs(path_refs)
-        component_matches = _component_matches_for_bug_paths(
-            component_rows=component_rows,
-            component_index=component_index,
-            path_refs=path_refs,
-        )
-        diagram_refs = _diagram_refs_for_bug_components(
-            component_matches=component_matches,
-            diagram_lookup=diagram_lookup,
-        )
-        workstreams = _extract_workstream_refs(
-            "\n".join(
-                token
-                for token in (
-                    raw_text,
-                    str(fields.get("Related Incidents/Bugs", "")).strip(),
-                    str(fields.get("Config/Flags", "")).strip(),
-                )
-                if token
-            )
-        )
-        related_bug_refs = _related_bug_refs_from_text(
-            text=str(fields.get("Related Incidents/Bugs", "")).strip(),
-            bug_lookup=bug_lookup,
-            repo_root=root,
-        )
-        agent_guidance = _bug_agent_guidance(
-            fields=fields,
-            ref_buckets=ref_buckets,
-            component_matches=component_matches,
-            workstreams=workstreams,
-            related_bug_refs=related_bug_refs,
-        )
-        detail_sections = _ordered_bug_detail_sections(fields)
-        search_text = "\n".join(
-            token
-            for token in (
-                bug_id,
-                title,
-                severity,
-                status,
-                components_raw,
-                raw_text,
-                "\n".join(match.get("name", "") for match in component_matches),
-                "\n".join(ref.get("title", "") for ref in related_bug_refs),
-                "\n".join(
-                    str(item.get("value", "")).strip()
-                    for item in agent_guidance.get("lessons", [])
-                    if isinstance(item, Mapping)
-                ),
-                "\n".join(str(item).strip() for item in agent_guidance.get("preflight_checks", [])),
-            )
-            if token
-        )
-        is_open = _bug_is_open(status)
-        intelligence_coverage = _bug_intelligence_coverage(fields=fields, severity=severity)
-        snapshot.append(
-            {
-                "bug_id": bug_id,
-                "bug_key": str(bug_key).strip(),
-                "title": title,
-                "date": date,
-                "severity": severity,
-                "severity_token": str(severity).strip().lower(),
-                "status": status,
-                "status_token": str(status).strip().lower(),
-                "components": components_raw,
-                "component_tokens": components,
-                "archive_bucket": _bug_archive_bucket_from_link_target(link_target),
-                "source_path": link_target,
-                "source_exists": bool(link_target and bug_path is not None and bug_path.is_file()),
-                "is_open": is_open,
-                "is_open_critical": is_open and str(severity).strip().lower() in _BUG_CRITICAL_SEVERITIES,
-                "workstreams": workstreams,
-                "primary_workstream": workstreams[0] if workstreams else "",
-                "summary": _bug_summary_from_fields(fields, lines),
-                "detail_sections": detail_sections,
-                "fields": dict(fields),
-                "path_refs": path_refs,
-                "code_refs": ref_buckets["code"],
-                "doc_refs": ref_buckets["docs"],
-                "test_refs": ref_buckets["tests"],
-                "contract_refs": ref_buckets["contracts"],
-                "component_matches": component_matches,
-                "diagram_refs": diagram_refs,
-                "related_bug_refs": related_bug_refs,
-                "agent_guidance": agent_guidance,
-                "intelligence_coverage": intelligence_coverage,
-                "search_text": search_text,
-            }
-        )
-    return snapshot
-
-def _component_entry_from_runtime_row(row: Mapping[str, Any]) -> component_registry.ComponentEntry:
-    metadata = json.loads(str(row["metadata_json"] or "{}"))
-    payload = dict(metadata) if isinstance(metadata, Mapping) else {}
-    if payload.get("component_id"):
-        return component_registry.ComponentEntry(
-            component_id=str(payload.get("component_id", "")).strip(),
-            name=str(payload.get("name", "")).strip(),
-            kind=str(payload.get("kind", "")).strip(),
-            category=str(payload.get("category", "")).strip(),
-            qualification=str(payload.get("qualification", "")).strip(),
-            aliases=[str(token).strip() for token in payload.get("aliases", []) if str(token).strip()]
-            if isinstance(payload.get("aliases"), list)
-            else [],
-            path_prefixes=[str(token).strip() for token in payload.get("path_prefixes", []) if str(token).strip()]
-            if isinstance(payload.get("path_prefixes"), list)
-            else [],
-            workstreams=[str(token).strip() for token in payload.get("workstreams", []) if str(token).strip()]
-            if isinstance(payload.get("workstreams"), list)
-            else [],
-            diagrams=[str(token).strip() for token in payload.get("diagrams", []) if str(token).strip()]
-            if isinstance(payload.get("diagrams"), list)
-            else [],
-            owner=str(payload.get("owner", "")).strip(),
-            status=str(payload.get("status", "")).strip(),
-            what_it_is=str(payload.get("what_it_is", "")).strip(),
-            why_tracked=str(payload.get("why_tracked", "")).strip(),
-            spec_ref=str(payload.get("spec_ref", "")).strip(),
-            sources=[str(token).strip() for token in payload.get("sources", []) if str(token).strip()]
-            if isinstance(payload.get("sources"), list)
-            else [],
-            subcomponents=[str(token).strip() for token in payload.get("subcomponents", []) if str(token).strip()]
-            if isinstance(payload.get("subcomponents"), list)
-            else [],
-            product_layer=str(payload.get("product_layer", "")).strip(),
-        )
-    return component_registry.ComponentEntry(
-        component_id=str(row["component_id"]).strip(),
-        name=str(row["name"]).strip(),
-        kind=str(payload.get("kind", "")).strip(),
-        category=str(payload.get("category", "")).strip(),
-        qualification=str(payload.get("qualification", "")).strip(),
-        aliases=_json_list(str(row["aliases_json"])),
-        path_prefixes=[str(token).strip() for token in payload.get("path_prefixes", []) if str(token).strip()]
-        if isinstance(payload.get("path_prefixes"), list)
-        else [],
-        workstreams=_json_list(str(row["workstreams_json"])),
-        diagrams=_json_list(str(row["diagrams_json"])),
-        owner=str(row["owner"]).strip(),
-        status=str(row["status"]).strip(),
-        what_it_is=str(payload.get("what_it_is", "")).strip(),
-        why_tracked=str(payload.get("why_tracked", "")).strip(),
-        spec_ref=str(row["spec_ref"]).strip(),
-        sources=[str(token).strip() for token in payload.get("sources", []) if str(token).strip()]
-        if isinstance(payload.get("sources"), list)
-        else [],
-        subcomponents=[str(token).strip() for token in payload.get("subcomponents", []) if str(token).strip()]
-        if isinstance(payload.get("subcomponents"), list)
-        else [],
-        product_layer=str(payload.get("product_layer", "")).strip(),
-    )
-
-def load_component_index(
-    *,
-    repo_root: Path,
-    runtime_mode: str = "auto",
-) -> dict[str, component_registry.ComponentEntry]:
-    root = Path(repo_root).resolve()
-    if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="component_index"):
-        connection = _connect(root)
-        try:
-            rows = connection.execute("SELECT * FROM components ORDER BY component_id").fetchall()
-            component_index = {
-                str(row["component_id"]).strip(): _component_entry_from_runtime_row(row)
-                for row in rows
-                if str(row["component_id"]).strip()
-            }
-            if _odylith_ablation_active(repo_root=root):
-                return _apply_odylith_component_index_ablation(component_index)
-            return component_index
-        finally:
-            connection.close()
-    manifest_path = component_registry.default_manifest_path(repo_root=root)
-    catalog_path = root / component_registry.DEFAULT_CATALOG_PATH
-    ideas_root = root / component_registry.DEFAULT_IDEAS_ROOT
-    if not manifest_path.is_file():
-        return {}
-    components, _alias_to_component, _diagnostics = component_registry.build_component_index(
-        repo_root=root,
-        manifest_path=manifest_path,
-        catalog_path=catalog_path,
-        ideas_root=ideas_root,
-    )
-    if _odylith_ablation_active(repo_root=root):
-        return _apply_odylith_component_index_ablation(components)
-    return components
-
-def load_registry_list(
-    *,
-    repo_root: Path,
-    runtime_mode: str = "auto",
-) -> list[dict[str, Any]]:
-    components = load_component_index(repo_root=repo_root, runtime_mode=runtime_mode)
-    rows: list[dict[str, Any]] = []
-    for component_id in sorted(components):
-        entry = components[component_id]
-        rows.append(
-            {
-                "component_id": entry.component_id,
-                "name": entry.name,
-                "kind": entry.kind,
-                "category": entry.category,
-                "qualification": entry.qualification,
-                "owner": entry.owner,
-                "status": entry.status,
-                "what_it_is": entry.what_it_is,
-                "why_tracked": entry.why_tracked,
-                "aliases": list(entry.aliases),
-            }
-        )
-    return rows
-
-def load_component_registry_snapshot(
-    *,
-    repo_root: Path,
-    runtime_mode: str = "auto",
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    odylith_ablation_active = _odylith_ablation_active(repo_root=root)
-    if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="component_registry_snapshot"):
-        connection = _connect(root)
-        try:
-            component_rows = connection.execute("SELECT * FROM components ORDER BY component_id").fetchall()
-            spec_rows = connection.execute("SELECT * FROM component_specs ORDER BY component_id").fetchall()
-            trace_rows = connection.execute(
-                "SELECT component_id, bucket, path FROM component_traceability ORDER BY component_id, bucket, path"
-            ).fetchall()
-            event_rows = connection.execute(
-                """
-                SELECT event_index, ts_iso, kind, summary, workstreams_json, artifacts_json,
-                       explicit_components_json, mapped_components_json, confidence, meaningful
-                FROM registry_events
-                ORDER BY ts_iso DESC, event_index DESC
-                """
-            ).fetchall()
-            state_row = connection.execute(
-                "SELECT payload_json FROM projection_state WHERE name = 'components'"
-            ).fetchone()
-        finally:
-            connection.close()
-        components = {
-            str(row["component_id"]).strip(): _component_entry_from_runtime_row(row)
-            for row in component_rows
-            if str(row["component_id"]).strip()
-        }
-        payload = json.loads(str(state_row["payload_json"] or "{}")) if state_row is not None else {}
-        diagnostics = [str(item) for item in payload.get("diagnostics", []) if str(item).strip()] if isinstance(payload, Mapping) else []
-        candidate_queue = [
-            dict(item)
-            for item in payload.get("candidate_queue", [])
-            if isinstance(payload, Mapping) and isinstance(payload.get("candidate_queue"), list) and isinstance(item, Mapping)
-        ] if isinstance(payload, Mapping) else []
-        unmapped_meaningful_events = [
-            component_registry.MappedEvent(
-                event_index=int(item.get("event_index", 0) or 0),
-                ts_iso=str(item.get("ts_iso", "")).strip(),
-                kind=str(item.get("kind", "")).strip(),
-                summary=str(item.get("summary", "")).strip(),
-                workstreams=[str(token).strip() for token in item.get("workstreams", []) if str(token).strip()]
-                if isinstance(item.get("workstreams"), list)
-                else [],
-                artifacts=[str(token).strip() for token in item.get("artifacts", []) if str(token).strip()]
-                if isinstance(item.get("artifacts"), list)
-                else [],
-                explicit_components=[str(token).strip() for token in item.get("explicit_components", []) if str(token).strip()]
-                if isinstance(item.get("explicit_components"), list)
-                else [],
-                mapped_components=[str(token).strip() for token in item.get("mapped_components", []) if str(token).strip()]
-                if isinstance(item.get("mapped_components"), list)
-                else [],
-                confidence=str(item.get("confidence", "")).strip(),
-                meaningful=bool(item.get("meaningful")),
-            )
-            for item in payload.get("unmapped_meaningful_events", [])
-            if isinstance(payload, Mapping) and isinstance(payload.get("unmapped_meaningful_events"), list) and isinstance(item, Mapping)
-        ] if isinstance(payload, Mapping) else []
-        mapped_events = [
-            component_registry.MappedEvent(
-                event_index=int(row["event_index"] or 0),
-                ts_iso=str(row["ts_iso"]).strip(),
-                kind=str(row["kind"]).strip(),
-                summary=str(row["summary"]).strip(),
-                workstreams=_json_list(str(row["workstreams_json"])),
-                artifacts=_json_list(str(row["artifacts_json"])),
-                explicit_components=_json_list(str(row["explicit_components_json"])),
-                mapped_components=_json_list(str(row["mapped_components_json"])),
-                confidence=str(row["confidence"]).strip(),
-                meaningful=bool(int(row["meaningful"] or 0)),
-            )
-            for row in event_rows
-        ]
-        report = component_registry.ComponentRegistryReport(
-            components=components,
-            mapped_events=mapped_events,
-            unmapped_meaningful_events=unmapped_meaningful_events,
-            candidate_queue=candidate_queue,
-            forensic_coverage=component_registry.build_component_forensic_coverage(
-                component_index=components,
-                mapped_events=mapped_events,
-                repo_root=repo_root,
-            ),
-            diagnostics=diagnostics,
-        )
-        spec_snapshots: dict[str, component_registry.ComponentSpecSnapshot] = {}
-        for row in spec_rows:
-            component_id = str(row["component_id"]).strip()
-            if not component_id:
-                continue
-            feature_history_payload = json.loads(str(row["feature_history_json"] or "[]"))
-            skill_tiers_payload = json.loads(str(row["skill_trigger_tiers_json"] or "{}"))
-            playbook_payload = json.loads(str(row["validation_playbook_commands_json"] or "[]"))
-            spec_snapshots[component_id] = component_registry.ComponentSpecSnapshot(
-                title=str(row["title"]).strip(),
-                last_updated=str(row["last_updated"]).strip(),
-                feature_history=[dict(item) for item in feature_history_payload if isinstance(item, Mapping)]
-                if isinstance(feature_history_payload, list)
-                else [],
-                markdown=str(row["markdown"] or ""),
-                skill_trigger_tiers=dict(skill_tiers_payload) if isinstance(skill_tiers_payload, Mapping) else {},
-                skill_trigger_structure=str(row["skill_trigger_structure"]).strip(),
-                validation_playbook_commands=[dict(item) for item in playbook_payload if isinstance(item, Mapping)]
-                if isinstance(playbook_payload, list)
-                else [],
-            )
-        traceability: dict[str, dict[str, list[str]]] = {}
-        for row in trace_rows:
-            component_id = str(row["component_id"]).strip()
-            bucket = str(row["bucket"]).strip()
-            path = str(row["path"]).strip()
-            if not component_id or not bucket or not path:
-                continue
-            traceability.setdefault(
-                component_id,
-                {"runbooks": [], "developer_docs": [], "code_references": []},
-            ).setdefault(bucket, []).append(path)
-        for component_id, buckets in traceability.items():
-            for bucket, values in buckets.items():
-                buckets[bucket] = _dedupe_strings(values)
-        snapshot = {
-            "report": report,
-            "traceability": traceability,
-            "spec_snapshots": spec_snapshots,
-            "odylith_switch": _odylith_switch_snapshot(repo_root=root),
-        }
-        if odylith_ablation_active:
-            return _apply_odylith_registry_snapshot_ablation(
-                repo_root=root,
-                report=report,
-                traceability=traceability,
-                spec_snapshots=spec_snapshots,
-            )
-        return snapshot
-
-    manifest_path = component_registry.default_manifest_path(repo_root=root)
-    catalog_path = root / component_registry.DEFAULT_CATALOG_PATH
-    ideas_root = root / component_registry.DEFAULT_IDEAS_ROOT
-    stream_path = root / component_registry.DEFAULT_STREAM_PATH
-    report = component_registry.build_component_registry_report(
-        repo_root=root,
-        manifest_path=manifest_path,
-        catalog_path=catalog_path,
-        ideas_root=ideas_root,
-        stream_path=stream_path,
-    )
-    traceability = component_registry.build_component_traceability_index(
-        repo_root=root,
-        components=report.components,
-    )
-    spec_snapshots = {
-        component_id: component_registry.load_component_spec_snapshot(spec_path=root / entry.spec_ref)
-        for component_id, entry in report.components.items()
-        if entry.spec_ref and (root / entry.spec_ref).is_file()
-    }
-    snapshot = {
-        "report": report,
-        "traceability": traceability,
-        "spec_snapshots": spec_snapshots,
-        "odylith_switch": _odylith_switch_snapshot(repo_root=root),
-    }
-    if odylith_ablation_active:
-        return _apply_odylith_registry_snapshot_ablation(
-            repo_root=root,
-            report=report,
-            traceability=traceability,
-            spec_snapshots=spec_snapshots,
-        )
-    return snapshot
-
-def load_registry_detail(
-    *,
-    repo_root: Path,
-    component_id: str,
-    runtime_mode: str = "auto",
-    detail_level: str = "full",
-) -> dict[str, Any] | None:
-    token = str(component_id or "").strip().lower()
-    if not token:
-        return None
-    root = Path(repo_root).resolve()
-    normalized_detail_level = str(detail_level or "").strip().lower()
-    if normalized_detail_level == "grounding_light" and not _odylith_ablation_active(repo_root=root):
-        def _load_runtime_detail() -> dict[str, Any] | None:
-            try:
-                connection = _connect(root)
-            except RuntimeError:
-                return None
-            try:
-                component_row = connection.execute(
-                    "SELECT * FROM components WHERE component_id = ? LIMIT 1",
-                    (token,),
-                ).fetchone()
-                if component_row is None:
-                    return None
-                spec_row = connection.execute(
-                    "SELECT * FROM component_specs WHERE component_id = ? LIMIT 1",
-                    (token,),
-                ).fetchone()
-                trace_rows = connection.execute(
-                    """
-                    SELECT bucket, path
-                    FROM component_traceability
-                    WHERE component_id = ?
-                    ORDER BY bucket, path
-                    """,
-                    (token,),
-                ).fetchall()
-                return odylith_context_engine_registry_detail_runtime.build_runtime_registry_detail(
-                    entry=_component_entry_from_runtime_row(component_row),
-                    spec_row=spec_row,
-                    trace_rows=trace_rows,
-                )
-            finally:
-                connection.close()
-
-        cache_key = f"{root}:reasoning"
-        if _PROCESS_WARM_CACHE_FINGERPRINTS.get(cache_key, ""):
-            detail = _cached_projection_rows(
-                repo_root=root,
-                cache_name=f"registry_detail_grounding_light:{token}",
-                loader=_load_runtime_detail,
-                scope="reasoning",
-            )
-        else:
-            detail = _load_runtime_detail()
-        if isinstance(detail, Mapping):
-            return dict(detail)
-    snapshot = load_component_registry_snapshot(repo_root=repo_root, runtime_mode=runtime_mode)
-    return odylith_context_engine_registry_detail_runtime.build_registry_detail(
-        snapshot=snapshot,
-        component_id=token,
-        detail_level=detail_level,
-    )

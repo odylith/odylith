@@ -1,4 +1,4 @@
-Status: In progress
+Status: Done
 
 Created: 2026-04-07
 
@@ -71,9 +71,9 @@ Related Bugs:
       shell surfaces.
 
 ## Defer
-- [ ] Broader benchmark-corpus or ablation changes stay in their own
+- [x] Broader benchmark-corpus or ablation changes stay in their own
       workstreams.
-- [ ] Deeper Tribunal internal decomposition stays out of scope for this
+- [x] Deeper Tribunal internal decomposition stays out of scope for this
       boundary move.
 
 ## Success Criteria
@@ -87,8 +87,8 @@ Related Bugs:
       pass.
 
 ## Non-Goals
-- [ ] Changing persisted reasoning contract filenames or CLI verbs.
-- [ ] Rewriting benchmark public docs beyond the source-path alignment needed
+- [x] Changing persisted reasoning contract filenames or CLI verbs.
+- [x] Rewriting benchmark public docs beyond the source-path alignment needed
       for this move.
 
 ## Open Questions
@@ -96,28 +96,28 @@ Related Bugs:
       flake risk stays tracked separately in `CB-045`.
 
 ## Impacted Areas
-- [ ] [consumer_profile.py](/Users/freedom/code/odylith/src/odylith/runtime/common/consumer_profile.py)
-- [ ] [delivery_intelligence_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/delivery_intelligence_engine.py)
-- [ ] [compass_dashboard_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/compass_dashboard_runtime.py)
-- [ ] [compass_standup_brief_narrator.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/compass_standup_brief_narrator.py)
-- [ ] [odylith_benchmark_isolation.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_isolation.py)
-- [ ] [odylith_benchmark_live_execution.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py)
-- [ ] [__init__.py](/Users/freedom/code/odylith/src/odylith/runtime/reasoning/__init__.py)
-- [ ] [odylith_reasoning.py](/Users/freedom/code/odylith/src/odylith/runtime/reasoning/odylith_reasoning.py)
-- [ ] [tribunal_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/reasoning/tribunal_engine.py)
-- [ ] [remediator.py](/Users/freedom/code/odylith/src/odylith/runtime/reasoning/remediator.py)
-- [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/tribunal/CURRENT_SPEC.md)
-- [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/remediator/CURRENT_SPEC.md)
-- [ ] [FORENSICS.v1.json](/Users/freedom/code/odylith/odylith/registry/source/components/tribunal/FORENSICS.v1.json)
-- [ ] [FORENSICS.v1.json](/Users/freedom/code/odylith/odylith/registry/source/components/remediator/FORENSICS.v1.json)
-- [ ] [diagrams.v1.json](/Users/freedom/code/odylith/odylith/atlas/source/catalog/diagrams.v1.json)
-- [ ] [delivery_intelligence.v4.json](/Users/freedom/code/odylith/odylith/runtime/delivery_intelligence.v4.json)
-- [ ] [test_odylith_reasoning.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_reasoning.py)
-- [ ] [test_tribunal_engine.py](/Users/freedom/code/odylith/tests/unit/runtime/test_tribunal_engine.py)
-- [ ] [test_remediator.py](/Users/freedom/code/odylith/tests/unit/runtime/test_remediator.py)
-- [ ] [test_odylith_benchmark_live_execution.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_live_execution.py)
-- [ ] [test_odylith_benchmark_runner.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_runner.py)
-- [ ] [test_reasoning_package_layout.py](/Users/freedom/code/odylith/tests/unit/runtime/test_reasoning_package_layout.py)
+- [x] [consumer_profile.py](/Users/freedom/code/odylith/src/odylith/runtime/common/consumer_profile.py)
+- [x] [delivery_intelligence_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/delivery_intelligence_engine.py)
+- [x] [compass_dashboard_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/compass_dashboard_runtime.py)
+- [x] [compass_standup_brief_narrator.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/compass_standup_brief_narrator.py)
+- [x] [odylith_benchmark_isolation.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_isolation.py)
+- [x] [odylith_benchmark_live_execution.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py)
+- [x] [__init__.py](/Users/freedom/code/odylith/src/odylith/runtime/reasoning/__init__.py)
+- [x] [odylith_reasoning.py](/Users/freedom/code/odylith/src/odylith/runtime/reasoning/odylith_reasoning.py)
+- [x] [tribunal_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/reasoning/tribunal_engine.py)
+- [x] [remediator.py](/Users/freedom/code/odylith/src/odylith/runtime/reasoning/remediator.py)
+- [x] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/tribunal/CURRENT_SPEC.md)
+- [x] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/remediator/CURRENT_SPEC.md)
+- [x] [FORENSICS.v1.json](/Users/freedom/code/odylith/odylith/registry/source/components/tribunal/FORENSICS.v1.json)
+- [x] [FORENSICS.v1.json](/Users/freedom/code/odylith/odylith/registry/source/components/remediator/FORENSICS.v1.json)
+- [x] [diagrams.v1.json](/Users/freedom/code/odylith/odylith/atlas/source/catalog/diagrams.v1.json)
+- [x] [delivery_intelligence.v4.json](/Users/freedom/code/odylith/odylith/runtime/delivery_intelligence.v4.json)
+- [x] [test_odylith_reasoning.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_reasoning.py)
+- [x] [test_tribunal_engine.py](/Users/freedom/code/odylith/tests/unit/runtime/test_tribunal_engine.py)
+- [x] [test_remediator.py](/Users/freedom/code/odylith/tests/unit/runtime/test_remediator.py)
+- [x] [test_odylith_benchmark_live_execution.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_live_execution.py)
+- [x] [test_odylith_benchmark_runner.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_runner.py)
+- [x] [test_reasoning_package_layout.py](/Users/freedom/code/odylith/tests/unit/runtime/test_reasoning_package_layout.py)
 
 ## Validation
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_reasoning.py tests/unit/runtime/test_tribunal_engine.py tests/unit/runtime/test_remediator.py`
@@ -133,3 +133,12 @@ Related Bugs:
 - [x] `PYTHONPATH=src python3 -B -m odylith.cli benchmark --repo-root . --profile quick --family architecture --shard-count 2 --shard-index 1 --limit 1 --no-write-report --json`
       (rerun report `44c05c52c2551121`, `provisional_pass`; an earlier same-slice run hit the separately tracked `CB-045` transport flake before passing on rerun)
 - [x] `git diff --check`
+
+## Current Outcome
+- [x] `B-061` is closed for `v0.1.11`.
+- [x] Reasoning now lives under `src/odylith/runtime/reasoning/`, the old
+      eval-path modules are gone, and governed topology or forensics now match
+      the real package boundary.
+- [x] The residual benchmark live-result transport flake remains tracked in
+      `CB-045`, but it is no longer a blocker to the reasoning-boundary slice
+      itself.

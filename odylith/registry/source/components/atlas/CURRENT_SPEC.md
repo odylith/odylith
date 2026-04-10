@@ -1,8 +1,8 @@
 # Atlas
-Last updated: 2026-04-07
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-09
 
 ## Purpose
 Atlas is Odylith's architecture and diagram-governance surface. It manages the
@@ -16,6 +16,8 @@ grounding.
 - Diagram metadata linking workstreams, components, docs, code, and change
   watch paths.
 - Mermaid render/update tooling.
+- Shared workstream pill links in Atlas must use Dashboard's compact
+  workstream-button contract rather than Atlas-local chip sizing.
 - Diagram freshness and review-age enforcement.
 - The read-only Atlas catalog surface.
 - Architecture-domain source data consumed by Context Engine architecture mode.
@@ -143,6 +145,10 @@ diagram dump.
 - New catalog field:
   update renderer, scaffold tooling, and any freshness or architecture-mode
   consumers.
+- New default-promotion rule:
+  update Atlas renderer, shared Delivery Intelligence `scope_signal` contract,
+  and any browser proof that asserts which workstream pills deserve default
+  visibility.
 - New freshness rule:
   update renderer, auto-update flow, and any validation or pre-commit hook
   messaging.
@@ -156,6 +162,9 @@ diagram dump.
 - Missing or malformed catalog data should fail rendering clearly.
 - Auto-update is deterministic and path-driven; it should not rewrite unrelated
   diagrams.
+- Low-signal workstream activity must not become an "active" Atlas pill just
+  because a watched path churned. Atlas default promotion should only trust the
+  shared Delivery Intelligence `scope_signal` contract.
 - Auto-update must fail before SVG/PNG generation when Mermaid source is
   syntactically invalid, and the failure must name the blocking diagram,
   source path, and line instead of ending as a long opaque render timeout.
@@ -175,6 +184,19 @@ diagram dump.
 - `odylith atlas scaffold --help`
 - `odylith sync --repo-root . --check-only`
 
+## Scope Signal Ladder Contract
+Atlas stays exhaustive about diagram truth, but default operator promotion is
+ladder-gated. When Delivery Intelligence publishes `scope_signal`:
+- child scopes at `R0-R1` do not earn default active-workstream pills
+- corroborating `R2` children may surface only when the parent rollup reaches a
+  promoted rung
+- `R3+` scopes are eligible for default active-workstream promotion
+- `R4-R5` scopes remain dominant when a diagram needs to highlight blocker or
+  warning posture over ordinary activity
+
+Atlas must preserve deep links and raw diagram linkage even when a scope is
+too low-signal for default promotion.
+
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
@@ -189,3 +211,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-26: Added the first Odylith-owned diagram catalog so product topology can be traced and reviewed inside the public repo rather than through a consumer-specific Atlas tree. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-02: Hardened Atlas Mermaid preflight so valid diagrams no longer false-fail strict refresh on the DOMPurify hook-drift path; Atlas now falls back to browser-backed scratch validation while keeping the fail-fast syntax gate for real source errors. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022); Bug: `CB-042`)
 - 2026-04-07: Refreshed the broad runtime maps to show the governed memory family, Tribunal-backed delivery flow, and conversation intelligence path, and added the dedicated memory-substrate diagram `D-025` so Registry can deep-link into projection bundle, snapshot, backend, remote retrieval, and memory-contract topology directly. (Plan: [B-059](odylith/radar/radar.html?view=plan&workstream=B-059))
+- 2026-04-09: Moved Atlas workstream pill links onto the shared compact workstream-button contract and added bundle plus browser proof so Atlas pills cannot drift from the product-wide `B-###` control contract. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-080`)
+- 2026-04-09: Bound Atlas default active-workstream promotion to Delivery Intelligence's shared Scope Signal Ladder so low-signal governance churn and broad fanout activity stop masquerading as architecture-relevant active work by default. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)

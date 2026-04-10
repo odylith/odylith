@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-07 for B-031, B-058, and B-059 to make the governed memory substrate and ambient conversation intelligence explicit.
+%% Reviewed 2026-04-09 for B-072 to make execution governance explicit and keep Context Engine grounding-only.
 flowchart LR
     CLI["odylith CLI + shell"] --> Context["Context Engine<br/>compiler + grounding packets"]
     Truth["Repo truth<br/>Radar + Plans + Casebook + Registry + Atlas"] --> Context
@@ -19,10 +19,15 @@ flowchart LR
 
     Context --> Bundle
     Context --> Snapshot
-    Contracts --> Router["Subagent Router"]
     Contracts --> Delivery["Delivery Intelligence"]
-    Router --> Orchestrator["Subagent Orchestrator"]
+    Contracts --> Proof["Proof State"]
     Delivery --> Tribunal["Tribunal"]
+    Delivery --> Exec["Execution Governance<br/>task contract + admissibility + frontier"]
+    Proof --> Exec
+    Tribunal --> Exec
+    Contracts --> Exec
+    Exec --> Router["Subagent Router"]
+    Router --> Orchestrator["Subagent Orchestrator"]
     Delivery --> Chatter["Odylith Chatter"]
     Tribunal --> Chatter
     Orchestrator --> Chatter

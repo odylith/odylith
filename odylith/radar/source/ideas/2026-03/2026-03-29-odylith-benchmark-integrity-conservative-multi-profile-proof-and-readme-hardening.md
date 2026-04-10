@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-020
-title: Odylith Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening
+title: Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening
 date: 2026-03-29
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: benchmark runner authenticity contract, cache-profile proof lane, published benchmark summary, benchmark component dossier, benchmark Atlas proof topology, benchmark graphs, README benchmark narrative, and maintainer release proof discipline
 sizing: M
 complexity: High

@@ -6,7 +6,9 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import operator_readout
+from odylith.runtime.governance import proof_state
 
 
 _DELIVERY_ARTIFACT_RELATIVE_PATH = Path("odylith/runtime/delivery_intelligence.v4.json")
@@ -61,6 +63,26 @@ def _normalize_proof_refs(value: Any) -> list[dict[str, Any]]:
     ][:4]
 
 
+def _normalize_ladder_signal(raw_signal: Any) -> dict[str, Any]:
+    if not isinstance(raw_signal, Mapping):
+        return {}
+    rank = scope_signal_ladder.scope_signal_rank(raw_signal)
+    rung = str(raw_signal.get("rung", "")).strip().upper() or f"R{rank}"
+    token = _normalize_token(raw_signal.get("token"))
+    label = _normalize_string(raw_signal.get("label"))
+    budget_class = _normalize_token(raw_signal.get("budget_class"))
+    return {
+        "rank": rank,
+        "rung": rung,
+        "token": token,
+        "label": label,
+        "reasons": _normalize_string_list(raw_signal.get("reasons")),
+        "caps": _normalize_string_list(raw_signal.get("caps")),
+        "promoted_default": bool(raw_signal.get("promoted_default")),
+        "budget_class": budget_class,
+    }
+
+
 def _normalize_operator_readout(raw_readout: Any) -> dict[str, Any]:
     readout = dict(raw_readout) if isinstance(raw_readout, Mapping) else {}
     return {
@@ -90,6 +112,12 @@ def _normalize_scope_signal(raw_scope: Any) -> dict[str, Any]:
         "surfaces": _normalize_surface_list(raw_scope.get("surfaces") or raw_scope.get("surface_contributions")),
         "operator_readout": _normalize_operator_readout(raw_scope.get("operator_readout")),
         "evidence_refs": _normalize_proof_refs(raw_scope.get("evidence_refs")),
+        "proof_state": proof_state.normalize_proof_state(raw_scope.get("proof_state", {})),
+        "proof_state_resolution": dict(raw_scope.get("proof_state_resolution", {}))
+        if isinstance(raw_scope.get("proof_state_resolution"), Mapping)
+        else {},
+        "scope_signal": _normalize_ladder_signal(raw_scope.get("scope_signal")),
+        "claim_guard": dict(raw_scope.get("claim_guard", {})) if isinstance(raw_scope.get("claim_guard"), Mapping) else {},
     }
 
 
@@ -103,6 +131,12 @@ def _normalize_case_queue_entry(raw_case: Any) -> dict[str, Any]:
         "brief": _normalize_string(raw_case.get("brief")),
         "systemic_theme_tags": _normalize_string_list(raw_case.get("systemic_theme_tags")),
         "proof_refs": _normalize_proof_refs(raw_case.get("proof_refs")),
+        "proof_state": proof_state.normalize_proof_state(raw_case.get("proof_state", {})),
+        "proof_state_resolution": dict(raw_case.get("proof_state_resolution", {}))
+        if isinstance(raw_case.get("proof_state_resolution"), Mapping)
+        else {},
+        "claim_guard": dict(raw_case.get("claim_guard", {})) if isinstance(raw_case.get("claim_guard"), Mapping) else {},
+        "proof_reopen": dict(raw_case.get("proof_reopen", {})) if isinstance(raw_case.get("proof_reopen"), Mapping) else {},
     }
 
 
@@ -182,6 +216,10 @@ def delivery_signal_snapshot(repo_root: Path | None) -> dict[str, Any]:
                         if isinstance(raw_scope.get("evidence_bundle"), Mapping)
                         else []
                     ),
+                    "proof_state": raw_scope.get("proof_state"),
+                    "proof_state_resolution": raw_scope.get("proof_state_resolution"),
+                    "scope_signal": raw_scope.get("scope_signal"),
+                    "claim_guard": raw_scope.get("claim_guard"),
                 }
             )
             scope_type = _normalize_token(scope.get("scope_type"))

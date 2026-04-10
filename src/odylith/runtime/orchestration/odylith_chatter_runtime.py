@@ -7,6 +7,8 @@ from typing import Sequence
 
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import operator_readout
+from odylith.runtime.governance import proof_state
+from odylith.runtime.orchestration import chatter_claim_runtime
 from odylith.runtime.orchestration import odylith_chatter_delivery_runtime
 from odylith.runtime.surfaces import dashboard_shell_links
 
@@ -903,6 +905,24 @@ def _compose_risk_signal(
         render_hint="explicit_label",
         severity=severity,
     )
+
+
+def _claim_guard_from_tribunal_context(tribunal_context: Mapping[str, Any]) -> dict[str, Any]:
+    for row in tribunal_context.get("scope_signals", []) if isinstance(tribunal_context.get("scope_signals"), list) else []:
+        if not isinstance(row, Mapping):
+            continue
+        claim_guard = dict(row.get("claim_guard", {})) if isinstance(row.get("claim_guard"), Mapping) else {}
+        if claim_guard:
+            return claim_guard
+    for row in tribunal_context.get("case_queue", []) if isinstance(tribunal_context.get("case_queue"), list) else []:
+        if not isinstance(row, Mapping):
+            continue
+        claim_guard = dict(row.get("claim_guard", {})) if isinstance(row.get("claim_guard"), Mapping) else {}
+        if claim_guard:
+            return claim_guard
+    return {}
+
+
 def compose_closeout_assist(
     *,
     request: Any,
@@ -1098,23 +1118,40 @@ def compose_conversation_bundle(
         repo_root=repo_root,
         anchor_artifacts=anchor_artifacts,
     )
-    risks = _compose_risk_signal(
-        request=request,
-        metrics=metrics,
-        adoption=adoption,
-        anchor_artifacts=anchor_artifacts,
-        tribunal_context=tribunal_context,
+    claim_guard = _claim_guard_from_tribunal_context(tribunal_context)
+    claim_lint = proof_state.build_claim_lint(claim_guard)
+    risks = chatter_claim_runtime.enforce_payload(
+        _compose_risk_signal(
+            request=request,
+            metrics=metrics,
+            adoption=adoption,
+            anchor_artifacts=anchor_artifacts,
+            tribunal_context=tribunal_context,
+        ),
+        claim_guard=claim_guard,
+        claim_lint=claim_lint,
+        surface="chatter_risks",
     )
-    insight = _compose_insight_signal(
-        metrics=metrics,
-        anchor_artifacts=anchor_artifacts,
-        tribunal_context=tribunal_context,
+    insight = chatter_claim_runtime.enforce_payload(
+        _compose_insight_signal(
+            metrics=metrics,
+            anchor_artifacts=anchor_artifacts,
+            tribunal_context=tribunal_context,
+        ),
+        claim_guard=claim_guard,
+        claim_lint=claim_lint,
+        surface="chatter_insight",
     )
-    history = _compose_history_signal(
-        metrics=metrics,
-        history_refs=history_refs,
-        anchor_artifacts=anchor_artifacts,
-        tribunal_context=tribunal_context,
+    history = chatter_claim_runtime.enforce_payload(
+        _compose_history_signal(
+            metrics=metrics,
+            history_refs=history_refs,
+            anchor_artifacts=anchor_artifacts,
+            tribunal_context=tribunal_context,
+        ),
+        claim_guard=claim_guard,
+        claim_lint=claim_lint,
+        surface="chatter_history",
     )
     selected_signal = ""
     for key in _EXPLICIT_SIGNAL_PRIORITY:
@@ -1122,15 +1159,20 @@ def compose_conversation_bundle(
         if payload["eligible"] and payload["render_hint"] == "explicit_label":
             selected_signal = key
             break
-    assist = compose_closeout_assist(
-        request=request,
-        decision=decision,
-        adoption=adoption,
-        repo_root=repo_root,
-        final_changed_paths=final_changed_paths,
-        changed_path_source=changed_path_source,
-        metrics=metrics,
-        context_rows=context_rows,
+    assist = chatter_claim_runtime.enforce_payload(
+        compose_closeout_assist(
+            request=request,
+            decision=decision,
+            adoption=adoption,
+            repo_root=repo_root,
+            final_changed_paths=final_changed_paths,
+            changed_path_source=changed_path_source,
+            metrics=metrics,
+            context_rows=context_rows,
+        ),
+        claim_guard=claim_guard,
+        claim_lint=claim_lint,
+        surface="chatter_assist",
     )
     closeout_signals = {
         "risks": dict(risks),
@@ -1161,18 +1203,28 @@ def compose_conversation_bundle(
     if selected_supplemental:
         closeout_markdown_lines.append(closeout_signals[selected_supplemental]["markdown_text"])
         closeout_plain_lines.append(closeout_signals[selected_supplemental]["plain_text"])
+    claim_enforcement = chatter_claim_runtime.build_claim_enforcement_summary(
+        claim_lint=claim_lint,
+        ambient_payloads={"risks": risks, "insight": insight, "history": history},
+        assist_payload=assist,
+        supplemental_payload=closeout_signals.get(selected_supplemental, {}) if selected_supplemental else {},
+    )
 
     return {
         "ambient_signals": {
             "insight": insight,
             "history": history,
             "risks": risks,
+            "claim_guard": claim_guard,
+            "claim_lint": claim_lint,
+            "claim_enforcement": claim_enforcement,
             "selected_signal": selected_signal,
             "render_policy": {
                 "ambient_by_default": True,
                 "explicit_labels_rare": True,
                 "one_signal_at_a_time": True,
                 "priority": list(_EXPLICIT_SIGNAL_PRIORITY),
+                "claim_terms_require_lint": bool(claim_lint.get("blocked_terms")),
             },
         },
         "closeout_bundle": {
@@ -1180,6 +1232,9 @@ def compose_conversation_bundle(
             "insight": closeout_signals["insight"],
             "history": closeout_signals["history"],
             "risks": closeout_signals["risks"],
+            "claim_guard": claim_guard,
+            "claim_lint": claim_lint,
+            "claim_enforcement": claim_enforcement,
             "selected_supplemental": selected_supplemental,
             "updated_artifacts": list(assist.get("updated_artifacts", [])),
             "plain_text": "\n".join(closeout_plain_lines),
@@ -1190,6 +1245,8 @@ def compose_conversation_bundle(
                 "max_lines": 2,
                 "supplemental_priority": list(_SUPPLEMENTAL_PRIORITY),
                 "changed_path_source": assist.get("changed_path_source", ""),
+                "claim_terms_require_lint": bool(claim_lint.get("blocked_terms")),
+                "highest_truthful_claim": str(claim_lint.get("highest_truthful_claim", "")).strip(),
             },
         },
     }

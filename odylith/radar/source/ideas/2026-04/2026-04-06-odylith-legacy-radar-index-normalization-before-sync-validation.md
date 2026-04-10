@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-053
-title: Odylith Legacy Radar Index Normalization Before Sync Validation
+title: Legacy Radar Index Normalization Before Sync Validation
 date: 2026-04-06
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: legacy Radar upgrader, backlog rationale normalization, sync preflight, and strict backlog-contract gating
 sizing: M
 complexity: High

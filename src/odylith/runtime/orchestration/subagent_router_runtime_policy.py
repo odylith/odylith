@@ -757,7 +757,10 @@ def _apply_accuracy_backstop(
         and assessment.accuracy_preference in {"accuracy", "max_accuracy", "maximum_accuracy"}
         and routing_confidence <= 1
     ):
-        lines.append("confidence backstop promoted low-confidence feature work from `codex_medium` to `codex_high`")
+        lines.append(
+            "confidence backstop promoted low-confidence feature work from "
+            f"`{RouterProfile.WRITE_MEDIUM.value}` to `{RouterProfile.WRITE_HIGH.value}`"
+        )
         selected = RouterProfile.CODEX_HIGH
         routing_confidence = _clamp_score(routing_confidence + 1)
     elif (
@@ -765,7 +768,10 @@ def _apply_accuracy_backstop(
         and (assessment.correctness_critical or assessment.task_family == "critical_change")
         and routing_confidence <= 1
     ):
-        lines.append("confidence backstop promoted low-confidence critical work from `codex_high` to `gpt54_high`")
+        lines.append(
+            "confidence backstop promoted low-confidence critical work from "
+            f"`{RouterProfile.WRITE_HIGH.value}` to `{RouterProfile.FRONTIER_HIGH.value}`"
+        )
         selected = RouterProfile.GPT54_HIGH
         routing_confidence = _clamp_score(routing_confidence + 1)
     elif (
@@ -774,7 +780,10 @@ def _apply_accuracy_backstop(
         and assessment.requested_depth >= 3
         and routing_confidence <= 1
     ):
-        lines.append("confidence backstop promoted low-confidence analysis from `mini_medium` to `mini_high`")
+        lines.append(
+            "confidence backstop promoted low-confidence analysis from "
+            f"`{RouterProfile.ANALYSIS_MEDIUM.value}` to `{RouterProfile.ANALYSIS_HIGH.value}`"
+        )
         selected = RouterProfile.MINI_HIGH
         routing_confidence = _clamp_score(routing_confidence + 1)
     return selected, routing_confidence, lines

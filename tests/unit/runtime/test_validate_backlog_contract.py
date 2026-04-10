@@ -31,6 +31,17 @@ def _repo_rel(root: Path, path: Path) -> str:
     return path.resolve().relative_to(root.resolve()).as_posix()
 
 
+def _seed_product_repo_shape(root: Path) -> None:
+    (root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+    registry_root = root / "odylith" / "registry" / "source"
+    registry_root.mkdir(parents=True, exist_ok=True)
+    (root / "pyproject.toml").write_text(
+        "[project]\nname = \"odylith\"\nversion = \"0.1.11\"\n",
+        encoding="utf-8",
+    )
+    (registry_root / "component_registry.v1.json").write_text("{\"components\": []}\n", encoding="utf-8")
+
+
 def _idea_text(
     *,
     idea_id: str,
@@ -66,7 +77,6 @@ def _idea_text(
         f"commercial_value: {commercial_value}\n\n"
         f"product_impact: {product_impact}\n\n"
         f"market_value: {market_value}\n\n"
-        "impacted_lanes: both\n\n"
         "impacted_parts: test surface\n\n"
         f"sizing: {sizing}\n\n"
         f"complexity: {complexity}\n\n"
@@ -93,8 +103,11 @@ def _idea_text(
     )
 
 
-def _seed_minimal_repo(root: Path) -> tuple[Path, Path]:
-    (root / "consumer_repo.yaml").write_text("repo: consumer\n", encoding="utf-8")
+def _seed_minimal_repo(root: Path, *, product_repo: bool = False) -> tuple[Path, Path]:
+    if product_repo:
+        _seed_product_repo_shape(root)
+    else:
+        (root / "consumer_repo.yaml").write_text("repo: consumer\n", encoding="utf-8")
     idea_dir = root / "odylith" / "radar" / "source" / "ideas" / "2026-02"
     idea_dir.mkdir(parents=True, exist_ok=True)
     (root / "odylith" / "technical-plans" / "in-progress").mkdir(parents=True, exist_ok=True)
@@ -161,16 +174,16 @@ def _seed_minimal_repo(root: Path) -> tuple[Path, Path]:
             "# Backlog Index\n\n"
             "Last updated (UTC): 2026-02-27\n\n"
             "## Ranked Active Backlog\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
-            f"| 1 | B-101 | Backlog Bootstrap | P1 | 89 | 4 | 4 | 3 | L | High | both | queued | [bootstrap]({_repo_rel(root, queued_path)}) |\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            f"| 1 | B-101 | Backlog Bootstrap | P1 | 89 | 4 | 4 | 3 | L | High | queued | [bootstrap]({_repo_rel(root, queued_path)}) |\n\n"
             "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
-            f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | both | implementation | [promoted]({_repo_rel(root, implementation_path)}) |\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | implementation | [promoted]({_repo_rel(root, implementation_path)}) |\n\n"
             "## Finished (Linked to `odylith/technical-plans/done`)\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
             "## Reorder Rationale Log\n\n"
             "### B-101 (rank 1)\n"
             "- why now: seed baseline.\n"
@@ -239,15 +252,15 @@ def _add_parked_seed(root: Path) -> tuple[Path, Path]:
     backlog_index = root / "odylith" / "radar" / "source" / "INDEX.md"
     backlog_text = backlog_index.read_text(encoding="utf-8").replace(
         "## Finished (Linked to `odylith/technical-plans/done`)\n\n"
-        "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n",
+        "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n",
         "## Parked (No Active Plan)\n\n"
-        "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
-        f"| - | B-103 | Parked Work | P1 | 89 | 4 | 4 | 3 | L | High | both | parked | [parked]({parked_path}) |\n\n"
+        "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+        f"| - | B-103 | Parked Work | P1 | 89 | 4 | 4 | 3 | L | High | parked | [parked]({parked_path}) |\n\n"
         "## Finished (Linked to `odylith/technical-plans/done`)\n\n"
-        "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n",
+        "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n",
     )
     backlog_index.write_text(backlog_text, encoding="utf-8")
     return parked_path, parked_plan_path
@@ -274,6 +287,70 @@ def test_backlog_contract_passes_with_valid_seed(
     assert rc == 0
     out = capsys.readouterr().out
     assert "backlog contract validation passed" in out
+    assert "- releases: 0" in out
+    assert "- active release targets: 0" in out
+
+
+def test_backlog_contract_rejects_product_repo_workstream_title_prefix(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001 - pytest fixture
+) -> None:
+    _seed_minimal_repo(tmp_path, product_repo=True)
+    prefixed_path = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-02" / "2026-02-27-backlog-bootstrap.md"
+    prefixed_path.write_text(
+        prefixed_path.read_text(encoding="utf-8").replace(
+            "title: Backlog Bootstrap",
+            "title: Odylith Backlog Bootstrap",
+        ),
+        encoding="utf-8",
+    )
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    assert rc == 2
+    out = capsys.readouterr().out
+    assert "must not start with `Odylith`" in out
+
+
+def test_backlog_contract_fails_closed_on_invalid_release_planning_truth(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001 - pytest fixture
+) -> None:
+    _seed_minimal_repo(tmp_path)
+    releases_root = tmp_path / "odylith" / "radar" / "source" / "releases"
+    releases_root.mkdir(parents=True, exist_ok=True)
+    (releases_root / "releases.v1.json").write_text(
+        (
+            "{\n"
+            '  "version": "v1",\n'
+            '  "updated_utc": "2026-04-08",\n'
+            '  "aliases": {\n'
+            '    "current": "release-0-1-11"\n'
+            "  },\n"
+            '  "releases": [\n'
+            "    {\n"
+            '      "release_id": "release-0-1-11",\n'
+            '      "status": "shipped",\n'
+            '      "version": "0.1.11",\n'
+            '      "tag": "v0.1.11",\n'
+            '      "name": "",\n'
+            '      "notes": "",\n'
+            '      "created_utc": "2026-04-08",\n'
+            '      "shipped_utc": "2026-04-08",\n'
+            '      "closed_utc": ""\n'
+            "    }\n"
+            "  ]\n"
+            "}\n"
+        ),
+        encoding="utf-8",
+    )
+    (releases_root / "release-assignment-events.v1.jsonl").write_text("", encoding="utf-8")
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+
+    assert rc == 2
+    assert "backlog contract validation FAILED" in out
+    assert "alias `current` cannot point to terminal release `release-0-1-11`" in out
 
 
 def test_backlog_contract_allows_repo_relative_equivalent_links_from_another_checkout(
@@ -575,11 +652,11 @@ def test_backlog_contract_fails_when_execution_rows_not_score_sorted(
     backlog_index = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
     text = backlog_index.read_text(encoding="utf-8")
     insertion = (
-        f"| - | B-103 | Second Promoted Work | P1 | 80 | 4 | 4 | 4 | L | High | both | implementation | [promoted-2]({_repo_rel(tmp_path, second_exec_idea)}) |\n"
-        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | both | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |"
+        f"| - | B-103 | Second Promoted Work | P1 | 80 | 4 | 4 | 4 | L | High | implementation | [promoted-2]({_repo_rel(tmp_path, second_exec_idea)}) |\n"
+        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |"
     )
     text = text.replace(
-        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | both | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |",
+        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |",
         insertion,
     )
     backlog_index.write_text(text, encoding="utf-8")
@@ -630,11 +707,11 @@ def test_backlog_contract_fails_when_execution_status_priority_is_violated(
     backlog_index = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
     text = backlog_index.read_text(encoding="utf-8")
     insertion = (
-        f"| - | B-103 | Planning Promoted Work | P1 | 100 | 4 | 4 | 4 | L | High | both | planning | [planning]({_repo_rel(tmp_path, planning_idea)}) |\n"
-        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | both | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |"
+        f"| - | B-103 | Planning Promoted Work | P1 | 100 | 4 | 4 | 4 | L | High | planning | [planning]({_repo_rel(tmp_path, planning_idea)}) |\n"
+        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |"
     )
     text = text.replace(
-        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | both | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |",
+        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |",
         insertion,
     )
     backlog_index.write_text(text, encoding="utf-8")
@@ -684,11 +761,11 @@ def test_backlog_contract_allows_execution_ordering_override_with_founder_overri
     backlog_index = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
     text = backlog_index.read_text(encoding="utf-8")
     insertion = (
-        f"| - | B-103 | Planning Promoted Work | P1 | 100 | 4 | 4 | 4 | L | High | both | planning | [planning]({_repo_rel(tmp_path, planning_idea)}) |\n"
-        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | both | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |"
+        f"| - | B-103 | Planning Promoted Work | P1 | 100 | 4 | 4 | 4 | L | High | planning | [planning]({_repo_rel(tmp_path, planning_idea)}) |\n"
+        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |"
     )
     text = text.replace(
-        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | both | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |",
+        f"| - | B-102 | Promoted Work | P1 | 95 | 4 | 4 | 4 | L | High | implementation | [promoted]({_repo_rel(tmp_path, implementation_path)}) |",
         insertion,
     )
     text += (

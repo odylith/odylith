@@ -1,7 +1,7 @@
 """Render benchmark SVGs directly from Odylith benchmark reports.
 
 This module is the maintained README benchmark graph contract for Odylith
-release work. Keep the filenames, Codex framing, and visual tone stable across
+release work. Keep the filenames, proof-host framing, and visual tone stable across
 releases unless the product is intentionally redesigning the benchmark story.
 """
 
@@ -47,7 +47,7 @@ POSTURE_TITLE = "Odylith benchmark operating posture"
 QUALITY_FRONTIER_TITLE = marketing_graphs.QUALITY_FRONTIER_TITLE
 FRONTIER_HEADING = "Live Benchmark: time to valid outcome vs live session input"
 HEATMAP_HEADING = "Live Benchmark Family Heatmap: where Odylith wins"
-POSTURE_HEADING = "Live Benchmark operating posture on the Codex benchmark corpus"
+POSTURE_HEADING = "Live Benchmark operating posture on the current proof-host corpus"
 QUALITY_FRONTIER_HEADING = marketing_graphs.QUALITY_FRONTIER_HEADING
 _VISUAL_CANDIDATE_MODE = "odylith_on"
 _VISUAL_BASELINE_MODE = "raw_agent_baseline"
@@ -114,7 +114,7 @@ def _heatmap_heading(report: Mapping[str, Any]) -> str:
 def _posture_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return POSTURE_HEADING
-    return "Grounding Benchmark operating posture on the Codex benchmark corpus"
+    return "Grounding Benchmark operating posture on the current proof-host corpus"
 
 
 def _report_source_label(report: Mapping[str, Any]) -> str:
@@ -434,8 +434,8 @@ def _mode_label(mode: str) -> str:
         "odylith_on_no_fanout": "Odylith on (no fanout)",
         "odylith_repo_scan_baseline": "Repo-scan baseline",
         "full_scan_baseline": "Repo-scan baseline",
-        "raw_agent_baseline": "odylith_off (raw Codex CLI)",
-        "odylith_off": "odylith_off (raw Codex CLI)",
+        "raw_agent_baseline": "odylith_off (raw host CLI)",
+        "odylith_off": "odylith_off (raw host CLI)",
     }
     token = str(mode or "").strip()
     if token in labels:
@@ -449,8 +449,8 @@ def _mode_compact_label(mode: str) -> str:
         "odylith_on_no_fanout": "Odylith on / no fanout",
         "odylith_repo_scan_baseline": "Repo-scan baseline",
         "full_scan_baseline": "Repo-scan baseline",
-        "raw_agent_baseline": "odylith_off / raw Codex CLI",
-        "odylith_off": "odylith_off / raw Codex CLI",
+        "raw_agent_baseline": "odylith_off / raw host CLI",
+        "odylith_off": "odylith_off / raw host CLI",
     }
     token = str(mode or "").strip()
     if token in labels:
@@ -1158,7 +1158,7 @@ def _render_operating_posture_svg(report: Mapping[str, Any]) -> str:
     title_y = 88
     subtitle_y = 114
     subtitle_lines = _wrap_words(
-        "This is the system behavior behind the Codex scorecard: packet coverage, grounding, delegation readiness, and runtime posture.",
+        "This is the system behavior behind the current proof-host scorecard: packet coverage, grounding, delegation readiness, and runtime posture.",
         limit=118,
     )
     subtitle_bottom = subtitle_y + max(0, (len(subtitle_lines) - 1) * 18)

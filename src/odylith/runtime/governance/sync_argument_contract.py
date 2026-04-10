@@ -110,15 +110,6 @@ def configure_sync_parser(
             "behavior, and `daemon` requires runtime-backed execution."
         ),
     )
-    parser.add_argument(
-        "--compass-refresh-profile",
-        choices=("full", "shell-safe"),
-        default=DEFAULT_SYNC_COMPASS_REFRESH_PROFILE,
-        help=(
-            "Compass refresh profile for sync/render steps. "
-            "`shell-safe` defers live AI narration so sync stays bounded."
-        ),
-    )
     deep_skill_group = parser.add_mutually_exclusive_group()
     deep_skill_group.add_argument(
         "--enforce-deep-skills",
@@ -195,8 +186,6 @@ def namespace_to_argv(args: argparse.Namespace, *, include_repo_root: bool = Tru
         argv.extend(["--registry-policy-mode", str(args.registry_policy_mode)])
     if str(getattr(args, "runtime_mode", "auto")).strip() != "auto":
         argv.extend(["--runtime-mode", str(args.runtime_mode)])
-    if str(getattr(args, "compass_refresh_profile", DEFAULT_SYNC_COMPASS_REFRESH_PROFILE)).strip() != DEFAULT_SYNC_COMPASS_REFRESH_PROFILE:
-        argv.extend(["--compass-refresh-profile", str(args.compass_refresh_profile)])
     if bool(getattr(args, "enforce_deep_skills", True)) is False:
         argv.append("--no-enforce-deep-skills")
     if bool(getattr(args, "once", False)):

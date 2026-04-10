@@ -1,0 +1,62 @@
+{
+  "component_id": "delivery-intelligence",
+  "diagrams": [
+    "D-005",
+    "D-009",
+    "D-026",
+    "D-007",
+    "D-010",
+    "D-011",
+    "D-028",
+    "D-029"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 0,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 2,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 1
+  },
+  "name": "Delivery Intelligence",
+  "path_prefixes": [
+    "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+    "src/odylith/runtime/delivery/delivery_intelligence_narrator.py",
+    "odylith/runtime/delivery_intelligence.v4.json"
+  ],
+  "spec_ref": "odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 68,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "delivery-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/delivery_intelligence_engine.py, odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-09T14:56:17-07:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Scope-synthesis engine that turns governed repo truth, runtime evidence, Tribunal results, and proof-state signals into one delivery snapshot consumed by sync, shell, packets, and narration.",
+  "why_tracked": "Provides the shared intelligence boundary that keeps operator readouts and downstream runtime consumers from rebuilding inconsistent scope summaries.",
+  "workstreams": [
+    "B-047",
+    "B-061",
+    "B-062",
+    "B-071"
+  ]
+}

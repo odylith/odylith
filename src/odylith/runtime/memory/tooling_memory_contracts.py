@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.consumer_profile import canonical_truth_token
+from odylith.runtime.common import agent_runtime_contract
 
 
 _ALLOWLIST_SOURCE_PREFIXES: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -72,16 +73,24 @@ def _mapping_value(value: Any) -> dict[str, Any]:
 
 def execution_profile_mapping(value: Any) -> dict[str, Any]:
     if isinstance(value, Mapping):
-        return dict(value)
+        profile = dict(value)
+        canonical_profile = agent_runtime_contract.canonical_execution_profile(profile.get("profile"))
+        if canonical_profile:
+            profile["profile"] = canonical_profile
+        return profile
     token = str(value or "").strip()
     if not token:
         return {}
     parts = [part.strip() for part in token.split("|")]
-    return {
+    profile = {
         key: part
         for key, part in zip(_EXECUTION_PROFILE_FIELDS, parts, strict=False)
         if part
     }
+    canonical_profile = agent_runtime_contract.canonical_execution_profile(profile.get("profile"))
+    if canonical_profile:
+        profile["profile"] = canonical_profile
+    return profile
 
 
 def compact_execution_profile_mapping(value: Any) -> dict[str, Any]:
@@ -636,8 +645,8 @@ def _hot_path_summary_only_contract(
     packet_kind: str,
     payload: Mapping[str, Any],
 ) -> bool:
-    delivery_profile = str(payload.get("delivery_profile", "")).strip().lower()
-    if delivery_profile != "codex_hot_path":
+    delivery_profile = agent_runtime_contract.canonical_delivery_profile(payload.get("delivery_profile"))
+    if delivery_profile != agent_runtime_contract.AGENT_HOT_PATH_PROFILE:
         return False
     return str(packet_kind or "").strip() in {"impact", "session_brief", "bootstrap_session"}
 

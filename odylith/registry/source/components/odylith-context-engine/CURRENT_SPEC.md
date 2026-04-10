@@ -1,8 +1,8 @@
 # Odylith Context Engine
-Last updated: 2026-04-07
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-09
 
 ## Purpose
 Odylith Context Engine is the deterministic local grounding runtime for the
@@ -25,6 +25,9 @@ claims, and optionally materializes faster local and remote retrieval layers.
 - Surface rendering policy.
 - Delegation routing policy itself. It only provides grounding and packet data
   that router/orchestrator logic can consume.
+- Admissibility or next-action control. It provides grounded truth and packets,
+  but [Execution Governance](../execution-governance/CURRENT_SPEC.md) decides
+  which next move is admissible.
 
 ## Developer Mental Model
 - `src/odylith/runtime/context_engine/odylith_context_engine.py` is the public
@@ -78,11 +81,14 @@ Public entrypoint: `odylith context-engine`
 ### Packet and read APIs
 - `query`
   Search the local projection store and report when a raw repo scan is still
-  recommended.
+  recommended. Release selectors such as `current release`, `next release`,
+  `release:<id>`, exact version, exact tag, and unique exact release names
+  resolve through the same compiled projection truth.
 - `surface-read`
   Return pre-shaped payloads for dashboard and surface consumers.
 - `context`
-  Resolve a single entity or path into a dossier.
+  Resolve a single entity or path into a dossier, including first-class
+  release entities.
 - `impact`
   Build a path-scoped implementation impact packet.
 - `architecture`
@@ -117,6 +123,32 @@ Operational guidance lives in
 - `odylith_context_engine_store.py`
   Projection compilation, packet assembly, session state, runtime timing,
   optimization snapshots, evaluation snapshots, and fallback behavior.
+- `odylith_context_engine_projection_query_runtime.py`
+  Query-facing projection composition and export wiring across entity,
+  backlog, bug, and registry read models.
+- `odylith_context_engine_projection_entity_runtime.py`
+  Exact entity resolution, release selector routing, and dossier shaping that
+  turns compiled projection truth into packet-safe context payloads.
+- `odylith_context_engine_projection_backlog_runtime.py`
+  Backlog, plan, and bug projection reads plus workstream detail loading.
+- `odylith_context_engine_projection_registry_runtime.py`
+  Component index, registry snapshot, and registry-detail projection reads.
+- `odylith_context_engine_packet_summary_runtime.py`
+  Packet-summary extraction and compact bootstrap-packet readback.
+- `odylith_context_engine_packet_session_runtime.py`
+  Session-brief and bootstrap packet assembly.
+- `odylith_context_engine_packet_architecture_runtime.py`
+  Architecture-audit packet assembly.
+- `odylith_context_engine_packet_adaptive_runtime.py`
+  Adaptive packet escalation and daemon-reuse packet flows.
+- `odylith_context_engine_hot_path_packet_core_runtime.py`
+  Compact packet-quality, routing, and execution-profile shaping for hot-path
+  packets.
+- `odylith_context_engine_hot_path_packet_bootstrap_runtime.py`
+  Governance and proof-aware hot-path bootstrap packet compaction.
+- `odylith_context_engine_hot_path_packet_finalize_runtime.py`
+  Final compact packet shaping, prompt trimming, and workstream context
+  compaction.
 - `tooling_context_packet_builder.py`
   Shared packet finalization and packet metrics.
 - `tooling_context_retrieval.py`
@@ -385,6 +417,11 @@ evidence is missing or drifting.
   update compilation in `odylith_context_engine_store.py`, include it in the
   snapshot or bundle if it is part of the public runtime contract, and then
   update any packets that consume it.
+- Release projection changes must evolve together:
+  - compiler/runtime tables and projection fingerprints
+  - exact-resolution aliases for `context` and `query`
+  - memory-backend release documents
+  - dependent surface or packet payloads that use active release labels
 - New packet family:
   add the packet builder logic, define its budget and trim behavior, and make
   the degraded or full-scan fallback explicit.
@@ -447,3 +484,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-28: Added durable judgment memory, persisted it beside the local memory backend, and promoted the memory backend into a first-class Registry component so governed slice continuity can survive across sessions without polluting hot-path packets. (Plan: [B-010](odylith/radar/radar.html?view=plan&workstream=B-010))
 - 2026-04-05: Restored canonical benchmark guidance memory, passed family hints through packet finalization into retrieval, and documented the fail-closed boundedness contract that keeps weak-family proof slices deterministic across warm and cold cache posture. (Plan: [B-038](odylith/radar/radar.html?view=plan&workstream=B-038))
 - 2026-04-07: Promoted the hidden memory-substrate seams into governed sibling components so projection bundle, projection snapshot, remote retrieval, and packet contracts become explicit Registry truth instead of broad Context Engine footnotes. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
+- 2026-04-08: Added first-class release entities and selector resolution to the projection model so `context`, `query`, and governed read surfaces can resolve release ids, aliases, versions, tags, and unique exact names from one repo-local contract. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
+- 2026-04-09: Clarified the product boundary that Context Engine grounds repo truth and packets, while Execution Governance owns admissibility and next-action control. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

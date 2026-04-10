@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-040
-title: Odylith Runtime Integrity, Supply-Chain Hardening, and Security Posture
+title: Runtime Integrity, Supply-Chain Hardening, and Security Posture
 date: 2026-04-01
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: managed runtime trust anchor, launcher and bootstrap launcher trust checks, release-asset override policy, GitHub workflow pinning, security documentation, process-lifetime verification, and v0.1.7 release messaging
 sizing: L
 complexity: High

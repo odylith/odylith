@@ -538,7 +538,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
                 border_color="#ddd6ae",
                 color="#6b5f2a",
             ),
-            dashboard_ui_primitives.detail_action_chip_css(
+            dashboard_ui_primitives.surface_workstream_button_chip_css(
                 selector=".execution-wave-chip-link",
             ),
             dashboard_ui_primitives.subtle_link_label_tone_css(

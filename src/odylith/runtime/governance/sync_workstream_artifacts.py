@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import importlib
+import json
 import os
 from pathlib import Path
 import signal
@@ -24,19 +25,22 @@ import threading
 import time
 from typing import Any, Callable, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.command_surface import display_command, ensure_repo_root_args
 from odylith.runtime.common.consumer_profile import surface_root_path, truth_root_path
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import dashboard_refresh_contract
+from odylith.runtime.governance import release_truth_runtime
 from odylith.runtime.governance.legacy_backlog_normalization import backlog_next_action
 from odylith.runtime.governance.legacy_backlog_normalization import collect_backlog_contract_errors
 from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
 from odylith.runtime.governance.legacy_backlog_normalization import summarize_backlog_contract_errors
-from odylith.runtime.governance.sync_argument_contract import DEFAULT_SYNC_COMPASS_REFRESH_PROFILE
 from odylith.runtime.governance.sync_argument_contract import DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD
 from odylith.runtime.governance.sync_argument_contract import configure_sync_parser
 from odylith.runtime.governance import sync_casebook_bug_index
+from odylith.runtime.surfaces import compass_refresh_contract
+from odylith.runtime.surfaces import compass_refresh_runtime
 
 
 _SYNC_PATH_PREFIXES: tuple[str, ...] = (
@@ -103,7 +107,6 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
     "registry": "registry",
     "casebook": "casebook",
 }
-_DEFAULT_COMPASS_REFRESH_PROFILE = DEFAULT_SYNC_COMPASS_REFRESH_PROFILE
 _HEARTBEAT_INTERVAL_SECONDS = 10.0
 _DASHBOARD_REFRESH_TIMEOUT_SECONDS = dashboard_refresh_contract.DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS
 
@@ -133,7 +136,7 @@ class ExecutionStep:
     paths: tuple[str, ...] = ()
     next_command_on_failure: str = ""
     timeout_seconds: float | None = None
-    action: Callable[[], int] | None = None
+    action: Callable[[], Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -194,7 +197,7 @@ def _execution_step(
     paths: Sequence[str] = (),
     next_command_on_failure: str = "",
     timeout_seconds: float | None = None,
-    action: Callable[[], int] | None = None,
+    action: Callable[[], Any] | None = None,
 ) -> ExecutionStep:
     return ExecutionStep(
         label=str(label).strip(),
@@ -686,7 +689,6 @@ def _dashboard_surface_steps(
     surface: str,
     runtime_mode: str,
     atlas_sync: bool,
-    compass_refresh_profile: str,
 ) -> list[ExecutionStep]:
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
     refresh_command = display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", surface)
@@ -729,32 +731,22 @@ def _dashboard_surface_steps(
             )
         )
     if surface == "compass":
-        normalized_profile = dashboard_refresh_contract.normalize_compass_refresh_profile(compass_refresh_profile)
-        command = (
-            "python",
-            "-m",
-            "odylith.runtime.surfaces.render_compass_dashboard",
-            "--repo-root",
-            str(repo_root),
-            "--refresh-profile",
-            normalized_profile,
-            *_runtime_args(normalized_runtime_mode),
-        )
         steps.append(
             _execution_step(
-                "Render Compass in the selected refresh profile.",
+                "Queue or run Compass through the shared Compass refresh engine.",
                 surface=surface,
-                command=command,
-                standalone_command=_runtime_retry_command(command),
+                action=lambda: compass_refresh_runtime.run_refresh(
+                    repo_root=repo_root,
+                    requested_profile=compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
+                    requested_runtime_mode=normalized_runtime_mode,
+                    wait=False,
+                    status_only=False,
+                    emit_output=True,
+                ),
                 mutation_classes=("generated_surfaces",),
                 paths=_surface_render_outputs("compass"),
                 next_command_on_failure=dashboard_refresh_contract.dashboard_refresh_failure_command(
                     surface=surface,
-                    compass_refresh_profile=normalized_profile,
-                ),
-                timeout_seconds=dashboard_refresh_contract.dashboard_refresh_timeout_seconds(
-                    surface=surface,
-                    compass_refresh_profile=normalized_profile,
                 ),
             )
         )
@@ -893,7 +885,6 @@ def _build_dashboard_refresh_steps(
     selected: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool,
-    compass_refresh_profile: str,
 ) -> list[ExecutionStep]:
     steps: list[ExecutionStep] = []
     for surface in selected:
@@ -903,7 +894,6 @@ def _build_dashboard_refresh_steps(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
-                compass_refresh_profile=compass_refresh_profile,
             )
         )
     return steps
@@ -915,7 +905,6 @@ def build_dashboard_refresh_plan(
     surfaces: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool = False,
-    compass_refresh_profile: str = _DEFAULT_COMPASS_REFRESH_PROFILE,
 ) -> ExecutionPlan:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -933,7 +922,6 @@ def build_dashboard_refresh_plan(
             selected=selected,
             runtime_mode=normalized_runtime_mode,
             atlas_sync=atlas_sync,
-            compass_refresh_profile=compass_refresh_profile,
         ),
         notes=notes,
         repo_root=repo_root,
@@ -989,7 +977,7 @@ def _dashboard_refresh_notes(
         notes.append(
             "`tooling_shell` refresh rerenders the parent shell wrapper only. "
             "It does not rewrite `odylith/compass/runtime/current.v1.json`; if the visible Compass brief is stale, run "
-            + display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", "compass")
+            + display_command("compass", "refresh", "--repo-root", ".")
         )
     if atlas_sync and "atlas" in selected_tokens:
         notes.append(
@@ -1053,11 +1041,39 @@ def _run_dashboard_refresh_step(
     repo_root: Path,
     step: ExecutionStep,
     runtime_mode: str,
-) -> tuple[int, bool]:
+) -> dict[str, Any]:
     if step.action is not None:
-        return int(step.action()), False
+        action_result = step.action()
+        if isinstance(action_result, Mapping):
+            state = action_result.get("state")
+            state_map = dict(state) if isinstance(state, Mapping) else {}
+            return {
+                "rc": int(action_result.get("rc", 0) or 0),
+                "fallback_used": False,
+                "status": str(action_result.get("status", "")).strip() or "passed",
+                "next_command": (
+                    str(action_result.get("next_command", "")).strip()
+                    or str(state_map.get("next_command", "")).strip()
+                    or step.next_command_on_failure
+                ),
+                "failed_step": "",
+            }
+        rc = int(action_result or 0)
+        return {
+            "rc": rc,
+            "fallback_used": False,
+            "status": "passed" if rc == 0 else "failed",
+            "next_command": step.next_command_on_failure,
+            "failed_step": "",
+        }
     if not step.command:
-        return 0, False
+        return {
+            "rc": 0,
+            "fallback_used": False,
+            "status": "passed",
+            "next_command": "",
+            "failed_step": "",
+        }
     heartbeat_label = _display_sync_step_command(repo_root=repo_root, command=step.command)
     command_kwargs: dict[str, Any] = {
         "repo_root": repo_root,
@@ -1068,7 +1084,13 @@ def _run_dashboard_refresh_step(
         command_kwargs["timeout_seconds"] = step.timeout_seconds
     rc = _run_command(**command_kwargs)
     if rc == 0 or str(runtime_mode).strip().lower() != "auto" or not step.standalone_command:
-        return rc, False
+        return {
+            "rc": rc,
+            "fallback_used": False,
+            "status": "passed" if rc == 0 else "failed",
+            "next_command": step.next_command_on_failure,
+            "failed_step": "",
+        }
     print(f"- runtime_fallback: {step.surface or 'surface'} -> standalone")
     fallback_label = _display_sync_step_command(repo_root=repo_root, command=step.standalone_command)
     fallback_kwargs: dict[str, Any] = {
@@ -1079,7 +1101,13 @@ def _run_dashboard_refresh_step(
     if step.timeout_seconds is not None:
         fallback_kwargs["timeout_seconds"] = step.timeout_seconds
     fallback_rc = _run_command(**fallback_kwargs)
-    return fallback_rc, True
+    return {
+        "rc": fallback_rc,
+        "fallback_used": True,
+        "status": "passed" if fallback_rc == 0 else "failed",
+        "next_command": step.next_command_on_failure,
+        "failed_step": "",
+    }
 
 
 def _execute_dashboard_refresh_surface(
@@ -1088,27 +1116,23 @@ def _execute_dashboard_refresh_surface(
     surface: str,
     steps: Sequence[ExecutionStep],
     runtime_mode: str,
-    compass_refresh_profile: str,
 ) -> dict[str, Any]:
     fallback_used = False
+    surface_status = "passed"
     for index, step in enumerate(steps, start=1):
         print(f"- {surface} step {index}/{len(steps)}: {step.label}")
-        rc, step_fallback = _run_dashboard_refresh_step(
+        step_result = _run_dashboard_refresh_step(
             repo_root=repo_root,
             step=step,
             runtime_mode=runtime_mode,
         )
-        fallback_used = fallback_used or step_fallback
+        rc = int(step_result.get("rc", 0) or 0)
+        step_status = str(step_result.get("status", "")).strip() or ("passed" if rc == 0 else "failed")
+        fallback_used = fallback_used or bool(step_result.get("fallback_used"))
+        if step_status == "queued":
+            surface_status = "queued"
         if rc != 0:
-            if str(surface).strip() == "compass":
-                dashboard_refresh_contract.mark_compass_refresh_failure(
-                    repo_root=repo_root,
-                    runtime_mode=runtime_mode,
-                    requested_profile=compass_refresh_profile,
-                    rc=int(rc),
-                    fallback_used=fallback_used,
-                )
-            next_command = step.next_command_on_failure
+            next_command = str(step_result.get("next_command", "")).strip() or step.next_command_on_failure
             if not next_command and step.command:
                 next_command = _display_sync_step_command(repo_root=repo_root, command=step.command)
             return {
@@ -1117,11 +1141,11 @@ def _execute_dashboard_refresh_surface(
                 "fallback_used": fallback_used,
                 "rc": int(rc),
                 "next_command": next_command,
-                "failed_step": step.label,
+                "failed_step": str(step_result.get("failed_step", "")).strip() or step.label,
             }
     return {
         "surface": surface,
-        "status": "passed",
+        "status": surface_status,
         "fallback_used": fallback_used,
         "rc": 0,
         "next_command": "",
@@ -1136,7 +1160,6 @@ def refresh_dashboard_surfaces(
     runtime_mode: str,
     atlas_sync: bool = False,
     dry_run: bool = False,
-    compass_refresh_profile: str = _DEFAULT_COMPASS_REFRESH_PROFILE,
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1145,7 +1168,6 @@ def refresh_dashboard_surfaces(
         surfaces=selected,
         runtime_mode=normalized_runtime_mode,
         atlas_sync=atlas_sync,
-        compass_refresh_profile=compass_refresh_profile,
     )
     _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run), verbose=False)
     if dry_run:
@@ -1159,21 +1181,25 @@ def refresh_dashboard_surfaces(
             surface=surface,
             runtime_mode=normalized_runtime_mode,
             atlas_sync=atlas_sync,
-            compass_refresh_profile=compass_refresh_profile,
         )
         result = _execute_dashboard_refresh_surface(
             repo_root=repo_root,
             surface=surface,
             steps=steps,
             runtime_mode=normalized_runtime_mode,
-            compass_refresh_profile=compass_refresh_profile,
         )
         runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
         surface_results.append(result)
     elapsed = time.perf_counter() - started_at
-    failures = [result for result in surface_results if result.get("status") != "passed"]
+    failures = [result for result in surface_results if str(result.get("status", "")).strip() == "failed"]
+    queued = [result for result in surface_results if str(result.get("status", "")).strip() == "queued"]
     print("dashboard refresh completed")
-    print("- outcome: failed" if failures else "- outcome: passed")
+    if failures:
+        print("- outcome: failed")
+    elif queued:
+        print("- outcome: queued")
+    else:
+        print("- outcome: passed")
     print(f"- elapsed_seconds: {elapsed:.1f}")
     print(f"- runtime_fallback_used: {'yes' if runtime_fallback_used else 'no'}")
     for result in surface_results:
@@ -1181,11 +1207,15 @@ def refresh_dashboard_surfaces(
         status = str(result.get("status", "")).strip() or "failed"
         suffix = " (standalone fallback used)" if bool(result.get("fallback_used")) else ""
         print(f"- {surface}: {status}{suffix}")
-        if status != "passed":
+        if status not in {"passed", "queued"}:
             failed_step = str(result.get("failed_step", "")).strip()
             next_command = str(result.get("next_command", "")).strip()
             if failed_step:
                 print(f"  failed_step: {failed_step}")
+            if next_command:
+                print(f"  next: {next_command}")
+        elif status == "queued":
+            next_command = str(result.get("next_command", "")).strip()
             if next_command:
                 print(f"  next: {next_command}")
     if failures:
@@ -1388,6 +1418,26 @@ def build_sync_execution_plan(
         notes = [
             "Check-only sync is non-mutating and proves the governed surfaces against current tracked truth.",
         ]
+        compass_runtime_path = repo_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+        if compass_runtime_path.is_file():
+            try:
+                payload = json.loads(compass_runtime_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                payload = {}
+            drift = (
+                release_truth_runtime.build_compass_runtime_truth_drift(
+                    repo_root=repo_root,
+                    runtime_payload=payload,
+                )
+                if isinstance(payload, Mapping)
+                else {}
+            )
+            warning = str(drift.get("warning", "")).strip()
+            if warning:
+                notes.append(
+                    "Visible Compass runtime drift: "
+                    + warning
+                )
         return _execution_plan(
             headline=f"Validate the current sync slice in `{runtime_mode}` mode without writing files.",
             steps=steps,
@@ -1526,9 +1576,6 @@ def build_sync_execution_plan(
                     "odylith.runtime.surfaces.render_compass_dashboard",
                     "--repo-root",
                     str(repo_root),
-                    "--refresh-profile",
-                    str(getattr(args, "compass_refresh_profile", _DEFAULT_COMPASS_REFRESH_PROFILE)).strip().lower()
-                    or _DEFAULT_COMPASS_REFRESH_PROFILE,
                     *_runtime_args(runtime_mode),
                 ),
                 mutation_classes=("generated_surfaces",),
@@ -1767,12 +1814,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not args.check_only:
             normalization = normalize_legacy_backlog_index(repo_root=repo_root)
             if normalization.changed:
+                normalized_idea_specs = tuple(getattr(normalization, "normalized_idea_specs", ()) or ())
+                normalized_table_sections = tuple(getattr(normalization, "normalized_table_sections", ()) or ())
                 print("workstream sync legacy normalization")
                 print(
                     f"- radar_index: normalized {len(normalization.normalized_sections)} rationale section"
                     f"{'' if len(normalization.normalized_sections) == 1 else 's'} before validation"
                 )
                 print(f"- added_sections: {len(normalization.added_sections)}")
+                print(f"- idea_schema_updates: {len(normalized_idea_specs)}")
+                print(f"- table_schema_updates: {len(normalized_table_sections)}")
                 print(f"- source: {normalization.backlog_index.relative_to(repo_root)}")
         backlog_errors = collect_backlog_contract_errors(repo_root=repo_root)
         if backlog_errors:
@@ -1846,7 +1897,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"- runtime_mode: {effective_runtime_mode}")
     meaningful = governance.collect_meaningful_activity_evidence(
         repo_root=repo_root,
-        stream_path=repo_root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl",
+        stream_path=agent_runtime_contract.resolve_agent_stream_path(repo_root=repo_root),
     ).as_dict()
     if meaningful:
         print(

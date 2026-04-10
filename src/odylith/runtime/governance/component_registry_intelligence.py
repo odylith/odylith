@@ -1,6 +1,6 @@
 """Shared component-registry intelligence for Registry/Registry governance paths.
 
-This module centralizes component inventory normalization and Codex stream
+This module centralizes component inventory normalization and agent-stream
 component-mapping logic so renderer, validator, timeline logger, and sync
 orchestration do not drift. Registry forensic evidence is intentionally sourced
 from two paths:
@@ -33,17 +33,21 @@ import re
 from typing import Any, Iterable, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.common.consumer_profile import is_component_forensics_path
 from odylith.runtime.common.consumer_profile import truth_root_path
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference
 from odylith.runtime.governance.component_registry_path_aliases import equivalent_component_artifact_tokens
+from odylith.runtime.governance.component_registry_review_policy import (
+    catalog_component_requests_inventory_review,
+)
 
 DEFAULT_MANIFEST_PATH = "odylith/registry/source/component_registry.v1.json"
 DEFAULT_CATALOG_PATH = "odylith/atlas/source/catalog/diagrams.v1.json"
 DEFAULT_IDEAS_ROOT = "odylith/radar/source/ideas"
-DEFAULT_STREAM_PATH = "odylith/compass/runtime/codex-stream.v1.jsonl"
+DEFAULT_STREAM_PATH = agent_runtime_contract.AGENT_STREAM_PATH
 DEFAULT_TRACEABILITY_GRAPH_PATH = "odylith/radar/traceability-graph.v1.json"
 DEFAULT_WORKSPACE_ACTIVITY_WINDOW_HOURS = 48
 
@@ -68,6 +72,7 @@ _FEATURE_HISTORY_PLAN_REF_RE = re.compile(r"\[(B-\d{3,})\]\(([^)]+)\)")
 _FEATURE_HISTORY_PLAN_ROUTE_RE = re.compile(r"(?:^|.*/)?odylith/radar/radar\.html$", re.I)
 _FEATURE_HISTORY_PLAN_ROUTE_VERSION = "radar-html-v1"
 _PRODUCT_LAYER_NORMALIZATION_VERSION = "consumer-distro-suffix-v1"
+_RADAR_IDEA_CONTRACT_VERSION = "v0.1.11"
 _COMPONENT_INDEX_CACHE_VERSION = "v2"
 _COMPONENT_REPORT_CACHE_VERSION = "v4"
 _SKILL_TRIGGER_HEADING_RE = re.compile(r"^###\s+(.+?)\s*$", re.I)
@@ -151,7 +156,7 @@ class ComponentSpecSnapshot:
 
 @dataclass(frozen=True)
 class MappedEvent:
-    """Codex stream event with derived component linkage metadata."""
+    """Agent-stream event with derived component linkage metadata."""
 
     event_index: int
     ts_iso: str
@@ -303,6 +308,7 @@ def _cached_component_index_payload(
             "component_index_cache_version": _COMPONENT_INDEX_CACHE_VERSION,
             "feature_history_plan_route_version": _FEATURE_HISTORY_PLAN_ROUTE_VERSION,
             "product_layer_normalization_version": _PRODUCT_LAYER_NORMALIZATION_VERSION,
+            "radar_idea_contract_version": _RADAR_IDEA_CONTRACT_VERSION,
             "manifest": odylith_context_cache.path_signature(manifest_path),
             "catalog": odylith_context_cache.path_signature(catalog_path),
             "ideas": odylith_context_cache.fingerprint_tree(ideas_root, glob="*.md"),
@@ -698,6 +704,7 @@ def _cached_component_registry_report_payload(
             "component_report_cache_version": _COMPONENT_REPORT_CACHE_VERSION,
             "feature_history_plan_route_version": _FEATURE_HISTORY_PLAN_ROUTE_VERSION,
             "product_layer_normalization_version": _PRODUCT_LAYER_NORMALIZATION_VERSION,
+            "radar_idea_contract_version": _RADAR_IDEA_CONTRACT_VERSION,
             "manifest": odylith_context_cache.path_signature(manifest_path),
             "catalog": odylith_context_cache.path_signature(catalog_path),
             "ideas": odylith_context_cache.fingerprint_tree(ideas_root, glob="*.md"),
@@ -1644,6 +1651,8 @@ def build_candidate_component_queue(
                 for raw_component in components:
                     if not isinstance(raw_component, Mapping):
                         continue
+                    if not catalog_component_requests_inventory_review(raw_component):
+                        continue
                     token = str(raw_component.get("name", "")).strip()
                     if not token:
                         continue
@@ -1692,7 +1701,7 @@ def build_candidate_component_queue(
                 _append_candidate_signal(
                     queue=queue,
                     token=token,
-                    source="codex_stream",
+                    source="agent_stream",
                     context=f"line:{idx}",
                 )
 
@@ -1880,7 +1889,7 @@ def map_stream_events(
     components: Mapping[str, ComponentEntry],
     alias_to_component: Mapping[str, str],
 ) -> tuple[list[MappedEvent], list[str]]:
-    """Map codex stream events to components with confidence metadata."""
+    """Map agent-stream events to components with confidence metadata."""
 
     diagnostics: list[str] = []
     rows: list[MappedEvent] = []

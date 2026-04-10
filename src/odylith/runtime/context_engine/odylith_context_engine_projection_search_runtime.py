@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
 from odylith.runtime.context_engine import projection_repo_state_runtime
 
@@ -364,7 +365,7 @@ def _atlas_catalog_path(*, repo_root: Path) -> Path:
     return _product_root(repo_root=repo_root) / "atlas" / "source" / "catalog" / "diagrams.v1.json"
 
 def _compass_stream_path(*, repo_root: Path) -> Path:
-    return _product_root(repo_root=repo_root) / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    return agent_runtime_contract.resolve_agent_stream_path(repo_root=_product_root(repo_root=repo_root))
 
 def _traceability_graph_path(*, repo_root: Path) -> Path:
     return _product_root(repo_root=repo_root) / "radar" / "traceability-graph.v1.json"
@@ -385,6 +386,14 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
                 "backlog_index": _path_fingerprint(radar_source_root / "INDEX.md"),
                 "backlog_archive": _path_fingerprint(radar_source_root / "archive"),
                 "ideas": _path_fingerprint(radar_source_root / "ideas"),
+            }
+        ),
+        "releases": odylith_context_cache.fingerprint_payload(
+            {
+                "contract_version": projection_contract_version("releases"),
+                "traceability": _path_fingerprint(traceability_graph_path),
+                "release_registry": _path_fingerprint(radar_source_root / "releases" / "releases.v1.json"),
+                "release_events": _path_fingerprint(radar_source_root / "releases" / "release-assignment-events.v1.jsonl"),
             }
         ),
         "plans": odylith_context_cache.fingerprint_payload(
@@ -1240,6 +1249,7 @@ def _empty_projection_tables() -> dict[str, list[dict[str, Any]]]:
     return {
         "projection_state": [],
         "workstreams": [],
+        "releases": [],
         "plans": [],
         "bugs": [],
         "diagrams": [],

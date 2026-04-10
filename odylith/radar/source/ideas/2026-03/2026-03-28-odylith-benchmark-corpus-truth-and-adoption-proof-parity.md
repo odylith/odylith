@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-009
 
-title: Odylith Benchmark Corpus Truth and Adoption Proof Parity
+title: Benchmark Corpus Truth and Adoption Proof Parity
 
 date: 2026-03-28
 
@@ -13,8 +13,6 @@ commercial_value: 4
 product_impact: 5
 
 market_value: 4
-
-impacted_lanes: both
 
 impacted_parts: benchmark corpus source truth, orchestration proof validation, benchmark component boundary, benchmark acceptance gate, and public benchmark snapshot
 

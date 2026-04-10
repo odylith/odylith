@@ -1,8 +1,8 @@
 # Dashboard
-Last updated: 2026-04-08
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-04-08
+Last updated (UTC): 2026-04-09
 
 ## Purpose
 Dashboard is the shell host for Odylith. It provides the top-level tabbed,
@@ -31,6 +31,40 @@ surface into the shell renderer.
   navigation, brand framing, and deep-link translation.
 - Shell link semantics are centralized so proof routes, scope routes, and tab
   links stay consistent across surfaces.
+- Shared interactive `B-###` workstream buttons are centralized too: the
+  compact non-Atlas workstream-button contract lives in
+  `src/odylith/runtime/surfaces/dashboard_ui_primitives.py`, and child
+  surfaces must not locally re-size or re-pad those controls.
+- Shared deep-link buttons are centralized there too: `Registry`, `Spec`,
+  proof-reference, and `D-###` diagram buttons must consume the shared
+  deep-link chip contract from
+  `src/odylith/runtime/surfaces/dashboard_ui_primitives.py` instead of
+  shipping surface-local button CSS forks.
+- The same source file owns the shared governance KPI/stat-card contract.
+  Compass, Radar, Registry, and Casebook top-line summary tiles must consume
+  the shared KPI grid/card/label-value helpers instead of shipping local
+  summary-card CSS forks.
+- Shared interactive `B-###` workstream buttons also share one destination:
+  Dashboard routes them to Radar's canonical workstream view. Child surfaces
+  may keep their own local scope state, but they must not repurpose those
+  shared buttons to open surface-local scoped views.
+- The shell cheatsheet drawer must teach release planning and program/wave
+  planning as distinct operator flows. Release planning answers "what release
+  should this workstream ship in?", while program/wave planning answers "how
+  should this umbrella execute across W1/W2/W3?" The same workstream may
+  participate in both, so cheatsheet examples must keep the distinction
+  explicit instead of blurring them into one planning lane.
+- Compass `Release Targets` layout is not a free shell-level styling choice.
+  Shared shell CSS must not reintroduce side-by-side or auto-fit multi-column
+  release boards once the operator has chosen the stacked release format,
+  unless that layout change is explicitly authorized.
+- When a child surface owns source-generated shell assets, keep one canonical
+  generator or loader path and require exact live-versus-bundle mirror
+  equality. Operator-owned layout and compact workstream-button contracts need
+  browser proof, not just static selector checks.
+- Shared KPI/stat-card contracts need the same proof posture: browser audits
+  must check computed card, label, and value styling plus release-card
+  labeling across the affected governance surfaces.
 
 ## Runtime Contract
 ### Owning modules
@@ -102,10 +136,12 @@ Shell-only refresh is wrapper-scoped, not a hidden child-surface rerender. If
 wrapper assets refreshed but Compass runtime truth did not. The shell must also
 project current Compass freshness or failure posture when the Compass tab is
 active so parent-surface success does not masquerade as a fresh child brief.
-Explicit Compass `full` refresh is the opposite contract: it is a deep
-child-surface rerender, not a wrapper refresh, and a passing run must not rely
-on deterministic local brief fallback or on reusing a recent Compass payload
-that does not already satisfy the requested deep-refresh truth contract.
+But if the Compass frame already carries the relevant stale or failed-refresh
+warning, the shell must not restate the same warning above the iframe.
+Compass no longer carries a second deep-refresh contract. The shell may ask
+Compass to refresh or wait for that refresh, but it must not invent or
+advertise a minute-scale `full` rerender path the child surface no longer
+supports.
 
 ### Live-refresh policy contract
 Dashboard owns the shell-side policy that decides when a currently open tab may
@@ -135,9 +171,27 @@ Across all policies, the shell must keep three guardrails:
 The same truth rule applies to explicit refresh: the shell may read Compass
 runtime state and surface stale/failure posture, but it must not imply that
 Compass rerendered unless the Compass child-runtime snapshot actually changed.
-When the operator explicitly requests Compass `full`, the shell and refresh
-contract must treat deterministic local brief output or stale child-runtime
-reuse as a failed deeper refresh, not as a successful update.
+
+When the Compass child snapshot disagrees with the live traceability release
+read model, Dashboard may disclose that the visible Compass snapshot is behind,
+but it must use the same traceability-based drift contract as Compass itself.
+The shell is not allowed to invent a second release-membership interpretation
+from some other source of truth.
+
+### Scope-budget policy
+Dashboard and shared shell consumers must treat Delivery Intelligence
+`scope_signal.budget_class` as the provider-neutral budget gate for expensive
+reasoning or narration work:
+- `none`
+- `cache_only`
+- `fast_simple`
+- `escalated_reasoning`
+
+Host adapters may map those classes to different concrete models or reasoning
+settings for Codex, Claude, or future providers, but Dashboard must not encode
+host-branded policy as the product contract. Cheap paths stay cheap because the
+shared ladder says which scopes deserve compute, not because one host happened
+to be configured locally.
 
 These policies are posture switches over one shell/runtime implementation. They
 must not fork Odylith into lane-specific codebases; source templates, generated
@@ -170,6 +224,7 @@ install/runtime layer.
 - `bug`
 - `severity`
 - `status`
+- `view` for Radar-only workstream projections such as plan routes
 
 It also normalizes scope-level routes from delivery-intelligence scopes and
 renders proof-reference links consistently. This module is the single place to
@@ -268,8 +323,14 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-26: Bound the shell host to Odylith's own product-governance records so the public repo can render and audit its own surface boundary. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-03-27: Added self-host posture payload fields so the shell can expose product-repo dogfood and release posture without inventing a second status model. (Plan: [B-004](odylith/radar/radar.html?view=plan&workstream=B-004))
 - 2026-04-07: Clarified the shell freshness contract so Compass owns its normal stale-runtime disclosure in-frame, the shell reserves status cards for failure-only or cross-surface posture, and the recovery dock no longer carries per-surface `Show status` reopen buttons. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-08: Split compact `B-###` workstream buttons out of the broader identifier styling contract so Radar, Compass, and execution-wave stacks keep one centralized button size instead of drifting with unrelated identifier tweaks. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-09: Removed the stale Compass release-board override from shared shell CSS and codified that shared Dashboard styling cannot change Compass release-target layout without explicit operator authorization. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-09: Hardened shell mirror discipline by requiring one canonical source path, exact live-versus-bundle equality for mirrored surface artifacts, and browser proof for operator-owned workstream-button and release-layout contracts. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-080`)
+- 2026-04-09: Collapsed Compass and Registry KPI/stat-card forks into the shared Dashboard KPI helpers and required browser proof for computed top-line card styling plus labeled current-release values across governance surfaces. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-085`)
 - 2026-03-31: Froze the dashboard header contract and made shell render fail closed if the source-owned header template or header CSS drifts. (Plan: [B-027](odylith/radar/radar.html?view=plan&workstream=B-027))
 - 2026-04-01: Restored the compact runtime/version string inside the frozen header contract so pinned and detached maintainer lanes stay visibly distinguishable. (Plan: [B-027](odylith/radar/radar.html?view=plan&workstream=B-027))
 - 2026-04-02: Added balanced, proof-frozen, and full-dev live-refresh policies so read-only runtime-backed tabs can stay current without background sync, provider-credit spend, or benchmark skew. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
-- 2026-04-08: Clarified that explicit Compass `full` is a deep child-surface refresh, not wrapper polish: the shell may project Compass freshness gaps, but a passing deep refresh now keeps the valid five-minute reuse clamp only when the reused payload is already deep-refresh-clean. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-09: Removed the old Compass `full` refresh idea from the shell contract too. Dashboard now treats Compass refresh as one bounded child-surface request and never advertises a second deep-refresh mode above the iframe. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-086`)
 - 2026-04-08: Fixed the shell runtime-status bootstrap so Compass stale/failure disclosure survives first load and later runtime probes instead of being cleared by a probe payload that lacks shell-facing status records. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-09: Reinstated shell-versus-child warning dedupe for Compass failures so the wrapper stays quiet when the Compass frame already explains the failed refresh. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-09: Added provider-neutral scope-budget gating to the shared shell contract so Compass and sibling governance consumers can map cheap versus escalated compute policy through one host-agnostic ladder contract. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071))

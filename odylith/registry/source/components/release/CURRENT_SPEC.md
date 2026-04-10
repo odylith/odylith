@@ -1,24 +1,26 @@
 # Release
-Last updated: 2026-04-08
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-04-08
+Last updated (UTC): 2026-04-09
 
 ## Purpose
-Release is Odylith's canonical maintainer publication lane. It owns the
-deterministic version session, semver tag progression, authoritative GitHub
-release dispatch, signed asset publication, and the maintainer-facing
-dog-food/consumer rehearsal sequence that proves a release before it is
-accepted as a GA publication. It also owns the reusable launch-readiness
-overlay that keeps release-note, popup, benchmark, GitHub-release, and proof
-claims aligned for public publication.
+Release is Odylith's release subsystem. It owns the canonical maintainer
+publication lane and the additive repo-local release-planning contract that
+lets backlog work target explicit ship lanes such as `current`, `next`, or a
+named release record. Publication proof, release planning, release-note
+alignment, and launch-readiness still stay separate concerns inside one
+governed subsystem.
 
 ## Scope And Non-Goals
 ### Release owns
 - Sticky local release-session state under `.odylith/locks/`.
+- Repo-local release-planning truth under `odylith/radar/source/releases/`.
 - Stable semver discovery anchored to published canonical releases and
   reusable unpublished tag reservations for the canonical lane.
 - Canonical release preflight and dispatch orchestration.
+- Release-planning selector resolution, alias ownership, append-only
+  workstream assignment history, and the `odylith release ...` command group.
 - The generic maintainer GTM-and-release checklist plus the release-readiness
   contract for benchmark-backed launch assets.
 - GitHub Actions publication of wheel, signed manifest, provenance, SBOM, and
@@ -38,6 +40,8 @@ claims aligned for public publication.
 ### Release does not own
 - Consumer install and upgrade semantics themselves. The install/runtime layer
   owns those contracts.
+- Generic workstream topology or umbrella execution-wave programs. Release
+  planning is additive and does not replace backlog lineage or execution waves.
 - Consumer project toolchains and application runtime selection.
 - The public support or disclosure policy.
 - Ongoing channel execution, community management, or non-product campaign
@@ -46,6 +50,12 @@ claims aligned for public publication.
 
 ## Developer Mental Model
 - Release is a product subsystem, not just a make target bundle.
+- Release planning is additive:
+  - backlog topology and execution waves remain the planning/execution shape
+  - repo-local release planning records one active target ship lane per
+    workstream
+  - the canonical maintainer publication lane still proves and ships one
+    semver release at a time
 - The runbook drives command order; the GTM-and-release checklist drives claim,
   asset, and announcement readiness.
 - The maintainer lane resolves one version per release attempt and keeps it
@@ -84,6 +94,37 @@ claims aligned for public publication.
   as launch-ready. That note is the source of truth for the consumer upgrade
   spotlight copy, so release-facing popup claims must be proved from the same
   authored markdown rather than one-off shell text.
+- Release `name` is explicit planning truth. Matching authored release notes
+  may exist for the same `version`, but they must not rename or override the
+  release-planning record unless a maintainer explicitly changes `name`.
+- In practice, release names only change through an explicit
+  `odylith release create ... --name` or `odylith release update ... --name`
+  operation.
+- Governed read surfaces may fall back from blank `name` to `version`, `tag`,
+  or `release_id`, but they must never treat release-note titles as implicit
+  release names.
+- `current` and `next` are explicit source aliases, not inferred from semver,
+  dates, or release-history ordering.
+- The current active release stays surfaced in governed read models until
+  maintainers explicitly update it to `shipped` or `closed`; zero targeted
+  workstreams is an empty state, not implicit GA.
+- Governed read models may also surface finished work completed in that active
+  release as historical completed members while keeping active-target
+  membership at zero.
+- Release-target member badges must follow shared workstream-progress truth
+  rather than raw plan checkbox math:
+  - active implementation members with checked execution work show tracked
+    execution percent
+  - active implementation members with zero checked execution tasks show
+    checklist-only or unknown state, never fake `0% progress`
+  - planning or queued members may still truthfully show `0% progress`
+- `odylith release add` may attach an already `finished` workstream to an
+  active release as historical completed membership. The command must record
+  that membership without restoring an active target for the finished
+  workstream.
+- `shipped` and `closed` release records are terminal for active planning.
+  Alias ownership and carried work must move to non-terminal follow-on records
+  before lifecycle closure.
 - Release notes and maintainer overrides are necessary but not sufficient
   version truth. Before canonical preflight for `vX.Y.Z`, the tracked product
   version must already be advanced in `pyproject.toml` and synchronized into
@@ -178,11 +219,20 @@ claims aligned for public publication.
   dogfood before release-proof, dogfood, or consumer-rehearsal claims.
 
 ## Runtime And Operator Contract
+### Repo-local release-planning truth
+- `odylith/radar/source/releases/releases.v1.json`
+  Release registry with immutable `release_id`, lifecycle state, optional
+  `version`, `tag`, `name`, notes, and explicit alias ownership.
+- `odylith/radar/source/releases/release-assignment-events.v1.jsonl`
+  Append-only add, remove, and move history for workstream targeting.
+
 ### Local mutable state
 - `.odylith/locks/release-session.json`
   Sticky local session for `version`, `tag`, `head_sha`, and retry metadata.
 
 ### Maintainer command surface
+- `odylith release create|update|list|show|add|remove|move`
+  Maintain repo-local release-planning truth for backlog targeting.
 - `make release-version-preview`
   Show the next auto patch version with no mutation.
 - `make release-version-show`
@@ -287,6 +337,11 @@ claims aligned for public publication.
   capabilities. If a unit or candidate-proof assertion needs Codex host-native
   spawn semantics or a discovered `codex` binary, the test must force or mock
   that contract explicitly so GitHub-hosted runners prove the same truth.
+- Successful verification output must stay calm across every shipped release
+  lane, not only the hosted installer shell. If pinned dogfood, consumer
+  rehearsal, or GA gate still prints allowlisted trust-warning noise such as
+  `unsupported key type: 7` before healthy `OK:` asset lines, the warning
+  suppression slice is incomplete and stays open for the next release.
 - Release assets are authoritative only when the signed manifest, provenance,
   and SBOM all verify for the canonical signer identity.
 - Consumer posture must reject maintainer-only localhost asset overrides and
@@ -371,3 +426,8 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-27: Added a first-class maintainer release subsystem with sticky version sessions, stable semver auto-tagging, canonical commit-bound release dispatch, and a dedicated release runbook. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
 - 2026-03-28: Reset the local relaunch narrative to restart preview at `v0.1.0`, made split managed assets part of the canonical release lane while keeping install full-stack by default, and blocked dispatch on local hosted-asset installer proof. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
 - 2026-03-28: Promoted `v0.1.0` from a proved preview relaunch to the GA baseline for the supported macOS Apple Silicon and Linux platform matrix, and carried the release-reset pin-realignment hardening into the GA branch. (Plan: [B-007](odylith/radar/radar.html?view=plan&workstream=B-007))
+- 2026-04-08: Added repo-local release planning with immutable `release_id`, explicit `current` and `next` aliases, append-only workstream targeting history, and authored release-note name alignment for versioned release records. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
+- 2026-04-08: Clarified that current-release visibility is manual-close driven: governed read models keep the active current release visible until maintainers explicitly mark it `shipped` or `closed`, even when no targeted workstreams remain. (Plan: [B-065](odylith/radar/radar.html?view=plan&workstream=B-065))
+- 2026-04-08: Clarified that active current releases may keep finished completed members visible from release history until explicit ship or closeout, without restoring those workstreams to active targeting. (Plan: [B-066](odylith/radar/radar.html?view=plan&workstream=B-066))
+- 2026-04-09: Hardened `odylith release add` so maintainers can attach an already finished workstream to the active release as completed release history instead of reviving it as an active target. (Plan: [B-066](odylith/radar/radar.html?view=plan&workstream=B-066)) (Bug: [CB-082](odylith/casebook/casebook.html?bug=CB-082))
+- 2026-04-09: Codified release-target progress semantics so release-member badges use shared execution-progress truth, show tracked partial completion honestly, and never render active implementation with unchecked execution as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068)) (Bug: [CB-087](odylith/casebook/casebook.html?bug=CB-087))

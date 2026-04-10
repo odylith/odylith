@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-035
-title: Odylith Decisions Tab and Architecture Decision Ledger
+title: Decisions Tab and Architecture Decision Ledger
 date: 2026-03-30
 priority: P1
 commercial_value: 4
 product_impact: 4
 market_value: 3
-impacted_lanes: both
 impacted_parts: shell navigation, architecture decision records, decision traceability, Atlas and Registry linkage, and governed summaries of durable technical choices
 sizing: L
 complexity: High

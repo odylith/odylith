@@ -16,10 +16,10 @@ from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import brand_assets
+from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.governance import delivery_intelligence_engine
 from odylith.runtime.governance import component_registry_intelligence as registry
 from odylith.runtime.surfaces import dashboard_time
-from odylith.runtime.governance import operator_readout
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.consumer_profile import load_consumer_profile
 from odylith.runtime.context_engine import odylith_context_engine_store
@@ -49,8 +49,12 @@ _REGISTRY_SUMMARY_HEAVY_FIELDS = frozenset(
 )
 _REGISTRY_INTELLIGENCE_COMPONENT_FIELDS = (
     "confidence",
+    "claim_guard",
     "operator_readout",
     "posture_mode",
+    "proof_state",
+    "proof_state_resolution",
+    "scope_signal",
     "trajectory",
 )
 
@@ -493,13 +497,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         linear-gradient(180deg, var(--bg-a), var(--bg-b));
     }
     __ODYLITH_REGISTRY_PAGE_BODY__
-    .shell {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 22px 18px 34px;
-      display: grid;
-      gap: 12px;
-    }
+    __ODYLITH_REGISTRY_SURFACE_SHELL_ROOT__
+    __ODYLITH_REGISTRY_SURFACE_SHELL__
     .panel {
       border: 1px solid var(--line);
       border-radius: 14px;
@@ -526,11 +525,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       justify-self: end;
       align-self: end;
     }
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 8px;
-    }
+    __ODYLITH_REGISTRY_KPI_GRID__
     __ODYLITH_REGISTRY_KPI_CARD_SURFACE__
     __ODYLITH_KPI_TYPOGRAPHY__
     .kpi-card.warn .kpi-label,
@@ -874,10 +869,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       display: grid;
       gap: 10px;
     }
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_LAYOUT__
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_LABEL__
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_COPY__
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_META__
     .context-section {
       border: 1px solid #d6e3f7;
       border-radius: 14px;
@@ -1413,26 +1404,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return "Low";
     }
 
-    function intelligenceConfidenceBasis(confidence, explicitCount, syntheticCount, workstreamCount, baselineCount = 0) {
-      const explicit = Number(explicitCount || 0);
-      const synthetic = Number(syntheticCount || 0);
-      const workstreams = Number(workstreamCount || 0);
-      const baseline = Number(baselineCount || 0);
-      if (confidence === "High") {
-        return `High confidence because ${explicit} explicit checkpoint${explicit === 1 ? "" : "s"} and ${workstreams} linked workstream${workstreams === 1 ? "" : "s"} are present.`;
-      }
-      if (confidence === "Medium") {
-        return `Medium confidence because explicit evidence exists, but the picture still relies on a limited checkpoint set${synthetic > 0 ? " mixed with inferred local change" : ""}.`;
-      }
-      if (synthetic > 0) {
-        return "Low confidence because the read is driven mainly by inferred local change rather than explicit governance checkpoints.";
-      }
-      if (baseline > 0) {
-        return `Low confidence because Registry currently has ${baseline} documented spec history ${pluralize(baseline, "checkpoint", "checkpoints")} but no live mapped forensic evidence yet.`;
-      }
-      return "Low confidence because Registry does not yet have enough mapped evidence to form a strong narrative.";
-    }
-
     function latestExplicitEvent(events) {
       return (Array.isArray(events) ? events : []).find((event) => isExplicitTimelineEvent(event)) || null;
     }
@@ -1646,36 +1617,24 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return intelligenceScope("component", componentId);
     }
 
-    function operatorReadout(snapshot) {
-      const readout = snapshot && typeof snapshot.operator_readout === "object" ? snapshot.operator_readout : {};
-      return readout && typeof readout === "object" ? readout : {};
+    function scopeSignal(snapshot) {
+      const value = snapshot && typeof snapshot.scope_signal === "object" ? snapshot.scope_signal : {};
+      return value && typeof value === "object" ? value : {};
     }
 
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_RUNTIME_JS__
-
-    function proofHref(ref, componentId, primaryWorkstream) {
-      const row = ref && typeof ref === "object" ? ref : {};
-      const surface = String(row.surface || "").trim().toLowerCase();
-      const value = String(row.value || "").trim();
-      if (surface === "shell" || surface === "tooling") return "../index.html";
-      if (surface === "compass") return hrefCompass(primaryWorkstream || value);
-      if (surface === "atlas") return hrefAtlas(primaryWorkstream || "", value);
-      if (surface === "radar") return hrefRadar(primaryWorkstream || value);
-      if (surface === "registry") return hrefRegistry(componentId || value.replace(/^component:/, ""));
-      return "../index.html?tab=registry";
+    function scopeSignalRank(snapshot) {
+      const signal = scopeSignal(snapshot);
+      const numeric = Number(signal.rank);
+      if (Number.isFinite(numeric)) return numeric;
+      const rung = String(signal.rung || "").trim().toUpperCase();
+      if (/^R\d+$/.test(rung)) return Number.parseInt(rung.slice(1), 10);
+      return 0;
     }
 
     function registryComponentHref(componentId) {
       const token = String(componentId || "").trim();
       if (!token) return "../index.html?tab=registry";
       return `../index.html?tab=registry&component=${encodeURIComponent(token)}`;
-    }
-
-    function renderProofRefs(refs, componentId, primaryWorkstream) {
-      return renderOperatorReadoutProofLinks(
-        refs,
-        (row) => proofHref(row, componentId, primaryWorkstream),
-      );
     }
 
     function toneClassForCategory(category) {
@@ -1927,6 +1886,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           const leftCategory = String(left.category || "");
           const rightCategory = String(right.category || "");
           if (leftCategory !== rightCategory) return leftCategory.localeCompare(rightCategory);
+          const leftRank = scopeSignalRank(componentIntelligenceSnapshot(left.component_id));
+          const rightRank = scopeSignalRank(componentIntelligenceSnapshot(right.component_id));
+          if (leftRank !== rightRank) return rightRank - leftRank;
           const leftName = String(left.name || left.component_id || "");
           const rightName = String(right.name || right.component_id || "");
           return leftName.localeCompare(rightName);
@@ -2632,18 +2594,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         specRunbooks: Array.isArray(row.spec_runbooks) ? row.spec_runbooks : [],
         specDeveloperDocs: Array.isArray(row.spec_developer_docs) ? row.spec_developer_docs : [],
       };
-      const intelligenceSnapshot = componentIntelligenceSnapshot(row.component_id);
-      const confidenceToken = String(intelligenceSnapshot && intelligenceSnapshot.confidence || confidence).trim() || confidence;
-      const confidenceSummary = intelligenceConfidenceBasis(
-        confidenceToken,
-        explicitExecutiveEvents.length,
-        syntheticExecutiveEvents.length,
-        allWorkstreams.length,
-        baselineExecutiveEvents.length,
-      );
-      const postureMode = humanizeToken(String(intelligenceSnapshot && intelligenceSnapshot.posture_mode || "converging"));
-      const trajectory = humanizeToken(String(intelligenceSnapshot && intelligenceSnapshot.trajectory || "converging"));
-
       const metadata = [
         staticLabel(`Category: ${humanizeToken(row.category)}`, categoryDescription(row.category)),
         staticLabel(`Qualification: ${humanizeToken(row.qualification)}`, qualificationDescription(row.qualification)),
@@ -2949,6 +2899,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     page_body_css = dashboard_ui_primitives.page_body_typography_css(
         selector="html, body",
     )
+    surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
+    surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
+        selector=".shell",
+        display="grid",
+        gap_px=12,
+    )
     control_label_css = dashboard_ui_primitives.control_label_css(
         selector=".control-title",
     )
@@ -2958,9 +2914,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         size_px=12,
         letter_spacing_em=0.06,
         line_height=1.2,
-    )
-    operator_readout_label_css = dashboard_ui_primitives.operator_readout_label_typography_css(
-        selector=".operator-readout-label",
     )
     content_copy_css = dashboard_ui_primitives.content_copy_css(
         selectors=(
@@ -2979,31 +2932,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         medium_title_size_px=22,
         small_title_size_px=19,
     )
-    operator_readout_layout_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.operator_readout_host_shell_css(
-                shell_selector=".operator-readout-shell",
-                heading_selector=".operator-readout-shell .operator-readout-shell-heading",
-                body_selector=".operator-readout-shell .operator-readout-shell-body",
-            ),
-            dashboard_ui_primitives.operator_readout_host_heading_css(
-                selector=".operator-readout-shell .operator-readout-shell-heading",
-            ),
-            dashboard_ui_primitives.operator_readout_layout_css(
-                container_selector=".operator-readout",
-                meta_selector=".operator-readout-meta",
-                main_selector=".operator-readout-main",
-                details_selector=".operator-readout-details",
-                section_selector=".operator-readout-section",
-                proof_selector=".operator-readout-proof",
-                footnote_selector=".operator-readout-footnote",
-            ),
-        )
-    )
-    operator_readout_copy_css = dashboard_ui_primitives.operator_readout_copy_typography_css(
-        selector=".operator-readout-copy",
-        line_height=1.55,
-        color="#27445e",
+    kpi_grid_css = dashboard_ui_primitives.kpi_grid_layout_css(
+        container_selector=".kpis",
+        gap_px=8,
+        margin_top="0",
     )
     kpi_card_surface_css = dashboard_ui_primitives.kpi_card_surface_css(
         card_selector=".kpi-card",
@@ -3036,16 +2968,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         border_color="#ead3b6",
         color="#8a6137",
     )
-    operator_readout_meta_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.operator_readout_meta_pill_css(
-                selector=".operator-readout-meta-item",
-            ),
-            dashboard_ui_primitives.operator_readout_meta_semantic_css(
-                selector=".operator-readout-meta-item",
-            ),
-        )
-    )
     summary_row_typography_css = dashboard_ui_primitives.inline_label_value_copy_css(
         row_selectors=(".summary-row",),
         label_selectors=(".summary-row strong",),
@@ -3066,9 +2988,17 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     detail_action_chip_css = dashboard_ui_primitives.detail_action_chip_css(
         selector=".detail-action-chip",
     )
-    detail_label_chip_css = dashboard_ui_primitives.detail_label_chip_css(
-        selector=".detail-chip-label",
-        color="var(--label-text)",
+    detail_label_chip_css = "\n\n".join(
+        (
+            dashboard_ui_primitives.detail_label_chip_css(
+                selector=".detail-chip-label",
+                color="var(--label-text)",
+            ),
+            dashboard_ui_primitives.surface_identifier_chip_typography_css(
+                selector=".detail-chip-label",
+                color="var(--label-text)",
+            ),
+        )
     )
     detail_action_chip_semantic_css = "\n\n".join(
         (
@@ -3309,19 +3239,17 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     )
     return (
         html.replace("__ODYLITH_REGISTRY_PAGE_BODY__", page_body_css)
+        .replace("__ODYLITH_REGISTRY_SURFACE_SHELL_ROOT__", surface_shell_root_css)
+        .replace("__ODYLITH_REGISTRY_SURFACE_SHELL__", surface_shell_css)
         .replace("__ODYLITH_REGISTRY_HERO_PANEL__", hero_panel_css)
         .replace("__ODYLITH_REGISTRY_HEADER_TYPOGRAPHY__", header_typography_css)
         .replace("__ODYLITH_REGISTRY_FILTER_SHELL__", sticky_filter_shell_css)
         .replace("__ODYLITH_REGISTRY_STICKY_FILTER_BAR__", sticky_filter_css)
         .replace("__ODYLITH_REGISTRY_CONTROL_LABEL__", control_label_css)
         .replace("__ODYLITH_REGISTRY_BRIEF_LABELS__", brief_section_label_css)
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_RUNTIME_JS__", operator_readout.operator_readout_runtime_helpers_js())
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_LAYOUT__", operator_readout_layout_css)
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_LABEL__", operator_readout_label_css)
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_COPY__", operator_readout_copy_css)
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_META__", operator_readout_meta_css)
         .replace("__ODYLITH_REGISTRY_WORKSPACE_LAYOUT__", workspace_layout_css)
         .replace("__ODYLITH_REGISTRY_DETAIL_IDENTITY_TYPOGRAPHY__", detail_identity_css)
+        .replace("__ODYLITH_REGISTRY_KPI_GRID__", kpi_grid_css)
         .replace("__ODYLITH_REGISTRY_KPI_CARD_SURFACE__", kpi_card_surface_css)
         .replace("__ODYLITH_KPI_TYPOGRAPHY__", kpi_typography_css)
         .replace("__ODYLITH_REGISTRY_LABEL_SURFACE__", label_surface_css)
@@ -3441,6 +3369,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             continue
         if stale_path.is_file():
             stale_path.unlink()
+    source_bundle_mirror.sync_live_paths(
+        repo_root=repo_root,
+        live_paths=(output_path, bundle_paths.payload_js_path, bundle_paths.control_js_path),
+    )
+    source_bundle_mirror.sync_live_glob(
+        repo_root=repo_root,
+        live_dir=output_path.parent,
+        pattern="registry-detail-shard-*.v1.js",
+    )
 
     print("registry dashboard render passed")
     print(f"- output: {output_path}")

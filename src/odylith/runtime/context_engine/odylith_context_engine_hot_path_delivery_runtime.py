@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import packet_quality_codec
 
 
@@ -74,7 +75,7 @@ def _impact_summary_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
     return summary_payload
 
 def _delivery_profile_hot_path(delivery_profile: str) -> bool:
-    return str(delivery_profile or "").strip().lower() == _CODEX_HOT_PATH_PROFILE
+    return agent_runtime_contract.is_agent_hot_path_profile(delivery_profile)
 
 def _elapsed_stage_ms(started_at: float) -> float:
     return round((time.perf_counter() - started_at) * 1000.0, 3)
@@ -135,6 +136,7 @@ def _impact_family_profile(
     prefer_explicit_workstream = bool(str(workstream_hint or "").strip()) and family != "architecture"
     prefer_explicit_component = bool(str(component_hint or "").strip()) and family in {
         "component_governance",
+        "live_proof_discipline",
         "release_publication",
     }
     governance_runtime_first_families = {
@@ -144,6 +146,7 @@ def _impact_family_profile(
         "daemon_security",
         "governed_surface_sync",
         "install_upgrade_runtime",
+        "live_proof_discipline",
     }
     fail_closed_support_families = {
         "component_governance",
@@ -153,6 +156,7 @@ def _impact_family_profile(
         "daemon_security",
         "exact_anchor_recall",
         "explicit_workstream",
+        "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
     }
@@ -168,6 +172,7 @@ def _impact_family_profile(
         "retrieval_miss_recovery",
         "explicit_workstream",
         "governed_surface_sync",
+        "live_proof_discipline",
         "release_publication",
         *governance_runtime_first_families,
     }
@@ -183,6 +188,7 @@ def _impact_family_profile(
         "retrieval_miss_recovery",
         "explicit_workstream",
         "governed_surface_sync",
+        "live_proof_discipline",
         "release_publication",
         *governance_runtime_first_families,
     }
@@ -193,6 +199,7 @@ def _impact_family_profile(
         "cross_file_feature",
         "exact_anchor_recall",
         "governed_surface_sync",
+        "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
         "retrieval_miss_recovery",
@@ -204,6 +211,7 @@ def _impact_family_profile(
         "exact_path_ambiguity",
         "explicit_workstream",
         "install_upgrade_runtime",
+        "live_proof_discipline",
         "daemon_security",
         "agent_activation",
         "cross_surface_governance_sync",
@@ -223,6 +231,7 @@ def _impact_family_profile(
         "explicit_workstream",
         "install_upgrade_runtime",
         "agent_activation",
+        "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
         "retrieval_miss_recovery",
@@ -241,6 +250,7 @@ def _impact_family_profile(
         "explicit_workstream",
         "governed_surface_sync",
         "install_upgrade_runtime",
+        "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
         "release_publication",

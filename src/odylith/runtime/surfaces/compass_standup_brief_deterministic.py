@@ -1,19 +1,14 @@
-"""Deterministic Compass standup brief voice helpers."""
+"""Deterministic Compass standup brief helpers."""
 
 from __future__ import annotations
 
 import re
 from typing import Any, Mapping, Sequence
 
-
-_VALID_VOICES = {"executive", "operator"}
 _WORKSTREAM_ID_RE = re.compile(r"\((B-\d+)\)")
 _WORKSTREAM_LABEL_RE = re.compile(r"^(?P<label>.+?)\s*\((?P<id>B-\d+)\)\s*$")
 _WORKSTREAM_FRAGMENT_RE = re.compile(r"([A-Z][^()]*?\(B-\d+\))")
-_WHY_PRIORITY_LEAD_RE = re.compile(
-    r"^(?:for\s+)?(?:[-*]\s*)?(?:primary|secondary|tertiary)\s*:\s*",
-    re.IGNORECASE,
-)
+_WORKSTREAM_COUNT_RE = re.compile(r"\b(\d+)\s+workstreams?\b", re.IGNORECASE)
 
 
 def build_sections(
@@ -89,8 +84,6 @@ def _section_bullets(
         return _current_execution_bullets(rows, summary=summary, window_key=window_key)
     if section_key == "next_planned":
         return _next_planned_bullets(rows, summary=summary)
-    if section_key == "why_this_matters":
-        return _why_this_matters_bullets(rows, summary=summary)
     if section_key == "risks_to_watch":
         return _risks_to_watch_bullets(rows, summary=summary)
     return _fallback_bullets(rows, limit=2)
@@ -106,11 +99,6 @@ def _fact_text(fact: Mapping[str, Any]) -> str:
 
 def _fact_kind(fact: Mapping[str, Any]) -> str:
     return str(fact.get("kind", "")).strip().lower()
-
-
-def _fact_voice(fact: Mapping[str, Any], *, default: str = "operator") -> str:
-    token = str(fact.get("voice_hint", "")).strip().lower()
-    return token if token in _VALID_VOICES else default
 
 
 def _clean_text(text: str) -> str:
@@ -147,7 +135,6 @@ def _strip_prefix(text: str, prefix: str) -> str:
 def _bullet(
     text: str,
     *,
-    voice: str,
     facts: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     fact_ids: list[str] = []
@@ -155,9 +142,7 @@ def _bullet(
         fact_id = _fact_id(fact)
         if fact_id and fact_id not in fact_ids:
             fact_ids.append(fact_id)
-    voice_token = voice if voice in _VALID_VOICES else "operator"
     return {
-        "voice": voice_token,
         "text": _clean_text(text),
         "fact_ids": fact_ids,
     }
@@ -167,14 +152,11 @@ def _storyline(summary: Mapping[str, Any]) -> dict[str, Any]:
     return _mapping(summary.get("storyline"))
 
 
-def _strip_priority_lead(text: str) -> str:
-    cleaned = _clean_text(text)
-    while cleaned:
-        normalized = _WHY_PRIORITY_LEAD_RE.sub("", cleaned, count=1).strip()
-        if normalized == cleaned:
-            return cleaned
-        cleaned = normalized
-    return ""
+def _compact_clause(text: str, *, max_words: int = 22) -> str:
+    cleaned = _clean_text(text).rstrip(" .")
+    if len(cleaned.split()) > max_words:
+        cleaned = " ".join(cleaned.split()[:max_words]).rstrip(" ,;:")
+    return _sentence(cleaned)
 
 
 def _label_ref(label: str) -> str:
@@ -182,6 +164,31 @@ def _label_ref(label: str) -> str:
     if workstream_id:
         return f"`{workstream_id}`"
     return _workstream_core(label)
+
+
+def _join_workstream_refs(ids: Sequence[str]) -> str:
+    refs = [f"`{str(token).strip()}`" for token in ids if str(token).strip()]
+    if not refs:
+        return ""
+    if len(refs) == 1:
+        return refs[0]
+    if len(refs) == 2:
+        return f"{refs[0]} and {refs[1]}"
+    return f"{', '.join(refs[:-1])}, and {refs[-1]}"
+
+
+def _workstream_count(text: str) -> int | None:
+    match = _WORKSTREAM_COUNT_RE.search(_clean_text(text))
+    if not match:
+        return None
+    return int(match.group(1))
+
+
+def _workstream_count_phrase(count: int | None, *, fallback: str = "those workstreams") -> str:
+    if count is None:
+        return fallback
+    suffix = "" if count == 1 else "s"
+    return f"{count} workstream{suffix}"
 
 
 def _first_fact(facts: Sequence[Mapping[str, Any]], *, kind: str) -> dict[str, Any] | None:
@@ -195,7 +202,6 @@ def _fallback_bullets(facts: Sequence[Mapping[str, Any]], *, limit: int) -> list
         bullets.append(
             _bullet(
                 _fact_text(fact),
-                voice=_fact_voice(fact),
                 facts=[fact],
             )
         )
@@ -218,6 +224,23 @@ def _workstream_core(label: str) -> str:
     return cleaned
 
 
+def _normalize_completion_core(core: str) -> str:
+    cleaned = _clean_text(core).strip().lower()
+    if not cleaned:
+        return ""
+    replacements = {
+        "completed release members stay visible until explicit ga": "the rule that keeps completed release members visible until explicit GA",
+        "current active release visibility until explicit ga": "the rule that keeps the current active release visible until explicit GA",
+        "first-turn bootstrap and short-form grounding commands": "first-turn bootstrap and short grounding commands",
+        "product self governance and repo boundary": "product self-governance and repo boundary",
+    }
+    if cleaned in replacements:
+        return replacements[cleaned]
+    cleaned = cleaned.replace(" explicit ga", " explicit GA")
+    cleaned = cleaned.replace(" self governance ", " self-governance ")
+    return cleaned
+
+
 def _completed_closeout_clauses(text: str) -> list[str]:
     payload = _strip_prefix(text, "Verified plan closeouts landed across the window:")
     clauses: list[str] = []
@@ -227,12 +250,12 @@ def _completed_closeout_clauses(text: str) -> list[str]:
         workstream_id = _workstream_id(label)
         if workstream_id and workstream_id in seen_ids:
             continue
-        core = _workstream_core(label).lower()
+        core = _normalize_completion_core(_workstream_core(label))
         if workstream_id and core:
             clauses.append(f"`{workstream_id}` finished {core}")
             seen_ids.add(workstream_id)
         elif core:
-            clauses.append(f"{core} landed cleanly")
+            clauses.append(f"{core} is done")
         if len(clauses) >= 2:
             break
     return clauses
@@ -244,21 +267,14 @@ def _completed_bullets(
     window_key: str,
 ) -> list[dict[str, Any]]:
     bullets: list[dict[str, Any]] = []
-    widened_window = window_key == "48h"
     plan_completion = _first_fact(facts, kind="plan_completion")
     if plan_completion is not None:
         text = _fact_text(plan_completion)
         closeout_clauses = _completed_closeout_clauses(text)
         if closeout_clauses:
-            opener = (
-                "Over the last 48 hours, two lingering obligations finally cleared"
-                if widened_window
-                else "This window finally cleared two lingering obligations"
-            )
             bullets.append(
                 _bullet(
-                    f"{opener}: {'; '.join(closeout_clauses)}.",
-                    voice="operator",
+                    f"{'; '.join(closeout_clauses)}.",
                     facts=[plan_completion],
                 )
             )
@@ -266,7 +282,6 @@ def _completed_bullets(
             bullets.append(
                 _bullet(
                     text,
-                    voice=_fact_voice(plan_completion),
                     facts=[plan_completion],
                 )
             )
@@ -277,57 +292,69 @@ def _completed_bullets(
         summary = _strip_prefix(summary, "Most concrete movement:")
         summary = summary.rstrip(".")
         lower = summary.lower()
+        workstream_count = _workstream_count(summary)
         if "lineage" in lower and "merge" in lower:
             text = (
-                "Over the last 48 hours, lineage got cleaned up across 15 workstreams. It is quiet work, but it keeps "
-                "plans, traceability, and rendered surfaces from drifting apart."
-                if widened_window
-                else "Lineage also got cleaned up across 15 workstreams. That work is easy to overlook, but it keeps "
-                "plans, traceability, and rendered surfaces from drifting apart."
+                f"Lineage was merged back together across {_workstream_count_phrase(workstream_count)}. "
+                "The plans and links match again."
+                if window_key == "48h"
+                else f"Lineage was merged back together across {_workstream_count_phrase(workstream_count)}. "
+                "The plans and links line up again."
             )
         elif lower.startswith("added product code + runtime tests"):
             text = (
-                "Over the last 48 hours, proof moved into code: product code and runtime tests landed across 2 "
-                "workstreams, so this is no longer just a contract in notes."
-                if widened_window
-                else "Proof moved into code this window: product code and runtime tests landed across 2 workstreams, "
-                "so this is no longer just a contract in notes."
+                f"Product code and runtime tests landed across {_workstream_count_phrase(workstream_count)}. "
+                "It made it into the repo, not just the notes."
+                if window_key == "48h"
+                else f"Product code and runtime tests landed across {_workstream_count_phrase(workstream_count)}. "
+                "It is in the repo now, not just the notes."
             )
         elif "preflight failed because the product repo is not in pinned dogfood posture" in lower:
             text = (
-                "Over the last 48 hours, the most useful thing that surfaced was a failure: self-host release "
-                "preflight is still refusing to bless a product repo that has not returned to pinned dogfood posture."
-                if widened_window
-                else "The most useful thing that surfaced this window was a failure: self-host release preflight is "
-                "still refusing to bless a product repo that has not returned to pinned dogfood posture."
+                "Self-host release preflight is still refusing to bless a product repo that has not returned to "
+                "pinned dogfood posture."
+            )
+        elif lower.startswith("decision: scoped compass is fail-closed"):
+            text = (
+                "Scoped Compass is now fail-closed. If a workstream brief is missing, Compass says so instead of "
+                "borrowing the global brief."
+            )
+        elif lower.startswith("decision: compass voice is a product invariant"):
+            text = (
+                "Compass voice is now treated as product behavior, not copy polish. Cached and fallback briefs do "
+                "not get to slide back into stock framing."
             )
         elif lower.startswith("implementation checkpoint in ") and ": completed " in lower:
             if "readme" in lower or "grounding benchmark" in lower:
                 text = (
-                    "Over the last 48 hours, a benchmark-truth checkpoint landed too. The README now draws a harder "
-                    "line around the Grounding Benchmark, which gives the rest of the proof something firmer to align to."
-                    if widened_window
-                    else "A benchmark-truth checkpoint landed too. The README now draws a harder line around the "
-                    "Grounding Benchmark, which gives the rest of the proof something firmer to align to."
+                    "The README now draws a harder line around the Grounding Benchmark, which gives the rest of the "
+                    "proof something firmer to align to."
                 )
             else:
                 detail = summary.split(": completed ", 1)[1].strip()
-                prefix = "Over the last 48 hours, a checkpoint landed" if widened_window else "A checkpoint landed"
-                text = f"{prefix}: {detail}."
+                text = f"{detail} is now complete."
         elif "release prep" in lower and "benchmark hardening" in lower:
             text = (
-                "Over the last 48 hours, benchmark hardening stopped being abstract. Release prep and proof-hardening "
-                "are now moving together, which is where weak claims finally get exposed."
-                if widened_window
-                else "Benchmark hardening stopped being abstract this window. Release prep and proof-hardening are "
-                "now moving together, which is where weak claims finally get exposed."
+                "Release prep and benchmark hardening are now moving together, which is where weak claims finally get "
+                "exposed."
             )
-        else:
+        elif lower.startswith("workstream lineage split update across "):
+            text = f"{summary} landed. The surrounding plans and links now line up better."
+        elif lower.startswith("workstream lineage reopen update across "):
+            verb = "was" if workstream_count == 1 else "were"
             text = (
-                f"{'Over the last 48 hours, the clearest move was' if widened_window else 'The clearest move this window was'} "
-                f"{summary}. It gave the rest of the work something concrete to steer against."
+                f"{_workstream_count_phrase(workstream_count).capitalize()} {verb} reopened. "
+                "The active lanes are visible again."
             )
-        bullets.append(_bullet(text, voice="operator", facts=[highlight]))
+        elif lower.startswith("updated product code + odylith artifacts"):
+            text = "Product code and Odylith artifacts moved together this window."
+        elif lower.startswith("updated odylith artifacts across "):
+            text = "Odylith artifacts were refreshed alongside the code they describe."
+        elif lower.startswith("prepare "):
+            text = f"{summary[8:].strip()} is in place."
+        else:
+            text = f"{summary}."
+        bullets.append(_bullet(text, facts=[highlight]))
 
     return bullets[:2] if bullets else _fallback_bullets(facts, limit=2)
 
@@ -340,7 +367,7 @@ def _direction_bullet(
     text = _fact_text(fact)
     match = re.match(r"(?P<label>.+?) is .*? because (?P<reason>.+)$", text)
     if not match:
-        return _bullet(text, voice="executive", facts=[fact])
+        return _bullet(text, facts=[fact])
     label = _clean_text(match.group("label"))
     reason = _clean_text(match.group("reason")).rstrip(".")
     workstream_id = _workstream_id(label)
@@ -350,21 +377,37 @@ def _direction_bullet(
         focus = reason.split(":", 1)[1].strip() if ":" in reason else reason
         focus = focus.replace("inside repos", "in repos")
         text = (
-            f"{'Over the last 48 hours, the lane boundary has stayed unsettled in' if window_key == '48h' else 'The lane boundary still feels unsettled in'} "
-            f"{focus_ref}. {focus} still read too much like one runtime contract when they are not the same thing."
+            f"{focus_ref} is still blocked on lane boundary clarity. People still read {focus} like one runtime contract "
+            "when they are not."
         )
-        return _bullet(text, voice="executive", facts=[fact])
+        return _bullet(text, facts=[fact])
     if "compact benchmark lane" in lower_reason:
         return _bullet(
-            f"{'Over the last 48 hours,' if window_key == '48h' else ''} {focus_ref} has moved out of easy-win territory. "
+            f"{focus_ref} has moved out of easy-win territory. "
             "The compact benchmark already clears; now the question is whether the proof survives a harder repo shape "
             "without getting easier to game.",
-            voice="executive",
+            facts=[fact],
+        )
+    if "once the benchmark starts shaping product claims" in lower_reason:
+        return _bullet(
+            f"{focus_ref} is trying to make the benchmark hard to game. "
+            "If it starts carrying product claims, it cannot quietly reshape itself to make those claims look better.",
+            facts=[fact],
+        )
+    if "right time to process release feedback is right after the release" in lower_reason:
+        return _bullet(
+            f"{focus_ref} is working through release feedback while the evidence is still fresh. "
+            "That is the moment to clean up the bad exceptions before they settle in.",
+            facts=[fact],
+        )
+    if "cost of local heuristics" in lower_reason:
+        return _bullet(
+            f"{focus_ref} is trying to stop each surface from guessing scope importance on its own. "
+            "Compass already showed how expensive that gets.",
             facts=[fact],
         )
     return _bullet(
-        f"{'Over the last 48 hours,' if window_key == '48h' else ''} {focus_ref} is still carrying the main decision load. {_sentence(reason)}",
-        voice="executive",
+        f"{focus_ref}: {_sentence(reason)}",
         facts=[fact],
     )
 
@@ -385,87 +428,95 @@ def _self_host_execution_bullet(
     release_eligible = snapshot.get("release_eligible")
     if posture == "detached_source_local":
         return _bullet(
-            "The live repo posture makes that concrete: the product repo is running detached `source-local`. "
-            "That is fine for active product work, and it is also why release gating should stay blocked until the "
-            "pinned runtime is back.",
-            voice="operator",
+            "The product repo is still running detached `source-local`. Release gating should stay blocked until the pinned runtime is back.",
             facts=[fact],
         )
     if posture == "pinned_release" and release_eligible is True:
         runtime = active_version or pinned_version or "the pinned runtime"
         return _bullet(
-            f"The repo is back on pinned dogfood runtime `{runtime}`, so the live posture and the release gate are "
-            "finally aligned again.",
-            voice="operator",
+            f"The product repo is on pinned dogfood runtime `{runtime}`. The release gate is using the same path "
+            "maintainers are meant to use.",
             facts=[fact],
         )
-    return _bullet(_fact_text(fact), voice="operator", facts=[fact])
+    return _bullet(_fact_text(fact), facts=[fact])
 
 
 def _portfolio_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
     text = _fact_text(fact)
     if "Live focus lanes:" not in text:
-        return _bullet(text, voice="operator", facts=[fact])
+        return _bullet(text, facts=[fact])
     focus_tail = text.split("Live focus lanes:", 1)[1].strip()
     labels = [_clean_text(match.group(1)) for match in _WORKSTREAM_FRAGMENT_RE.finditer(focus_tail)]
     if len(labels) < 2:
-        return _bullet(text, voice="operator", facts=[fact])
+        return _bullet(text, facts=[fact])
+    primary = labels[0]
+    primary_id = _workstream_id(primary)
+    primary_ref = f"`{primary_id}`" if primary_id else _workstream_core(primary)
     companion = labels[1]
     companion_id = _workstream_id(companion)
     companion_ref = f"`{companion_id}`" if companion_id else _workstream_core(companion)
     companion_lower = companion.lower()
     if "benchmark" in companion_lower or "proof" in companion_lower or "integrity" in companion_lower:
         return _bullet(
-            f"{companion_ref} is the lane keeping this honest alongside it. If Odylith is genuinely better, the "
-            "benchmark needs to prove that with harder evidence and less wasted work, not stronger narration.",
-            voice="operator",
+            f"{companion_ref} is right beside {primary_ref}. The proof work is close enough to tell us whether those changes actually hold.",
+            facts=[fact],
+        )
+    if "self-governance" in companion_lower or "repo boundary" in companion_lower:
+        return _bullet(
+            f"{companion_ref} is right beside {primary_ref} too. The repo-boundary cleanup is being finished in the same pass.",
             facts=[fact],
         )
     return _bullet(
-        f"{companion_ref} is moving beside it and gives the portfolio a second place where plan intent is turning "
-        "into something operators can actually trust.",
-        voice="operator",
+        f"{primary_ref} and {companion_ref} are still moving together.",
         facts=[fact],
     )
 
 
+def _window_coverage_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
+    text = _fact_text(fact)
+    if text.startswith("Most of the movement this window sat in "):
+        tail = text.split("Most of the movement this window sat in ", 1)[1].rstrip(".")
+        ids = re.findall(r"`?(B-\d+)`?", tail)
+        if ids:
+            joined = _join_workstream_refs(ids)
+            return _bullet(f"This window mostly ran through {joined}.", facts=[fact])
+        return _bullet(f"This window mostly ran through {tail}.", facts=[fact])
+    if text.startswith("A lot moved in this window."):
+        ids = re.findall(r"`?(B-\d+)`?", text)
+        if ids:
+            joined = _join_workstream_refs(ids)
+            return _bullet(f"This window mostly ran through {joined}.", facts=[fact])
+    return _bullet(text, facts=[fact])
+
+
 def _signal_bullet(fact: Mapping[str, Any], *, window_key: str) -> dict[str, Any]:
     summary = _strip_prefix(_fact_text(fact), "Primary execution signal:").rstrip(".")
-    widened_window = window_key == "48h"
     lower = summary.lower()
     if lower.startswith("implementation checkpoint in ") and ": completed " in lower:
         detail = summary.split(": completed ", 1)[1].strip()
         if "readme" in lower or "grounding benchmark" in lower:
             return _bullet(
-                "Over the last 48 hours, the benchmark got a firmer anchor. The README now draws a harder line around "
-                "the Grounding Benchmark, so the rest of the truth surfaces have something more stable to align to."
-                if widened_window
-                else "The benchmark got a firmer anchor this window. The README now draws a harder line around the "
-                "Grounding Benchmark, so the rest of the truth surfaces have something more stable to align to.",
-                voice="operator",
+                "The benchmark got a firmer anchor. The README now draws a harder line around the Grounding "
+                "Benchmark, so the rest of the truth surfaces have something more stable to align to.",
                 facts=[fact],
             )
         return _bullet(
-            f"{'Over the last 48 hours, a checkpoint landed' if widened_window else 'A checkpoint landed'}: {detail}.",
-            voice="operator",
+            f"{detail} is now complete.",
             facts=[fact],
         )
     if lower.startswith("added "):
         return _bullet(
-            f"{'Over the last 48 hours, proof moved into code' if widened_window else 'The latest proof moved into code'}: {summary}.",
-            voice="operator",
+            f"{summary} moved proof into code.",
             facts=[fact],
         )
     if "self-host release preflight failed" in lower and "pinned dogfood posture" in lower:
         return _bullet(
             "The most useful signal right now is still a failure: self-host preflight is refusing to bless a "
             "repo that has not come back to pinned dogfood posture.",
-            voice="operator",
             facts=[fact],
         )
     return _bullet(
-        f"{'Over the last 48 hours, the clearest signal has been' if widened_window else 'Right now the clearest signal is'} {summary}.",
-        voice="operator",
+        f"{summary} still reads the same when you widen the window to 48h." if window_key == "48h" else _sentence(summary),
         facts=[fact],
     )
 
@@ -474,32 +525,27 @@ def _checklist_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
     text = _fact_text(fact)
     match = re.search(r"checklist progress is\s+(\d+)/(\d+);", text, re.IGNORECASE)
     if not match:
-        return _bullet(text, voice="operator", facts=[fact])
+        return _bullet(text, facts=[fact])
     done_tasks = int(match.group(1))
     total_tasks = int(match.group(2))
     remaining = max(0, total_tasks - done_tasks)
     if total_tasks <= 0:
         return _bullet(
-            "The implementation shape is still being named, so the lane needs a concrete first checkpoint.",
-            voice="operator",
+            "The lane still needs a first concrete checkpoint.",
             facts=[fact],
         )
     if done_tasks <= 0:
         return _bullet(
-            "The plan is defined, but none of the checklist is closed yet.",
-            voice="operator",
+            "The plan is there, but the first checklist item is still open.",
             facts=[fact],
         )
     if remaining <= 0:
         return _bullet(
             "The scoped checklist is fully closed, so the remaining work is proving the lane cleanly.",
-            voice="operator",
             facts=[fact],
         )
     return _bullet(
-        f"This lane is still carrying real weight. {remaining} checklist items are open, so it can still sprawl if "
-        "the next checkpoint stays fuzzy.",
-        voice="operator",
+        f"{remaining} checklist items are still open.",
         facts=[fact],
     )
 
@@ -510,35 +556,19 @@ def _timeline_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
     detail = detail.rstrip(".")
     lower = detail.lower()
     if lower.startswith("projected at"):
-        return _bullet(
-            f"The schedule still matters here: {detail}, so nobody should mistake this for cleanup.",
-            voice="operator",
-            facts=[fact],
-        )
-    return _bullet(
-        f"The timing still matters here: {detail}.",
-        voice="operator",
-        facts=[fact],
-    )
+        return _bullet(_sentence(detail), facts=[fact])
+    return _bullet(_sentence(detail), facts=[fact])
 
 
 def _freshness_bullet(fact: Mapping[str, Any]) -> dict[str, Any]:
     text = _fact_text(fact)
     if text.lower().startswith("freshness signal is stale:"):
         detail = _strip_prefix(text, "Freshness signal is stale:")
-        return _bullet(
-            f"Execution proof is getting stale. {_sentence(detail)}",
-            voice="operator",
-            facts=[fact],
-        )
+        return _bullet(_sentence(detail), facts=[fact])
     if text.lower().startswith("freshness signal is aging:"):
         detail = _strip_prefix(text, "Freshness signal is aging:")
-        return _bullet(
-            f"Execution proof is aging. {_sentence(detail)}",
-            voice="operator",
-            facts=[fact],
-        )
-    return _bullet(text, voice="operator", facts=[fact])
+        return _bullet(_sentence(detail), facts=[fact])
+    return _bullet(text, facts=[fact])
 
 
 def _current_execution_bullets(
@@ -552,6 +582,7 @@ def _current_execution_bullets(
     signal = _first_fact(facts, kind="signal")
     self_host_status = _first_fact(facts, kind="self_host_status")
     portfolio_posture = _first_fact(facts, kind="portfolio_posture")
+    window_coverage = _first_fact(facts, kind="window_coverage")
     checklist = _first_fact(facts, kind="checklist")
     freshness = _first_fact(facts, kind="freshness")
     timeline = _first_fact(facts, kind="timeline")
@@ -566,6 +597,8 @@ def _current_execution_bullets(
 
     if portfolio_posture is not None:
         bullets.append(_portfolio_bullet(portfolio_posture))
+    if window_coverage is not None and len(bullets) < 4:
+        bullets.append(_window_coverage_bullet(window_coverage))
     elif signal is not None:
         bullets.append(_signal_bullet(signal, window_key=window_key))
         used_signal = True
@@ -606,20 +639,41 @@ def _next_detail(detail: str) -> str:
     cleaned = re.sub(r"^(?:to|then)\s+", "", cleaned, count=1, flags=re.IGNORECASE)
     lower = cleaned.lower()
     if "turn the next open checklist item into a named checkpoint" in lower:
-        return (
-            "name the next concrete checkpoint so the lane stops reading like a broad cleanup bucket and starts "
-            "reading like one clear operator call"
-        )
+        detail_tail = re.sub(
+            r"^turn\s+the\s+next\s+open\s+checklist\s+item\s+into\s+a\s+named\s+checkpoint(?:\s+for\s+.+?)?\s+so\s+",
+            "",
+            cleaned,
+            count=1,
+            flags=re.IGNORECASE,
+        ).rstrip(" .;:,")
+        if detail_tail != cleaned.rstrip(" .;:,"):
+            lower_tail = detail_tail.lower()
+            if "maintainer execution" in lower_tail and "consumer execution" in lower_tail:
+                return (
+                    "the next open checklist item still needs a name so the lane boundary stops blurring "
+                    "maintainer and consumer execution"
+                )
+            if len(detail_tail.split()) > 18:
+                detail_tail = " ".join(detail_tail.split()[:18]).rstrip(" ,;:")
+            return f"the next open checklist item still needs a name so {detail_tail}"
+        return "the next open checklist item still needs a name"
     if "lag the readme" in lower and "registry" in lower:
         return (
             "bring Registry and the other benchmark truth surfaces back into line with the README so the "
-            "public benchmark story is backed by governed source again"
+            "benchmark story stops drifting across surfaces"
+        )
+    if lower.startswith("bring registry, radar, atlas, compass, and the benchmark docs back into"):
+        return (
+            "bring Registry, Radar, Atlas, Compass, and the benchmark docs back into line with each other so the "
+            "benchmark story stops drifting across surfaces"
         )
     if "developer-core local coding slices" in lower or "higher-signal developer shapes" in lower:
         return (
-            "the corpus needs more developer-core local coding slices. The benchmark only gets more believable "
-            "if the workload gets closer to the hard work we actually care about"
+            "the corpus still needs more real maintainer coding work in it. Otherwise the benchmark gets cleaner "
+            "without saying much about the work people actually do"
         )
+    if "tracked corpus" in lower and "cli contract" in lower:
+        return "the corpus also needs more real maintainer coding work, starting with the CLI contract"
     if "the corpus grows beyond the current 30-scenario suite" in lower:
         return "expand the corpus beyond the current suite so the benchmark gets harder where the proof is still weak"
     if "next proof rerun must clear both cache profiles" in lower:
@@ -644,126 +698,23 @@ def _next_planned_bullets(
         same_scope = bool(workstream_id and scope_id and workstream_id == scope_id)
         next_ref = _label_ref(label)
         if next_ref and not same_scope:
-            text = f"Next up is {next_ref}: {detail_text}."
-        elif detail_text.lower().startswith("to "):
-            text = f"Next up is {detail_text}."
+            text = (
+                f"{next_ref} now needs {detail_text}."
+                if detail_text.lower().startswith("the ")
+                else f"{next_ref} now needs to {detail_text}."
+            )
         else:
-            text = f"Next up is to {detail_text}."
-        bullets.append(_bullet(text, voice="operator", facts=[forcing_function]))
+            text = _sentence(detail_text)
+        bullets.append(_bullet(text, facts=[forcing_function]))
     if follow_on is not None:
         _label, detail = _action_fact_parts(_fact_text(follow_on))
         detail_text = _next_detail(detail)
-        if detail_text.lower().startswith("to "):
-            detail_text = detail_text[3:].strip()
         bullets.append(
             _bullet(
-                f"After that, {detail_text}.",
-                voice="operator",
+                _sentence(detail_text[3:].strip() if detail_text.lower().startswith("to ") else detail_text),
                 facts=[follow_on],
             )
         )
-    return bullets[:2] if bullets else _fallback_bullets(facts, limit=2)
-
-
-def _why_this_matters_bullets(
-    facts: Sequence[Mapping[str, Any]],
-    *,
-    summary: Mapping[str, Any],
-) -> list[dict[str, Any]]:
-    executive = _first_fact(facts, kind="executive_impact") or (dict(facts[0]) if facts else None)
-    operator = _first_fact(facts, kind="operator_leverage")
-    storyline = _storyline(summary)
-    use_story = _strip_priority_lead(_clean_text(str(storyline.get("use_story", "")).strip()))
-    architecture = _strip_priority_lead(_clean_text(str(storyline.get("architecture_consequence", "")).strip()))
-    joined_story = " ".join(part for part in [use_story, architecture] if part).lower()
-    bullets: list[dict[str, Any]] = []
-    if executive is not None:
-        executive_text = _fact_text(executive)
-        lower = executive_text.lower()
-        if "is correct, but" in lower or "easy to collapse" in lower or "pinned dogfood" in lower:
-            bullets.append(
-                _bullet(
-                    "What is at stake here is trust at the moment of action. The runtime boundary itself is sound, "
-                    "but the way it is described still makes maintainers infer too much when they choose a lane.",
-                    voice="executive",
-                    facts=[executive],
-                )
-            )
-        elif "benchmark" in joined_story and (
-            "complex governed repo" in joined_story
-            or "serious coding agent" in joined_story
-            or "public proof" in joined_story
-            or "published diagnostic report" in joined_story
-        ):
-            bullets.append(
-                _bullet(
-                    "The benchmark only matters if it reflects the hard work we actually care about. Right now the "
-                    "public proof is still on hold, so the story can still outrun the governed source.",
-                    voice="executive",
-                    facts=[executive],
-                )
-            )
-        elif "benchmark" in joined_story and (
-            "hard to dismiss" in joined_story
-            or "auditable" in joined_story
-            or "anti-gaming" in joined_story
-        ):
-            bullets.append(
-                _bullet(
-                    "Once the benchmark starts carrying product claims, it has to stay honest enough that the proof is "
-                    "harder to game than the story is to tell.",
-                    voice="executive",
-                    facts=[executive],
-                )
-            )
-        else:
-            bullets.append(
-                _bullet(
-                    f"What matters here is {(use_story or executive_text).rstrip(' .')}.",
-                    voice="executive",
-                    facts=[executive],
-                )
-            )
-    if operator is not None:
-        operator_text = _fact_text(operator)
-        lower = operator_text.lower()
-        if "benchmark" in joined_story and (
-            "readme" in joined_story
-            or "governed source" in joined_story
-            or "truth surfaces" in joined_story
-        ):
-            bullets.append(
-                _bullet(
-                    "If we tighten this up, the published benchmark story stops getting ahead of the governed source.",
-                    voice="operator",
-                    facts=[operator],
-                )
-            )
-        elif "benchmark" in joined_story:
-            bullets.append(
-                _bullet(
-                    "If we get this right, benchmark gains become easier to trust because the proof stays hard, not flattering.",
-                    voice="operator",
-                    facts=[operator],
-                )
-            )
-        elif "lane matrix" in lower or "clearer contract" in lower or "coordination risk" in lower:
-            bullets.append(
-                _bullet(
-                    "Making that lane contract explicit across docs, guidance, specs, and surfaces would let operators "
-                    "act without guessing, and it would clean up release proof at the same time.",
-                    voice="operator",
-                    facts=[operator],
-                )
-            )
-        else:
-            bullets.append(
-                _bullet(
-                    f"Making the contract clearer would {_strip_priority_lead(operator_text).rstrip(' .')}.",
-                    voice="operator",
-                    facts=[operator],
-                )
-            )
     return bullets[:2] if bullets else _fallback_bullets(facts, limit=2)
 
 
@@ -774,13 +725,17 @@ def _risk_bullet(
 ) -> dict[str, Any]:
     text = _fact_text(fact)
     lower = text.lower()
-    if lower.startswith("primary blocker is an open p1 bug:"):
-        detail = _strip_prefix(text, "Primary blocker is an open P1 bug:")
+    blocker_match = re.match(r"Primary blocker is an open\s+(P\d+)\s+bug:\s*(?P<detail>.+)$", text, re.IGNORECASE)
+    if blocker_match is not None:
+        severity = str(blocker_match.group(1)).upper()
+        detail = _clean_text(str(blocker_match.group("detail")).strip())
         detail = detail.replace("forensics miss ", "forensics missing ")
         detail = detail.replace("source owned", "source-owned")
+        detail = detail.replace("mid corpus", "mid-corpus")
+        detail = detail.replace("can wedge ", "wedging ")
+        detail = detail.replace("and block ", "and blocking ")
         return _bullet(
-            f"The sharpest open risk is still the P1 around {detail.rstrip(' .')}.",
-            voice="operator",
+            f"The sharpest open risk is still the {severity} around {detail.rstrip(' .')}.",
             facts=[fact],
         )
     closure_match = re.match(
@@ -794,20 +749,27 @@ def _risk_bullet(
         storyline_label = _clean_text(str(_storyline(summary).get("flagship_lane", "")).strip())
         ref = _label_ref(label_text or storyline_label) or "this lane"
         return _bullet(
-            f"The lane can still sprawl: {remaining} plan items are open on {ref}, so the next checkpoint needs to land cleanly.",
-            voice="operator",
+            f"{remaining} plan items remain open on {ref}.",
             facts=[fact],
         )
+    if lower.startswith("primary watch item is execution coherence across "):
+        labels = [_clean_text(match.group(1)) for match in _WORKSTREAM_FRAGMENT_RE.finditer(text)]
+        left_ref = _label_ref(labels[0]) if len(labels) >= 1 else ""
+        right_ref = _label_ref(labels[1]) if len(labels) >= 2 else ""
+        if left_ref and right_ref:
+            return _bullet(
+                f"{left_ref} and {right_ref} still need to move in step. If they drift, the proof gets cleaner faster than it gets more trustworthy.",
+                facts=[fact],
+            )
     snapshot = _self_host_snapshot(summary)
     if "release gating stays blocked until" in lower and str(snapshot.get("posture", "")).strip() == "detached_source_local":
         pinned_version = str(snapshot.get("pinned_version", "")).strip() or "unknown"
         return _bullet(
             f"Release gating stays constrained while the repo is running detached `source-local` instead of the "
             f"pinned `{pinned_version}` runtime.",
-            voice="operator",
             facts=[fact],
         )
-    return _bullet(text, voice="operator", facts=[fact])
+    return _bullet(text, facts=[fact])
 
 
 def _risks_to_watch_bullets(

@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-047
-title: Odylith Tribunal Default Diagnosis Triggers, Two-Speed Execution, and Cached Case Reuse
+title: Tribunal Default Diagnosis Triggers, Two-Speed Execution, and Cached Case Reuse
 date: 2026-04-04
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: Tribunal invocation seams, validation-failure diagnosis, unsafe-closeout review, ownership and evidence-conflict handling, delivery-intelligence reasoning refresh, Remediator packet handoff, and Tribunal cache and provider-gate efficiency
 sizing: M
 complexity: High

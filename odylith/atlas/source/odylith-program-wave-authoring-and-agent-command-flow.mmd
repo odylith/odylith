@@ -1,0 +1,12 @@
+%% Reviewed 2026-04-09 for B-072/B-079 to show the thin program-wave authoring sidecar for coding agents.
+flowchart LR
+    Agent["Coding agent / maintainer"] --> Program["odylith program ..."]
+    Agent --> Wave["odylith wave ..."]
+    Umbrella["Umbrella workstream<br/>B-072"] --> Program
+    Program --> ProgramFile["B-072.execution-waves.v1.json"]
+    Wave --> ProgramFile
+    ProgramFile --> Validate["odylith validate backlog-contract"]
+    ProgramFile --> Radar["Radar + Compass<br/>execution-wave views"]
+    ProgramFile --> Context["Context Engine<br/>program + wave resolution"]
+    Program --> Next["program next / status<br/>exact next command"]
+    Wave --> Next

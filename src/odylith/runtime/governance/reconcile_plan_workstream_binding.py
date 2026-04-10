@@ -15,6 +15,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.common import log_compass_timeline_event as timeline_logger
@@ -22,6 +23,8 @@ from odylith.runtime.governance import validate_backlog_contract as backlog_cont
 
 _WORKSTREAM_RE = re.compile(r"^B-(\d{3,})$")
 _SECTION_RE = re.compile(r"^##\s+(.+?)\s*$")
+_BACKLOG_ROW_COL_COUNT = len(backlog_contract._INDEX_COLS)
+_BACKLOG_STATUS_COL_INDEX = backlog_contract._INDEX_COLS.index("status")
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -33,7 +36,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--plan-index", default="odylith/technical-plans/INDEX.md")
     parser.add_argument("--backlog-index", default="odylith/radar/source/INDEX.md")
     parser.add_argument("--ideas-root", default="odylith/radar/source/ideas")
-    parser.add_argument("--stream", default="odylith/compass/runtime/codex-stream.v1.jsonl")
+    parser.add_argument("--stream", default=agent_runtime_contract.AGENT_STREAM_PATH)
     parser.add_argument("--author", default="sync")
     parser.add_argument("--source", default="sync")
     parser.add_argument("changed_paths", nargs="*")
@@ -136,7 +139,6 @@ def _render_idea_text(*, metadata: Mapping[str, str], sections: Mapping[str, str
         "commercial_value",
         "product_impact",
         "market_value",
-        "impacted_lanes",
         "impacted_parts",
         "sizing",
         "complexity",
@@ -212,7 +214,7 @@ def _collect_table_row_indexes(lines: list[str], *, section_start: int, section_
         if stripped.startswith("| ---"):
             continue
         cells = _split_table_cells(stripped)
-        if len(cells) != 13:
+        if len(cells) != _BACKLOG_ROW_COL_COUNT:
             continue
         if cells[0].lower() == "rank" and cells[1].lower() == "idea_id":
             continue
@@ -272,7 +274,7 @@ def _move_active_row_to_execution_status(
     target_cells: list[str] = []
     for idx in active_rows:
         cells = _split_table_cells(lines[idx].strip())
-        if len(cells) == 13 and cells[1] == idea_id:
+        if len(cells) == _BACKLOG_ROW_COL_COUNT and cells[1] == idea_id:
             target_idx = idx
             target_cells = cells
             break
@@ -287,14 +289,14 @@ def _move_active_row_to_execution_status(
     next_rank = 1
     for idx in active_rows:
         cells = _split_table_cells(lines[idx].strip())
-        if len(cells) != 13:
+        if len(cells) != _BACKLOG_ROW_COL_COUNT:
             continue
         cells[0] = str(next_rank)
         next_rank += 1
         lines[idx] = _format_table_row(cells)
 
     target_cells[0] = "-"
-    target_cells[11] = normalized_status
+    target_cells[_BACKLOG_STATUS_COL_INDEX] = normalized_status
 
     exec_start, exec_end = _find_section_bounds(lines, "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)")
     exec_rows = _collect_table_row_indexes(lines, section_start=exec_start, section_end=exec_end)
@@ -363,7 +365,6 @@ def _build_successor_metadata(
         "commercial_value": str(source_metadata.get("commercial_value", "3")).strip() or "3",
         "product_impact": str(source_metadata.get("product_impact", "3")).strip() or "3",
         "market_value": str(source_metadata.get("market_value", "3")).strip() or "3",
-        "impacted_lanes": str(source_metadata.get("impacted_lanes", "both")).strip() or "both",
         "impacted_parts": str(source_metadata.get("impacted_parts", "")).strip(),
         "sizing": str(source_metadata.get("sizing", "M")).strip() or "M",
         "complexity": str(source_metadata.get("complexity", "Medium")).strip() or "Medium",
@@ -464,7 +465,6 @@ def _create_successor_workstream(
         successor_metadata["market_value"],
         successor_metadata["sizing"],
         successor_metadata["complexity"],
-        successor_metadata["impacted_lanes"],
         "planning",
         backlog_authoring._backlog_link(
             repo_root=repo_root,

@@ -36,12 +36,14 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         if isinstance(case, dict)
     }
 
-    assert len(scenarios) >= 33
-    assert len(architecture_scenarios) >= 4
+    assert len(scenarios) >= 39
+    assert len(architecture_scenarios) >= 5
     assert {
         "install_upgrade_runtime",
+        "live_proof_discipline",
         "release_publication",
         "browser_surface_reliability",
+        "context_engine_grounding",
         "daemon_security",
         "component_governance",
         "compass_brief_freshness",
@@ -63,6 +65,12 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "install-time-agent-activation-contract",
         "cli-install-first-run-onboarding-contract",
         "consumer-profile-truth-root-compatibility",
+        "context-engine-split-adaptive-grounding",
+        "context-engine-governance-boundary-grounding",
+        "context-engine-broad-scope-fail-closed",
+        "context-engine-release-resolution-grounding",
+        "live-proof-frontier-verified-control-panel",
+        "live-proof-no-fake-precision-without-a-lane",
         "product-runtime-state-js-companion-contract",
         "cross-surface-governance-sync-truth",
         "benchmark-raw-baseline-publication-contract",
@@ -72,6 +80,7 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
     }.issubset(scenario_ids)
     assert {
         "architecture-release-install-runtime-boundary",
+        "architecture-context-engine-split-boundary-contract",
         "architecture-benchmark-proof-publication-lane",
         "architecture-benchmark-honest-baseline-contract",
     }.issubset(architecture_ids)

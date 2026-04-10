@@ -18,6 +18,22 @@ _REQUIRED_BULLETS = (
     "- deferred for now:",
     "- ranking basis:",
 )
+_LEGACY_INDEX_COLS_WITH_LANES: tuple[str, ...] = (
+    "rank",
+    "idea_id",
+    "title",
+    "priority",
+    "ordering_score",
+    "commercial_value",
+    "product_impact",
+    "market_value",
+    "sizing",
+    "complexity",
+    "impacted_lanes",
+    "status",
+    "link",
+)
+_LEGACY_METADATA_FIELDS: tuple[str, ...] = ("impacted_lanes",)
 
 
 @dataclass(frozen=True)
@@ -26,6 +42,8 @@ class LegacyBacklogNormalizationResult:
     changed: bool
     added_sections: tuple[str, ...]
     normalized_sections: tuple[str, ...]
+    normalized_idea_specs: tuple[str, ...] = ()
+    normalized_table_sections: tuple[str, ...] = ()
 
 
 def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | None = None) -> LegacyBacklogNormalizationResult:
@@ -38,8 +56,11 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             changed=False,
             added_sections=(),
             normalized_sections=(),
+            normalized_idea_specs=(),
+            normalized_table_sections=(),
         )
     current_day = today or dt.date.today()
+    normalized_idea_specs = _normalize_legacy_idea_specs(idea_root=idea_root)
     ideas, _idea_errors = backlog_contract._validate_idea_specs(idea_root)  # noqa: SLF001
     snapshot = backlog_contract.load_backlog_index_snapshot(backlog_index)
     active_rows = _section_rows(snapshot.get("active", {}))
@@ -109,6 +130,10 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             changed_keys.append(idea_id)
 
     content = backlog_index.read_text(encoding="utf-8")
+    content, normalized_table_sections = _normalize_legacy_backlog_tables(
+        content=content,
+        snapshot=snapshot,
+    )
     lines = content.splitlines()
     start, end = _section_bounds(lines, "## Reorder Rationale Log")
     replacement = ["## Reorder Rationale Log", ""]
@@ -120,7 +145,7 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
     updated = _update_last_updated("\n".join(lines), today=current_day)
     if not updated.endswith("\n"):
         updated += "\n"
-    changed = updated != content
+    changed = updated != content or bool(normalized_idea_specs) or bool(normalized_table_sections)
     if changed:
         atomic_write_text(backlog_index, updated, encoding="utf-8")
     return LegacyBacklogNormalizationResult(
@@ -128,6 +153,8 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
         changed=changed,
         added_sections=tuple(added_keys),
         normalized_sections=tuple(sorted(dict.fromkeys((*changed_keys, *added_keys)))),
+        normalized_idea_specs=normalized_idea_specs,
+        normalized_table_sections=normalized_table_sections,
     )
 
 
@@ -216,15 +243,102 @@ def backlog_next_action(*, errors: Iterable[str]) -> str:
 def _section_rows(section: Any) -> list[dict[str, str]]:
     if not isinstance(section, Mapping):
         return []
+    headers_raw = section.get("headers", [])
     rows_raw = section.get("rows", [])
+    if not isinstance(headers_raw, list) or not isinstance(rows_raw, list):
+        return []
+    headers = tuple(str(cell) for cell in headers_raw)
+    if headers not in {backlog_contract._INDEX_COLS, _LEGACY_INDEX_COLS_WITH_LANES}:  # noqa: SLF001
+        return []
     if not isinstance(rows_raw, list):
         return []
     rows: list[dict[str, str]] = []
     for row in rows_raw:
-        if not isinstance(row, list) or len(row) != len(backlog_contract._INDEX_COLS):  # noqa: SLF001
+        if not isinstance(row, list) or len(row) != len(headers):
             continue
-        rows.append(dict(zip(backlog_contract._INDEX_COLS, row, strict=True)))  # noqa: SLF001
+        payload = dict(zip(headers, row, strict=True))
+        rows.append(
+            {
+                key: str(payload.get(key, "")).strip()
+                for key in backlog_contract._INDEX_COLS  # noqa: SLF001
+            }
+        )
     return rows
+
+
+def _normalize_legacy_idea_specs(*, idea_root: Path) -> tuple[str, ...]:
+    normalized: list[str] = []
+    for path in sorted(idea_root.rglob("*.md")):
+        original = path.read_text(encoding="utf-8")
+        updated = original
+        for field in _LEGACY_METADATA_FIELDS:
+            updated = _strip_legacy_metadata_field(updated, field=field)
+        if updated == original:
+            continue
+        atomic_write_text(path, updated, encoding="utf-8")
+        normalized.append(path.stem)
+    return tuple(normalized)
+
+
+def _strip_legacy_metadata_field(text: str, *, field: str) -> str:
+    lines = text.splitlines()
+    updated: list[str] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if line.strip().startswith(f"{field}:"):
+            index += 1
+            while index < len(lines) and not lines[index].strip():
+                index += 1
+            continue
+        updated.append(line)
+        index += 1
+    normalized = "\n".join(updated).strip() + "\n"
+    return normalized
+
+
+def _normalize_legacy_backlog_tables(
+    *,
+    content: str,
+    snapshot: Mapping[str, Any],
+) -> tuple[str, tuple[str, ...]]:
+    lines = content.splitlines()
+    normalized_sections: list[str] = []
+    section_pairs = (
+        ("active", snapshot.get("active", {})),
+        ("execution", snapshot.get("execution", {})),
+        ("parked", snapshot.get("parked", {})),
+        ("finished", snapshot.get("finished", {})),
+    )
+    for section_key, section in section_pairs:
+        if not isinstance(section, Mapping):
+            continue
+        headers = tuple(str(cell) for cell in section.get("headers", [])) if isinstance(section.get("headers", []), list) else ()
+        if headers not in {backlog_contract._INDEX_COLS, _LEGACY_INDEX_COLS_WITH_LANES}:  # noqa: SLF001
+            continue
+        section_title = str(section.get("section_title", "")).strip()
+        if not section_title:
+            continue
+        rows = _section_rows(section)
+        replacement = [
+            f"## {section_title}",
+            "",
+            backlog_authoring._format_table_row(backlog_contract._INDEX_COLS),  # noqa: SLF001
+            backlog_authoring._format_table_row(["---"] * len(backlog_contract._INDEX_COLS)),  # noqa: SLF001
+            *[backlog_authoring._format_table_row([row[key] for key in backlog_contract._INDEX_COLS]) for row in rows],  # noqa: SLF001
+            "",
+        ]
+        start, end = _section_bounds(lines, f"## {section_title}")
+        if start == -1:
+            continue
+        old_block = lines[start:end]
+        if old_block != replacement:
+            normalized_sections.append(section_key)
+            lines[start:end] = replacement
+    normalized = "\n".join(lines)
+    if not normalized.endswith("\n"):
+        normalized += "\n"
+    return normalized, tuple(normalized_sections)
 
 
 def _founder_override_ids(*, ideas: Mapping[str, backlog_contract.IdeaSpec], rows: Iterable[list[dict[str, str]]]) -> list[str]:

@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-021
-title: Odylith Complex-Repo Benchmark Corpus Expansion and Frontier Improvement
+title: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement
 date: 2026-03-29
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 5
-impacted_lanes: both
 impacted_parts: benchmark corpus realism, developer-first family ordering, benchmark frontier, guidance-memory recovery, warm/cold proof determinism, weak-family boundedness, benchmark graphs, README and benchmark docs narrative, and benchmark trust hardening
 sizing: L
 complexity: High
@@ -19,7 +18,7 @@ promoted_to_plan: odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith
 execution_model: standard
 workstream_type: standalone
 workstream_parent:
-workstream_children:
+workstream_children: B-068
 workstream_depends_on: B-009, B-019, B-020
 workstream_blocks:
 related_diagram_ids: D-024

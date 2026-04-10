@@ -4,6 +4,7 @@ from __future__ import annotations
 _ZERO_SUPPORT_DOC_EXPANSION_FAMILIES = frozenset(
     {
         "component_governance",
+        "context_engine_grounding",
         "compass_brief_freshness",
         "consumer_profile_compatibility",
         "cross_file_feature",
@@ -11,6 +12,7 @@ _ZERO_SUPPORT_DOC_EXPANSION_FAMILIES = frozenset(
         "exact_anchor_recall",
         "explicit_workstream",
         "governed_surface_sync",
+        "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
     }
@@ -20,6 +22,7 @@ _CURATED_DOC_OVERRIDE_FAMILIES = frozenset(
     {
         *_ZERO_SUPPORT_DOC_EXPANSION_FAMILIES,
         "cross_surface_governance_sync",
+        "live_proof_discipline",
         "release_publication",
     }
 )
@@ -69,6 +72,14 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
         ):
             return 1
         return 4
+    if normalized_family == "context_engine_grounding":
+        if lowered.endswith("/runtime/context_engine_operations.md"):
+            return 0
+        if lowered.endswith("/components/odylith-context-engine/current_spec.md"):
+            return 1
+        if lowered.endswith("/atlas/source/odylith-context-and-agent-execution-stack.mmd"):
+            return 2
+        return 4
     if normalized_family == "compass_brief_freshness":
         if lowered.endswith("/components/compass/current_spec.md"):
             return 0
@@ -90,6 +101,14 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
             return 0
         if lowered.endswith("/radar/source/index.md"):
             return 1
+        return 4
+    if normalized_family == "live_proof_discipline":
+        if lowered.endswith("/components/proof-state/current_spec.md"):
+            return 0
+        if "/casebook/bugs/" in lowered or "/technical-plans/" in lowered:
+            return 1
+        if lowered.endswith("/delivery_intelligence.v4.json"):
+            return 2
         return 4
     if normalized_family == "cross_surface_governance_sync":
         if lowered.endswith("/component_registry.v1.json") or lowered.endswith("/atlas/source/catalog/diagrams.v1.json"):

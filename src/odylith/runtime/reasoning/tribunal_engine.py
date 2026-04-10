@@ -24,6 +24,7 @@ from typing import Any
 
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.governance import operator_readout
+from odylith.runtime.governance import proof_state
 from odylith.runtime.reasoning import remediator
 from odylith.runtime.governance import workstream_inference
 
@@ -513,6 +514,11 @@ def _evidence_fingerprint(
             "changed_artifacts": list(evidence.get("changed_artifacts", [])),
         },
         "operator_readout": readout,
+        "proof_state": dict(snapshot.get("proof_state", {})) if isinstance(snapshot.get("proof_state"), Mapping) else {},
+        "proof_state_resolution": dict(snapshot.get("proof_state_resolution", {}))
+        if isinstance(snapshot.get("proof_state_resolution"), Mapping)
+        else {},
+        "claim_guard": dict(snapshot.get("claim_guard", {})) if isinstance(snapshot.get("claim_guard"), Mapping) else {},
         "evidence_refs": _normalize_refs(snapshot.get("evidence_refs", []), require_surface=False, limit=8),
         "proof_routes": _normalize_refs(readout.get("proof_refs", []), require_surface=True, limit=8),
         "diagnostics": {
@@ -666,6 +672,11 @@ def _build_observations(snapshot: Mapping[str, Any], posture: Mapping[str, Any])
         "reasoning_state": str(reasoning.get("state", "")).strip(),
         "clearance_state": str(clearance.get("state", "")).strip(),
         "render_drift": bool(diagnostics.get("render_drift", False)),
+        "proof_state": proof_state.normalize_proof_state(snapshot.get("proof_state", {})),
+        "proof_state_resolution": dict(snapshot.get("proof_state_resolution", {}))
+        if isinstance(snapshot.get("proof_state_resolution"), Mapping)
+        else {},
+        "claim_guard": dict(snapshot.get("claim_guard", {})) if isinstance(snapshot.get("claim_guard"), Mapping) else {},
         "policy_breaches": [
             {
                 "id": str(row.get("id", "")).strip(),
@@ -864,7 +875,7 @@ def _provider_gate(
             "reason_code": "outside_ai_focus",
             "reason_label": "outside AI focus cap",
             "reason_detail": (
-                f"This case stays eligible, but Codex effort is currently focused on the top {max(1, int(focus_cap))} "
+                f"This case stays eligible, but provider-backed effort is currently focused on the top {max(1, int(focus_cap))} "
                 "cases in Odylith's default focused inbox before the rest of the queue."
             ),
         }
@@ -1240,6 +1251,7 @@ def _rehydrate_cached_case(
     case["dossier"] = dict(dossier)
     case["evidence_fingerprint"] = str(fingerprint).strip()
     case["queue_row"] = queue_row
+    case["proof_reopen"] = dict(queue_row.get("proof_reopen", {})) if isinstance(queue_row.get("proof_reopen"), Mapping) else {}
     case["selection"] = dict(selection_meta) if isinstance(selection_meta, Mapping) else {}
     return case
 
@@ -1786,6 +1798,12 @@ def _case_queue_row(
     form = str(adjudication.get("form", "")).strip()
     mode = str(packet.get("execution_mode", "manual")).strip() or "manual"
     selection = dict(selection_meta) if isinstance(selection_meta, Mapping) else {}
+    resolved_proof_state = (
+        proof_state.normalize_proof_state(dossier.get("observations", {}).get("proof_state", {}))
+        if isinstance(dossier.get("observations"), Mapping)
+        else {}
+    )
+    proof_reopen = proof_state.proof_reopen_signal(resolved_proof_state)
     action_label = {
         "deterministic": "Approve and apply",
         "ai_engine": "Send to AI engine",
@@ -1815,6 +1833,14 @@ def _case_queue_row(
         "systemic_theme_tags": _normalize_strings(adjudication.get("systemic_theme_tags"), limit=4),
         "proof_routes": [operator_readout.normalize_proof_ref(row) for row in proof_routes],
         "proof_refs": [operator_readout.normalize_proof_ref(row) for row in proof_routes],
+        "proof_state": resolved_proof_state,
+        "proof_state_resolution": dict(dossier.get("observations", {}).get("proof_state_resolution", {}))
+        if isinstance(dossier.get("observations"), Mapping) and isinstance(dossier.get("observations", {}).get("proof_state_resolution"), Mapping)
+        else {},
+        "claim_guard": dict(dossier.get("observations", {}).get("claim_guard", {}))
+        if isinstance(dossier.get("observations"), Mapping) and isinstance(dossier.get("observations", {}).get("claim_guard"), Mapping)
+        else {},
+        "proof_reopen": proof_reopen,
         "selection_slot": str(selection.get("slot", "")).strip(),
         "selection_reason": str(selection.get("reason", "")).strip(),
         "selection_metrics": dict(selection.get("metrics", {})) if isinstance(selection.get("metrics"), Mapping) else {},
@@ -2078,6 +2104,12 @@ def build_tribunal_payload(
             "reasoning": reasoning_meta,
             "packet": packet,
             "queue_row": queue_row,
+            "proof_state": proof_state.normalize_proof_state(snapshot.get("proof_state", {})),
+            "proof_state_resolution": dict(snapshot.get("proof_state_resolution", {}))
+            if isinstance(snapshot.get("proof_state_resolution"), Mapping)
+            else {},
+            "claim_guard": dict(snapshot.get("claim_guard", {})) if isinstance(snapshot.get("claim_guard"), Mapping) else {},
+            "proof_reopen": dict(queue_row.get("proof_reopen", {})) if isinstance(queue_row.get("proof_reopen"), Mapping) else {},
             "selection": dict(selection_meta_by_scope.get(scope_key, {})),
         }
         cases.append(case)

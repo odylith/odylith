@@ -1,3 +1,9 @@
+    function numericProgressOrNull(value) {
+      if (value === null || value === undefined || value === "") return null;
+      const numericValue = Number(value);
+      return Number.isFinite(numericValue) ? numericValue : null;
+    }
+
     function renderExecutionWaves(payload, state) {
       const host = document.getElementById("execution-waves-host");
       if (!host) return;
@@ -45,8 +51,12 @@
           .map((row) => {
             const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
             const plan = row && typeof row.plan === "object" ? row.plan : {};
-            const progressRatio = Number(plan && plan.progress_ratio);
-            return [ideaId, Number.isFinite(progressRatio) ? progressRatio : null];
+            const progressRatio = numericProgressOrNull(
+              Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")
+                ? plan.display_progress_ratio
+                : (Object.prototype.hasOwnProperty.call(plan, "progress_ratio") ? plan.progress_ratio : null)
+            );
+            return [ideaId, progressRatio];
           })
           .filter(([ideaId]) => ideaId)
       );
@@ -63,9 +73,9 @@
       const renderMemberChip = (ideaId, options = {}) => {
         const token = String(ideaId || "").trim();
         if (!WORKSTREAM_RE.test(token)) return "";
-        const tooltip = workstreamTooltipText(token, workstreamTitles, `Scope to ${token}`);
+        const tooltip = workstreamTooltipText(token, workstreamTitles, `Open radar for ${token}`);
         const tone = options && options.selected ? " wave-member-selected" : "";
-        return `<a class="chip chip-link execution-wave-chip-link${tone}" href="${escapeHtml(compassScopeHref(token, state))}" target="_top" data-execution-wave-scope="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
+        return `<a class="chip chip-link execution-wave-chip-link${tone}" href="${escapeHtml(radarWorkstreamHref(token))}" target="_top" data-execution-wave-scope="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
       };
       const planHrefForPath = (value) => {
         const token = normalizeRepoPath(value);

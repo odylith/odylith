@@ -21,14 +21,17 @@
         "odylith/radar/source/INDEX.md",
         "odylith/technical-plans/INDEX.md"
       ],
-      "workstreams": [
-        "B-001",
-        "B-004",
-        "B-005",
-        "B-031",
-        "B-058",
-        "B-059"
-      ],
+  "workstreams": [
+    "B-001",
+    "B-004",
+    "B-005",
+    "B-031",
+    "B-058",
+    "B-059",
+    "B-062",
+    "B-063",
+    "B-072"
+  ],
       "diagrams": [
         "D-001",
         "D-002",
@@ -40,7 +43,10 @@
         "D-020",
         "D-025",
         "D-021",
-        "D-022"
+        "D-022",
+        "D-026",
+        "D-030",
+        "D-031"
       ],
       "owner": "product",
       "status": "active",
@@ -67,6 +73,9 @@
         "odylith-memory-contracts",
         "benchmark",
         "odylith-chatter",
+        "delivery-intelligence",
+        "proof-state",
+        "execution-governance",
         "subagent-router",
         "subagent-orchestrator",
         "tribunal",
@@ -122,10 +131,11 @@
         "src/odylith/runtime/governance/sync_workstream_artifacts.py",
         "odylith/radar/source"
       ],
-      "workstreams": [
-        "B-001",
-        "B-059"
-      ],
+  "workstreams": [
+    "B-001",
+    "B-059",
+    "B-063"
+  ],
       "diagrams": [
         "D-001",
         "D-004",
@@ -156,10 +166,11 @@
         "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
         "odylith/atlas/source/catalog/diagrams.v1.json"
       ],
-      "workstreams": [
-        "B-001",
-        "B-059"
-      ],
+  "workstreams": [
+    "B-001",
+    "B-059",
+    "B-063"
+  ],
       "diagrams": [
         "D-001",
         "D-002",
@@ -299,16 +310,21 @@
         "bin/release-preflight",
         "bin/release-dispatch",
         "bin/dogfood-activate",
-        "bin/consumer-rehearsal",
-        "bin/ga-gate",
-        "bin/_odylith.sh",
-        "src/odylith/runtime/governance/validate_self_host_posture.py",
-        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-        "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md"
-      ],
-      "workstreams": [
-        "B-005"
-      ],
+    "bin/consumer-rehearsal",
+    "bin/ga-gate",
+    "bin/_odylith.sh",
+    "src/odylith/runtime/governance/release_planning_authoring.py",
+    "src/odylith/runtime/governance/release_planning_contract.py",
+    "src/odylith/runtime/governance/release_planning_view_model.py",
+    "src/odylith/runtime/governance/validate_self_host_posture.py",
+    "odylith/radar/source/releases",
+    "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+    "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md"
+  ],
+  "workstreams": [
+    "B-005",
+    "B-063"
+  ],
       "diagrams": [
         "D-022"
       ],
@@ -374,12 +390,13 @@
       ],
       "workstreams": [
         "B-001",
-        "B-008",
-        "B-009",
-        "B-010",
-        "B-058",
-        "B-059"
-      ],
+    "B-008",
+    "B-009",
+    "B-010",
+    "B-058",
+    "B-059",
+    "B-063"
+  ],
       "diagrams": [
         "D-002",
         "D-004",
@@ -686,7 +703,8 @@
         "odylith/skills/subagent-orchestrator/SKILL.md"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-072"
       ],
       "diagrams": [
         "D-002",
@@ -721,7 +739,8 @@
         "odylith/skills/subagent-router/SKILL.md"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-072"
       ],
       "diagrams": [
         "D-002",
@@ -741,6 +760,73 @@
       "product_layer": "agent_execution"
     },
     {
+      "component_id": "execution-governance",
+      "name": "Execution Governance",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "execution-governance-engine",
+        "admissibility-runtime"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/execution_engine"
+      ],
+      "workstreams": [
+        "B-072"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-030",
+        "D-031"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Constraint-aware execution runtime that materializes task contracts, admissibility decisions, frontiers, closure, receipts, contradiction records, and host-aware execution hints before Odylith acts.",
+      "why_tracked": "Owns the boundary that turns grounding into governed next-action control instead of soft prompt advice.",
+      "spec_ref": "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "agent_execution"
+    },
+    {
+      "component_id": "delivery-intelligence",
+      "name": "Delivery Intelligence",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "delivery-intelligence-engine",
+        "delivery-snapshot"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/delivery/delivery_intelligence_narrator.py",
+        "odylith/runtime/delivery_intelligence.v4.json"
+      ],
+      "workstreams": [
+        "B-047",
+        "B-061",
+        "B-062",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-005",
+        "D-009",
+        "D-026"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Scope-synthesis engine that turns governed repo truth, runtime evidence, Tribunal results, and proof-state signals into one delivery snapshot consumed by sync, shell, packets, and narration.",
+      "why_tracked": "Provides the shared intelligence boundary that keeps operator readouts and downstream runtime consumers from rebuilding inconsistent scope summaries.",
+      "spec_ref": "odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    },
+    {
       "component_id": "tribunal",
       "name": "Tribunal",
       "kind": "runtime",
@@ -754,7 +840,8 @@
         "odylith/runtime/odylith-tribunal-and-remediation-design.md"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-072"
       ],
       "diagrams": [
         "D-002",
@@ -777,6 +864,37 @@
       "product_layer": "intelligence"
     },
     {
+      "component_id": "proof-state",
+      "name": "Proof State",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "live-proof-control",
+        "blocker-frontier"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/governance/proof_state",
+        ".odylith/runtime/odylith-proof-surfaces.v1.json"
+      ],
+      "workstreams": [
+        "B-062",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-026"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Split-authority live-proof control plane that keeps blocker identity, frontier movement, falsification memory, and claim tier coherent across governed truth and runtime surfaces.",
+      "why_tracked": "Turns proof discipline into a shared product contract so repeated live blocker fingerprints stay pinned instead of drifting behind adjacent progress.",
+      "spec_ref": "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    },
+    {
       "component_id": "remediator",
       "name": "Remediator",
       "kind": "runtime",
@@ -790,7 +908,8 @@
         "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-072"
       ],
       "diagrams": [
         "D-003",

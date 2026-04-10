@@ -20,6 +20,7 @@ import shutil
 import tempfile
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.memory import odylith_projection_bundle
 
@@ -53,6 +54,26 @@ _FIELD_TEXT_WEIGHTS: tuple[tuple[str, float], ...] = (
     ("path", 0.9),
     ("content", 0.35),
 )
+
+
+@contextlib.contextmanager
+def _suppress_expected_lance_bootstrap_warnings() -> Iterable[None]:
+    saved_stderr_fd: int | None = None
+    devnull_handle = None
+    try:
+        saved_stderr_fd = os.dup(2)
+        devnull_handle = open(os.devnull, "w", encoding="utf-8")
+        os.dup2(devnull_handle.fileno(), 2)
+        yield
+    finally:
+        if saved_stderr_fd is not None:
+            with contextlib.suppress(OSError):
+                os.dup2(saved_stderr_fd, 2)
+            with contextlib.suppress(OSError):
+                os.close(saved_stderr_fd)
+        if devnull_handle is not None:
+            with contextlib.suppress(OSError):
+                devnull_handle.close()
 
 
 def local_backend_root(*, repo_root: Path) -> Path:
@@ -452,6 +473,41 @@ def _projection_documents_from_tables(*, connection: Any) -> list[dict[str, Any]
                 )
             )
 
+    if _table_exists(connection, "releases"):
+        for row in connection.execute(
+            """
+            SELECT release_id, display_label, version, tag, effective_name, aliases_json, active_workstreams_json, source_path, metadata_json
+            FROM releases
+            ORDER BY release_id
+            """
+        ).fetchall():
+            metadata = _json_dict(row["metadata_json"])
+            aliases = [str(item).strip() for item in _json_list(row["aliases_json"]) if str(item).strip()]
+            active_workstreams = [str(item).strip() for item in _json_list(row["active_workstreams_json"]) if str(item).strip()]
+            documents.append(
+                _document_record(
+                    {
+                        "kind": "release",
+                        "entity_id": str(row["release_id"]).strip(),
+                        "title": str(row["display_label"]).strip() or str(row["release_id"]).strip(),
+                        "content": "\n".join(
+                            token
+                            for token in (
+                                str(row["release_id"]).strip(),
+                                str(row["version"]).strip(),
+                                str(row["tag"]).strip(),
+                                str(row["effective_name"]).strip(),
+                                " ".join(aliases),
+                                " ".join(active_workstreams),
+                                str(metadata.get("notes", "")).strip(),
+                            )
+                            if token
+                        ),
+                        "path": str(row["source_path"]).strip(),
+                    }
+                )
+            )
+
     if _table_exists(connection, "plans"):
         for row in connection.execute(
             "SELECT plan_path, source_path, search_body FROM plans ORDER BY plan_path"
@@ -570,7 +626,7 @@ def _projection_documents_from_tables(*, connection: Any) -> list[dict[str, Any]
                             )
                             if token
                         ),
-                        "path": "odylith/compass/runtime/codex-stream.v1.jsonl",
+                        "path": agent_runtime_contract.AGENT_STREAM_PATH,
                     }
                 )
             )
@@ -669,6 +725,40 @@ def _projection_documents_from_projection_tables(
                     "content": "\n".join(
                         token
                         for token in (idea_id, str(row.get("search_body", "")).strip())
+                        if token
+                    ),
+                    "path": str(row.get("source_path", "")).strip(),
+                }
+            )
+        )
+
+    for row in tables.get("releases", []) if isinstance(tables.get("releases"), list) else []:
+        if not isinstance(row, Mapping):
+            continue
+        metadata = _json_dict(row.get("metadata_json"))
+        aliases = [str(item).strip() for item in _json_list(row.get("aliases_json")) if str(item).strip()]
+        active_workstreams = [
+            str(item).strip()
+            for item in _json_list(row.get("active_workstreams_json"))
+            if str(item).strip()
+        ]
+        documents.append(
+            _document_record(
+                {
+                    "kind": "release",
+                    "entity_id": str(row.get("release_id", "")).strip(),
+                    "title": str(row.get("display_label", "")).strip() or str(row.get("release_id", "")).strip(),
+                    "content": "\n".join(
+                        token
+                        for token in (
+                            str(row.get("release_id", "")).strip(),
+                            str(row.get("version", "")).strip(),
+                            str(row.get("tag", "")).strip(),
+                            str(row.get("effective_name", "")).strip(),
+                            " ".join(aliases),
+                            " ".join(active_workstreams),
+                            str(metadata.get("notes", "")).strip(),
+                        )
                         if token
                     ),
                     "path": str(row.get("source_path", "")).strip(),
@@ -785,7 +875,7 @@ def _projection_documents_from_projection_tables(
                         )
                         if token
                     ),
-                    "path": "odylith/compass/runtime/codex-stream.v1.jsonl",
+                    "path": agent_runtime_contract.AGENT_STREAM_PATH,
                 }
             )
         )
@@ -1220,15 +1310,16 @@ def _create_lance_tables(
     temp_root = Path(tempfile.mkdtemp(prefix="odylith-lance-", dir=str(local_backend_root(repo_root=repo_root))))
     target_root = local_lance_root(repo_root=repo_root)
     try:
-        with _lance_connection(lance_root=temp_root) as db:
-            if documents:
-                db.create_table(DOCUMENTS_TABLE, data=[dict(row) for row in documents], mode="overwrite")
-            else:
-                db.create_table(DOCUMENTS_TABLE, schema=_documents_schema(), mode="overwrite")
-            if edges:
-                db.create_table(EDGES_TABLE, data=[dict(row) for row in edges], mode="overwrite")
-            else:
-                db.create_table(EDGES_TABLE, schema=_edges_schema(), mode="overwrite")
+        with _suppress_expected_lance_bootstrap_warnings():
+            with _lance_connection(lance_root=temp_root) as db:
+                if documents:
+                    db.create_table(DOCUMENTS_TABLE, data=[dict(row) for row in documents], mode="overwrite")
+                else:
+                    db.create_table(DOCUMENTS_TABLE, schema=_documents_schema(), mode="overwrite")
+                if edges:
+                    db.create_table(EDGES_TABLE, data=[dict(row) for row in edges], mode="overwrite")
+                else:
+                    db.create_table(EDGES_TABLE, schema=_edges_schema(), mode="overwrite")
         if target_root.exists():
             shutil.rmtree(target_root)
         temp_root.rename(target_root)

@@ -29,7 +29,7 @@ def test_evaluation_ledger_summarizes_good_recent_events(tmp_path: Path) -> None
                 "evidence_diversity_score": 3,
                 "density_per_1k_tokens": 21.0,
                 "estimated_tokens": 2100,
-                "odylith_execution_profile": "codex_high",
+                "odylith_execution_profile": "write_high",
                 "odylith_execution_model": "gpt-5.3-codex",
                 "odylith_execution_reasoning_effort": "high",
                 "odylith_execution_delegate_preference": "delegate",
@@ -133,7 +133,7 @@ def test_evaluation_ledger_degrades_confidence_for_stale_and_conflicted_history(
                 "reasoning_readiness_score": 3,
                 "deep_reasoning_ready": True,
                 "evidence_diversity_score": 3,
-                "odylith_execution_profile": "codex_high",
+                "odylith_execution_profile": "write_high",
             },
             benchmark_summary={
                 "matched_case_count": 1,
@@ -186,7 +186,7 @@ def test_optimization_snapshot_exposes_learning_loop(tmp_path: Path) -> None:
                 "evidence_diversity_score": 2,
                 "density_per_1k_tokens": 2.1,
                 "estimated_tokens": 1800,
-                "odylith_execution_profile": "codex_high",
+                "odylith_execution_profile": "write_high",
             },
             benchmark_summary={
                 "matched_case_count": 1,
@@ -622,7 +622,7 @@ def test_router_promotes_grounded_bounded_write_when_depth_is_earned(tmp_path: P
                         "parallelism_hint": "serial_preferred",
                     },
                     "odylith_execution_profile": {
-                        "profile": "codex_high",
+                        "profile": "write_high",
                         "model": "gpt-5.3-codex",
                         "reasoning_effort": "high",
                         "agent_role": "worker",

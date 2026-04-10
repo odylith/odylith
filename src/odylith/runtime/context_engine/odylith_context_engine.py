@@ -159,6 +159,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--kind",
         choices=(
             "workstream",
+            "release",
             "plan",
             "bug",
             "diagram",
@@ -172,7 +173,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="",
         help="Optional explicit entity kind.",
     )
-    context.add_argument("--event-limit", type=int, default=2, help="Maximum linked Codex events to return.")
+    context.add_argument("--event-limit", type=int, default=2, help="Maximum linked agent events to return.")
     context.add_argument("--relation-limit", type=int, default=2, help="Maximum relation rows to return.")
 
     impact = subparsers.add_parser("impact", help="Resolve architecture impact for one or more changed paths.")
@@ -237,7 +238,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
     session_brief = subparsers.add_parser(
         "session-brief",
-        help="Build one deterministic Codex session dossier and refresh the local session heartbeat.",
+        help="Build one deterministic coding-agent session dossier and refresh the local session heartbeat.",
     )
     session_brief.add_argument("paths", nargs="*", help="Optional explicit repo-relative changed paths.")
     session_brief.add_argument("--working-tree", action="store_true", help="Include meaningful changed paths from the git working tree.")
@@ -327,7 +328,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
     benchmark = subparsers.add_parser(
         "benchmark",
-        help="Run the local Codex benchmark harness with explicit quick versus proof profiles.",
+        help="Run the local benchmark harness with explicit quick versus proof profiles.",
     )
     benchmark.add_argument(
         "--profile",
@@ -336,7 +337,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help=(
             "Benchmark profile to run. `quick` is the default live matched-pair developer lane; "
             "`proof` is the full-corpus live publication proof for `odylith_on` versus `odylith_off`; "
-            "`diagnostic` isolates packet and prompt creation without running the live Codex pair."
+            "`diagnostic` isolates packet and prompt creation without running the live host pair."
         ),
     )
     benchmark.add_argument(
@@ -346,7 +347,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=tuple(odylith_benchmark_runner.PUBLIC_CLI_MODES),
         help=(
             "Benchmark mode to run (repeatable). Defaults follow the selected profile; "
-            "use `odylith_off` for the raw Codex CLI lane."
+            "use `odylith_off` for the raw host CLI lane."
         ),
     )
     benchmark.add_argument(

@@ -89,6 +89,45 @@ def _release_story_notes_label(story: Mapping[str, Any]) -> str:
     return _release_story_label(story, "notes_label", fallback="Open release note on GitHub")
 
 
+def _append_unique_release_copy(items: list[str], value: Any, *, limit: int = 180) -> None:
+    token = _normalize_release_copy(value, limit=limit)
+    if token and token not in items:
+        items.append(token)
+
+
+def _release_story_body_candidates(story: Mapping[str, Any], *, limit: int = 4) -> list[str]:
+    body = str(story.get("release_body") or "").strip()
+    if not body:
+        return []
+    candidates: list[str] = []
+    for raw_line in body.splitlines():
+        line = str(raw_line or "").strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith(("- ", "* ", "+ ")):
+            line = line[2:].strip()
+        else:
+            numbered = re.match(r"^\d+\.\s+(?P<text>.+)$", line)
+            if numbered is None:
+                continue
+            line = str(numbered.group("text") or "").strip()
+        _append_unique_release_copy(candidates, line)
+        if len(candidates) >= limit:
+            return candidates[:limit]
+    for paragraph in re.split(r"\n\s*\n", body):
+        _append_unique_release_copy(candidates, paragraph)
+        if len(candidates) >= limit:
+            return candidates[:limit]
+    normalized_body = _normalize_release_copy(body, limit=None)
+    if not normalized_body:
+        return candidates[:limit]
+    for sentence in re.split(r"(?<=[.!?])\s+", normalized_body):
+        _append_unique_release_copy(candidates, sentence)
+        if len(candidates) >= limit:
+            break
+    return candidates[:limit]
+
+
 def _release_story_meta_tokens(*, from_version: str, to_version: str, published_at: str) -> list[str]:
     tokens: list[str] = []
     if from_version and to_version and from_version != to_version:
@@ -101,20 +140,29 @@ def _release_story_meta_tokens(*, from_version: str, to_version: str, published_
     return tokens
 
 
-def _release_story_bullets(*, highlights: Sequence[str], detail: str, limit: int = 4) -> list[str]:
+def _release_story_bullets(
+    *,
+    story: Mapping[str, Any],
+    highlights: Sequence[str],
+    summary: str,
+    detail: str,
+    minimum: int = 2,
+    limit: int = 4,
+) -> list[str]:
     bullets: list[str] = []
     for raw in highlights:
-        item = _normalize_release_copy(raw, limit=None)
-        if not item or item in bullets:
-            continue
-        bullets.append(item)
+        _append_unique_release_copy(bullets, raw)
         if len(bullets) >= limit:
             return bullets[:limit]
-    if bullets:
-        return bullets[:limit]
-    fallback = _normalize_release_copy(detail, limit=None)
-    if fallback:
-        bullets.append(fallback)
+    if len(bullets) < minimum:
+        _append_unique_release_copy(bullets, detail)
+    if len(bullets) < minimum:
+        _append_unique_release_copy(bullets, summary)
+    if len(bullets) < minimum:
+        for candidate in _release_story_body_candidates(story, limit=max(limit, minimum) + 2):
+            _append_unique_release_copy(bullets, candidate)
+            if len(bullets) >= minimum:
+                break
     return bullets[:limit]
 
 
@@ -154,7 +202,9 @@ def render_release_spotlight_html(payload: Mapping[str, Any]) -> str:
     if not summary and highlights:
         summary = highlights[0]
     bullet_items = _release_story_bullets(
+        story=spotlight,
         highlights=[item for item in highlights if item != summary],
+        summary=summary,
         detail=detail,
     )
     notes_url = str(spotlight.get("notes_url", "")).strip()
@@ -165,7 +215,11 @@ def render_release_spotlight_html(payload: Mapping[str, Any]) -> str:
         to_version=to_version,
         published_at=published_at_raw,
     )
-    summary_html = f'<p class="upgrade-spotlight-story-summary">{html.escape(summary)}</p>' if summary else ""
+    summary_html = (
+        f'<p class="upgrade-spotlight-story-summary">{html.escape(summary)}</p>'
+        if summary and summary not in bullet_items
+        else ""
+    )
     bullet_list_html = (
         '<ul class="upgrade-spotlight-list">'
         + "".join(f"<li>{html.escape(item)}</li>" for item in bullet_items)

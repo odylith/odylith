@@ -1,0 +1,97 @@
+{
+  "umbrella_id": "B-072",
+  "version": "v1",
+  "waves": [
+    {
+      "wave_id": "W1",
+      "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+      "status": "active",
+      "summary": "Stand up the event-sourced execution contract, host-profile envelope, and hard-constraint promotion while carrying the thin program/wave authoring sidecar in band.",
+      "depends_on": [],
+      "primary_workstreams": [
+        "B-073"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [
+        "B-079"
+      ],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W2",
+      "label": "Admissibility Policy Middleware and Re-Anchor Triggers",
+      "status": "planned",
+      "summary": "Add `admit|deny|defer` policy decisions in front of execution surfaces and trigger re-anchor after repeated drift or contradiction.",
+      "depends_on": [
+        "W1"
+      ],
+      "primary_workstreams": [
+        "B-074"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W3",
+      "label": "Frontier Extraction, User-Correction Invariants, and Critical-Path Modes",
+      "status": "planned",
+      "summary": "Derive one truthful frontier and explicit execution modes so verify/recover lanes stop branching indefinitely.",
+      "depends_on": [
+        "W2"
+      ],
+      "primary_workstreams": [
+        "B-075"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W4",
+      "label": "Resource Closure Analysis and Destructive-Subset Blocking",
+      "status": "planned",
+      "summary": "Compute safe, incomplete, and destructive scope for the first resource domains instead of relying on operator intuition.",
+      "depends_on": [
+        "W3"
+      ],
+      "primary_workstreams": [
+        "B-076"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W5",
+      "label": "External Dependency Semantics, Receipts, and Resumability",
+      "status": "planned",
+      "summary": "Normalize semantic wait states, emit receipts, and default reruns to reattachment when work is already in flight.",
+      "depends_on": [
+        "W3"
+      ],
+      "primary_workstreams": [
+        "B-077"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W6",
+      "label": "Validation Matrix Synthesis, Contradiction Detection, and History-Based Failure Blocking",
+      "status": "planned",
+      "summary": "Close the loop with validation synthesis, contradiction records, and executable preflight rules from known failure classes.",
+      "depends_on": [
+        "W4",
+        "W5"
+      ],
+      "primary_workstreams": [
+        "B-078"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    }
+  ]
+}

@@ -1,13 +1,12 @@
 ---
-status: implementation
+status: finished
 idea_id: B-061
-title: Odylith Reasoning Package Boundary and Benchmark Separation
+title: Reasoning Package Boundary and Benchmark Separation
 date: 2026-04-07
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 3
-impacted_lanes: both
 impacted_parts: Tribunal and Remediator packaging, shared reasoning provider adapters, benchmark live execution and isolation, Atlas catalog freshness, delivery intelligence imports, Registry traceability, sync hardening, browser-surface reproof, and strict package-boundary cleanup
 sizing: M
 complexity: High
@@ -15,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Benchmark proof and Tribunal diagnosis are now tightly coupled in code even though they are different product concerns. A clean package boundary is the lowest-risk way to keep benchmark harness work from accreting more reasoning internals while preserving the current runtime contract.
 confidence: medium
 founder_override: no
-promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md
 execution_model: standard
 workstream_type: standalone
 workstream_parent:

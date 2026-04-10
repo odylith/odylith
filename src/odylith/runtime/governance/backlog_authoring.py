@@ -8,13 +8,13 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 _WORKSTREAM_RE = re.compile(r"^B-(\d{3,})$")
 _SECTION_RE = re.compile(r"^##\s+(.+?)\s*$")
 _DEFAULT_PRIORITY = "P1"
-_DEFAULT_IMPACTED_LANES = "both"
 _DEFAULT_SIZING = "M"
 _DEFAULT_COMPLEXITY = "Medium"
 _DEFAULT_CONFIDENCE = "medium"
@@ -53,7 +53,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--commercial-value", type=int, default=3)
     parser.add_argument("--product-impact", type=int, default=3)
     parser.add_argument("--market-value", type=int, default=3)
-    parser.add_argument("--impacted-lanes", default=_DEFAULT_IMPACTED_LANES)
+    parser.add_argument("--impacted-lanes", default="", help=argparse.SUPPRESS)
     parser.add_argument("--impacted-parts", default="odylith")
     parser.add_argument("--sizing", default=_DEFAULT_SIZING)
     parser.add_argument("--complexity", default=_DEFAULT_COMPLEXITY)
@@ -158,7 +158,6 @@ def _render_idea_text(*, metadata: Mapping[str, str], sections: Mapping[str, str
         "commercial_value",
         "product_impact",
         "market_value",
-        "impacted_lanes",
         "impacted_parts",
         "sizing",
         "complexity",
@@ -282,7 +281,6 @@ def _build_metadata(
         "commercial_value": str(int(args.commercial_value)),
         "product_impact": str(int(args.product_impact)),
         "market_value": str(int(args.market_value)),
-        "impacted_lanes": str(args.impacted_lanes).strip(),
         "impacted_parts": str(args.impacted_parts).strip(),
         "sizing": str(args.sizing).strip(),
         "complexity": str(args.complexity).strip(),
@@ -440,7 +438,7 @@ def create_queued_backlog_items(
         backlog_index_path=backlog_index_path,
         ideas_root=ideas_root,
     )
-    ideas, idea_errors = backlog_contract._validate_idea_specs(ideas_root)
+    ideas, idea_errors = backlog_contract._validate_idea_specs(ideas_root, repo_root=repo_root)
     if idea_errors:
         raise ValueError("; ".join(idea_errors))
     _, _, _, _, _, index_errors = backlog_contract._validate_backlog_index(
@@ -466,7 +464,10 @@ def create_queued_backlog_items(
     mutable_ideas = dict(ideas)
     reserved_paths: set[Path] = set()
     for raw_title in titles:
-        title = str(raw_title).strip()
+        title = backlog_title_contract.normalize_workstream_title(
+            title=str(raw_title).strip(),
+            repo_root=repo_root,
+        )
         if not title:
             raise ValueError("backlog titles must be non-empty")
         idea_id = _next_workstream_id(mutable_ideas)
@@ -503,7 +504,6 @@ def create_queued_backlog_items(
                 "market_value": str(row["market_value"]).strip(),
                 "sizing": str(row["sizing"]).strip(),
                 "complexity": str(row["complexity"]).strip(),
-                "impacted_lanes": str(row["impacted_lanes"]).strip(),
                 "status": "queued",
                 "link": str(row["link"]).strip(),
                 "existing_order": ordinal,
@@ -523,7 +523,6 @@ def create_queued_backlog_items(
                 "market_value": metadata["market_value"],
                 "sizing": metadata["sizing"],
                 "complexity": metadata["complexity"],
-                "impacted_lanes": metadata["impacted_lanes"],
                 "status": "queued",
                 "link": _backlog_link(
                     repo_root=repo_root,
@@ -567,7 +566,6 @@ def create_queued_backlog_items(
                 str(row["market_value"]).strip(),
                 str(row["sizing"]).strip(),
                 str(row["complexity"]).strip(),
-                str(row["impacted_lanes"]).strip(),
                 "queued",
                 str(row["link"]).strip(),
             ]

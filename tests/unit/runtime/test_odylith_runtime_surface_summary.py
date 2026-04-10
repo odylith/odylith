@@ -58,7 +58,7 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
                 "advised_retrieval_focus": "balanced",
                 "advised_speed_mode": "accelerate_grounded",
                 "intent_family": "implementation",
-                "odylith_execution_profile": "gpt54_high",
+                "odylith_execution_profile": "frontier_high",
                 "odylith_execution_selection_mode": "critical_accuracy",
                 "odylith_execution_delegate_preference": "delegate",
                 "odylith_execution_source": "odylith_runtime_packet",
@@ -203,7 +203,7 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["evaluation_architecture_satisfied_case_count"] == 3
     assert summary["evaluation_architecture_coverage_rate"] == 1.0
     assert summary["evaluation_architecture_satisfaction_rate"] == 1.0
-    assert summary["latest_execution_profile"] == "gpt54_high"
+    assert summary["latest_execution_profile"] == "frontier_high"
     assert summary["latest_packet_strategy"] == "density_first"
     assert summary["latest_budget_mode"] == "spend_when_grounded"
     assert summary["latest_speed_mode"] == "accelerate_grounded"

@@ -21,16 +21,17 @@
     "D-016",
     "D-017",
     "D-019",
-    "D-024"
+    "D-024",
+    "D-026"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 4,
     "mapped_workstream_evidence_count": 4,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 4
+    "timeline_event_count": 5
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -39,6 +40,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/reasoning/tribunal_engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 80,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/reasoning/tribunal_engine.py",
+      "ts_iso": "2026-04-09T12:43:49-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
@@ -221,6 +238,7 @@
     "B-045",
     "B-046",
     "B-047",
-    "B-061"
+    "B-061",
+    "B-062"
   ]
 }

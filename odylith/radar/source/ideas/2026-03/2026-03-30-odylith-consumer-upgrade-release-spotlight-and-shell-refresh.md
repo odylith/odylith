@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-030
-title: Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh
+title: Consumer Upgrade, Reinstall Recovery, and Shell Refresh
 date: 2026-03-30
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: service
 impacted_parts: upgrade and reinstall CLI, launcher recovery, tooling dashboard refresh, default Compass refresh, Atlas diagnostics, release spotlight payload, Mermaid worker failure handling, and shell upgrade UX
 sizing: L
 complexity: High

@@ -177,7 +177,6 @@ def test_sync_parser_accepts_legacy_shape_aliases(tmp_path: Path) -> None:
     assert args.repo_root == str(tmp_path)
     assert args.check_only is True
     assert args.registry_policy_mode == "enforce-critical"
-    assert args.compass_refresh_profile == "shell-safe"
 
 
 def test_print_execution_plan_condenses_dirty_overlap_without_verbose(capsys) -> None:  # noqa: ANN001
@@ -427,6 +426,7 @@ def test_check_only_sync_skips_runtime_fast_path_and_warmup(tmp_path: Path, monk
 
 def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tmp_path: Path, monkeypatch) -> None:
     executed: list[tuple[str, ...]] = []
+    compass_calls: list[dict[str, object]] = []
 
     def _fake_run_command(
         *,
@@ -440,6 +440,17 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
 
     monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
     monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.compass_refresh_runtime,
+        "run_refresh",
+        lambda **kwargs: compass_calls.append(dict(kwargs))
+        or {
+            "rc": 0,
+            "status": "queued",
+            "request_id": "compass-1",
+            "state": {"next_command": "odylith compass refresh --repo-root . --status"},
+        },
+    )
 
     rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=tmp_path,
@@ -452,12 +463,17 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
     modules = [command[2] for command in executed if len(command) >= 3 and command[0] == "python" and command[1] == "-m"]
     assert "odylith.runtime.governance.delivery_intelligence_engine" in modules
     assert "odylith.runtime.surfaces.render_backlog_ui" in modules
-    assert "odylith.runtime.surfaces.render_compass_dashboard" in modules
     assert "odylith.runtime.surfaces.render_tooling_dashboard" in modules
-    compass_commands = [command for command in executed if "odylith.runtime.surfaces.render_compass_dashboard" in command]
-    assert compass_commands
-    assert "--refresh-profile" in compass_commands[0]
-    assert compass_commands[0][compass_commands[0].index("--refresh-profile") + 1] == "shell-safe"
+    assert compass_calls == [
+        {
+            "repo_root": tmp_path,
+            "requested_profile": "shell-safe",
+            "requested_runtime_mode": "auto",
+            "wait": False,
+            "status_only": False,
+            "emit_output": True,
+        }
+    ]
     assert "odylith.runtime.governance.sync_component_spec_requirements" not in modules
     assert "odylith.runtime.surfaces.render_registry_dashboard" not in modules
 
@@ -563,10 +579,46 @@ def test_dashboard_refresh_plan_says_tooling_shell_does_not_rerender_compass(
         == (
             "`tooling_shell` refresh rerenders the parent shell wrapper only. "
             "It does not rewrite `odylith/compass/runtime/current.v1.json`; if the visible Compass brief is stale, run "
-            "odylith dashboard refresh --repo-root . --surfaces compass"
+            "odylith compass refresh --repo-root ."
         )
         for note in plan.notes
     )
+
+
+def test_check_only_sync_plan_reports_visible_compass_runtime_truth_drift(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        sync_workstream_artifacts.release_truth_runtime,
+        "build_compass_runtime_truth_drift",
+        lambda **_kwargs: {
+            "warning": (
+                "Release truth for 0.1.11 now targets B-068 and completes B-067, while the visible Compass snapshot "
+                "targets B-067 and completes none. Run `odylith compass refresh --repo-root .` to refresh the Compass runtime snapshot."
+            )
+        },
+    )
+    runtime_dir = tmp_path / "odylith" / "compass" / "runtime"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    (runtime_dir / "current.v1.json").write_text("{}\n", encoding="utf-8")
+
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=True,
+            force=False,
+            impact_mode="focused",
+            registry_policy_mode="warn",
+            enforce_deep_skills=False,
+            no_traceability_autofix=False,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=(),
+        impact=SimpleNamespace(atlas=False),
+        impact_tooling_shell=False,
+        runtime_mode="standalone",
+    )
+
+    assert any(note.startswith("Visible Compass runtime drift: Release truth for 0.1.11 now targets B-068") for note in plan.notes)
 
 
 def test_dashboard_refresh_retries_auto_surface_with_standalone_fallback(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -603,6 +655,18 @@ def test_dashboard_refresh_continues_after_surface_failure_and_returns_non_zero(
         return 0
 
     monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.compass_refresh_runtime,
+        "run_refresh",
+        lambda **kwargs: {
+            "rc": 1,
+            "status": "failed",
+            "request_id": "compass-1",
+            "state": {
+                "next_command": "odylith compass refresh --repo-root . --wait"
+            },
+        },
+    )
 
     rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=tmp_path,
@@ -613,59 +677,56 @@ def test_dashboard_refresh_continues_after_surface_failure_and_returns_non_zero(
 
     assert rc == 2
     modules = [command[2] for command in executed if len(command) >= 3 and command[0] == "python" and command[1] == "-m"]
-    assert "odylith.runtime.surfaces.render_compass_dashboard" in modules
     assert "odylith.runtime.surfaces.render_backlog_ui" in modules
     assert "odylith.runtime.surfaces.render_tooling_dashboard" in modules
     assert "- compass: failed" in output
     assert "- radar: passed" in output
     assert "- tooling_shell: passed" in output
-    assert "next: odylith dashboard refresh --repo-root . --surfaces compass --compass-refresh-profile shell-safe" in output
+    assert "next: odylith compass refresh --repo-root . --wait" in output
 
 
-def test_dashboard_refresh_full_compass_uses_deeper_timeout_and_marks_failed_payload(
+def test_dashboard_refresh_compass_uses_shared_engine_queue_and_reports_failure(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
-    executed: list[tuple[tuple[str, ...], float | None]] = []
-    marked_failure: dict[str, object] = {}
-
-    def _fake_run_command(
-        *,
-        repo_root: Path,
-        args: tuple[str, ...],
-        heartbeat_label: str = "",
-        timeout_seconds: float | None = None,
-    ) -> int:  # noqa: ARG001
-        executed.append((tuple(args), timeout_seconds))
-        return 124
-
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    refresh_calls: list[dict[str, object]] = []
     monkeypatch.setattr(
-        sync_workstream_artifacts.dashboard_refresh_contract,
-        "mark_compass_refresh_failure",
-        lambda **kwargs: marked_failure.update(kwargs) or True,
+        sync_workstream_artifacts,
+        "_run_command",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Compass compatibility path should not shell out directly")),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.compass_refresh_runtime,
+        "run_refresh",
+        lambda **kwargs: refresh_calls.append(dict(kwargs))
+        or {
+            "rc": 124,
+            "status": "failed",
+            "request_id": "compass-refresh",
+            "state": {
+                "next_command": "odylith compass refresh --repo-root . --wait"
+            },
+        },
     )
 
     rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=tmp_path,
         surfaces=("compass",),
         runtime_mode="standalone",
-        compass_refresh_profile="full",
     )
     output = capsys.readouterr().out
 
     assert rc == 2
-    assert executed
-    command, timeout_seconds = executed[0]
-    assert "odylith.runtime.surfaces.render_compass_dashboard" in command
-    assert timeout_seconds == sync_workstream_artifacts.dashboard_refresh_contract.COMPASS_FULL_REFRESH_TIMEOUT_SECONDS
-    assert marked_failure == {
-        "repo_root": tmp_path,
-        "runtime_mode": "standalone",
-        "requested_profile": "full",
-        "rc": 124,
-        "fallback_used": False,
-    }
-    assert "next: odylith dashboard refresh --repo-root . --surfaces compass --compass-refresh-profile full" in output
+    assert refresh_calls == [
+        {
+            "repo_root": tmp_path,
+            "requested_profile": "shell-safe",
+            "requested_runtime_mode": "standalone",
+            "wait": False,
+            "status_only": False,
+            "emit_output": True,
+        }
+    ]
+    assert "next: odylith compass refresh --repo-root . --wait" in output
 
 
 def test_run_command_terminates_timed_out_child_process(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -926,6 +987,8 @@ def test_sync_preflight_summarizes_backlog_contract_blockers(monkeypatch, tmp_pa
             changed=True,
             normalized_sections=("B-001", "B-002"),
             added_sections=("B-002",),
+            normalized_idea_specs=(),
+            normalized_table_sections=(),
             backlog_index=tmp_path / "odylith" / "radar" / "source" / "INDEX.md",
         ),
     )
@@ -990,13 +1053,20 @@ def test_sync_auto_normalizes_legacy_backlog_before_continuing(monkeypatch, tmp_
     rc = sync_workstream_artifacts.main(["--repo-root", str(repo_root), "--force", "--dry-run"])
     output = capsys.readouterr().out
     backlog_index = (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+    queued_idea = (
+        repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-06-legacy-sync-fix.md"
+    ).read_text(encoding="utf-8")
 
     assert rc == 0
     assert "workstream sync legacy normalization" in output
     assert "- added_sections: " in output
+    assert "- idea_schema_updates: 2" in output
+    assert "- table_schema_updates: 3" in output
     assert "- source: odylith/radar/source/INDEX.md" in output
     assert "odylith sync did not complete." not in output
     assert "workstream sync dry-run" in output
+    assert "impacted_lanes" not in backlog_index
+    assert "impacted_lanes" not in queued_idea
     assert "- expected outcome: clearer product truth and faster follow-on implementation planning." in backlog_index
     assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." in backlog_index
     assert "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream." in backlog_index

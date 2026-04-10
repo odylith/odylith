@@ -56,8 +56,8 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
     BenchmarkFamilyGroup(
         key="governance_release_integrity",
         label="Governance / Release Integrity",
-        description="Benchmark, Registry, Atlas, and release-proof integrity work.",
-        families=("component_governance", "release_publication"),
+        description="Benchmark, Registry, Atlas, release-proof, and live-proof integrity work.",
+        families=("component_governance", "live_proof_discipline", "release_publication"),
     ),
     BenchmarkFamilyGroup(
         key="architecture_review",
@@ -71,6 +71,7 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
         description="Control-plane and narrowing discipline families that explain how Odylith stays bounded.",
         families=(
             "broad_shared_scope",
+            "context_engine_grounding",
             "exact_path_ambiguity",
             "exact_anchor_recall",
             "explicit_workstream",

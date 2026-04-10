@@ -13,6 +13,14 @@ from odylith.install.state import ProductVersionPin, load_version_pin, version_p
 
 _PACKAGE_INIT_RELATIVE = Path("src/odylith/__init__.py")
 _PIN_RELATIVE = Path("odylith/runtime/source/product-version.v1.json")
+_SECURITY_OVERVIEW_RELATIVE = Path("SECURITY.md")
+_PRODUCT_SECURITY_POSTURE_RELATIVE = Path("odylith/SECURITY_POSTURE.md")
+_BUNDLED_SECURITY_POSTURE_RELATIVE = Path("src/odylith/bundle/assets/odylith/SECURITY_POSTURE.md")
+_RELEASE_SECURITY_DOCS = (
+    _SECURITY_OVERVIEW_RELATIVE,
+    _PRODUCT_SECURITY_POSTURE_RELATIVE,
+    _BUNDLED_SECURITY_POSTURE_RELATIVE,
+)
 _PACKAGE_VERSION_RE = re.compile(r'^__version__\s*=\s*["\'](?P<version>[^"\']+)["\']\s*$', re.MULTILINE)
 
 
@@ -87,6 +95,35 @@ def validate_version_truth(*, repo_root: str | Path) -> list[str]:
     return errors
 
 
+def _normalize_release_version(version: str) -> str:
+    normalized = str(version or "").strip()
+    if normalized.startswith("v"):
+        normalized = normalized[1:]
+    return normalized
+
+
+def validate_release_security_docs(*, repo_root: str | Path, expected_version: str) -> list[str]:
+    truth = collect_version_truth(repo_root=repo_root)
+    if not truth.is_product_repo:
+        return []
+    normalized_version = _normalize_release_version(expected_version)
+    if not normalized_version:
+        raise ValueError("expected release version is required")
+    expected_tag = f"v{normalized_version}"
+    errors: list[str] = []
+    for relative_path in _RELEASE_SECURITY_DOCS:
+        path = truth.repo_root / relative_path
+        if not path.is_file():
+            errors.append(f"missing release-facing security doc `{relative_path.as_posix()}`")
+            continue
+        text = path.read_text(encoding="utf-8")
+        if expected_tag not in text:
+            errors.append(
+                f"release-facing security doc `{relative_path.as_posix()}` does not mention expected release `{expected_tag}`"
+            )
+    return errors
+
+
 def render_package_init(*, version: str) -> str:
     normalized = str(version or "").strip()
     return (
@@ -145,6 +182,11 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("show", help="Show current version truth.")
     subparsers.add_parser("check", help="Fail when generated version truth drifts from pyproject.")
     subparsers.add_parser("sync", help="Regenerate version truth files from pyproject.")
+    release_check = subparsers.add_parser(
+        "release-check",
+        help="Fail when release-facing security docs do not mention the expected release version.",
+    )
+    release_check.add_argument("--expected-version", required=True)
     return parser
 
 
@@ -177,8 +219,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             if not changed:
                 print("- updated: <none>")
             return 0
+        if args.command == "release-check":
+            errors = validate_release_security_docs(repo_root=repo_root, expected_version=args.expected_version)
+            if errors:
+                print("odylith release security docs FAILED")
+                for item in errors:
+                    print(f"- {item}")
+                return 2
+            print("odylith release security docs passed")
+            print(f"- expected_version: v{_normalize_release_version(args.expected_version)}")
+            return 0
         raise ValueError(f"unsupported command: {args.command}")
     except ValueError as exc:
         print(f"error: {exc}")
         return 2
-

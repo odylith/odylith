@@ -120,8 +120,20 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Human Readout" not in app_js
     assert "Nearby Change Guidance" not in app_js
     assert "Inspect Next" not in app_js
+    assert ".component-subtitle, .ref-meta {" in html
+    assert "font-size: var(--surface-identifier-font-size, 14px);" in html
+    assert "font-weight: var(--surface-identifier-font-weight, 500);" in html
+    assert ".bug-row-kicker {" in html
+    assert ".bug-row-kicker, .detail-kicker {" not in html
+    assert "text-transform: uppercase;" in html
+    assert ".action-chip {" in html
+    assert "padding: var(--surface-deep-link-button-padding, 4px 12px);" in html
+    assert "font-size: var(--surface-deep-link-button-font-size, 11px);" in html
+    assert "font-weight: var(--surface-deep-link-button-font-weight, 700);" in html
     assert 'data-summary-field="${escapeHtml(label)}"' in app_js
     assert '<div class="summary-facts" role="list">${summaryFacts}</div>' in app_js
+    assert '["Bug ID", row.bug_id || "-"]' in app_js
+    assert '${detail.bug_id ? `<p class="detail-kicker">${escapeHtml(detail.bug_id)}</p>` : ""}' not in app_js
     assert app_js.index('<div class="summary-facts" role="list">${summaryFacts}</div>') < app_js.index("${summary}")
     assert "function normalizeSearchToken(value)" in app_js
     assert "function canonicalizeBugIdToken(value)" in app_js
@@ -197,3 +209,183 @@ def test_casebook_payload_dedupes_overlapping_proof_links_from_evidence_refs(tmp
     assert bug["code_ref_links"]
     assert bug["test_ref_links"]
     assert bug["agent_guidance"]["proof_links"] == []
+
+
+def test_casebook_payload_preserves_proof_state_contract_fields(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-08-proof-state.md"
+    bug_path.parent.mkdir(parents=True, exist_ok=True)
+    bug_path.write_text("# Proof state bug\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_bug_snapshot",
+        lambda **kwargs: [
+            {
+                "bug_id": "CB-077",
+                "bug_key": "odylith/casebook/bugs/2026-04-08-proof-state.md",
+                "bug_route": "CB-077",
+                "title": "Proof state lane is visible in Casebook",
+                "date": "2026-04-08",
+                "severity": "P1",
+                "severity_token": "p1",
+                "status": "Open",
+                "status_token": "open",
+                "components": "`src/odylith/runtime/governance/proof_state/resolver.py`",
+                "component_tokens": ["casebook"],
+                "archive_bucket": "",
+                "source_path": "odylith/casebook/bugs/2026-04-08-proof-state.md",
+                "source_exists": True,
+                "is_open": True,
+                "is_open_critical": True,
+                "summary": "Casebook should show the same blocker lane and truthful claim as the other surfaces.",
+                "workstreams": ["B-062"],
+                "workstream_links": [{"workstream": "B-062", "href": "../index.html?tab=radar&workstream=B-062"}],
+                "fields": {},
+                "detail_sections": [],
+                "code_refs": [],
+                "doc_refs": [],
+                "test_refs": [],
+                "contract_refs": [],
+                "component_matches": [],
+                "diagram_refs": [],
+                "related_bug_refs": [],
+                "agent_guidance": {"lessons": [], "preflight_checks": [], "proof_paths": []},
+                "intelligence_coverage": {},
+                "proof_state": {
+                    "lane_id": "proof-state-control-plane",
+                    "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                    "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                    "first_failing_phase": "manifests-deploy",
+                    "frontier_phase": "manifests-deploy",
+                    "clearance_condition": "Hosted SIM3 passes beyond manifests-deploy",
+                    "proof_status": "fixed_in_code",
+                    "evidence_tier": "code_only",
+                    "allowed_next_work": ["primary fix", "validating test", "deploy instruction"],
+                    "deprioritized_until_cleared": ["docs", "UX polish", "broader hardening"],
+                    "linked_bug_id": "CB-077",
+                    "deployment_truth": {
+                        "local_head": "unknown",
+                        "pushed_head": "abc123",
+                        "published_source_commit": "unknown",
+                        "runner_fingerprint": "runner-v3",
+                        "last_live_failing_commit": "abc123",
+                    },
+                },
+                "proof_state_resolution": {"state": "resolved", "lane_ids": ["proof-state-control-plane"]},
+                "claim_guard": {
+                    "highest_truthful_claim": "fixed in code",
+                    "blocked_terms": ["fixed", "cleared", "resolved"],
+                    "hosted_frontier_advanced": False,
+                },
+                "search_text": "proof state lane casebook",
+            }
+        ],
+    )
+
+    payload = renderer._build_payload(  # noqa: SLF001
+        repo_root=tmp_path,
+        output_path=tmp_path / "odylith" / "casebook" / "casebook.html",
+        runtime_mode="standalone",
+    )
+
+    bug = payload["bugs"][0]
+    assert bug["proof_state"]["lane_id"] == "proof-state-control-plane"
+    assert bug["proof_state"]["current_blocker"] == "Lambda permission lifecycle on ecs-drift-monitor invoke"
+    assert bug["proof_state_resolution"] == {"state": "resolved", "lane_ids": ["proof-state-control-plane"]}
+    assert bug["claim_guard"]["highest_truthful_claim"] == "fixed in code"
+
+
+def test_render_casebook_dashboard_emits_proof_control_panel_contract(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-08-proof-state.md"
+    bug_path.parent.mkdir(parents=True, exist_ok=True)
+    bug_path.write_text("# Proof state bug\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_bug_snapshot",
+        lambda **kwargs: [
+            {
+                "bug_id": "CB-077",
+                "bug_key": "odylith/casebook/bugs/2026-04-08-proof-state.md",
+                "bug_route": "CB-077",
+                "title": "Proof state lane is visible in Casebook",
+                "date": "2026-04-08",
+                "severity": "P1",
+                "severity_token": "p1",
+                "status": "Open",
+                "status_token": "open",
+                "components": "`src/odylith/runtime/governance/proof_state/resolver.py`",
+                "component_tokens": ["casebook"],
+                "archive_bucket": "",
+                "source_path": "odylith/casebook/bugs/2026-04-08-proof-state.md",
+                "source_exists": True,
+                "is_open": True,
+                "is_open_critical": True,
+                "summary": "Casebook should show the same blocker lane and truthful claim as the other surfaces.",
+                "workstreams": ["B-062"],
+                "workstream_links": [{"workstream": "B-062", "href": "../index.html?tab=radar&workstream=B-062"}],
+                "fields": {},
+                "detail_sections": [],
+                "code_refs": [],
+                "doc_refs": [],
+                "test_refs": [],
+                "contract_refs": [],
+                "component_matches": [],
+                "diagram_refs": [],
+                "related_bug_refs": [],
+                "agent_guidance": {"lessons": [], "preflight_checks": [], "proof_paths": []},
+                "intelligence_coverage": {},
+                "proof_state": {
+                    "lane_id": "proof-state-control-plane",
+                    "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                    "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                    "first_failing_phase": "manifests-deploy",
+                    "frontier_phase": "manifests-deploy",
+                    "clearance_condition": "Hosted SIM3 passes beyond manifests-deploy",
+                    "proof_status": "fixed_in_code",
+                    "evidence_tier": "code_only",
+                    "allowed_next_work": ["primary fix", "validating test", "deploy instruction"],
+                    "deprioritized_until_cleared": ["docs", "UX polish", "broader hardening"],
+                    "linked_bug_id": "CB-077",
+                    "warnings": [
+                        "Recent activity is skewing away from the primary blocker while Lambda permission lifecycle on ecs-drift-monitor invoke is still open."
+                    ],
+                    "deployment_truth": {
+                        "local_head": "unknown",
+                        "pushed_head": "abc123",
+                        "published_source_commit": "fedcba",
+                        "runner_fingerprint": "runner-v3",
+                        "last_live_failing_commit": "abc123",
+                    },
+                    "last_falsification": {
+                        "recorded_at": "2026-04-08T18:42:00Z",
+                        "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                        "frontier_phase": "manifests-deploy",
+                    },
+                },
+                "proof_state_resolution": {"state": "resolved", "lane_ids": ["proof-state-control-plane"]},
+                "claim_guard": {
+                    "highest_truthful_claim": "fixed in code",
+                    "blocked_terms": ["fixed", "cleared", "resolved"],
+                    "hosted_frontier_advanced": False,
+                },
+                "search_text": "proof state lane casebook",
+            }
+        ],
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/casebook/casebook.html"])
+
+    assert rc == 0
+    app_js = (tmp_path / "odylith" / "casebook" / "casebook-app.v1.js").read_text(encoding="utf-8")
+    payload_js = (tmp_path / "odylith" / "casebook" / "casebook-payload.v1.js").read_text(encoding="utf-8")
+    assert "Proof Control Panel" in app_js
+    assert "Pinned blocker, frontier, and proof tier for this bug lane." in app_js
+    assert "No dominant proof lane is resolved for this bug yet." in app_js
+    assert "Proof state is ambiguous across multiple blocker lanes" in app_js
+    assert "Deployed vs local truth" in app_js
+    assert "Highest truthful claim" in app_js
+    assert '"proof_state"' in payload_js
+    assert '"current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke"' in payload_js
+    assert '"allowed_next_work": ["primary fix", "validating test", "deploy instruction"]' in payload_js
+    assert '"highest_truthful_claim": "fixed in code"' in payload_js

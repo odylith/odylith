@@ -14,7 +14,9 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.consumer_profile import consumer_profile_path, truth_root_path
+from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
+from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.context_engine import odylith_context_cache
 
 _REQUIRED_METADATA: tuple[str, ...] = (
@@ -23,7 +25,6 @@ _REQUIRED_METADATA: tuple[str, ...] = (
     "commercial_value",
     "product_impact",
     "market_value",
-    "impacted_lanes",
     "impacted_parts",
     "sizing",
     "complexity",
@@ -53,7 +54,6 @@ _REQUIRED_SECTIONS: tuple[str, ...] = (
 )
 
 _VALID_PRIORITIES: set[str] = {"P0", "P1", "P2", "P3"}
-_VALID_LANES: set[str] = {"platform", "service", "both"}
 _VALID_SIZING: dict[str, int] = {"XS": 1, "S": 2, "M": 3, "L": 5, "XL": 8}
 _VALID_COMPLEXITY: dict[str, int] = {"Low": 1, "Medium": 2, "High": 3, "VeryHigh": 5}
 _VALID_STATUS: set[str] = {
@@ -81,10 +81,25 @@ _INDEX_COLS: tuple[str, ...] = (
     "market_value",
     "sizing",
     "complexity",
+    "status",
+    "link",
+)
+_LEGACY_INDEX_COLS_WITH_LANES: tuple[str, ...] = (
+    "rank",
+    "idea_id",
+    "title",
+    "priority",
+    "ordering_score",
+    "commercial_value",
+    "product_impact",
+    "market_value",
+    "sizing",
+    "complexity",
     "impacted_lanes",
     "status",
     "link",
 )
+_LEGACY_METADATA_FIELDS: tuple[str, ...] = ("impacted_lanes",)
 
 _PLAN_COLS: tuple[str, ...] = ("Plan", "Status", "Created", "Updated", "Backlog")
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -1007,11 +1022,19 @@ def _validate_lineage_contract(*, ideas: dict[str, IdeaSpec]) -> list[str]:
     return errors
 
 
-def _validate_idea_specs(idea_root: Path) -> tuple[dict[str, IdeaSpec], list[str]]:
+def _validate_idea_specs(
+    idea_root: Path,
+    repo_root: Path | None = None,
+) -> tuple[dict[str, IdeaSpec], list[str]]:
     errors: list[str] = []
     if not idea_root.is_dir():
         return {}, [f"missing ideas root: {idea_root}"]
 
+    resolved_repo_root = (
+        Path(repo_root).resolve()
+        if repo_root is not None
+        else backlog_title_contract.infer_repo_root_from_ideas_root(idea_root)
+    )
     ideas: dict[str, IdeaSpec] = {}
     for path in sorted(idea_root.rglob("*.md")):
         spec = _parse_idea_spec(path)
@@ -1019,10 +1042,23 @@ def _validate_idea_specs(idea_root: Path) -> tuple[dict[str, IdeaSpec], list[str
         for key in _REQUIRED_METADATA:
             if key not in spec.metadata or not str(spec.metadata.get(key, "")).strip():
                 errors.append(f"{path}: missing required metadata `{key}`")
+        for key in _LEGACY_METADATA_FIELDS:
+            if key in spec.metadata:
+                errors.append(
+                    f"{path}: legacy metadata `{key}` is no longer supported in Radar; rerun `odylith sync --repo-root .` to migrate"
+                )
 
         for section in _REQUIRED_SECTIONS:
             if section not in spec.sections:
                 errors.append(f"{path}: missing required section `## {section}`")
+
+        errors.extend(
+            backlog_title_contract.validate_workstream_title(
+                title=str(spec.metadata.get("title", "")).strip(),
+                path=path,
+                repo_root=resolved_repo_root,
+            )
+        )
 
         idea_id = spec.idea_id
         if not idea_id:
@@ -1069,12 +1105,6 @@ def _validate_idea_specs(idea_root: Path) -> tuple[dict[str, IdeaSpec], list[str
         priority = str(spec.metadata.get("priority", "")).strip()
         if priority and priority not in _VALID_PRIORITIES:
             errors.append(f"{path}: invalid `priority` `{priority}`")
-
-        lanes = str(spec.metadata.get("impacted_lanes", "")).strip()
-        if lanes and lanes not in _VALID_LANES:
-            errors.append(
-                f"{path}: invalid `impacted_lanes` `{lanes}`; expected one of {sorted(_VALID_LANES)}"
-            )
 
         status = spec.status
         if status and status not in _VALID_STATUS:
@@ -1221,13 +1251,33 @@ def _validate_backlog_index(
             errors.append(f"{backlog_index}: {err_parked}")
         rows_parked = []
     if headers_active and tuple(headers_active) != _INDEX_COLS:
-        errors.append(f"{backlog_index}: active table headers do not match contract")
+        if tuple(headers_active) == _LEGACY_INDEX_COLS_WITH_LANES:
+            errors.append(
+                f"{backlog_index}: active table still uses legacy `impacted_lanes` column; rerun `odylith sync --repo-root .` to migrate"
+            )
+        else:
+            errors.append(f"{backlog_index}: active table headers do not match contract")
     if headers_execution and tuple(headers_execution) != _INDEX_COLS:
-        errors.append(f"{backlog_index}: execution table headers do not match contract")
+        if tuple(headers_execution) == _LEGACY_INDEX_COLS_WITH_LANES:
+            errors.append(
+                f"{backlog_index}: execution table still uses legacy `impacted_lanes` column; rerun `odylith sync --repo-root .` to migrate"
+            )
+        else:
+            errors.append(f"{backlog_index}: execution table headers do not match contract")
     if headers_finished and tuple(headers_finished) != _INDEX_COLS:
-        errors.append(f"{backlog_index}: finished table headers do not match contract")
+        if tuple(headers_finished) == _LEGACY_INDEX_COLS_WITH_LANES:
+            errors.append(
+                f"{backlog_index}: finished table still uses legacy `impacted_lanes` column; rerun `odylith sync --repo-root .` to migrate"
+            )
+        else:
+            errors.append(f"{backlog_index}: finished table headers do not match contract")
     if headers_parked and tuple(headers_parked) != _INDEX_COLS:
-        errors.append(f"{backlog_index}: parked table headers do not match contract")
+        if tuple(headers_parked) == _LEGACY_INDEX_COLS_WITH_LANES:
+            errors.append(
+                f"{backlog_index}: parked table still uses legacy `impacted_lanes` column; rerun `odylith sync --repo-root .` to migrate"
+            )
+        else:
+            errors.append(f"{backlog_index}: parked table headers do not match contract")
 
     seen_ids: set[str] = set()
     active_ids: set[str] = set()
@@ -1483,7 +1533,6 @@ def _validate_row_against_idea(
         ("market_value", payload["market_value"]),
         ("sizing", payload["sizing"]),
         ("complexity", payload["complexity"]),
-        ("impacted_lanes", payload["impacted_lanes"]),
         ("status", payload["status"]),
     )
     for key, actual in comparisons:
@@ -1825,7 +1874,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not backlog_source_root.is_dir():
         errors.append(f"{repo_root}: missing `odylith/radar/source/` directory")
 
-    ideas, idea_errors = _validate_idea_specs(idea_root)
+    ideas, idea_errors = _validate_idea_specs(idea_root, repo_root=repo_root)
     errors.extend(idea_errors)
     errors.extend(_validate_topology_contract(ideas=ideas))
     errors.extend(_validate_lineage_contract(ideas=ideas))
@@ -1855,6 +1904,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     )
     del finished_ids
+    release_state, release_errors = release_planning_contract.validate_release_planning(
+        repo_root=repo_root,
+        idea_specs=ideas,
+    )
+    errors.extend(release_errors)
 
     if errors:
         print("backlog contract validation FAILED")
@@ -1866,6 +1920,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"- ideas validated: {len(ideas)}")
     print(f"- execution-linked ideas: {len(execution_ids)}")
     print(f"- parked ideas: {len(parked_ids)}")
+    print(f"- releases: {len(release_state.releases_by_id)}")
+    print(f"- active release targets: {len(release_state.active_release_by_workstream)}")
     return 0
 
 

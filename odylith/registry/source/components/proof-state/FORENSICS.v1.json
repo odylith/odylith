@@ -1,0 +1,60 @@
+{
+  "component_id": "proof-state",
+  "diagrams": [
+    "D-026",
+    "D-004",
+    "D-028",
+    "D-029"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 0,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 2,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 1
+  },
+  "name": "Proof State",
+  "path_prefixes": [
+    "src/odylith/runtime/governance/proof_state",
+    "odylith/runtime/odylith-proof-surfaces.v1.json"
+  ],
+  "spec_ref": "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+        "src/odylith/runtime/governance/proof_state/__init__.py",
+        "src/odylith/runtime/governance/proof_state/contract.py",
+        "src/odylith/runtime/governance/proof_state/enforcement.py",
+        "src/odylith/runtime/governance/proof_state/ledger.py",
+        "src/odylith/runtime/governance/proof_state/readout.py",
+        "src/odylith/runtime/governance/proof_state/resolver.py"
+      ],
+      "confidence": "high",
+      "event_index": 74,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "proof-state"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/proof-state/CURRENT_SPEC.md, src/odylith/runtime/governance/proof_state/__init__.py +5 more",
+      "ts_iso": "2026-04-09T14:56:17-07:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Split-authority live-proof control plane that keeps blocker identity, frontier movement, falsification memory, and claim tier coherent across governed truth and runtime surfaces.",
+  "why_tracked": "Turns proof discipline into a shared product contract so repeated live blocker fingerprints stay pinned instead of drifting behind adjacent progress.",
+  "workstreams": [
+    "B-062",
+    "B-071"
+  ]
+}

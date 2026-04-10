@@ -34,9 +34,12 @@ import time
 import tomllib
 from typing import Any, Iterator, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.evaluation import benchmark_group_summaries
+from odylith.runtime.evaluation import odylith_benchmark_context_engine
 from odylith.runtime.evaluation import odylith_benchmark_guardrails
 from odylith.runtime.evaluation import odylith_benchmark_live_execution
+from odylith.runtime.evaluation import odylith_benchmark_proof_discipline
 from odylith.runtime.evaluation import odylith_benchmark_prompt_payloads
 from odylith.runtime.common import odylith_benchmark_contract
 from odylith.runtime.context_engine import odylith_context_cache
@@ -91,7 +94,7 @@ _MODE_ALIASES = {
 _VALID_MODES = frozenset((*DEFAULT_MODES, *DIAGNOSTIC_CONTROL_MODES, *_MODE_ALIASES.keys()))
 DEFAULT_CACHE_PROFILES: tuple[str, ...] = ("warm", "cold")
 _VALID_CACHE_PROFILES = frozenset({"warm", "cold"})
-_VALID_PACKET_SOURCES = frozenset({"impact", "governance_slice", "session_brief", "bootstrap_session"})
+_VALID_PACKET_SOURCES = frozenset({"adaptive", "impact", "governance_slice", "session_brief", "bootstrap_session"})
 _ANALYSIS_FAMILIES = frozenset({"analysis", "architecture", "broad_shared_scope"})
 _WRITE_FAMILIES = frozenset(
     {
@@ -116,6 +119,7 @@ _GOVERNANCE_SLICE_FAMILIES = frozenset(
         "component_governance",
         "agent_activation",
         "cross_surface_governance_sync",
+        "live_proof_discipline",
     }
 )
 _CORRECTNESS_CRITICAL_FAMILIES = frozenset({"validation_heavy_fix", "merge_heavy_change"})
@@ -166,6 +170,8 @@ _LOWER_BETTER_SUMMARY_FIELDS = frozenset(
         "odylith_requires_widening_rate",
         "odylith_mixed_local_fallback_rate",
         "unnecessary_widening_rate",
+        *odylith_benchmark_proof_discipline.LOWER_BETTER_SUMMARY_FIELDS,
+        *odylith_benchmark_context_engine.LOWER_BETTER_SUMMARY_FIELDS,
     }
 )
 _HIGHER_BETTER_SUMMARY_FIELDS = frozenset(
@@ -185,6 +191,8 @@ _HIGHER_BETTER_SUMMARY_FIELDS = frozenset(
         "critical_required_path_recall_rate",
         "critical_validation_success_rate",
         "write_surface_precision_rate",
+        *odylith_benchmark_proof_discipline.HIGHER_BETTER_SUMMARY_FIELDS,
+        *odylith_benchmark_context_engine.HIGHER_BETTER_SUMMARY_FIELDS,
     }
 )
 _LOWER_BETTER_RESULT_FIELDS = frozenset(
@@ -272,6 +280,15 @@ _ACCEPTANCE_CHECK_LABELS = {
     "candidate_validation_success_positive": "odylith_on did not reach any validator-backed successful outcome on sampled validation-backed work",
     "candidate_critical_required_path_recall_positive": "odylith_on missed every critical required path on sampled critical work",
     "candidate_critical_validation_success_positive": "odylith_on did not reach any successful critical validator-backed outcome",
+    "proof_false_clearance_healthy": "proof-state claimed live clearance before the hosted frontier advanced",
+    "proof_frontier_gate_accurate": "proof-state frontier gating is inconsistent with the observed live frontier",
+    "proof_claim_guard_accurate": "claim guard is labeling proof tiers inconsistently",
+    "proof_same_fingerprint_reuse_accurate": "same-fingerprint live failures are not reopening the same blocker seam consistently",
+    "context_engine_packet_source_accurate": "Context Engine benchmark slices chose the wrong packet lane",
+    "context_engine_selection_state_accurate": "Context Engine benchmark slices resolved the wrong scope-selection state",
+    "context_engine_workstream_accurate": "Context Engine benchmark slices resolved the wrong workstream anchor",
+    "context_engine_ambiguity_fail_closed": "Context Engine benchmark slices do not stay fail-closed on ambiguous scope",
+    "context_engine_session_namespaced": "Context Engine runtime-backed benchmark slices are not keeping sessions namespaced",
     "explicit_workstream_expectation_positive": "explicit workstream scenarios lost expectation coverage",
     "critical_metric_coverage_complete": "critical metric coverage is incomplete",
     "selected_cache_profiles_clear_gate": "selected cache profiles do not all clear the hard quality gate",
@@ -1550,7 +1567,7 @@ def _build_packet_payload(
                 workstream=str(scenario.get("workstream", "")).strip(),
                 component=str(scenario.get("component", "")).strip(),
                 runtime_mode="local",
-                delivery_profile="codex_hot_path",
+                delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
                 family_hint=str(scenario.get("family", "")).strip(),
                 intent=str(scenario.get("intent", "")).strip(),
                 validation_command_hints=[
@@ -1577,7 +1594,7 @@ def _build_packet_payload(
                 session_id=f"benchmark-{str(scenario.get('scenario_id', '')).strip()}-{normalized_mode}",
                 workstream=str(scenario.get("workstream", "")).strip(),
                 intent=str(scenario.get("intent", "")).strip(),
-                delivery_profile="codex_hot_path",
+                delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
                 family_hint=str(scenario.get("family", "")).strip(),
                 validation_command_hints=[
                     str(token).strip()
@@ -1605,7 +1622,7 @@ def _build_packet_payload(
                 session_id=f"benchmark-{str(scenario.get('scenario_id', '')).strip()}-{normalized_mode}",
                 workstream=str(scenario.get("workstream", "")).strip(),
                 intent=str(scenario.get("intent", "")).strip(),
-                delivery_profile="codex_hot_path",
+                delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
                 family_hint=str(scenario.get("family", "")).strip(),
                 validation_command_hints=[
                     str(token).strip()
@@ -2390,6 +2407,7 @@ def _packet_result(
         operations=("impact", "governance_slice", "session_brief", "bootstrap_session", "architecture"),
     )
     packet_summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+    packet_summary["packet_source"] = packet_source
     measurement_payload = dict(payload)
     supplemented_doc_count = 0
     if _mode_uses_odylith(normalized_mode):
@@ -3965,7 +3983,7 @@ def _mode_summary(*, mode: str, scenario_rows: Sequence[Mapping[str, Any]]) -> d
     workstream_selector_hits = [bool(diag.get("fast_selector_used")) for diag in selector_diagnostics]
     component_selector_hits = [bool(diag.get("component_fast_selector_used")) for diag in selector_diagnostics]
     architecture_compaction_applied = [bool(row.get("architecture_compaction_applied")) for row in architecture_rows]
-    return {
+    summary = {
         "mode": mode,
         "scenario_count": len(scenario_rows),
         "packet_scenario_count": len(packet_rows),
@@ -4062,6 +4080,9 @@ def _mode_summary(*, mode: str, scenario_rows: Sequence[Mapping[str, Any]]) -> d
             field_name="runtime_transport",
         ),
     }
+    summary.update(odylith_benchmark_proof_discipline.summary_from_rows(scenario_rows))
+    summary.update(odylith_benchmark_context_engine.summary_from_rows(scenario_rows))
+    return summary
 
 
 def _result_wall_clock_ms(result: Mapping[str, Any]) -> float:
@@ -4625,7 +4646,7 @@ def _summary_comparison(
     baseline_payload = _lookup_mode_mapping(mode_summaries, baseline_mode)
     candidate = dict(candidate_payload) if isinstance(candidate_payload, Mapping) else {}
     baseline = dict(baseline_payload) if isinstance(baseline_payload, Mapping) else {}
-    return {
+    comparison = {
         "candidate_mode": _public_mode_name(candidate_mode),
         "baseline_mode": _public_mode_name(baseline_mode),
         "median_latency_delta_ms": round(
@@ -4742,6 +4763,19 @@ def _summary_comparison(
             3,
         ),
     }
+    comparison.update(
+        odylith_benchmark_proof_discipline.comparison(
+            candidate=candidate,
+            baseline=baseline,
+        )
+    )
+    comparison.update(
+        odylith_benchmark_context_engine.comparison(
+            candidate=candidate,
+            baseline=baseline,
+        )
+    )
+    return comparison
 
 
 def _primary_comparison(
@@ -5783,6 +5817,42 @@ def _acceptance(
         "critical_validation_success_not_worse": float(primary_comparison.get("critical_validation_success_delta", 0.0) or 0.0) >= 0.0,
         "live_execution_contract_match": _live_execution_contract_match(execution_contracts),
         "expectation_success_not_worse": float(primary_comparison.get("expectation_success_delta", 0.0) or 0.0) >= 0.0,
+        "proof_false_clearance_healthy": (
+            int(candidate.get("proof_state_backed_scenario_count", 0) or 0) == 0
+            or float(candidate.get("false_clearance_rate", 0.0) or 0.0) <= 0.0
+        ),
+        "proof_frontier_gate_accurate": (
+            int(candidate.get("proof_state_backed_scenario_count", 0) or 0) == 0
+            or float(candidate.get("proof_frontier_gate_accuracy_rate", 0.0) or 0.0) >= 1.0
+        ),
+        "proof_claim_guard_accurate": (
+            int(candidate.get("proof_state_backed_scenario_count", 0) or 0) == 0
+            or float(candidate.get("proof_claim_guard_accuracy_rate", 0.0) or 0.0) >= 1.0
+        ),
+        "proof_same_fingerprint_reuse_accurate": (
+            int(candidate.get("proof_same_fingerprint_backed_scenario_count", 0) or 0) == 0
+            or float(candidate.get("proof_same_fingerprint_reuse_rate", 0.0) or 0.0) >= 1.0
+        ),
+        "context_engine_packet_source_accurate": (
+            int(candidate.get("context_engine_expected_packet_source_count", 0) or 0) == 0
+            or float(candidate.get("context_engine_packet_source_accuracy_rate", 0.0) or 0.0) >= 1.0
+        ),
+        "context_engine_selection_state_accurate": (
+            int(candidate.get("context_engine_expected_selection_state_count", 0) or 0) == 0
+            or float(candidate.get("context_engine_selection_state_accuracy_rate", 0.0) or 0.0) >= 1.0
+        ),
+        "context_engine_workstream_accurate": (
+            int(candidate.get("context_engine_expected_workstream_count", 0) or 0) == 0
+            or float(candidate.get("context_engine_workstream_accuracy_rate", 0.0) or 0.0) >= 1.0
+        ),
+        "context_engine_ambiguity_fail_closed": (
+            int(candidate.get("context_engine_ambiguity_backed_scenario_count", 0) or 0) == 0
+            or float(candidate.get("context_engine_fail_closed_ambiguity_rate", 0.0) or 0.0) >= 1.0
+        ),
+        "context_engine_session_namespaced": (
+            int(candidate.get("context_engine_runtime_backed_scenario_count", 0) or 0) == 0
+            or float(candidate.get("context_engine_session_namespace_rate", 0.0) or 0.0) >= 1.0
+        ),
         "candidate_expectation_success_positive": (
             candidate_scenario_count == 0 or float(candidate.get("expectation_success_rate", 0.0) or 0.0) > 0.0
         ),
@@ -5874,6 +5944,39 @@ def _acceptance(
             or float(candidate_family.get("hallucinated_surface_rate", 0.0) or 0.0) > float(baseline_family.get("hallucinated_surface_rate", 0.0) or 0.0)
             or float(candidate_family.get("validation_success_rate", 0.0) or 0.0) < float(baseline_family.get("validation_success_rate", 0.0) or 0.0)
             or float(candidate_family.get("expectation_success_rate", 0.0) or 0.0) < float(baseline_family.get("expectation_success_rate", 0.0) or 0.0)
+            or float(candidate_family.get("false_clearance_rate", 0.0) or 0.0) > 0.0
+            or (
+                int(candidate_family.get("proof_state_backed_scenario_count", 0) or 0) > 0
+                and float(candidate_family.get("proof_frontier_gate_accuracy_rate", 0.0) or 0.0) < 1.0
+            )
+            or (
+                int(candidate_family.get("proof_state_backed_scenario_count", 0) or 0) > 0
+                and float(candidate_family.get("proof_claim_guard_accuracy_rate", 0.0) or 0.0) < 1.0
+            )
+            or (
+                int(candidate_family.get("proof_same_fingerprint_backed_scenario_count", 0) or 0) > 0
+                and float(candidate_family.get("proof_same_fingerprint_reuse_rate", 0.0) or 0.0) < 1.0
+            )
+            or (
+                int(candidate_family.get("context_engine_expected_packet_source_count", 0) or 0) > 0
+                and float(candidate_family.get("context_engine_packet_source_accuracy_rate", 0.0) or 0.0) < 1.0
+            )
+            or (
+                int(candidate_family.get("context_engine_expected_selection_state_count", 0) or 0) > 0
+                and float(candidate_family.get("context_engine_selection_state_accuracy_rate", 0.0) or 0.0) < 1.0
+            )
+            or (
+                int(candidate_family.get("context_engine_expected_workstream_count", 0) or 0) > 0
+                and float(candidate_family.get("context_engine_workstream_accuracy_rate", 0.0) or 0.0) < 1.0
+            )
+            or (
+                int(candidate_family.get("context_engine_ambiguity_backed_scenario_count", 0) or 0) > 0
+                and float(candidate_family.get("context_engine_fail_closed_ambiguity_rate", 0.0) or 0.0) < 1.0
+            )
+            or (
+                int(candidate_family.get("context_engine_runtime_backed_scenario_count", 0) or 0) > 0
+                and float(candidate_family.get("context_engine_session_namespace_rate", 0.0) or 0.0) < 1.0
+            )
             or (
                 int(candidate_family.get("write_surface_backed_scenario_count", 0) or 0) > 0
                 and float(candidate_family.get("write_surface_precision_rate", 0.0) or 0.0)
@@ -5921,6 +6024,42 @@ def _acceptance(
     if not hard_quality_checks["candidate_critical_validation_success_positive"]:
         notes.append(
             "No sampled critical validator-backed task produced a successful `odylith_on` outcome, so the critical slice is not benchmark-ready."
+        )
+    if not hard_quality_checks["proof_false_clearance_healthy"]:
+        notes.append(
+            "Proof-state benchmark slices still allow false live-clearance claims before the hosted frontier advances."
+        )
+    if not hard_quality_checks["proof_frontier_gate_accurate"]:
+        notes.append(
+            "Proof-state frontier gating is inconsistent on the sampled proof-backed slices."
+        )
+    if not hard_quality_checks["proof_claim_guard_accurate"]:
+        notes.append(
+            "Proof-state claim tiers are still mislabeled on sampled proof-backed slices."
+        )
+    if not hard_quality_checks["proof_same_fingerprint_reuse_accurate"]:
+        notes.append(
+            "Same-fingerprint proof seams are not being reused consistently on sampled proof-backed slices."
+        )
+    if not hard_quality_checks["context_engine_packet_source_accurate"]:
+        notes.append(
+            "Context Engine benchmark slices are selecting the wrong packet lane on sampled grounding cases."
+        )
+    if not hard_quality_checks["context_engine_selection_state_accurate"]:
+        notes.append(
+            "Context Engine benchmark slices are mislabeling resolved versus ambiguous scope on sampled grounding cases."
+        )
+    if not hard_quality_checks["context_engine_workstream_accurate"]:
+        notes.append(
+            "Context Engine benchmark slices are resolving the wrong workstream anchor on sampled grounding cases."
+        )
+    if not hard_quality_checks["context_engine_ambiguity_fail_closed"]:
+        notes.append(
+            "Context Engine benchmark slices are not staying fail-closed when the sampled scope remains ambiguous."
+        )
+    if not hard_quality_checks["context_engine_session_namespaced"]:
+        notes.append(
+            "Context Engine runtime-backed benchmark slices are not keeping session state namespaced consistently."
         )
     if not _live_execution_contract_match(execution_contracts):
         notes.append("`odylith_on` and `odylith_off` did not run on the same Codex CLI model/reasoning contract.")

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives as execution_wave_ui
 
 
@@ -35,7 +36,7 @@ def test_execution_wave_component_css_matches_shared_contract() -> None:
         flags=re.S,
     )
     assert re.search(
-        r"\.execution-wave-chip-link\s*\{[^}]*font-family:\s*inherit;[^}]*color:\s*var\(--chip-link-text\);[^}]*font-size:\s*11px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*700;",
+        rf"\.execution-wave-chip-link\s*\{{[^}}]*font-family:\s*inherit;[^}}]*color:\s*var\(--chip-link-text\);[^}}]*font-size:\s*var\({re.escape(dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR)},\s*{re.escape(dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE)}\);[^}}]*line-height:\s*1;[^}}]*letter-spacing:\s*0\.01em;[^}}]*font-weight:\s*var\({re.escape(dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR)},\s*{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT}\);",
         css,
         flags=re.S,
     )

@@ -1,0 +1,65 @@
+%% Reviewed 2026-04-09 for B-071 to keep governance-surface focus gating and cheap narration flow explicit in Atlas.
+flowchart LR
+  Start["Repo state changes or operator opens a governance surface"]
+  Delivery["Delivery Intelligence snapshot refresh<br/>compute shared scope_signal once"]
+  Split{"Scope rung?"}
+
+  R0["R0 suppressed_noise<br/>hide by default"]
+  R1["R1 background_trace<br/>deep-linkable but quiet"]
+  R2["R2 verified_local<br/>window-visible local scope"]
+  R3["R3 active_scope<br/>default operational promotion"]
+  R4["R4 actionable_priority<br/>promoted + cheap fresh reasoning allowed"]
+  R5["R5 blocking_frontier<br/>top-of-stack operator focus"]
+
+  CompassQuiet["Compass<br/>quiet scoped brief + empty timeline<br/>no fresh provider"]
+  CompassVisible["Compass<br/>selector/timeline visible<br/>cache or deterministic"]
+  CompassPromoted["Compass<br/>promoted workstreams and brief inputs"]
+  CompassFresh["Compass<br/>fresh scoped narration allowed"]
+
+  RadarAll["Radar source truth<br/>all rows remain visible in backlog"]
+  RadarPromoted["Radar default focus and ordering<br/>promote R3+ first"]
+
+  RegistryPromoted["Registry default ordering<br/>higher ladder signals first"]
+  AtlasPromoted["Atlas active-workstream pills<br/>promoted_default only"]
+  ShellBudget["Shell / chatter / future reasoning<br/>map budget_class to host-specific cheap model profile"]
+
+  Start --> Delivery
+  Delivery --> Split
+  Split --> R0
+  Split --> R1
+  Split --> R2
+  Split --> R3
+  Split --> R4
+  Split --> R5
+
+  R0 --> CompassQuiet
+  R1 --> CompassQuiet
+  R2 --> CompassVisible
+  R3 --> CompassPromoted
+  R4 --> CompassFresh
+  R5 --> CompassFresh
+
+  Delivery --> RadarAll
+  R3 --> RadarPromoted
+  R4 --> RadarPromoted
+  R5 --> RadarPromoted
+
+  R3 --> RegistryPromoted
+  R4 --> RegistryPromoted
+  R5 --> RegistryPromoted
+
+  R3 --> AtlasPromoted
+  R4 --> AtlasPromoted
+  R5 --> AtlasPromoted
+
+  R0 --> ShellBudget
+  R1 --> ShellBudget
+  R2 --> ShellBudget
+  R3 --> ShellBudget
+  R4 --> ShellBudget
+  R5 --> ShellBudget
+
+  Note["Host-neutral policy:<br/>R0-R1 => none/cache_only<br/>R2 => cache_only<br/>R3 => fast_simple<br/>R4-R5 => escalated_reasoning"]:::note
+  ShellBudget --> Note
+
+  classDef note fill:#f5f9ff,stroke:#7aa0d6,color:#1f355f

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import tooling_dashboard_frontend_contract as contract
 
 
@@ -66,6 +67,24 @@ def test_tooling_shell_frontend_contract_loads_cheatsheet_modules() -> None:
     control_js = contract.load_tooling_shell_control_js()
 
     assert ".brief-drawer-cheatsheet" in style_css
+    assert "--surface-identifier-chip-padding: 2px 10px;" in style_css
+    assert "--surface-identifier-font-size: 14px;" in style_css
+    assert "--surface-identifier-font-weight: 500;" in style_css
+    assert (
+        f"{dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}: "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING};"
+    ) in style_css
+    assert (
+        f"{dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR}: "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE};"
+    ) in style_css
+    assert (
+        f"{dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR}: "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT};"
+    ) in style_css
+    assert ".operator-readout .operator-readout-copy a.brief-inline-link {" in style_css
+    assert "font-size: var(--surface-identifier-font-size, 14px);" in style_css
+    assert "font-weight: var(--surface-identifier-font-weight, 500);" in style_css
     assert ".agent-cheatsheet-search-input" in style_css
     assert ".agent-cheatsheet-empty[hidden]" in style_css
     assert "initToolingShellCheatsheetDrawer" in control_js

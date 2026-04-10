@@ -64,7 +64,6 @@ _BACKLOG_ROW_HEADERS: tuple[str, ...] = (
     "market_value",
     "sizing",
     "complexity",
-    "impacted_lanes",
     "status",
     "link",
 )
@@ -649,7 +648,7 @@ def _parse_iso_ts(raw: str) -> dt.datetime | None:
     return parsed.astimezone(_COMPASS_TZ)
 
 
-def _load_codex_stream_events(
+def _load_agent_stream_events(
     *,
     repo_root: Path,
     stream_path: Path,
@@ -745,6 +744,19 @@ def _load_codex_stream_events(
 
     events.sort(key=lambda item: item.get("ts", dt.datetime.min.replace(tzinfo=dt.timezone.utc)), reverse=True)
     return events
+
+
+def _load_codex_stream_events(
+    *,
+    repo_root: Path,
+    stream_path: Path,
+    ws_path_index: Mapping[str, set[str]],
+) -> list[dict[str, Any]]:
+    return _load_agent_stream_events(
+        repo_root=repo_root,
+        stream_path=stream_path,
+        ws_path_index=ws_path_index,
+    )
 
 
 def _collect_workstream_path_index(

@@ -99,11 +99,11 @@ BENCHMARK_ANTI_GAMING_LINE = "- Never game the eval."
 BENCHMARK_HONEST_BASELINE_LINES = (
     "`odylith_off` means `raw_agent_baseline`",
     "`Odylith off` means `raw_agent_baseline`",
-    "`odylith_off` is the raw Codex CLI lane",
-    "`odylith_off` is the honest raw Codex CLI baseline",
-    "`odylith_off` is the public name for the raw Codex CLI lane",
-    "`odylith_off` is the reviewer-facing and README-facing name for the raw Codex CLI lane",
-    "`odylith_off` in README, graphs, and review framing is the raw Codex CLI lane",
+    "`odylith_off` is the raw host CLI lane",
+    "`odylith_off` is the honest raw host CLI baseline",
+    "`odylith_off` is the public name for the raw host CLI lane",
+    "`odylith_off` is the reviewer-facing and README-facing name for the raw host CLI lane",
+    "`odylith_off` in README, graphs, and review framing is the raw host CLI lane",
 )
 ODYLITH_ASSIST_LABEL = "`Odylith Assist:`"
 ODYLITH_ASSIST_MARKDOWN_LABEL = "`**Odylith Assist:**`"
@@ -497,7 +497,7 @@ def test_b022_benchmark_workstream_surfaces_as_active_with_only_current_children
         / "2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md"
     ).read_text(encoding="utf-8")
 
-    assert "| - | B-022 | Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof |" in radar_index
+    assert "| - | B-022 | Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof |" in radar_index
     assert "| 1 | B-022 |" not in radar_index
     assert "workstream_children: B-038, B-039" in b022
 

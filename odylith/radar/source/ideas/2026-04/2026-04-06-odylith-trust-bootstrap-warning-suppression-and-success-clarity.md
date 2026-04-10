@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-056
-title: Odylith Trust Bootstrap Warning Suppression and Success Clarity
+title: Trust Bootstrap Warning Suppression and Success Clarity
 date: 2026-04-06
 priority: P1
 commercial_value: 4
 product_impact: 4
 market_value: 3
-impacted_lanes: both
 impacted_parts: Sigstore verification output, benign TUF warning handling, install and repair success messaging, and release-note wording
 sizing: S
 complexity: Medium
@@ -102,6 +101,16 @@ system actually verified. Right now those two states blur together.
 ## Open Questions
 - whether later versions should surface a machine-readable verifier warning
   classification in the install ledger
+
+## 2026-04-08 Follow-Up
+- `v0.1.10` cleaned the hosted `install.sh` happy path, but pinned-runtime
+  release-proof lanes still print `Failed to load a trusted root key:
+  unsupported key type: 7` before successful `OK:` asset lines during
+  dogfood activation, consumer rehearsal, and GA gate.
+- Next release must carry the same success-clarity contract through those
+  managed-runtime verification paths instead of treating the hosted installer
+  cleanup as end-to-end completion.
+- Bound residual bug: [CB-076](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md)
 
 ## Outcome
 - Bound to `B-056` under `B-048`.

@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-010
 
-title: Odylith Durable Judgment Memory and Memory Backend Productization
+title: Durable Judgment Memory and Memory Backend Productization
 
 date: 2026-03-28
 
@@ -13,8 +13,6 @@ commercial_value: 5
 product_impact: 5
 
 market_value: 4
-
-impacted_lanes: both
 
 impacted_parts: judgment memory snapshot contract, workspace and actor memory posture, contradiction and outcome persistence, shell telemetry, CLI runtime readouts, benchmark proof, and the memory backend component boundary
 

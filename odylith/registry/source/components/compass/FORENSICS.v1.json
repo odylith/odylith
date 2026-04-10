@@ -24,16 +24,20 @@
     "D-021",
     "D-022",
     "D-023",
-    "D-024"
+    "D-024",
+    "D-026",
+    "D-027",
+    "D-028",
+    "D-029"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 47,
+    "explicit_event_count": 50,
     "mapped_workstream_evidence_count": 3,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 9,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 20,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 47
+    "timeline_event_count": 51
   },
   "name": "Compass",
   "path_prefixes": [
@@ -43,6 +47,73 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/compass/runtime/AGENTS.md",
+        "src/odylith/runtime/common/log_compass_timeline_event.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 66,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/compass/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/compass/runtime/AGENTS.md +2 more",
+      "ts_iso": "2026-04-09T14:53:40-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 62,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "Compass brief contract for v0.1.11 is now fail-closed against stock framing: scoped 24h and 48h must never borrow global prose, the old Executive/Product versus Operator/Technical split is forbidden across narration and rendering, and provider plus deterministic briefs both reject internal canned wrappers before refresh can publish them.",
+      "ts_iso": "2026-04-08T16:59:48-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 61,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "Scoped Compass is fail-closed: when a workstream scope is selected, Compass must render that exact scoped brief or an explicit scoped-unavailable state, never the global brief.",
+      "ts_iso": "2026-04-08T16:13:51-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 60,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "Compass voice is a product invariant: no stock framing, no house phrases, no canned status wrappers, and no warmed-cache replay of templated narration.",
+      "ts_iso": "2026-04-08T15:05:37-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/install.json",
@@ -1376,6 +1447,13 @@
     "B-038",
     "B-044",
     "B-047",
-    "B-060"
+    "B-060",
+    "B-066",
+    "B-065",
+    "B-062",
+    "B-063",
+    "B-064",
+    "B-069",
+    "B-071"
   ]
 }

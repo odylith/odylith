@@ -84,7 +84,7 @@ Related Bugs:
       get woven into ordinary commentary, while explicit `Odylith Insight:`,
       `Odylith History:`, and `Odylith Risks:` labels stay rare, earned, and
       one-at-a-time.
-- [x] Cross-lane closeout guidance allows at most one end-of-work
+- [x] Cross-posture closeout guidance allows at most one end-of-work
       `Odylith Assist:` line, preferably `**Odylith Assist:**` when Markdown is
       available, with linked updated governance ids inline and at most one
       supplemental closeout line chosen from `Odylith Risks:`,
@@ -244,7 +244,7 @@ Related Bugs:
       instead of widening required reads just for branding.
 - [x] Router and orchestrator human-readable reasons now describe scope,
       readiness, and blockers without `Odylith ...` control-plane chatter.
-- [x] Registry now tracks `odylith-chatter` as the cross-lane narration
+- [x] Registry now tracks `odylith-chatter` as the cross-posture narration
       contract so the closeout-branding rule has a first-class component
       boundary and living spec.
 - [x] Shared orchestration runtime now emits one canonical

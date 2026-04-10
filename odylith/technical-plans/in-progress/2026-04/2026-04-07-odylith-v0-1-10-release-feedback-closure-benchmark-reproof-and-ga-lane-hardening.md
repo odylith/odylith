@@ -129,11 +129,10 @@ Related Bugs:
       rewrote some unchanged generated artifacts in ways that broke audit
       timestamps.
 - [x] Real downstream Compass refresh feedback on 2026-04-07 showed the
-      remaining explicit-refresh trust gap: bounded `shell-safe` refresh stayed
-      healthy, but explicit `full` still inherited the same 45-second wrapper
-      timeout, surfaced `odylith compass update --repo-root .` as a bogus next
-      command, and left the old `shell-safe` payload active with no visible
-      failure marker when deeper refresh did not land.
+      remaining explicit-refresh trust gap: the product needed one canonical
+      `odylith compass refresh` operator path, explicit failure truth for
+      failed bounded refreshes, and a request model that did not turn one bad
+      timeout into a duplicated second wait through the wrapper.
 - [x] Real downstream shell follow-up feedback on 2026-04-08 showed the parent
       surface still overstated freshness after the Compass-side fix: a
       successful `tooling_shell` rerender could leave the visible Compass brief
@@ -177,11 +176,11 @@ Related Bugs:
       explicit acknowledgement past large dirty-overlap thresholds, structured
       warning pointers, and truthful audit metadata for semantic no-op artifact
       refreshes.
-- [x] Make explicit Compass full refresh operator-truthful: align the renderer
-      default with `shell-safe`, give `full` a viable timeout budget, replace
-      the bogus `compass update` failure hint with a real rerender command, and
-      mark the live Compass payload when a requested deeper refresh fails so
-      the shell cannot silently keep serving the old bounded snapshot.
+- [x] Make Compass refresh operator-truthful end to end: ship canonical
+      `odylith compass refresh`, make default `shell-safe` explicitly
+      queued/background with `--status` and `--wait`, retire the old minute-
+      scale `full` mode completely, and record failed refresh truth into the
+      live Compass payload without blind duplicate timeout retries.
 - [x] Make shell refresh truthful about Compass child-runtime freshness: when
       the wrapper rerenders without Compass, project the current Compass
       runtime age and last failed deeper-refresh state into the shell so the
@@ -242,10 +241,11 @@ Related Bugs:
       action-backed heartbeat output on long phases, large overlap gated behind
       explicit acknowledgement, and unchanged generated JSON artifacts staying
       current instead of being falsely rewritten.
-- [ ] Downstream Compass refresh proof shows explicit `full` refresh using a
-      larger timeout budget than bounded `shell-safe`, a truthful next command,
-      and an explicit stale-and-failed warning when the requested deeper
-      refresh does not land.
+- [ ] Downstream Compass refresh proof shows `odylith compass refresh
+      --repo-root .` as the canonical path, default `shell-safe` queueing with
+      truthful status/wait guidance, no duplicate timeout retry loop, and an
+      explicit stale-and-failed warning when the bounded refresh does not
+      land.
 
 ## Non-Goals
 - [ ] Changing the canonical hosted installer entrypoint away from
@@ -314,11 +314,12 @@ Related Bugs:
   - [ ] Mitigation: keep heartbeat output thresholded, keep overlap gating
         explicit and bounded, and point warning-heavy passes at durable report
         artifacts instead of dumping more terminal text.
-- [ ] Risk: the explicit Compass full-refresh fix only raises the timeout and
-      still leaves operators unable to tell whether deeper refresh landed.
-  - [ ] Mitigation: update the live Compass payload on failure, clear that
-        marker on success, and point operators at a real rerender command
-        instead of the event-writing `compass update` path.
+- [ ] Risk: the Compass refresh fix stops at wrapper tuning and still leaves
+      operators without one trustworthy refresh command or truthful queue
+      state.
+  - [ ] Mitigation: keep `odylith compass refresh` as the single public
+        contract, record request state locally, stamp the live payload on every
+        failed refresh, and refuse duplicate retry loops after timeout.
 - [ ] Risk: audit-fidelity fixes accidentally rotate timestamps on every no-op
       run.
   - [ ] Mitigation: preserve stable `generated_utc` behavior and stop rewriting
@@ -390,12 +391,11 @@ Related Bugs:
       `odylith sync` control surface, add long-step heartbeats plus overlap
       gating, point warning-heavy passes at durable reports, and stop semantic
       no-op generated artifacts from being falsely rewritten.
-- [x] Compass explicit-refresh hardening landed: the renderer now defaults to
-      `shell-safe`, the dashboard wrapper gives explicit `full` refresh a
-      larger timeout budget, failed deeper refreshes stamp the live payload
-      with an explicit warning instead of silently serving the old bounded
-      snapshot, and the bogus `odylith compass update --repo-root .` next hint
-      is replaced by a real rerender command.
+- [x] Compass explicit-refresh hardening landed: `odylith compass refresh` is
+      now the canonical request engine, default `shell-safe` refresh queues and
+      reports status truthfully, the old `full` mode is retired, failed
+      refreshes stamp the live payload, and timeout does not automatically fan
+      into a second wrapper retry.
 - [x] Shell-host Compass freshness projection landed: `tooling_shell` refresh
       now states when it only updated wrapper assets, surfaces failed deeper
       Compass rerenders on the Compass tab, and stops stale child-runtime data

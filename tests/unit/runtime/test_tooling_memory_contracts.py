@@ -7,7 +7,7 @@ def test_execution_profile_mapping_decodes_compact_token() -> None:
     profile = tooling_memory_contracts.execution_profile_mapping("codex_high|worker|bounded_write|delegate")
 
     assert profile == {
-        "profile": "codex_high",
+        "profile": "write_high",
         "agent_role": "worker",
         "selection_mode": "bounded_write",
         "delegate_preference": "delegate",
@@ -26,7 +26,7 @@ def test_compact_execution_profile_mapping_keeps_only_shared_runtime_fields() ->
     )
 
     assert profile == {
-        "profile": "codex_medium",
+        "profile": "write_medium",
         "agent_role": "worker",
         "selection_mode": "bounded_write",
     }
@@ -42,4 +42,4 @@ def test_encode_execution_profile_token_trims_trailing_empty_fields() -> None:
         }
     )
 
-    assert token == "mini_high|explorer"
+    assert token == "analysis_high|explorer"

@@ -1,13 +1,13 @@
 """Compiler-backed local projection store for installed maintainer tooling.
 
 This module keeps markdown/JSON source artifacts authoritative while providing
-an optional compiled runtime layer for fast local Codex sessions. The store is
+an optional compiled runtime layer for fast local host sessions. The store is
 local-only, archive-aware, and safe to rebuild at any time.
 
 Design constraints:
 - source markdown, JSON contracts, and generated tracked artifacts remain
   authoritative;
-- projections must be safe under concurrent Codex sessions sharing one repo;
+- projections must be safe under concurrent coding-agent sessions sharing one repo;
 - cache invalidation is fingerprint-driven and fail-open to reparsing;
 - strict standalone validation paths must continue to work without the store.
 """
@@ -41,9 +41,12 @@ from odylith.runtime.context_engine import odylith_context_engine_code_graph_run
 from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.context_engine import odylith_context_engine_engineering_notes_runtime
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_architecture_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime
-from odylith.runtime.context_engine import odylith_context_engine_session_packet_runtime
 from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_query_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime
@@ -60,6 +63,7 @@ from odylith.runtime.context_engine import tooling_context_routing as routing
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine.projection_contract_versions import projection_contract_version
 from odylith.runtime.context_engine import tooling_guidance_catalog
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.common import odylith_benchmark_contract
 from odylith.runtime.common.consumer_profile import (
@@ -89,7 +93,8 @@ SESSIONS_DIRNAME = "sessions"
 BOOTSTRAPS_DIRNAME = "bootstraps"
 JUDGMENT_MEMORY_FILENAME = "odylith-judgment-memory.v1.json"
 SCHEMA_VERSION = "v6"
-_CODEX_HOT_PATH_PROFILE = "codex_hot_path"
+_AGENT_HOT_PATH_PROFILE = agent_runtime_contract.AGENT_HOT_PATH_PROFILE
+_CODEX_HOT_PATH_PROFILE = _AGENT_HOT_PATH_PROFILE
 _FALLBACK_LOCAL_MEMORY_BACKEND = {
     "provider": "odylith-context-engine",
     "storage": "compiler_projection_snapshot",
@@ -276,6 +281,7 @@ _PROCESS_PROJECTION_CONNECTION_CACHE: dict[str, tuple[tuple[Any, ...], Any]] = {
 _PROCESS_GIT_REF_CACHE_TTL_SECONDS = 5.0
 _ENTITY_KIND_ALIASES: dict[str, str] = {
     "workstream": "workstream",
+    "release": "release",
     "plan": "plan",
     "bug": "bug",
     "decision": "decision",
@@ -319,6 +325,7 @@ _ENTITY_KIND_ALIASES: dict[str, str] = {
 }
 _BASE_PROJECTION_NAMES = (
     "workstreams",
+    "releases",
     "plans",
     "bugs",
     "diagrams",
@@ -334,6 +341,7 @@ _FULL_ONLY_PROJECTION_NAMES = (
 )
 _REASONING_PROJECTION_NAMES = (
     "workstreams",
+    "releases",
     "plans",
     "bugs",
     "diagrams",
@@ -445,6 +453,7 @@ _MISS_RECOVERY_ALLOWED_KINDS = (
     "make_target",
     "entrypoint",
     "plan",
+    "release",
     "bug",
     "workstream",
     "component",
@@ -471,6 +480,7 @@ _MISS_RECOVERY_KIND_PRIORITY = {
     "make_target": 1,
     "entrypoint": 1,
     "plan": 2,
+    "release": 2,
     "bug": 2,
     "workstream": 2,
     "component": 2,
@@ -1431,7 +1441,7 @@ def watch_targets(*, repo_root: Path) -> tuple[str, ...]:
         component_registry.DEFAULT_IDEAS_ROOT,
         component_registry.DEFAULT_STREAM_PATH,
         component_registry.DEFAULT_TRACEABILITY_GRAPH_PATH,
-        "odylith/compass/runtime/codex-stream.v1.jsonl",
+        agent_runtime_contract.AGENT_STREAM_PATH,
         delivery_intelligence_engine.DEFAULT_OUTPUT_PATH,
         *_ENGINEERING_WATCH_PATHS,
         "docs/runbooks",
@@ -1597,7 +1607,7 @@ load_runtime_memory_snapshot = odylith_context_engine_runtime_learning_runtime.l
 
 _load_recent_bootstrap_packets = odylith_context_engine_runtime_learning_runtime._load_recent_bootstrap_packets
 
-_packet_summary_from_bootstrap_payload = odylith_context_engine_runtime_learning_runtime._packet_summary_from_bootstrap_payload
+_packet_summary_from_bootstrap_payload = odylith_context_engine_packet_summary_runtime._packet_summary_from_bootstrap_payload
 
 _repo_paths_overlap = odylith_context_engine_runtime_learning_runtime._repo_paths_overlap
 
@@ -1782,6 +1792,10 @@ _load_codex_event_projection = odylith_context_engine_projection_query_runtime._
 
 
 _load_traceability_projection = odylith_context_engine_projection_query_runtime._load_traceability_projection
+
+
+
+_load_release_projection = odylith_context_engine_projection_query_runtime._load_release_projection
 
 
 
@@ -2105,6 +2119,10 @@ _context_lookup_aliases = odylith_context_engine_projection_query_runtime._conte
 
 
 _workstream_lookup_aliases = odylith_context_engine_projection_query_runtime._workstream_lookup_aliases
+
+
+
+_release_lookup_aliases = odylith_context_engine_projection_query_runtime._release_lookup_aliases
 
 
 
@@ -3434,7 +3452,7 @@ def _compact_context_dossier(
                 ]
                 if compact_rows:
                     compact_related[str(kind)] = compact_rows
-    events = dossier.get("recent_codex_events", [])
+    events = dossier.get(agent_runtime_contract.AGENT_EVENT_KEY, dossier.get("recent_codex_events", []))
     compact_events = []
     if isinstance(events, list):
         for row in events[: max(1, int(event_limit))]:
@@ -3464,7 +3482,7 @@ def _compact_context_dossier(
         "entity": compact_entity,
         "lookup": dict(dossier.get("lookup", {})) if isinstance(dossier.get("lookup"), Mapping) else {},
         "related_entities": compact_related,
-        "recent_codex_events": compact_events,
+        agent_runtime_contract.AGENT_EVENT_KEY: compact_events,
         "delivery_scope_summaries": compact_scopes,
         "relation_count": relation_count,
         "candidate_matches": dossier.get("matches", [])[:3] if isinstance(dossier.get("matches"), list) else [],
@@ -3544,7 +3562,7 @@ def build_architecture_audit(
     detail_level: str = "compact",
 ) -> dict[str, Any]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_architecture_audit(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, detail_level=detail_level)
+    return odylith_context_engine_packet_architecture_runtime.build_architecture_audit(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, detail_level=detail_level)
 
 
 
@@ -3684,7 +3702,7 @@ def build_session_brief(
     skip_impact_runtime_warmup: bool = False,
 ) -> dict[str, Any]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_session_brief(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=generated_surfaces, intent=intent, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, impact_override=impact_override, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
+    return odylith_context_engine_packet_session_runtime.build_session_brief(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=generated_surfaces, intent=intent, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, impact_override=impact_override, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
 
 
 
@@ -3712,7 +3730,7 @@ def build_session_bootstrap(
     skip_impact_runtime_warmup: bool = False,
 ) -> dict[str, Any]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_session_bootstrap(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=generated_surfaces, intent=intent, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, doc_limit=doc_limit, command_limit=command_limit, test_limit=test_limit, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
+    return odylith_context_engine_packet_session_runtime.build_session_bootstrap(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=generated_surfaces, intent=intent, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, doc_limit=doc_limit, command_limit=command_limit, test_limit=test_limit, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
 
 
 
@@ -3731,7 +3749,7 @@ def build_adaptive_coding_packet(
     validation_command_hints: Sequence[str] = (),
 ) -> dict[str, Any]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_adaptive_coding_packet(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, intent=intent, family_hint=family_hint, workstream_hint=workstream_hint, validation_command_hints=validation_command_hints)
+    return odylith_context_engine_packet_adaptive_runtime.build_adaptive_coding_packet(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, intent=intent, family_hint=family_hint, workstream_hint=workstream_hint, validation_command_hints=validation_command_hints)
 
 
 
@@ -3783,11 +3801,14 @@ def build_adaptive_coding_packet_reusing_daemon(
     validation_command_hints: Sequence[str] = (),
 ) -> dict[str, Any]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_adaptive_coding_packet_reusing_daemon(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, intent=intent, family_hint=family_hint, workstream_hint=workstream_hint, validation_command_hints=validation_command_hints)
+    return odylith_context_engine_packet_adaptive_runtime.build_adaptive_coding_packet_reusing_daemon(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, intent=intent, family_hint=family_hint, workstream_hint=workstream_hint, validation_command_hints=validation_command_hints)
 
 
 def _refresh_runtime_helper_bindings() -> None:
-    odylith_context_engine_session_packet_runtime.bind(globals())
+    odylith_context_engine_packet_summary_runtime.bind(globals())
+    odylith_context_engine_packet_architecture_runtime.bind(globals())
+    odylith_context_engine_packet_session_runtime.bind(globals())
+    odylith_context_engine_packet_adaptive_runtime.bind(globals())
     odylith_context_engine_memory_snapshot_runtime.bind(globals())
     odylith_context_engine_projection_query_runtime.bind(globals())
     odylith_context_engine_hot_path_runtime.bind(globals())

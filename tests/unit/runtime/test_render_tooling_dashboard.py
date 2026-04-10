@@ -5,6 +5,7 @@ from pathlib import Path
 
 from odylith.install.state import write_install_state, write_upgrade_spotlight, write_version_pin
 from odylith.runtime.surfaces import render_tooling_dashboard as renderer
+from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
 
 
 def _load_externalized_payload_js(path: Path) -> dict[str, object]:
@@ -218,6 +219,7 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
+
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "Repo · Odylith" not in html
     assert "Product Self-Governance Is Live Here" in html
@@ -288,6 +290,15 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Create a Registry component named" in html
     assert "Create an Atlas diagram for the payments component." in html
     assert "Duplicate payment capture after webhook retry" in html
+    assert "Release planning: pick the ship target" in html
+    assert "Program/wave planning: sequence umbrella execution" in html
+    assert "Release planning picks the ship target for one workstream" in html
+    assert "Program/wave planning picks execution order under one umbrella" in html
+    assert "A workstream can belong to both." in html
+    assert "Add B-067 to release 0.1.11." in html
+    assert "odylith release add B-067 0.1.11 --repo-root ." in html
+    assert "For umbrella workstream B-021, create a 3-wave execution program." in html
+    assert "odylith program next B-021 --repo-root ." in html
     assert "Refresh the full dashboard" in html
     assert "Keep Compass warm" in html
     assert "Add a developer note" in html
@@ -318,6 +329,112 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert html.index('<h3 class="cheatsheet-card-title">Create a Registry component</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
     assert html.index('<h3 class="cheatsheet-card-title">Create an Atlas diagram</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
     assert html.index('<h3 class="cheatsheet-card-title">Create a Casebook bug</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
+
+
+def test_shell_case_preview_rows_include_proof_preview_lines(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    _seed_inputs(tmp_path)
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+
+    rows = tooling_dashboard_shell_presenter.shell_case_preview_rows(
+        [
+            {
+                "id": "case-1",
+                "rank": 1,
+                "headline": "Stay pinned to the blocker seam",
+                "brief": "Preview proof is not live proof.",
+                "decision_at_stake": "Fix the live blocker before sidecars.",
+                "scope_key": "workstream:B-062",
+                "scope_id": "B-062",
+                "proof_state": {
+                    "lane_id": "proof-state-control-plane",
+                    "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                    "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                    "frontier_phase": "manifests-deploy",
+                    "proof_status": "fixed_in_code",
+                },
+                "claim_guard": {
+                    "highest_truthful_claim": "fixed in code",
+                    "blocked_terms": ["fixed", "cleared", "resolved"],
+                },
+            }
+        ]
+    )
+
+    assert rows[0]["proof_lines"][:3] == [
+        "Current blocker: Lambda permission lifecycle on ecs-drift-monitor invoke",
+        "Failure fingerprint: aws:lambda:Permission doesn't support update",
+        "Frontier: manifests-deploy",
+    ]
+    assert rows[0]["proof_claim"] == "fixed in code"
+
+
+def test_shell_case_preview_rows_surface_proof_resolution_ambiguity() -> None:
+    rows = tooling_dashboard_shell_presenter.shell_case_preview_rows(
+        [
+            {
+                "id": "case-2",
+                "rank": 2,
+                "headline": "Ambiguous proof lane",
+                "brief": "Do not fake a precise blocker.",
+                "decision_at_stake": "Pick the right lane before status language.",
+                "scope_key": "workstream:B-999",
+                "scope_id": "B-999",
+                "proof_state": {},
+                "proof_state_resolution": {
+                    "state": "ambiguous",
+                    "lane_ids": ["lane-a", "lane-b"],
+                },
+            }
+        ]
+    )
+
+    assert rows[0]["proof_lines"] == [
+        "Proof state is ambiguous across multiple blocker lanes: lane-a, lane-b."
+    ]
+
+
+def test_shell_case_preview_rows_surface_same_fingerprint_reopen_summary() -> None:
+    rows = tooling_dashboard_shell_presenter.shell_case_preview_rows(
+        [
+            {
+                "id": "case-3",
+                "rank": 3,
+                "headline": "Keep the blocker seam pinned",
+                "brief": "The same live blocker came back.",
+                "decision_at_stake": "Reuse the same bug lane instead of narrating a new mystery.",
+                "scope_key": "workstream:B-062",
+                "scope_id": "B-062",
+                "proof_state": {
+                    "lane_id": "proof-state-control-plane",
+                    "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                    "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                    "frontier_phase": "manifests-deploy",
+                    "proof_status": "falsified_live",
+                    "last_falsification": {
+                        "recorded_at": "2026-04-08T18:42:00Z",
+                        "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                        "frontier_phase": "manifests-deploy",
+                    },
+                    "linked_bug_id": "CB-077",
+                    "repeated_fingerprint_count": 2,
+                },
+                "proof_reopen": {
+                    "same_fingerprint_reopened": True,
+                    "linked_bug_id": "CB-077",
+                    "repeated_fingerprint_count": 2,
+                    "summary": "Previous fix did not clear the live blocker; keep Lambda permission lifecycle on ecs-drift-monitor invoke pinned as the active seam. Reuse Casebook bug CB-077 rather than opening a new blocker record.",
+                },
+            }
+        ]
+    )
+
+    assert rows[0]["proof_lines"][0].startswith("Previous fix did not clear the live blocker")
 
 
 def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -404,28 +521,104 @@ def test_render_tooling_dashboard_dedupes_stale_compass_runtime_from_shell_statu
     assert payload_js["surface_runtime_status"] == {}
 
 
-def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_status(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_dedupes_stale_failed_compass_refresh_from_shell_status(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
-    warning = (
-        "Requested Compass full refresh did not finish before the dashboard timeout. "
-        "Showing the last successful shell-safe runtime snapshot from 2026-04-07T17:06:12Z."
-    )
     _seed_compass_runtime_snapshot(
         tmp_path,
-        generated_utc="2026-04-07T17:06:12Z",
+        generated_utc="2020-01-02T17:06:12Z",
         last_refresh_attempt={
             "status": "failed",
-            "requested_profile": "full",
+            "requested_profile": "shell-safe",
             "applied_profile": "shell-safe",
             "attempted_utc": "2026-04-07T17:17:57Z",
             "reason": "timeout",
         },
-        warning=warning,
+        warning=(
+            "Requested Compass refresh did not finish before the refresh timeout. "
+            "Showing the last successful shell-safe runtime snapshot from 2020-01-02T17:06:12Z."
+        ),
     )
     monkeypatch.setattr(
         renderer.odylith_context_engine_store,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
+    )
+    monkeypatch.setattr(
+        renderer.tooling_dashboard_surface_status,
+        "now_utc",
+        lambda: "2026-04-09T19:17:57Z",
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+
+    assert rc == 0
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    assert payload_js["surface_runtime_status"] == {}
+
+
+def test_render_tooling_dashboard_dedupes_failed_compass_refresh_when_compass_payload_warns(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # noqa: ANN001
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(
+        tmp_path,
+        generated_utc="2026-04-07T17:06:12Z",
+        last_refresh_attempt={
+            "status": "failed",
+            "requested_profile": "shell-safe",
+            "applied_profile": "shell-safe",
+            "attempted_utc": "2026-04-07T17:17:57Z",
+            "reason": "timeout",
+        },
+        warning=(
+            "Requested Compass refresh did not finish before the refresh timeout. "
+            "Showing the last successful shell-safe runtime snapshot from 2026-04-07T17:06:12Z."
+        ),
+    )
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+    monkeypatch.setattr(
+        renderer.tooling_dashboard_surface_status,
+        "now_utc",
+        lambda: "2026-04-07T18:17:57Z",
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+
+    assert rc == 0
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    assert payload_js["surface_runtime_status"] == {}
+
+
+def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_status(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(
+        tmp_path,
+        generated_utc="2026-04-07T17:06:12Z",
+        last_refresh_attempt={
+            "status": "failed",
+            "requested_profile": "shell-safe",
+            "applied_profile": "shell-safe",
+            "attempted_utc": "2026-04-07T17:17:57Z",
+            "reason": "timeout",
+        },
+    )
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+    monkeypatch.setattr(
+        renderer.tooling_dashboard_surface_status,
+        "now_utc",
+        lambda: "2026-04-07T18:17:57Z",
     )
 
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
@@ -435,13 +628,13 @@ def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_sta
     compass_status = dict(payload_js["surface_runtime_status"]["compass"])
     assert compass_status["tone"] == "warning"
     assert compass_status["title"] == "Showing prior Compass snapshot"
-    assert compass_status["body"] == warning
+    assert compass_status["body"] == (
+        "Requested Compass refresh failed before a fresh payload was written. "
+        "Showing the prior runtime snapshot from 2026-04-07T17:06:12Z."
+    )
     assert "Snapshot: 2026-04-07T17:06:12Z" in compass_status["meta"]
     assert "Attempted: 2026-04-07T17:17:57Z" in compass_status["meta"]
-    assert (
-        "Next: odylith dashboard refresh --repo-root . --surfaces compass --compass-refresh-profile full"
-        in compass_status["meta"]
-    )
+    assert "Next: odylith compass refresh --repo-root . --wait" in compass_status["meta"]
 
 
 def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001

@@ -99,7 +99,6 @@ def _idea_text(
         "commercial_value: 5\n\n"
         "product_impact: 5\n\n"
         "market_value: 5\n\n"
-        "impacted_lanes: both\n\n"
         "impacted_parts: workstream phase promotion\n\n"
         "sizing: L\n\n"
         "complexity: High\n\n"
@@ -170,15 +169,15 @@ def _seed_repo(*, root: Path, status: str) -> tuple[Path, Path, Path]:
             "# Backlog Index\n\n"
             "Last updated (UTC): 2026-03-03\n\n"
             "## Ranked Active Backlog\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
             "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
-            f"| - | B-901 | Lineage Promotion Test | P0 | 100 | 5 | 5 | 5 | L | High | both | {status} | [lineage]({idea_path}) |\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            f"| - | B-901 | Lineage Promotion Test | P0 | 100 | 5 | 5 | 5 | L | High | {status} | [lineage]({idea_path}) |\n\n"
             "## Finished (Linked to `odylith/technical-plans/done`)\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
             "## Reorder Rationale Log\n\n"
             "### B-901 (rank -)\n"
             "- why now: test.\n"
@@ -235,7 +234,7 @@ def test_auto_promote_promotes_planning_workstream_with_decision_signal(tmp_path
     assert "status: implementation" in idea_text
 
     index_text = backlog_index.read_text(encoding="utf-8")
-    assert "| both | implementation |" in index_text
+    assert "| High | implementation |" in index_text
 
     rows = [json.loads(line) for line in stream_path.read_text(encoding="utf-8").splitlines() if line.strip()]
     assert len(rows) == 2
@@ -261,7 +260,7 @@ def test_auto_promote_skips_generated_only_activity(tmp_path: Path) -> None:
     idea_text = idea_path.read_text(encoding="utf-8")
     assert "status: planning" in idea_text
     index_text = backlog_index.read_text(encoding="utf-8")
-    assert "| both | planning |" in index_text
+    assert "| High | planning |" in index_text
     rows = [json.loads(line) for line in stream_path.read_text(encoding="utf-8").splitlines() if line.strip()]
     assert len(rows) == 1
 
@@ -284,6 +283,6 @@ def test_auto_promote_never_demotes_existing_implementation(tmp_path: Path) -> N
     idea_text = idea_path.read_text(encoding="utf-8")
     assert "status: implementation" in idea_text
     index_text = backlog_index.read_text(encoding="utf-8")
-    assert "| both | implementation |" in index_text
+    assert "| High | implementation |" in index_text
     rows = [json.loads(line) for line in stream_path.read_text(encoding="utf-8").splitlines() if line.strip()]
     assert len(rows) == 1

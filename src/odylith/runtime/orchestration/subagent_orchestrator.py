@@ -1,4 +1,4 @@
-"""Prompt-level orchestration for accuracy-first Codex delegation.
+"""Prompt-level orchestration for accuracy-first host-aware delegation.
 
 This module sits above the bounded Subagent Router and decides whether a
 grounded repo-work prompt should stay local, run as one bounded leaf, or fan
@@ -31,6 +31,7 @@ from typing import Mapping
 from typing import Sequence
 import uuid
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as compass_timeline
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import odylith_context_engine_store as odylith_store
@@ -44,7 +45,7 @@ from odylith.runtime.orchestration import subagent_orchestrator_odylith_runtime
 
 DEFAULT_TUNING_PATH = ".odylith/subagent_orchestrator/tuning.v1.json"
 DEFAULT_DECISION_LEDGER_DIR = ".odylith/subagent_orchestrator/decision-ledgers"
-DEFAULT_STREAM_PATH = "odylith/compass/runtime/codex-stream.v1.jsonl"
+DEFAULT_STREAM_PATH = agent_runtime_contract.AGENT_STREAM_PATH
 DEFAULT_COMPONENT_ID = "subagent-orchestrator"
 _TUNING_VERSION = "v1"
 _DECISION_LEDGER_VERSION = "v1"
@@ -140,7 +141,8 @@ _ARCHITECTURE_GROUNDING_KEYWORDS: tuple[str, ...] = (
     "ownership boundary",
     "tenant boundary",
 )
-_CODEX_HOT_PATH_PROFILE = "codex_hot_path"
+_AGENT_HOT_PATH_PROFILE = agent_runtime_contract.AGENT_HOT_PATH_PROFILE
+_CODEX_HOT_PATH_PROFILE = _AGENT_HOT_PATH_PROFILE
 
 
 class OrchestrationMode(str, Enum):
@@ -2450,7 +2452,7 @@ def orchestrate_prompt(
     if any(subtask.route_model == "gpt-5.3-codex-spark" for subtask in routed_subtasks):
         budget_notes.append("lighter mechanical support leaves were routed toward Spark to conserve token budget")
     if any(subtask.route_model == "gpt-5.3-codex" for subtask in routed_subtasks):
-        budget_notes.append("mid-tier coding leaves were routed toward Codex profiles before escalating to GPT-5.4")
+        budget_notes.append("mid-tier coding leaves were routed toward write-focused profiles before escalating to GPT-5.4")
 
     rationale = {
         OrchestrationMode.SINGLE_LEAF: "delegated as one bounded leaf because the grounded scope did not justify decomposition",

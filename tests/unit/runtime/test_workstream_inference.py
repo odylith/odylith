@@ -40,7 +40,6 @@ def _idea_text(*, idea_id: str, title: str, promoted_to_plan: str) -> str:
         "commercial_value: 5\n\n"
         "product_impact: 5\n\n"
         "market_value: 5\n\n"
-        "impacted_lanes: both\n\n"
         "impacted_parts: traceability\n\n"
         "sizing: M\n\n"
         "complexity: High\n\n"

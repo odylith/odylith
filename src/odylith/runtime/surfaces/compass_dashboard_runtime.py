@@ -19,13 +19,13 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.surfaces import compass_outcome_digest_runtime
 from odylith.runtime.surfaces import compass_narrative_runtime
-from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_fact_packets
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import compass_self_host_runtime
 from odylith.runtime.surfaces import compass_transaction_runtime
 from odylith.runtime.surfaces import compass_execution_focus_runtime
 from odylith.runtime.surfaces import compass_runtime_payload_runtime
+from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.governance import execution_wave_view_model
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
@@ -41,20 +41,6 @@ _FRESHNESS_AGING_MAX_MINUTES = 24 * 60
 DEFAULT_HISTORY_RETENTION_DAYS = 15
 
 
-def _global_brief_should_use_provider(
-    *,
-    repo_root: Path,
-    fact_packet: Mapping[str, Any],
-    window_hours: int,
-) -> bool:
-    if int(window_hours) in {24, 48}:
-        return True
-    return not compass_standup_brief_narrator.has_reusable_cached_brief(
-        repo_root=repo_root,
-        fact_packet=fact_packet,
-    )
-
-
 def _global_brief_provider_allowed(
     *,
     repo_root: Path,
@@ -62,13 +48,26 @@ def _global_brief_provider_allowed(
     window_hours: int,
     refresh_profile: str,
 ) -> bool:
-    if compass_refresh_contract.normalize_refresh_profile(refresh_profile) not in {"full", "shell-safe"}:
+    if not compass_refresh_contract.prefer_live_provider(refresh_profile):
         return False
     return _global_brief_should_use_provider(
         repo_root=repo_root,
         fact_packet=fact_packet,
         window_hours=window_hours,
     )
+
+
+def _global_brief_should_use_provider(
+    *,
+    repo_root: Path,
+    fact_packet: Mapping[str, Any],
+    window_hours: int,
+) -> bool:
+    del repo_root
+    window_token = str(fact_packet.get("window", "")).strip().lower()
+    if window_token in {"24h", "48h"}:
+        return True
+    return int(window_hours) in {24, 48}
 
 
 def _timeline_event_priority(row: Mapping[str, Any]) -> int:
@@ -197,11 +196,21 @@ def _event_public_payload(event: Mapping[str, Any]) -> dict[str, Any]:
         "transaction_boundary": str(event.get("transaction_boundary", "")).strip(),
         "context": str(event.get("context", "")).strip(),
         "headline_hint": str(event.get("headline_hint", "")).strip(),
+        "proof_lane": str(event.get("proof_lane", "")).strip(),
+        "proof_fingerprint": str(event.get("proof_fingerprint", "")).strip(),
+        "proof_phase": str(event.get("proof_phase", "")).strip(),
+        "evidence_tier": str(event.get("evidence_tier", "")).strip(),
+        "proof_status": str(event.get("proof_status", "")).strip(),
+        "work_category": str(event.get("work_category", "")).strip(),
+        "deployment_truth": dict(event.get("deployment_truth", {})) if isinstance(event.get("deployment_truth"), Mapping) else {},
     }
 
 
-def _self_host_snapshot(*, repo_root: Path) -> dict[str, Any]:
-    return compass_self_host_runtime.self_host_snapshot(repo_root=repo_root)
+def _self_host_snapshot(*, repo_root: Path, refresh_profile: str = "shell-safe") -> dict[str, Any]:
+    return compass_self_host_runtime.self_host_snapshot(
+        repo_root=repo_root,
+        prefer_cached=True,
+    )
 
 
 def _self_host_risk_rows(*, snapshot: Mapping[str, Any], local_date: str) -> list[dict[str, Any]]:
@@ -2120,6 +2129,8 @@ def _build_scoped_standup_fact_packet(
     recent_completed: Sequence[Mapping[str, str]],
     window_events: Sequence[Mapping[str, Any]],
     window_transactions: Sequence[Mapping[str, Any]],
+    execution_updates: Sequence[Mapping[str, Any]] | None = None,
+    transaction_updates: Sequence[Mapping[str, Any]] | None = None,
     window_hours: int,
     risk_rows: Mapping[str, Sequence[Mapping[str, Any]]],
     risk_summary: str,
@@ -2132,6 +2143,8 @@ def _build_scoped_standup_fact_packet(
         recent_completed=recent_completed,
         window_events=window_events,
         window_transactions=window_transactions,
+        execution_updates=execution_updates,
+        transaction_updates=transaction_updates,
         window_hours=window_hours,
         risk_rows=risk_rows,
         risk_summary=risk_summary,
@@ -2150,6 +2163,8 @@ def _build_global_standup_fact_packet(
     recent_completed: Sequence[Mapping[str, str]],
     window_events: Sequence[Mapping[str, Any]],
     window_transactions: Sequence[Mapping[str, Any]],
+    execution_updates: Sequence[Mapping[str, Any]] | None = None,
+    transaction_updates: Sequence[Mapping[str, Any]] | None = None,
     window_hours: int,
     risk_rows: Mapping[str, Sequence[Mapping[str, Any]]],
     risk_summary: str,
@@ -2167,6 +2182,8 @@ def _build_global_standup_fact_packet(
         recent_completed=recent_completed,
         window_events=window_events,
         window_transactions=window_transactions,
+        execution_updates=execution_updates,
+        transaction_updates=transaction_updates,
         window_hours=window_hours,
         risk_rows=risk_rows,
         risk_summary=risk_summary,
@@ -2355,6 +2372,7 @@ def _build_runtime_payload(
     active_window_minutes: int,
     runtime_mode: str,
     refresh_profile: str = "shell-safe",
+    progress_callback: Any | None = None,
 ) -> dict[str, Any]:
     return compass_runtime_payload_runtime._build_runtime_payload(
         repo_root=repo_root,
@@ -2368,6 +2386,7 @@ def _build_runtime_payload(
         active_window_minutes=active_window_minutes,
         runtime_mode=runtime_mode,
         refresh_profile=refresh_profile,
+        progress_callback=progress_callback,
     )
 
 

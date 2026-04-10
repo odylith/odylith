@@ -34,6 +34,7 @@ def warm_projections(
     load_runtime_timing_summary = host.load_runtime_timing_summary
     _empty_projection_tables = host._empty_projection_tables
     _load_backlog_projection = host._load_backlog_projection
+    _load_release_projection = host._load_release_projection
     _load_idea_specs = host._load_idea_specs
     _WORKSTREAM_ID_RE = host._WORKSTREAM_ID_RE
     _parse_link_target = host._parse_link_target
@@ -164,6 +165,17 @@ def warm_projections(
                 }
             )
 
+        release_projection = (
+            _load_release_projection(repo_root=root)
+            if {"workstreams", "releases"}.intersection(projection_names)
+            else {"releases": [], "workstreams": {}, "current_release": {}, "next_release": {}, "summary": {}}
+        )
+        release_workstreams = (
+            dict(release_projection.get("workstreams", {}))
+            if isinstance(release_projection.get("workstreams"), Mapping)
+            else {}
+        )
+
         if "workstreams" in projection_names:
             projection_started = time.perf_counter()
             backlog_projection = _load_backlog_projection(repo_root=root)
@@ -186,8 +198,32 @@ def warm_projections(
                     search_body = _raw_text(root / idea_file) if idea_file else ""
                     normalized_plan = _normalize_repo_token(str(spec.metadata.get("promoted_to_plan", "")).strip(), repo_root=root) if spec is not None else ""
                     metadata = dict(spec.metadata) if spec is not None else {}
+                    release_detail = (
+                        dict(release_workstreams.get(idea_id, {}))
+                        if isinstance(release_workstreams.get(idea_id), Mapping)
+                        else {}
+                    )
+                    active_release = (
+                        dict(release_detail.get("active_release", {}))
+                        if isinstance(release_detail.get("active_release"), Mapping)
+                        else {}
+                    )
                     if normalized_plan:
                         metadata["promoted_to_plan"] = normalized_plan
+                    if active_release:
+                        metadata["active_release_id"] = str(release_detail.get("active_release_id", "")).strip()
+                        metadata["active_release_label"] = str(active_release.get("display_label", "")).strip()
+                        metadata["active_release_version"] = str(active_release.get("version", "")).strip()
+                        metadata["active_release_tag"] = str(active_release.get("tag", "")).strip()
+                        metadata["active_release_name"] = str(active_release.get("effective_name", "")).strip()
+                        metadata["active_release_aliases"] = [
+                            str(item).strip()
+                            for item in active_release.get("aliases", [])
+                            if str(item).strip()
+                        ] if isinstance(active_release.get("aliases"), list) else []
+                    history_summary = str(release_detail.get("release_history_summary", "")).strip()
+                    if history_summary:
+                        metadata["release_history_summary"] = history_summary
                     rows.append(
                         {
                             "idea_id": idea_id,
@@ -217,6 +253,44 @@ def warm_projections(
             )
             updated_projections.append("workstreams")
             _record_projection_timing("workstreams", projection_started, row_count=len(rows))
+
+        if "releases" in projection_names:
+            projection_started = time.perf_counter()
+            rows = [
+                dict(row)
+                for row in release_projection.get("releases", [])
+                if isinstance(row, Mapping) and str(row.get("release_id", "")).strip()
+            ] if isinstance(release_projection.get("releases"), list) else []
+            tables["releases"] = rows
+            current_release = (
+                dict(release_projection.get("current_release", {}))
+                if isinstance(release_projection.get("current_release"), Mapping)
+                else {}
+            )
+            next_release = (
+                dict(release_projection.get("next_release", {}))
+                if isinstance(release_projection.get("next_release"), Mapping)
+                else {}
+            )
+            release_summary = (
+                dict(release_projection.get("summary", {}))
+                if isinstance(release_projection.get("summary"), Mapping)
+                else {}
+            )
+            tables["projection_state"].append(
+                _projection_state_row(
+                    name="releases",
+                    fingerprint=requested_fingerprints["releases"],
+                    row_count=len(rows),
+                    payload={
+                        "current_release_id": str(current_release.get("release_id", "")).strip(),
+                        "next_release_id": str(next_release.get("release_id", "")).strip(),
+                        "active_assignment_count": int(release_summary.get("active_assignment_count", 0) or 0),
+                    },
+                )
+            )
+            updated_projections.append("releases")
+            _record_projection_timing("releases", projection_started, row_count=len(rows))
 
         if "plans" in projection_names:
             projection_started = time.perf_counter()

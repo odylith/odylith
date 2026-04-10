@@ -7,6 +7,9 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.governance.delivery import scope_signal_ladder
+from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
+
 
 def _host():
     from odylith.runtime.surfaces import render_backlog_ui as host
@@ -193,6 +196,34 @@ def _attach_execution_overlay(
         entry["execution_state_meta"] = meta
 
 
+def _attach_delivery_scope_signals(
+    *,
+    entries: list[dict[str, object]],
+    repo_root: Path,
+    runtime_mode: str,
+) -> None:
+    host = _host()
+    payload = host.odylith_context_engine_store.load_delivery_surface_payload(  # noqa: SLF001
+        repo_root=repo_root,
+        surface="radar",
+        runtime_mode=runtime_mode,
+        buckets=("workstreams",),
+    )
+    workstreams = payload.get("workstreams") if isinstance(payload, Mapping) else None
+    if not isinstance(workstreams, Mapping):
+        workstreams = {}
+
+    for entry in entries:
+        ws_id = str(entry.get("idea_id", "")).strip()
+        snapshot = workstreams.get(ws_id, {}) if ws_id else {}
+        scope_signal = snapshot.get("scope_signal", {}) if isinstance(snapshot, Mapping) else {}
+        normalized_signal = dict(scope_signal) if isinstance(scope_signal, Mapping) else {}
+        entry["scope_signal"] = normalized_signal
+        entry["scope_signal_rank"] = scope_signal_ladder.scope_signal_rank(normalized_signal)
+        entry["scope_signal_budget_class"] = str(normalized_signal.get("budget_class", "")).strip()
+        entry["scope_signal_promoted_default"] = bool(normalized_signal.get("promoted_default", False))
+
+
 def _component_catalog_rows(
     *,
     component_index: Mapping[str, component_registry.ComponentEntry],
@@ -352,6 +383,21 @@ def _build_entry(
         return None
 
     section_text = host._extract_sections_from_markdown(idea_path)  # noqa: SLF001
+    section_lines = host._extract_sections_with_body(idea_path)  # noqa: SLF001
+    section_lookup: dict[str, list[str]] = {}
+    for title, lines in section_lines:
+        normalized_title = str(title or "").strip().lower()
+        if normalized_title and normalized_title not in section_lookup:
+            section_lookup[normalized_title] = list(lines)
+
+    def _section_html(*titles: str) -> str:
+        for title in titles:
+            normalized_title = str(title or "").strip().lower()
+            lines = section_lookup.get(normalized_title, [])
+            if lines:
+                return host._render_section_body(repo_root=repo_root, lines=lines)  # noqa: SLF001
+        return ""
+
     spec = host.contract._parse_idea_spec(idea_path)  # noqa: SLF001
     metadata = spec.metadata
     promoted_to_plan = str(metadata.get("promoted_to_plan", "")).strip()
@@ -363,9 +409,12 @@ def _build_entry(
     plan_data: dict[str, object] = {
         "created": "",
         "updated": "",
+        "all_total_tasks": 0,
+        "all_done_tasks": 0,
         "total_tasks": 0,
         "done_tasks": 0,
         "progress_ratio": 0.0,
+        "progress_basis": "execution_checklist",
         "next_tasks": [],
     }
     if promoted_to_plan:
@@ -441,6 +490,10 @@ def _build_entry(
     opportunity = round((0.40 * commercial) + (0.35 * product) + (0.25 * market), 2)
     idea_ui_path = output_path
     plan_ui_path: Path | None = output_path if promoted_to_plan_path is not None and promoted_to_plan_path.is_file() else None
+    progress_view = workstream_progress_runtime.derive_workstream_progress(
+        status=str(payload["status"]).strip(),
+        plan=plan_data,
+    )
 
     return {
         "section": section,
@@ -456,7 +509,6 @@ def _build_entry(
         "market_value": market,
         "sizing": payload["sizing"].strip(),
         "complexity": payload["complexity"].strip(),
-        "impacted_lanes": payload["impacted_lanes"].strip(),
         "status": payload["status"].strip(),
         "idea_file": host._as_repo_path(repo_root=repo_root, target=idea_path),  # noqa: SLF001
         "idea_href": host._as_relative_href(output_path=output_path, target=idea_path),  # noqa: SLF001
@@ -486,10 +538,20 @@ def _build_entry(
         "rationale_text": " ".join(rationale_map.get(idea_id, [])).strip(),
         "impacted_parts": str(metadata.get("impacted_parts", "")).strip(),
         "problem": section_text.get("Problem", ""),
+        "problem_html": _section_html("Problem"),
         "customer": section_text.get("Customer", ""),
+        "customer_html": _section_html("Customer"),
         "opportunity": section_text.get("Opportunity", ""),
+        "opportunity_html": _section_html("Opportunity"),
         "founder_pov": section_text.get("Product View", section_text.get("Founder POV", "")),
+        "founder_pov_html": _section_html("Product View", "Founder POV"),
         "success_metrics": section_text.get("Success Metrics", section_text.get("Success Metric", "")),
+        "success_metrics_html": _section_html("Success Metrics", "Success Metric"),
+        "implemented_summary_html": (
+            host._render_section_body(repo_root=repo_root, lines=[str(metadata.get("implemented_summary", "")).strip()])  # noqa: SLF001
+            if str(metadata.get("implemented_summary", "")).strip()
+            else ""
+        ),
         "promoted_to_plan": promoted_to_plan,
         "promoted_to_plan_file": (
             host._as_repo_path(repo_root=repo_root, target=promoted_to_plan_path)  # noqa: SLF001
@@ -522,9 +584,17 @@ def _build_entry(
         "plan": {
             "created": str(plan_data.get("created", "")).strip(),
             "updated": str(plan_data.get("updated", "")).strip(),
+            "all_total_tasks": int(plan_data.get("all_total_tasks", 0) or 0),
+            "all_done_tasks": int(plan_data.get("all_done_tasks", 0) or 0),
             "total_tasks": int(plan_data.get("total_tasks", 0) or 0),
             "done_tasks": int(plan_data.get("done_tasks", 0) or 0),
             "progress_ratio": float(plan_data.get("progress_ratio", 0.0) or 0.0),
+            "progress_basis": str(plan_data.get("progress_basis", "")).strip(),
+            "display_progress_ratio": progress_view.get("display_progress_ratio"),
+            "display_progress_label": str(progress_view.get("display_progress_label", "")).strip(),
+            "display_progress_state": str(progress_view.get("display_progress_state", "")).strip(),
+            "progress_classification": str(progress_view.get("classification", "")).strip(),
+            "checklist_label": str(progress_view.get("checklist_label", "")).strip(),
             "next_tasks": [str(item) for item in plan_data.get("next_tasks", [])],
         },
         "finished_sort_date": finished_sort_date,
@@ -604,9 +674,17 @@ def _build_backlog_summary_entry(entry: Mapping[str, object]) -> dict[str, objec
         summary["plan"] = {
             "created": str(plan.get("created", "")).strip(),
             "updated": str(plan.get("updated", "")).strip(),
+            "all_total_tasks": int(plan.get("all_total_tasks", 0) or 0),
+            "all_done_tasks": int(plan.get("all_done_tasks", 0) or 0),
             "total_tasks": int(plan.get("total_tasks", 0) or 0),
             "done_tasks": int(plan.get("done_tasks", 0) or 0),
             "progress_ratio": float(plan.get("progress_ratio", 0.0) or 0.0),
+            "progress_basis": str(plan.get("progress_basis", "")).strip(),
+            "display_progress_ratio": plan.get("display_progress_ratio"),
+            "display_progress_label": str(plan.get("display_progress_label", "")).strip(),
+            "display_progress_state": str(plan.get("display_progress_state", "")).strip(),
+            "progress_classification": str(plan.get("progress_classification", "")).strip(),
+            "checklist_label": str(plan.get("checklist_label", "")).strip(),
         }
     return summary
 
@@ -633,6 +711,30 @@ def _build_traceability_client_payload(traceability_graph: Mapping[str, object])
             if isinstance(edge, Mapping)
             and str(edge.get("edge_type", "")).strip() in host._TRACEABILITY_INDEX_EDGE_TYPES  # noqa: SLF001
         ]
+
+    releases = traceability_graph.get("releases")
+    if isinstance(releases, list):
+        payload["releases"] = [dict(row) for row in releases if isinstance(row, Mapping)]
+
+    release_aliases = traceability_graph.get("release_aliases")
+    if isinstance(release_aliases, Mapping):
+        payload["release_aliases"] = {
+            str(alias).strip(): dict(row)
+            for alias, row in release_aliases.items()
+            if str(alias).strip() and isinstance(row, Mapping)
+        }
+
+    current_release = traceability_graph.get("current_release")
+    if isinstance(current_release, Mapping):
+        payload["current_release"] = dict(current_release)
+
+    next_release = traceability_graph.get("next_release")
+    if isinstance(next_release, Mapping):
+        payload["next_release"] = dict(next_release)
+
+    release_summary = traceability_graph.get("release_summary")
+    if isinstance(release_summary, Mapping):
+        payload["release_summary"] = dict(release_summary)
 
     warning_items = traceability_graph.get("warning_items")
     if isinstance(warning_items, list):

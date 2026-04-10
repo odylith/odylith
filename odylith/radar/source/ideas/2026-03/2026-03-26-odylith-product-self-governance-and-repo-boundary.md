@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-001
 
-title: Odylith Product Self-Governance and Repo Boundary
+title: Product Self-Governance and Repo Boundary
 
 date: 2026-03-26
 
@@ -13,8 +13,6 @@ commercial_value: 5
 product_impact: 5
 
 market_value: 5
-
-impacted_lanes: both
 
 impacted_parts: Odylith public repo governance roots, component registry, product component specs, bundle docs, installed product docs, and downstream repo-boundary references
 

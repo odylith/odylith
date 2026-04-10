@@ -4,11 +4,11 @@
     {
       "diagram_id": "D-001",
       "slug": "odylith-product-governance-loop",
-      "title": "Odylith Product Governance Loop",
+      "title": "Product Governance Loop",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-product-governance-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-governance-loop.svg",
       "source_png": "odylith/atlas/source/odylith-product-governance-loop.png",
@@ -80,24 +80,28 @@
     {
       "diagram_id": "D-002",
       "slug": "odylith-context-and-agent-execution-stack",
-      "title": "Odylith Context And Agent Execution Stack",
+      "title": "Context And Agent Execution Stack",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd",
       "source_svg": "odylith/atlas/source/odylith-context-and-agent-execution-stack.svg",
       "source_png": "odylith/atlas/source/odylith-context-and-agent-execution-stack.png",
-      "summary": "Context and execution stack showing how repo truth flows through compiler-owned memory read models, packet-safe contracts, delivery intelligence, Tribunal, and the agent-control or conversation path before Odylith speaks or delegates.",
+      "summary": "Context and execution stack showing how repo truth flows through compiler-owned memory read models into delivery, proof, diagnosis, and the new execution-governance layer before routing, orchestration, or chatter act.",
       "change_watch_paths": [
         "src/odylith/runtime/context_engine/odylith_context_engine.py",
         "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_backlog_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_registry_runtime.py",
         "src/odylith/runtime/memory/odylith_projection_bundle.py",
         "src/odylith/runtime/memory/odylith_projection_snapshot.py",
         "src/odylith/runtime/memory/odylith_memory_backend.py",
         "src/odylith/runtime/memory/odylith_remote_retrieval.py",
         "src/odylith/runtime/memory/tooling_memory_contracts.py",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/execution_engine",
         "src/odylith/runtime/reasoning/tribunal_engine.py",
         "src/odylith/runtime/orchestration/subagent_router.py",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py",
@@ -108,13 +112,15 @@
         "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
         "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
         "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
       ],
       "related_plans": [
         "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
         "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
         "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
-        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
       ],
       "related_docs": [
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
@@ -124,6 +130,8 @@
         "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
         "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+        "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
@@ -132,12 +140,18 @@
       "related_code": [
         "src/odylith/runtime/context_engine/odylith_context_engine.py",
         "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_backlog_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_registry_runtime.py",
         "src/odylith/runtime/memory/odylith_projection_bundle.py",
         "src/odylith/runtime/memory/odylith_projection_snapshot.py",
         "src/odylith/runtime/memory/odylith_memory_backend.py",
         "src/odylith/runtime/memory/odylith_remote_retrieval.py",
         "src/odylith/runtime/memory/tooling_memory_contracts.py",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/execution_engine/contract.py",
+        "src/odylith/runtime/execution_engine/policy.py",
+        "src/odylith/runtime/execution_engine/frontier.py",
         "src/odylith/runtime/reasoning/tribunal_engine.py",
         "src/odylith/runtime/orchestration/subagent_router.py",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py",
@@ -148,7 +162,8 @@
         "B-001",
         "B-031",
         "B-058",
-        "B-059"
+        "B-059",
+        "B-072"
       ],
       "components": [
         {
@@ -161,11 +176,11 @@
         },
         {
           "name": "delivery and diagnosis",
-          "description": "Delivery Intelligence and Tribunal consume compact memory truth before the product explains what it should do next."
+          "description": "Delivery Intelligence, Proof State, and Tribunal convert grounded truth into posture, blocker, and diagnosis inputs instead of directly controlling the next action."
         },
         {
-          "name": "agent control and chatter",
-          "description": "Router, orchestrator, and Odylith chatter turn grounded evidence into bounded execution and humane commentary."
+          "name": "execution governance and agent control",
+          "description": "Execution Governance screens the next move for admissibility before router/orchestrator policy or Odylith chatter act on it."
         }
       ],
       "related_component_ids": [
@@ -176,6 +191,8 @@
         "odylith-memory-backend",
         "odylith-remote-retrieval",
         "odylith-memory-contracts",
+        "execution-governance",
+        "proof-state",
         "odylith-chatter",
         "subagent-router",
         "subagent-orchestrator",
@@ -185,11 +202,11 @@
     {
       "diagram_id": "D-003",
       "slug": "odylith-diagnosis-and-remediation-loop",
-      "title": "Odylith Diagnosis And Remediation Loop",
+      "title": "Diagnosis And Remediation Loop",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.svg",
       "source_png": "odylith/atlas/source/odylith-diagnosis-and-remediation-loop.png",
@@ -231,11 +248,11 @@
     {
       "diagram_id": "D-004",
       "slug": "odylith-delivery-governance-topology",
-      "title": "Odylith Delivery Governance Topology",
+      "title": "Delivery Governance Topology",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-delivery-governance-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-delivery-governance-topology.svg",
       "source_png": "odylith/atlas/source/odylith-delivery-governance-topology.png",
@@ -342,11 +359,11 @@
     {
       "diagram_id": "D-005",
       "slug": "odylith-delivery-intelligence-closed-loop",
-      "title": "Odylith Delivery Intelligence Closed Loop",
+      "title": "Delivery Intelligence Closed Loop",
       "kind": "sequence",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.svg",
       "source_png": "odylith/atlas/source/odylith-delivery-intelligence-closed-loop.png",
@@ -421,11 +438,11 @@
     {
       "diagram_id": "D-006",
       "slug": "odylith-operator-inbox-and-evidence-routing",
-      "title": "Odylith Operator Inbox and Evidence Routing",
+      "title": "Operator Inbox and Evidence Routing",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.mmd",
       "source_svg": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.svg",
       "source_png": "odylith/atlas/source/odylith-operator-inbox-and-evidence-routing.png",
@@ -502,11 +519,11 @@
     {
       "diagram_id": "D-007",
       "slug": "odylith-tribunal-multi-actor-reasoning-engine",
-      "title": "Odylith Tribunal Multi-Actor Reasoning Engine",
+      "title": "Tribunal Multi-Actor Reasoning Engine",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.png",
@@ -569,11 +586,11 @@
     {
       "diagram_id": "D-008",
       "slug": "odylith-tribunal-dossier-and-remediation-lifecycle",
-      "title": "Odylith Tribunal Dossier and Remediation Lifecycle",
+      "title": "Tribunal Dossier and Remediation Lifecycle",
       "kind": "sequence",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.png",
@@ -638,11 +655,11 @@
     {
       "diagram_id": "D-009",
       "slug": "odylith-delivery-intelligence-signal-journal-and-observer-pipeline",
-      "title": "Odylith Delivery Intelligence Signal Journal and Observer Pipeline",
+      "title": "Delivery Intelligence Signal Journal and Observer Pipeline",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.mmd",
       "source_svg": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.svg",
       "source_png": "odylith/atlas/source/odylith-delivery-intelligence-signal-journal-and-observer-pipeline.png",
@@ -707,11 +724,11 @@
     {
       "diagram_id": "D-010",
       "slug": "odylith-tribunal-selection-funnel-and-queue-formation",
-      "title": "Odylith Tribunal Selection Funnel and Queue Formation",
+      "title": "Tribunal Selection Funnel and Queue Formation",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.png",
@@ -772,11 +789,11 @@
     {
       "diagram_id": "D-011",
       "slug": "odylith-tribunal-adjudication-editor-and-packet-assembly",
-      "title": "Odylith Tribunal Adjudication, Editorial Merge, and Packet Assembly",
+      "title": "Tribunal Adjudication, Editorial Merge, and Packet Assembly",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.png",
@@ -841,11 +858,11 @@
     {
       "diagram_id": "D-012",
       "slug": "odylith-subagent-router-decision-and-escalation-flow",
-      "title": "Odylith Subagent Router Decision and Escalation Flow",
+      "title": "Subagent Router Decision and Escalation Flow",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-07",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-router-decision-and-escalation-flow.png",
@@ -903,11 +920,11 @@
     {
       "diagram_id": "D-013",
       "slug": "odylith-subagent-router-governance-and-audit-topology",
-      "title": "Odylith Subagent Router Governance and Audit Topology",
+      "title": "Subagent Router Governance and Audit Topology",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-router-governance-and-audit-topology.png",
@@ -970,11 +987,11 @@
     {
       "diagram_id": "D-014",
       "slug": "odylith-subagent-orchestrator-prompt-triage-and-routing-flow",
-      "title": "Odylith Subagent Orchestrator Prompt Triage and Routing Flow",
+      "title": "Subagent Orchestrator Prompt Triage and Routing Flow",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-07",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-prompt-triage-and-routing-flow.png",
@@ -1028,11 +1045,11 @@
     {
       "diagram_id": "D-015",
       "slug": "odylith-subagent-orchestrator-safe-fanout-and-parallel-safety",
-      "title": "Odylith Subagent Orchestrator Safe Fan-Out and Parallel Safety",
+      "title": "Subagent Orchestrator Safe Fan-Out and Parallel Safety",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-07",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-safe-fanout-and-parallel-safety.png",
@@ -1082,11 +1099,11 @@
     {
       "diagram_id": "D-016",
       "slug": "odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership",
-      "title": "Odylith Subagent Orchestrator Merge Barrier and Adjudication Ownership",
+      "title": "Subagent Orchestrator Merge Barrier and Adjudication Ownership",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-07",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-merge-barrier-and-adjudication-ownership.png",
@@ -1136,11 +1153,11 @@
     {
       "diagram_id": "D-017",
       "slug": "odylith-subagent-orchestrator-governance-and-adaptive-learning-topology",
-      "title": "Odylith Subagent Orchestrator Governance and Adaptive Learning Topology",
+      "title": "Subagent Orchestrator Governance and Adaptive Learning Topology",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.svg",
       "source_png": "odylith/atlas/source/odylith-subagent-orchestrator-governance-and-adaptive-learning-topology.png",
@@ -1197,11 +1214,11 @@
     {
       "diagram_id": "D-018",
       "slug": "odylith-installable-product-layered-topology",
-      "title": "Odylith Installable Product Layered Topology",
+      "title": "Installable Product Layered Topology",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-installable-product-layered-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-installable-product-layered-topology.svg",
       "source_png": "odylith/atlas/source/odylith-installable-product-layered-topology.png",
@@ -1349,11 +1366,11 @@
     {
       "diagram_id": "D-019",
       "slug": "odylith-installable-product-bootstrap-and-validation-flow",
-      "title": "Odylith Installable Product Bootstrap and Validation Flow",
+      "title": "Installable Product Bootstrap and Validation Flow",
       "kind": "sequence",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.svg",
       "source_png": "odylith/atlas/source/odylith-installable-product-bootstrap-and-validation-flow.png",
@@ -1437,11 +1454,11 @@
     {
       "diagram_id": "D-020",
       "slug": "odylith-product-runtime-boundary-map",
-      "title": "Odylith Product Runtime Boundary Map",
+      "title": "Product Runtime Boundary Map",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-product-runtime-boundary-map.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-runtime-boundary-map.svg",
       "source_png": "odylith/atlas/source/odylith-product-runtime-boundary-map.png",
@@ -1601,11 +1618,11 @@
     {
       "diagram_id": "D-021",
       "slug": "odylith-self-host-runtime-and-release-gate",
-      "title": "Odylith Self-Host Runtime And Release Gate",
+      "title": "Self-Host Runtime And Release Gate",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.mmd",
       "source_svg": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.svg",
       "source_png": "odylith/atlas/source/odylith-self-host-runtime-and-release-gate.png",
@@ -1676,11 +1693,11 @@
     {
       "diagram_id": "D-022",
       "slug": "odylith-canonical-release-version-session-and-publish-lane",
-      "title": "Odylith Canonical Release Version Session And Publish Lane",
+      "title": "Canonical Release Version Session And Publish Lane",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.mmd",
       "source_svg": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.svg",
       "source_png": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.png",
@@ -1761,11 +1778,11 @@
     {
       "diagram_id": "D-023",
       "slug": "odylith-managed-runtime-release-and-install-flow",
-      "title": "Odylith Managed Runtime Release And Install Flow",
+      "title": "Managed Runtime Release And Install Flow",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.svg",
       "source_png": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.png",
@@ -1834,11 +1851,11 @@
     {
       "diagram_id": "D-024",
       "slug": "odylith-benchmark-proof-and-publication-lane",
-      "title": "Odylith Benchmark Proof And Publication Lane",
+      "title": "Benchmark Proof And Publication Lane",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
       "source_svg": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.svg",
       "source_png": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.png",
@@ -1914,11 +1931,11 @@
     {
       "diagram_id": "D-025",
       "slug": "odylith-memory-substrate-compile-retrieval-and-packet-topology",
-      "title": "Odylith Memory Substrate Compile, Retrieval, and Packet Topology",
+      "title": "Memory Substrate Compile, Retrieval, and Packet Topology",
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-08",
+      "last_reviewed_utc": "2026-04-09",
       "source_mmd": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.svg",
       "source_png": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.png",
@@ -1997,6 +2014,426 @@
         "odylith-memory-backend",
         "odylith-remote-retrieval",
         "odylith-memory-contracts"
+      ]
+    },
+    {
+      "diagram_id": "D-026",
+      "slug": "odylith-live-proof-state-control-plane",
+      "title": "Live Proof-State Control Plane",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-09",
+      "source_mmd": "odylith/atlas/source/odylith-live-proof-state-control-plane.mmd",
+      "source_svg": "odylith/atlas/source/odylith-live-proof-state-control-plane.svg",
+      "source_png": "odylith/atlas/source/odylith-live-proof-state-control-plane.png",
+      "initial_view_fit_factor": 0.72,
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md",
+        "odylith/technical-plans/done/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+        "odylith/casebook/bugs/2026-04-08-live-proof-lanes-do-not-pin-the-primary-blocker-frontier-or-falsification-memory.md",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/reasoning/tribunal_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
+      ],
+      "summary": "Shows how tracked blocker truth and runtime live-proof memory resolve into one proof-state lane that feeds delivery, Tribunal, packets, shell or Compass surfaces, Registry, and claim lint.",
+      "components": [
+        {
+          "name": "Tracked proof truth",
+          "description": "Casebook bugs and bound plans define blocker identity, first failing phase, and clearance rule when that metadata is present."
+        },
+        {
+          "name": "Runtime live-proof memory",
+          "description": "The proof-surfaces ledger retains repeated fingerprints, last falsification, deployment truth, and frontier movement for one lane_id."
+        },
+        {
+          "name": "Shared proof consumers",
+          "description": "Delivery, Tribunal, packets, surfaces, and chatter all consume the same resolved proof-state lane instead of inventing separate summaries."
+        }
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/governance/operator_readout.py",
+        "src/odylith/runtime/reasoning/tribunal_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
+      ],
+      "related_workstreams": [
+        "B-062"
+      ],
+      "related_component_ids": [
+        "proof-state",
+        "odylith-context-engine",
+        "tribunal",
+        "dashboard",
+        "compass",
+        "casebook",
+        "odylith-chatter"
+      ]
+    },
+    {
+      "diagram_id": "D-027",
+      "slug": "odylith-release-planning-and-workstream-targeting",
+      "title": "Release Planning And Workstream Targeting",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-09",
+      "source_mmd": "odylith/atlas/source/odylith-release-planning-and-workstream-targeting.mmd",
+      "source_svg": "odylith/atlas/source/odylith-release-planning-and-workstream-targeting.svg",
+      "source_png": "odylith/atlas/source/odylith-release-planning-and-workstream-targeting.png",
+      "initial_view_fit_factor": 0.72,
+      "change_watch_paths": [
+        "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+        "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+        "odylith/radar/source/releases/releases.v1.json",
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+        "odylith/runtime/source/release-notes/v0.1.11.md",
+        "src/odylith/runtime/governance/release_planning_contract.py",
+        "src/odylith/runtime/governance/release_planning_authoring.py",
+        "src/odylith/runtime/governance/build_traceability_graph.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py"
+      ],
+      "summary": "Shows how release registry truth, append-only workstream assignment history, and release-note title inheritance flow through validation, authoring, traceability, Radar, Compass, Context Engine, and maintainer release guidance.",
+      "components": [
+        {
+          "name": "Release source truth",
+          "description": "The release registry and assignment event log own immutable release ids, aliases, lifecycle state, and auditable workstream targeting."
+        },
+        {
+          "name": "Release planning contract",
+          "description": "Shared selector resolution, lifecycle validation, and release-note name alignment keep every consumer on one truthful release lane."
+        },
+        {
+          "name": "Release consumers",
+          "description": "Traceability, Radar, Compass, Context Engine, and the maintainer runbook all read the same release-planning contract."
+        }
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/governance/release_planning_contract.py",
+        "src/odylith/runtime/governance/release_planning_authoring.py",
+        "src/odylith/runtime/governance/build_traceability_graph.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+        "src/odylith/cli.py"
+      ],
+      "related_workstreams": [
+        "B-063"
+      ],
+      "related_component_ids": [
+        "release",
+        "radar",
+        "compass",
+        "odylith-context-engine",
+        "odylith"
+      ]
+    },
+    {
+      "diagram_id": "D-028",
+      "slug": "odylith-scope-signal-ladder-and-escalation-topology",
+      "title": "Scope Signal Ladder And Escalation Topology",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-09",
+      "source_mmd": "odylith/atlas/source/odylith-scope-signal-ladder-and-escalation-topology.mmd",
+      "source_svg": "odylith/atlas/source/odylith-scope-signal-ladder-and-escalation-topology.svg",
+      "source_png": "odylith/atlas/source/odylith-scope-signal-ladder-and-escalation-topology.png",
+      "summary": "Shows the shared deterministic ladder that turns raw scope evidence into one additive contract for visibility, promotion, and expensive compute budgets across governance surfaces.",
+      "components": [
+        {
+          "name": "Scope feature intake",
+          "description": "Timeline events, local path classes, plan status, operator readouts, and proof posture collapse into one deterministic feature vector."
+        },
+        {
+          "name": "Scope Signal Ladder",
+          "description": "One shared rung contract assigns visibility, promotion, and budget posture instead of letting each surface invent urgency locally."
+        },
+        {
+          "name": "Provider-neutral budgets",
+          "description": "The ladder emits host-agnostic budget classes so Codex, Claude, and future providers all follow one product compute policy."
+        }
+      ],
+      "change_watch_paths": [
+        "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/governance/operator_readout.py",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/proof-state/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py"
+      ],
+      "related_workstreams": [
+        "B-071"
+      ],
+      "related_component_ids": [
+        "delivery-intelligence",
+        "compass",
+        "radar",
+        "dashboard",
+        "proof-state",
+        "registry",
+        "atlas"
+      ]
+    },
+    {
+      "diagram_id": "D-029",
+      "slug": "odylith-governance-surface-focus-and-budget-gating-flow",
+      "title": "Governance Surface Focus And Budget Gating Flow",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-09",
+      "source_mmd": "odylith/atlas/source/odylith-governance-surface-focus-and-budget-gating-flow.mmd",
+      "source_svg": "odylith/atlas/source/odylith-governance-surface-focus-and-budget-gating-flow.svg",
+      "source_png": "odylith/atlas/source/odylith-governance-surface-focus-and-budget-gating-flow.png",
+      "summary": "Shows how one scope rung drives Compass quiet-vs-promoted behavior, Radar default ordering, Atlas and Registry promotion, and host-neutral compute budgets without changing exhaustive source truth.",
+      "components": [
+        {
+          "name": "Quiet low-signal path",
+          "description": "Suppressed or background scopes remain deep-linkable but stay quiet instead of borrowing activity from global context."
+        },
+        {
+          "name": "Promoted default focus",
+          "description": "Verified local, active, actionable, and blocker scopes rise through Compass, Radar, Registry, and Atlas without changing source completeness."
+        },
+        {
+          "name": "Budget gating flow",
+          "description": "The same rung decides whether a scope gets no spend, cache-only reuse, cheap local reasoning, or escalated fresh provider work."
+        }
+      ],
+      "change_watch_paths": [
+        "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-state.v1.js",
+        "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
+      ],
+      "related_workstreams": [
+        "B-071"
+      ],
+      "related_component_ids": [
+        "compass",
+        "radar",
+        "dashboard",
+        "registry",
+        "atlas",
+        "delivery-intelligence"
+      ]
+    },
+    {
+      "diagram_id": "D-030",
+      "slug": "odylith-execution-governance-engine-stack",
+      "title": "Execution Governance Engine Stack",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-09",
+      "source_mmd": "odylith/atlas/source/odylith-execution-governance-engine-stack.mmd",
+      "source_svg": "odylith/atlas/source/odylith-execution-governance-engine-stack.svg",
+      "source_png": "odylith/atlas/source/odylith-execution-governance-engine-stack.png",
+      "summary": "Shows the new execution-governance package turning grounded truth, delivery posture, proof-state signals, and diagnosis into admissibility, frontier, closure, receipts, and validation control before routing or remediation proceeds.",
+      "components": [
+        {
+          "name": "Execution contract core",
+          "description": "Host profile, task contract, and admissibility policy define the shared execution-governance state and first hard action gate."
+        },
+        {
+          "name": "Frontier and closure layer",
+          "description": "Frontier, resource closure, and semantic receipts keep execution truthful, resumable, and safer than command validity alone."
+        },
+        {
+          "name": "Downstream execution surfaces",
+          "description": "Router, orchestrator, remediator, Compass, shell, and packets consume execution-governance decisions instead of re-deriving policy locally."
+        }
+      ],
+      "change_watch_paths": [
+        "src/odylith/runtime/execution_engine/contract.py",
+        "src/odylith/runtime/execution_engine/policy.py",
+        "src/odylith/runtime/execution_engine/frontier.py",
+        "src/odylith/runtime/execution_engine/resource_closure.py",
+        "src/odylith/runtime/execution_engine/receipts.py",
+        "src/odylith/runtime/execution_engine/validation.py",
+        "src/odylith/runtime/execution_engine/contradictions.py",
+        "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
+      ],
+      "related_docs": [
+        "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+        "odylith/registry/source/components/remediator/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/execution_engine/contract.py",
+        "src/odylith/runtime/execution_engine/policy.py",
+        "src/odylith/runtime/execution_engine/frontier.py",
+        "src/odylith/runtime/execution_engine/resource_closure.py",
+        "src/odylith/runtime/execution_engine/receipts.py",
+        "src/odylith/runtime/execution_engine/validation.py",
+        "src/odylith/runtime/execution_engine/contradictions.py"
+      ],
+      "related_workstreams": [
+        "B-072"
+      ],
+      "related_component_ids": [
+        "execution-governance",
+        "odylith-context-engine",
+        "delivery-intelligence",
+        "proof-state",
+        "subagent-router",
+        "subagent-orchestrator",
+        "remediator"
+      ]
+    },
+    {
+      "diagram_id": "D-031",
+      "slug": "odylith-program-wave-authoring-and-agent-command-flow",
+      "title": "Program/Wave Authoring And Agent Command Flow",
+      "kind": "flowchart",
+      "status": "active",
+      "owner": "product",
+      "last_reviewed_utc": "2026-04-09",
+      "source_mmd": "odylith/atlas/source/odylith-program-wave-authoring-and-agent-command-flow.mmd",
+      "source_svg": "odylith/atlas/source/odylith-program-wave-authoring-and-agent-command-flow.svg",
+      "source_png": "odylith/atlas/source/odylith-program-wave-authoring-and-agent-command-flow.png",
+      "summary": "Shows the thin program/wave authoring sidecar letting coding agents maintain umbrella execution-wave source truth through direct commands rather than hand-editing JSON.",
+      "components": [
+        {
+          "name": "Direct authoring commands",
+          "description": "Coding agents use `odylith program ...` and `odylith wave ...` as the ergonomic layer over the canonical source contract."
+        },
+        {
+          "name": "Canonical program file",
+          "description": "The execution-wave JSON file remains the one source of truth and is validated before downstream consumers render or query it."
+        },
+        {
+          "name": "Shared consumers",
+          "description": "Radar, Compass, Context Engine, and validators all consume the same program file rather than a second planning schema."
+        }
+      ],
+      "change_watch_paths": [
+        "src/odylith/runtime/governance/program_wave_authoring.py",
+        "src/odylith/runtime/governance/execution_wave_contract.py",
+        "src/odylith/cli.py",
+        "odylith/radar/source/programs/B-072.execution-waves.v1.json",
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md"
+      ],
+      "related_backlog": [
+        "odylith/radar/source/ideas/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-09-program-wave-authoring-cli-and-agent-ergonomics.md"
+      ],
+      "related_plans": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
+      ],
+      "related_docs": [
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
+      ],
+      "related_code": [
+        "src/odylith/runtime/governance/program_wave_authoring.py",
+        "src/odylith/runtime/governance/execution_wave_contract.py",
+        "src/odylith/cli.py"
+      ],
+      "related_workstreams": [
+        "B-072",
+        "B-079"
+      ],
+      "related_component_ids": [
+        "execution-governance",
+        "radar",
+        "compass",
+        "odylith-context-engine"
       ]
     }
   ]

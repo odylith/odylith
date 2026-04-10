@@ -94,7 +94,6 @@ def _idea_text(
         "commercial_value: 4\n\n"
         "product_impact: 4\n\n"
         "market_value: 4\n\n"
-        "impacted_lanes: both\n\n"
         "impacted_parts: governance\n\n"
         "sizing: M\n\n"
         "complexity: Medium\n\n"
@@ -152,16 +151,16 @@ def _write_backlog_index(root: Path, *, row: str, section: str) -> Path:
             "# Backlog Index\n\n"
             "Last updated (UTC): 2026-03-03\n\n"
             "## Ranked Active Backlog\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
             f"{active_row}\n\n"
             "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
             f"{execution_row}\n\n"
             "## Finished (Linked to `odylith/technical-plans/done`)\n\n"
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
             f"{finished_row}\n\n"
             "## Reorder Rationale Log\n\n"
             "### B-201 (rank 1)\n"
@@ -193,7 +192,7 @@ def test_reconcile_queued_binding_advances_to_planning_without_implementation_ev
     )
     plan_rel = "odylith/technical-plans/in-progress/2026-03-03-governance-plan.md"
     plan_index_path = _write_plan_index(tmp_path, backlog_id="B-201", plan_rel=plan_rel)
-    backlog_row = f"| 1 | B-201 | Governance Queue | P1 | 100 | 4 | 4 | 4 | M | Medium | both | queued | [idea]({_repo_rel(tmp_path, idea_path)}) |"
+    backlog_row = f"| 1 | B-201 | Governance Queue | P1 | 100 | 4 | 4 | 4 | M | Medium | queued | [idea]({_repo_rel(tmp_path, idea_path)}) |"
     backlog_index_path = _write_backlog_index(tmp_path, row=backlog_row, section="active")
     stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
 
@@ -214,7 +213,7 @@ def test_reconcile_queued_binding_advances_to_planning_without_implementation_ev
     assert "status: planning" in updated_idea
     assert f"promoted_to_plan: {plan_rel}" in updated_idea
     backlog_text = backlog_index_path.read_text(encoding="utf-8")
-    assert "| - | B-201 | Governance Queue | P1 | 100 | 4 | 4 | 4 | M | Medium | both | planning |" in backlog_text
+    assert "| - | B-201 | Governance Queue | P1 | 100 | 4 | 4 | 4 | M | Medium | planning |" in backlog_text
 
 
 def test_reconcile_queued_binding_advances_to_implementation_with_evidence(tmp_path: Path) -> None:
@@ -234,7 +233,7 @@ def test_reconcile_queued_binding_advances_to_implementation_with_evidence(tmp_p
     )
     plan_rel = "odylith/technical-plans/in-progress/2026-03-03-governance-plan.md"
     plan_index_path = _write_plan_index(tmp_path, backlog_id="B-201", plan_rel=plan_rel)
-    backlog_row = f"| 1 | B-201 | Governance Queue | P1 | 100 | 4 | 4 | 4 | M | Medium | both | queued | [idea]({_repo_rel(tmp_path, idea_path)}) |"
+    backlog_row = f"| 1 | B-201 | Governance Queue | P1 | 100 | 4 | 4 | 4 | M | Medium | queued | [idea]({_repo_rel(tmp_path, idea_path)}) |"
     backlog_index_path = _write_backlog_index(tmp_path, row=backlog_row, section="active")
     stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
 
@@ -253,7 +252,7 @@ def test_reconcile_queued_binding_advances_to_implementation_with_evidence(tmp_p
     updated_idea = idea_path.read_text(encoding="utf-8")
     assert "status: implementation" in updated_idea
     backlog_text = backlog_index_path.read_text(encoding="utf-8")
-    assert "| - | B-201 | Governance Queue | P1 | 100 | 4 | 4 | 4 | M | Medium | both | implementation |" in backlog_text
+    assert "| - | B-201 | Governance Queue | P1 | 100 | 4 | 4 | 4 | M | Medium | implementation |" in backlog_text
 
 
 def test_reconcile_finished_binding_creates_successor_and_rebinds_plan(tmp_path: Path) -> None:
@@ -278,7 +277,7 @@ def test_reconcile_finished_binding_creates_successor_and_rebinds_plan(tmp_path:
     )
     plan_rel = "odylith/technical-plans/in-progress/2026-03-03-successor-plan.md"
     plan_index_path = _write_plan_index(tmp_path, backlog_id="B-300", plan_rel=plan_rel)
-    backlog_row = f"| - | B-300 | Finished Governance | P1 | 100 | 4 | 4 | 4 | M | Medium | both | finished | [idea]({_repo_rel(tmp_path, finished_idea)}) |"
+    backlog_row = f"| - | B-300 | Finished Governance | P1 | 100 | 4 | 4 | 4 | M | Medium | finished | [idea]({_repo_rel(tmp_path, finished_idea)}) |"
     backlog_index_path = _write_backlog_index(tmp_path, row=backlog_row, section="finished")
     stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
 

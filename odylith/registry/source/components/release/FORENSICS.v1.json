@@ -8,16 +8,17 @@
     "D-023",
     "D-024",
     "D-014",
-    "D-018"
+    "D-018",
+    "D-027"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 17,
     "mapped_workstream_evidence_count": 3,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 3,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 17
+    "timeline_event_count": 18
   },
   "name": "Release",
   "path_prefixes": [
@@ -33,12 +34,41 @@
     "bin/consumer-rehearsal",
     "bin/ga-gate",
     "bin/_odylith.sh",
+    "src/odylith/runtime/governance/release_planning_authoring.py",
+    "src/odylith/runtime/governance/release_planning_contract.py",
+    "src/odylith/runtime/governance/release_planning_view_model.py",
     "src/odylith/runtime/governance/validate_self_host_posture.py",
+    "odylith/radar/source/releases",
     "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
     "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md"
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/governance/validate_self_host_posture.py",
+        "odylith/radar/source/releases/AGENTS.md",
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+        "odylith/radar/source/releases/releases.v1.json",
+        "src/odylith/runtime/governance/release_planning_authoring.py",
+        "src/odylith/runtime/governance/release_planning_contract.py",
+        "src/odylith/runtime/governance/release_planning_view_model.py"
+      ],
+      "confidence": "high",
+      "event_index": 77,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/MAINTAINER_RELEASE_RUNBOOK.md, odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md +8 more",
+      "ts_iso": "2026-04-09T14:11:45-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -563,6 +593,7 @@
   "why_tracked": "Makes Odylith's publication path a first-class governed subsystem instead of an undocumented maintainer ritual spread across ad hoc commands.",
   "workstreams": [
     "B-005",
+    "B-063",
     "B-007",
     "B-021",
     "B-026",
@@ -579,6 +610,8 @@
     "B-050",
     "B-056",
     "B-048",
-    "B-060"
+    "B-060",
+    "B-066",
+    "B-065"
   ]
 }

@@ -12,6 +12,16 @@
       --danger: #b91c1c;
       --ok: #166534;
       --focus: #2563eb;
+      --surface-shell-max-width: __ODYLITH_STANDARD_SURFACE_SHELL_MAX_WIDTH__;
+      --surface-identifier-font-size: __ODYLITH_STANDARD_SURFACE_IDENTIFIER_FONT_SIZE__;
+      --surface-identifier-font-weight: __ODYLITH_STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT__;
+      --surface-identifier-chip-padding: __ODYLITH_STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING__;
+      --surface-workstream-button-font-size: __ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE__;
+      --surface-workstream-button-font-weight: __ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT__;
+      --surface-workstream-button-padding: __ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING__;
+      --surface-deep-link-button-font-size: __ODYLITH_STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE__;
+      --surface-deep-link-button-font-weight: __ODYLITH_STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT__;
+      --surface-deep-link-button-padding: __ODYLITH_STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING__;
     }
     * { box-sizing: border-box; }
     body {
@@ -29,7 +39,7 @@
   color: var(--ink, #0b1324);
 }
     .shell {
-      max-width: 1320px;
+      max-width: var(--surface-shell-max-width, __ODYLITH_STANDARD_SURFACE_SHELL_MAX_WIDTH__);
       margin: 0 auto;
       padding: 22px 18px 34px;
       display: grid;
@@ -103,6 +113,7 @@ h1 {
       flex: 1 1 auto;
       min-width: 0;
     }
+    __ODYLITH_COMPASS_DEEP_LINK_BUTTON_CONTRACT__
     .pill {
       --chip-link-border: #93c5fd;
       --chip-link-bg: #eff6ff;
@@ -112,52 +123,7 @@ h1 {
       --chip-link-text-hover: #1d4ed8;
       gap: 6px;
     }
-    .pill, .ws-id-btn, .chip-link {
-  --chip-link-border: #b9c7db;
-  --chip-link-bg: #f3f6fb;
-  --chip-link-text: var(--chip-link-text);
-  --chip-link-border-hover: #9aaec9;
-  --chip-link-bg-hover: #e8eef7;
-  --chip-link-text-hover: #1e293b;
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--chip-link-border);
-  background: var(--chip-link-bg);
-  color: var(--chip-link-text);
-  box-shadow: none;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-  text-decoration: none;
-  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
-}
-
-.pill:hover, .ws-id-btn:hover, .chip-link:hover,
-.pill:focus-visible, .ws-id-btn:focus-visible, .chip-link:focus-visible {
-  border-color: var(--chip-link-border-hover);
-  background: var(--chip-link-bg-hover);
-  color: var(--chip-link-text-hover);
-}
-
-.pill:focus-visible, .ws-id-btn:focus-visible, .chip-link:focus-visible {
-  outline: 2px solid #bfdbfe;
-  outline-offset: 1px;
-}
-
-.pill, .ws-id-btn, .chip-link {
-  font-family: inherit;
-  color: var(--chip-link-text);
-  font-size: 11px;
-  line-height: 1;
-  letter-spacing: 0.01em;
-  font-weight: 700;
-  text-transform: none;
-}
+    __ODYLITH_COMPASS_WORKSTREAM_BUTTON_CONTRACT__
     span.pill, span.chip {
   --label-bg: #f6faf7;
   --label-border: #d6e2da;
@@ -209,31 +175,18 @@ h1 {
       --chip-link-bg-hover: #ffedd5;
       --chip-link-text-hover: #7c2d12;
     }
-    .stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
-  margin-top: 12px;
+    __ODYLITH_COMPASS_KPI_GRID_CONTRACT__
+    __ODYLITH_COMPASS_KPI_CARD_CONTRACT__
+    __ODYLITH_COMPASS_CARD_SURFACE_CONTRACT__
+    .card.release-groups-card {
+  padding-bottom: 15px;
 }
-    .stat {
-  border: 1px solid #dbeafe;
-  border-radius: 12px;
-  background: #ffffff;
-  padding: 10px 12px;
-  min-height: 0;
-  display: grid;
-  grid-template-rows: 2.35em auto;
-  align-content: start;
-}
-    .card {
-  border: 1px solid #dbeafe;
-  border-radius: 14px;
-  background: linear-gradient(180deg, #ffffff, #fbfdff);
-  padding: 12px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-  display: grid;
-  gap: 8px;
-  align-content: start;
+
+.card.release-groups-card .execution-wave-section-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 18px;
 }
     .card h2 {
       margin: 0 0 8px;
@@ -247,29 +200,10 @@ h1 {
   font-weight: 700;
   text-transform: uppercase;
 }
-    .stat .kpi-label {
-  margin: 0;
-  color: var(--ink-muted, #64748b);
-  font-size: 12px;
-  line-height: 1.15;
-  letter-spacing: 0.06em;
-  font-weight: 400;
-  text-transform: uppercase;
-  display: flex;
-  align-items: flex-start;
-}
-
-.stat .kpi-value {
-  margin: 4px 0 0;
-  color: var(--ink, #0b1324);
-  font-size: 23px;
-  line-height: 1;
-  letter-spacing: -0.01em;
-  font-weight: 700;
-}
+    __ODYLITH_COMPASS_KPI_TYPOGRAPHY_CONTRACT__
     .layout {
       display: grid;
-      gap: 12px;
+      gap: 40px;
       grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
       align-items: start;
     }
@@ -279,6 +213,12 @@ h1 {
     .stack {
       display: grid;
       gap: 12px;
+    }
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+      }
     }
     .bullet-list {
       margin: 0;
@@ -323,7 +263,7 @@ h1 {
     }
     .standup-brief-sheet {
       display: grid;
-      gap: 16px;
+      gap: 10px;
       border: 1px solid #d9e4ee;
       border-radius: 18px;
       padding: 16px 18px;
@@ -358,6 +298,9 @@ h1 {
       padding: 10px 2px;
       min-width: 0;
     }
+    .standup-brief-sections > .brief-section:first-child {
+      padding-top: 4px;
+    }
     .brief-section + .brief-section {
       border-top: 1px solid #d9e4ee;
     }
@@ -378,38 +321,6 @@ h1 {
       color: var(--ink-soft);
       min-width: 0;
       overflow-wrap: anywhere;
-    }
-    .brief-bullet.has-voice {
-      list-style: none;
-      margin-left: -18px;
-      padding-left: 18px;
-      position: relative;
-    }
-    .brief-bullet.has-voice::before {
-      content: "";
-      position: absolute;
-      left: 3px;
-      top: 11px;
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #cbd5e1;
-    }
-    .brief-bullet.has-voice.executive::before {
-      background: #60a5fa;
-    }
-    .brief-bullet.has-voice.operator::before {
-      background: #d4a373;
-    }
-    .brief-bullet-prefix {
-      display: inline;
-      margin-right: 6px;
-      color: var(--ink-muted);
-      font-size: 10px;
-      line-height: 1.15;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 800;
     }
     .brief-bullet-copy {
       color: var(--ink-soft);
@@ -442,7 +353,7 @@ h1 {
       padding: 4px 10px;
       background: #f8fbff;
       color: #35516a;
-      font-size: 11px;
+      font-size: 10px;
       line-height: 1.1;
       letter-spacing: 0.06em;
       text-transform: uppercase;
@@ -579,15 +490,21 @@ h1 {
       color: var(--ink-soft);
       overflow-wrap: anywhere;
     }
-    .digest-link {
+    .digest-link,
+    .brief-inline-link {
       color: #1d4ed8;
       text-decoration: underline dotted #93c5fd;
       text-underline-offset: 2px;
-      font-weight: 700;
+      font-size: var(--surface-identifier-font-size, __ODYLITH_STANDARD_SURFACE_IDENTIFIER_FONT_SIZE__);
+      font-weight: var(--surface-identifier-font-weight, __ODYLITH_STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT__);
     }
-    .digest-link:hover {
+    .digest-link:hover,
+    .digest-link:focus-visible,
+    .brief-inline-link:hover,
+    .brief-inline-link:focus-visible {
       color: #1e3a8a;
       text-decoration-style: solid;
+      outline: none;
     }
 
     .quick-tooltip {
@@ -647,7 +564,7 @@ h1 {
       table-layout: fixed;
     }
     .ws-table .ws-col-id {
-      width: 110px;
+      width: 240px;
     }
     .ws-table .ws-col-wave {
       width: 180px;
@@ -710,6 +627,13 @@ h1 {
       --chip-link-border-hover: #60a5fa;
       --chip-link-bg-hover: #deebff;
       --chip-link-text-hover: #1d4ed8;
+    }
+    .ws-id-stack {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
     }
     .ws-title-cell {
       color: var(--ink);
@@ -789,7 +713,7 @@ h1 {
       gap: 6px;
       flex-wrap: wrap;
     }
-    .execution-wave-board {
+.execution-wave-board {
   display: grid;
   gap: 14px;
 }

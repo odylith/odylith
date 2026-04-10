@@ -44,3 +44,78 @@ def test_refresh_context_views_uses_repo_root_for_working_memory_tiers(monkeypat
     assert seen["repo_root"] == tmp_path
     assert payload["working_memory_tiers"] == {"warm": {"guidance_chunks": []}}
     assert retrieval_plan == {}
+
+
+def test_packet_proof_state_resolves_from_delivery_scopes(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        builder.delivery_intelligence_engine,
+        "load_delivery_intelligence_artifact",
+        lambda **_: {
+            "scopes": [
+                {
+                    "scope_key": "workstream:B-062",
+                    "proof_state": {
+                        "lane_id": "proof-state-control-plane",
+                        "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                        "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                        "frontier_phase": "manifests-deploy",
+                        "proof_status": "fixed_in_code",
+                    },
+                    "claim_guard": {
+                        "highest_truthful_claim": "fixed in code",
+                        "blocked_terms": ["fixed", "cleared", "resolved"],
+                    },
+                }
+            ],
+            "indexes": {"workstreams": {"B-062": "workstream:B-062"}},
+        },
+    )
+
+    resolved = builder._packet_proof_state(  # noqa: SLF001
+        repo_root=tmp_path,
+        workstream_selection={"selected_workstream": {"entity_id": "B-062"}},
+        candidate_workstreams=[],
+        components=[],
+        diagrams=[],
+    )
+
+    assert resolved["proof_state"]["lane_id"] == "proof-state-control-plane"
+    assert resolved["claim_guard"]["highest_truthful_claim"] == "fixed in code"
+    assert resolved["proof_state_resolution"] == {
+        "state": "resolved",
+        "lane_ids": ["proof-state-control-plane"],
+    }
+
+
+def test_packet_proof_state_preserves_ambiguous_resolution(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        builder.delivery_intelligence_engine,
+        "load_delivery_intelligence_artifact",
+        lambda **_: {
+            "scopes": [
+                {
+                    "scope_key": "workstream:B-062",
+                    "proof_state_resolution": {
+                        "state": "ambiguous",
+                        "lane_ids": ["lane-a", "lane-b"],
+                    },
+                }
+            ],
+            "indexes": {"workstreams": {"B-062": "workstream:B-062"}},
+        },
+    )
+
+    resolved = builder._packet_proof_state(  # noqa: SLF001
+        repo_root=tmp_path,
+        workstream_selection={"selected_workstream": {"entity_id": "B-062"}},
+        candidate_workstreams=[],
+        components=[],
+        diagrams=[],
+    )
+
+    assert resolved == {
+        "proof_state_resolution": {
+            "state": "ambiguous",
+            "lane_ids": ["lane-a", "lane-b"],
+        }
+    }

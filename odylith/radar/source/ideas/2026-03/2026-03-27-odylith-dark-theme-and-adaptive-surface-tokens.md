@@ -2,7 +2,7 @@ status: queued
 
 idea_id: B-006
 
-title: Odylith Dark Theme and Adaptive Surface Tokens
+title: Dark Theme and Adaptive Surface Tokens
 
 date: 2026-03-27
 
@@ -13,8 +13,6 @@ commercial_value: 4
 product_impact: 4
 
 market_value: 4
-
-impacted_lanes: both
 
 impacted_parts: tooling shell theme contract, shared dashboard UI primitives, brand head/meta theme colors, Radar/Atlas/Compass/Registry/Casebook surface palettes, chart and diagram contrast, and local operator theme preference
 

@@ -1,0 +1,34 @@
+%% Reviewed 2026-04-08 for B-063 so release planning stays a first-class planning lane instead of prose attached to workstreams or release notes.
+flowchart LR
+  subgraph Source["Release Planning Source Truth"]
+    Registry["releases.v1.json<br/>release_id, status,<br/>version, tag,<br/>aliases"]
+    Events["release-assignment-events.v1.jsonl<br/>append-only add/remove/move<br/>history"]
+    Notes["release notes<br/>versioned title inheritance"]
+  end
+
+  Contract["Release Planning Contract<br/>selector resolution,<br/>lifecycle validation,<br/>name alignment"]
+  Authoring["odylith release ...<br/>create, update,<br/>list, show, add,<br/>remove, move"]
+
+  Source --> Contract
+  Authoring --> Contract
+
+  Contract --> Traceability["Traceability Graph<br/>catalog, aliases,<br/>history, active release"]
+  Contract --> Radar["Radar<br/>release cards,<br/>filters, chips"]
+  Traceability --> TruthGuard["Compass runtime truth guard<br/>reconcile stale runtime snapshot<br/>from live traceability"]
+  TruthGuard --> Compass["Compass<br/>release summary,<br/>member grouping,<br/>workstream chips"]
+  TruthGuard --> Shell["Dashboard shell + sync notes<br/>visible snapshot behind<br/>release truth warning"]
+  Contract --> Context["Context Engine<br/>release entities,<br/>selector grounding,<br/>query resolution"]
+  Contract --> Runbook["Maintainer Release Guidance<br/>explicit alias advancement<br/>and release closeout"]
+
+  Traceability --> Maintainer["Maintainer / Operator"]
+  Radar --> Maintainer
+  Compass --> Maintainer
+  Shell --> Maintainer
+  Context --> Maintainer
+  Runbook --> Maintainer
+
+  Terminal["shipped / closed<br/>release"] --> Guard["aliases must move to<br/>non-terminal planning records"]
+  Guard --> Contract
+
+  Drift["finished / parked / superseded<br/>workstream"] --> Reject["active release rejects<br/>invalid membership"]
+  Reject --> Contract

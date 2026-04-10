@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-007
 
-title: Odylith GA Promotion and Supported Platform Contract
+title: GA Promotion and Supported Platform Contract
 
 date: 2026-03-28
 
@@ -13,8 +13,6 @@ commercial_value: 5
 product_impact: 5
 
 market_value: 5
-
-impacted_lanes: both
 
 impacted_parts: public product stance, supported platform contract, release source truth, maintainer release guidance, and GA-facing product documentation
 

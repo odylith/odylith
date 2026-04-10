@@ -14,8 +14,6 @@ product_impact: 5
 
 market_value: 3
 
-impacted_lanes: both
-
 impacted_parts: compass runtime history retention, compressed archive storage, restore command surface, and runtime history metadata
 
 sizing: M

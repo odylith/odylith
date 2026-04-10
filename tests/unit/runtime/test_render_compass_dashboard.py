@@ -47,7 +47,33 @@ def _brief(*, source: str) -> dict[str, object]:
     }
 
 
-def test_parse_args_defaults_to_shell_safe_refresh_profile() -> None:
+def _seed_runtime_paths(runtime_dir: Path) -> tuple[Path, Path, Path, Path, Path]:
+    current_json_path, current_js_path, daily_path, history_index_path, history_js_path = _runtime_paths(runtime_dir)
+    history_index_path.parent.mkdir(parents=True, exist_ok=True)
+    current_json_path.write_text("{}\n", encoding="utf-8")
+    current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
+    daily_path.write_text("{}\n", encoding="utf-8")
+    history_index_path.write_text("{}\n", encoding="utf-8")
+    history_js_path.write_text("window.__ODYLITH_COMPASS_HISTORY__ = {};\n", encoding="utf-8")
+    return current_json_path, current_js_path, daily_path, history_index_path, history_js_path
+
+
+def _seed_required_render_inputs(repo_root: Path) -> None:
+    (repo_root / "odylith" / "radar" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "technical-plans").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "casebook" / "bugs").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "atlas" / "source" / "catalog").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "radar" / "source" / "INDEX.md").write_text("# Radar\n", encoding="utf-8")
+    (repo_root / "odylith" / "technical-plans" / "INDEX.md").write_text("# Plans\n", encoding="utf-8")
+    (repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md").write_text("# Bugs\n", encoding="utf-8")
+    (repo_root / "odylith" / "radar" / "traceability-graph.v1.json").write_text("{}\n", encoding="utf-8")
+    (repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json").write_text(
+        json.dumps({"version": "v1", "diagrams": []}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def test_parse_args_defaults_refresh_profile_to_shell_safe() -> None:
     args = render_compass_dashboard._parse_args([])  # noqa: SLF001
 
     assert args.refresh_profile == "shell-safe"
@@ -96,7 +122,95 @@ def test_refresh_runtime_artifacts_reuses_matching_runtime_payload(tmp_path: Pat
     assert paths == (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
 
 
-def test_refresh_runtime_artifacts_full_refresh_reuses_matching_full_ready_payload(tmp_path: Path, monkeypatch) -> None:
+def test_render_compass_dashboard_emits_proof_resolution_ui_text(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path
+    output_path = repo_root / "odylith" / "compass" / "compass.html"
+    runtime_dir = repo_root / "odylith" / "compass" / "runtime"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    _seed_required_render_inputs(repo_root)
+    runtime_paths = _seed_runtime_paths(runtime_dir)
+
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "refresh_runtime_artifacts",
+        lambda **_kwargs: (
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-08T00:00:00Z",
+            },
+            runtime_paths,
+        ),
+    )
+
+    rc = render_compass_dashboard.main(["--repo-root", str(repo_root), "--output", str(output_path)])
+
+    assert rc == 0
+    workstreams_js = (repo_root / "odylith" / "compass" / "compass-workstreams.v1.js").read_text(encoding="utf-8")
+    assert "No dominant proof lane is resolved for this workstream yet." in workstreams_js
+    assert "Ambiguous across" in workstreams_js
+
+
+def test_render_compass_dashboard_emits_release_summary_and_workstream_release_ui(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path
+    output_path = repo_root / "odylith" / "compass" / "compass.html"
+    runtime_dir = repo_root / "odylith" / "compass" / "runtime"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    _seed_required_render_inputs(repo_root)
+    runtime_paths = _seed_runtime_paths(runtime_dir)
+
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "refresh_runtime_artifacts",
+        lambda **_kwargs: (
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-08T00:00:00Z",
+            },
+            runtime_paths,
+        ),
+    )
+
+    rc = render_compass_dashboard.main(["--repo-root", str(repo_root), "--output", str(output_path)])
+
+    assert rc == 0
+    summary_js = (repo_root / "odylith" / "compass" / "compass-summary.v1.js").read_text(encoding="utf-8")
+    releases_js = (repo_root / "odylith" / "compass" / "compass-releases.v1.js").read_text(encoding="utf-8")
+    workstreams_js = (repo_root / "odylith" / "compass" / "compass-workstreams.v1.js").read_text(encoding="utf-8")
+    assert 'rows.push(["Current Release", currentReleaseLabel, "stat-release-only"])' in summary_js
+    assert 'rows.push(["Next Release"' not in summary_js
+    assert 'class="stat${cardClass ? ` ${cardClass}` : ""}"' in summary_js
+    assert "function releaseHeroLabel(release)" in summary_js
+    assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js
+    assert 'const versionLabel = String(releaseRow.version || "").trim();' in summary_js
+    assert 'const tagLabel = String(releaseRow.tag || "").trim();' in summary_js
+    assert 'return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;' in summary_js
+    assert 'return versionLabel.startsWith("v") ? versionLabel : `v${versionLabel}`;' not in summary_js
+    assert "function renderReleaseGroups(payload, state)" in releases_js
+    assert "Release Targets" in releases_js
+    assert "Targeted Workstreams" in releases_js
+    assert "Completed Workstreams" in releases_js
+    assert 'group.status === "planned"' in releases_js
+    assert 'group.status === "draft"' in releases_js
+    assert 'return groups;' in releases_js
+    assert 'const currentOnlyGroups = currentReleaseId' not in releases_js
+    assert 'Current Release</span>' in releases_js
+    assert "No targeted workstreams." in releases_js
+    assert "execution-wave-focus-title" not in releases_js
+    assert '<div class="execution-wave-member-head">' in releases_js
+    assert '<div class="execution-wave-member-title-chips">' in releases_js
+    assert '<div class="execution-wave-title-row">' not in releases_js
+    assert "Release-owned targeted workstreams for this release." not in releases_js
+    assert "Release-owned targeted workstreams for this selection." not in releases_js
+    assert "function compassReleaseDisplayName(release)" in releases_js
+    assert "row.name || row.version || row.tag || row.display_label || row.effective_name" in releases_js
+    assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js
+    assert "row.name || row.version || row.tag || row.display_label || row.effective_name" in workstreams_js
+    assert "Release: ${escapeHtml(selected.releaseLabel)}" not in workstreams_js
+    assert "Release ${item.releaseLabel}" not in workstreams_js
+    assert "<strong>Release history:</strong>" in workstreams_js
+
+
+def test_refresh_runtime_artifacts_reuses_matching_payload(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     runtime_dir = repo_root / "odylith/compass/runtime"
     runtime_dir.mkdir(parents=True)
@@ -129,28 +243,28 @@ def test_refresh_runtime_artifacts_full_refresh_reuses_matching_full_ready_paylo
     monkeypatch.setattr(
         render_compass_dashboard,
         "_load_runtime_impl",
-        lambda: (_ for _ in ()).throw(AssertionError("runtime implementation should not load on full-ready reuse")),
+        lambda: (_ for _ in ()).throw(AssertionError("runtime implementation should not load on matching-payload reuse")),
     )
 
     reused_payload, _paths = render_compass_dashboard.refresh_runtime_artifacts(
         **_refresh_kwargs(repo_root, runtime_dir),
-        refresh_profile="full",
+        refresh_profile="shell-safe",
     )
 
     assert reused_payload["runtime_contract"]["last_refresh_attempt"]["status"] == "passed"
-    assert reused_payload["runtime_contract"]["last_refresh_attempt"]["requested_profile"] == "full"
+    assert reused_payload["runtime_contract"]["last_refresh_attempt"]["requested_profile"] == "shell-safe"
 
 
-def test_payload_satisfies_requested_refresh_requires_scoped_briefs_for_current_workstreams() -> None:
+def test_payload_satisfies_requested_refresh_accepts_matching_payload_shape() -> None:
     payload = {
         "current_workstreams": [{"idea_id": "B-101"}],
         "standup_brief": {"24h": _brief(source="provider"), "48h": _brief(source="cache")},
         "standup_brief_scoped": {"24h": {"B-101": _brief(source="provider")}, "48h": {}},
     }
 
-    assert not render_compass_dashboard._payload_satisfies_requested_refresh(  # noqa: SLF001
+    assert render_compass_dashboard._payload_satisfies_requested_refresh(  # noqa: SLF001
         payload=payload,
-        requested_profile="full",
+        requested_profile="shell-safe",
     )
 
 
@@ -163,11 +277,11 @@ def test_payload_satisfies_requested_refresh_allows_empty_scoped_maps_when_no_cu
 
     assert render_compass_dashboard._payload_satisfies_requested_refresh(  # noqa: SLF001
         payload=payload,
-        requested_profile="full",
+        requested_profile="shell-safe",
     )
 
 
-def test_refresh_runtime_artifacts_full_refresh_rebuilds_when_matching_payload_is_not_full_ready(
+def test_refresh_runtime_artifacts_reuses_matching_payload_even_when_briefs_are_deterministic(
     tmp_path: Path, monkeypatch
 ) -> None:
     repo_root = tmp_path
@@ -214,11 +328,11 @@ def test_refresh_runtime_artifacts_full_refresh_rebuilds_when_matching_payload_i
 
     payload, _paths = render_compass_dashboard.refresh_runtime_artifacts(
         **_refresh_kwargs(repo_root, runtime_dir),
-        refresh_profile="full",
+        refresh_profile="shell-safe",
     )
 
-    assert calls["build"]
-    assert payload["runtime_contract"]["refresh_profile"] == "full"
+    assert "build" not in calls
+    assert payload["runtime_contract"]["refresh_profile"] == "shell-safe"
 
 
 def test_refresh_runtime_artifacts_rebuilds_when_cache_is_stale(tmp_path: Path, monkeypatch) -> None:
@@ -489,7 +603,7 @@ def test_record_failed_refresh_attempt_marks_live_runtime_payload(tmp_path: Path
     marked = render_compass_dashboard.record_failed_refresh_attempt(
         repo_root=repo_root,
         runtime_dir=runtime_dir,
-        requested_profile="full",
+        requested_profile="shell-safe",
         runtime_mode="auto",
         reason="timeout",
         fallback_used=True,
@@ -498,9 +612,9 @@ def test_record_failed_refresh_attempt_marks_live_runtime_payload(tmp_path: Path
     updated = json.loads(current_json_path.read_text(encoding="utf-8"))
 
     assert marked is True
-    assert "Requested Compass full refresh did not finish before the dashboard timeout." in updated["warning"]
+    assert "Requested Compass shell-safe refresh did not finish before the dashboard timeout." in updated["warning"]
     assert updated["runtime_contract"]["last_refresh_attempt"]["status"] == "failed"
-    assert updated["runtime_contract"]["last_refresh_attempt"]["requested_profile"] == "full"
+    assert updated["runtime_contract"]["last_refresh_attempt"]["requested_profile"] == "shell-safe"
     assert updated["runtime_contract"]["last_refresh_attempt"]["applied_profile"] == "shell-safe"
     assert updated["runtime_contract"]["last_refresh_attempt"]["reason"] == "timeout"
     assert updated["runtime_contract"]["last_refresh_attempt"]["fallback_used"] is True
@@ -518,7 +632,7 @@ def test_refresh_runtime_artifacts_clears_failed_refresh_warning_when_reusing_ma
     payload = {
         "version": "v1",
         "generated_utc": dt.datetime.now(tz=dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-        "warning": "Requested Compass full refresh did not finish before the dashboard timeout.",
+        "warning": "Requested Compass shell-safe refresh did not finish before the dashboard timeout.",
         "runtime_contract": {
             "version": "v1",
             "refresh_profile": "shell-safe",
@@ -526,7 +640,7 @@ def test_refresh_runtime_artifacts_clears_failed_refresh_warning_when_reusing_ma
             "input_fingerprint": "matching-fingerprint",
             "last_refresh_attempt": {
                 "status": "failed",
-                "requested_profile": "full",
+                "requested_profile": "shell-safe",
                 "applied_profile": "shell-safe",
                 "reason": "timeout",
                 "attempted_utc": "2026-04-08T00:10:00Z",

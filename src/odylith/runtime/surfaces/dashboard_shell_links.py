@@ -42,6 +42,7 @@ def shell_href(
     bug: str = "",
     severity: str = "",
     status: str = "",
+    view: str = "",
 ) -> str:
     """Return a tooling-shell relative href preserving per-surface query rules."""
 
@@ -60,10 +61,18 @@ def shell_href(
             query.append(("status", status))
     elif workstream:
         query.append(("workstream", workstream))
+    if normalized_tab == "radar" and str(view or "").strip():
+        query.append(("view", str(view).strip()))
     if diagram:
         query.append(("diagram", diagram))
     token = urlencode(query)
     return f"?{token}" if token else ""
+
+
+def radar_workstream_href(workstream: str, *, view: str = "") -> str:
+    """Return the canonical shell route for one Radar workstream selection."""
+
+    return shell_href(tab="radar", workstream=workstream, view=view)
 
 
 def scope_lookup(
@@ -219,6 +228,8 @@ def proof_href(row: Mapping[str, Any]) -> str:
 
     surface = str(row.get("surface", "")).strip().lower()
     value = str(row.get("value", "")).strip()
+    if surface == "casebook":
+        return shell_href(tab="casebook", bug=value)
     if surface == "registry":
         return shell_href(tab="registry", component=value.replace("component:", ""))
     if surface == "atlas":

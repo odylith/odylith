@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-029
-title: Odylith Install-Time Gitignore Bootstrap for Managed State
+title: Install-Time Gitignore Bootstrap for Managed State
 date: 2026-03-30
 priority: P1
 commercial_value: 4
 product_impact: 4
 market_value: 3
-impacted_lanes: service
 impacted_parts: install flow, upgrade backfill, doctor repair, .gitignore bootstrap, and CLI install guidance
 sizing: S
 complexity: Low

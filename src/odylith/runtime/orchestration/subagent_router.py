@@ -1,4 +1,4 @@
-"""Accuracy-first subagent routing for bounded Codex delegation.
+"""Accuracy-first subagent routing for bounded host-aware delegation.
 
 This module provides one centralized contract for deciding whether a bounded
 task should stay in the main thread or be delegated to a subagent with an
@@ -30,6 +30,7 @@ import sys
 from typing import Any, Mapping, Sequence
 import uuid
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as compass_timeline
 from odylith.runtime.context_engine import governance_signal_codec
@@ -44,7 +45,7 @@ _SCORE_MIN = 0
 _SCORE_MAX = 4
 _TUNING_VERSION = "v1"
 DEFAULT_TUNING_PATH = ".odylith/subagent_router/tuning.v1.json"
-DEFAULT_STREAM_PATH = "odylith/compass/runtime/codex-stream.v1.jsonl"
+DEFAULT_STREAM_PATH = agent_runtime_contract.AGENT_STREAM_PATH
 DEFAULT_COMPONENT_ID = "subagent-router"
 _PROFILE_BIAS_LIMIT = 0.75
 _DEFAULT_BIAS_DELTA = 0.05
@@ -58,7 +59,7 @@ _DEFAULT_IDLE_TIMEOUT_ACTION = "close_agent"
 _DEFAULT_IDLE_TIMEOUT_ESCALATION = "resume_main_thread_or_reroute_fresh_slice"
 _HOST_SUPPORTED_AGENT_TYPES: tuple[str, ...] = ("default", "explorer", "worker")
 _HOST_UI_VISIBILITY_NOTE = (
-    "Codex desktop may still show parent-thread model/reasoning controls in the delegated thread UI "
+    "Some host UIs may still show parent-thread model/reasoning controls in the delegated thread UI "
     "for some combinations even when explicit spawn overrides are passed."
 )
 _HOST_CUSTOM_AGENT_TYPE_NOTE = (
@@ -68,13 +69,13 @@ _HOST_CUSTOM_AGENT_TYPE_NOTE = (
 )
 _PROFILE_PRIORITY: dict[str, int] = {
     "main_thread": 0,
-    "mini_medium": 1,
-    "mini_high": 2,
-    "spark_medium": 3,
-    "codex_medium": 4,
-    "codex_high": 5,
-    "gpt54_high": 6,
-    "gpt54_xhigh": 7,
+    agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE: 1,
+    agent_runtime_contract.ANALYSIS_HIGH_PROFILE: 2,
+    agent_runtime_contract.FAST_WORKER_PROFILE: 3,
+    agent_runtime_contract.WRITE_MEDIUM_PROFILE: 4,
+    agent_runtime_contract.WRITE_HIGH_PROFILE: 5,
+    agent_runtime_contract.FRONTIER_HIGH_PROFILE: 6,
+    agent_runtime_contract.FRONTIER_XHIGH_PROFILE: 7,
 }
 _RUNTIME_EARNED_DEPTH_SELECTION_MODES: frozenset[str] = frozenset(
     {
@@ -391,13 +392,13 @@ _ODYLITH_DOC_SURFACE_SEGMENTS: frozenset[str] = frozenset(
 
 def _delegated_profile_values() -> tuple[str, ...]:
     return (
-        RouterProfile.MINI_MEDIUM.value,
-        RouterProfile.MINI_HIGH.value,
-        RouterProfile.SPARK_MEDIUM.value,
-        RouterProfile.CODEX_MEDIUM.value,
-        RouterProfile.CODEX_HIGH.value,
-        RouterProfile.GPT54_HIGH.value,
-        RouterProfile.GPT54_XHIGH.value,
+        RouterProfile.ANALYSIS_MEDIUM.value,
+        RouterProfile.ANALYSIS_HIGH.value,
+        RouterProfile.FAST_WORKER.value,
+        RouterProfile.WRITE_MEDIUM.value,
+        RouterProfile.WRITE_HIGH.value,
+        RouterProfile.FRONTIER_HIGH.value,
+        RouterProfile.FRONTIER_XHIGH.value,
     )
 
 
@@ -419,21 +420,28 @@ def _default_family_outcome_counts_map() -> dict[str, dict[str, dict[str, int]]]
 
 class RouterProfile(str, Enum):
     MAIN_THREAD = "main_thread"
-    MINI_MEDIUM = "mini_medium"
-    MINI_HIGH = "mini_high"
-    SPARK_MEDIUM = "spark_medium"
-    CODEX_MEDIUM = "codex_medium"
-    CODEX_HIGH = "codex_high"
-    GPT54_HIGH = "gpt54_high"
-    GPT54_XHIGH = "gpt54_xhigh"
+    ANALYSIS_MEDIUM = agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
+    ANALYSIS_HIGH = agent_runtime_contract.ANALYSIS_HIGH_PROFILE
+    FAST_WORKER = agent_runtime_contract.FAST_WORKER_PROFILE
+    WRITE_MEDIUM = agent_runtime_contract.WRITE_MEDIUM_PROFILE
+    WRITE_HIGH = agent_runtime_contract.WRITE_HIGH_PROFILE
+    FRONTIER_HIGH = agent_runtime_contract.FRONTIER_HIGH_PROFILE
+    FRONTIER_XHIGH = agent_runtime_contract.FRONTIER_XHIGH_PROFILE
+    MINI_MEDIUM = agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
+    MINI_HIGH = agent_runtime_contract.ANALYSIS_HIGH_PROFILE
+    SPARK_MEDIUM = agent_runtime_contract.FAST_WORKER_PROFILE
+    CODEX_MEDIUM = agent_runtime_contract.WRITE_MEDIUM_PROFILE
+    CODEX_HIGH = agent_runtime_contract.WRITE_HIGH_PROFILE
+    GPT54_HIGH = agent_runtime_contract.FRONTIER_HIGH_PROFILE
+    GPT54_XHIGH = agent_runtime_contract.FRONTIER_XHIGH_PROFILE
 
     @property
     def model(self) -> str:
-        if self in {RouterProfile.MINI_MEDIUM, RouterProfile.MINI_HIGH}:
+        if self in {RouterProfile.ANALYSIS_MEDIUM, RouterProfile.ANALYSIS_HIGH}:
             return "gpt-5.4-mini"
-        if self is RouterProfile.SPARK_MEDIUM:
+        if self is RouterProfile.FAST_WORKER:
             return "gpt-5.3-codex-spark"
-        if self in {RouterProfile.CODEX_MEDIUM, RouterProfile.CODEX_HIGH}:
+        if self in {RouterProfile.WRITE_MEDIUM, RouterProfile.WRITE_HIGH}:
             return "gpt-5.3-codex"
         if self is RouterProfile.MAIN_THREAD:
             return ""
@@ -441,9 +449,9 @@ class RouterProfile(str, Enum):
 
     @property
     def reasoning_effort(self) -> str:
-        if self in {RouterProfile.MINI_MEDIUM, RouterProfile.SPARK_MEDIUM, RouterProfile.CODEX_MEDIUM}:
+        if self in {RouterProfile.ANALYSIS_MEDIUM, RouterProfile.FAST_WORKER, RouterProfile.WRITE_MEDIUM}:
             return "medium"
-        if self is RouterProfile.GPT54_XHIGH:
+        if self is RouterProfile.FRONTIER_XHIGH:
             return "xhigh"
         if self is RouterProfile.MAIN_THREAD:
             return ""
@@ -451,7 +459,7 @@ class RouterProfile(str, Enum):
 
 
 def _router_profile_from_token(value: Any) -> RouterProfile | None:
-    token = _normalize_token(value)
+    token = agent_runtime_contract.canonical_execution_profile(_normalize_token(value))
     try:
         return RouterProfile(token)
     except ValueError:
@@ -463,21 +471,21 @@ def _router_profile_from_runtime(model: Any, reasoning_effort: Any) -> RouterPro
     runtime_reasoning = _normalize_token(reasoning_effort)
     if runtime_model == "gpt-5.4-mini":
         if runtime_reasoning == "high":
-            return RouterProfile.MINI_HIGH
+            return RouterProfile.ANALYSIS_HIGH
         if runtime_reasoning == "medium":
-            return RouterProfile.MINI_MEDIUM
+            return RouterProfile.ANALYSIS_MEDIUM
     if runtime_model == "gpt-5.3-codex-spark" and runtime_reasoning == "medium":
-        return RouterProfile.SPARK_MEDIUM
+        return RouterProfile.FAST_WORKER
     if runtime_model == "gpt-5.3-codex":
         if runtime_reasoning == "high":
-            return RouterProfile.CODEX_HIGH
+            return RouterProfile.WRITE_HIGH
         if runtime_reasoning == "medium":
-            return RouterProfile.CODEX_MEDIUM
+            return RouterProfile.WRITE_MEDIUM
     if runtime_model == "gpt-5.4":
         if runtime_reasoning == "xhigh":
-            return RouterProfile.GPT54_XHIGH
+            return RouterProfile.FRONTIER_XHIGH
         if runtime_reasoning == "high":
-            return RouterProfile.GPT54_HIGH
+            return RouterProfile.FRONTIER_HIGH
     return None
 
 
@@ -700,14 +708,14 @@ _TASK_CLASS_POLICIES: dict[str, TaskClassPolicy] = {
         default_profile=RouterProfile.CODEX_MEDIUM,
         minimum_profile=RouterProfile.CODEX_MEDIUM,
         default_agent_role="worker",
-        rationale="Bounded understood fixes default to Codex medium so code-writing leaves use a coding-optimized tier before promoting deeper.",
+        rationale="Bounded understood fixes default to the write-medium tier so code-writing leaves use a coding-optimized tier before promoting deeper.",
     ),
     "bounded_feature": TaskClassPolicy(
         task_family="bounded_feature",
         default_profile=RouterProfile.CODEX_HIGH,
         minimum_profile=RouterProfile.CODEX_MEDIUM,
         default_agent_role="worker",
-        rationale="New bounded write behavior defaults to Codex high, with GPT-5.4 reserved for the riskier or more architecture-heavy cases.",
+        rationale="New bounded write behavior defaults to the write-high tier, with GPT-5.4 reserved for the riskier or more architecture-heavy cases.",
     ),
     "analysis_review": TaskClassPolicy(
         task_family="analysis_review",
@@ -1150,41 +1158,49 @@ def _synthesized_execution_profile_candidate(
             _normalize_bool(governance.get("governed_surface_sync_required")),
         )
     )
-    profile = "mini_medium"
+    profile = RouterProfile.ANALYSIS_MEDIUM.value
     model = "gpt-5.4-mini"
     reasoning_effort = "medium"
     agent_role = "explorer"
     selection_mode = "analysis_scout"
     if family in {"implementation", "write", "bugfix"}:
         if governance_contract and _int_value(governance.get("strict_gate_command_count")) > 0:
-            profile = "gpt54_high"
+            profile = RouterProfile.FRONTIER_HIGH.value
             model = "gpt-5.4"
             reasoning_effort = "high"
             selection_mode = "deep_validation"
         else:
-            profile = "codex_high" if confidence == "high" and (validation_count > 0 or guidance_count >= 2) else "codex_medium"
+            profile = (
+                RouterProfile.WRITE_HIGH.value
+                if confidence == "high" and (validation_count > 0 or guidance_count >= 2)
+                else RouterProfile.WRITE_MEDIUM.value
+            )
             model = "gpt-5.3-codex"
-            reasoning_effort = "high" if profile == "codex_high" else "medium"
+            reasoning_effort = "high" if profile == RouterProfile.WRITE_HIGH.value else "medium"
             selection_mode = "bounded_write"
         agent_role = "worker"
     elif family == "validation":
-        profile = "codex_high" if confidence == "high" or validation_count >= 2 else "codex_medium"
+        profile = RouterProfile.WRITE_HIGH.value if confidence == "high" or validation_count >= 2 else RouterProfile.WRITE_MEDIUM.value
         model = "gpt-5.3-codex"
-        reasoning_effort = "high" if profile == "codex_high" else "medium"
+        reasoning_effort = "high" if profile == RouterProfile.WRITE_HIGH.value else "medium"
         agent_role = "worker"
         selection_mode = "validation_focused"
     elif family in {"docs", "governance"}:
-        profile = "spark_medium" if governance_contract else "mini_medium"
-        model = "gpt-5.3-codex-spark" if profile == "spark_medium" else "gpt-5.4-mini"
+        profile = RouterProfile.FAST_WORKER.value if governance_contract else RouterProfile.ANALYSIS_MEDIUM.value
+        model = "gpt-5.3-codex-spark" if profile == RouterProfile.FAST_WORKER.value else "gpt-5.4-mini"
         reasoning_effort = "medium"
-        agent_role = "worker" if profile == "spark_medium" else "explorer"
-        selection_mode = "support_fast_lane" if profile == "spark_medium" else "analysis_scout"
+        agent_role = "worker" if profile == RouterProfile.FAST_WORKER.value else "explorer"
+        selection_mode = "support_fast_lane" if profile == RouterProfile.FAST_WORKER.value else "analysis_scout"
     elif family in {"analysis", "review", "diagnosis"}:
-        profile = "mini_high" if confidence == "high" or governance_contract or validation_count > 0 or guidance_count > 0 else "mini_medium"
+        profile = (
+            RouterProfile.ANALYSIS_HIGH.value
+            if confidence == "high" or governance_contract or validation_count > 0 or guidance_count > 0
+            else RouterProfile.ANALYSIS_MEDIUM.value
+        )
         model = "gpt-5.4-mini"
-        reasoning_effort = "high" if profile == "mini_high" else "medium"
+        reasoning_effort = "high" if profile == RouterProfile.ANALYSIS_HIGH.value else "medium"
         agent_role = "explorer"
-        selection_mode = "analysis_synthesis" if profile == "mini_high" else "analysis_scout"
+        selection_mode = "analysis_synthesis" if profile == RouterProfile.ANALYSIS_HIGH.value else "analysis_scout"
     return {
         "profile": profile,
         "model": model,
@@ -1308,7 +1324,7 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
     if not native_spawn_supported:
         contract["local_guidance_only"] = True
         contract["unsupported_reason"] = (
-            "Native subagent spawn is validated only in Codex today; keep this routed runtime as local execution guidance in the current host."
+            "Native subagent spawn is validated only on selected hosts today; keep this routed runtime as local execution guidance in the current host unless native spawn is explicitly proven there."
         )
     return contract
 
@@ -1338,7 +1354,7 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
         f"REASONING: {profile.reasoning_effort}",
         f"AGENT ROLE: {agent_role}",
         (
-            "HOST NOTE: Codex desktop may still show parent-thread model/reasoning controls in this "
+            "HOST NOTE: The current host UI may still show parent-thread model/reasoning controls in this "
             "delegated thread UI for some combinations. Treat this banner and the structured spawn payload as the authoritative "
             "requested runtime for this leaf."
         ),
@@ -1490,7 +1506,7 @@ def _spawn_contract_lines(*, profile: RouterProfile, assessment: TaskAssessment)
                 f"(`{host_runtime}`), so keep this routed runtime as local execution guidance only"
             ),
             (
-                f"if this same bounded leaf runs in a Codex-compatible host, request "
+                f"if this same bounded leaf runs in a native-spawn-capable host, request "
                 f"`model={profile.model}` and `reasoning_effort={profile.reasoning_effort}`"
             ),
             f"termination expectation: {lifecycle.termination_expectation}",
@@ -3088,7 +3104,7 @@ def _emit_error(error: RouterInputError, *, as_json: bool) -> None:
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith subagent-router",
-        description="Route bounded Codex subtasks to the right subagent profile.",
+        description="Route bounded subtasks to the right subagent profile.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

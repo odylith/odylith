@@ -8,6 +8,71 @@ from __future__ import annotations
 
 BODY_FONT_FAMILY = '"Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif'
 MONO_FONT_FAMILY = 'ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace'
+SURFACE_SHELL_MAX_WIDTH_CSS_VAR = "--surface-shell-max-width"
+STANDARD_SURFACE_SHELL_MAX_WIDTH_PX = 1320
+STANDARD_SURFACE_SHELL_MAX_WIDTH = f"{STANDARD_SURFACE_SHELL_MAX_WIDTH_PX}px"
+_STANDARD_SURFACE_SHELL_MAX_WIDTH_TEMPLATE_TOKEN = "__ODYLITH_STANDARD_SURFACE_SHELL_MAX_WIDTH__"
+SURFACE_IDENTIFIER_FONT_SIZE_CSS_VAR = "--surface-identifier-font-size"
+STANDARD_SURFACE_IDENTIFIER_FONT_SIZE_PX = 14
+STANDARD_SURFACE_IDENTIFIER_FONT_SIZE = f"{STANDARD_SURFACE_IDENTIFIER_FONT_SIZE_PX}px"
+_STANDARD_SURFACE_IDENTIFIER_FONT_SIZE_TEMPLATE_TOKEN = "__ODYLITH_STANDARD_SURFACE_IDENTIFIER_FONT_SIZE__"
+SURFACE_IDENTIFIER_FONT_WEIGHT_CSS_VAR = "--surface-identifier-font-weight"
+STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT = 500
+_STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT_TEMPLATE_TOKEN = "__ODYLITH_STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT__"
+SURFACE_IDENTIFIER_CHIP_PADDING_CSS_VAR = "--surface-identifier-chip-padding"
+STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING_Y_PX = 2
+STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING_X_PX = 10
+STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING = (
+    f"{STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING_Y_PX}px "
+    f"{STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING_X_PX}px"
+)
+_STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING_TEMPLATE_TOKEN = (
+    "__ODYLITH_STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING__"
+)
+SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR = "--surface-workstream-button-font-size"
+STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_PX = 12
+STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE = (
+    f"{STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_PX}px"
+)
+_STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_TEMPLATE_TOKEN = (
+    "__ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE__"
+)
+SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR = "--surface-workstream-button-font-weight"
+STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT = 500
+_STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_TEMPLATE_TOKEN = (
+    "__ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT__"
+)
+SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR = "--surface-workstream-button-padding"
+STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING_Y_PX = 1
+STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING_X_PX = 8
+STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING = (
+    f"{STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING_Y_PX}px "
+    f"{STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING_X_PX}px"
+)
+_STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING_TEMPLATE_TOKEN = (
+    "__ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING__"
+)
+SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_CSS_VAR = "--surface-deep-link-button-font-size"
+STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_PX = 11
+STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE = f"{STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_PX}px"
+_STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_TEMPLATE_TOKEN = (
+    "__ODYLITH_STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE__"
+)
+SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT_CSS_VAR = "--surface-deep-link-button-font-weight"
+STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT = 700
+_STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT_TEMPLATE_TOKEN = (
+    "__ODYLITH_STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT__"
+)
+SURFACE_DEEP_LINK_BUTTON_PADDING_CSS_VAR = "--surface-deep-link-button-padding"
+STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING_Y_PX = 4
+STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING_X_PX = 12
+STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING = (
+    f"{STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING_Y_PX}px "
+    f"{STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING_X_PX}px"
+)
+_STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING_TEMPLATE_TOKEN = (
+    "__ODYLITH_STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING__"
+)
 
 
 def _selector_list(selector: str) -> tuple[str, ...]:
@@ -172,6 +237,337 @@ def split_detail_workspace_css(
   align-items: {align_items};
 }}
 """.strip()
+
+
+def standard_surface_shell_root_css(*, selector: str = ":root") -> str:
+    """Return the shared non-Atlas surface shell-width variable contract."""
+
+    return f"""
+{selector} {{
+  {SURFACE_SHELL_MAX_WIDTH_CSS_VAR}: {STANDARD_SURFACE_SHELL_MAX_WIDTH};
+  {SURFACE_IDENTIFIER_FONT_SIZE_CSS_VAR}: {STANDARD_SURFACE_IDENTIFIER_FONT_SIZE};
+  {SURFACE_IDENTIFIER_FONT_WEIGHT_CSS_VAR}: {STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT};
+  {SURFACE_IDENTIFIER_CHIP_PADDING_CSS_VAR}: {STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING};
+  {SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR}: {STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE};
+  {SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR}: {STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT};
+  {SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}: {STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING};
+  {SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_CSS_VAR}: {STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE};
+  {SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT_CSS_VAR}: {STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT};
+  {SURFACE_DEEP_LINK_BUTTON_PADDING_CSS_VAR}: {STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING};
+}}
+""".strip()
+
+
+def standard_surface_shell_css(
+    *,
+    selector: str,
+    padding: str = "22px 18px 34px",
+    margin: str = "0 auto",
+    display: str | None = None,
+    gap_px: int | None = None,
+    min_height: str | None = None,
+    height: str | None = None,
+    grid_template_rows: str | None = None,
+) -> str:
+    """Return the shared shell container contract for non-Atlas surfaces."""
+
+    lines = [
+        f"{selector} {{",
+        f"  max-width: var({SURFACE_SHELL_MAX_WIDTH_CSS_VAR}, {STANDARD_SURFACE_SHELL_MAX_WIDTH});",
+        f"  margin: {margin};",
+        f"  padding: {padding};",
+    ]
+    if display is not None:
+        lines.append(f"  display: {display};")
+    if gap_px is not None:
+        lines.append(f"  gap: {int(gap_px)}px;")
+    if min_height is not None:
+        lines.append(f"  min-height: {min_height};")
+    if height is not None:
+        lines.append(f"  height: {height};")
+    if grid_template_rows is not None:
+        lines.append(f"  grid-template-rows: {grid_template_rows};")
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def resolve_surface_shell_template_tokens(source: str) -> str:
+    """Resolve shared shell-contract placeholders in source-owned surface templates."""
+
+    resolved = str(source).replace(
+        _STANDARD_SURFACE_SHELL_MAX_WIDTH_TEMPLATE_TOKEN,
+        STANDARD_SURFACE_SHELL_MAX_WIDTH,
+    )
+    resolved = resolved.replace(
+        _STANDARD_SURFACE_IDENTIFIER_FONT_SIZE_TEMPLATE_TOKEN,
+        STANDARD_SURFACE_IDENTIFIER_FONT_SIZE,
+    )
+    resolved = resolved.replace(
+        _STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT_TEMPLATE_TOKEN,
+        str(STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT),
+    )
+    resolved = resolved.replace(
+        _STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING_TEMPLATE_TOKEN,
+        STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING,
+    )
+    resolved = resolved.replace(
+        _STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_TEMPLATE_TOKEN,
+        STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE,
+    )
+    resolved = resolved.replace(
+        _STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_TEMPLATE_TOKEN,
+        str(STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT),
+    )
+    resolved = resolved.replace(
+        _STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING_TEMPLATE_TOKEN,
+        STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING,
+    )
+    resolved = resolved.replace(
+        _STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_TEMPLATE_TOKEN,
+        STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE,
+    )
+    resolved = resolved.replace(
+        _STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT_TEMPLATE_TOKEN,
+        str(STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT),
+    )
+    resolved = resolved.replace(
+        _STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING_TEMPLATE_TOKEN,
+        STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING,
+    )
+    return resolved
+
+
+def surface_identifier_typography_css(
+    *,
+    selector: str,
+    color: str | None = None,
+    margin: str | None = None,
+    font_family: str | None = None,
+    line_height: str | float | None = None,
+    letter_spacing_em: float | None = None,
+    text_transform: str | None = None,
+) -> str:
+    """Return the shared non-Atlas identifier typography contract.
+
+    Entity ids should stay visually consistent across shell surfaces even when
+    they appear as plain copy, inline links, or chip-like affordances.
+    """
+
+    lines = [f"{selector} {{"]
+    if margin is not None:
+        lines.append(f"  margin: {margin};")
+    if color is not None:
+        lines.append(f"  color: {color};")
+    if font_family is not None:
+        lines.append(f"  font-family: {font_family};")
+    lines.append(
+        f"  font-size: var({SURFACE_IDENTIFIER_FONT_SIZE_CSS_VAR}, {STANDARD_SURFACE_IDENTIFIER_FONT_SIZE});"
+    )
+    lines.append(
+        f"  font-weight: var({SURFACE_IDENTIFIER_FONT_WEIGHT_CSS_VAR}, {STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT});"
+    )
+    if line_height is not None:
+        if isinstance(line_height, str):
+            lines.append(f"  line-height: {line_height};")
+        else:
+            lines.append(f"  line-height: {float(line_height):g};")
+    if letter_spacing_em is not None:
+        lines.append(f"  letter-spacing: {float(letter_spacing_em):g}em;")
+    if text_transform is not None:
+        lines.append(f"  text-transform: {text_transform};")
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def surface_identifier_link_css(
+    *,
+    selector: str,
+    color: str = "#1d4ed8",
+    hover_color: str = "#1e3a8a",
+    border_color: str = "#93c5fd",
+    hover_border_color: str = "#5f95e6",
+    line_height: str | float = "inherit",
+    letter_spacing_em: float = 0.0,
+) -> str:
+    """Return the shared inline-link treatment for shell-owned entity ids."""
+
+    scoped_selector = _joined_selector_list(selector)
+    hover_selector = _selector_state_list(selector, ":hover")
+    focus_selector = _selector_state_list(selector, ":focus-visible")
+    return "\n\n".join(
+        (
+            surface_identifier_typography_css(
+                selector=selector,
+                color=color,
+                font_family="inherit",
+                line_height=line_height,
+                letter_spacing_em=letter_spacing_em,
+            ),
+            f"""
+{scoped_selector} {{
+  text-decoration: none;
+  border-bottom: 1px solid {border_color};
+}}
+
+{hover_selector},
+{focus_selector} {{
+  color: {hover_color};
+  border-bottom-color: {hover_border_color};
+  outline: none;
+}}
+""".strip(),
+        )
+    )
+
+
+def surface_identifier_chip_typography_css(
+    *,
+    selector: str,
+    color: str = "var(--chip-link-text)",
+    line_height: float = 1.0,
+    letter_spacing_em: float = 0.01,
+) -> str:
+    """Return the shared identifier-chip typography contract for shell surfaces."""
+
+    return surface_identifier_typography_css(
+        selector=selector,
+        color=color,
+        font_family="inherit",
+        line_height=line_height,
+        letter_spacing_em=letter_spacing_em,
+        text_transform="none",
+    )
+
+
+def surface_identifier_chip_surface_css(
+    *,
+    selector: str,
+    padding: str | None = None,
+    min_height_px: int = 0,
+) -> str:
+    """Return the shared compact identifier-chip surface override for shell surfaces.
+
+    Identifier chips use a smaller box model than generic action chips so
+    workstream references stay compact and stable across Compass, Radar, and
+    sibling shell surfaces even when surrounding action-chip styling evolves.
+    """
+
+    resolved_padding = (
+        padding
+        if padding is not None
+        else f"var({SURFACE_IDENTIFIER_CHIP_PADDING_CSS_VAR}, {STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING})"
+    )
+    return f"""
+{selector} {{
+  min-height: {int(min_height_px)}px;
+  padding: {resolved_padding};
+}}
+""".strip()
+
+
+def surface_workstream_button_typography_css(
+    *,
+    selector: str,
+    color: str = "var(--chip-link-text)",
+    line_height: float = 1.0,
+    letter_spacing_em: float = 0.01,
+) -> str:
+    """Return the shared compact B-### workstream-button typography contract.
+
+    Workstream buttons are distinct from general identifier labels and links.
+    Keeping this contract separate prevents generic identifier adjustments from
+    silently inflating the interactive B-### controls across Compass and Radar.
+    """
+
+    lines = [f"{selector} {{"]
+    lines.append("  font-family: inherit;")
+    lines.append(f"  color: {color};")
+    lines.append(
+        f"  font-size: var({SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR}, {STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE});"
+    )
+    lines.append(f"  line-height: {float(line_height):g};")
+    lines.append(f"  letter-spacing: {float(letter_spacing_em):g}em;")
+    lines.append(
+        f"  font-weight: var({SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR}, {STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT});"
+    )
+    lines.append("  text-transform: none;")
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def surface_workstream_button_surface_css(
+    *,
+    selector: str,
+    padding: str | None = None,
+    min_height_px: int = 0,
+) -> str:
+    """Return the shared compact B-### workstream-button surface contract."""
+
+    resolved_padding = (
+        padding
+        if padding is not None
+        else (
+            f"var({SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}, "
+            f"{STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING})"
+        )
+    )
+    return f"""
+{selector} {{
+  min-height: {int(min_height_px)}px;
+  padding: {resolved_padding};
+}}
+""".strip()
+
+
+def surface_workstream_button_chip_css(
+    *,
+    selector: str,
+    color: str = "var(--chip-link-text)",
+    min_height_px: int = 0,
+    radius_px: int = 999,
+    border_color: str = "#b9c7db",
+    background: str = "#f3f6fb",
+    hover_border_color: str = "#9aaec9",
+    hover_background: str = "#e8eef7",
+    hover_color: str = "#1e293b",
+    focus_outline: str = "#bfdbfe",
+    line_height: float = 1.0,
+    letter_spacing_em: float = 0.01,
+) -> str:
+    """Return the canonical interactive B-### workstream-button contract.
+
+    This helper is the only supported way to style interactive workstream
+    chips/buttons in non-Atlas shell surfaces. It keeps the box model and
+    typography bound together so generic chip changes cannot silently re-inflate
+    B-### controls.
+    """
+
+    return "\n\n".join(
+        (
+            action_chip_surface_css(
+                selector=selector,
+                min_height_px=min_height_px,
+                padding=(
+                    f"var({SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}, "
+                    f"{STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING})"
+                ),
+                radius_px=radius_px,
+                border_color=border_color,
+                background=background,
+                color=color,
+                hover_border_color=hover_border_color,
+                hover_background=hover_background,
+                hover_color=hover_color,
+                focus_outline=focus_outline,
+            ),
+            surface_workstream_button_typography_css(
+                selector=selector,
+                color=color,
+                line_height=line_height,
+                letter_spacing_em=letter_spacing_em,
+            ),
+        )
+    )
 
 
 def auxiliary_heading_css(
@@ -374,7 +770,7 @@ def detail_action_chip_css(
     selector: str,
     color: str = "var(--chip-link-text)",
     min_height_px: int = 0,
-    padding: str = "4px 12px",
+    padding: str | None = None,
     radius_px: int = 999,
     border_color: str = "#b9c7db",
     background: str = "#f3f6fb",
@@ -382,25 +778,50 @@ def detail_action_chip_css(
     hover_background: str = "#e8eef7",
     hover_color: str = "#1e293b",
     focus_outline: str = "#bfdbfe",
-    size_px: int = 11,
+    size_px: str | int | None = None,
     line_height: float = 1.0,
     letter_spacing_em: float = 0.01,
-    weight: int = 700,
+    weight: str | int | None = None,
 ) -> str:
-    """Return the shared small interactive chip contract for detail-pane links.
+    """Return the shared deep-link chip contract for shell-surface action links.
 
-    Radar's detail links are the reference visual treatment for dense governance
-    detail panes. Registry, Shell, and sibling surfaces should reuse this
-    helper for inline linked chips instead of carrying local copies of the same
-    height, padding, and typography contract.
+    Registry, Spec, proof, and diagram links across Compass, Radar, Registry,
+    Casebook, Atlas, and sibling governance surfaces should reuse this helper
+    instead of carrying local copies of the same height, padding, and
+    typography contract.
     """
+
+    resolved_padding = (
+        padding
+        if padding is not None
+        else (
+            f"var({SURFACE_DEEP_LINK_BUTTON_PADDING_CSS_VAR}, "
+            f"{STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING})"
+        )
+    )
+    resolved_size = (
+        str(size_px)
+        if size_px is not None
+        else (
+            f"var({SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_CSS_VAR}, "
+            f"{STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE})"
+        )
+    )
+    resolved_weight = (
+        str(weight)
+        if weight is not None
+        else (
+            f"var({SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT_CSS_VAR}, "
+            f"{STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT})"
+        )
+    )
 
     return "\n\n".join(
         (
             action_chip_surface_css(
                 selector=selector,
                 min_height_px=min_height_px,
-                padding=padding,
+                padding=resolved_padding,
                 radius_px=radius_px,
                 border_color=border_color,
                 background=background,
@@ -410,14 +831,17 @@ def detail_action_chip_css(
                 hover_color=hover_color,
                 focus_outline=focus_outline,
             ),
-            button_typography_css(
-                selector=selector,
-                color=color,
-                size_px=size_px,
-                line_height=line_height,
-                letter_spacing_em=letter_spacing_em,
-                weight=weight,
-            ),
+            f"""
+{selector} {{
+  font-family: inherit;
+  color: {color};
+  font-size: {resolved_size};
+  line-height: {float(line_height):g};
+  letter-spacing: {float(letter_spacing_em):g}em;
+  font-weight: {resolved_weight};
+  text-transform: none;
+}}
+""".strip(),
         )
     )
 
@@ -1681,8 +2105,16 @@ def operator_readout_copy_typography_css(
         letter_spacing_em=letter_spacing_em,
         margin=margin,
     )
+    identifier_link_css = surface_identifier_link_css(
+        selector=f"{scoped_selector} .brief-inline-link",
+        color=link_color,
+        hover_color=link_hover_color,
+        border_color=link_border_color,
+        hover_border_color=link_hover_border_color,
+        line_height="inherit",
+    )
     if not emit_link_styles:
-        return base_css
+        return "\n\n".join((base_css, identifier_link_css))
     link_css = f"""
 {scoped_selector} a {{
   color: {link_color};
@@ -1701,7 +2133,7 @@ def operator_readout_copy_typography_css(
   outline: none;
 }}
 """.strip()
-    return "\n\n".join((base_css, link_css))
+    return "\n\n".join((base_css, identifier_link_css, link_css))
 
 
 def operator_readout_meta_pill_css(
@@ -1851,22 +2283,33 @@ def mono_identifier_typography_css(
     *,
     selector: str,
     color: str = "var(--ink-muted, #64748b)",
-    size_px: int = 12,
+    size_px: int = STANDARD_SURFACE_IDENTIFIER_FONT_SIZE_PX,
     line_height: float = 1.2,
-    weight: int = 400,
+    weight: int = STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT,
     letter_spacing_em: float = 0.0,
     margin: str = "0",
 ) -> str:
     """Return shared monospace identifier typography for ids and trace tokens."""
+
+    size_css = (
+        f"var({SURFACE_IDENTIFIER_FONT_SIZE_CSS_VAR}, {STANDARD_SURFACE_IDENTIFIER_FONT_SIZE})"
+        if int(size_px) == STANDARD_SURFACE_IDENTIFIER_FONT_SIZE_PX
+        else f"{int(size_px)}px"
+    )
+    weight_css = (
+        f"var({SURFACE_IDENTIFIER_FONT_WEIGHT_CSS_VAR}, {STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT})"
+        if int(weight) == STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT
+        else str(int(weight))
+    )
 
     return f"""
 {selector} {{
   margin: {margin};
   color: {color};
   font-family: {MONO_FONT_FAMILY};
-  font-size: {int(size_px)}px;
+  font-size: {size_css};
   line-height: {float(line_height):g};
-  font-weight: {int(weight)};
+  font-weight: {weight_css};
   letter-spacing: {float(letter_spacing_em):g}em;
 }}
 """.strip()
@@ -2003,7 +2446,20 @@ def tooltip_typography_css(
 __all__ = [
     "BODY_FONT_FAMILY",
     "MONO_FONT_FAMILY",
+    "STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING",
+    "STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING_X_PX",
+    "STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING_Y_PX",
+    "STANDARD_SURFACE_IDENTIFIER_FONT_SIZE",
+    "STANDARD_SURFACE_IDENTIFIER_FONT_SIZE_PX",
+    "STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT",
+    "SURFACE_IDENTIFIER_CHIP_PADDING_CSS_VAR",
+    "STANDARD_SURFACE_SHELL_MAX_WIDTH",
+    "STANDARD_SURFACE_SHELL_MAX_WIDTH_PX",
+    "SURFACE_IDENTIFIER_FONT_SIZE_CSS_VAR",
+    "SURFACE_IDENTIFIER_FONT_WEIGHT_CSS_VAR",
+    "SURFACE_SHELL_MAX_WIDTH_CSS_VAR",
     "auxiliary_heading_css",
+    "resolve_surface_shell_template_tokens",
     "button_typography_css",
     "card_title_typography_css",
     "caption_typography_css",
@@ -2043,8 +2499,17 @@ __all__ = [
     "quick_tooltip_surface_css",
     "section_heading_css",
     "shell_tab_surface_css",
+    "surface_identifier_chip_typography_css",
+    "surface_identifier_chip_surface_css",
+    "surface_identifier_link_css",
+    "surface_identifier_typography_css",
+    "surface_workstream_button_chip_css",
+    "surface_workstream_button_surface_css",
+    "surface_workstream_button_typography_css",
     "sticky_filter_shell_css",
     "sticky_filter_bar_css",
+    "standard_surface_shell_css",
+    "standard_surface_shell_root_css",
     "split_detail_workspace_css",
     "action_chip_surface_css",
     "subtle_labeled_surface_tone_css",

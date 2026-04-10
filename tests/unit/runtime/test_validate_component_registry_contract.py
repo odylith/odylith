@@ -18,7 +18,6 @@ def _write_idea(path: Path, *, idea_id: str, impacted_components: str) -> None:
             "commercial_value: 5\n\n"
             "product_impact: 5\n\n"
             "market_value: 5\n\n"
-            "impacted_lanes: both\n\n"
             "impacted_parts: x\n\n"
             "sizing: L\n\n"
             "complexity: VeryHigh\n\n"
@@ -60,6 +59,15 @@ def _write_idea(path: Path, *, idea_id: str, impacted_components: str) -> None:
             "## Test Strategy\nBody\n\n"
             "## Open Questions\nBody\n"
         ),
+        encoding="utf-8",
+    )
+
+
+def _write_catalog(tmp_path: Path, diagrams: list[dict[str, object]] | None = None) -> None:
+    catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_path.write_text(
+        json.dumps({"version": "1.0", "diagrams": diagrams or []}, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -113,9 +121,7 @@ def _seed_repo(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
-    catalog_path.parent.mkdir(parents=True, exist_ok=True)
-    catalog_path.write_text(json.dumps({"version": "1.0", "diagrams": []}, indent=2) + "\n", encoding="utf-8")
+    _write_catalog(tmp_path)
 
     ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-03"
     _write_idea(
@@ -184,6 +190,131 @@ def test_validate_component_registry_contract_warning_output_points_to_report(tm
     assert "component registry contract warnings" in output
     assert "- report: " in output
     assert "component-report" in output
+
+
+def test_validate_component_registry_contract_ignores_catalog_labels_without_inventory_review_flag(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _seed_repo(tmp_path)
+    _write_catalog(
+        tmp_path,
+        [
+            {
+                "diagram_id": "D-100",
+                "title": "Fixture Diagram",
+                "components": [
+                    {
+                        "name": "Bootstrap lane",
+                        "description": "Diagram-local stage label.",
+                    }
+                ],
+            }
+        ],
+    )
+
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    stream_path.write_text("", encoding="utf-8")
+
+    rc = validator.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--manifest",
+            "odylith/registry/source/component_registry.v1.json",
+            "--catalog",
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "--ideas-root",
+            "odylith/radar/source/ideas",
+            "--stream",
+            "odylith/compass/runtime/codex-stream.v1.jsonl",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "candidate components pending review" not in output
+    assert "component registry contract warnings" not in output
+
+
+def test_validate_component_registry_contract_surfaces_opt_in_catalog_inventory_candidates(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _seed_repo(tmp_path)
+    _write_catalog(
+        tmp_path,
+        [
+            {
+                "diagram_id": "D-100",
+                "title": "Fixture Diagram",
+                "components": [
+                    {
+                        "name": "Bootstrap lane",
+                        "description": "Diagram-local stage label.",
+                        "inventory_candidate": True,
+                    }
+                ],
+            }
+        ],
+    )
+
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    stream_path.write_text("", encoding="utf-8")
+
+    rc = validator.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--manifest",
+            "odylith/registry/source/component_registry.v1.json",
+            "--catalog",
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "--ideas-root",
+            "odylith/radar/source/ideas",
+            "--stream",
+            "odylith/compass/runtime/codex-stream.v1.jsonl",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "component registry contract warnings" in output
+    assert "candidate components pending review: 1" in output
+
+
+def test_validate_component_registry_contract_suppresses_missing_deep_skill_target_noise(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _seed_repo(tmp_path)
+
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    stream_path.write_text("", encoding="utf-8")
+
+    rc = validator.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--manifest",
+            "odylith/registry/source/component_registry.v1.json",
+            "--catalog",
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "--ideas-root",
+            "odylith/radar/source/ideas",
+            "--stream",
+            "odylith/compass/runtime/codex-stream.v1.jsonl",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "component policy warnings" not in output
+    assert "deep-skill policy `kafka-topic`" not in output
+    assert "deep-skill policy `msk`" not in output
 
 
 def test_validate_component_registry_contract_accepts_odylith_chatter_component_inventory(tmp_path: Path) -> None:

@@ -3,16 +3,18 @@
   "diagrams": [
     "D-002",
     "D-018",
-    "D-020"
+    "D-020",
+    "D-004",
+    "D-026"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 12,
     "mapped_workstream_evidence_count": 4,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 7,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 12
+    "timeline_event_count": 13
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -45,6 +47,44 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "AGENTS.md",
+        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+        "docs/benchmarks/README.md",
+        "docs/benchmarks/REVIEWER_GUIDE.md",
+        "odylith/AGENTS.md",
+        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/skills/delivery-governance-surface-ops/SKILL.md",
+        "odylith/skills/session-context/SKILL.md",
+        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/subagent-router/SKILL.md",
+        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "src/odylith/bundle/assets/odylith/skills/delivery-governance-surface-ops/SKILL.md",
+        "src/odylith/bundle/assets/odylith/skills/session-context/SKILL.md",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py"
+      ],
+      "confidence": "high",
+      "event_index": 70,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, docs/benchmarks/METRICS_AND_PRIORITIES.md +21 more",
+      "ts_iso": "2026-04-09T14:58:31-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
@@ -424,6 +464,7 @@
   "what_it_is": "Cross-lane narration contract that keeps Odylith control-plane chatter implicit during active work and limits Odylith-by-name branding to one optional evidence-backed end-of-work assist line.",
   "why_tracked": "Makes user-visible Odylith narration a governed subsystem so AGENTS guidance, skills, install assets, runtime explanation templates, and benchmark-facing artifacts do not drift into noisy or marketing-style chatter.",
   "workstreams": [
-    "B-031"
+    "B-031",
+    "B-062"
   ]
 }

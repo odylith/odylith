@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-042
-title: Odylith Zero-Governance External-Repo Grounding and SWE-bench Verified Frontier
+title: Zero-Governance External-Repo Grounding and SWE-bench Verified Frontier
 date: 2026-04-02
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 5
-impacted_lanes: both
 impacted_parts: external repo grounding, issue-to-code localization, targeted validation ladders, external benchmark solve rate, patch quality, and zero-governance control-plane efficiency
 sizing: L
 complexity: VeryHigh

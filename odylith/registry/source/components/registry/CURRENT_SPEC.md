@@ -1,8 +1,8 @@
 # Registry
-Last updated: 2026-04-07
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-09
 
 ## Purpose
 Registry is Odylith's authoritative component-inventory and component-centric
@@ -121,6 +121,10 @@ The result is a component-centric dashboard where each detail panel can show:
 - relevant docs, runbooks, and code
 - event timeline and forensic coverage posture
 
+When Delivery Intelligence publishes `scope_signal`, Registry may use it to
+order default operational views so high-signal components surface first without
+silencing raw component truth.
+
 ## Validation Model
 `validate_component_registry_contract.py` is fail-closed for:
 - manifest integrity
@@ -148,6 +152,9 @@ governance, and diagnosis to stay coherent.
 - New event-mapping heuristic:
   update mapping confidence logic, forensic coverage, and any requirements-trace
   sync assumptions.
+- New default-promotion rule:
+  update Registry renderer, Delivery Intelligence `scope_signal` contract, and
+  any operator-readout or browser proof that assumes component ordering.
 - New spec snapshot field:
   update snapshot parsing and Registry detail rendering together.
 - New deep-skill policy:
@@ -158,6 +165,14 @@ governance, and diagnosis to stay coherent.
 - Candidate extraction must never silently promote first-class components.
 - Synthetic workspace evidence should remain explicitly weaker than explicit
   Compass narrative evidence.
+- Registry component detail must not render a default proof-state or
+  live-status card. Proof-state internals such as `Proof Control`,
+  `Live Blocker`, `Fingerprint`, `Frontier`, `Evidence tier`,
+  `Truthful claim`, or commit-hash-heavy deployment rows are diagnostic
+  engine data, not default Registry detail UI.
+- Low-signal governance churn or generated noise must not outrank stronger
+  component evidence in Registry's default ordering once `scope_signal` is
+  available.
 - Requirements-trace sync must preserve surrounding manual spec content even
   when the generated block changes.
 
@@ -166,6 +181,19 @@ governance, and diagnosis to stay coherent.
 - `odylith validate component-registry --repo-root .`
 - `odylith governance sync-component-spec-requirements --repo-root . --check-only`
 - `odylith sync --repo-root . --check-only`
+
+## Scope Signal Ladder Contract
+Registry keeps the full curated component inventory visible. The shared Scope
+Signal Ladder only affects default promotion and ordering:
+- `R0-R1` scope signals do not earn top-of-surface promotion by themselves
+- `R2` signals can keep a component locally relevant without outranking stronger
+  execution or blocker evidence
+- `R3+` signals may float components earlier in default operational ordering
+- `R4-R5` signals should dominate ordinary component activity when warning or
+  blocker posture is present
+
+Registry detail truth, requirements trace, and component inclusion stay
+exhaustive regardless of rung.
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
@@ -182,3 +210,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Moved the authoritative Odylith product component inventory into the public repo so product components stop depending on consumer-local registry truth. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Promoted the hidden memory-substrate seams into first-class Registry components so projection bundle, projection snapshot, remote retrieval, and memory contracts have explicit governed ownership and rendered detail instead of one coarse backend silhouette. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
+- 2026-04-09: Bound Registry default operational ordering to Delivery Intelligence's shared Scope Signal Ladder so low-signal churn can stay visible in forensics without outranking real execution or blocker evidence. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)

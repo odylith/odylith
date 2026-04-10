@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-057
-title: Odylith Machine-Level Verified Runtime Store for Cross-Repo Reuse
+title: Machine-Level Verified Runtime Store for Cross-Repo Reuse
 date: 2026-04-06
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: managed runtime storage, install materialization, feature-pack overlay safety, runtime retention, and operator posture reporting
 sizing: L
 complexity: High

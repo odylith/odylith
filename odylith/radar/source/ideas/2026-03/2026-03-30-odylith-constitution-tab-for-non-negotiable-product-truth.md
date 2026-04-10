@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-034
-title: Odylith Constitution Tab for Non-Negotiable Product Truth
+title: Constitution Tab for Non-Negotiable Product Truth
 date: 2026-03-30
 priority: P0
 commercial_value: 4
 product_impact: 5
 market_value: 3
-impacted_lanes: both
 impacted_parts: shell navigation, constitutional guidance, governed product truth, operator guardrails, and first-class visibility for non-negotiable product rules
 sizing: L
 complexity: High

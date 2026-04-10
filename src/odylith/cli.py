@@ -36,7 +36,9 @@ from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import backfill_workstream_traceability
 from odylith.runtime.governance import maintainer_lane_status
 from odylith.runtime.governance import normalize_plan_risk_mitigation
+from odylith.runtime.governance import program_wave_authoring
 from odylith.runtime.governance import reconcile_plan_workstream_binding
+from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import sync_component_spec_requirements
 from odylith.runtime.governance import validate_guidance_portability
 from odylith.runtime.governance import validate_backlog_contract
@@ -50,6 +52,7 @@ from odylith.runtime.orchestration import subagent_orchestrator
 from odylith.runtime.orchestration import subagent_router
 from odylith.runtime.surfaces import install_mermaid_autosync_hook
 from odylith.runtime.surfaces import auto_update_mermaid_diagrams
+from odylith.runtime.surfaces import compass_refresh_runtime
 from odylith.runtime.surfaces import render_mermaid_catalog
 from odylith.runtime.surfaces import restore_compass_history
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
@@ -77,7 +80,6 @@ _FIRST_RUN_SURFACE_OUTPUTS = (
     Path("odylith/registry/registry.html"),
     Path("odylith/casebook/casebook.html"),
 )
-_DEFAULT_COMPASS_REFRESH_PROFILE = "shell-safe"
 _DEFAULT_DASHBOARD_REFRESH_SURFACES = ("tooling_shell", "radar", "compass")
 _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV = ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
 
@@ -272,8 +274,6 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path) -> int:
                 "--force",
                 "--impact-mode",
                 "full",
-                "--compass-refresh-profile",
-                _DEFAULT_COMPASS_REFRESH_PROFILE,
             ]
         )
     render_rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
@@ -281,7 +281,6 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path) -> int:
         surfaces=("tooling_shell",),
         runtime_mode="auto",
         atlas_sync=False,
-        compass_refresh_profile=_DEFAULT_COMPASS_REFRESH_PROFILE,
     )
     remaining_missing = _missing_first_run_surfaces(repo_root=resolved_repo_root)
     if remaining_missing:
@@ -292,8 +291,6 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path) -> int:
                 "--force",
                 "--impact-mode",
                 "full",
-                "--compass-refresh-profile",
-                _DEFAULT_COMPASS_REFRESH_PROFILE,
             ]
         )
         if full_sync_rc == 0:
@@ -488,7 +485,6 @@ def _refresh_dashboard_after_upgrade(*, repo_root: Path) -> tuple[bool, str]:
         surfaces=_DEFAULT_DASHBOARD_REFRESH_SURFACES,
         runtime_mode="auto",
         atlas_sync=False,
-        compass_refresh_profile=_DEFAULT_COMPASS_REFRESH_PROFILE,
     )
     if render_rc != 0:
         return (
@@ -627,12 +623,12 @@ def _cmd_install_common(
     if summary.repo_guidance_created:
         print(f"Created root AGENTS.md at {summary.repo_root / 'AGENTS.md'}.")
     if getattr(summary, "gitignore_updated", False):
-        print("Added `/.odylith/` to the root `.gitignore` so Odylith runtime state stays untracked.")
+        print("Added Odylith local-state ignore rules to the root `.gitignore` so runtime state stays untracked.")
     if not summary.git_repo_present:
         print("This folder is not backed by Git yet. Odylith still installs here, but Git-aware features stay limited until `.git` exists.")
         print("That means working-tree intelligence, background autospawn, and git-fsmonitor watcher help stay reduced for now.")
     print(
-        "Repo-root AGENTS now activates Odylith guidance, skills, and the Codex-native spawn path for most grounded work."
+        "Repo-root AGENTS now activates Odylith guidance, skills, and native delegation when the current host supports it for most grounded work."
     )
     print(
         "Full Odylith is installed by default. Delivery is layered under the hood so Odylith can reuse unchanged runtime payloads during later repairs and upgrades."
@@ -1009,7 +1005,7 @@ def _cmd_off(args: argparse.Namespace) -> int:
     print(message, file=sys.stdout if enabled else sys.stderr)
     if enabled:
         print(
-            "Repo guidance is detached. Codex falls back to the surrounding repo's default behavior until `./.odylith/bin/odylith on --repo-root .` restores it."
+            "Repo guidance is detached. The current coding host falls back to the surrounding repo's default behavior until `./.odylith/bin/odylith on --repo-root .` restores it."
         )
         print("The local Odylith runtime and `odylith/` context stay installed.")
     return 0 if enabled else 1
@@ -1039,7 +1035,6 @@ def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
         runtime_mode=str(args.runtime_mode),
         atlas_sync=bool(args.atlas_sync),
         dry_run=bool(args.dry_run),
-        compass_refresh_profile=str(args.compass_refresh_profile),
     )
 
 
@@ -1068,6 +1063,54 @@ def _cmd_backlog(args: argparse.Namespace) -> int:
         "create": backlog_authoring.main,
     }[args.backlog_command]
     return target(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+
+
+def _cmd_release(args: argparse.Namespace) -> int:
+    if args.release_command in {"create", "update", "add", "remove", "move"} and not _forwarded_has_flag(
+        args.forwarded,
+        "--dry-run",
+    ):
+        blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+        if blocked:
+            return blocked
+    return release_planning_authoring.main(
+        ensure_repo_root_args(
+            repo_root=args.repo_root,
+            argv=[str(args.release_command).strip(), *list(args.forwarded)],
+        )
+    )
+
+
+def _cmd_program(args: argparse.Namespace) -> int:
+    if args.program_command in {"create", "update"} and not _forwarded_has_flag(
+        args.forwarded,
+        "--dry-run",
+    ):
+        blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+        if blocked:
+            return blocked
+    return program_wave_authoring.run_program(
+        ensure_repo_root_args(
+            repo_root=args.repo_root,
+            argv=[str(args.program_command).strip(), *list(args.forwarded)],
+        )
+    )
+
+
+def _cmd_wave(args: argparse.Namespace) -> int:
+    if args.wave_command in {"create", "update", "assign", "unassign", "gate-add", "gate-remove"} and not _forwarded_has_flag(
+        args.forwarded,
+        "--dry-run",
+    ):
+        blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+        if blocked:
+            return blocked
+    return program_wave_authoring.run_wave(
+        ensure_repo_root_args(
+            repo_root=args.repo_root,
+            argv=[str(args.wave_command).strip(), *list(args.forwarded)],
+        )
+    )
 
 
 def _cmd_validate(args: argparse.Namespace) -> int:
@@ -1169,6 +1212,20 @@ def _cmd_lane_status(args: argparse.Namespace) -> int:
 
 def _cmd_compass_log(args: argparse.Namespace) -> int:
     return log_compass_timeline_event.main(ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+
+
+def _cmd_compass_refresh(args: argparse.Namespace) -> int:
+    if not bool(getattr(args, "status", False)):
+        blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+        if blocked:
+            return blocked
+    forwarded = ["--repo-root", str(args.repo_root)]
+    if bool(getattr(args, "wait", False)):
+        forwarded.append("--wait")
+    if bool(getattr(args, "status", False)):
+        forwarded.append("--status")
+    forwarded.extend(["--runtime-mode", str(getattr(args, "runtime_mode", "auto"))])
+    return compass_refresh_runtime.main(forwarded)
 
 
 def _cmd_compass_update(args: argparse.Namespace) -> int:
@@ -1454,13 +1511,6 @@ def build_parser() -> argparse.ArgumentParser:
             "`standalone` stays subprocess-only, and `daemon` requires runtime-backed execution."
         ),
     )
-    dashboard_refresh.add_argument(
-        "--compass-refresh-profile",
-        choices=("full", "shell-safe"),
-        default=_DEFAULT_COMPASS_REFRESH_PROFILE,
-        help="Compass refresh profile. `shell-safe` defers live AI narration so refresh stays bounded.",
-    )
-
     governance = subparsers.add_parser("governance", help="Run Odylith governance maintenance helpers.")
     governance_subparsers = governance.add_subparsers(dest="governance_command", required=True)
     for command, help_text in (
@@ -1488,6 +1538,50 @@ def build_parser() -> argparse.ArgumentParser:
     )
     backlog_create.add_argument("--repo-root", default=".", help="Consumer repository root.")
     backlog_create.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    release = subparsers.add_parser("release", help="Create and maintain repo-local release planning truth.")
+    release_subparsers = release.add_subparsers(dest="release_command", required=True)
+    for command, help_text in (
+        ("create", "Create one release definition."),
+        ("update", "Update one release definition or alias ownership."),
+        ("list", "List known releases and alias ownership."),
+        ("show", "Show one release and its active assignments."),
+        ("add", "Assign one workstream to a release."),
+        ("remove", "Remove one workstream from its active release."),
+        ("move", "Move one workstream between releases."),
+    ):
+        child_parser = release_subparsers.add_parser(command, help=help_text)
+        child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
+        child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    program = subparsers.add_parser("program", help="Create and maintain umbrella execution-wave programs.")
+    program_subparsers = program.add_subparsers(dest="program_command", required=True)
+    for command, help_text in (
+        ("create", "Create one umbrella execution-wave program."),
+        ("update", "Update program-level wave posture."),
+        ("list", "List known execution-wave programs."),
+        ("show", "Show one umbrella execution-wave program."),
+        ("status", "Show one program summary and next posture."),
+        ("next", "Return one truthful next authoring command."),
+    ):
+        child_parser = program_subparsers.add_parser(command, help=help_text)
+        child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
+        child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    wave = subparsers.add_parser("wave", help="Create and maintain execution-wave members and gates.")
+    wave_subparsers = wave.add_subparsers(dest="wave_command", required=True)
+    for command, help_text in (
+        ("create", "Create one wave inside an existing program."),
+        ("update", "Update one wave's label, summary, or status."),
+        ("assign", "Assign one workstream to a wave role."),
+        ("unassign", "Remove one workstream from a wave."),
+        ("gate-add", "Add one gate ref for a wave member."),
+        ("gate-remove", "Remove one gate ref for a wave member."),
+        ("status", "Show one wave's current member and gate posture."),
+    ):
+        child_parser = wave_subparsers.add_parser(command, help=help_text)
+        child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
+        child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
     validate = subparsers.add_parser("validate", help="Run Odylith governance and contract validators.")
     validate_subparsers = validate.add_subparsers(dest="validate_command", required=True)
@@ -1520,6 +1614,27 @@ def build_parser() -> argparse.ArgumentParser:
     compass_log = compass_subparsers.add_parser("log", help="Append one Compass timeline event.")
     compass_log.add_argument("--repo-root", default=".", help="Consumer repository root.")
     compass_log.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    compass_refresh = compass_subparsers.add_parser(
+        "refresh",
+        help="Refresh Compass runtime artifacts with status and wait support.",
+    )
+    compass_refresh.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    compass_refresh.add_argument(
+        "--runtime-mode",
+        choices=("auto", "standalone", "daemon"),
+        default="auto",
+        help="Resolve the Compass refresh runtime once up front.",
+    )
+    compass_refresh.add_argument(
+        "--wait",
+        action="store_true",
+        help="Wait for the active or newly started Compass refresh to reach a terminal state.",
+    )
+    compass_refresh.add_argument(
+        "--status",
+        action="store_true",
+        help="Read the local Compass refresh state without mutating it.",
+    )
     compass_update = compass_subparsers.add_parser("update", help="Append Compass updates and refresh the surface.")
     compass_update.add_argument("--repo-root", default=".", help="Consumer repository root.")
     compass_update.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
@@ -1630,6 +1745,19 @@ def main(argv: list[str] | None = None) -> int:
                         forwarded=forwarded,
                     )
                 )
+        if tokens[0] == "release" and len(tokens) >= 2:
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            if _help_requested(forwarded):
+                parser = build_parser()
+                args = parser.parse_args(tokens)
+                return _cmd_release(args)
+            return _cmd_release(
+                argparse.Namespace(
+                    repo_root=repo_root,
+                    release_command=tokens[1],
+                    forwarded=forwarded,
+                )
+            )
         if tokens[0] == "validate" and len(tokens) >= 2:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if tokens[1] == "version-truth":
@@ -1665,9 +1793,7 @@ def main(argv: list[str] | None = None) -> int:
         if tokens[0] == "context-engine":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
             if _help_requested(forwarded):
-                parser = build_parser()
-                args = parser.parse_args(tokens)
-                return _cmd_context_engine(args)
+                return odylith_context_engine.main(["--repo-root", repo_root, *forwarded])
             return odylith_context_engine.main(["--repo-root", repo_root, *forwarded])
         if tokens[0] == "benchmark":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
@@ -1678,7 +1804,7 @@ def main(argv: list[str] | None = None) -> int:
             if forwarded and str(forwarded[0]).strip() == "compare":
                 return _cmd_benchmark(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
             return odylith_context_engine.main(["--repo-root", repo_root, "benchmark", *forwarded])
-        if tokens[0] == "compass" and len(tokens) >= 2 and tokens[1] in {"log", "update", "restore-history", "watch-transactions"}:
+        if tokens[0] == "compass" and len(tokens) >= 2 and tokens[1] in {"log", "refresh", "update", "restore-history", "watch-transactions"}:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             compass_command = tokens[1]
             if _help_requested(forwarded):
@@ -1686,6 +1812,8 @@ def main(argv: list[str] | None = None) -> int:
                 args = parser.parse_args(tokens)
                 if compass_command == "log":
                     return _cmd_compass_log(args)
+                if compass_command == "refresh":
+                    return _cmd_compass_refresh(args)
                 if compass_command == "update":
                     return _cmd_compass_update(args)
                 if compass_command == "restore-history":
@@ -1693,6 +1821,11 @@ def main(argv: list[str] | None = None) -> int:
                 return _cmd_compass_watch_transactions(args)
             if compass_command == "log":
                 return _cmd_compass_log(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
+            if compass_command == "refresh":
+                refresh_parser = build_parser()
+                refresh_args = refresh_parser.parse_args(tokens)
+                refresh_args.repo_root = repo_root
+                return _cmd_compass_refresh(refresh_args)
             if compass_command == "update":
                 return _cmd_compass_update(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
             if compass_command == "restore-history":
@@ -1775,6 +1908,12 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_dashboard_refresh(args)
     if args.command == "backlog":
         return _cmd_backlog(args)
+    if args.command == "release":
+        return _cmd_release(args)
+    if args.command == "program":
+        return _cmd_program(args)
+    if args.command == "wave":
+        return _cmd_wave(args)
     if args.command == "governance":
         return _cmd_governance(args)
     if args.command == "validate":
@@ -1785,6 +1924,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_benchmark(args)
     if args.command == "compass" and args.compass_command == "log":
         return _cmd_compass_log(args)
+    if args.command == "compass" and args.compass_command == "refresh":
+        return _cmd_compass_refresh(args)
     if args.command == "compass" and args.compass_command == "update":
         return _cmd_compass_update(args)
     if args.command == "compass" and args.compass_command == "restore-history":

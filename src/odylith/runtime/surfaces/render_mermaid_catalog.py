@@ -18,12 +18,15 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.surfaces import brand_assets
+from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.governance import delivery_intelligence_engine  # Backward-compatible test monkeypatch surface.
 from odylith.runtime.surfaces import generated_surface_cleanup
+from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
@@ -186,7 +189,7 @@ def _surface_links_for_diagram(
         links.append(
             {
                 "file": f"Radar ({primary_workstream})",
-                "href": f"{tooling_shell_href}?tab=radar&workstream={primary_workstream}",
+                "href": f"{tooling_shell_href}{dashboard_shell_links.radar_workstream_href(primary_workstream)}",
                 "target": "_top",
             }
         )
@@ -714,40 +717,47 @@ def _meaningful_active_diagram_touches(
         if not linked_diagrams:
             continue
 
-        diagnostics = snapshot.get("diagnostics", {}) if isinstance(snapshot.get("diagnostics"), Mapping) else {}
-        change_vector = snapshot.get("change_vector", {}) if isinstance(snapshot.get("change_vector"), Mapping) else {}
-        evidence_bundle = (
-            snapshot.get("evidence_bundle", {})
-            if isinstance(snapshot.get("evidence_bundle"), Mapping)
-            else {}
-        )
-
-        live_actionable = bool(diagnostics.get("live_actionable", False))
-        status = str(diagnostics.get("status", "")).strip().lower()
-        latest_event = str(evidence_context.get("latest_event_ts_iso", "")).strip()
-        latest_explicit = str(evidence_context.get("latest_explicit_ts_iso", "")).strip()
-        has_recent_delta = bool(latest_event and (not latest_explicit or latest_event > latest_explicit))
-        has_meaningful_change = any(
-            int(change_vector.get(bucket, 0) or 0) > 0
-            for bucket in ("build_ci", "cli", "contract", "policy", "renderer", "runtime", "spec", "runbook")
-        )
-        if not has_meaningful_change:
-            has_meaningful_change = bool(evidence_bundle.get("code_references")) or bool(
-                evidence_bundle.get("changed_artifacts")
+        scope_signal = snapshot.get("scope_signal", {}) if isinstance(snapshot.get("scope_signal"), Mapping) else {}
+        if scope_signal:
+            if scope_signal_ladder.scope_signal_rank(scope_signal) < scope_signal_ladder.DEFAULT_PROMOTED_DEFAULT_RANK:
+                continue
+            if not bool(scope_signal.get("promoted_default", False)):
+                continue
+        else:
+            diagnostics = snapshot.get("diagnostics", {}) if isinstance(snapshot.get("diagnostics"), Mapping) else {}
+            change_vector = snapshot.get("change_vector", {}) if isinstance(snapshot.get("change_vector"), Mapping) else {}
+            evidence_bundle = (
+                snapshot.get("evidence_bundle", {})
+                if isinstance(snapshot.get("evidence_bundle"), Mapping)
+                else {}
             )
 
-        if not has_meaningful_change:
-            continue
+            live_actionable = bool(diagnostics.get("live_actionable", False))
+            status = str(diagnostics.get("status", "")).strip().lower()
+            latest_event = str(evidence_context.get("latest_event_ts_iso", "")).strip()
+            latest_explicit = str(evidence_context.get("latest_explicit_ts_iso", "")).strip()
+            has_recent_delta = bool(latest_event and (not latest_explicit or latest_event > latest_explicit))
+            has_meaningful_change = any(
+                int(change_vector.get(bucket, 0) or 0) > 0
+                for bucket in ("build_ci", "cli", "contract", "policy", "renderer", "runtime", "spec", "runbook")
+            )
+            if not has_meaningful_change:
+                has_meaningful_change = bool(evidence_bundle.get("code_references")) or bool(
+                    evidence_bundle.get("changed_artifacts")
+                )
 
-        if status in {"planning", "implementation"}:
-            qualifies_as_active = True
-        elif status == "parked":
-            qualifies_as_active = live_actionable or has_recent_delta
-        else:
-            qualifies_as_active = False
+            if not has_meaningful_change:
+                continue
 
-        if not qualifies_as_active:
-            continue
+            if status in {"planning", "implementation"}:
+                qualifies_as_active = True
+            elif status == "parked":
+                qualifies_as_active = live_actionable or has_recent_delta
+            else:
+                qualifies_as_active = False
+
+            if not qualifies_as_active:
+                continue
 
         for diagram_id in linked_diagrams:
             by_diagram.setdefault(diagram_id, set()).add(workstream_id)
@@ -1039,7 +1049,7 @@ def _render_html(
             ),
         )
     )
-    workstream_pill_button_css = dashboard_ui_primitives.detail_action_chip_css(
+    workstream_pill_button_css = dashboard_ui_primitives.surface_workstream_button_chip_css(
         selector=".artifact-list a.workstream-pill-link",
         border_color="#8cb8f4",
         background="#eaf3ff",
@@ -3012,6 +3022,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             path=bundle_paths.control_js_path,
             content=control_js,
             lock_key=str(bundle_paths.control_js_path),
+        )
+        source_bundle_mirror.sync_live_paths(
+            repo_root=repo_root,
+            live_paths=(output_path, bundle_paths.payload_js_path, bundle_paths.control_js_path),
         )
         generated_surface_cleanup.remove_legacy_generated_paths(
             active_outputs=(output_path,),

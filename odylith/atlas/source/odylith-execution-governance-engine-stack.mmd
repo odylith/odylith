@@ -1,0 +1,23 @@
+%% Reviewed 2026-04-09 for B-072 to show the new execution-governance package as a first-class runtime boundary.
+flowchart LR
+    Truth["Repo truth<br/>Radar + Plans + Registry + Casebook + Atlas"] --> Context["Context Engine<br/>grounded packets + entity context"]
+    Context --> Host["Execution Host Profile<br/>host family + model family + capabilities"]
+    Context --> Contract["Execution Contract<br/>objective + lane + scope + hard constraints"]
+    Delivery["Delivery Intelligence<br/>shared posture + scope signal"] --> Contract
+    Proof["Proof State<br/>blocker lane + claim tier"] --> Frontier["Execution Frontier<br/>phase + blocker + next move"]
+    Tribunal["Tribunal<br/>diagnosis + rival explanations"] --> Rules["Validation + Contradictions<br/>matrix + failure blocking"]
+
+    subgraph Engine["Execution Governance"]
+        Host --> Policy["Admissibility Policy<br/>admit / deny / defer"]
+        Contract --> Policy
+        Policy --> Frontier
+        Frontier --> Closure["Resource Closure<br/>safe / incomplete / destructive"]
+        Closure --> Receipts["Semantic Receipts + Resume Handles"]
+        Receipts --> Rules
+    end
+
+    Policy --> Router["Subagent Router"]
+    Policy --> Orchestrator["Subagent Orchestrator"]
+    Policy --> Remediator["Remediator"]
+    Receipts --> Surfaces["Compass + Shell + Packets"]
+    Rules --> Surfaces

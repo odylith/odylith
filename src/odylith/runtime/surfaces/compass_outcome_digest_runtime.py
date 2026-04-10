@@ -7,6 +7,8 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
+
 
 def _host():
     from odylith.runtime.surfaces import compass_dashboard_runtime as host
@@ -387,12 +389,11 @@ def _build_outcome_digest_global(
     else:
         completed_line = f"Completed in this window: no milestone closeout was recorded in the last {window_hours}h."
 
-    progressed_count = 0
-    for row in active_ws_rows:
-        plan = row.get("plan", {}) if isinstance(row, Mapping) else {}
-        ratio = float(plan.get("progress_ratio", 0.0) or 0.0) if isinstance(plan, Mapping) else 0.0
-        if ratio > 0:
-            progressed_count += 1
+    progress_summary = workstream_progress_runtime.summarize_active_progress(
+        [row for row in active_ws_rows if isinstance(row, Mapping)]
+    )
+    progressed_count = int(progress_summary.get("tracked", 0) or 0) + int(progress_summary.get("closed", 0) or 0)
+    active_untracked_count = int(progress_summary.get("active_untracked", 0) or 0)
 
     ranked_activity = sorted(
         [(ws_id, int(count)) for ws_id, count in event_counts_by_ws.items() if ws_id],
@@ -431,11 +432,17 @@ def _build_outcome_digest_global(
     if active_count <= 0:
         base_update = "no active implementation lane is currently open for this scope"
     elif progressed_count <= 0:
-        base_update = "active lanes are in planning setup and closure execution is starting"
+        if active_untracked_count > 0:
+            base_update = "active lanes are in implementation, but checklist progress is not yet captured"
+        else:
+            base_update = "active lanes are in planning setup and closure execution is starting"
     elif progressed_count >= active_count:
         base_update = "active lanes are translating plans into concrete implementation outcomes"
     else:
-        base_update = "planning and implementation are running in parallel across active lanes"
+        if active_untracked_count > 0:
+            base_update = "planning and implementation are running in parallel, and some implementation lanes still lack captured checklist progress"
+        else:
+            base_update = "planning and implementation are running in parallel across active lanes"
 
     if top_activity_labels:
         focus_scope = (
@@ -455,13 +462,13 @@ def _build_outcome_digest_global(
         f"{focus_clause}."
     )
     why_focus = _narrative_excerpt(
-        primary_use_story or "focused execution remains prerequisite for dependent platform lanes.",
+        primary_use_story or "focused execution remains prerequisite for dependent follow-on workstreams.",
         max_sentences=1,
         max_chars=280,
     )
     impact_focus = _narrative_excerpt(
         primary_architecture_consequence
-        or "gives operators a clearer contract and lower coordination risk across dependent lanes.",
+        or "gives operators a clearer contract and lower coordination risk across dependent work.",
         max_sentences=1,
         max_chars=280,
     )

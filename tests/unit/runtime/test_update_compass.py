@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.surfaces import update_compass as updater
 
 
@@ -20,7 +21,6 @@ def _write_workstream_spec(tmp_path: Path, *, idea_id: str, title: str) -> None:
             "commercial_value: 4\n\n"
             "product_impact: 4\n\n"
             "market_value: 4\n\n"
-            "impacted_lanes: both\n\n"
             "impacted_parts: compass\n\n"
             "sizing: M\n\n"
             "complexity: Medium\n\n"
@@ -126,7 +126,7 @@ def _seed_component_registry(tmp_path: Path) -> None:
 
 
 def _stream_lines(repo_root: Path) -> list[dict[str, object]]:
-    stream_path = repo_root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path = repo_root / agent_runtime_contract.AGENT_STREAM_PATH
     assert stream_path.is_file()
     return [
         json.loads(line)
@@ -172,13 +172,13 @@ def test_update_compass_fails_without_messages(tmp_path: Path, capsys) -> None: 
 
 def test_update_compass_renders_by_default(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_component_registry(tmp_path)
-    calls: list[list[str]] = []
+    captured: dict[str, object] = {}
 
-    def _fake_render(args: list[str]) -> int:
-        calls.append(args)
-        return 0
+    def _fake_run_refresh(**kwargs):  # noqa: ANN003
+        captured.update(kwargs)
+        return {"rc": 0, "status": "passed"}
 
-    monkeypatch.setattr(updater.render_compass_dashboard, "main", _fake_render)
+    monkeypatch.setattr(updater.compass_refresh_runtime, "run_refresh", _fake_run_refresh)
     rc = updater.main(
         [
             "--repo-root",
@@ -188,33 +188,36 @@ def test_update_compass_renders_by_default(tmp_path: Path, monkeypatch) -> None:
         ]
     )
     assert rc == 0
-    assert calls
-    assert "--repo-root" in calls[0]
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "requested_profile": "shell-safe",
+        "requested_runtime_mode": "auto",
+        "wait": True,
+        "status_only": False,
+        "emit_output": True,
+    }
 
 
-def test_update_compass_uses_default_history_retention_for_refresh(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_update_compass_returns_render_failure_when_refresh_engine_fails(tmp_path: Path, monkeypatch, capsys) -> None:  # noqa: ANN001
     _seed_component_registry(tmp_path)
-    captured: dict[str, object] = {}
-
-    def _fake_refresh_runtime_artifacts(**kwargs):  # noqa: ANN001
-        captured.update(kwargs)
-        dummy = tmp_path / "dummy"
-        return {}, (dummy, dummy, dummy, dummy, dummy)
-
-    monkeypatch.setattr(updater.render_compass_dashboard, "refresh_runtime_artifacts", _fake_refresh_runtime_artifacts)
-    monkeypatch.setattr(updater.odylith_context_engine_store, "append_runtime_event", lambda **_: None)
+    monkeypatch.setattr(
+        updater.compass_refresh_runtime,
+        "run_refresh",
+        lambda **_: {"rc": 124, "status": "failed"},
+    )
 
     rc = updater.main(
         [
             "--repo-root",
             str(tmp_path),
             "--statement",
-            "Captured execution update for retention coverage.",
+            "Captured execution update for failure coverage.",
         ]
     )
 
-    assert rc == 0
-    assert captured["retention_days"] == updater.render_compass_dashboard.DEFAULT_HISTORY_RETENTION_DAYS
+    assert rc == 124
+    out = capsys.readouterr().out
+    assert "timeline events were appended, but Compass render failed" in out
 
 
 def test_update_compass_passes_transaction_grouping_fields(tmp_path: Path) -> None:
@@ -254,3 +257,47 @@ def test_update_compass_passes_transaction_grouping_fields(tmp_path: Path) -> No
     assert all(str(row.get("headline_hint", "")) == "Hardened Compass headline inference" for row in payloads)
     assert payloads[0]["transaction_boundary"] == "start"
     assert "transaction_boundary" not in payloads[1]
+
+
+def test_update_compass_appends_proof_state_fields(tmp_path: Path) -> None:
+    _seed_component_registry(tmp_path)
+    rc = updater.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--implementation",
+            "Implemented proof-state capture for the live blocker lane.",
+            "--workstream",
+            "B-033",
+            "--proof-lane",
+            "proof-state-control-plane",
+            "--proof-fingerprint",
+            "aws:lambda:Permission doesn't support update",
+            "--proof-phase",
+            "manifests-deploy",
+            "--evidence-tier",
+            "code_only",
+            "--proof-status",
+            "fixed_in_code",
+            "--work-category",
+            "primary_blocker",
+            "--pushed-head",
+            "def456",
+            "--runner-fingerprint",
+            "runner-v3",
+            "--no-render",
+        ]
+    )
+
+    assert rc == 0
+    payload = _stream_lines(tmp_path)[0]
+    assert payload["proof_lane"] == "proof-state-control-plane"
+    assert payload["proof_fingerprint"] == "aws:lambda:Permission doesn't support update"
+    assert payload["proof_phase"] == "manifests-deploy"
+    assert payload["evidence_tier"] == "code_only"
+    assert payload["proof_status"] == "fixed_in_code"
+    assert payload["work_category"] == "primary_blocker"
+    assert payload["deployment_truth"] == {
+        "pushed_head": "def456",
+        "runner_fingerprint": "runner-v3",
+    }

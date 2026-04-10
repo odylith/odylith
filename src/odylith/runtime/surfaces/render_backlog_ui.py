@@ -29,6 +29,7 @@ from odylith.runtime.surfaces import backlog_detail_pages
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
 from odylith.runtime.surfaces import render_backlog_ui_payload_runtime
 from odylith.runtime.surfaces import render_backlog_ui_html_runtime
+from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.governance import execution_wave_view_model
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.governance import plan_progress
@@ -244,11 +245,12 @@ def _legacy_test_command(module_name: str) -> str:
         "auto_update_mermaid_diagrams": "odylith atlas render --repo-root .",
         "install_mermaid_autosync_hook": "odylith atlas render --repo-root .",
         "scaffold_mermaid_diagram": "odylith atlas render --repo-root .",
-        "render_compass_dashboard": "odylith dashboard refresh --repo-root . --surfaces compass",
-        "compass_dashboard_base": "odylith dashboard refresh --repo-root . --surfaces compass",
-        "compass_dashboard_runtime": "odylith dashboard refresh --repo-root . --surfaces compass",
-        "compass_dashboard_shell": "odylith dashboard refresh --repo-root . --surfaces compass",
-        "compass_standup_brief_narrator": "odylith dashboard refresh --repo-root . --surfaces compass",
+        "render_compass_dashboard": "odylith compass refresh --repo-root . --wait",
+        "compass_refresh_runtime": "odylith compass refresh --repo-root . --wait",
+        "compass_dashboard_base": "odylith compass refresh --repo-root . --wait",
+        "compass_dashboard_runtime": "odylith compass refresh --repo-root . --wait",
+        "compass_dashboard_shell": "odylith compass refresh --repo-root . --wait",
+        "compass_standup_brief_narrator": "odylith compass refresh --repo-root . --wait",
         "log_compass_timeline_event": "odylith compass log --repo-root . --help",
         "watch_prompt_transactions": "odylith compass watch-transactions --repo-root . --once --runtime-mode standalone",
         "odylith_context_engine": "odylith context-engine --repo-root . status",
@@ -808,6 +810,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     component_index = _load_component_index(repo_root=repo_root)
     _attach_component_registry_links(entries=entries, component_index=component_index)
     _attach_execution_overlay(entries=entries, repo_root=repo_root)
+    render_backlog_ui_payload_runtime._attach_delivery_scope_signals(
+        entries=entries,
+        repo_root=repo_root,
+        runtime_mode=str(args.runtime_mode),
+    )
 
     detail_entries = {
         str(entry.get("idea_id", "")).strip(): _build_backlog_detail_entry(entry)
@@ -968,6 +975,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                 stale_path.unlink()
     if analytics_path.is_file():
         analytics_path.unlink()
+    source_bundle_mirror.sync_live_paths(
+        repo_root=repo_root,
+        live_paths=(
+            output_path,
+            bundle_paths.payload_js_path,
+            bundle_paths.control_js_path,
+            standalone_pages_path,
+        ),
+    )
+    source_bundle_mirror.sync_live_glob(
+        repo_root=repo_root,
+        live_dir=output_path.parent,
+        pattern="backlog-detail-shard-*.v1.js",
+    )
+    source_bundle_mirror.sync_live_glob(
+        repo_root=repo_root,
+        live_dir=output_path.parent,
+        pattern="backlog-document-shard-*.v1.js",
+    )
 
     legacy_ui_root = (repo_root / "backlog" / "ui").resolve()
     generated_surface_cleanup.remove_legacy_generated_paths(

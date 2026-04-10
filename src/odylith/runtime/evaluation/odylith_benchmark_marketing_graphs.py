@@ -245,7 +245,7 @@ def _mode_compact_label(mode: str) -> str:
     if token == "odylith_on":
         return "Odylith on"
     if token in {"raw_agent_baseline", "odylith_off"}:
-        return "Odylith off / raw Codex CLI"
+        return "Odylith off / raw host CLI"
     if token in {"odylith_repo_scan_baseline", "full_scan_baseline"}:
         return "Repo-scan baseline"
     return token.replace("_", " ").strip() or "Benchmark mode"
@@ -361,9 +361,7 @@ def render_quality_frontier_svg(report: Mapping[str, Any]) -> str:
     pairs, candidate_mode, baseline_mode = _quality_pairs(report)
     prompt_only_control = _prompt_only_control_baseline(report=report, baseline_mode=baseline_mode, pairs=pairs)
     candidate_compact_label = _mode_compact_label(candidate_mode)
-    baseline_compact_label = (
-        "Prompt-only raw Codex control" if prompt_only_control else _mode_compact_label(baseline_mode)
-    )
+    baseline_compact_label = "Prompt-only raw host control" if prompt_only_control else _mode_compact_label(baseline_mode)
     candidate_short_label = _mode_short_label(candidate_mode)
     baseline_short_label = "control" if prompt_only_control else _mode_short_label(baseline_mode)
     baseline_recalls = [float(row.get("baseline_recall", 0.0) or 0.0) for row in pairs]
@@ -420,7 +418,7 @@ def render_quality_frontier_svg(report: Mapping[str, Any]) -> str:
 
     subtitle_lines = _wrap_words(
         (
-            "Each line connects the same benchmark scenario with a prompt-only raw Codex control (red) "
+            "Each line connects the same benchmark scenario with a prompt-only raw host control (red) "
             f"and Odylith on (teal). Right is better and lower {time_axis_noun} is better."
             if prompt_only_control
             else f"Each line connects the same benchmark scenario with Odylith off (red) and Odylith on (teal). Right is better and lower {time_axis_noun} is better."

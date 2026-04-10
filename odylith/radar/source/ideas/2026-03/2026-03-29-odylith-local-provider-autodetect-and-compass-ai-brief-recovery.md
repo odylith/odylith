@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-012
-title: Odylith Local Provider Autodetect and Compass AI Brief Recovery
+title: Local Provider Autodetect and Compass AI Brief Recovery
 date: 2026-03-29
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: shared reasoning adapter, local provider autodetect, Claude Code compatibility, Compass standup narration, and AI brief cache warming
 sizing: M
 complexity: Medium
@@ -30,8 +29,15 @@ workstream_split_into:
 workstream_merged_into:
 workstream_merged_from:
 supersedes:
-superseded_by:
+superseded_by: B-069
 ---
+
+## Historical Note
+This slice remains factually correct about the first shared local-provider and
+Claude-compatible reasoning recovery work. Treat any normative host-contract
+language here as historical. `B-069` now owns the current cross-host product
+contract and the separation between host capability, model-family policy, and
+shared runtime canon.
 
 ## Problem
 Odylith's shared reasoning defaults assumed a hosted `openai-compatible`

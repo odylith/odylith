@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import render_mermaid_catalog as renderer
 
 
@@ -20,6 +21,32 @@ def test_render_mermaid_catalog_uses_relative_tooling_shell_href_for_workstream_
     assert 'const TOOLING_BASE_HREF = "../index.html";' in html
     assert 'a.href = `${TOOLING_BASE_HREF}?tab=radar&workstream=${encodeURIComponent(id)}`;' in html
     assert "../odylith/index.html" not in html
+
+
+def test_render_mermaid_catalog_workstream_pills_use_shared_workstream_button_contract() -> None:
+    html = renderer._render_html(  # noqa: SLF001
+        diagrams=[],
+        stats={"total": 0, "fresh": 0, "stale": 0},
+        max_review_age_days=21,
+        tooltip_lookup={},
+        generated_utc="2026-03-27T05:42:32Z",
+        brand_head_html="",
+        tooling_base_href="../index.html",
+    )
+
+    assert ".artifact-list a.workstream-pill-link {" in html
+    assert (
+        f"padding: var({dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}, "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING});"
+    ) in html
+    assert (
+        f"font-size: var({dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR}, "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE});"
+    ) in html
+    assert (
+        f"font-weight: var({dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR}, "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT});"
+    ) in html
 
 
 def test_render_mermaid_catalog_normalizes_mismatched_selected_diagram_workstream_filter() -> None:
@@ -196,3 +223,53 @@ def test_load_catalog_rejects_empty_product_catalog(tmp_path: Path) -> None:
     assert diagrams == []
     assert errors == [f"{catalog_path}: `diagrams` list is empty"]
     assert stats == {"total": 0, "fresh": 0, "stale": 0}
+
+
+def test_repo_atlas_catalog_titles_do_not_repeat_product_prefix() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+    diagrams = payload.get("diagrams", []) if isinstance(payload, dict) else []
+
+    prefixed = [
+        f"{row.get('diagram_id', '')}: {row.get('title', '')}"
+        for row in diagrams
+        if isinstance(row, dict) and str(row.get("title", "")).startswith("Odylith ")
+    ]
+
+    assert prefixed == []
+
+
+def test_meaningful_active_diagram_touches_require_promoted_scope_signal() -> None:
+    active = renderer._meaningful_active_diagram_touches(  # noqa: SLF001
+        delivery_intelligence={
+            "workstreams": {
+                "B-040": {
+                    "scope_id": "B-040",
+                    "scope_signal": {
+                        "rank": 1,
+                        "rung": "R1",
+                        "token": "background_trace",
+                        "promoted_default": False,
+                    },
+                    "evidence_context": {
+                        "linked_diagrams": ["D-028"],
+                    },
+                },
+                "B-071": {
+                    "scope_id": "B-071",
+                    "scope_signal": {
+                        "rank": 4,
+                        "rung": "R4",
+                        "token": "actionable_priority",
+                        "promoted_default": True,
+                    },
+                    "evidence_context": {
+                        "linked_diagrams": ["D-028"],
+                    },
+                },
+            }
+        }
+    )
+
+    assert active == {"D-028": {"B-071"}}

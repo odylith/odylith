@@ -22,16 +22,18 @@
     "D-015",
     "D-016",
     "D-017",
-    "D-024"
+    "D-024",
+    "D-028",
+    "D-029"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 19,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 3,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 19
+    "timeline_event_count": 20
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -41,6 +43,23 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py"
+      ],
+      "confidence": "high",
+      "event_index": 63,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "atlas"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/atlas/CURRENT_SPEC.md, src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+      "ts_iso": "2026-04-09T15:09:43-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/radar/source/INDEX.md",
@@ -575,6 +594,7 @@
   "workstreams": [
     "B-001",
     "B-059",
+    "B-063",
     "B-006",
     "B-002",
     "B-023",
@@ -586,6 +606,7 @@
     "B-035",
     "B-032",
     "B-033",
-    "B-043"
+    "B-043",
+    "B-071"
   ]
 }

@@ -5,6 +5,7 @@ from typing import Mapping
 from typing import Sequence
 from pathlib import Path
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.consumer_profile import load_consumer_profile
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.orchestration import odylith_chatter_runtime
@@ -99,7 +100,11 @@ def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
         and (required_reads or validation_obligation_count > 0 or authority_graph_edge_count >= 3)
     )
     execution_profile = {
-        "profile": "gpt54_high" if risk_tier == "high" else "mini_high",
+        "profile": (
+            agent_runtime_contract.FRONTIER_HIGH_PROFILE
+            if risk_tier == "high"
+            else agent_runtime_contract.ANALYSIS_HIGH_PROFILE
+        ),
         "model": model,
         "reasoning_effort": reasoning_effort,
         "agent_role": agent_role,

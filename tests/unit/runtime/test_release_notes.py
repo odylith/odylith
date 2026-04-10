@@ -79,7 +79,7 @@ def test_repo_has_authored_release_note_for_v0_1_10_release_prep() -> None:
     assert note.version == "0.1.10"
     assert note.title == "Boringly Trustworthy"
     assert note.highlights
-    assert note.summary.startswith("Truthful Compass full refresh")
+    assert note.summary.startswith("Truthful Compass refresh")
 
 
 def test_github_release_notes_url_points_at_tagged_markdown() -> None:

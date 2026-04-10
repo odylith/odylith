@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-014
-title: Odylith Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening
+title: Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening
 date: 2026-03-29
 priority: P0
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: Odylith Context Engine daemon lifecycle, local transport trust boundary, repair reset-local-state flow, runtime watcher cleanup, daemon regression proof
 sizing: M
 complexity: High

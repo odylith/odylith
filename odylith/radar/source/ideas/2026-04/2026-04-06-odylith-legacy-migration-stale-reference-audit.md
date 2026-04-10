@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-052
-title: Odylith Legacy Migration Stale Reference Audit
+title: Legacy Migration Stale Reference Audit
 date: 2026-04-06
 priority: P1
 commercial_value: 4
 product_impact: 4
 market_value: 3
-impacted_lanes: service
 impacted_parts: legacy migration auditing, tracked-text scanning, repo-local migration reports, and stale `odyssey` reference surfacing
 sizing: S
 complexity: Medium

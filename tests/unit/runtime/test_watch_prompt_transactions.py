@@ -56,3 +56,63 @@ def test_runtime_fingerprint_prefers_live_daemon_in_auto_mode(
     )  # noqa: SLF001
 
     assert watcher._runtime_fingerprint(tmp_path, runtime_mode="auto") == "daemon-fingerprint"
+
+
+def test_refresh_outputs_runtime_uses_compass_refresh_engine_then_backlog_runtime(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    captured: dict[str, object] = {}
+
+    def _fake_run_refresh(**kwargs):  # noqa: ANN003
+        captured["refresh"] = kwargs
+        return {"rc": 0, "status": "passed"}
+
+    class _BacklogModule:
+        @staticmethod
+        def main(argv: list[str]) -> int:
+            captured["backlog_argv"] = argv
+            return 0
+
+    monkeypatch.setattr(watcher.compass_refresh_runtime, "run_refresh", _fake_run_refresh)
+    monkeypatch.setattr(watcher.importlib, "import_module", lambda name: _BacklogModule())
+
+    rc = watcher._refresh_outputs_runtime(tmp_path, runtime_mode="auto")  # noqa: SLF001
+
+    assert rc == 0
+    assert captured["refresh"] == {
+        "repo_root": tmp_path,
+        "requested_profile": "shell-safe",
+        "requested_runtime_mode": "auto",
+        "wait": True,
+        "status_only": False,
+        "emit_output": True,
+    }
+    assert captured["backlog_argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "--runtime-mode",
+        "auto",
+    ]
+
+
+def test_refresh_outputs_runtime_stops_when_compass_refresh_fails(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+    capsys,  # noqa: ANN001
+) -> None:
+    monkeypatch.setattr(
+        watcher.compass_refresh_runtime,
+        "run_refresh",
+        lambda **_: {"rc": 124, "status": "failed"},
+    )
+    monkeypatch.setattr(
+        watcher.importlib,
+        "import_module",
+        lambda name: (_ for _ in ()).throw(AssertionError("backlog render should not run after Compass failure")),
+    )
+
+    rc = watcher._refresh_outputs_runtime(tmp_path, runtime_mode="auto")  # noqa: SLF001
+
+    assert rc == 124
+    assert "prompt transaction watcher FAILED while refreshing Compass" in capsys.readouterr().out

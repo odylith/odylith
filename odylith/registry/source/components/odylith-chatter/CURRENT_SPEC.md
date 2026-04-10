@@ -1,11 +1,11 @@
 # Odylith Chatter
-Last updated: 2026-04-07
+Last updated: 2026-04-09
 
 
 Last updated (UTC): 2026-04-07
 
 ## Purpose
-Odylith Chatter is Odylith's cross-lane narration contract. It governs how
+Odylith Chatter is Odylith's cross-posture narration contract. It governs how
 Odylith shows up in agent-visible updates, closeouts, generated reviewer
 artifacts, and shipped guidance so the product stays task-first during work,
 ambiently helpful in the middle, and earns brand visibility from factual
@@ -25,7 +25,7 @@ end-of-work outcomes instead of canned self-promotion.
   diagnosis pass.
 - Control-plane debranding for routed explanations, install-managed guidance,
   and runtime explanation templates.
-- Cross-lane mirror alignment across source, bundle, and generated Registry
+- Cross-surface mirror alignment across source, bundle, and generated Registry
   surfaces for this narration policy.
 
 ### Odylith Chatter does not own

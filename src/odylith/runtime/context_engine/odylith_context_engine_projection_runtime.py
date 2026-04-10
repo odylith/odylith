@@ -445,7 +445,148 @@ def _load_traceability_projection(*, repo_root: Path) -> list[dict[str, str]]:
                             "source_path": str(workstream.get("idea_file", "")).strip(),
                         }
                     )
+        active_release_id = str(workstream.get("active_release_id", "")).strip()
+        if active_release_id:
+            rows.append(
+                {
+                    "source_kind": "workstream",
+                    "source_id": idea_id,
+                    "relation": "active_release",
+                    "target_kind": "release",
+                    "target_id": active_release_id,
+                    "source_path": str(workstream.get("idea_file", "")).strip(),
+                }
+            )
     return rows
+
+
+def _load_release_projection(*, repo_root: Path) -> dict[str, Any]:
+    host = _host()
+    from odylith.runtime.governance import release_truth_runtime
+
+    release_view, workstream_status_by_id, _errors = release_truth_runtime.load_release_view_from_source(
+        repo_root=repo_root,
+    )
+    releases = release_view.get("catalog", []) if isinstance(release_view.get("catalog"), list) else []
+    aliases = release_view.get("aliases", {}) if isinstance(release_view.get("aliases"), Mapping) else {}
+    workstreams = []
+    for idea_id, status in workstream_status_by_id.items():
+        release_metadata = (
+            dict(release_view.get("workstreams", {}).get(idea_id, {}))
+            if isinstance(release_view.get("workstreams"), Mapping)
+            and isinstance(release_view.get("workstreams", {}).get(idea_id), Mapping)
+            else {}
+        )
+        workstreams.append(
+            {
+                "idea_id": idea_id,
+                "status": status,
+                "active_release_id": str(release_metadata.get("active_release_id", "")).strip(),
+                "active_release": (
+                    dict(release_metadata.get("active_release", {}))
+                    if isinstance(release_metadata.get("active_release"), Mapping)
+                    else {}
+                ),
+                "release_history_summary": str(release_metadata.get("history_summary", "")).strip(),
+            }
+        )
+    current_release = (
+        release_view.get("current_release", {})
+        if isinstance(release_view.get("current_release"), Mapping)
+        else {}
+    )
+    next_release = (
+        release_view.get("next_release", {})
+        if isinstance(release_view.get("next_release"), Mapping)
+        else {}
+    )
+    summary = (
+        release_view.get("summary", {})
+        if isinstance(release_view.get("summary"), Mapping)
+        else {}
+    )
+
+    workstream_lookup: dict[str, dict[str, Any]] = {}
+    for workstream in workstreams:
+        if not isinstance(workstream, Mapping):
+            continue
+        idea_id = str(workstream.get("idea_id", "")).strip().upper()
+        if not host._WORKSTREAM_ID_RE.fullmatch(idea_id):  # noqa: SLF001
+            continue
+        active_release = workstream.get("active_release", {})
+        active_release_aliases = (
+            [
+                str(item).strip()
+                for item in active_release.get("aliases", [])
+                if str(item).strip()
+            ]
+            if isinstance(active_release, Mapping) and isinstance(active_release.get("aliases"), list)
+            else []
+        )
+        workstream_lookup[idea_id] = {
+            "active_release_id": str(workstream.get("active_release_id", "")).strip(),
+            "active_release": dict(active_release) if isinstance(active_release, Mapping) else {},
+            "active_release_aliases": active_release_aliases,
+            "release_history_summary": str(workstream.get("release_history_summary", "")).strip(),
+        }
+
+    rows: list[dict[str, Any]] = []
+    for release in releases:
+        if not isinstance(release, Mapping):
+            continue
+        release_id = str(release.get("release_id", "")).strip()
+        if not release_id:
+            continue
+        active_workstreams = [
+            str(item).strip().upper()
+            for item in release.get("active_workstreams", [])
+            if str(item).strip()
+        ] if isinstance(release.get("active_workstreams"), list) else []
+        aliases_for_release = [
+            str(item).strip()
+            for item in release.get("aliases", [])
+            if str(item).strip()
+        ] if isinstance(release.get("aliases"), list) else []
+        metadata = dict(release)
+        metadata["active_workstreams"] = active_workstreams
+        metadata["aliases"] = aliases_for_release
+        metadata["current_alias"] = "current" in aliases_for_release
+        metadata["next_alias"] = "next" in aliases_for_release
+        rows.append(
+            {
+                "release_id": release_id,
+                "status": str(release.get("status", "")).strip(),
+                "version": str(release.get("version", "")).strip(),
+                "tag": str(release.get("tag", "")).strip(),
+                "effective_name": str(release.get("effective_name", "")).strip(),
+                "display_label": str(release.get("display_label", "")).strip() or release_id,
+                "aliases_json": json.dumps(aliases_for_release, sort_keys=True),
+                "active_workstreams_json": json.dumps(active_workstreams, sort_keys=True),
+                "source_path": str(release.get("source_path", "")).strip() or "odylith/radar/source/releases/releases.v1.json",
+                "metadata_json": json.dumps(metadata, sort_keys=True),
+                "search_body": "\n".join(
+                    token
+                    for token in (
+                        release_id,
+                        str(release.get("version", "")).strip(),
+                        str(release.get("tag", "")).strip(),
+                        str(release.get("effective_name", "")).strip(),
+                        str(release.get("notes", "")).strip(),
+                        " ".join(aliases_for_release),
+                        " ".join(active_workstreams),
+                    )
+                    if token
+                ),
+            }
+        )
+    return {
+        "releases": rows,
+        "aliases": dict(aliases),
+        "workstreams": workstream_lookup,
+        "current_release": dict(current_release),
+        "next_release": dict(next_release),
+        "summary": dict(summary),
+    }
 
 
 def _load_diagram_projection(*, repo_root: Path) -> list[dict[str, Any]]:

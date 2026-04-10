@@ -45,7 +45,6 @@ def _write_registry_inputs(tmp_path: Path, *, components: list[dict[str, object]
             "commercial_value: 5\n\n"
             "product_impact: 5\n\n"
             "market_value: 5\n\n"
-            "impacted_lanes: both\n\n"
             "impacted_parts: x\n\n"
             "sizing: S\n\n"
             "complexity: Low\n\n"

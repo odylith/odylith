@@ -9,6 +9,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+from odylith.runtime.governance import proof_state
 from odylith.runtime.surfaces import dashboard_template_runtime
 from odylith.runtime.surfaces import tooling_dashboard_cheatsheet_presenter
 from odylith.runtime.surfaces import tooling_dashboard_release_presenter
@@ -42,6 +43,30 @@ def shell_case_preview_rows(case_queue: Sequence[Mapping[str, Any]]) -> list[dic
         brief = str(case.get("brief", "")).strip()
         decision = str(case.get("decision_at_stake", "")).strip()
         scope_key = str(case.get("scope_key", "")).strip()
+        resolved_proof_state = proof_state.normalize_proof_state(case.get("proof_state", {}))
+        proof_lines = proof_state.proof_preview_lines(resolved_proof_state, compact=True, limit=4)
+        proof_reopen = (
+            dict(case.get("proof_reopen", {}))
+            if isinstance(case.get("proof_reopen"), Mapping)
+            else {}
+        )
+        reopen_summary = str(proof_reopen.get("summary", "")).strip()
+        if reopen_summary and reopen_summary not in proof_lines:
+            proof_lines = [reopen_summary, *proof_lines][:4]
+        proof_state_resolution = (
+            dict(case.get("proof_state_resolution", {}))
+            if isinstance(case.get("proof_state_resolution"), Mapping)
+            else {}
+        )
+        if not proof_lines:
+            resolution_message = proof_state.proof_resolution_message(proof_state_resolution)
+            if resolution_message:
+                proof_lines = [resolution_message]
+        claim_guard = (
+            dict(case.get("claim_guard", {}))
+            if isinstance(case.get("claim_guard"), Mapping)
+            else {}
+        )
         if not scope_key or not headline:
             continue
         rows.append(
@@ -56,6 +81,12 @@ def shell_case_preview_rows(case_queue: Sequence[Mapping[str, Any]]) -> list[dic
                 "summary": brief,
                 "start_here": decision or brief,
                 "start_here_short": decision or brief,
+                "proof_state": resolved_proof_state,
+                "proof_state_resolution": proof_state_resolution,
+                "claim_guard": claim_guard,
+                "proof_reopen": proof_reopen,
+                "proof_lines": proof_lines,
+                "proof_claim": str(claim_guard.get("highest_truthful_claim", "")).strip(),
             }
         )
     return rows

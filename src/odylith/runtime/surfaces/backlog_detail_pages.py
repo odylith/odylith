@@ -5,6 +5,8 @@ from __future__ import annotations
 import html
 from pathlib import Path
 
+from odylith.runtime.surfaces import backlog_rich_text
+
 
 def _host():
     from odylith.runtime.surfaces import render_backlog_ui as host
@@ -65,7 +67,6 @@ def _render_idea_spec_html(
         ("Execution Start", entry.get("execution_start_date_display", entry.get("execution_start_date", ""))),
         ("Execution End", entry.get("execution_end_date_display", entry.get("execution_end_date", ""))),
         ("Execution Days", entry.get("execution_duration_days", entry.get("execution_age_days", ""))),
-        ("Impacted Lanes", metadata.get("impacted_lanes", "")),
         ("Sizing", metadata.get("sizing", "")),
         ("Complexity", metadata.get("complexity", "")),
         ("Ordering Score", metadata.get("ordering_score", "")),
@@ -94,16 +95,15 @@ def _render_idea_spec_html(
         if fallback:
             rationale_bullets = [fallback]
     if len(rationale_bullets) > 1:
-        rationale_html = (
-            "<ul>"
-            + "".join(
-                f"<li>{html.escape(_rewrite_section_text(repo_root=repo_root, text=item))}</li>"
-                for item in rationale_bullets
-            )
-            + "</ul>"
+        rationale_html = _render_section_body(
+            repo_root=repo_root,
+            lines=[f"- {item}" for item in rationale_bullets],
         )
     elif len(rationale_bullets) == 1:
-        rationale_html = f"<p>{html.escape(_rewrite_section_text(repo_root=repo_root, text=rationale_bullets[0]))}</p>"
+        rationale_html = _render_section_body(
+            repo_root=repo_root,
+            lines=[rationale_bullets[0]],
+        )
     else:
         rationale_html = "<p>No decision-basis bullets recorded.</p>"
     product_view_lines = section_map.get("product view", section_map.get("founder pov", []))
@@ -113,6 +113,16 @@ def _render_idea_spec_html(
         else "<p>Not captured in the idea spec yet.</p>"
     )
 
+    problem_section_html = "".join(
+        (
+            f"<section class=\"block\">"
+            f"<h2>{html.escape(title)}</h2>"
+            f"{_render_section_body(repo_root=repo_root, lines=lines)}"
+            f"</section>"
+        )
+        for title, lines in sections
+        if title.strip().lower() == "problem"
+    )
     section_html = "".join(
         (
             f"<section class=\"block\">"
@@ -121,15 +131,15 @@ def _render_idea_spec_html(
             f"</section>"
         )
         for title, lines in sections
-        if title.strip().lower() not in {"product view", "founder pov"}
+        if title.strip().lower() not in {"product view", "founder pov", "problem"}
     )
-    if not section_html:
+    if not problem_section_html and not section_html:
         section_html = "<section class=\"block\"><h2>Content</h2><p>No markdown sections found.</p></section>"
 
     implemented_summary_html = (
         "<section class=\"block\">"
         "<h2>Implemented Summary</h2>"
-        f"<p>{html.escape(_rewrite_section_text(repo_root=repo_root, text=implemented_summary))}</p>"
+        f"{_render_section_body(repo_root=repo_root, lines=[implemented_summary])}"
         "</section>"
         if implemented_summary
         else ""
@@ -150,11 +160,15 @@ def _render_idea_spec_html(
     idea_id = html.escape(str(entry.get("idea_id", "")).strip())
     priority = html.escape(str(entry.get("priority", "")).strip())
     status = html.escape(str(entry.get("status", "")).strip())
-    lanes = html.escape(str(entry.get("impacted_lanes", "")).strip())
     score = html.escape(str(entry.get("ordering_score", "")).strip())
     page_body_css = dashboard_ui_primitives.page_body_typography_css(
         selector="body",
         color="var(--ink)",
+    )
+    surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
+    surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
+        selector=".shell",
+        padding="18px 14px 26px",
     )
     title_css = dashboard_ui_primitives.display_title_typography_css(
         title_selector="h1",
@@ -245,11 +259,8 @@ def _render_idea_spec_html(
       background: linear-gradient(180deg, #eef2ff, var(--bg));
     }}
     {page_body_css}
-    .shell {{
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 18px 14px 26px;
-    }}
+    {surface_shell_root_css}
+    {surface_shell_css}
     .back {{
       display: inline-block;
       margin-bottom: 12px;
@@ -336,6 +347,24 @@ def _render_idea_spec_html(
       margin: 0;
       padding-left: 20px;
     }}
+    .block code,
+    .meta-val code {{
+      font-family: {dashboard_ui_primitives.MONO_FONT_FAMILY};
+      font-size: 0.92em;
+      color: #1e3a8a;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      border-radius: 6px;
+      padding: 0.08em 0.38em;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }}
+    .block a,
+    .meta-val a {{
+      color: var(--brand);
+      text-decoration: none;
+      border-bottom: 1px solid #bfdbfe;
+    }}
     {body_copy_css}
     .checklist {{
       display: flex;
@@ -362,6 +391,13 @@ def _render_idea_spec_html(
       opacity: 1;
     }}
     .check-text {{
+      min-width: 0;
+    }}
+    .check-text > *:first-child {{
+      margin-top: 0;
+    }}
+    .check-text > *:last-child {{
+      margin-bottom: 0;
     }}
     .code {{
       margin: 0;
@@ -373,7 +409,9 @@ def _render_idea_spec_html(
     }}
     {code_css}
     .code code {{
-      white-space: pre;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }}
     .mermaid-wrap {{
       border: 1px solid var(--line);
@@ -407,7 +445,6 @@ def _render_idea_spec_html(
       <div class="chips">
         <span class="chip">{priority}</span>
         <span class="chip">{status}</span>
-        <span class="chip">{lanes}</span>
         <span class="chip">Score {score}</span>
       </div>
     </header>
@@ -423,6 +460,10 @@ def _render_idea_spec_html(
       </div>
     </section>
 
+    {implemented_summary_html}
+
+    {problem_section_html}
+
     <section class="founder-group">
       <article class="block founder-card">
         <h2>Product View</h2>
@@ -433,8 +474,6 @@ def _render_idea_spec_html(
         {rationale_html}
       </article>
     </section>
-
-    {implemented_summary_html}
 
     {section_html}
   </main>
@@ -540,7 +579,7 @@ def _render_plan_html(
         (
             f"<div class=\"meta-item\">"
             f"<div class=\"meta-key\">{html.escape(label)}</div>"
-            f"<div class=\"meta-val\">{html.escape(_rewrite_section_text(repo_root=repo_root, text=value or '-'))}</div>"
+            f"<div class=\"meta-val\">{backlog_rich_text.render_inline_html(repo_root=repo_root, text=value or '-')}</div>"
             f"</div>"
         )
         for label, value in summary_pairs
@@ -549,7 +588,7 @@ def _render_plan_html(
         (
             f"<div class=\"meta-row\">"
             f"<div class=\"meta-row-key\">{html.escape(label)}</div>"
-            f"<div class=\"meta-row-val\">{html.escape(_rewrite_section_text(repo_root=repo_root, text=value or '-'))}</div>"
+            f"<div class=\"meta-row-val\">{_render_section_body(repo_root=repo_root, lines=[value or '-'])}</div>"
             f"</div>"
         )
         for label, value in detail_pairs
@@ -628,6 +667,11 @@ def _render_plan_html(
         selector="body",
         color="var(--ink)",
     )
+    surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
+    surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
+        selector=".shell",
+        padding="18px 14px 28px",
+    )
     title_css = dashboard_ui_primitives.display_title_typography_css(
         title_selector="h1",
         title_size="30px",
@@ -684,7 +728,11 @@ def _render_plan_html(
             ".block p",
             ".block ul",
             ".block li",
+            ".meta-val",
             ".meta-row-val",
+            ".meta-row-val p",
+            ".meta-row-val ul",
+            ".meta-row-val li",
             ".check-text",
         ),
         color="#27445e",
@@ -755,11 +803,8 @@ def _render_plan_html(
       background: linear-gradient(180deg, #ecfeff, var(--bg));
     }}
     {page_body_css}
-    .shell {{
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 18px 14px 28px;
-    }}
+    {surface_shell_root_css}
+    {surface_shell_css}
     .back {{
       display: inline-block;
       margin-bottom: 12px;
@@ -859,6 +904,39 @@ def _render_plan_html(
       margin: 0;
       padding-left: 20px;
     }}
+    .block code,
+    .meta-val code,
+    .meta-row-val code {{
+      font-family: {dashboard_ui_primitives.MONO_FONT_FAMILY};
+      font-size: 0.92em;
+      color: #1e3a8a;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      border-radius: 6px;
+      padding: 0.08em 0.38em;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }}
+    .block a,
+    .meta-val a,
+    .meta-row-val a {{
+      color: var(--brand);
+      text-decoration: none;
+      border-bottom: 1px solid #bfdbfe;
+    }}
+    .meta-row-val > *:first-child {{
+      margin-top: 0;
+    }}
+    .meta-row-val > *:last-child {{
+      margin-bottom: 0;
+    }}
+    .meta-row-val p {{
+      margin: 0 0 8px;
+    }}
+    .meta-row-val ul {{
+      margin: 0;
+      padding-left: 20px;
+    }}
     {plan_body_copy_css}
     .checklist {{
       display: flex;
@@ -885,6 +963,13 @@ def _render_plan_html(
       opacity: 1;
     }}
     .check-text {{
+      min-width: 0;
+    }}
+    .check-text > *:first-child {{
+      margin-top: 0;
+    }}
+    .check-text > *:last-child {{
+      margin-bottom: 0;
     }}
     .code {{
       margin: 0;
@@ -896,7 +981,9 @@ def _render_plan_html(
     }}
     {code_css}
     .code code {{
-      white-space: pre;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }}
     .mermaid-wrap {{
       border: 1px solid var(--line);

@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-04-06
 
-Updated: 2026-04-07
+Updated: 2026-04-08
 
 Backlog: B-048
 
@@ -56,6 +56,7 @@ Related Bugs:
 - [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md)
 - [2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md)
 - [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md)
+- [2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md)
 - [2026-03-28-first-install-and-same-version-upgrade-mutate-live-runtime-before-fail-closed-proof.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-28-first-install-and-same-version-upgrade-mutate-live-runtime-before-fail-closed-proof.md)
 - [2026-03-28-release-download-cache-and-runtime-restage-lose-atomicity-on-failure.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-28-release-download-cache-and-runtime-restage-lose-atomicity-on-failure.md)
 - [2026-03-31-product-repo-doctor-repair-rewrites-root-agents-to-stale-managed-block.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-31-product-repo-doctor-repair-rewrites-root-agents-to-stale-managed-block.md)
@@ -170,6 +171,10 @@ Related Bugs:
       recovery wave.
 - [x] Child workstreams `B-049` through `B-056` and bugs `CB-054` through
       `CB-061` are now the explicit execution slices for this feedback set.
+- [x] Hosted installer suppression improved the shell bootstrap path, but the
+      same warning class still leaks through pinned-runtime proof lanes; that
+      residual next-release scope is now captured under `CB-076` and folded
+      back into `B-056`.
 - [x] `B-051` is landed: trust-only managed-runtime drift now stays on one
       shared wrapped-runtime posture path, and doctor no longer degrades into
       a generic failure summary when version reports trust-degraded detail.

@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-036
-title: Odylith Product Canon Tab for Feature Narrative
+title: Product Canon Tab for Feature Narrative
 date: 2026-03-30
 priority: P1
 commercial_value: 5
 product_impact: 4
 market_value: 3
-impacted_lanes: both
 impacted_parts: shell navigation, product explanation, feature storytelling, release-adjacent marketing language, and durable articulation of what Odylith does for users
 sizing: L
 complexity: High

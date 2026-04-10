@@ -12,7 +12,6 @@
 <body data-surface-ready="loading">
   <main class="shell">
     <section class="hero">
-      <p class="kicker">Delivery Posture and Risk Brief</p>
       <h1>Executive Compass</h1>
       <p class="subtitle">Current workstream direction, risks, and runtime evidence across Radar, plans, bugs, and Atlas traceability.</p>
       <section class="stats" id="kpi-grid"></section>
@@ -42,6 +41,7 @@
         </article>
 
         <div id="execution-waves-host"></div>
+        <div id="release-groups-host"></div>
 
         <article class="card">
           <h2>Current Workstreams</h2>
@@ -63,10 +63,12 @@
     </section>
   </main>
   <script src="{{ shared_js_href }}"></script>
+  <script src="{{ runtime_truth_js_href }}"></script>
   <script src="{{ state_js_href }}"></script>
   <script src="{{ summary_js_href }}"></script>
   <script src="{{ timeline_js_href }}"></script>
   <script src="{{ waves_js_href }}"></script>
+  <script src="{{ releases_js_href }}"></script>
   <script src="{{ workstreams_js_href }}"></script>
   <script src="{{ ui_runtime_js_href }}"></script>
   <script src="{{ runtime_js_href }}"></script>

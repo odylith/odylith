@@ -141,6 +141,29 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             tags=("casebook", "create", "bug", "debugging"),
         ),
         _card(
+            card_id="plan-release-target",
+            category="Planning",
+            title="Release planning: pick the ship target",
+            summary="Use release planning when the question is which release one workstream should ship in. Example: add `B-067` to `0.1.11`. This does not decide umbrella sequencing or wave order.",
+            prompt="Add B-067 to release 0.1.11.",
+            command="odylith release add B-067 0.1.11 --repo-root .",
+            tags=("release", "planning", "ship-target", "0.1.11"),
+        ),
+        _card(
+            card_id="plan-program-waves",
+            category="Planning",
+            title="Program/wave planning: sequence umbrella execution",
+            summary="Use program/wave planning when the question is how one umbrella effort should execute. Start with `odylith program next` so the agent gets one exact next command instead of hand-editing wave JSON. This does not choose the release; the same workstream can still target `0.1.11` separately.",
+            prompt=(
+                "For umbrella workstream B-021, create a 3-wave execution program. "
+                "Make W1 the foundation wave, W2 the rollout wave, and W3 the hardening wave. "
+                "Put B-045 in W1, carry B-048 into W2, and keep the gates tied to the bound plans."
+            ),
+            command="odylith program next B-021 --repo-root .",
+            secondary_label="CLI",
+            tags=("program", "waves", "umbrella", "execution-order"),
+        ),
+        _card(
             card_id="surface-shell",
             category="Surfaces",
             title="Odylith Dashboard",
@@ -235,6 +258,15 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             prompt="Refresh the Odylith dashboard.",
             command="odylith dashboard refresh --repo-root . --surfaces tooling_shell,radar,compass,atlas,registry,casebook",
             tags=("dashboard", "render", "shell"),
+        ),
+        _card(
+            card_id="refresh-compass-now",
+            category="Refresh",
+            title="Refresh Compass now",
+            summary="Use the canonical Compass refresh command when you need fresh runtime truth without rediscovering the wrapper path.",
+            prompt="Refresh Compass now and wait for the runtime snapshot to finish.",
+            command="odylith compass refresh --repo-root . --wait",
+            tags=("compass", "refresh", "runtime"),
         ),
         _card(
             card_id="watch-transactions",
@@ -529,7 +561,7 @@ def build_agent_cheatsheet_state(payload: Mapping[str, Any]) -> AgentCheatsheetS
         title=str(raw_state.get("title", "")).strip() or "Odylith Dashboard Cheatsheet",
         note=(
             str(raw_state.get("note", "")).strip()
-            or "Concrete examples. Replace the names and ids; when a prompt names a component like payments or a workstream id like B-025, Odylith scopes to the tied files and governed records."
+            or "Release planning picks the ship target for one workstream, like `B-067 -> 0.1.11`. Program/wave planning picks execution order under one umbrella, like `B-021 -> W1, W2, W3`. A workstream can belong to both. Replace the names and ids; when a prompt names a component like payments or a workstream id like B-025, Odylith scopes to the tied files and governed records."
         ),
         search_placeholder=(
             str(raw_state.get("search_placeholder", "")).strip()

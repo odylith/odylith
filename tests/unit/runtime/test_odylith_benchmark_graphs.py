@@ -988,7 +988,7 @@ def test_benchmark_graph_style_contract_stays_stable() -> None:
     assert graphs.QUALITY_FRONTIER_HEADING == "Live Benchmark Quality Frontier: grounding recall vs time to valid outcome"
     assert graphs.FRONTIER_HEADING == "Live Benchmark: time to valid outcome vs live session input"
     assert graphs.HEATMAP_HEADING == "Live Benchmark Family Heatmap: where Odylith wins"
-    assert graphs.POSTURE_HEADING == "Live Benchmark operating posture on the Codex benchmark corpus"
+    assert graphs.POSTURE_HEADING == "Live Benchmark operating posture on the current proof-host corpus"
     assert graphs._BG == "#f6f1e7"
     assert graphs._PANEL == "#fffdfa"
     assert graphs._BASELINE == "#c75b52"
@@ -1081,7 +1081,7 @@ def test_render_graph_assets_uses_diagnostic_labels_for_diagnostic_reports(tmp_p
     assert "Packet time (ms)" in heatmap
     assert "Grounding Benchmark Quality Frontier" in quality
     assert "packet time" in quality
-    assert "prompt-only raw Codex control" in quality
+    assert "prompt-only raw host control" in quality
     assert "0.00 rail by contract" in quality
     assert "Prompt-only control rail" in quality
 

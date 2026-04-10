@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-05
+Updated: 2026-04-08
 
 Backlog: B-021
 
@@ -73,11 +73,11 @@ Related Bugs:
 - [x] Benchmark guidance memory was effectively empty on product-repo proof
       slices until the canonical manifest path and family-aware retrieval
       plumbing were restored.
-- [ ] Neighboring benchmark truth surfaces still lag the README unless Registry,
-      Radar, Atlas, Compass, and benchmark docs are updated together.
-- [ ] The tracked corpus still needs more developer-core local coding slices:
-      CLI contract repair, config compatibility, runtime state integrity,
-      managed runtime repair, and onboarding browser proof.
+- [ ] Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into
+      line with the README.
+- [ ] Add more real maintainer coding work to the tracked corpus: CLI contract
+      repair, config compatibility, runtime state integrity, managed runtime
+      repair, and onboarding browser proof.
 - [x] A new full proof rerun now exists, so the public benchmark no longer has
       to stay pinned to the older `hold` report while the tracked corpus and
       governed surfaces move forward.
@@ -252,6 +252,9 @@ Related Bugs:
 
 - [x] Bound to `B-021`; the anomaly audit and prompt-handoff fixes landed
       before the README refresh.
+- [x] The tracked corpus now carries a `live_proof_discipline` family plus
+      proof-discipline benchmark metrics for false clearance, frontier gating,
+      claim-tier accuracy, and same-fingerprint reuse.
 - [x] Browser proof handoff now pulls both required shell entrypoints into the
       support-doc candidate set when the slice truly needs them.
 - [x] Install, activation, and release-governance support-doc selection now

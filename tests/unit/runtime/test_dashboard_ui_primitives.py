@@ -22,10 +22,38 @@ def test_detail_action_chip_css_inherits_dashboard_font_family() -> None:
     css = ui.detail_action_chip_css(selector=".chip-link")
 
     assert re.search(
-        r"\.chip-link\s*\{[^}]*font-family:\s*inherit;[^}]*color:\s*var\(--chip-link-text\);[^}]*font-size:\s*11px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*700;",
+        rf"\.chip-link\s*\{{[^}}]*font-family:\s*inherit;[^}}]*color:\s*var\(--chip-link-text\);[^}}]*font-size:\s*var\({re.escape(ui.SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_CSS_VAR)},\s*{re.escape(ui.STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE)}\);[^}}]*line-height:\s*1;[^}}]*letter-spacing:\s*0\.01em;[^}}]*font-weight:\s*var\({re.escape(ui.SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT_CSS_VAR)},\s*{ui.STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT}\);",
         css,
         flags=re.S,
     )
+    assert (
+        f"padding: var({ui.SURFACE_DEEP_LINK_BUTTON_PADDING_CSS_VAR}, "
+        f"{ui.STANDARD_SURFACE_DEEP_LINK_BUTTON_PADDING});"
+    ) in css
+
+
+def test_surface_workstream_button_chip_css_keeps_box_model_and_typography_bound_together() -> None:
+    css = ui.surface_workstream_button_chip_css(selector=".ws-id-btn, .execution-wave-chip-link")
+
+    assert ".ws-id-btn, .execution-wave-chip-link {" in css
+    assert re.search(
+        r"\.ws-id-btn:hover,\s*\.execution-wave-chip-link:hover,\s*\.ws-id-btn:focus-visible,\s*\.execution-wave-chip-link:focus-visible\s*\{",
+        css,
+    )
+    assert (
+        f"padding: var({ui.SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}, "
+        f"{ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING});"
+    ) in css
+    assert (
+        f"font-size: var({ui.SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR}, "
+        f"{ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE});"
+    ) in css
+    assert (
+        f"font-weight: var({ui.SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR}, "
+        f"{ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT});"
+    ) in css
+    assert ".ws-id-btn, .execution-wave-chip-link:hover" not in css
+    assert ".ws-id-btn, .execution-wave-chip-link:focus-visible" not in css
 
 
 def test_shell_tab_surface_css_normalizes_selector_lists_for_all_states() -> None:

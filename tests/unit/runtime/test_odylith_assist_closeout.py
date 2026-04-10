@@ -213,6 +213,10 @@ def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Pa
                         "proof_refs": [{"kind": "workstream", "value": "B-031", "label": "B-031", "surface": "radar"}],
                         "requires_approval": True,
                     },
+                    "claim_guard": {
+                        "highest_truthful_claim": "fixed in code",
+                        "blocked_terms": ["fixed", "cleared", "resolved"],
+                    },
                     "surface_contributions": [{"surface": "Radar"}],
                     "evidence_bundle": {
                         "evidence_refs": [{"kind": "component", "value": "component:odylith-chatter", "label": "odylith-chatter"}]
@@ -240,7 +244,190 @@ def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Pa
 
     assert bundle["ambient_signals"]["selected_signal"] == "risks"
     assert "Tribunal already has B-031 in unsafe closeout" in bundle["ambient_signals"]["risks"]["markdown_text"]
+    assert bundle["ambient_signals"]["claim_lint"]["highest_truthful_claim"] == "fixed in code"
+    assert bundle["closeout_bundle"]["render_policy"]["claim_terms_require_lint"] is True
     assert bundle["closeout_bundle"]["selected_supplemental"] == "risks"
+
+
+def test_conversation_bundle_does_not_lint_live_verified_claims(tmp_path: Path) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-062",
+                    "scope_key": "workstream:B-062",
+                    "scope_label": "B-062",
+                    "case_refs": ["case-workstream-B-062"],
+                    "operator_readout": {"primary_scenario": "clear_path", "severity": "clear", "proof_refs": []},
+                    "proof_state": {
+                        "lane_id": "proof-state-control-plane",
+                        "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                        "first_failing_phase": "manifests-deploy",
+                        "frontier_phase": "post-manifests-smoke",
+                        "proof_status": "live_verified",
+                    },
+                    "claim_guard": {
+                        "highest_truthful_claim": "fixed live",
+                        "blocked_terms": [],
+                        "hosted_frontier_advanced": True,
+                    },
+                    "surface_contributions": [{"surface": "Compass"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [
+                {
+                    "id": "case-workstream-B-062",
+                    "scope_key": "workstream:B-062",
+                    "headline": "Live proof advanced",
+                    "brief": "The hosted run moved past the prior failing phase.",
+                    "claim_guard": {
+                        "highest_truthful_claim": "fixed live",
+                        "blocked_terms": [],
+                        "hosted_frontier_advanced": True,
+                    },
+                }
+            ],
+            "systemic_brief": {},
+        },
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-062.",
+        workstreams=["B-062"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["ambient_signals"]["claim_lint"]["status"] == "live_ok"
+    assert bundle["ambient_signals"]["claim_lint"]["blocked_terms"] == []
+    assert bundle["closeout_bundle"]["render_policy"]["claim_terms_require_lint"] is False
+
+
+def test_conversation_bundle_rewrites_unqualified_resolution_terms_in_closeout(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-062",
+                    "scope_key": "workstream:B-062",
+                    "scope_label": "B-062",
+                    "case_refs": ["case-workstream-B-062"],
+                    "operator_readout": {"primary_scenario": "false_priority", "severity": "watch", "proof_refs": []},
+                    "claim_guard": {
+                        "highest_truthful_claim": "fixed in code",
+                        "blocked_terms": ["fixed", "cleared", "resolved"],
+                        "hosted_frontier_advanced": False,
+                        "same_fingerprint_as_last_falsification": True,
+                        "claim_scope": "code_or_preview",
+                    },
+                    "surface_contributions": [{"surface": "Compass"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [],
+            "systemic_brief": {},
+        },
+    )
+
+    monkeypatch.setattr(
+        odylith_chatter_runtime,
+        "compose_closeout_assist",
+        lambda **_kwargs: {
+            "eligible": True,
+            "style": "test",
+            "label": "Odylith Assist:",
+            "preferred_markdown_label": "**Odylith Assist:**",
+            "text": "**Odylith Assist:** The blocker is fixed.",
+            "plain_text": "Odylith Assist: The blocker is fixed.",
+            "markdown_text": "**Odylith Assist:** The blocker is fixed.",
+            "user_win": "kept the proof honest",
+            "delta": "",
+            "proof": "",
+            "updated_artifacts": [],
+            "changed_path_source": "test",
+            "suppressed_reason": "",
+            "metrics": {},
+        },
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-062.",
+        workstreams=["B-062"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["closeout_bundle"]["assist"]["markdown_text"] == "**Odylith Assist:** The blocker is fixed in code."
+    assert bundle["closeout_bundle"]["assist"]["plain_text"] == "Odylith Assist: The blocker is fixed in code."
+    assert bundle["ambient_signals"]["claim_lint"]["gate"]["state"] == "rewrite_or_block"
+    assert bundle["ambient_signals"]["claim_lint"]["forced_checks"][0]["answer"] == "yes"
+    assert bundle["closeout_bundle"]["claim_enforcement"]["closeout"]["assist"]["applied"] is True
+
+
+def test_delivery_signal_snapshot_preserves_scope_proof_state_resolution(tmp_path: Path) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-062",
+                    "scope_key": "workstream:B-062",
+                    "scope_label": "B-062",
+                    "proof_state_resolution": {
+                        "state": "ambiguous",
+                        "lane_ids": ["lane-a", "lane-b"],
+                    },
+                    "proof_state": {},
+                    "scope_signal": {
+                        "rank": 5,
+                        "rung": "R5",
+                        "token": "blocking_frontier",
+                        "label": "Blocking frontier",
+                        "budget_class": "escalated_reasoning",
+                        "promoted_default": True,
+                    },
+                    "claim_guard": {},
+                    "surface_contributions": [{"surface": "Compass"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [],
+            "systemic_brief": {},
+        },
+    )
+
+    snapshot = odylith_chatter_delivery_runtime.delivery_signal_snapshot(tmp_path)
+
+    assert snapshot["scopes_by_id"][("workstream", "B-062")]["proof_state_resolution"] == {
+        "state": "ambiguous",
+        "lane_ids": ["lane-a", "lane-b"],
+    }
+    assert snapshot["scopes_by_id"][("workstream", "B-062")]["scope_signal"]["rung"] == "R5"
+    assert snapshot["scopes_by_id"][("workstream", "B-062")]["scope_signal"]["budget_class"] == "escalated_reasoning"
 
 
 def test_conversation_bundle_reads_precomputed_tribunal_insight_signal(tmp_path: Path) -> None:
@@ -640,7 +827,7 @@ def test_orchestrator_threads_conversation_bundle_into_odylith_adoption(tmp_path
                     "parallelism_hint": "serial_preferred",
                 },
                 "odylith_execution_profile": {
-                    "profile": "codex_high",
+                    "profile": "write_high",
                     "model": "gpt-5.3-codex",
                     "reasoning_effort": "high",
                     "agent_role": "worker",

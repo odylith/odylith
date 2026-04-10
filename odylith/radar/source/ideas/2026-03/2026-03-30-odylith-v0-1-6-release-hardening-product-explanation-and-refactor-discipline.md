@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-033
-title: Odylith v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline
+title: v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline
 date: 2026-03-30
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: release candidate proof lane, single-source version truth, backlog burn-down discipline, isolated canonical-checkout proof, lane introspection, release session validity, maintainer repair and dogfood idempotence, source-authored release notes, shell explainers, version-delta UX, empty-repo onboarding, benchmark comparison and history UX, and targeted large-file decomposition
 sizing: XL
 complexity: VeryHigh
@@ -19,7 +18,7 @@ promoted_to_plan: odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith
 execution_model: standard
 workstream_type: standalone
 workstream_parent:
-workstream_children: B-040,B-048
+workstream_children: B-040,B-048,B-067
 workstream_depends_on: B-006,B-021,B-022,B-028,B-030
 workstream_blocks:
 related_diagram_ids:

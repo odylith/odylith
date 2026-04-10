@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-054
-title: Odylith Sync Failure Summary Dedup and Next-Action Routing
+title: Sync Failure Summary Dedup and Next-Action Routing
 date: 2026-04-06
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 3
-impacted_lanes: both
 impacted_parts: sync failure UX, duplicate error collapsing, failure-class routing, and operator guidance
 sizing: S
 complexity: Medium

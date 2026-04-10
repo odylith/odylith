@@ -14,18 +14,26 @@ from typing import Any
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _CHECKBOX_RE = re.compile(r"^\s*-\s*\[(?P<mark>[xX ])\]\s+(?P<body>.+?)\s*$")
 _HEADER_RE = re.compile(r"^##\s+(?P<title>.+?)\s*$")
-_EXCLUDED_NEXT_TASK_SECTIONS = {
-    "Non-Goals",
+_EXCLUDED_PROGRESS_SECTIONS = {
+    "Defer",
     "Impacted Areas",
-    "Traceability",
-    "Risks & Mitigations",
+    "Learnings",
+    "Non-Goals",
+    "Open Questions",
     "Open Questions/Decisions",
+    "Risks & Mitigations",
+    "Traceability",
+}
+_EXCLUDED_NEXT_TASK_SECTIONS = {
+    *_EXCLUDED_PROGRESS_SECTIONS,
 }
 
 
 def collect_plan_progress(plan_path: Path) -> dict[str, Any]:
     created = ""
     updated = ""
+    all_total = 0
+    all_done = 0
     total = 0
     done = 0
     next_tasks: list[str] = []
@@ -36,9 +44,12 @@ def collect_plan_progress(plan_path: Path) -> dict[str, Any]:
             "path": "",
             "created": "",
             "updated": "",
+            "all_total_tasks": 0,
+            "all_done_tasks": 0,
             "total_tasks": 0,
             "done_tasks": 0,
             "progress_ratio": 0.0,
+            "progress_basis": "execution_checklist",
             "next_tasks": [],
         }
 
@@ -61,13 +72,19 @@ def collect_plan_progress(plan_path: Path) -> dict[str, Any]:
         if match is None:
             continue
         body = str(match.group("body")).strip()
+        all_total += 1
+        checked = str(match.group("mark")).lower() == "x"
+        if checked:
+            all_done += 1
+        lowered = body.lower()
+        if lowered.startswith("risk:") or lowered.startswith("mitigation:"):
+            continue
+        if current_section in _EXCLUDED_PROGRESS_SECTIONS:
+            continue
         total += 1
-        if str(match.group("mark")).lower() == "x":
+        if checked:
             done += 1
         else:
-            lowered = body.lower()
-            if lowered.startswith("risk:") or lowered.startswith("mitigation:"):
-                continue
             if current_section in _EXCLUDED_NEXT_TASK_SECTIONS:
                 continue
             if len(next_tasks) < 6:
@@ -78,9 +95,12 @@ def collect_plan_progress(plan_path: Path) -> dict[str, Any]:
         "path": plan_path.as_posix(),
         "created": created,
         "updated": updated,
+        "all_total_tasks": all_total,
+        "all_done_tasks": all_done,
         "total_tasks": total,
         "done_tasks": done,
         "progress_ratio": round(ratio, 4),
+        "progress_basis": "execution_checklist",
         "next_tasks": next_tasks,
     }
 

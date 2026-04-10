@@ -1,8 +1,8 @@
 # Subagent Orchestrator
-Last updated: 2026-03-31
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-03-31
+Last updated (UTC): 2026-04-09
 
 ## Purpose
 Subagent Orchestrator is Odylith's prompt-level decomposition engine. It takes
@@ -10,9 +10,11 @@ one grounded prompt and decides whether the work remains local, becomes one
 delegated leaf, or expands into a conservative serial or parallel execution
 plan with explicit merge barriers.
 
-In Codex, this orchestration contract applies to substantive grounded repo work
-across the consumer lane and both Odylith product-repo maintainer postures:
-pinned dogfood and detached `source-local` maintainer dev.
+This orchestration contract applies to substantive grounded repo work across
+the consumer lane and both Odylith product-repo maintainer postures: pinned
+dogfood and detached `source-local` maintainer dev. Native spawn remains
+capability-gated by the resolved host runtime, with Codex as the currently
+validated native-spawn host.
 
 ## Scope And Non-Goals
 ### The orchestrator owns
@@ -30,6 +32,8 @@ pinned dogfood and detached `source-local` maintainer dev.
 - Grounding the repo from scratch. It expects bounded context or request
   signals.
 - Spawning agents itself. It emits the plan the live agent should execute.
+- Global admissibility policy. Execution Governance decides whether the next
+  move is allowed before orchestration fan-out becomes relevant.
 
 ## Developer Mental Model
 - The orchestrator sits one level above the router.
@@ -71,15 +75,17 @@ Public entrypoint: `odylith subagent-orchestrator`
   state for a decision.
 
 The CLI can optionally mirror plan and feedback audit rows into
-`odylith/compass/runtime/codex-stream.v1.jsonl`.
+`odylith/compass/runtime/agent-stream.v1.jsonl`, while retaining read
+compatibility for legacy `codex-stream.v1.jsonl` consumers during migration.
 
 ## Persistent State
 - `.odylith/subagent_orchestrator/tuning.v1.json`
   Local orchestration-mode bias and family-specific feedback.
 - `.odylith/subagent_orchestrator/decision-ledgers/`
   One JSON decision ledger per orchestration decision.
-- `odylith/compass/runtime/codex-stream.v1.jsonl`
-  Optional orchestration audit stream.
+- `odylith/compass/runtime/agent-stream.v1.jsonl`
+  Canonical optional orchestration audit stream, with legacy reader support
+  for `codex-stream.v1.jsonl`.
 
 ## Core Types
 ### `OrchestrationRequest`
@@ -281,3 +287,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Registered the public orchestrator as an Odylith-owned product component with product-local governance and feature history. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-02: Fixed the public CLI wrapper so `odylith subagent-orchestrator --repo-root . --help` and verbed invocations preserve the documented verb-first contract instead of misrouting `--repo-root` ahead of the orchestrator subcommand. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
+- 2026-04-09: Clarified that orchestration planning follows Execution Governance admissibility instead of acting as the product's first action-policy boundary. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

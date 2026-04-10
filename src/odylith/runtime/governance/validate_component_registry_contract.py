@@ -1,7 +1,7 @@
 """Validate component-registry contracts.
 
 This validator is fail-closed for component inventory integrity and meaningful
-Codex event coverage.
+agent-event coverage.
 """
 
 from __future__ import annotations
@@ -11,6 +11,9 @@ from pathlib import Path
 from typing import Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as registry
+from odylith.runtime.governance.component_registry_review_policy import (
+    should_emit_deep_skill_policy_warning,
+)
 
 
 _WARN_ONLY_PREFIXES: tuple[str, ...] = (
@@ -164,6 +167,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         component_id = str(row.get("component_id", "")).strip() or "unknown"
         missing = [str(token or "").strip() for token in row.get("missing", []) if str(token or "").strip()]
         if not missing:
+            continue
+        if not should_emit_deep_skill_policy_warning(row):
             continue
         required = bool(row.get("required", False))
         gate_count = int(row.get("gate_count", 0) or 0)

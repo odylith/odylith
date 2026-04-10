@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-043
-title: Odylith Bootstrapped Consumer Governance Lane for SWE-bench Verified
+title: Bootstrapped Consumer Governance Lane for SWE-bench Verified
 date: 2026-04-02
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 5
-impacted_lanes: both
 impacted_parts: consumer bootstrap truth generation, same-truth external benchmarking, generated-governance provenance, frozen snapshot fairness, and governance-value attribution
 sizing: L
 complexity: VeryHigh

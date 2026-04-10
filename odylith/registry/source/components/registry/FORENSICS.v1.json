@@ -25,16 +25,18 @@
     "D-022",
     "D-023",
     "D-024",
-    "D-025"
+    "D-025",
+    "D-028",
+    "D-029"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 15,
     "mapped_workstream_evidence_count": 1,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 2,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 15
+    "timeline_event_count": 16
   },
   "name": "Registry",
   "path_prefixes": [
@@ -44,6 +46,25 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+        "src/odylith/runtime/governance/component_registry_intelligence.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 76,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json, odylith/registry/source/components/registry/CURRENT_SPEC.md +2 more",
+      "ts_iso": "2026-04-09T15:09:43-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "README.md",
@@ -522,6 +543,7 @@
     "B-043",
     "B-045",
     "B-059",
-    "B-058"
+    "B-058",
+    "B-071"
   ]
 }

@@ -15,6 +15,13 @@
       --chip-active-bg: #d7e6ff;
       --chip-active-line: #4f86db;
       --chip-active-ink: #173f83;
+      --surface-shell-max-width: __ODYLITH_STANDARD_SURFACE_SHELL_MAX_WIDTH__;
+      --surface-identifier-font-size: __ODYLITH_STANDARD_SURFACE_IDENTIFIER_FONT_SIZE__;
+      --surface-identifier-font-weight: __ODYLITH_STANDARD_SURFACE_IDENTIFIER_FONT_WEIGHT__;
+      --surface-identifier-chip-padding: __ODYLITH_STANDARD_SURFACE_IDENTIFIER_CHIP_PADDING__;
+      --surface-workstream-button-font-size: __ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE__;
+      --surface-workstream-button-font-weight: __ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT__;
+      --surface-workstream-button-padding: __ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING__;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -1961,7 +1968,6 @@
       overflow: hidden;
       min-height: 420px;
       --brief-handle-width: 46px;
-      --surface-shell-max-width: 1320px;
       --surface-shell-inline-padding: 18px;
       --runtime-status-offset: 0px;
     }

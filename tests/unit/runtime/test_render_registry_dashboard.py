@@ -202,7 +202,6 @@ def _seed_repo(tmp_path: Path) -> None:
             "commercial_value: 5\n\n"
             "product_impact: 5\n\n"
             "market_value: 5\n\n"
-            "impacted_lanes: both\n\n"
             "impacted_parts: x\n\n"
             "sizing: L\n\n"
             "complexity: VeryHigh\n\n"
@@ -433,11 +432,28 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert re.search(r"\.detail-disclosure-title\s*\{[^}]*color:\s*#22496f;[^}]*font-size:\s*15px;[^}]*line-height:\s*1\.55;[^}]*letter-spacing:\s*0em;[^}]*font-weight:\s*700;", html, flags=re.S)
     assert 'class="context-k context-toggle-label"' not in html
     assert re.search(r"\.label\s*\{[^}]*border:\s*1px solid var\(--label-border\);[^}]*border-radius:\s*4px;[^}]*padding:\s*4px 10px;", html, flags=re.S)
-    assert re.search(r"\.action-chip\s*\{[^}]*--chip-link-border:\s*var\(--action-border\);[^}]*--chip-link-bg:\s*var\(--action-bg\);[^}]*--chip-link-text:\s*var\(--action-text\);[^}]*min-height:\s*0px;[^}]*padding:\s*4px 12px;[^}]*border-radius:\s*999px;[^}]*border:\s*1px solid var\(--chip-link-border\);[^}]*background:\s*var\(--chip-link-bg\);[^}]*color:\s*var\(--chip-link-text\);", html, flags=re.S)
-    assert re.search(r"\.action-chip\s*\{[^}]*font-size:\s*11px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*700;", html, flags=re.S)
-    assert re.search(r"\.detail-action-chip\s*\{[^}]*min-height:\s*0px;[^}]*padding:\s*4px 12px;[^}]*border-radius:\s*999px;[^}]*border:\s*1px solid var\(--chip-link-border\);", html, flags=re.S)
-    assert re.search(r"\.detail-action-chip\s*\{[^}]*font-size:\s*11px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*700;", html, flags=re.S)
+    assert re.search(
+        r"\.action-chip\s*\{[^}]*--chip-link-border:\s*var\(--action-border\);[^}]*--chip-link-bg:\s*var\(--action-bg\);[^}]*--chip-link-text:\s*var\(--action-text\);[^}]*min-height:\s*0px;[^}]*padding:\s*var\(--surface-deep-link-button-padding,\s*4px 12px\);[^}]*border-radius:\s*999px;[^}]*border:\s*1px solid var\(--chip-link-border\);[^}]*background:\s*var\(--chip-link-bg\);[^}]*color:\s*var\(--chip-link-text\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.action-chip\s*\{[^}]*font-size:\s*var\(--surface-deep-link-button-font-size,\s*11px\);[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*var\(--surface-deep-link-button-font-weight,\s*700\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.detail-action-chip\s*\{[^}]*min-height:\s*0px;[^}]*padding:\s*var\(--surface-deep-link-button-padding,\s*4px 12px\);[^}]*border-radius:\s*999px;[^}]*border:\s*1px solid var\(--chip-link-border\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.detail-action-chip\s*\{[^}]*font-size:\s*var\(--surface-deep-link-button-font-size,\s*11px\);[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*var\(--surface-deep-link-button-font-weight,\s*700\);",
+        html,
+        flags=re.S,
+    )
     assert re.search(r"\.detail-chip-label\s*\{[^}]*border:\s*1px solid var\(--label-border\);[^}]*border-radius:\s*4px;[^}]*min-height:\s*0px;[^}]*padding:\s*4px 10px;", html, flags=re.S)
+    assert re.search(r"\.detail-chip-label\s*\{[^}]*font-size:\s*var\(--surface-identifier-font-size,\s*14px\);[^}]*font-weight:\s*var\(--surface-identifier-font-weight,\s*500\);[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;", html, flags=re.S)
     assert re.search(r"\.action-chip\.active\s*\{[^}]*border-color:\s*#1d4a8f;[^}]*background:\s*#deebff;[^}]*color:\s*#1d4ed8;", html, flags=re.S)
     assert not re.search(r"\.action-chip\.active\s*\{[^}]*box-shadow:", html, flags=re.S)
     assert re.search(r"\.component-btn\.active\s*\{[^}]*border-color:\s*var\(--line-strong\);[^}]*background:\s*#eaf3ff;", html, flags=re.S)
@@ -556,16 +572,39 @@ def test_render_registry_dashboard_compacts_delivery_intelligence_payload(
         lambda **_kwargs: {
             "summary": {"headline": "unused"},
             "workstreams": {"B-901": {"unused": True}},
-            "components": {
-                "radar": {
-                    "confidence": "high",
-                    "operator_readout": {"headline": "Radar is converging."},
-                    "posture_mode": "converging",
-                    "trajectory": "steady",
-                    "diagnostics": ["unused"],
-                    "evidence_refs": [{"surface": "radar", "value": "B-901"}],
-                }
-            },
+                "components": {
+                    "radar": {
+                        "confidence": "high",
+                        "operator_readout": {"headline": "Radar is converging."},
+                        "posture_mode": "converging",
+                        "proof_state": {
+                            "lane_id": "proof-state-control-plane",
+                            "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                            "proof_status": "fixed_in_code",
+                        },
+                        "proof_state_resolution": {
+                            "state": "resolved",
+                            "lane_ids": ["proof-state-control-plane"],
+                        },
+                        "claim_guard": {
+                            "highest_truthful_claim": "fixed in code",
+                            "blocked_terms": ["fixed", "cleared", "resolved"],
+                        },
+                        "scope_signal": {
+                            "rank": 4,
+                            "rung": "R4",
+                            "token": "actionable_priority",
+                            "label": "Actionable priority",
+                            "reasons": ["An open warning or operator recommendation is still unresolved."],
+                            "caps": [],
+                            "promoted_default": True,
+                            "budget_class": "escalated_reasoning",
+                        },
+                        "trajectory": "steady",
+                        "diagnostics": ["unused"],
+                        "evidence_refs": [{"surface": "radar", "value": "B-901"}],
+                    }
+                },
         },
     )
 
@@ -577,12 +616,82 @@ def test_render_registry_dashboard_compacts_delivery_intelligence_payload(
         "components": {
             "radar": {
                 "confidence": "high",
+                "claim_guard": {
+                    "blocked_terms": ["fixed", "cleared", "resolved"],
+                    "highest_truthful_claim": "fixed in code",
+                },
                 "operator_readout": {"headline": "Radar is converging."},
                 "posture_mode": "converging",
+                "proof_state": {
+                    "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                    "lane_id": "proof-state-control-plane",
+                    "proof_status": "fixed_in_code",
+                },
+                "proof_state_resolution": {
+                    "state": "resolved",
+                    "lane_ids": ["proof-state-control-plane"],
+                },
+                "scope_signal": {
+                    "rank": 4,
+                    "rung": "R4",
+                    "token": "actionable_priority",
+                    "label": "Actionable priority",
+                    "reasons": ["An open warning or operator recommendation is still unresolved."],
+                    "caps": [],
+                    "promoted_default": True,
+                    "budget_class": "escalated_reasoning",
+                },
                 "trajectory": "steady",
             }
         }
     }
+    html = _bundle_registry_text(tmp_path)
+    assert "Live Status" not in html
+    assert "Product Summary" not in html
+    assert "Current live risk is still centered on " not in html
+    assert "Safest current claim: " not in html
+    assert "Proof Control" not in html
+    assert "Live Blocker" not in html
+    assert "Current blocker:" not in html
+    assert "Fingerprint:" not in html
+    assert "Frontier:" not in html
+    assert "Evidence tier:" not in html
+    assert "Truthful claim:" not in html
+    assert "Deployment truth:" not in html
+
+
+def test_render_registry_dashboard_surfaces_proof_resolution_when_no_dominant_lane(tmp_path: Path, monkeypatch) -> None:
+    _seed_repo(tmp_path)
+
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **_kwargs: {
+            "components": {
+                "radar": {
+                    "operator_readout": {"headline": "Radar needs a tighter blocker read."},
+                    "proof_state": {},
+                    "proof_state_resolution": {
+                        "state": "ambiguous",
+                        "lane_ids": ["lane-a", "lane-b"],
+                    },
+                    "claim_guard": {},
+                }
+            }
+        },
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+
+    assert rc == 0
+    payload = _load_registry_payload(tmp_path)
+    assert payload["delivery_intelligence"]["components"]["radar"]["proof_state_resolution"] == {
+        "state": "ambiguous",
+        "lane_ids": ["lane-a", "lane-b"],
+    }
+    html = _bundle_registry_text(tmp_path)
+    assert "Current live risk is still split across more than one blocker path for this component." not in html
+    assert "No dominant proof lane is resolved for this component." not in html
 
 
 def test_render_registry_dashboard_surfaces_baseline_forensic_only_components(tmp_path: Path) -> None:

@@ -85,3 +85,68 @@ def test_delivery_intelligence_main_reports_current_for_semantic_noop(monkeypatc
 
     assert rc == 0
     assert "delivery intelligence artifact is current" in output
+
+
+def test_slice_delivery_intelligence_for_surface_retains_proof_state_contract() -> None:
+    payload = {
+        "version": "v4",
+        "indexes": {
+            "workstreams": {"B-062": "workstream:B-062"},
+        },
+        "scopes": [
+            {
+                "scope_key": "workstream:B-062",
+                "scope_id": "B-062",
+                "scope_type": "workstream",
+                "operator_readout": {
+                    "primary_scenario": "false_priority",
+                    "secondary_scenarios": [],
+                    "severity": "blocker",
+                    "issue": "A higher-risk blocker is still open.",
+                    "why_hidden": "Preview proof did not move the live frontier.",
+                    "action": "Stay pinned to the blocker seam.",
+                    "action_kind": "rebind_scope",
+                    "proof_refs": [],
+                    "requires_approval": False,
+                    "source": "deterministic",
+                },
+                "proof_state": {
+                    "lane_id": "proof-state-control-plane",
+                    "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                    "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                    "frontier_phase": "manifests-deploy",
+                    "proof_status": "fixed_in_code",
+                },
+                "proof_state_resolution": {
+                    "state": "resolved",
+                    "lane_ids": ["proof-state-control-plane"],
+                },
+                "claim_guard": {
+                    "highest_truthful_claim": "fixed in code",
+                    "blocked_terms": ["fixed", "cleared", "resolved"],
+                },
+                "scope_signal": {
+                    "rank": 5,
+                    "rung": "R5",
+                    "token": "blocking_frontier",
+                    "label": "Blocking frontier",
+                    "reasons": ["A live proof blocker is still open."],
+                    "caps": [],
+                    "promoted_default": True,
+                    "budget_class": "escalated_reasoning",
+                },
+            }
+        ],
+        "case_queue": [],
+    }
+
+    sliced = engine.slice_delivery_intelligence_for_surface(payload=payload, surface="compass")
+
+    assert sliced["workstreams"]["B-062"]["proof_state"]["lane_id"] == "proof-state-control-plane"
+    assert sliced["workstreams"]["B-062"]["proof_state_resolution"] == {
+        "state": "resolved",
+        "lane_ids": ["proof-state-control-plane"],
+    }
+    assert sliced["workstreams"]["B-062"]["claim_guard"]["highest_truthful_claim"] == "fixed in code"
+    assert sliced["workstreams"]["B-062"]["scope_signal"]["rung"] == "R5"
+    assert sliced["workstreams"]["B-062"]["scope_signal"]["budget_class"] == "escalated_reasoning"

@@ -1,8 +1,8 @@
 # Benchmark
-Last updated: 2026-04-08
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-04-08
+Last updated (UTC): 2026-04-09
 
 ## Purpose
 Benchmark is Odylith's local proof subsystem for measuring whether Odylith-on
@@ -30,7 +30,8 @@ reviewer framing that explains how Odylith should be compared.
 - The grounding, routing, or orchestration runtime it measures.
 - Hosted evaluation infrastructure.
 - Consumer-repo source truth outside the local Odylith tree.
-- Claude-native benchmark claims that do not share the current Codex harness.
+- Host-native benchmark claims that do not share the current matched proof
+  harness.
 
 ## Developer Mental Model
 - The corpus defines the scenarios, expectations, and validation hooks that
@@ -42,7 +43,7 @@ reviewer framing that explains how Odylith should be compared.
 - `odylith_on_no_fanout` isolates how much bounded multi-leaf orchestration is
   contributing on top of the same Odylith grounding packet.
 - `raw_agent_baseline` is `odylith_off`, or plain-English `Odylith off`: the
-  raw Codex CLI control with Odylith grounding disabled.
+  raw host CLI control with Odylith grounding disabled.
 - `odylith_repo_scan_baseline` is the current repo-scan scaffold control lane.
 - The honest primary benchmark comparison is `odylith_on` versus
   `raw_agent_baseline`; the repo-scan lane is secondary context that shows how
@@ -51,11 +52,30 @@ reviewer framing that explains how Odylith should be compared.
   `src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py`. That
   taxonomy orders the public README table and both proof and diagnostic family
   heatmaps by developer legibility rather than by prompt-cost ranking.
+- The tracked corpus now includes a dedicated `live_proof_discipline` family
+  for proof-state control-panel behavior. That family measures whether
+  benchmark packets expose a real live blocker lane when one resolves and stay
+  explicit about `none` when no lane resolves.
+- The tracked corpus now also includes a dedicated
+  `context_engine_grounding` family for Context Engine packet-lane and
+  scope-resolution behavior. That family measures whether adaptive and
+  governance packets choose the right lane, keep the right workstream anchor,
+  and stay fail-closed on broad or unresolved scope.
+- Proof-discipline summary metrics are first-class benchmark outputs now:
+  `proof_state_present_rate`, `false_clearance_rate`,
+  `proof_frontier_gate_accuracy_rate`, `proof_claim_guard_accuracy_rate`, and
+  `proof_same_fingerprint_reuse_rate`.
+- Context Engine grounding summary metrics are first-class benchmark outputs
+  now too: `context_engine_packet_source_accuracy_rate`,
+  `context_engine_selection_state_accuracy_rate`,
+  `context_engine_workstream_accuracy_rate`,
+  `context_engine_fail_closed_ambiguity_rate`, and
+  `context_engine_session_namespace_rate` when runtime-backed rows are present.
 - A live `odylith_on` versus `odylith_off` comparison only counts as benchmark
-  proof when both lanes run the same Codex CLI model, reasoning effort,
+  proof when both lanes run the same host CLI model, reasoning effort,
   sandbox policy, approval posture, validator contract, and stripped workspace
-  shape. The only intended lane difference is whether Odylith contributes the
-  grounding scaffold.
+  shape for the proof host under test. The only intended lane difference is
+  whether Odylith contributes the grounding scaffold.
 - The report under `.odylith/runtime/odylith-benchmarks/latest.v1.json` is the
   machine-readable source of truth for publication.
 - The README numbers, benchmark explainer, reviewer guide, and canonical SVG
@@ -125,6 +145,12 @@ reviewer framing that explains how Odylith should be compared.
 - Preserve bounded benchmark finalization: adoption-proof sampling is
   supplementary and must degrade cleanly on timeout or transport loss instead
   of blocking report persistence after the full corpus finishes.
+- Keep proof-state benchmark slices honest: `false_clearance_rate` must stay at
+  `0.0`, and proof-backed benchmark rows must keep frontier gating plus
+  claim-tier accuracy at `1.0`.
+- Keep Context Engine benchmark slices honest: packet-lane accuracy,
+  selection-state accuracy, workstream accuracy, and ambiguity fail-closed
+  behavior must stay at `1.0` whenever the sampled corpus includes those rows.
 - Keep the first shipped release proof local-memory-first; hybrid rerank and
   remote retrieval remain experiment lanes until they improve proof without
   harming the current pass.
@@ -143,7 +169,7 @@ Benchmark publication now leads with the developer-facing core:
 - Runtime / Install / Security
 - Surface / UI Reliability
 - Docs + Code Closeout
-- Governance / Release Integrity
+- Governance / Release Integrity, including live blocker proof discipline
 - Architecture Review
 - Grounding / Orchestration Control
 
@@ -220,10 +246,10 @@ with the families that look and feel most like normal coding-agent work.
   softened to preserve flattering numbers.
 - Benchmark evolution is allowed only when it makes the eval harder, more
   representative, more reproducible, or more conservative.
-- A live raw-Codex baseline is invalid for publication if the disposable
+- A live raw-host baseline is invalid for publication if the disposable
   workspace inherits ambient workstation or repo state beyond the explicit
   shared task contract. Shared `.odylith` runtime state, global Git config,
-  host Python or package-manager state, desktop Codex environment variables,
+  host Python or package-manager state, desktop host environment variables,
   shared caches, or shell startup drift all count as contamination.
 - Benchmark status must fail closed when both compared lanes fail, time out, or
   miss the validator contract. Equal failure is never a pass.
@@ -245,9 +271,9 @@ with the families that look and feel most like normal coding-agent work.
   profiles unless the operator passes explicit filters.
 - `diagnostic` is the internal tuning lane: it isolates packet and prompt
   creation for `odylith_on` versus `odylith_off` without running the live
-  end-to-end Codex pair.
+  end-to-end host pair.
 - The proof lane answers:
-  - "Does Odylith beat raw Codex CLI on the same live end-to-end task contract?"
+  - "Does Odylith beat the raw host CLI on the same live end-to-end task contract?"
   - "What is the full matched-pair time to valid outcome?"
   - "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
 - The diagnostic lane answers:
@@ -277,7 +303,7 @@ with the families that look and feel most like normal coding-agent work.
 - `latest-diagnostic.v1.json` is the profile-specific diagnostic snapshot.
 - `docs/benchmarks/proof/` and `docs/benchmarks/diagnostic/` carry the
   profile-specific SVG graph sets.
-- For live Codex CLI proof, `odylith_on` and `odylith_off` must also share the
+- For live proof, `odylith_on` and `odylith_off` must also share the
   same execution contract fields for resolved CLI binary, model, and reasoning
   effort. A report that mixes those contracts is not a valid same-agent
   comparison.
@@ -291,7 +317,7 @@ with the families that look and feel most like normal coding-agent work.
 - The runner may batch the public live pair only after each lane's request has
   already been prepared. Odylith packet-building, cache-profile preparation,
   and other global-state-sensitive phases stay serial. Only the isolated live
-  Codex subprocess phase is allowed to run concurrently, and only for the same
+  host subprocess phase is allowed to run concurrently, and only for the same
   scenario's `odylith_on` versus `odylith_off` pair.
 - Because of that matched-pair batching, published live-proof timing is a
   contention-shared benchmark time-to-valid-outcome measurement, not a
@@ -301,7 +327,7 @@ with the families that look and feel most like normal coding-agent work.
   context such as mean, `p95`, and full proof pair-wall total across the
   selected cache profiles.
 - If Odylith selects docs or contracts for the live evidence cone, those
-  surfaces must survive the packet-to-prompt handoff into the live Codex lane.
+  surfaces must survive the packet-to-prompt handoff into the live host lane.
   Stripping selected docs from the prompt payload invalidates both required-path
   accuracy claims and prompt-token accounting.
 - The inverse also matters on strict bounded proof slices. When the scenario's
@@ -329,7 +355,7 @@ with the families that look and feel most like normal coding-agent work.
   package. If a dirty selected Python file depends on dirty sibling modules in
   the same package, the snapshot must carry those same-package dirty siblings
   for both compared lanes or fail closed before publication.
-- Diagnostic runs must fail closed if any benchmark-owned live Codex
+- Diagnostic runs must fail closed if any benchmark-owned live host
   subprocess or benchmark temp worktree appears during or after the run.
 - Live observed-path attribution must count direct listing, search, and file
   inspection behavior, not transitive file-path mentions embedded inside the
@@ -340,7 +366,7 @@ with the families that look and feel most like normal coding-agent work.
   as `AGENTS.md`, `agents-guidelines/*`, or skills are valid support docs only
   when they are also the most relevant truthful read for the slice.
 - Live proof completion recovery must prefer `result.json` but fall back to a
-  schema-valid final `agent_message` from the Codex JSON event stream before
+  schema-valid final `agent_message` from the host JSON event stream before
   declaring `missing_schema_output`.
 
 ### Published proof posture
@@ -354,7 +380,7 @@ with the families that look and feel most like normal coding-agent work.
   attribution and anti-gaming review.
 - Packet and prompt creation diagnostics are useful internal tuning signals,
   but they are not the same thing as the live end-to-end product comparison.
-- By default, Odylith applies a conservative `20m` timeout to each live Codex
+- By default, Odylith applies a conservative `20m` timeout to each live host
   turn so one stalled scenario cannot hang the benchmark indefinitely.
   Validator timeouts remain operator-controlled. Any operator-supplied timeout
   override or explicit disable must be recorded in the report contract.
@@ -389,9 +415,10 @@ with the families that look and feel most like normal coding-agent work.
   repo-scan scaffold itself is helping, but it is not `Odylith off`.
 - Structural feature comparisons are secondary context and only meaningful when
   they are tied back to execution consequences.
-- Public measured proof is Codex-first today. Public docs may describe
+- Public measured proof is Codex-host-scoped today. Public docs may describe
   Claude-facing benefits from the same grounding and governance layer, but they
-  must not overstate those benefits as Claude-native benchmark proof.
+  must not overstate those benefits as Claude-host benchmark proof until that
+  proof exists.
 - If Odylith only wins when it gets extra hidden truth, that is a weaker story
   than the true benchmark claim and must not be presented as the primary
   proof.
@@ -427,7 +454,7 @@ In practice that means:
   live proof lane this is benchmark time to valid outcome, not solo-user
   latency
 - prompt-token and total payload efficiency:
-  on the live proof lane these are full-session Codex costs; initial
+  on the live proof lane these are full-session host-session costs; initial
   prompt-bundle efficiency belongs to the diagnostic lane
 - bounded token-budget behavior:
   Odylith should degrade gracefully under tighter budgets rather than winning
@@ -517,8 +544,9 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 5. Packet results must publish traced reasoning time plus explicit
    uninstrumented overhead so latency spikes can be diagnosed instead of being
    mistaken for grounding-quality regressions.
-6. Live Codex CLI results must also publish the isolation contract that made
-   the comparison fair, including whether the run used a temporary Codex home,
+6. Live proof-host CLI results must also publish the isolation contract that
+   made the comparison fair, including whether the run used a temporary host
+   home,
    stripped repo guidance, localized validator cache or temp roots, the
    resolved timeout policy, and any remaining contamination risks that still
    invalidate publication.
@@ -562,7 +590,7 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
   If a documented `odylith ...` validator command misparses, the fix belongs in
   the product command surface before the benchmark story moves forward.
 - The benchmark must also fail closed on contaminated live-run isolation. If
-  the raw-Codex lane still sees shared workstation or repo state, the result is
+  the raw-host lane still sees shared workstation or repo state, the result is
   debug-only and must not be narrated as benchmark proof.
 - The tracked corpus stays canonical on `scenarios` and
   `architecture_scenarios`; reader support for legacy `cases` keys is only a

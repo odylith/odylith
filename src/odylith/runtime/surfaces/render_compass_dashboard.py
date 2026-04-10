@@ -14,14 +14,16 @@ from importlib import import_module
 import json
 import os
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine.surface_projection_fingerprint import default_surface_projection_input_fingerprint
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import dashboard_surface_bundle
+from odylith.runtime.surfaces import source_bundle_mirror
 
 DEFAULT_HISTORY_RETENTION_DAYS = 15
 _DEFAULT_ACTIVE_WINDOW_MINUTES = 15
@@ -33,6 +35,7 @@ _EXPORT_MODULES = (
     "odylith.runtime.surfaces.compass_dashboard_base",
     "odylith.runtime.surfaces.compass_dashboard_runtime",
 )
+CompassProgressCallback = Callable[[str, Mapping[str, Any] | None], None]
 
 
 def _resolve(repo_root: Path, value: str) -> Path:
@@ -75,6 +78,17 @@ def _now_utc_iso() -> str:
     return dt.datetime.now(tz=dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _emit_progress(
+    progress_callback: CompassProgressCallback | None,
+    *,
+    stage: str,
+    detail: Mapping[str, Any] | None = None,
+) -> None:
+    if progress_callback is None:
+        return
+    progress_callback(str(stage).strip(), dict(detail or {}))
+
+
 def _write_current_runtime_payload(
     *,
     repo_root: Path,
@@ -105,10 +119,15 @@ def _refresh_failure_warning(
 ) -> str:
     snapshot_label = str(generated_utc).strip() or "the last successful render"
     reason_token = str(reason or "").strip().lower()
-    reason_label = "did not finish before the dashboard timeout" if reason_token == "timeout" else "failed before a fresh payload was written"
+    requested_label = _normalize_refresh_profile(requested_profile)
+    reason_label = (
+        f"Requested Compass {requested_label} refresh did not finish before the dashboard timeout."
+        if reason_token == "timeout"
+        else f"Requested Compass {requested_label} refresh failed before a fresh runtime payload was written."
+    )
     return (
-        f"Requested Compass {requested_profile} refresh {reason_label}. "
-        f"Showing the last successful {applied_profile} runtime snapshot from {snapshot_label}."
+        f"{reason_label} "
+        f"Showing the last successful {_normalize_refresh_profile(applied_profile)} runtime snapshot from {snapshot_label}."
     )
 
 
@@ -264,9 +283,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Telemetry live/active freshness window in minutes.",
     )
     parser.add_argument(
+        "--agent-stream",
         "--codex-stream",
-        default="odylith/compass/runtime/codex-stream.v1.jsonl",
-        help="Optional local JSONL stream of Codex decision/implementation timeline events.",
+        dest="agent_stream",
+        default=agent_runtime_contract.AGENT_STREAM_PATH,
+        help="Optional local JSONL stream of agent decision/implementation timeline events.",
     )
     parser.add_argument("--backlog-index", default="odylith/radar/source/INDEX.md")
     parser.add_argument("--plan-index", default="odylith/technical-plans/INDEX.md")
@@ -281,12 +302,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--refresh-profile",
-        choices=("full", "shell-safe"),
+        choices=(compass_refresh_contract.DEFAULT_REFRESH_PROFILE, compass_refresh_contract.FULL_REFRESH_PROFILE),
         default=_DEFAULT_REFRESH_PROFILE,
-        help=(
-            "`shell-safe` rebuilds Compass in bounded mode, keeps scoped provider warming deferred, "
-            "and lets global 24h/48h narration use the live provider opportunistically."
-        ),
+        help="Compass refresh policy: cheap shell-safe reuse by default, or explicit full refresh when live provider-backed briefs are required.",
     )
     return parser.parse_args(argv)
 
@@ -306,6 +324,7 @@ def refresh_runtime_artifacts(
     active_window_minutes: int,
     runtime_mode: str,
     refresh_profile: str = _DEFAULT_REFRESH_PROFILE,
+    progress_callback: CompassProgressCallback | None = None,
 ) -> tuple[dict[str, Any], tuple[Path, Path, Path, Path, Path]]:
     current_json_path = runtime_dir / "current.v1.json"
     current_js_path = runtime_dir / "current.v1.js"
@@ -330,6 +349,14 @@ def refresh_runtime_artifacts(
         refresh_profile=refresh_profile,
     )
     normalized_profile = _normalize_refresh_profile(refresh_profile)
+    _emit_progress(
+        progress_callback,
+        stage="input_resolution",
+        detail={
+            "refresh_profile": normalized_profile,
+            "runtime_mode": str(runtime_mode).strip().lower() or "auto",
+        },
+    )
     existing_payload = _existing_runtime_payload_if_fresh(
         current_json_path=current_json_path,
         input_fingerprint=input_fingerprint,
@@ -339,8 +366,18 @@ def refresh_runtime_artifacts(
         payload=existing_payload,
         requested_profile=normalized_profile,
     ):
+        runtime_contract = (
+            dict(existing_payload.get("runtime_contract", {}))
+            if isinstance(existing_payload.get("runtime_contract"), Mapping)
+            else {}
+        )
+        runtime_contract["refresh_profile"] = normalized_profile
+        existing_payload = {
+            **dict(existing_payload),
+            "runtime_contract": runtime_contract,
+        }
         updated_existing_payload = _apply_refresh_attempt_state(
-            payload=dict(existing_payload),
+            payload=existing_payload,
             requested_profile=normalized_profile,
             applied_profile=normalized_profile,
             runtime_mode=runtime_mode,
@@ -351,6 +388,11 @@ def refresh_runtime_artifacts(
             current_json_path=current_json_path,
             current_js_path=current_js_path,
             payload=updated_existing_payload,
+        )
+        _emit_progress(
+            progress_callback,
+            stage="runtime_payload_built",
+            detail={"message": "reused the current runtime payload because the Compass inputs still match"},
         )
         return updated_existing_payload, runtime_paths
 
@@ -367,6 +409,7 @@ def refresh_runtime_artifacts(
         active_window_minutes=active_window_minutes,
         runtime_mode=runtime_mode,
         refresh_profile=normalized_profile,
+        progress_callback=progress_callback,
     )
     runtime_contract = payload.get("runtime_contract") if isinstance(payload.get("runtime_contract"), dict) else {}
     runtime_contract.update(
@@ -390,11 +433,21 @@ def refresh_runtime_artifacts(
         status="passed",
         attempted_utc=str(payload.get("generated_utc", "")).strip(),
     )
+    _emit_progress(
+        progress_callback,
+        stage="runtime_payload_built",
+        detail={"message": "built a fresh Compass runtime payload"},
+    )
     paths = runtime_impl._write_runtime_snapshots(
         repo_root=repo_root,
         runtime_dir=runtime_dir,
         payload=payload,
         retention_days=retention_days,
+    )
+    _emit_progress(
+        progress_callback,
+        stage="runtime_snapshots_written",
+        detail={"message": "wrote the current runtime snapshot and history files"},
     )
     return payload, paths
 
@@ -478,32 +531,21 @@ def _payload_satisfies_requested_refresh(
 ) -> bool:
     if not compass_refresh_contract.full_refresh_requested(requested_profile):
         return True
-    current_workstreams = payload.get("current_workstreams")
-    if not isinstance(current_workstreams, list):
+    standup = payload.get("standup_brief")
+    if not isinstance(standup, Mapping):
         return False
-    expected_scoped_ids = {
-        str(row.get("idea_id", "")).strip()
-        for row in current_workstreams
-        if isinstance(row, Mapping) and str(row.get("idea_id", "")).strip()
-    }
-    standup_brief = payload.get("standup_brief")
-    if not isinstance(standup_brief, Mapping):
-        return False
-    standup_brief_scoped = payload.get("standup_brief_scoped")
-    scoped_by_window = standup_brief_scoped if isinstance(standup_brief_scoped, Mapping) else {}
     for window in ("24h", "48h"):
-        brief = standup_brief.get(window)
-        if not isinstance(brief, Mapping) or not compass_refresh_contract.brief_satisfies_full_refresh(brief):
+        if not compass_refresh_contract.brief_satisfies_full_refresh(standup.get(window)):
             return False
-        scoped_map = scoped_by_window.get(window)
-        if not isinstance(scoped_map, Mapping):
+    scoped = payload.get("standup_brief_scoped")
+    if not isinstance(scoped, Mapping):
+        return False
+    for window in ("24h", "48h"):
+        briefs = scoped.get(window)
+        if not isinstance(briefs, Mapping):
             return False
-        for ws_id in expected_scoped_ids:
-            scoped_brief = scoped_map.get(ws_id)
-            if not isinstance(scoped_brief, Mapping):
-                return False
-            if not compass_refresh_contract.brief_satisfies_full_refresh(scoped_brief):
-                return False
+        if any(not compass_refresh_contract.brief_satisfies_full_refresh(brief) for brief in briefs.values()):
+            return False
     return True
 
 
@@ -536,19 +578,17 @@ def _compass_shell_asset_paths(*, output_path: Path) -> dict[str, Path]:
     }
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    args = _parse_args(argv)
-    repo_root = Path(str(args.repo_root)).expanduser().resolve()
-
-    output_path = _resolve(repo_root, args.output)
-    runtime_dir = _resolve(repo_root, args.runtime_dir)
-    backlog_index_path = _resolve(repo_root, args.backlog_index)
-    plan_index_path = _resolve(repo_root, args.plan_index)
-    bugs_index_path = _resolve(repo_root, args.bugs_index)
-    traceability_graph_path = _resolve(repo_root, args.traceability_graph)
-    mermaid_catalog_path = _resolve(repo_root, args.mermaid_catalog)
-    codex_stream_path = _resolve(repo_root, args.codex_stream)
-
+def _validate_render_inputs(
+    *,
+    backlog_index_path: Path,
+    plan_index_path: Path,
+    bugs_index_path: Path,
+    traceability_graph_path: Path,
+    mermaid_catalog_path: Path,
+    retention_days: int,
+    max_review_age_days: int,
+    active_window_minutes: int,
+) -> list[str]:
     errors: list[str] = []
     for label, path in (
         ("backlog index", backlog_index_path),
@@ -560,18 +600,45 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not path.is_file():
             errors.append(f"missing {label}: {path}")
 
-    if int(args.retention_days) < 1:
+    if int(retention_days) < 1:
         errors.append("retention-days must be >= 1")
-    if int(args.max_review_age_days) < 1:
+    if int(max_review_age_days) < 1:
         errors.append("max-review-age-days must be >= 1")
-    if int(args.active_window_minutes) < 1:
+    if int(active_window_minutes) < 1:
         errors.append("active-window-minutes must be >= 1")
+    return errors
 
+
+def render_compass_artifacts(
+    *,
+    repo_root: Path,
+    output_path: Path,
+    runtime_dir: Path,
+    backlog_index_path: Path,
+    plan_index_path: Path,
+    bugs_index_path: Path,
+    traceability_graph_path: Path,
+    mermaid_catalog_path: Path,
+    codex_stream_path: Path,
+    retention_days: int,
+    max_review_age_days: int,
+    active_window_minutes: int,
+    runtime_mode: str,
+    refresh_profile: str = _DEFAULT_REFRESH_PROFILE,
+    progress_callback: CompassProgressCallback | None = None,
+) -> tuple[dict[str, Any], tuple[Path, Path, Path, Path, Path]]:
+    errors = _validate_render_inputs(
+        backlog_index_path=backlog_index_path,
+        plan_index_path=plan_index_path,
+        bugs_index_path=bugs_index_path,
+        traceability_graph_path=traceability_graph_path,
+        mermaid_catalog_path=mermaid_catalog_path,
+        retention_days=retention_days,
+        max_review_age_days=max_review_age_days,
+        active_window_minutes=active_window_minutes,
+    )
     if errors:
-        print("compass render FAILED")
-        for err in errors:
-            print(f"- {err}")
-        return 2
+        raise ValueError("\n".join(errors))
 
     runtime_payload, runtime_paths = refresh_runtime_artifacts(
         repo_root=repo_root,
@@ -582,19 +649,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         traceability_graph_path=traceability_graph_path,
         mermaid_catalog_path=mermaid_catalog_path,
         codex_stream_path=codex_stream_path,
-        retention_days=int(args.retention_days),
-        max_review_age_days=int(args.max_review_age_days),
-        active_window_minutes=int(args.active_window_minutes),
-        runtime_mode=str(args.runtime_mode),
-        refresh_profile=str(args.refresh_profile),
+        retention_days=int(retention_days),
+        max_review_age_days=int(max_review_age_days),
+        active_window_minutes=int(active_window_minutes),
+        runtime_mode=str(runtime_mode),
+        refresh_profile=str(refresh_profile),
+        progress_callback=progress_callback,
     )
-    current_json_path, current_js_path, daily_path, history_index_path, history_js_path = runtime_paths
+    current_json_path, current_js_path, _daily_path, history_index_path, history_js_path = runtime_paths
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     from odylith.runtime.common import stable_generated_utc
     from odylith.runtime.common.consumer_profile import load_consumer_profile
-    from odylith.runtime.surfaces import compass_dashboard_frontend_contract
-    from odylith.runtime.surfaces import brand_assets, dashboard_surface_bundle
+    from odylith.runtime.surfaces import brand_assets, compass_dashboard_frontend_contract, dashboard_surface_bundle
     from odylith.runtime.surfaces.compass_dashboard_shell import _render_shell_html
 
     shell_asset_paths = _compass_shell_asset_paths(output_path=output_path)
@@ -623,10 +690,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             target=shell_asset_paths["compass-style-surface.v1.css"],
         ),
         "shared_js_href": _versioned_href(output_path=output_path, target=shell_asset_paths["compass-shared.v1.js"]),
+        "runtime_truth_js_href": _versioned_href(
+            output_path=output_path,
+            target=shell_asset_paths["compass-runtime-truth.v1.js"],
+        ),
         "state_js_href": _versioned_href(output_path=output_path, target=shell_asset_paths["compass-state.v1.js"]),
         "summary_js_href": _versioned_href(output_path=output_path, target=shell_asset_paths["compass-summary.v1.js"]),
         "timeline_js_href": _versioned_href(output_path=output_path, target=shell_asset_paths["compass-timeline.v1.js"]),
         "waves_js_href": _versioned_href(output_path=output_path, target=shell_asset_paths["compass-waves.v1.js"]),
+        "releases_js_href": _versioned_href(
+            output_path=output_path,
+            target=shell_asset_paths["compass-releases.v1.js"],
+        ),
         "workstreams_js_href": _versioned_href(
             output_path=output_path,
             target=shell_asset_paths["compass-workstreams.v1.js"],
@@ -635,6 +710,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             output_path=output_path,
             target=shell_asset_paths["compass-ui-runtime.v1.js"],
         ),
+        "traceability_graph_href": _versioned_href(output_path=output_path, target=traceability_graph_path),
         "runtime_json_href": _versioned_href(output_path=output_path, target=current_json_path),
         "runtime_js_href": _versioned_href(output_path=output_path, target=current_js_path),
         "runtime_history_js_href": _versioned_href(output_path=output_path, target=history_js_path),
@@ -688,6 +764,75 @@ def main(argv: Sequence[str] | None = None) -> int:
         content=control_js,
         lock_key=str(bundle_paths.control_js_path),
     )
+    source_bundle_mirror.sync_live_paths(
+        repo_root=repo_root,
+        live_paths=(
+            output_path,
+            bundle_paths.payload_js_path,
+            bundle_paths.control_js_path,
+            *shell_asset_paths.values(),
+        ),
+    )
+    _emit_progress(
+        progress_callback,
+        stage="shell_bundle_written",
+        detail={"message": f"wrote the Compass shell bundle to {output_path}"},
+    )
+    _emit_progress(
+        progress_callback,
+        stage="complete",
+        detail={"message": f"Compass refresh complete at {output_path}"},
+    )
+    return runtime_payload, runtime_paths
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = _parse_args(argv)
+    repo_root = Path(str(args.repo_root)).expanduser().resolve()
+
+    output_path = _resolve(repo_root, args.output)
+    runtime_dir = _resolve(repo_root, args.runtime_dir)
+    backlog_index_path = _resolve(repo_root, args.backlog_index)
+    plan_index_path = _resolve(repo_root, args.plan_index)
+    bugs_index_path = _resolve(repo_root, args.bugs_index)
+    traceability_graph_path = _resolve(repo_root, args.traceability_graph)
+    mermaid_catalog_path = _resolve(repo_root, args.mermaid_catalog)
+    codex_stream_path = _resolve(repo_root, args.agent_stream)
+
+    errors = _validate_render_inputs(
+        backlog_index_path=backlog_index_path,
+        plan_index_path=plan_index_path,
+        bugs_index_path=bugs_index_path,
+        traceability_graph_path=traceability_graph_path,
+        mermaid_catalog_path=mermaid_catalog_path,
+        retention_days=int(args.retention_days),
+        max_review_age_days=int(args.max_review_age_days),
+        active_window_minutes=int(args.active_window_minutes),
+    )
+
+    if errors:
+        print("compass render FAILED")
+        for err in errors:
+            print(f"- {err}")
+        return 2
+
+    runtime_payload, runtime_paths = render_compass_artifacts(
+        repo_root=repo_root,
+        output_path=output_path,
+        runtime_dir=runtime_dir,
+        backlog_index_path=backlog_index_path,
+        plan_index_path=plan_index_path,
+        bugs_index_path=bugs_index_path,
+        traceability_graph_path=traceability_graph_path,
+        mermaid_catalog_path=mermaid_catalog_path,
+        codex_stream_path=codex_stream_path,
+        retention_days=int(args.retention_days),
+        max_review_age_days=int(args.max_review_age_days),
+        active_window_minutes=int(args.active_window_minutes),
+        runtime_mode=str(args.runtime_mode),
+        refresh_profile=str(args.refresh_profile),
+    )
+    current_json_path, current_js_path, daily_path, history_index_path, history_js_path = runtime_paths
 
     print("compass render passed")
     print(f"- shell: {output_path}")

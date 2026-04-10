@@ -23,6 +23,7 @@ from typing import Sequence
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine
 from odylith.runtime.context_engine import odylith_context_engine_store
+from odylith.runtime.surfaces import compass_refresh_runtime
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -82,14 +83,18 @@ def _run_command(repo_root: Path, command: Sequence[str]) -> int:
 
 
 def _refresh_outputs_runtime(repo_root: Path, *, runtime_mode: str) -> int:
+    refresh_result = compass_refresh_runtime.run_refresh(
+        repo_root=repo_root,
+        requested_profile="shell-safe",
+        requested_runtime_mode=runtime_mode,
+        wait=True,
+        status_only=False,
+        emit_output=True,
+    )
+    if int(refresh_result.get("rc", 0) or 0) != 0:
+        print("prompt transaction watcher FAILED while refreshing Compass")
+        return int(refresh_result.get("rc", 0) or 0)
     commands: tuple[tuple[str, ...], ...] = (
-        (
-            "odylith.runtime.surfaces.render_compass_dashboard",
-            "--repo-root",
-            str(repo_root),
-            "--runtime-mode",
-            str(runtime_mode),
-        ),
         (
             "odylith.runtime.surfaces.render_backlog_ui",
             "--repo-root",
@@ -114,8 +119,18 @@ def _refresh_outputs_runtime(repo_root: Path, *, runtime_mode: str) -> int:
 def _refresh_outputs(repo_root: Path, *, runtime_mode: str) -> int:
     if str(runtime_mode).strip().lower() != "standalone":
         return _refresh_outputs_runtime(repo_root, runtime_mode=runtime_mode)
+    refresh_result = compass_refresh_runtime.run_refresh(
+        repo_root=repo_root,
+        requested_profile="shell-safe",
+        requested_runtime_mode=runtime_mode,
+        wait=True,
+        status_only=False,
+        emit_output=True,
+    )
+    if int(refresh_result.get("rc", 0) or 0) != 0:
+        print("prompt transaction watcher FAILED while refreshing Compass")
+        return int(refresh_result.get("rc", 0) or 0)
     commands: tuple[tuple[str, ...], ...] = (
-        ("python", "-m", "odylith.runtime.surfaces.render_compass_dashboard", "--repo-root", str(repo_root)),
         ("python", "-m", "odylith.runtime.surfaces.render_backlog_ui", "--repo-root", str(repo_root)),
     )
     for command in commands:

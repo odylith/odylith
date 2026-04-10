@@ -12,6 +12,7 @@
     "D-025",
     "D-021",
     "D-022",
+    "D-026",
     "D-006",
     "D-007",
     "D-008",
@@ -25,16 +26,17 @@
     "D-016",
     "D-017",
     "D-023",
-    "D-024"
+    "D-024",
+    "D-027"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 46,
     "mapped_workstream_evidence_count": 7,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 9,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 46
+    "timeline_event_count": 47
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -48,6 +50,26 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "AGENTS.md",
+        "README.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/radar/source/INDEX.md"
+      ],
+      "confidence": "high",
+      "event_index": 69,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, README.md +3 more",
+      "ts_iso": "2026-04-09T13:51:28-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/install.json",
@@ -1360,6 +1382,8 @@
     "B-031",
     "B-058",
     "B-059",
+    "B-062",
+    "B-063",
     "B-003",
     "B-006",
     "B-002",
@@ -1398,6 +1422,8 @@
     "B-056",
     "B-048",
     "B-061",
-    "B-060"
+    "B-060",
+    "B-070",
+    "B-069"
   ]
 }

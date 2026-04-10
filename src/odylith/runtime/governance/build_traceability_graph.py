@@ -6,10 +6,11 @@ import argparse
 import json
 from pathlib import Path
 import re
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 from odylith.runtime.common.consumer_profile import canonical_truth_token
 from odylith.runtime.governance import execution_wave_contract
+from odylith.runtime.governance import release_planning_view_model
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -333,6 +334,47 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
             source=execution_wave_contract.PROGRAMS_DIR.as_posix(),
         )
+    release_payload, release_errors, _release_state = release_planning_view_model.build_release_view_from_repo(
+        repo_root=repo_root,
+        idea_specs=idea_specs,
+    )
+    for entry in release_errors:
+        _add_warning(
+            entry,
+            category="release_planning",
+            severity="error",
+            action=(
+                "Fix odylith/radar/source/releases/releases.v1.json or "
+                "odylith/radar/source/releases/release-assignment-events.v1.jsonl and rerun workstream sync."
+            ),
+            source="odylith/radar/source/releases",
+        )
+    release_catalog = release_payload.get("catalog", []) if isinstance(release_payload.get("catalog"), list) else []
+    release_aliases = (
+        dict(release_payload.get("aliases", {}))
+        if isinstance(release_payload.get("aliases"), Mapping)
+        else {}
+    )
+    release_workstreams = (
+        dict(release_payload.get("workstreams", {}))
+        if isinstance(release_payload.get("workstreams"), Mapping)
+        else {}
+    )
+    current_release = (
+        dict(release_payload.get("current_release", {}))
+        if isinstance(release_payload.get("current_release"), Mapping)
+        else {}
+    )
+    next_release = (
+        dict(release_payload.get("next_release", {}))
+        if isinstance(release_payload.get("next_release"), Mapping)
+        else {}
+    )
+    release_summary = (
+        dict(release_payload.get("summary", {}))
+        if isinstance(release_payload.get("summary"), Mapping)
+        else {}
+    )
 
     if autofix_report_path.is_file():
         try:
@@ -428,6 +470,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         workstream_merged_from = _split_ids(str(metadata.get("workstream_merged_from", "")), pattern=_IDEA_ID_RE)
         inferred_diagrams = sorted(workstream_to_diagrams.get(idea_id, set()))
         merged_diagrams = sorted(set(related_diagrams) | set(inferred_diagrams))
+        release_detail = (
+            dict(release_workstreams.get(idea_id, {}))
+            if isinstance(release_workstreams.get(idea_id), Mapping)
+            else {}
+        )
+        active_release_id = str(release_detail.get("active_release_id", "")).strip()
+        active_release = (
+            dict(release_detail.get("active_release", {}))
+            if isinstance(release_detail.get("active_release"), Mapping)
+            else {}
+        )
+        release_history = [
+            dict(item)
+            for item in release_detail.get("history", [])
+            if isinstance(item, Mapping)
+        ] if isinstance(release_detail.get("history"), list) else []
 
         workstream_type = str(metadata.get("workstream_type", "")).strip().lower()
         if workstream_type not in {"umbrella", "child", "standalone"}:
@@ -564,6 +622,29 @@ def main(argv: Sequence[str] | None = None) -> int:
         _link_artifacts(runbooks, bucket="runbooks")
         _link_artifacts(devdocs, bucket="developer_docs")
         _link_artifacts(code_refs, bucket="code_references")
+        if active_release_id and active_release:
+            release_node = f"release:{active_release_id}"
+            _add_node(
+                nodes,
+                node_id=release_node,
+                payload={
+                    "id": release_node,
+                    "type": "release",
+                    "label": str(active_release.get("display_label", "")).strip() or active_release_id,
+                    "release_id": active_release_id,
+                    "status": str(active_release.get("status", "")).strip(),
+                    "version": str(active_release.get("version", "")).strip(),
+                    "tag": str(active_release.get("tag", "")).strip(),
+                    "name": str(active_release.get("effective_name", "")).strip(),
+                    "aliases": [
+                        str(item).strip()
+                        for item in active_release.get("aliases", [])
+                        if str(item).strip()
+                    ] if isinstance(active_release.get("aliases"), list) else [],
+                    "file": "odylith/radar/source/releases/releases.v1.json",
+                },
+            )
+            _add_edge(edges, source=idea_id, target=release_node, edge_type="active_release")
 
         coverage[idea_id] = {
             "linked_plan_count": 1 if plan_file else 0,
@@ -597,6 +678,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "developer_docs": devdocs,
                     "code_references": code_refs,
                 },
+                "active_release_id": active_release_id,
+                "active_release": active_release,
+                "release_history": release_history,
+                "release_history_summary": str(release_detail.get("history_summary", "")).strip(),
                 "coverage": coverage[idea_id],
                 "execution_wave_refs": execution_wave_refs.get(idea_id, []),
             }
@@ -629,8 +714,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             "ideas_root": _as_repo_path(repo_root, ideas_root),
             "catalog": _as_repo_path(repo_root, catalog_path),
             "execution_programs_root": execution_wave_contract.PROGRAMS_DIR.as_posix(),
+            "release_planning_root": "odylith/radar/source/releases",
         },
         "workstreams": workstreams,
+        "releases": release_catalog,
+        "release_aliases": release_aliases,
+        "current_release": current_release,
+        "next_release": next_release,
+        "release_summary": release_summary,
         "execution_programs": [program.to_dict() for program in execution_programs],
         "nodes": [nodes[key] for key in sorted(nodes)],
         "edges": edge_items,
@@ -639,6 +730,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "warnings": sorted(set(warnings)),
         "summary": {
             "workstream_count": len(workstreams),
+            "release_count": len(release_catalog),
+            "active_release_assignment_count": int(release_summary.get("active_assignment_count", 0) or 0),
             "execution_program_count": len(execution_programs),
             "execution_wave_count": sum(len(program.waves) for program in execution_programs),
             "node_count": len(nodes),

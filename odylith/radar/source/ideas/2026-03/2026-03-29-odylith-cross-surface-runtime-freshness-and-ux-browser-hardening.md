@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-025
-title: Odylith Cross-Surface Runtime Freshness and UX Browser Hardening
+title: Cross-Surface Runtime Freshness and UX Browser Hardening
 date: 2026-03-29
 priority: P0
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: Compass runtime freshness, projection invalidation, standup-brief recovery, shell UX proof, cross-surface browser hardening, balanced live-shell freshness posture, default-surface diagnostics curation, cross-surface filter and search semantics
 sizing: M
 complexity: High
@@ -19,7 +18,7 @@ promoted_to_plan: odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith
 execution_model: standard
 workstream_type: standalone
 workstream_parent:
-workstream_children:
+workstream_children: B-071
 workstream_depends_on: B-017, B-018, B-023
 workstream_blocks:
 related_diagram_ids:
@@ -66,11 +65,10 @@ remove stale cross-packet global brief recovery, curate traceability
 diagnostics once so default surfaces only show operator-facing warning/error
 rows, and expand Playwright proof to assert fresh KPIs, brief posture,
 timelines, and cross-surface state restore.
-That same slice now needs one stricter explicit Compass `full` refresh
-contract: keep the existing five-minute runtime reuse clamp, but only reuse a
-recent payload when it already satisfies the requested deep-refresh truth
-contract. A passing deep rerender must not land on deterministic local
-narration or stale child-runtime state.
+That same slice also has to retire the old minute-scale deeper Compass rerender
+idea entirely. Compass should keep one bounded refresh contract, reuse a recent
+payload only when it already satisfies current bounded truth, and never ask
+operators to choose between a cheap mode and a second expensive truth lane.
 Extend that same model into a balanced live-shell posture:
 - keep live shell views fresh earlier than commit through runtime-backed data
   and bounded shell-safe refresh while the shell is actively open
@@ -95,10 +93,9 @@ Extend that same model into a balanced live-shell posture:
 ## Scope
 - fix Compass runtime reuse so 24h/48h windows rebuild on age as well as input
   change
-- keep the existing five-minute runtime reuse clamp, but make explicit Compass
-  `full` validate that any reused payload already satisfies the deep-refresh
-  contract and fail if the result would still require deterministic or stale
-  fallback state
+- keep the existing five-minute runtime reuse clamp, but only for the one
+  bounded Compass refresh contract so reused payloads stay truthful without
+  reviving a second deep-refresh lane
 - version the bug projection contract into store and hot-path fingerprints
 - remove stale last-known-good global brief reuse across changed fact packets
 - extend the shell freshness model so runtime-backed live views can refresh
@@ -139,9 +136,12 @@ Extend that same model into a balanced live-shell posture:
 - default operator-facing shell surfaces agree on which traceability warnings
   deserve primary warning treatment
 - browser proof covers broader shell UX/UI freshness paths, not just Compass
-- browser proof catches explicit Compass `full` refresh regressions so a
-  passing deep rerender never lands on deterministic local brief state across
-  global 24h/48h and scoped current-workstream views
+- browser proof catches bounded Compass refresh regressions so a passing
+  rerender never lands on deterministic local brief state across global
+  24h/48h and scoped current-workstream views
+- Compass only advertises scoped windows when the selected workstream has
+  verified scoped activity in that exact rolling window; governance-only churn
+  and broad fanout timeline rows stay global-only evidence
 - exact-id and normalized-token filter/search behavior is proven across Radar,
   Registry, Atlas, Casebook, and Compass filter state
 - the shell makes the difference between live runtime freshness and tracked
@@ -168,20 +168,35 @@ Extend that same model into a balanced live-shell posture:
 - implemented on 2026-04-05 for the browser-refresh contract:
   shell bundle assets, child-surface frame hrefs, and Compass runtime/script
   refs now publish cache-busting version tokens; global `48h` is back on the
-  provider-backed full-refresh path; and deterministic scoped `48h` briefs now
+  provider-backed live-brief path when warmed truth is available; and
+  deterministic scoped `48h` briefs now
   widen their wording instead of collapsing into the exact `24h` narration
 - implemented on 2026-04-05 for the scoped-brief/browser-proof follow-up:
-  full Compass refresh now warms selected workstream briefs through the live
-  provider path as well, but fans that work through a small worker pool so the
-  rerender stays bounded; the Compass DOM now exposes brief source, scope,
-  window, and fingerprint metadata; and Playwright asserts those values switch
-  correctly across global versus scoped selection and `24h` versus `48h`
-  toggles
-- implemented on 2026-04-05 for the standup-voice follow-up: Compass brief
-  contract `v13` now bans repeated house phrases in provider narration,
-  deterministic fallback rewrites the same facts in plainer spoken language,
-  and validation rejects overused stock openings so global and scoped briefs
-  cannot quietly fall back into robotic prose after rerender
+  the Compass DOM now exposes brief source, scope, window, and fingerprint
+  metadata, and Playwright asserts those values switch correctly across global
+  versus scoped selection and `24h` versus `48h` toggles; the older deeper
+  rerender experiment that warmed selected scoped briefs was later retired in
+  favor of one bounded refresh contract
+- implemented on 2026-04-08 for the standup-voice follow-up: Compass brief
+  contract `v15` now treats no-stock-framing as a standing product invariant
+  across provider output, warmed cache reuse, and deterministic fallback;
+  repeated window leads, canned `next/why/timing` wrappers, rhetorical
+  benchmark challenges, and second-wave house phrasing are rejected before
+  global or scoped briefs can quietly fall back into robotic prose after
+  rerender
+- implemented on 2026-04-08 for the `v0.1.11` Compass release target:
+  scoped `24h` and `48h` briefs now fail closed instead of borrowing the
+  global brief, the old `Executive/Product` versus `Operator/Technical` split
+  is gone across provider output, deterministic fallback, cache replay, DOM
+  rendering, and copied brief text, and both narration paths now reject the
+  internal stock templates that kept making Compass sound canned after refresh
+- implemented on 2026-04-08 for the plainspoken-voice hardening follow-up:
+  Compass brief contract `v19` now names the target style as plainspoken
+  grounded maintainer narration, invalidates warmed cache written under the
+  older contract, rejects stagey phrases like `pressure point`, `muddy`,
+  `window coverage spans`, `with the clearest movement around`, and `The next move is`,
+  and carries the same voice rule through the Compass spec, delivery guidance,
+  session memory, and bundled skills
 - implemented on 2026-04-07 for cross-surface diagnostics curation:
   traceability warning items now carry audience/visibility policy, default
   Radar warning cards and Compass traceability risks agree on the same
@@ -197,17 +212,20 @@ Extend that same model into a balanced live-shell posture:
   the audit-day picker now clamps against real retained history dates instead
   of a synthetic 30-day range, so historical filter changes stop inviting
   browser-visible 404s for snapshots that were never retained
-- implemented on 2026-04-08 for the explicit full-refresh contract:
-  Compass `full` now keeps the valid five-minute runtime reuse clamp but only
-  reuses recent payloads that already satisfy the deep-refresh truth bar,
-  fails closed instead of landing on deterministic or stale fallback brief
-  state, and is backed by targeted contract, runtime, render, narrator, and
-  browser-regression proof
+- implemented on 2026-04-08 for explicit-refresh hardening:
+  Compass briefly carried a stricter deep-refresh contract to prove that stale
+  or deterministic fallback state could be rejected end to end; that contract
+  was then retired on 2026-04-09 when the product collapsed back to one
+  bounded refresh path instead of preserving a second minute-scale mode
 - implemented on 2026-04-08 for shell freshness projection bootstrap:
   the tooling shell now preserves its precomputed Compass stale/failure status
   on first load and across runtime probes, so browser-visible shell truth no
   longer disappears just because the runtime-probe payload omits shell-only
   status records
+- implemented on 2026-04-09 for shell-versus-child warning dedupe:
+  when Compass already carries a failed-refresh warning inside the frame, the
+  shell now stays quiet instead of rendering the same warning again above the
+  iframe
 - implemented on 2026-04-08 for deeper Compass/browser hardening proof:
   the resumed shell-and-Compass browser sweep now runs against rerendered
   checked-in shell and Casebook surfaces after source/governance changes, so
@@ -218,6 +236,41 @@ Extend that same model into a balanced live-shell posture:
   opportunistic," and browser proof rerenders a real shell-safe Compass
   snapshot so deterministic global fallback cannot slip through again while a
   provider is available
+- implemented on 2026-04-08 for Compass credit-burn containment:
+  the retired deeper rerender lane proved that exact current-packet cache
+  reuse and bounded multi-scope provider packs could cut cost before the
+  product removed that second lane entirely
+- implemented on 2026-04-08 for deeper Compass refresh hardening:
+  the retired deeper rerender lane also proved out scoped-pack splitting,
+  24h-to-48h narration reuse, global synthesis from scoped truth, and stale
+  worker repair before the product removed that minute-scale path and kept the
+  cheaper pieces inside the bounded refresh contract
+- implemented on 2026-04-09 for shell-safe refresh/runtime hardening:
+  the default refresh now keeps live provider cost on the two global windows
+  only, status derives dead-worker failure truth without mutating state, and
+  live phase reporting finally exposes where runtime time is going; the next
+  cut reused deterministic timeline/window material upstream, moved simple
+  live brief narration onto `gpt-5.3-codex-spark` with low reasoning, bumped
+  the brief cache to `v21`, invalidated warmed runtime-snapshot prose that no
+  longer satisfies the current voice validator, and brought source-local proof down to `0.78s`
+  warm wall-clock with about `1.63s` on a tmpdir cold shell-safe render
+- implemented on 2026-04-09 for live-voice recovery after the cache epoch cut:
+  global coverage facts and plan-fed next actions were rewritten into plain
+  source language, shell-safe provider globals recovered without replaying the
+  old stock phrases, and source-local proof showed both `24h` and `48h`
+  provider globals back under the current voice contract
+- implemented on 2026-04-09 for the scope-signal follow-up:
+  low-signal scope visibility, promotion, and compute budgets split into child
+  workstream `B-071` so Compass's verified-scope gating can become one shared
+  cross-surface ladder contract instead of another Compass-only heuristic
+  provider-backed again at `27.29s` wall-clock; the measured long pole is now
+  upstream window-fact preparation (`10.8s`), not model fan-out
+- implemented on 2026-04-09 for scoped-window integrity:
+  Compass now publishes `verified_scoped_workstreams` for each rolling window,
+  keeps quiet scopes such as `B-040` out of the normal selector when they only
+  appear in governance-only churn or broad fanout transactions, and renders an
+  empty scoped Timeline Audit instead of borrowing unrelated global cards when
+  a preserved deep link points at an inactive local window
 - implemented on 2026-04-08 for Compass closeout governance:
   Compass-specific freshness, fail-closed refresh, stale-disclosure, and
   retained-history claims are now closed; the remaining open workstream scope

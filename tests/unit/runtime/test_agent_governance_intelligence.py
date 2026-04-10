@@ -187,7 +187,6 @@ def test_build_governance_summary_includes_component_registry_counts(tmp_path: P
             "commercial_value: 4\n\n"
             "product_impact: 4\n\n"
             "market_value: 4\n\n"
-            "impacted_lanes: both\n\n"
             "impacted_parts: compass\n\n"
             "sizing: M\n\n"
             "complexity: Medium\n\n"
