@@ -38,21 +38,8 @@ For more example prompts, see
 
 ## Prove It In 2 Minutes
 
-From the repo you just installed into, run:
-
-```bash
-./.odylith/bin/odylith start --repo-root .
-```
-
-Then paste this into Codex:
-
-> Use Odylith to define this repo's first governed slice. Pick one path to own, one seam to guard, one component to define, one diagram to draw, and one backlog to open, all tied to the same slice. First show me 5 bullets. Then create the Odylith files. Plain English. Real file paths only. No IDs. No hedging. Only write under `odylith/`.
-
-What you should see within the first turn:
-
-- a narrowed, grounded slice instead of a blind repo scan
-- `odylith/index.html` reflecting the repo's live execution state
-- durable repo-local records under `odylith/` for the chosen slice
+From the repo you just installed into, open `odylith/index.html` and follow the
+guidance in the Cheatsheet drawer.
 
 > [!TIP]
 > **⭐ If Odylith makes your coding agent materially sharper in real repo work,
