@@ -3303,7 +3303,8 @@
         "B-076",
         "B-077",
         "B-078",
-        "B-079"
+        "B-079",
+        "B-082"
       ],
       "workstream_depends_on": [
         "B-062",
@@ -3355,7 +3356,8 @@
           "B-076",
           "B-077",
           "B-078",
-          "B-079"
+          "B-079",
+          "B-082"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3368,7 +3370,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 9,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3449,7 +3451,8 @@
           "B-076",
           "B-077",
           "B-078",
-          "B-079"
+          "B-079",
+          "B-082"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3462,7 +3465,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 9,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3552,7 +3555,8 @@
           "B-076",
           "B-077",
           "B-078",
-          "B-079"
+          "B-079",
+          "B-082"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3565,7 +3569,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 9,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3656,7 +3660,8 @@
           "B-076",
           "B-077",
           "B-078",
-          "B-079"
+          "B-079",
+          "B-082"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3669,7 +3674,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 9,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3759,7 +3764,8 @@
           "B-076",
           "B-077",
           "B-078",
-          "B-079"
+          "B-079",
+          "B-082"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3772,7 +3778,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 9,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3862,7 +3868,8 @@
           "B-076",
           "B-077",
           "B-078",
-          "B-079"
+          "B-079",
+          "B-082"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3875,7 +3882,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 9,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3965,7 +3972,8 @@
           "B-076",
           "B-077",
           "B-078",
-          "B-079"
+          "B-079",
+          "B-082"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3978,7 +3986,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 9,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4066,7 +4074,8 @@
           "B-076",
           "B-077",
           "B-078",
-          "B-079"
+          "B-079",
+          "B-082"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4079,7 +4088,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 9,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4201,6 +4210,111 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-082",
+      "title": "Shared Turn Intake With Hard Consumer Fencing and Dev-Maintainer Odylith Targeting",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-072",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-073"
+      ],
+      "workstream_blocks": [
+        "B-074"
+      ],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-030",
+        "D-031"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-10-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 9,
+        "completed_workstream_count": 7
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-082",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-10T12:15:00Z",
+          "note": "Bind the structured turn-intake and lane-fenced target-resolution child workstream into the active v0.1.11 wave.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-072",
+          "wave_id": "W1",
+          "wave_label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+          "wave_status": "active",
+          "role": "in_band",
+          "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
+        }
+      ]
     }
   ],
   "releases": [
@@ -4228,7 +4342,8 @@
         "B-076",
         "B-077",
         "B-078",
-        "B-079"
+        "B-079",
+        "B-082"
       ],
       "completed_workstreams": [
         "B-061",
@@ -4241,7 +4356,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 8,
+      "active_workstream_count": 9,
       "completed_workstream_count": 7
     },
     {
@@ -4295,7 +4410,8 @@
         "B-076",
         "B-077",
         "B-078",
-        "B-079"
+        "B-079",
+        "B-082"
       ],
       "completed_workstreams": [
         "B-061",
@@ -4308,7 +4424,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 8,
+      "active_workstream_count": 9,
       "completed_workstream_count": 7
     },
     "next": {
@@ -4361,7 +4477,8 @@
       "B-076",
       "B-077",
       "B-078",
-      "B-079"
+      "B-079",
+      "B-082"
     ],
     "completed_workstreams": [
       "B-061",
@@ -4374,7 +4491,7 @@
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 8,
+    "active_workstream_count": 9,
     "completed_workstream_count": 7
   },
   "next_release": {
@@ -4405,7 +4522,7 @@
   "release_summary": {
     "release_count": 2,
     "alias_count": 2,
-    "active_assignment_count": 9
+    "active_assignment_count": 10
   },
   "execution_programs": [
     {
@@ -4417,14 +4534,15 @@
           "wave_id": "W1",
           "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
           "status": "active",
-          "summary": "Stand up the event-sourced execution contract, host-profile envelope, and hard-constraint promotion while carrying the thin program/wave authoring sidecar in band.",
+          "summary": "Stand up the event-sourced execution contract, host-profile envelope, and hard-constraint promotion while carrying the thin program/wave authoring sidecar and structured turn-intake lane in band.",
           "depends_on": [],
           "primary_workstreams": [
             "B-073"
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [
-            "B-079"
+            "B-079",
+            "B-082"
           ],
           "gate_refs": []
         },
@@ -5074,6 +5192,13 @@
       "label": "Atlas Cold Real-Render Daemon Reuse and Sub-Second First-Render Budget",
       "status": "queued",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-10-atlas-cold-real-render-daemon-reuse-and-sub-second-first-render-budget.md"
+    },
+    {
+      "id": "B-082",
+      "type": "workstream",
+      "label": "Shared Turn Intake With Hard Consumer Fencing and Dev-Maintainer Odylith Targeting",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-10-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md"
     },
     {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
@@ -7841,6 +7966,11 @@
     },
     {
       "source": "B-072",
+      "target": "B-082",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-072",
       "target": "diagram:D-002",
       "edge_type": "diagram_linkage"
     },
@@ -7887,6 +8017,11 @@
     {
       "source": "B-073",
       "target": "B-079",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-073",
+      "target": "B-082",
       "edge_type": "depends_on"
     },
     {
@@ -8053,6 +8188,26 @@
       "source": "B-081",
       "target": "diagram:D-030",
       "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-082",
+      "target": "B-074",
+      "edge_type": "blocks"
+    },
+    {
+      "source": "B-082",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-082",
+      "target": "diagram:D-031",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-082",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
     }
   ],
   "coverage": {
@@ -8622,6 +8777,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-082": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -8662,15 +8824,15 @@
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 81,
+    "workstream_count": 82,
     "release_count": 2,
-    "active_release_assignment_count": 9,
+    "active_release_assignment_count": 10,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 195,
-    "edge_count": 443,
+    "node_count": 196,
+    "edge_count": 449,
     "warning_count": 3,
     "warning_item_count": 3
   },
-  "generated_utc": "2026-04-10 15:59:24Z"
+  "generated_utc": "2026-04-10 21:37:27Z"
 }

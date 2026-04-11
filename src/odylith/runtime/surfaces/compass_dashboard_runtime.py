@@ -48,7 +48,7 @@ def _global_brief_provider_allowed(
     window_hours: int,
     refresh_profile: str,
 ) -> bool:
-    if not compass_refresh_contract.prefer_live_provider(refresh_profile):
+    if not compass_refresh_contract.allow_global_provider(refresh_profile):
         return False
     return _global_brief_should_use_provider(
         repo_root=repo_root,

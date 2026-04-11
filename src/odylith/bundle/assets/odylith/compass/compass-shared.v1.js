@@ -212,58 +212,6 @@ initQuickTooltips();
       return Boolean(globalBrief || scopedBrief);
     }
 
-    function legacyDigestLinesForState(payload, state) {
-      const key = state.window === "24h" ? "24h" : "48h";
-      const globalList = Array.isArray(payload.digest && payload.digest[key]) ? payload.digest[key] : [];
-      const scopedMap = payload.digest_scoped && payload.digest_scoped[key] && typeof payload.digest_scoped[key] === "object"
-        ? payload.digest_scoped[key]
-        : {};
-      const scopedList = state.workstream && Array.isArray(scopedMap[state.workstream]) ? scopedMap[state.workstream] : [];
-      if (WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim())) {
-        return scopedList;
-      }
-      return globalList;
-    }
-
-    function normalizeLegacyBulletText(bulletText) {
-      const source = String(bulletText || "").trim();
-      const executiveMatch = source.match(/^(Executive|Product|Business)\s*:\s*(.+)$/i);
-      if (executiveMatch) {
-        return String(executiveMatch[2] || "").trim();
-      }
-      const operatorMatch = source.match(/^(Operator|Technical)\s*:\s*(.+)$/i);
-      if (operatorMatch) {
-        return String(operatorMatch[2] || "").trim();
-      }
-      return source;
-    }
-
-    function legacyDigestToBrief(lines, generatedUtc) {
-      const sourceLines = Array.isArray(lines) ? lines : [];
-      const sections = STANDUP_BRIEF_SECTION_SPECS.map((spec) => {
-        const matchedLine = sourceLines.find((line) => {
-          const parts = splitDigestLine(line);
-          return String(parts && parts.header ? parts.header : "").replace(/:\s*$/, "").trim() === spec.label;
-        }) || `${spec.label}:`;
-        const parts = splitDigestLine(matchedLine);
-        const bulletTexts = splitDigestBodyToBullets(parts.body);
-        return {
-          key: spec.key,
-          label: spec.label,
-          bullets: bulletTexts
-            .map((bullet) => ({ text: normalizeLegacyBulletText(bullet) }))
-            .filter((bullet) => String(bullet && bullet.text ? bullet.text : "").trim()),
-        };
-      });
-      return {
-        status: "ready",
-        source: "legacy",
-        fingerprint: "legacy-history",
-        generated_utc: String(generatedUtc || "").trim(),
-        sections,
-      };
-    }
-
     function standupBriefToDigestLines(brief) {
       if (!brief || typeof brief !== "object" || String(brief.status || "") !== "ready") return [];
       const sections = Array.isArray(brief.sections) ? brief.sections : [];
@@ -294,6 +242,8 @@ initQuickTooltips();
           config_source: String(diagnostics.config_source || "").trim(),
           config_path: String(diagnostics.config_path || "").trim(),
           attempted_utc: String(diagnostics.attempted_utc || "").trim(),
+          provider_failure_code: String(diagnostics.provider_failure_code || "").trim(),
+          provider_failure_detail: String(diagnostics.provider_failure_detail || "").trim(),
           validation_errors: Array.isArray(diagnostics.validation_errors) ? diagnostics.validation_errors : [],
         },
         sections: [],
@@ -330,9 +280,51 @@ initQuickTooltips();
       );
     }
 
+    function cloneStructuredBrief(brief) {
+      return JSON.parse(JSON.stringify(brief && typeof brief === "object" ? brief : {}));
+    }
+
+    function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason) {
+      const cloned = cloneStructuredBrief(globalBrief);
+      cloned.notice = {
+        title: "Showing the global live brief",
+        message: String(message || "").trim(),
+        reason: String(reason || "scoped_brief_showing_global").trim(),
+      };
+      cloned.scope_fallback = {
+        workstream: String(workstreamId || "").trim(),
+        mode: "global_brief",
+      };
+      return cloned;
+    }
+
+    function scopedLiveBriefFallbackMessage(workstreamId, diagnostics) {
+      const scopedWorkstream = String(workstreamId || "This scope").trim() || "This scope";
+      const safeDiagnostics = diagnostics && typeof diagnostics === "object" ? diagnostics : {};
+      const reason = String(safeDiagnostics.reason || "").trim().toLowerCase();
+      if (reason === "provider_deferred") {
+        return `${scopedWorkstream} still needs its own brief. Compass is showing the global live brief for now.`;
+      }
+      if (reason === "rate_limited") {
+        return `${scopedWorkstream} is waiting on narration provider capacity. Compass is showing the global live brief for now.`;
+      }
+      if (reason === "credits_exhausted") {
+        return `${scopedWorkstream} is waiting on narration provider budget. Compass is showing the global live brief for now.`;
+      }
+      if (reason === "timeout") {
+        return `${scopedWorkstream} asked the narration provider for a scoped brief, but the reply took too long. Compass is showing the global live brief while it retries in the background.`;
+      }
+      if (reason === "invalid_batch") {
+        return `${scopedWorkstream} got a scoped provider reply, but the brief was not usable yet. Compass is showing the global live brief while it retries in the background.`;
+      }
+      if (reason === "provider_unavailable" || reason === "transport_error" || reason === "auth_error" || reason === "provider_error") {
+        return `${scopedWorkstream} ran into a narration provider problem. That may be capacity, budget, access, or provider health, so Compass is showing the global live brief for now.`;
+      }
+      return `Compass could not load a scoped live brief for ${scopedWorkstream}, so it is showing the global live brief for now.`;
+    }
+
     function standupBriefForState(payload, state) {
       const key = state.window === "24h" ? "24h" : "48h";
-      const legacyLines = legacyDigestLinesForState(payload, state);
       if (hasStructuredStandupBriefPayload(payload)) {
         const scopedWorkstream = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim())
           ? String(state.workstream || "").trim()
@@ -352,15 +344,36 @@ initQuickTooltips();
         const scopedReadySource = String(scopedReady && scopedReady.source ? scopedReady.source : "").trim();
         const globalReadySource = String(globalReady && globalReady.source ? globalReady.source : "").trim();
         if (hasScopedSelection && scopedReady) return scopedReady;
-        if (hasScopedSelection && scopedBrief) return scopedBrief;
-        if (hasScopedSelection && legacyLines.length) {
-          return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);
+        if (hasScopedSelection && scopedBrief) {
+          if (globalReady) {
+            const diagnostics = scopedBrief.diagnostics && typeof scopedBrief.diagnostics === "object" ? scopedBrief.diagnostics : {};
+            const reason = String(diagnostics.reason || "").trim().toLowerCase() || "scoped_brief_unavailable";
+            const message = scopedLiveBriefFallbackMessage(scopedWorkstream, diagnostics);
+            return scopedFallbackToGlobalBrief(globalReady, scopedWorkstream, message, `scoped_${reason}_showing_global`);
+          }
+          return scopedBrief;
         }
         if (hasScopedSelection) {
           const scopedRow = scopedWorkstreamRow(payload, scopedWorkstream);
           const activity = scopedWindowActivity(scopedRow, key);
           if (scopedRow && activity.commitCount <= 0 && activity.localChangeCount <= 0 && activity.fileTouchCount <= 0) {
+            if (globalReady) {
+              return scopedFallbackToGlobalBrief(
+                globalReady,
+                scopedWorkstream,
+                `${scopedWorkstream} was quiet in this window, so Compass is showing the global live brief instead.`,
+                "scoped_window_quiet_showing_global",
+              );
+            }
             return quietWindowStandupBrief(scopedWorkstream, key);
+          }
+          if (globalReady) {
+            return scopedFallbackToGlobalBrief(
+              globalReady,
+              scopedWorkstream,
+              `Compass does not have a scoped live brief for ${scopedWorkstream} yet, so it is showing the global live brief for now.`,
+              "scoped_brief_missing_showing_global",
+            );
           }
           return unavailableStandupBrief(
             `No scoped standup brief is available for ${scopedWorkstream}.`,
@@ -371,16 +384,10 @@ initQuickTooltips();
         if (globalReady) return globalReady;
         if (scopedReady && (scopedReadySource === "provider" || scopedReadySource === "cache")) return scopedReady;
         if (scopedReady) return scopedReady;
-        if (legacyLines.length) {
-          return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);
-        }
         if (globalBrief) return globalBrief;
         return unavailableStandupBrief("No structured standup brief is available for this view.");
       }
-      if (legacyLines.length) {
-        return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);
-      }
-      return unavailableStandupBrief("No standup brief is available for this view.");
+      return unavailableStandupBrief("No structured standup brief is available for this view.");
     }
 
     function radarWorkstreamHref(workstreamId, { view = "" } = {}) {

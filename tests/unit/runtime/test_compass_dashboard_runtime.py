@@ -134,57 +134,6 @@ def test_verified_scoped_window_ids_require_verified_rows_or_recent_completion()
     assert verified == {"B-064"}
 
 
-def test_scoped_packets_match_for_cross_window_ignores_window_only_fields() -> None:
-    packet_24h = {
-        "window": "24h",
-        "scope": {"mode": "scoped", "idea_id": "B-025"},
-        "summary": {"window_hours": 24, "storyline": {"proof": "Latest proof stayed concrete."}},
-        "facts": [{"id": "F-001", "text": "Latest proof stayed concrete."}],
-    }
-    packet_48h = {
-        "window": "48h",
-        "scope": {"mode": "scoped", "idea_id": "B-025"},
-        "summary": {"window_hours": 48, "storyline": {"proof": "Latest proof stayed concrete."}},
-        "facts": [{"id": "F-001", "text": "Latest proof stayed concrete."}],
-    }
-
-    assert compass_runtime_payload_runtime._scoped_packets_match_for_cross_window(  # noqa: SLF001
-        left=packet_24h,
-        right=packet_48h,
-    )
-
-
-def test_reuse_scoped_brief_for_window_rekeys_fingerprint_without_notice() -> None:
-    packet = {
-        "window": "48h",
-        "scope": {"mode": "scoped", "idea_id": "B-025"},
-        "summary": {"window_hours": 48},
-        "facts": [{"id": "F-001", "text": "Latest proof stayed concrete."}],
-    }
-    brief = {
-        "status": "ready",
-        "source": "provider",
-        "sections": [
-            {
-                "key": "completed",
-                "label": "Completed in this window",
-                "bullets": [{"text": "Latest proof stayed concrete.", "fact_ids": ["F-001"]}],
-            }
-        ],
-    }
-
-    reused = compass_runtime_payload_runtime._reuse_scoped_brief_for_window(  # noqa: SLF001
-        brief=brief,
-        fact_packet=packet,
-        generated_utc="2026-04-08T21:00:00Z",
-    )
-
-    assert reused["status"] == "ready"
-    assert reused["source"] == "provider"
-    assert "notice" not in reused
-    assert reused["fingerprint"] == compass_standup_brief_narrator.standup_brief_fingerprint(fact_packet=packet)
-
-
 def test_compose_global_fact_packet_from_scoped_briefs_uses_scoped_narration_and_coverage() -> None:
     base_packet = {
         "version": "v1",
@@ -245,6 +194,50 @@ def test_inactive_scoped_brief_uses_quiet_window_copy() -> None:
     assert brief["diagnostics"]["reason"] == "scoped_window_inactive"
     assert brief["diagnostics"]["title"] == "Nothing moved in this window"
     assert "B-003 was quiet in the last 24 hours" in brief["diagnostics"]["message"]
+
+
+def test_brief_with_known_failure_state_replaces_provider_deferred(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        compass_runtime_payload_runtime.compass_standup_brief_maintenance,
+        "failure_brief_for_fact_packet",
+        lambda **_kwargs: {
+            "status": "unavailable",
+            "source": "unavailable",
+            "fingerprint": "fp-known-failure",
+            "generated_utc": "2026-04-10T20:00:00Z",
+            "sections": [],
+            "diagnostics": {
+                "reason": "provider_error",
+                "title": "Brief unavailable right now",
+                "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+            },
+            "evidence_lookup": {},
+        },
+    )
+
+    brief = compass_runtime_payload_runtime._brief_with_known_failure_state(  # noqa: SLF001
+        repo_root=Path("/tmp"),
+        window_key="24h",
+        fact_packet={"scope": {"mode": "scoped"}},
+        generated_utc="2026-04-10T20:00:00Z",
+        brief={
+            "status": "unavailable",
+            "source": "unavailable",
+            "fingerprint": "fp-provider-deferred",
+            "generated_utc": "2026-04-10T20:00:00Z",
+            "sections": [],
+            "diagnostics": {
+                "reason": "provider_deferred",
+                "title": "Fresh brief still warming",
+                "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+            },
+            "evidence_lookup": {},
+        },
+        scope_id="B-012",
+    )
+
+    assert brief["diagnostics"]["reason"] == "provider_error"
+    assert "provider failed" in brief["diagnostics"]["message"].lower()
 
 
 def test_prior_runtime_state_rejects_mismatched_brief_schema() -> None:
@@ -825,7 +818,7 @@ def test_generated_only_transaction_detection() -> None:
     )
 
 
-def test_global_brief_provider_is_disabled_for_bounded_refresh() -> None:
+def test_global_brief_provider_is_disabled_in_shell_safe_foreground_even_for_global_windows() -> None:
     assert not runtime._global_brief_provider_allowed(
         repo_root=Path("/tmp/repo"),
         fact_packet={"window": "24h"},
@@ -840,56 +833,12 @@ def test_global_brief_provider_is_disabled_for_bounded_refresh() -> None:
     )
 
 
-def test_global_brief_provider_allowed_uses_cache_for_shell_safe_when_reusable(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setattr(
-        runtime.compass_standup_brief_narrator,
-        "has_reusable_cached_brief",
-        lambda **_kwargs: True,
-    )
-
+def test_global_brief_provider_stays_disabled_for_non_global_windows() -> None:
     assert not runtime._global_brief_provider_allowed(
         repo_root=Path("/tmp/repo"),
-        fact_packet={"window": "24h"},
-        window_hours=24,
+        fact_packet={"window": "12h"},
+        window_hours=12,
         refresh_profile="shell-safe",
-    )
-
-
-def test_global_brief_provider_allowed_disables_provider_for_shell_safe_cache_miss(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setattr(
-        runtime.compass_standup_brief_narrator,
-        "has_reusable_cached_brief",
-        lambda **_kwargs: False,
-    )
-
-    assert not runtime._global_brief_provider_allowed(
-        repo_root=Path("/tmp/repo"),
-        fact_packet={"window": "24h"},
-        window_hours=24,
-        refresh_profile="shell-safe",
-    )
-
-
-def test_global_brief_provider_allowed_stays_disabled_on_shell_safe_policy() -> None:
-    assert not runtime._global_brief_provider_allowed(
-        repo_root=Path("/tmp/repo"),
-        fact_packet={"window": "24h"},
-        window_hours=24,
-        refresh_profile="shell-safe",
-    )
-
-
-def test_scoped_brief_provider_allowed_disables_provider_for_low_rung_scope() -> None:
-    assert not compass_runtime_payload_runtime._scoped_brief_provider_allowed(  # noqa: SLF001
-        refresh_profile="shell-safe",
-        scope_signal={"budget_class": "cache_only"},
-    )
-
-
-def test_scoped_brief_provider_allowed_enables_provider_for_high_rung_scope() -> None:
-    assert compass_runtime_payload_runtime._scoped_brief_provider_allowed(  # noqa: SLF001
-        refresh_profile="shell-safe",
-        scope_signal={"budget_class": "escalated_reasoning"},
     )
 
 

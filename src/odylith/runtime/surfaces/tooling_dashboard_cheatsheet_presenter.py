@@ -272,9 +272,9 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             card_id="watch-transactions",
             category="Refresh",
             title="Keep Compass warm",
-            summary="Run the watcher and keep execution evidence moving while you work.",
-            prompt="Start the Compass watcher every 10 seconds.",
-            command="odylith compass watch-transactions --repo-root . --interval-seconds 10",
+            summary="Run the change-driven watcher so Compass refreshes only when repo truth actually moves.",
+            prompt="Start the Compass watcher and keep it change-driven while you work.",
+            command="odylith compass watch-transactions --repo-root .",
             tags=("watch", "near-real-time", "refresh"),
         ),
         _card(

@@ -301,6 +301,8 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "odylith program next B-021 --repo-root ." in html
     assert "Refresh the full dashboard" in html
     assert "Keep Compass warm" in html
+    assert "Run the change-driven watcher so Compass refreshes only when repo truth actually moves." in html
+    assert "odylith compass watch-transactions --repo-root ." in html
     assert "Add a developer note" in html
     assert "Open Radar for workstream B-025." in html
     assert "Open Registry for the payments component." in html

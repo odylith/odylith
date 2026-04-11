@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import datetime as dt
-import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -14,7 +13,6 @@ from odylith.runtime.governance import workstream_progress as workstream_progres
 from odylith.runtime.surfaces import compass_governance_source_runtime
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_execution_focus_runtime
-from odylith.runtime.surfaces import compass_standup_brief_batch
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
 from odylith.runtime.surfaces import compass_standup_runtime_reuse
 from odylith.runtime.surfaces import compass_window_update_index
@@ -24,19 +22,6 @@ def _host():
     from odylith.runtime.surfaces import compass_dashboard_runtime as host
 
     return host
-
-
-def _scoped_brief_provider_allowed(
-    *,
-    refresh_profile: str,
-    scope_signal: Mapping[str, Any] | None = None,
-) -> bool:
-    del refresh_profile
-    if not isinstance(scope_signal, Mapping):
-        return False
-    return scope_signal_ladder.budget_class_allows_fresh_provider(
-        str(scope_signal.get("budget_class", "")).strip()
-    )
 
 
 def _emit_refresh_progress(
@@ -64,8 +49,6 @@ def _format_brief_source_counts(counts: Mapping[str, int]) -> str:
     ordered = [
         ("provider", "provider"),
         ("cache", "cache"),
-        ("composed", "composed"),
-        ("deterministic", "deterministic"),
         ("unavailable", "inactive"),
         ("unknown", "unknown"),
     ]
@@ -93,6 +76,35 @@ def _reusable_brief_sections_for_fact_packet(
         fact_packet=fact_packet,
         cached_evidence_lookup=brief.get("evidence_lookup", {}),
     )
+
+
+def _brief_with_known_failure_state(
+    *,
+    repo_root: Path,
+    window_key: str,
+    fact_packet: Mapping[str, Any],
+    generated_utc: str,
+    brief: Mapping[str, Any],
+    scope_id: str = "",
+) -> dict[str, Any]:
+    if not isinstance(brief, Mapping):
+        return dict(brief)
+    if str(brief.get("status", "")).strip().lower() != "unavailable":
+        return dict(brief)
+    if str(brief.get("source", "")).strip().lower() != "unavailable":
+        return dict(brief)
+    diagnostics = brief.get("diagnostics") if isinstance(brief.get("diagnostics"), Mapping) else {}
+    reason = str(diagnostics.get("reason", "")).strip().lower()
+    if reason not in {"provider_deferred", "provider_unavailable"}:
+        return dict(brief)
+    known_failure = compass_standup_brief_maintenance.failure_brief_for_fact_packet(
+        repo_root=repo_root,
+        window_key=window_key,
+        fact_packet=fact_packet,
+        generated_utc=generated_utc,
+        scope_id=scope_id,
+    )
+    return dict(known_failure) if isinstance(known_failure, Mapping) else dict(brief)
 
 
 def _is_default_traceability_warning(row: Mapping[str, Any]) -> bool:
@@ -251,74 +263,6 @@ def _inactive_scoped_standup_brief(
         "sections": [],
         "evidence_lookup": {},
     }
-
-
-def _canonicalize_scoped_fact_packet_for_window_reuse(
-    value: Any,
-    *,
-    field_name: str = "",
-) -> Any:
-    if isinstance(value, Mapping):
-        normalized: dict[str, Any] = {}
-        for key, item in value.items():
-            key_token = str(key)
-            if not key_token:
-                continue
-            if key_token == "window":
-                continue
-            if field_name == "summary" and key_token == "window_hours":
-                continue
-            normalized[key_token] = _canonicalize_scoped_fact_packet_for_window_reuse(
-                item,
-                field_name=key_token,
-            )
-        return normalized
-    if isinstance(value, list):
-        return [
-            _canonicalize_scoped_fact_packet_for_window_reuse(item, field_name=field_name)
-            for item in value
-        ]
-    return value
-
-
-def _scoped_packets_match_for_cross_window(
-    *,
-    left: Mapping[str, Any],
-    right: Mapping[str, Any],
-) -> bool:
-    return json.dumps(
-        _canonicalize_scoped_fact_packet_for_window_reuse(left),
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-    ) == json.dumps(
-        _canonicalize_scoped_fact_packet_for_window_reuse(right),
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-    )
-
-
-def _reuse_scoped_brief_for_window(
-    *,
-    brief: Mapping[str, Any],
-    fact_packet: Mapping[str, Any],
-    generated_utc: str,
-) -> dict[str, Any]:
-    host = _host()
-    narrator = host.compass_standup_brief_narrator
-    raw_sections = brief.get("sections")
-    sections = [dict(item) for item in raw_sections if isinstance(item, Mapping)] if isinstance(raw_sections, list) else []
-    source = str(brief.get("source", "")).strip().lower()
-    if source not in {"provider", "cache"}:
-        source = "cache"
-    return narrator._ready_brief(  # noqa: SLF001
-        source=source,
-        fingerprint=narrator.standup_brief_fingerprint(fact_packet=fact_packet),
-        generated_utc=generated_utc,
-        sections=sections,
-        evidence_lookup=narrator._brief_evidence_lookup(fact_packet=fact_packet),  # noqa: SLF001
-    )
 
 
 def _brief_section_bullets(*, brief: Mapping[str, Any], section_key: str) -> list[str]:
@@ -584,7 +528,6 @@ def _build_runtime_payload(
     _build_risk_posture_summary = host._build_risk_posture_summary
     _scope_risk_rows = host._scope_risk_rows
     _build_global_standup_fact_packet = host._build_global_standup_fact_packet
-    _global_brief_provider_allowed = host._global_brief_provider_allowed
     _build_scoped_standup_fact_packet = host._build_scoped_standup_fact_packet
     _as_repo_path = host._as_repo_path
     _COMPASS_TIMEZONE = host._COMPASS_TIMEZONE
@@ -1222,19 +1165,6 @@ def _build_runtime_payload(
     prior_runtime_state = compass_standup_runtime_reuse.prior_runtime_state(
         payload=_current_runtime_payload(repo_root),
     )
-    reasoning_provider = None
-
-    def _ensure_reasoning_provider() -> Any | None:
-        nonlocal reasoning_provider
-        if reasoning_provider is None:
-            reasoning_provider = odylith_reasoning.provider_from_config(
-                reasoning_config,
-                repo_root=repo_root,
-                require_auto_mode=False,
-                allow_implicit_local_provider=True,
-            )
-        return reasoning_provider
-
     self_host = _self_host_snapshot(repo_root=repo_root, refresh_profile=refresh_profile)
     self_host_risks = _self_host_risk_rows(snapshot=self_host, local_date=now.date().isoformat())
     _emit_refresh_progress(
@@ -1248,8 +1178,6 @@ def _build_runtime_payload(
 
     def _summarize_window(
         hours: int,
-        *,
-        reuse_scoped_from: Mapping[str, tuple[Mapping[str, Any], Mapping[str, Any]]] | None = None,
     ) -> tuple[dict[str, int], dict[str, Any], dict[str, dict[str, Any]], dict[str, dict[str, Any]], dict[str, Any]]:
         window_events = _window_events(hours)
         window_transactions = _window_transactions(hours)
@@ -1540,32 +1468,26 @@ def _build_runtime_payload(
                 sections=reusable_global_sections,
             )
         else:
-            global_allow_provider = _global_brief_provider_allowed(
-                repo_root=repo_root,
-                fact_packet=global_fact_packet,
-                window_hours=hours,
-                refresh_profile=refresh_profile,
-            )
-            global_provider = _ensure_reasoning_provider() if global_allow_provider else None
             standup_global = compass_standup_brief_narrator.build_standup_brief(
                 repo_root=repo_root,
                 fact_packet=global_fact_packet,
                 generated_utc=generated_utc,
                 config=reasoning_config,
-                provider=global_provider,
-                allow_provider=global_allow_provider,
-                prefer_provider=compass_refresh_contract.prefer_live_provider(refresh_profile),
-                allow_cache_recovery=compass_refresh_contract.allow_stale_cache_recovery(refresh_profile),
-                allow_legacy_cache_recovery=False,
-                allow_deterministic_fallback=compass_refresh_contract.allow_deterministic_fallback(refresh_profile),
+                provider=None,
+                allow_provider=False,
+                prefer_provider=False,
+            )
+            standup_global = _brief_with_known_failure_state(
+                repo_root=repo_root,
+                window_key=window_key,
+                fact_packet=global_fact_packet,
+                generated_utc=generated_utc,
+                brief=standup_global,
             )
         standup_scoped: dict[str, dict[str, Any]] = {}
         scoped_packet_index: dict[str, dict[str, Any]] = {}
-        scoped_packets: list[tuple[str, dict[str, Any]]] = []
-        provider_scoped_packets: list[tuple[str, dict[str, Any]]] = []
-        provider_scoped_ids: set[str] = set()
-        # Scoped brief generation always reuses exact cache first, then falls
-        # back to deterministic local coverage on the cheap refresh path.
+        # Scoped brief generation reuses exact same-packet narration first, then
+        # returns explicit unavailability when no live or exact-replay brief exists.
         for ws in all_ws_payloads:
             ws_id = str(ws.get("idea_id", "")).strip()
             if not ws_id:
@@ -1637,62 +1559,23 @@ def _build_runtime_payload(
                     sections=reusable_scoped_sections,
                 )
                 continue
-            prior_entry = reuse_scoped_from.get(ws_id) if isinstance(reuse_scoped_from, Mapping) else None
-            if isinstance(prior_entry, tuple) and len(prior_entry) == 2:
-                prior_packet, prior_brief = prior_entry
-                if (
-                    isinstance(prior_packet, Mapping)
-                    and isinstance(prior_brief, Mapping)
-                    and str(prior_brief.get("status", "")).strip().lower() == "ready"
-                    and _scoped_packets_match_for_cross_window(left=prior_packet, right=scoped_fact_packet)
-                ):
-                    standup_scoped[ws_id] = _reuse_scoped_brief_for_window(
-                        brief=prior_brief,
-                        fact_packet=scoped_fact_packet,
-                        generated_utc=generated_utc,
-                    )
-                    continue
-            scoped_packets.append((ws_id, scoped_fact_packet))
-            if _scoped_brief_provider_allowed(
-                refresh_profile=refresh_profile,
-                scope_signal=ws.get("scope_signal", {}),
-            ):
-                provider_scoped_packets.append((ws_id, scoped_fact_packet))
-                provider_scoped_ids.add(ws_id)
-
-        def _build_scoped_brief(entry: tuple[str, dict[str, Any]]) -> tuple[str, dict[str, Any]]:
-            ws_id, scoped_fact_packet = entry
-            allow_provider = ws_id in provider_scoped_ids
-            brief = compass_standup_brief_narrator.build_standup_brief(
+            standup_scoped[ws_id] = compass_standup_brief_narrator.build_standup_brief(
                 repo_root=repo_root,
                 fact_packet=scoped_fact_packet,
                 generated_utc=generated_utc,
                 config=reasoning_config,
-                provider=reasoning_provider if allow_provider else None,
-                allow_provider=allow_provider,
-                prefer_provider=compass_refresh_contract.prefer_live_provider(refresh_profile),
-                allow_cache_recovery=compass_refresh_contract.allow_stale_cache_recovery(refresh_profile),
-                allow_legacy_cache_recovery=False,
-                allow_deterministic_fallback=compass_refresh_contract.allow_deterministic_fallback(refresh_profile),
-                allow_composed_fallback=False,
+                provider=None,
+                allow_provider=False,
+                prefer_provider=False,
             )
-            return ws_id, brief
-        if provider_scoped_packets:
-            scoped_provider = _ensure_reasoning_provider()
-            batched_results = compass_standup_brief_batch.build_scoped_briefs(
+            standup_scoped[ws_id] = _brief_with_known_failure_state(
                 repo_root=repo_root,
-                fact_packets_by_scope={ws_id: packet for ws_id, packet in provider_scoped_packets},
+                window_key=window_key,
+                fact_packet=scoped_fact_packet,
                 generated_utc=generated_utc,
-                config=reasoning_config,
-                provider=scoped_provider,
+                brief=standup_scoped[ws_id],
+                scope_id=ws_id,
             )
-            standup_scoped.update(batched_results)
-
-        for ws_id, scoped_fact_packet in scoped_packets:
-            if ws_id in standup_scoped:
-                continue
-            built_ws_id, brief = _build_scoped_brief((ws_id, scoped_fact_packet))
-            standup_scoped[built_ws_id] = brief
         _emit_refresh_progress(
             progress_callback,
             stage="standup_briefs_built",
@@ -1705,14 +1588,7 @@ def _build_runtime_payload(
         return window_kpis, standup_global, standup_scoped, scoped_packet_index, standup_runtime_window, global_fact_packet
 
     kpi_24h, standup_brief_24h, standup_brief_scoped_24h, scoped_packets_24h, standup_runtime_24h, global_packet_24h = _summarize_window(24)
-    kpi_48h, standup_brief_48h, standup_brief_scoped_48h, scoped_packets_48h, standup_runtime_48h, global_packet_48h = _summarize_window(
-        48,
-        reuse_scoped_from={
-            ws_id: (packet, standup_brief_scoped_24h[ws_id])
-            for ws_id, packet in scoped_packets_24h.items()
-            if ws_id in standup_brief_scoped_24h
-        },
-    )
+    kpi_48h, standup_brief_48h, standup_brief_scoped_48h, scoped_packets_48h, standup_runtime_48h, global_packet_48h = _summarize_window(48)
     digest_24h = compass_standup_brief_narrator.brief_to_digest_lines(standup_brief_24h)
     digest_48h = compass_standup_brief_narrator.brief_to_digest_lines(standup_brief_48h)
     digest_scoped_24h = {

@@ -375,7 +375,7 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
         writes = _clipboard_writes(page)
         assert writes
-        assert writes[-1] == "odylith compass watch-transactions --repo-root . --interval-seconds 10"
+        assert writes[-1] == "odylith compass watch-transactions --repo-root ."
 
         search.fill("ship target")
         page.locator(".cheatsheet-card-title", has_text="Release planning: pick the ship target").wait_for(timeout=15000)

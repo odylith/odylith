@@ -1,4 +1,966 @@
 {
-  "components": [],
-  "version": "v1"
+  "version": "v1",
+  "components": [
+    {
+      "component_id": "odylith",
+      "name": "Odylith",
+      "kind": "platform",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "odylith-platform",
+        "installable-odylith",
+        "odylith-product"
+      ],
+      "path_prefixes": [
+        "AGENTS.md",
+        "README.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        "odylith/README.md",
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md"
+      ],
+  "workstreams": [
+    "B-001",
+    "B-004",
+    "B-005",
+    "B-031",
+    "B-058",
+    "B-059",
+    "B-062",
+    "B-063",
+    "B-072"
+  ],
+      "diagrams": [
+        "D-001",
+        "D-002",
+        "D-003",
+        "D-004",
+        "D-005",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-025",
+        "D-021",
+        "D-022",
+        "D-026",
+        "D-030",
+        "D-031"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Installable local governance and execution agent and a platform that packages context grounding, governance surfaces, delivery intelligence, subagent control, and operator tooling behind one CLI.",
+      "why_tracked": "Defines the top-level product boundary so Odylith can self-govern and consumers can treat it as an installed product rather than a copied implementation detail.",
+      "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "subcomponents": [
+        "dashboard",
+        "radar",
+        "atlas",
+        "compass",
+        "briefs-voice-contract",
+        "registry",
+        "casebook",
+        "release",
+        "security",
+        "odylith-context-engine",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts",
+        "benchmark",
+        "odylith-chatter",
+        "delivery-intelligence",
+        "proof-state",
+        "execution-governance",
+        "subagent-router",
+        "subagent-orchestrator",
+        "tribunal",
+        "remediator"
+      ]
+    },
+    {
+      "component_id": "dashboard",
+      "name": "Dashboard",
+      "kind": "composite",
+      "category": "governance_surface",
+      "qualification": "curated",
+      "aliases": [
+        "tooling-dashboard",
+        "shell-host"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+        "src/odylith/runtime/surfaces/dashboard_surface_bundle.py",
+        "odylith/surfaces/README.md"
+      ],
+      "workstreams": [
+        "B-001",
+        "B-058"
+      ],
+      "diagrams": [
+        "D-001",
+        "D-004",
+        "D-005",
+        "D-006"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Shell host for the Odylith evidence and governance surfaces.",
+      "why_tracked": "Controls the top-level surface boundary, navigation model, and installed product shell contract.",
+      "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "shell_host"
+    },
+    {
+      "component_id": "radar",
+      "name": "Radar",
+      "kind": "composite",
+      "category": "governance_surface",
+      "qualification": "curated",
+      "aliases": [
+        "backlog-radar"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "odylith/radar/source"
+      ],
+  "workstreams": [
+    "B-001",
+    "B-059",
+    "B-063"
+  ],
+      "diagrams": [
+        "D-001",
+        "D-004",
+        "D-005",
+        "D-006"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Workstream backlog and queue-governance surface.",
+      "why_tracked": "Owns Odylith's ranked workstream truth and keeps feature work linked to plans and component changes.",
+      "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "evidence_surface"
+    },
+    {
+      "component_id": "atlas",
+      "name": "Atlas",
+      "kind": "composite",
+      "category": "governance_surface",
+      "qualification": "curated",
+      "aliases": [
+        "diagram-atlas"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
+        "odylith/atlas/source/catalog/diagrams.v1.json"
+      ],
+  "workstreams": [
+    "B-001",
+    "B-059",
+    "B-063"
+  ],
+      "diagrams": [
+        "D-001",
+        "D-002",
+        "D-003",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Diagram catalog and architecture-trace surface for Odylith.",
+      "why_tracked": "Keeps product topology and change-watch truth close to the runtime and governance engine that consume it.",
+      "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "evidence_surface"
+    },
+    {
+      "component_id": "compass",
+      "name": "Compass",
+      "kind": "composite",
+      "category": "governance_surface",
+      "qualification": "curated",
+      "aliases": [
+        "timeline-audit"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/common/log_compass_timeline_event.py",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+        "odylith/compass/runtime"
+      ],
+      "workstreams": [
+        "B-001",
+        "B-025",
+        "B-059",
+        "B-071"
+      ],
+      "diagrams": [
+        "D-001",
+        "D-004",
+        "D-005",
+        "D-006",
+        "D-009"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Execution and decision timeline surface for Odylith runtime activity.",
+      "why_tracked": "Provides the durable narrative trail that ties workstreams, validations, and product changes together.",
+      "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "evidence_surface"
+    },
+    {
+      "component_id": "briefs-voice-contract",
+      "name": "Briefs Voice Contract",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "compass-brief-contract",
+        "brief-voice"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+        "src/odylith/runtime/surfaces/compass_standup_brief_voice_validation.py",
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "odylith/skills/compass-executive/SKILL.md"
+      ],
+      "workstreams": [
+        "B-025",
+        "B-071"
+      ],
+      "diagrams": [
+        "D-032"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Governed narration contract that keeps Compass briefs human, factual, friendly, and fail-closed.",
+      "why_tracked": "Prevents brief-quality drift by keeping prompt, validator, cache policy, skills, and guidance under one product-owned contract.",
+      "spec_ref": "odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    },
+    {
+      "component_id": "registry",
+      "name": "Registry",
+      "kind": "composite",
+      "category": "governance_surface",
+      "qualification": "curated",
+      "aliases": [
+        "component-registry"
+      ],
+      "path_prefixes": [
+        "odylith/registry/source/component_registry.v1.json",
+        "src/odylith/runtime/governance/component_registry_intelligence.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+      ],
+      "workstreams": [
+        "B-001"
+      ],
+      "diagrams": [
+        "D-001",
+        "D-004",
+        "D-005",
+        "D-013",
+        "D-018"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Component inventory, spec snapshot, and evidence-correlation surface.",
+      "why_tracked": "Defines the authoritative component inventory for the Odylith product repo and its installed product contract.",
+      "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "evidence_surface"
+    },
+    {
+      "component_id": "casebook",
+      "name": "Casebook",
+      "kind": "composite",
+      "category": "governance_surface",
+      "qualification": "curated",
+      "aliases": [
+        "bug-casebook"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+        "odylith/casebook/bugs/INDEX.md"
+      ],
+      "workstreams": [
+        "B-001"
+      ],
+      "diagrams": [
+        "D-001",
+        "D-004",
+        "D-006"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Bug intelligence and learning surface for Odylith product defects and regressions.",
+      "why_tracked": "Preserves local product failure history so Odylith can improve its own install, governance, and execution behavior.",
+      "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "evidence_surface"
+    },
+    {
+      "component_id": "release",
+      "name": "Release",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "maintainer-release-lane",
+        "canonical-publish-lane"
+      ],
+      "path_prefixes": [
+        ".github/workflows/release.yml",
+        "Makefile",
+        "bin/release-version-preview",
+        "bin/release-version-show",
+        "bin/release-session-show",
+        "bin/release-session-clear",
+        "bin/release-preflight",
+        "bin/release-dispatch",
+        "bin/dogfood-activate",
+    "bin/consumer-rehearsal",
+    "bin/ga-gate",
+    "bin/_odylith.sh",
+    "src/odylith/runtime/governance/release_planning_authoring.py",
+    "src/odylith/runtime/governance/release_planning_contract.py",
+    "src/odylith/runtime/governance/release_planning_view_model.py",
+    "src/odylith/runtime/governance/validate_self_host_posture.py",
+    "odylith/radar/source/releases",
+    "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+    "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md"
+  ],
+  "workstreams": [
+    "B-005",
+    "B-063"
+  ],
+      "diagrams": [
+        "D-022"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Canonical maintainer release lane that resolves one sticky semver session, binds it to a specific commit, publishes signed release assets plus managed runtime bundles, validates dogfood plus consumer rehearsal flow, and owns the reusable GTM-and-release readiness overlay for proof-backed launch assets.",
+      "why_tracked": "Makes Odylith's publication path a first-class governed subsystem instead of an undocumented maintainer ritual spread across ad hoc commands.",
+      "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "cli_bootstrap"
+    },
+    {
+      "component_id": "security",
+      "name": "Security",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "runtime-trust-boundary",
+        "supply-chain-hardening"
+      ],
+      "path_prefixes": [
+        "src/odylith/install/runtime.py",
+        "src/odylith/install/runtime_integrity.py",
+        "src/odylith/install/release_assets.py",
+        ".github/workflows/release.yml",
+        ".github/workflows/release-candidate.yml",
+        ".github/workflows/test.yml",
+        "odylith/SECURITY_POSTURE.md",
+        "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
+        "odylith/skills/security-hardening/SKILL.md"
+      ],
+      "workstreams": [
+        "B-033",
+        "B-040"
+      ],
+      "diagrams": [],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Cross-cutting runtime-trust, release-provenance, workflow-supply-chain, and process-lifetime boundary for Odylith's install and execution contract.",
+      "why_tracked": "Keeps Odylith's security posture explicit, governed, and auditable instead of spreading the trust model across ad hoc code comments and release notes.",
+      "spec_ref": "odylith/registry/source/components/security/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "cli_bootstrap"
+    },
+    {
+      "component_id": "odylith-context-engine",
+      "name": "Odylith Context Engine",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "context-engine",
+        "memory-retrieval"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/context_engine",
+        "odylith/runtime/source"
+      ],
+      "workstreams": [
+        "B-001",
+    "B-008",
+    "B-009",
+    "B-010",
+    "B-058",
+    "B-059",
+    "B-063"
+  ],
+      "diagrams": [
+        "D-002",
+        "D-004",
+        "D-005",
+        "D-006",
+        "D-009",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Local deterministic grounding, projection-compilation, and packetization runtime that orchestrates Odylith's memory substrate.",
+      "why_tracked": "Supplies the grounding packets and coordinates the governed memory substrate that make Odylith more than a static surface bundle.",
+      "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "subcomponents": [
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "odylith-memory-backend",
+      "name": "Odylith Memory Backend",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "memory-backend",
+        "lance-tantivy-backend",
+        "judgment-memory"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/memory/odylith_memory_backend.py",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md"
+      ],
+      "workstreams": [
+        "B-010",
+        "B-058",
+        "B-059"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Local-first LanceDB plus Tantivy retrieval backend and durable judgment-memory runtime for the Odylith Context Engine.",
+      "why_tracked": "Gives Odylith's local retrieval and durable judgment memory an explicit governed boundary apart from sibling projection, remote-retrieval, and packet-contract components.",
+      "spec_ref": "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "odylith-projection-bundle",
+      "name": "Odylith Projection Bundle",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "projection-bundle",
+        "compiler-bundle",
+        "documents-and-edges-bundle"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/memory/odylith_projection_bundle.py"
+      ],
+      "workstreams": [
+        "B-058",
+        "B-059"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Compiler-owned JSONL read model that writes the projection manifest plus document and edge streams shared across memory consumers.",
+      "why_tracked": "Makes the first compiled memory read model explicit so bundle-contract drift can be tracked independently from the broader context engine and the local backend.",
+      "spec_ref": "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "odylith-projection-snapshot",
+      "name": "Odylith Projection Snapshot",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "projection-snapshot",
+        "compiler-snapshot",
+        "fallback-read-model"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py"
+      ],
+      "workstreams": [
+        "B-058",
+        "B-059"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Compiler-owned JSON snapshot fallback read model with full tables and projection-state metadata.",
+      "why_tracked": "Defines the deterministic fallback memory contract when fast local retrieval is unavailable, stale, or intentionally bypassed.",
+      "spec_ref": "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "odylith-remote-retrieval",
+      "name": "Odylith Remote Retrieval",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "remote-retrieval",
+        "vespa-sync",
+        "vespa-augment"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/memory/odylith_remote_retrieval.py"
+      ],
+      "workstreams": [
+        "B-021",
+        "B-058",
+        "B-059"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Optional Vespa-backed remote retrieval and sync contract that can augment or replace local lookup when explicitly configured.",
+      "why_tracked": "Keeps networked retrieval opt-in, fail-closed, and auditable instead of burying hosted memory behavior inside the local backend.",
+      "spec_ref": "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "odylith-memory-contracts",
+      "name": "Odylith Memory Contracts",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "memory-contracts",
+        "packet-memory-contracts",
+        "evidence-pack-contracts"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/memory/tooling_memory_contracts.py"
+      ],
+      "workstreams": [
+        "B-058",
+        "B-059"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-020",
+        "D-025"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Neutral packet and evidence-pack compaction contract that sanitizes provenance, execution-profile tokens, and memory-derived packet fields.",
+      "why_tracked": "Makes the memory-facing packet contract explicit and benchmark-safe instead of hiding redaction, allowlisting, and compaction policy inside one helper module.",
+      "spec_ref": "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "memory_retrieval"
+    },
+    {
+      "component_id": "benchmark",
+      "name": "Benchmark",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "benchmark-proof",
+        "codex-benchmark",
+        "evaluation-proof"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+        "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "docs/benchmarks",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md"
+      ],
+      "workstreams": [
+        "B-009",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022"
+      ],
+      "diagrams": [
+        "D-024"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Local benchmark proof subsystem that runs the Codex corpus, publishes a conservative multi-profile report, and regenerates the maintained README graph set from that same report.",
+      "why_tracked": "Makes Odylith's measured quality, speed, and token-efficiency claims auditable as a first-class governed subsystem instead of a loose mix of scripts, reports, and README edits.",
+      "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    },
+    {
+      "component_id": "odylith-chatter",
+      "name": "Odylith Chatter",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "commentary-contract",
+        "narration-policy",
+        "closeout-assist"
+      ],
+      "path_prefixes": [
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+        "odylith/README.md",
+        "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
+        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+        "odylith/skills/delivery-governance-surface-ops/SKILL.md",
+        "odylith/skills/odylith-context-engine-operations/SKILL.md",
+        "odylith/skills/session-context/SKILL.md",
+        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/subagent-router/SKILL.md",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+        "docs/benchmarks/README.md",
+        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+        "docs/benchmarks/REVIEWER_GUIDE.md",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator_runtime_signals.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+        "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py"
+      ],
+      "workstreams": [
+        "B-031"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-018",
+        "D-020"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Cross-lane narration contract that keeps Odylith control-plane chatter implicit during active work and limits Odylith-by-name branding to one optional evidence-backed end-of-work assist line.",
+      "why_tracked": "Makes user-visible Odylith narration a governed subsystem so AGENTS guidance, skills, install assets, runtime explanation templates, and benchmark-facing artifacts do not drift into noisy or marketing-style chatter.",
+      "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "agent_execution"
+    },
+    {
+      "component_id": "subagent-orchestrator",
+      "name": "Subagent Orchestrator",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "orchestrator"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "odylith/skills/subagent-orchestrator/SKILL.md"
+      ],
+      "workstreams": [
+        "B-001",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-018",
+        "D-020",
+        "D-014",
+        "D-015",
+        "D-016",
+        "D-017"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Prompt-level planning and bounded fan-out engine for Codex tasks.",
+      "why_tracked": "Owns the product decision about when a prompt stays local, becomes one bounded leaf, or decomposes into multiple leaves.",
+      "spec_ref": "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "agent_execution"
+    },
+    {
+      "component_id": "subagent-router",
+      "name": "Subagent Router",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "router"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "odylith/skills/subagent-router/SKILL.md"
+      ],
+      "workstreams": [
+        "B-001",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-018",
+        "D-020",
+        "D-012",
+        "D-013"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Bounded leaf-routing engine that selects local vs delegated execution and the requested model plus reasoning posture.",
+      "why_tracked": "Owns the explicit routed execution contract that downstream host adapters and operators rely on.",
+      "spec_ref": "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "agent_execution"
+    },
+    {
+      "component_id": "execution-governance",
+      "name": "Execution Governance",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "execution-governance-engine",
+        "admissibility-runtime"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/execution_engine"
+      ],
+      "workstreams": [
+        "B-072"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-030",
+        "D-031"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Constraint-aware execution runtime that materializes task contracts, admissibility decisions, frontiers, closure, receipts, contradiction records, and host-aware execution hints before Odylith acts.",
+      "why_tracked": "Owns the boundary that turns grounding into governed next-action control instead of soft prompt advice.",
+      "spec_ref": "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "agent_execution"
+    },
+    {
+      "component_id": "delivery-intelligence",
+      "name": "Delivery Intelligence",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "delivery-intelligence-engine",
+        "delivery-snapshot"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/delivery/delivery_intelligence_narrator.py",
+        "odylith/runtime/delivery_intelligence.v4.json"
+      ],
+      "workstreams": [
+        "B-047",
+        "B-061",
+        "B-062",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-005",
+        "D-009",
+        "D-026"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Scope-synthesis engine that turns governed repo truth, runtime evidence, Tribunal results, and proof-state signals into one delivery snapshot consumed by sync, shell, packets, and narration.",
+      "why_tracked": "Provides the shared intelligence boundary that keeps operator readouts and downstream runtime consumers from rebuilding inconsistent scope summaries.",
+      "spec_ref": "odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    },
+    {
+      "component_id": "tribunal",
+      "name": "Tribunal",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "diagnosis-engine"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/reasoning/tribunal_engine.py",
+        "odylith/runtime/odylith-tribunal-and-remediation-design.md"
+      ],
+      "workstreams": [
+        "B-001",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-003",
+        "D-018",
+        "D-020",
+        "D-007",
+        "D-008",
+        "D-010",
+        "D-011"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Structured diagnosis engine that turns grounded dossiers into explicit leading and rival explanations, risks, and next checks.",
+      "why_tracked": "Provides the explanation contract behind Odylith's approval-gated operational intelligence.",
+      "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    },
+    {
+      "component_id": "proof-state",
+      "name": "Proof State",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "live-proof-control",
+        "blocker-frontier"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/governance/proof_state",
+        ".odylith/runtime/odylith-proof-surfaces.v1.json"
+      ],
+      "workstreams": [
+        "B-062",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-026"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Split-authority live-proof control plane that keeps blocker identity, frontier movement, falsification memory, and claim tier coherent across governed truth and runtime surfaces.",
+      "why_tracked": "Turns proof discipline into a shared product contract so repeated live blocker fingerprints stay pinned instead of drifting behind adjacent progress.",
+      "spec_ref": "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    },
+    {
+      "component_id": "remediator",
+      "name": "Remediator",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "correction-packet"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/reasoning/remediator.py",
+        "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
+      ],
+      "workstreams": [
+        "B-001",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-003",
+        "D-008",
+        "D-011"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Approval-gated remediation packet compiler that turns diagnosis into bounded execution and rollback guidance.",
+      "why_tracked": "Closes the loop from diagnosis to safe next action without weakening approval or rollback discipline.",
+      "spec_ref": "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    }
+  ]
 }

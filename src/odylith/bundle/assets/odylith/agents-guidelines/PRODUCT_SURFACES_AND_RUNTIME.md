@@ -5,20 +5,42 @@
 - Use `odylith sync`, `odylith context-engine`, `odylith benchmark`, `odylith compass ...`, and `odylith atlas ...` as the public workflow.
 - Do not default back to removed local wrapper modules when the CLI already owns the surface.
 
-## Installed Consumer Lane
-- `./.odylith/bin/odylith` runs Odylith on Odylith's managed runtime.
-- Consumer repo code still validates on the consumer repo's own toolchain.
-- The shipped bundle covers the installed consumer contract only.
-
-## Coding Standards
-- Follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the canonical Odylith coding standards, including file-size discipline, refactor-first posture, documentation, reuse, robustness, and focused validation expectations.
+## Lane Matrix
+- Consumer lane:
+  - `./.odylith/bin/odylith` runs Odylith on Odylith's managed runtime
+  - consumer repo code still validates on the consumer repo's own toolchain
+  - `source-local` is unsupported
+- Product-repo maintainer mode:
+  - pinned dogfood posture:
+    - default self-host posture
+    - proves the shipped pinned runtime
+    - not the lane for executing unreleased live `src/odylith/*` changes
+  - detached `source-local` posture:
+    - explicit maintainer-only override
+    - allowed to execute live unreleased `src/odylith/*` changes
+    - intentionally release-ineligible
+  - dashboard header freeze:
+    - the dashboard shell header is a non-negotiable frozen contract in both
+      maintainer postures
+    - do not add, remove, rename, reorder, restyle, repurpose, or otherwise
+      tamper with header labels, text, buttons, controls, badges, tabs,
+      version readouts, or any other UI artifact there
+    - keep onboarding, release-note, maintainer-note, and adjacent shell UX
+      affordances out of the header
+  - branch safety posture:
+    - the Git `main` branch is read-only for authoring in this maintainer lane
+    - never work directly on `main`; this rule is non-negotiable
+    - if the current branch is `main`, create and switch to a new branch before any code or tracked-file edit
+    - if work is already on a non-`main` branch, keep using that branch
+  - source-file discipline posture:
+    - follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the canonical Odylith coding standards, including file-size discipline, refactor-first posture, documentation, reuse, robustness, and focused validation expectations
 
 ## Runtime, Write, And Validation Boundaries
 - Runtime boundary: the invoked Odylith executable decides which interpreter runs Odylith itself.
 - Write boundary: interpreter choice does not decide which repo files the agent may edit.
 - Validation boundary: the target repo's own toolchain proves target-repo application behavior; Odylith CLI proves Odylith-owned runtime, governance, and surface contracts.
 - Do not collapse those three boundaries into one generic "which Python am I using" question.
-- In consumer repos, diagnosing an Odylith product issue does not authorize local writes under `odylith/` or `.odylith/`; hand off upstream evidence unless the operator explicitly authorizes mutation.
+- In consumer repos, diagnosing an Odylith product issue does not authorize local writes under `odylith/` or `.odylith/`; hand off maintainer-ready evidence unless the operator explicitly authorizes mutation.
 
 ## Surface Ownership And Generated UI Contract
 - Odylith governance surfaces are product-owned and should be refreshed through the CLI, not hand-run local renderer modules.
@@ -44,18 +66,20 @@
 ## Refresh And Runtime Posture
 - Odylith refresh defaults to `on-demand`, not a mandatory background daemon and not part of the normal hot path for every local coding loop.
 - In consumer repos, the shell may show passive runtime-freshness warnings before commit time by reading existing local runtime state only; that notice must never start sync, never start background work, and never silently rewrite tracked `odylith/` truth.
-- In consumer repos, autonomous Odylith fixes must not run `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, or `odylith dashboard refresh`; those mutate `odylith/` or `.odylith/` and belong to operator-authorized recovery flows.
+- In consumer repos, autonomous Odylith fixes must not run `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, or `odylith dashboard refresh`; those mutate `odylith/` or `.odylith/` and belong to operator- or maintainer-authorized recovery flows.
+- In the Odylith product repo, keep the shell frozen for benchmark and proof posture: no passive live-refresh probe, no hidden dashboard heating, and no benchmark-lane-only convenience behavior.
 - Plain `odylith sync --repo-root .` is the fast selective upkeep path.
-- Use `odylith dashboard refresh --repo-root .` for the low-friction shell-facing refresh path, `odylith sync --repo-root . --force --impact-mode full` for a full write-mode refresh, `odylith sync --repo-root . --check-only` for a strict non-mutating gate, and `odylith compass watch-transactions` only when an explicitly continuous local loop is useful.
+- Use `--odylith-mode refresh` for a full refresh, `--odylith-mode check` for a strict non-mutating gate, and `odylith compass watch-transactions` only when an explicitly continuous local loop is useful.
 - Default local reasoning should auto-select the active Codex or Claude Code host when one is available; do not require separate endpoint keys or a hardcoded host-model override for the normal local path.
 - Persist repeated local reasoning-provider choices in gitignored `.odylith/reasoning.config.v1.json`; environment variables remain per-process overrides on top of that local config.
 - Treat Tribunal provider adapters as bounded tooling, not as ambient reuse of the current interactive desktop chat session.
 - `odylith sync` and dashboard refresh must stay deterministic when the persisted Tribunal reasoning artifact is missing; do not block shell or delivery-intelligence refresh on opportunistic provider calls.
 - When explicit Tribunal provider enrichment times out or loses transport during a run, disable provider enrichment for the remaining cases in that run and keep the queue deterministic rather than repeating the same stall case by case.
+- In the product repo, pinned dogfood stays the default operator posture even when maintainers are editing source; switch to detached `source-local` only when the task actually needs live-source execution rather than shipped-runtime proof.
 
 ## Operator-Intelligence Split
 - Odylith owns signal intake, posture, queue ranking, approval, and clearance.
-- Tribunal owns deep reasoning and editorial engineering briefs.
+- Tribunal owns deep reasoning and editorial maintainer briefs.
 - Remediator owns bounded packet compilation plus execution/delegation metadata.
 - `reasoning_state` is a reasoning-depth/status signal; `packet_mode` is an execution-lane signal.
 - `proof_routes` are the only deep-linkable proof contract. `evidence_refs` remain contextual evidence and must not become proof chips.
@@ -63,7 +87,7 @@
 
 ## Runtime Layers And Artifacts
 - Odylith is the observer/control-plane surface: it owns signal intake, cheap correlation, queue ranking, approval state, clearance state, and the final operator-facing shell/CLI surface.
-- Tribunal is the reasoning engine beneath Odylith: it turns ranked scopes into dossiers, runs actors, adjudicates disagreement, and emits one engineering brief plus systemic context.
+- Tribunal is the reasoning engine beneath Odylith: it turns ranked scopes into dossiers, runs actors, adjudicates disagreement, and emits one maintainer brief plus systemic context.
 - Remediator compiles an adjudicated prescription into a bounded correction packet when the action is reviewable, allowlisted, validated, and reversible.
 - Canonical Odylith runtime artifacts are:
   - `odylith/runtime/posture.v4.json`
@@ -131,11 +155,18 @@
 - deterministic fallback rows explain themselves through `deterministic_reason` and `deterministic_reason_detail`
 
 ## Compass Brief Runtime
-- Compass standup briefs should read like a concise engineering standup, not like a generic dashboard summary.
-- The default live refresh should warm the primary 24h global standup brief first; secondary global windows may reuse cache or stay deterministic until they are warmed, so normal sync does not block on every window.
-- The local brief cache is an acceleration layer only; cache fingerprints must rotate when narration semantics change, and stale warmed briefs must not imply current traction without freshness evidence.
-- Exact cache hits may reuse directly, and bounded same-scope fallback is acceptable only when live refresh fails or is intentionally deferred.
-- If the provider returns no valid brief after bounded retry and repair, the standup panel must stay fail-closed.
+- The canonical brief contract lives in [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md).
+- Compass standup briefs should read like a thoughtful maintainer talking to a teammate, not like a dashboard summary or executive memo.
+- The only truthful brief source states are fresh `provider`, exact `cache`, or explicit `unavailable`.
+- Deterministic fallback narration is retired. If the provider does not yield a valid brief and there is no exact same-packet validated cache entry, the standup panel must stay fail-closed.
+- The local brief cache is an acceleration layer only. Cache fingerprints must rotate when narration semantics change, and stale warmed briefs must never imply current traction.
+- Exact cache hits may reuse directly. Non-exact cache replay is not allowed.
+- Global and scoped Compass narration should warm as one packet-level bundle.
+  Do not reintroduce a second scoped provider queue or scope-by-scope provider
+  fanout after refresh.
+- Only ready `provider` or exact `cache` briefs get the full standup-brief stage. Warming, failed, budget-limited, or unavailable states must stay compact and clearly labeled.
+- `Copy Brief` should only appear when a real narrated brief is on screen.
+- Whole-window coverage facts stay upstream evidence; Compass must not synthesize stock coverage bullets to fill the panel.
 - Provider-output transport quirks such as missing sidecar files or transient stdout/file disagreements should degrade gracefully when the same schema-valid payload is still recoverable.
 
 ## Shared Surface Primitives
@@ -156,4 +187,4 @@
 - Tribunal reasoning runs only when a case dossier fingerprint changes or leverage/uncertainty thresholds justify it.
 - Missing Tribunal cache during sync or shell refresh is not a license to start an implicit provider-backed reasoning pass; use deterministic Tribunal fallback there and keep explicit provider use on dedicated reasoning flows.
 - Systemic synthesis runs more selectively still, and remediation only proceeds after explicit approval.
-- The default local loop is `sync + on-demand`; continuous watchers are optional local accelerators, not required background truth.
+- The default maintainer loop is `sync + on-demand`; continuous watchers are optional local accelerators, not required background truth.

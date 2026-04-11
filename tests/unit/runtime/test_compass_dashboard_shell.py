@@ -46,8 +46,9 @@ def test_render_shell_references_split_compass_assets_and_inline_bootstrap() -> 
     assert "Delivery Posture and Risk Brief" not in html
     assert "Current workstream direction, risks, and runtime evidence across Radar, plans, bugs, and Atlas traceability." in html
     assert 'id="release-groups-host"' in html
+    assert '<article class="card standup-brief-card standup-brief-card--compact" id="standup-brief-card">' in html
     assert '<div class="card-title-row standup-brief-title-row">' in html
-    assert '<button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>' in html
+    assert '<button class="pill subtle hidden" id="copy-brief" type="button" disabled aria-hidden="true" tabindex="-1">Copy Brief</button>' in html
     assert '<div id="brief-copy-status" class="brief-copy-status hidden" role="status" aria-live="polite"></div>' in html
     assert html.index('<h2>Standup Brief</h2>') < html.index('id="copy-brief"')
     assert html.index('id="copy-brief"') < html.index('id="brief-copy-status"')
@@ -58,7 +59,7 @@ def test_render_shell_references_split_compass_assets_and_inline_bootstrap() -> 
     assert "init();" in html
 
 
-def test_shared_compass_asset_preserves_legacy_digest_fallback_logic() -> None:
+def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic() -> None:
     shared_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-shared.v1.js")
     runtime_truth_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-runtime-truth.v1.js")
     summary_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-summary.v1.js")
@@ -67,13 +68,21 @@ def test_shared_compass_asset_preserves_legacy_digest_fallback_logic() -> None:
     assert "const scopedWorkstream = WORKSTREAM_RE.test(" in shared_js
     assert "const hasScopedSelection = Boolean(scopedWorkstream);" in shared_js
     assert 'if (hasScopedSelection && scopedReady) return scopedReady;' in shared_js
+    assert "function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason)" in shared_js
+    assert "function scopedLiveBriefFallbackMessage(workstreamId, diagnostics)" in shared_js
+    assert 'return scopedFallbackToGlobalBrief(globalReady, scopedWorkstream, message, `scoped_${reason}_showing_global`);' in shared_js
+    assert 'is waiting on narration provider capacity' in shared_js
+    assert 'is waiting on narration provider budget' in shared_js
+    assert 'got a scoped provider reply, but the brief was not usable yet' in shared_js
+    assert 'still needs its own brief' in shared_js
     assert 'if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;' in shared_js
     assert 'if (globalReady) return globalReady;' in shared_js
-    assert 'if (hasScopedSelection && scopedBrief) return scopedBrief;' in shared_js
+    assert 'if (hasScopedSelection && scopedBrief) {' in shared_js
     assert 'if (scopedReady && (scopedReadySource === "provider" || scopedReadySource === "cache")) return scopedReady;' in shared_js
     assert 'if (scopedReady) return scopedReady;' in shared_js
-    assert 'if (legacyLines.length) {' in shared_js
-    assert 'return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);' in shared_js
+    assert "function legacyDigestLinesForState" not in shared_js
+    assert "function legacyDigestToBrief" not in shared_js
+    assert 'return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);' not in shared_js
     assert "function radarWorkstreamHref(workstreamId, options = {})" in shared_js
     assert 'const view = String(options && options.view ? options.view : "").trim().toLowerCase();' in shared_js
     assert 'if (WORKSTREAM_RE.test(token)) params.set("workstream", token);' in shared_js
@@ -88,7 +97,8 @@ def test_shared_compass_asset_preserves_legacy_digest_fallback_logic() -> None:
     assert "const historyDates = knownHistoryDateTokens(payload);" in state_js
     assert "const minDate = historyDates.length" in state_js
     assert "? historyDates[historyDates.length - 1]" in state_js
-    assert 'source === "provider" || source === "cache" || source === "deterministic"' in summary_js
+    assert "legacyDigestLinesForState(payload, state)" not in state_js
+    assert 'source === "provider" || source === "cache"' in summary_js
     assert "AI narrative · provider" not in summary_js
     assert "AI narrative · cache" not in summary_js
     assert "last known good cache" not in summary_js
@@ -97,6 +107,15 @@ def test_shared_compass_asset_preserves_legacy_digest_fallback_logic() -> None:
     assert "No validated AI-authored standup brief is available for this view." not in summary_js
     assert "No validated narrative bullets available for this section." not in summary_js
     assert "No standup brief available for this view." not in summary_js
+    assert "function briefHasRenderableNarrative(brief)" in summary_js
+    assert "function briefIsScopedGlobalFallback(brief)" not in summary_js
+    assert "function briefAllowsCopy(brief)" not in summary_js
+    assert 'card.classList.toggle("standup-brief-card--compact", !hasNarrative);' in summary_js
+    assert 'copyButton.classList.toggle("hidden", !hasNarrative);' in summary_js
+    assert 'const retryUtc = String(diagnostics.next_retry_utc || "").trim();' in summary_js
+    assert 'brief-status-card--compact' in summary_js
+    assert "function renderScopedFallbackBrief(brief, linkContext)" not in summary_js
+    assert 'Show the global live brief while ${escapeHtml(workstream)} warms' not in summary_js
     assert 'return String(value ?? "")' in shared_js
 
 

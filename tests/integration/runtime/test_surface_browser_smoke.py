@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import contextlib
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+import json
 from pathlib import Path
 import re
+import shutil
 import threading
 from typing import Iterator
 from urllib.parse import parse_qs, quote, urlparse
@@ -53,6 +55,60 @@ def _browser() -> Iterator[tuple[object, object]]:
             yield pw, browser
         finally:
             browser.close()
+
+
+def _ready_compass_fixture_root(tmp_path: Path) -> Path:
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    generated_utc = "2026-04-10T03:00:00Z"
+
+    def _ready_brief(fingerprint: str) -> dict[str, object]:
+        return {
+            "status": "ready",
+            "source": "provider",
+            "fingerprint": fingerprint,
+            "generated_utc": generated_utc,
+            "sections": [
+                {
+                    "key": "completed_in_window",
+                    "label": "Completed in this window",
+                    "bullets": [{"text": "A real standup brief is ready for this view.", "fact_ids": []}],
+                },
+                {
+                    "key": "current_execution",
+                    "label": "Current execution",
+                    "bullets": [{"text": "Compass is showing a seeded live brief for browser proof.", "fact_ids": []}],
+                },
+                {
+                    "key": "next_planned",
+                    "label": "Next planned",
+                    "bullets": [{"text": "This keeps the copy and layout checks deterministic.", "fact_ids": []}],
+                },
+                {
+                    "key": "risks_to_watch",
+                    "label": "Risks to watch",
+                    "bullets": [{"text": "No extra risk callout for this seeded browser case.", "fact_ids": []}],
+                },
+            ],
+            "evidence_lookup": {},
+        }
+
+    payload["generated_utc"] = generated_utc
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    standup_brief["24h"] = _ready_brief("seeded-ready-24h")
+    standup_brief["48h"] = _ready_brief("seeded-ready-48h")
+    payload["standup_brief"] = standup_brief
+    payload["standup_brief_scoped"] = {"24h": {}, "48h": {}}
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    return fixture_root
 
 
 @pytest.fixture(scope="module")
@@ -593,91 +649,103 @@ def test_compass_and_radar_current_release_cards_show_labeled_release_version(br
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_compass_standup_brief_title_row_keeps_button_close_and_optically_aligned(browser_context) -> None:  # noqa: ANN001
-    base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
-    assert response is not None and response.ok
-    page.wait_for_function(
-        """() => {
-            const node = document.querySelector("#shellRuntimeStatus");
-            return Boolean(node && node.hidden && node.getAttribute("aria-hidden") === "true");
-        }""",
-        timeout=15000,
-    )
+def test_compass_standup_brief_title_row_keeps_button_close_and_optically_aligned(tmp_path: Path) -> None:
+    fixture_root = _ready_compass_fixture_root(tmp_path)
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+                page.wait_for_function(
+                    """() => {
+                        const node = document.querySelector("#shellRuntimeStatus");
+                        return Boolean(node && node.hidden && node.getAttribute("aria-hidden") === "true");
+                    }""",
+                    timeout=15000,
+                )
 
-    compass = page.frame_locator("#frame-compass")
-    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-    _assert_compass_live_state(compass, window_token="48h")
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _assert_compass_live_state(compass, window_token="48h")
 
-    alignment = compass.locator(".standup-brief-title-row").evaluate(
-        """(node) => {
-            const title = node.querySelector("h2");
-            const button = node.querySelector("#copy-brief");
-            const titleBox = title ? title.getBoundingClientRect() : null;
-            const buttonBox = button ? button.getBoundingClientRect() : null;
-            return {
-              gap: titleBox && buttonBox ? buttonBox.left - titleBox.right : null,
-              centerDelta: titleBox && buttonBox
-                ? (buttonBox.top + buttonBox.height / 2) - (titleBox.top + titleBox.height / 2)
-                : null,
-            };
-        }"""
-    )
-    assert alignment["gap"] is not None and 6 <= alignment["gap"] <= 14
-    assert alignment["centerDelta"] is not None and abs(alignment["centerDelta"]) <= 1.5
+                alignment = compass.locator(".standup-brief-title-row").evaluate(
+                    """(node) => {
+                        const title = node.querySelector("h2");
+                        const button = node.querySelector("#copy-brief");
+                        const titleBox = title ? title.getBoundingClientRect() : null;
+                        const buttonBox = button ? button.getBoundingClientRect() : null;
+                        return {
+                          gap: titleBox && buttonBox ? buttonBox.left - titleBox.right : null,
+                          centerDelta: titleBox && buttonBox
+                            ? (buttonBox.top + buttonBox.height / 2) - (titleBox.top + titleBox.height / 2)
+                            : null,
+                        };
+                    }"""
+                )
+                assert alignment["gap"] is not None and 6 <= alignment["gap"] <= 14
+                assert alignment["centerDelta"] is not None and abs(alignment["centerDelta"]) <= 1.5
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
 
 
-def test_compass_copy_brief_notice_stays_below_brief_title_instead_of_header(browser_context) -> None:  # noqa: ANN001
-    base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
-    assert response is not None and response.ok
-    page.wait_for_function(
-        """() => {
-            const node = document.querySelector("#shellRuntimeStatus");
-            return Boolean(node && node.hidden && node.getAttribute("aria-hidden") === "true");
-        }""",
-        timeout=15000,
-    )
+def test_compass_copy_brief_notice_stays_below_brief_title_instead_of_header(tmp_path: Path) -> None:
+    fixture_root = _ready_compass_fixture_root(tmp_path)
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+                page.wait_for_function(
+                    """() => {
+                        const node = document.querySelector("#shellRuntimeStatus");
+                        return Boolean(node && node.hidden && node.getAttribute("aria-hidden") === "true");
+                    }""",
+                    timeout=15000,
+                )
 
-    compass = page.frame_locator("#frame-compass")
-    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-    _assert_compass_live_state(compass, window_token="48h")
-    compass.locator("body").evaluate(
-        """() => {
-            navigator.clipboard.writeText = async (payload) => {
-                window.__ODYLITH_COPIED_BRIEF__ = String(payload || "");
-            };
-        }"""
-    )
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _assert_compass_live_state(compass, window_token="48h")
+                compass.locator("body").evaluate(
+                    """() => {
+                        navigator.clipboard.writeText = async (payload) => {
+                            window.__ODYLITH_COPIED_BRIEF__ = String(payload || "");
+                        };
+                    }"""
+                )
 
-    compass.get_by_role("button", name="Copy Brief").click()
-    brief_notice = compass.locator("#brief-copy-status")
-    brief_notice.wait_for(timeout=15000)
-    assert "Standup brief copied to clipboard." in brief_notice.inner_text().strip()
+                compass.get_by_role("button", name="Copy Brief").click()
+                brief_notice = compass.locator("#brief-copy-status")
+                brief_notice.wait_for(timeout=15000)
+                assert "Standup brief copied to clipboard." in brief_notice.inner_text().strip()
 
-    layout = compass.locator(".card:has(.standup-brief-title-row)").evaluate(
-        """(node) => {
-            const titleRow = node.querySelector(".standup-brief-title-row");
-            const notice = node.querySelector("#brief-copy-status");
-            const banner = document.getElementById("status-banner");
-            const titleBox = titleRow ? titleRow.getBoundingClientRect() : null;
-            const noticeBox = notice ? notice.getBoundingClientRect() : null;
-            return {
-              noticeTopGap: titleBox && noticeBox ? noticeBox.top - titleBox.bottom : null,
-              bannerHidden: Boolean(banner && banner.classList.contains("hidden")),
-              bannerText: banner ? String(banner.textContent || "").trim() : "",
-            };
-        }"""
-    )
-    assert layout["noticeTopGap"] is not None and 0 <= layout["noticeTopGap"] <= 16
-    assert layout["bannerHidden"] is True
-    assert layout["bannerText"] == ""
+                layout = compass.locator(".card:has(.standup-brief-title-row)").evaluate(
+                    """(node) => {
+                        const titleRow = node.querySelector(".standup-brief-title-row");
+                        const notice = node.querySelector("#brief-copy-status");
+                        const banner = document.getElementById("status-banner");
+                        const titleBox = titleRow ? titleRow.getBoundingClientRect() : null;
+                        const noticeBox = notice ? notice.getBoundingClientRect() : null;
+                        return {
+                          noticeTopGap: titleBox && noticeBox ? noticeBox.top - titleBox.bottom : null,
+                          bannerHidden: Boolean(banner && banner.classList.contains("hidden")),
+                          bannerText: banner ? String(banner.textContent || "").trim() : "",
+                        };
+                    }"""
+                )
+                assert layout["noticeTopGap"] is not None and 0 <= layout["noticeTopGap"] <= 16
+                assert layout["bannerHidden"] is True
+                assert layout["bannerText"] == ""
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
 
 
 def test_compass_current_workstreams_excludes_rows_already_represented_in_programs_or_release_targets(browser_context) -> None:  # noqa: ANN001

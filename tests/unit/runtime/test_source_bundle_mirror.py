@@ -54,3 +54,33 @@ def test_sync_live_glob_updates_active_shards_and_removes_stale_bundle_mirrors(t
     assert not stale_bundle.exists()
     assert (bundle_dir / "casebook-detail-shard-001.v1.js").read_text(encoding="utf-8") == "one\n"
     assert (bundle_dir / "casebook-detail-shard-002.v1.js").read_text(encoding="utf-8") == "two\n"
+
+
+def test_repo_governance_docs_preserve_watcher_and_brief_contract_in_bundle_mirrors() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    checks = (
+        (
+            repo_root / "odylith" / "agents-guidelines" / "DELIVERY_AND_GOVERNANCE_SURFACES.md",
+            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "DELIVERY_AND_GOVERNANCE_SURFACES.md",
+            "`odylith compass watch-transactions --repo-root .` is the supported change-driven local watcher",
+        ),
+        (
+            repo_root / "odylith" / "skills" / "delivery-governance-surface-ops" / "SKILL.md",
+            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "delivery-governance-surface-ops" / "SKILL.md",
+            "./.odylith/bin/odylith compass watch-transactions --repo-root .",
+        ),
+        (
+            repo_root / "odylith" / "skills" / "compass-executive" / "SKILL.md",
+            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "compass-executive" / "SKILL.md",
+            "Scoped selection does not buy a foreground provider exception.",
+        ),
+        (
+            repo_root / "odylith" / "skills" / "session-context" / "SKILL.md",
+            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "session-context" / "SKILL.md",
+            "never turn an ordinary restart into a foreground provider refresh",
+        ),
+    )
+
+    for live_path, mirror_path, expected_snippet in checks:
+        assert expected_snippet in live_path.read_text(encoding="utf-8")
+        assert expected_snippet in mirror_path.read_text(encoding="utf-8")

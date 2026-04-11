@@ -670,6 +670,14 @@ h1 {
   align-items: start;
 }
 
+.execution-wave-card-shell-full-copy {
+  grid-template-areas:
+    "title meta"
+    "sub sub"
+    "compact compact";
+  row-gap: 8px;
+}
+
 .execution-wave-card-copy {
   display: grid;
   gap: 8px;
@@ -683,12 +691,18 @@ h1 {
   flex-wrap: wrap;
 }
 
+.execution-wave-card-shell-full-copy .execution-wave-title-row {
+  grid-area: title;
+  min-width: 0;
+}
+
 .execution-wave-title {
   color: var(--ink);
   font-size: 15px;
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.01em;
+  min-width: 0;
 }
 
 .execution-wave-sub {
@@ -697,11 +711,22 @@ h1 {
   max-width: 72ch;
 }
 
+.execution-wave-card-shell-full-copy .execution-wave-sub {
+  grid-area: sub;
+  max-width: none;
+  min-width: 0;
+}
+
 .execution-wave-compact {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 12px;
   align-items: center;
+}
+
+.execution-wave-card-shell-full-copy .execution-wave-compact {
+  grid-area: compact;
+  min-width: 0;
 }
 
 .execution-wave-compact-line {
@@ -725,6 +750,10 @@ h1 {
   justify-items: end;
   align-content: start;
   min-width: 180px;
+}
+
+.execution-wave-card-shell-full-copy .execution-wave-card-meta {
+  grid-area: meta;
 }
 
 .execution-wave-card-stat-rail {
@@ -855,6 +884,14 @@ h1 {
   .execution-wave-focus-grid,
   .execution-wave-card-shell {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-card-shell-full-copy {
+    grid-template-areas:
+      "title"
+      "meta"
+      "sub"
+      "compact";
   }
 
   .execution-wave-body-grid-members {
@@ -2407,7 +2444,7 @@ h1 {
   }
 })();
 </script>
-  <script id="backlogData" src="backlog-payload.v1.js?v=7810311a9060"></script>
-  <script src="backlog-app.v1.js?v=7810311a9060"></script>
+  <script id="backlogData" src="backlog-payload.v1.js?v=22570bef5676"></script>
+  <script src="backlog-app.v1.js?v=22570bef5676"></script>
 </body>
 </html>

@@ -95,4 +95,4 @@
   stop the live daemon first rather than deleting runtime artifacts underneath
   it.
 - For deploy-, publish-, release-, and pre-commit-adjacent validation, standalone non-daemon CLI execution remains the authoritative fallback.
-- `odylith compass watch-transactions` may consume live daemon fingerprints when available, but refresh and traceability decisions must degrade to deterministic file fingerprints when the daemon is unavailable.
+- `odylith compass watch-transactions` should wait on live daemon change signals first, reuse the same local watcher stack directly when the daemon is unavailable, and fall back to coarse deterministic fingerprint polling only as a last resort.

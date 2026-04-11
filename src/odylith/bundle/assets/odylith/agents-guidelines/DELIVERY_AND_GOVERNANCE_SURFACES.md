@@ -114,6 +114,13 @@
   Example: `B-067 -> 0.1.11` through `odylith release add B-067 0.1.11`.
 - Use program or wave planning when the operator is answering "how should this umbrella effort execute?"
   Example: umbrella `B-021 -> W1, W2, W3` through the umbrella execution-wave contract in Radar source.
+- When coding agents are authoring or maintaining that contract directly, use
+  the program/wave command surface instead of hand-editing the JSON:
+  - `odylith program create B-072`
+  - `odylith program status B-072`
+  - `odylith program next B-072`
+  - `odylith wave assign B-072 W1 B-073 --role primary`
+  - `odylith wave gate-add B-072 W1 B-073 --label "child plan gate"`
 - One workstream may participate in both contracts at once because release picks the ship lane while waves pick the execution order.
 - The canonical source files are:
   - `odylith/radar/source/releases/releases.v1.json`
@@ -133,6 +140,9 @@
   - exact `version`
   - exact `tag`
   - unique exact `name`
+- Program and wave selector resolution should follow the same fail-closed
+  posture: exact umbrella id, exact wave id, and no fuzzy "closest match"
+  shortcuts when source truth would become ambiguous.
 - Do not leave `finished`, `parked`, or `superseded` workstreams in active releases.
 - Do not mutate a `shipped` or `closed` release except by moving alias ownership off it before lifecycle closure.
 - Release `name` is explicit operator-owned source truth. Matching authored
@@ -159,6 +169,11 @@
 - Inside those release-member cards, keep the workstream title on its own
   second row under the ID/status chips. Short titles must not collapse back
   into the first row.
+- In Compass's default unscoped view, `Current Workstreams` is a residual
+  board, not a second copy of governance-grouped work. Filter out any
+  workstream already represented in `Programs` or `Release Targets`, and only
+  keep it in `Current Workstreams` when the operator explicitly scopes to that
+  workstream.
 - Governance KPI/stat cards are operator-facing shared shell contract too.
   Compass hero KPIs, Radar summary stats, Registry summary KPIs, and Casebook
   summary KPIs must consume the shared grid/card/label-value helpers instead
@@ -204,12 +219,20 @@
   contracts when the shared Dashboard KPI helpers already express the same
   surface. Update the shared primitive path, affected renderers/loaders,
   browser proof, and governed docs/specs together.
+- Generic deep-link buttons such as `Registry`, `Spec`, proof refs, and
+  `D-###` diagram links are shared shell contract too. Keep them on the
+  centralized deep-link chip helper/tokens in
+  `src/odylith/runtime/surfaces/dashboard_ui_primitives.py` instead of
+  carrying local CSS forks in Compass, Radar, Registry, Casebook, or Atlas.
 - Operator-owned shell-surface contracts such as compact `B-###` buttons and
   stacked Compass `Release Targets` require headless browser proof in both the
   normal and compact shell layouts, not just string or snapshot assertions.
 - Browser proof for shared KPI/stat-card contracts must verify the computed
   padding, radius, label typography, value typography, and release-card
   labeling across Compass, Radar, Registry, and Casebook.
+- Browser proof for shared deep-link buttons must verify the computed
+  font-size, font-weight, padding, and radius across Compass workstream
+  detail, Radar detail, Registry detail, and Casebook detail.
 
 ## Refresh, Sync, And Clean Proof
 - `odylith sync --repo-root . --force --odylith-mode refresh --registry-policy-mode enforce-critical --enforce-deep-skills` is the strict canonical refresh path.
@@ -252,47 +275,31 @@
   - explicit Compass events
   - recent tracked path matches
   - mapped workstream-linked evidence
+- Registry component detail is not the place for a default proof-state or
+  live-status card. Proof-state internals such as `Proof Control`,
+  `Live Blocker`, `Fingerprint`, `Frontier`, `Evidence tier`,
+  `Truthful claim`, and commit-hash deployment details should stay in
+  underlying intelligence or explicit forensic tooling, not the default
+  Registry detail surface.
 
 ## Compass Standup Contract
-- Compass standup is AI-authored only, but deterministic runtime evidence still owns fact selection, ranking, and fail-closed validation.
-- Compass voice is a product invariant: plainspoken grounded maintainer narration, live spoken maintainer register, human, plain, specific, open, clear, and lightly soulful, not branded dashboard prose or generic portfolio narration.
-- The standup contract should stay compressed and causal: verified movement, current proof, forcing function, impact, and the most relevant watch item should dominate over generic portfolio narration.
-- Repeated house phrases, workstream-title restatement, repeated window leads, priority or attention wrappers, sloganized self-host status, rhetorical benchmark challenges, and canned next/why/timing scaffolding are invalid even if the underlying facts are true.
-- Templating is also a shape failure, not just a phrase failure: Compass should not read like four evenly polished summary cards. Let vividness, asymmetry, and human emphasis survive when the evidence calls for them.
-- Stagey metaphor is a failure too. Reject `pressure point`, `center of gravity`, `muddy`, `slippery`, `top lane`, `window coverage spans`, or similar dashboard-wise phrasing even when the facts are current.
-- Rhythmic prose is not safer than stock phrases. If bullets settle into repeated claim-then-explanation cadence or sound like a dashboard performing insight, the brief has already drifted.
+- The canonical contract lives in [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md).
+- Compass standup is provider-authored only, but deterministic runtime evidence still owns fact selection, ranking, and fail-closed validation.
+- Voice is non-negotiable: a thoughtful maintainer talking to a teammate. Friendly, calm, direct, simple, factual, precise, and human.
+- Briefs should surface humane judgment: what changed, why it matters, what is next, and what could still break.
+- Celebrate real wins with restraint. When things are shaky, be steady and reassuring without hiding the truth.
+- Repeated house phrases, workstream-title restatement, workstream roll calls, repeated window leads, canned next/why/timing wrappers, stagey metaphor, and polished portable summary prose are correctness failures even when the facts are true.
+- Whole-window coverage facts are evidence, not a mandatory bullet. Compass must not inject stock coverage lines like `Most of the work here was in ...` just to satisfy bookkeeping.
 - Every bullet must stay visibly tethered to the cited fact language. If the cited facts disappear and the sentence still works as a polished status card, it is too generic for Compass.
-- Do not reintroduce `Executive/Product` or `Operator/Technical` brief bullets. Compass briefs are unlabeled narrative bullets now, and that rule applies in provider output, deterministic fallback, warmed cache reuse, browser rendering, copied brief text, and legacy compatibility shims.
-- Provider output, warmed cache reuse, and deterministic fallback all share the same voice bar. If one path cannot stay natural, it should fall back to plainer fact language, not a different template.
-- Deterministic fallback is the live-narration quality floor, not the place to
-  hide canned prose. If a Compass test blesses stock fallback wording, rewrite
-  or remove the test rather than preserving the stale phrasing.
-- Compass should not render a separate `Why this matters` section. Customer need, use-story, and operator consequence belong inside the completed/current/next/risk bullets when they sharpen the point.
-- `Next planned` should synthesize actionable near-term work, not just file paths, deferred scope, or generic portfolio posture.
-- Cache reuse must stay freshness-bound, voice-valid, and fail closed; stale or missing provider output should not masquerade as live progress, and warmed cache must never replay canned prose back into Compass.
-- Timeline audit and window-coverage material should stay deterministic and
-  precomputed. Compass brief generation should consume that upstream material
-  instead of paying repeated model cost to rediscover the same timeline shape.
-- For simple Compass brief enrichment, default to the cheap-fast coding model
-  lane: `gpt-5.3-codex-spark` with low reasoning effort. A more expensive
-  model needs evidence, not habit.
-- Hot-path Compass upkeep is budget-owned. Compass now has only two
-  acceptable runtime lanes: unchanged refresh under `50ms` of internal runtime
-  work and complete cold shell-safe refresh under `1s` of internal runtime
-  work on the normal local path. Do not revive a third slower lane.
-- Budget cuts must preserve the live voice contract by defaulting to reuse of
-  the last validated brief layer when the narrative-relevant window signature
-  is unchanged. Do not spend model or deterministic scoped-brief work just
-  because a refresh was requested if the brief story is materially the same.
-  Compass now has one bounded refresh contract only; do not revive or
-  advertise a second `full` or deep-refresh mode. If a user says "full"
-  in prose, route that request to `odylith compass refresh --repo-root . --wait`
-  instead of inventing a Compass-specific flag. Refresh may reuse a warmed
-  live global brief, and shell-safe global `24h`/`48h` should stay on
-  maintained narrated cache before deterministic fallback. It must not pay for
-  a fresh provider call on a miss, and it must not let packet-local fact-id
-  churn or one old coverage-summary sentence knock a validated narrated global
-  brief back into deterministic by default.
+- Do not reintroduce `Executive/Product` or `Operator/Technical` brief bullets, a second narrator, or any deterministic fallback voice split.
+- Compass brief runtime now has one truthful source triad only: fresh `provider`, exact `cache`, or explicit `unavailable`.
+- Cache reuse must stay exact-fingerprint only, voice-valid, and fail closed. Contract changes must rotate the brief epoch and invalidate stale warmed prose.
+- Only ready `provider` or exact `cache` briefs get the full standup-brief stage. Non-ready states should stay compact, truthful, and obviously not-final.
+- `Copy Brief` is reserved for real narrated briefs, not unavailable-state chrome.
+- Timeline-audit and window-coverage material should stay deterministic and precomputed upstream. Compass brief generation should consume that evidence instead of rediscovering timeline shape with a second narrator.
+- For simple Compass brief enrichment, default to the cheap-fast coding model lane: `gpt-5.3-codex-spark` with low reasoning effort. A more expensive model needs evidence, not habit.
+- Hot-path Compass upkeep is budget-owned. Compass now has only two acceptable runtime lanes: unchanged refresh under `50ms` of internal runtime work and complete cold shell-safe refresh under `1s` of internal runtime work on the normal local path. Do not revive a slower third lane.
+- Compass now has one bounded refresh contract only; do not revive or advertise a second `full` or deep-refresh mode. If a user says `full` in prose, route that request to `odylith compass refresh --repo-root . --wait`.
 
 ## Lifecycle Closeout
 - Treat lifecycle reconciliation as part of implementation, not postscript cleanup.
@@ -313,7 +320,7 @@
 - Plan links shown to users must target the canonical rendered Radar plan route, not raw `odylith/technical-plans/**/*.md` files.
 - Keep Compass transaction headlines intent-first and outcome-first; never degrade to file-count-only labels.
 - Treat Registry synthetic workspace activity as forensic-only support for timelines, not as a replacement for explicit Compass decision or implementation logging.
-- `odylith compass watch-transactions --repo-root . --interval-seconds <n>` is the supported near-real-time local watcher for transaction cards and Radar execution overlays.
+- `odylith compass watch-transactions --repo-root .` is the supported change-driven local watcher for transaction cards and Radar execution overlays. It should wake on daemon or local watcher signals first and fall back to coarse polling only when no push-backed watcher exists.
 
 ## Backlog Execution Programs
 - Umbrella-owned execution waves are a repo-local backlog contract, not ad hoc plan prose.

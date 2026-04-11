@@ -192,7 +192,7 @@
     function renderBriefMeta(brief) {
       if (!brief || typeof brief !== "object") return "";
       const source = String(brief.source || "").trim().toLowerCase();
-      if (source === "provider" || source === "cache" || source === "deterministic") {
+      if (source === "provider" || source === "cache") {
         const generated = compactTimestamp(brief.generated_utc);
         return `
           <div class="standup-brief-meta">
@@ -200,16 +200,51 @@
           </div>
         `;
       }
-      if (source === "legacy") {
-        return '<div class="brief-legacy-note">Legacy retained-history snapshot rendered through the compatibility path.</div>';
-      }
       return "";
+    }
+
+    function briefHasRenderableNarrative(brief) {
+      if (!brief || typeof brief !== "object") return false;
+      if (String(brief.status || "").trim() !== "ready") return false;
+      const source = String(brief.source || "").trim().toLowerCase();
+      return source === "provider" || source === "cache";
+    }
+
+    function syncBriefPresentationChrome(brief) {
+      const card = document.getElementById("standup-brief-card");
+      const copyButton = document.getElementById("copy-brief");
+      const copyStatus = document.getElementById("brief-copy-status");
+      const hasNarrative = briefHasRenderableNarrative(brief);
+
+      if (card) {
+        card.classList.toggle("standup-brief-card--compact", !hasNarrative);
+        if (card.dataset) {
+          card.dataset.briefMode = hasNarrative ? "narrative" : "status";
+        }
+      }
+
+      if (copyButton) {
+        copyButton.classList.toggle("hidden", !hasNarrative);
+        copyButton.disabled = !hasNarrative;
+        if (hasNarrative) {
+          copyButton.removeAttribute("aria-hidden");
+          copyButton.removeAttribute("tabindex");
+        } else {
+          copyButton.setAttribute("aria-hidden", "true");
+          copyButton.setAttribute("tabindex", "-1");
+        }
+      }
+
+      if (!hasNarrative && copyStatus) {
+        copyStatus.classList.add("hidden");
+        copyStatus.classList.remove("warn");
+        copyStatus.textContent = "";
+        copyStatus.title = "";
+      }
     }
 
     function visibleBriefNotice(brief) {
       const notice = brief && brief.notice && typeof brief.notice === "object" ? brief.notice : {};
-      const source = String(brief && brief.source ? brief.source : "").trim().toLowerCase();
-      if (source === "deterministic") return {};
       return notice;
     }
 
@@ -230,10 +265,13 @@
       const diagnostics = brief && brief.diagnostics && typeof brief.diagnostics === "object" ? brief.diagnostics : {};
       const title = String(diagnostics.title || "").trim() || "Standup brief unavailable";
       const message = String(diagnostics.message || "").trim() || "No standup brief is available for this view.";
+      const retryUtc = String(diagnostics.next_retry_utc || "").trim();
+      const retryCopy = retryUtc ? `Next retry ${compactTimestamp(retryUtc)}.` : "";
       return `
-        <div class="brief-status-card brief-status-card--warn">
+        <div class="brief-status-card brief-status-card--warn brief-status-card--compact" role="status" aria-live="polite">
           <div class="brief-status-title">${escapeHtml(title)}</div>
           <div class="brief-status-copy">${escapeHtml(message)}</div>
+          ${retryCopy ? `<div class="brief-status-meta">${escapeHtml(retryCopy)}</div>` : ""}
         </div>
       `;
     }
@@ -294,12 +332,13 @@
       const linkContext = briefLinkContext(payload, state);
       CURRENT_STANDUP_BRIEF = brief;
       applyBriefDataset(target, brief, state);
+      syncBriefPresentationChrome(brief);
 
       if (!brief || typeof brief !== "object") {
         target.innerHTML = "";
         return;
       }
-      if (String(brief.status || "").trim() !== "ready") {
+      if (!briefHasRenderableNarrative(brief)) {
         target.innerHTML = renderUnavailableBrief(brief);
         return;
       }

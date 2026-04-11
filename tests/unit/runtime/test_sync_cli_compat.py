@@ -621,6 +621,64 @@ def test_check_only_sync_plan_reports_visible_compass_runtime_truth_drift(tmp_pa
     assert any(note.startswith("Visible Compass runtime drift: Release truth for 0.1.11 now targets B-068") for note in plan.notes)
 
 
+def test_sync_changed_source_truth_bundle_mirrors_updates_changed_docs(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path
+    live_path = repo_root / "odylith" / "agents-guidelines" / "DELIVERY_AND_GOVERNANCE_SURFACES.md"
+    mirror_path = (
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "DELIVERY_AND_GOVERNANCE_SURFACES.md"
+    )
+    live_path.parent.mkdir(parents=True, exist_ok=True)
+    mirror_path.parent.mkdir(parents=True, exist_ok=True)
+    live_path.write_text("change-driven watcher\n", encoding="utf-8")
+    mirror_path.write_text("stale watcher\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_git_changed_paths",
+        lambda *, repo_root: ("odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",),
+    )
+
+    rc = sync_workstream_artifacts._sync_changed_source_truth_bundle_mirrors(repo_root=repo_root)  # noqa: SLF001
+
+    assert rc == 0
+    assert mirror_path.read_text(encoding="utf-8") == "change-driven watcher\n"
+
+
+def test_build_sync_execution_plan_appends_source_bundle_mirror_step(tmp_path: Path) -> None:
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=False,
+            force=False,
+            impact_mode="focused",
+            registry_policy_mode="warn",
+            enforce_deep_skills=False,
+            no_traceability_autofix=True,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=("odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",),
+        impact=SimpleNamespace(atlas=False),
+        impact_tooling_shell=False,
+        runtime_mode="standalone",
+    )
+
+    mirror_steps = [
+        step
+        for step in plan.steps
+        if step.label == "Mirror changed source-truth docs into the shipped bundle asset tree."
+    ]
+    assert len(mirror_steps) == 1
+    assert mirror_steps[0].action is not None
+
+
 def test_dashboard_refresh_retries_auto_surface_with_standalone_fallback(tmp_path: Path, monkeypatch, capsys) -> None:
     executed: list[tuple[str, ...]] = []
 

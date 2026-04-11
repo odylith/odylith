@@ -1046,6 +1046,52 @@ def test_codex_cli_provider_records_timeout_failure(
     assert "2.0s" in provider.last_failure_detail
 
 
+def test_codex_cli_provider_classifies_rate_limit_failure(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    provider = odylith_reasoning.CodexCliReasoningProvider(
+        repo_root=tmp_path,
+        codex_bin="codex",
+        model="gpt-5.4",
+        timeout_seconds=2.0,
+        reasoning_effort="high",
+    )
+    monkeypatch.setattr(odylith_reasoning.shutil, "which", lambda token: "/usr/bin/codex" if token == "codex" else None)
+
+    def _fake_run(command, **kwargs):  # noqa: ANN001, ARG001
+        return subprocess.CompletedProcess(command, 1, stdout="", stderr="429 Too Many Requests: rate limit reached")
+
+    monkeypatch.setattr(odylith_reasoning.subprocess, "run", _fake_run)
+
+    assert provider.generate_finding(prompt_payload={"case_id": "case-workstream-B-061"}) is None
+    assert provider.last_failure_code == "rate_limited"
+    assert "rate limit" in provider.last_failure_detail.lower()
+
+
+def test_codex_cli_provider_classifies_credit_limit_failure(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    provider = odylith_reasoning.CodexCliReasoningProvider(
+        repo_root=tmp_path,
+        codex_bin="codex",
+        model="gpt-5.4",
+        timeout_seconds=2.0,
+        reasoning_effort="high",
+    )
+    monkeypatch.setattr(odylith_reasoning.shutil, "which", lambda token: "/usr/bin/codex" if token == "codex" else None)
+
+    def _fake_run(command, **kwargs):  # noqa: ANN001, ARG001
+        return subprocess.CompletedProcess(command, 1, stdout="", stderr="Error: insufficient_quota. You have run out of credits.")
+
+    monkeypatch.setattr(odylith_reasoning.subprocess, "run", _fake_run)
+
+    assert provider.generate_finding(prompt_payload={"case_id": "case-workstream-B-061"}) is None
+    assert provider.last_failure_code == "credits_exhausted"
+    assert "credits" in provider.last_failure_detail.lower() or "quota" in provider.last_failure_detail.lower()
+
+
 def test_openai_provider_generate_structured_uses_custom_request_contract(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

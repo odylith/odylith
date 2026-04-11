@@ -22,7 +22,8 @@
 - When changing generated surfaces, validate the full generated bundle contract, not only the HTML shell.
 - Child-surface regressions must preserve the shell-owned redirect/access contract for Radar, Atlas, Compass, Registry, and Odylith.
 - Visual dashboard changes still need rendered review after regeneration; static HTML assertions do not replace looking at the generated surface.
-- Provider-backed reasoning changes need deterministic fallback checks and proof-route truthfulness checks in the same pass.
+- Provider-backed reasoning changes need the owning fail-closed contract checked in the same pass.
+- Compass brief work follows [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md): validate fresh `provider`, exact `cache`, explicit `unavailable`, and voice-truth rejection together.
 - Commentary or closeout-contract changes need source, bundle, install, and benchmark-story regressions so ambient mid-task signals stay task-first, labeled `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` beats stay rare and earned, and any final `Odylith Assist:` note remains evidence-backed. Prefer `**Odylith Assist:**` when Markdown is available. Lead with the user win, keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual, link updated governance ids inline when they were actually changed, tie concrete observed counts, measured deltas, or validation outcomes back to `odylith_off` or the broader unguided path. Silence is better than filler.
 
 ## Coverage And Harness Rules

@@ -45,13 +45,11 @@
         const briefSourceRank = (id) => {
           const brief = scopedBriefMap[id] && typeof scopedBriefMap[id] === "object" ? scopedBriefMap[id] : null;
           const status = String(brief && brief.status ? brief.status : "").trim().toLowerCase();
-          if (status !== "ready") return 5;
+          if (status !== "ready") return 3;
           const source = String(brief && brief.source ? brief.source : "").trim().toLowerCase();
           if (source === "provider") return 0;
           if (source === "cache") return 1;
-          if (source === "composed") return 2;
-          if (source === "deterministic") return 3;
-          return 4;
+          return 2;
         };
         const sortedOptionIds = optionIds.slice().sort((left, right) => {
           const leftId = String(left || "").trim();
@@ -173,6 +171,19 @@
       const target = document.getElementById("kpi-grid");
       target.innerHTML = `<article class="stat"><p class="kpi-label">Runtime Unavailable</p><p class="muted">${message}</p></article>`;
       CURRENT_STANDUP_BRIEF = null;
+      const briefCard = document.getElementById("standup-brief-card");
+      if (briefCard) {
+        briefCard.classList.add("standup-brief-card--compact");
+        if (briefCard.dataset) briefCard.dataset.briefMode = "status";
+      }
+      const copyButton = document.getElementById("copy-brief");
+      if (copyButton) {
+        copyButton.classList.add("hidden");
+        copyButton.disabled = true;
+        copyButton.setAttribute("aria-hidden", "true");
+        copyButton.setAttribute("tabindex", "-1");
+      }
+      showBriefCopyStatus("");
       document.getElementById("digest-list").innerHTML = '<div class="empty">Runtime data unavailable.</div>';
       const executionWavesHost = document.getElementById("execution-waves-host");
       if (executionWavesHost) executionWavesHost.innerHTML = "";
@@ -214,6 +225,101 @@
       }, 3200);
     }
 
+    let liveBriefWarmPollTimer = null;
+    const LIVE_BRIEF_WARM_POLL_INTERVAL_MS = 1500;
+    const LIVE_BRIEF_WARM_POLL_MAX_ATTEMPTS = 8;
+
+    function clearLiveBriefWarmPoll() {
+      if (!liveBriefWarmPollTimer) return;
+      window.clearTimeout(liveBriefWarmPollTimer);
+      liveBriefWarmPollTimer = null;
+    }
+
+    function shouldPollForWarmBrief(brief, state) {
+      const safeBrief = brief && typeof brief === "object" ? brief : {};
+      const safeState = state && typeof state === "object" ? state : {};
+      if (String(safeState.date || "live").trim() !== "live") return false;
+      if (String(safeBrief.status || "").trim() !== "ready") {
+        const diagnostics = safeBrief.diagnostics && typeof safeBrief.diagnostics === "object" ? safeBrief.diagnostics : {};
+        const reason = String(diagnostics.reason || "").trim().toLowerCase();
+        return [
+          "provider_deferred",
+          "rate_limited",
+          "credits_exhausted",
+          "timeout",
+          "provider_unavailable",
+          "transport_error",
+          "auth_error",
+          "provider_error",
+          "invalid_batch",
+        ].includes(reason);
+      }
+      const notice = safeBrief.notice && typeof safeBrief.notice === "object" ? safeBrief.notice : {};
+      return String(notice.reason || "").trim().toLowerCase().endsWith("_showing_global");
+    }
+
+    async function renderCompassRuntime(rawState, runtime) {
+      if (!runtime.payload) {
+        showFallback("Compass runtime files were not found. Run `odylith sync --repo-root . --force`.");
+        return { brief: null, state: rawState };
+      }
+      let payload = runtime.payload;
+      let normalized = normalizeStateWithPayload(rawState, payload);
+      payload = await augmentLiveHistoryIntoPayload(payload, normalized.state);
+      normalized = normalizeStateWithPayload(rawState, payload);
+      const state = normalized.state;
+      const summaryState = stateForSummary(state);
+      const summaryEvents = filterEventsByWindow(payload, summaryState);
+      const summaryTransactions = filterTransactionsByWindow(payload, summaryState);
+      const timelineEvents = filterEventsByWindow(payload, state);
+      const timelineTransactions = filterTransactionsByWindow(payload, state);
+      syncControls(state, summaryEvents, payload);
+
+      const notices = [];
+      const freshnessNotice = staleRuntimeNotice(payload, state);
+      if (freshnessNotice) notices.push(freshnessNotice);
+      if (runtime.warning) notices.push(runtime.warning);
+      if (normalized.warnings.length) notices.push(...normalized.warnings);
+      if (runtime.source.startsWith("history:")) {
+        notices.push(`Loaded historical snapshot ${runtime.source.replace("history:", "")}.`);
+      }
+      const uniqueNotices = dedupeNoticeLines(notices);
+      if (uniqueNotices.length) {
+        const hasWarn = uniqueNotices.some((line) => isWarningNotice(line));
+        showStatus(uniqueNotices.join(" "), hasWarn ? "warn" : "info");
+      } else {
+        showStatus("");
+      }
+
+      renderKpis(payload, summaryState, summaryEvents);
+      renderDigest(payload, summaryState, summaryEvents);
+      renderExecutionWaves(payload, summaryState);
+      renderReleaseGroups(payload, summaryState);
+      renderCurrentWorkstreams(payload, summaryState, summaryEvents, summaryTransactions, state);
+      renderTimeline(payload, state, timelineEvents, timelineTransactions);
+      renderRisks(payload, summaryState);
+      markCompassSurfaceReady(true);
+      return { brief: CURRENT_STANDUP_BRIEF, state };
+    }
+
+    function scheduleLiveBriefWarmPoll(rawState, rendered, attempt = 0) {
+      clearLiveBriefWarmPoll();
+      const renderedState = rendered && rendered.state && typeof rendered.state === "object" ? rendered.state : rawState;
+      const renderedBrief = rendered && rendered.brief && typeof rendered.brief === "object" ? rendered.brief : null;
+      if (!shouldPollForWarmBrief(renderedBrief, renderedState)) return;
+      if (attempt >= LIVE_BRIEF_WARM_POLL_MAX_ATTEMPTS) return;
+      liveBriefWarmPollTimer = window.setTimeout(async () => {
+        liveBriefWarmPollTimer = null;
+        if (shellRedirectInProgress()) return;
+        const nextRawState = params();
+        const runtime = await loadRuntime(nextRawState);
+        if (!runtime.payload) return;
+        const rerendered = await renderCompassRuntime(nextRawState, runtime);
+        if (!shouldPollForWarmBrief(rerendered.brief, rerendered.state)) return;
+        scheduleLiveBriefWarmPoll(nextRawState, rerendered, attempt + 1);
+      }, LIVE_BRIEF_WARM_POLL_INTERVAL_MS);
+    }
+
     function bindCopyBrief() {
       const button = document.getElementById("copy-brief");
       if (!button) return;
@@ -221,18 +327,15 @@
         const lines = [];
         const brief = CURRENT_STANDUP_BRIEF && typeof CURRENT_STANDUP_BRIEF === "object" ? CURRENT_STANDUP_BRIEF : null;
         if (brief && String(brief.status || "").trim() === "ready") {
-          const source = String(brief.source || "").trim().toLowerCase();
-          if (source !== "deterministic") {
-            const notice = brief.notice && typeof brief.notice === "object" ? brief.notice : {};
-            const noticeTitle = String(notice.title || "").trim();
-            const noticeMessage = String(notice.message || "").trim();
-            if (noticeTitle && noticeMessage) {
-              lines.push(`${noticeTitle}: ${noticeMessage}`);
-            } else if (noticeTitle) {
-              lines.push(noticeTitle);
-            } else if (noticeMessage) {
-              lines.push(noticeMessage);
-            }
+          const notice = brief.notice && typeof brief.notice === "object" ? brief.notice : {};
+          const noticeTitle = String(notice.title || "").trim();
+          const noticeMessage = String(notice.message || "").trim();
+          if (noticeTitle && noticeMessage) {
+            lines.push(`${noticeTitle}: ${noticeMessage}`);
+          } else if (noticeTitle) {
+            lines.push(noticeTitle);
+          } else if (noticeMessage) {
+            lines.push(noticeMessage);
           }
           const sections = Array.isArray(brief.sections) ? brief.sections : [];
           STANDUP_BRIEF_SECTION_SPECS.forEach((spec) => {
@@ -275,6 +378,7 @@
 
     async function init() {
       markCompassSurfaceReady(false);
+      clearLiveBriefWarmPoll();
       if (shellRedirectInProgress()) {
         return;
       }
@@ -283,44 +387,6 @@
       const rawState = params();
 
       const runtime = await loadRuntime(rawState);
-      if (!runtime.payload) {
-        showFallback("Compass runtime files were not found. Run `odylith sync --repo-root . --force`.");
-        return;
-      }
-      let payload = runtime.payload;
-      let normalized = normalizeStateWithPayload(rawState, payload);
-      payload = await augmentLiveHistoryIntoPayload(payload, normalized.state);
-      normalized = normalizeStateWithPayload(rawState, payload);
-      const state = normalized.state;
-      const summaryState = stateForSummary(state);
-      const summaryEvents = filterEventsByWindow(payload, summaryState);
-      const summaryTransactions = filterTransactionsByWindow(payload, summaryState);
-      const timelineEvents = filterEventsByWindow(payload, state);
-      const timelineTransactions = filterTransactionsByWindow(payload, state);
-      syncControls(state, summaryEvents, payload);
-
-      const notices = [];
-      const freshnessNotice = staleRuntimeNotice(payload, state);
-      if (freshnessNotice) notices.push(freshnessNotice);
-      if (runtime.warning) notices.push(runtime.warning);
-      if (normalized.warnings.length) notices.push(...normalized.warnings);
-      if (runtime.source.startsWith("history:")) {
-        notices.push(`Loaded historical snapshot ${runtime.source.replace("history:", "")}.`);
-      }
-      const uniqueNotices = dedupeNoticeLines(notices);
-      if (uniqueNotices.length) {
-        const hasWarn = uniqueNotices.some((line) => isWarningNotice(line));
-        showStatus(uniqueNotices.join(" "), hasWarn ? "warn" : "info");
-      } else {
-        showStatus("");
-      }
-
-      renderKpis(payload, summaryState, summaryEvents);
-      renderDigest(payload, summaryState, summaryEvents);
-      renderExecutionWaves(payload, summaryState);
-      renderReleaseGroups(payload, summaryState);
-      renderCurrentWorkstreams(payload, summaryState, summaryEvents, summaryTransactions, state);
-      renderTimeline(payload, state, timelineEvents, timelineTransactions);
-      renderRisks(payload, summaryState);
-      markCompassSurfaceReady(true);
+      const rendered = await renderCompassRuntime(rawState, runtime);
+      scheduleLiveBriefWarmPoll(rawState, rendered);
     }

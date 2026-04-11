@@ -174,7 +174,7 @@ def _fact_packet(
             },
             **({"self_host": self_host} if isinstance(self_host, dict) else {}),
             "storyline": {
-                "use_story": "Platform maintainers need deterministic execution status.",
+                "use_story": "Platform maintainers need clear execution status.",
                 "architecture_consequence": "The architecture move is to use a generated executive dashboard, which gives operators a clearer contract and lower coordination risk.",
             },
         },
@@ -210,6 +210,13 @@ def _now_utc_iso() -> str:
 def _median_ms(samples: list[float]) -> float:
     ordered = sorted(samples)
     return ordered[len(ordered) // 2]
+
+
+def _assert_unavailable(brief: dict[str, object], *, reason: str) -> None:
+    assert brief["status"] == "unavailable"
+    assert brief["source"] == "unavailable"
+    assert brief["diagnostics"]["reason"] == reason
+    assert brief["sections"] == []
 
 
 def _valid_provider_result() -> dict[str, object]:
@@ -413,7 +420,7 @@ def test_build_standup_brief_retries_one_transient_empty_provider_reply(tmp_path
     assert provider.calls == 2
 
 
-def test_build_standup_brief_uses_deterministic_fallback_after_repeated_empty_provider_replies(tmp_path: Path) -> None:
+def test_build_standup_brief_fails_closed_after_repeated_empty_provider_replies(tmp_path: Path) -> None:
     provider = _QueuedProvider([None, None])
 
     brief = narrator.build_standup_brief(
@@ -424,14 +431,11 @@ def test_build_standup_brief_uses_deterministic_fallback_after_repeated_empty_pr
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "provider_empty"
-    assert brief["sections"]
+    _assert_unavailable(brief, reason="provider_empty")
     assert provider.calls == 2
 
 
-def test_build_standup_brief_uses_deterministic_fallback_for_invalid_provider_output(tmp_path: Path) -> None:
+def test_build_standup_brief_fails_closed_for_invalid_provider_output(tmp_path: Path) -> None:
     invalid = _valid_provider_result()
     invalid["sections"][1]["bullets"][1]["text"] = "src/odylith/runtime/surfaces/render_compass_dashboard.py is the current execution focus."
     provider = _FakeProvider(invalid)
@@ -444,10 +448,7 @@ def test_build_standup_brief_uses_deterministic_fallback_for_invalid_provider_ou
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
-    assert brief["sections"]
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_wordy_filler_output(tmp_path: Path) -> None:
@@ -466,9 +467,7 @@ def test_build_standup_brief_rejects_wordy_filler_output(tmp_path: Path) -> None
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_cross_section_fact_citations(tmp_path: Path) -> None:
@@ -484,39 +483,26 @@ def test_build_standup_brief_rejects_cross_section_fact_citations(tmp_path: Path
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_provider_request_contract_emphasizes_maintainer_voice_without_a_dedicated_why_section() -> None:
     request = narrator._provider_request(fact_packet=_fact_packet())  # noqa: SLF001
 
-    assert "strong maintainer speaking off notes" in request.system_prompt.lower()
-    assert "plainspoken grounded maintainer narration" in request.system_prompt.lower()
-    assert "use ordinary words another maintainer can understand on first read" in request.system_prompt.lower()
-    assert "pressure point" in request.system_prompt.lower()
-    assert "muddy" in request.system_prompt.lower()
-    assert "window coverage spans" in request.system_prompt.lower()
-    assert "carry consequence inside the relevant bullet" in request.system_prompt.lower()
-    assert "write with stance" in request.system_prompt.lower()
-    assert "do not write in first-person singular" in request.system_prompt.lower()
-    assert "do not invent a house style or signature lead-in" in request.system_prompt.lower()
-    assert "the real center of gravity is" in request.system_prompt.lower()
-    assert "attention stays on" in request.system_prompt.lower()
-    assert "self-host posture is clean" in request.system_prompt.lower()
-    assert "next up is" in request.system_prompt.lower()
-    assert "what matters here is" in request.system_prompt.lower()
+    assert "thoughtful maintainer talking to a teammate" in request.system_prompt.lower()
+    assert "friendly, calm, direct, simple, factual, precise, and human" in request.system_prompt.lower()
+    assert "use short plain sentences first" in request.system_prompt.lower()
+    assert "stagey metaphor" in request.system_prompt.lower()
+    assert "most of the work here was in" in request.system_prompt.lower()
+    assert "x and y are still moving together" in request.system_prompt.lower()
+    assert "x is there because" in request.system_prompt.lower()
+    assert "celebrate real wins with restraint" in request.system_prompt.lower()
+    assert "steady and reassuring without softening the truth" in request.system_prompt.lower()
+    assert "do not force workstream roll calls just to prove coverage" in request.system_prompt.lower()
+    assert "do not sound like a dashboard, status bot, executive memo" in request.system_prompt.lower()
+    assert "do not print raw fact ids in prose" in request.system_prompt.lower()
+    assert "x is there because" in request.system_prompt.lower()
     assert "over the last 48 hours" in request.system_prompt.lower()
-    assert "the schedule still matters here" in request.system_prompt.lower()
-    assert "if odylith is genuinely better" in request.system_prompt.lower()
-    assert "work is now driving through" in request.system_prompt.lower()
-    assert "there is a live-version split to keep in view" in request.system_prompt.lower()
-    assert "release planning and execution are running together" in request.system_prompt.lower()
-    assert "most of the movement this window sat in" in request.system_prompt.lower()
-    assert "next step is" in request.system_prompt.lower()
-    assert "the follow-on adds" in request.system_prompt.lower()
-    assert "live self-host or install posture facts" in request.system_prompt.lower()
     assert request.model == "gpt-5.3-codex-spark"
     assert request.reasoning_effort == "low"
     assert request.timeout_seconds == 30.0
@@ -524,30 +510,29 @@ def test_provider_request_contract_emphasizes_maintainer_voice_without_a_dedicat
     assert "voice_values" not in request.prompt_payload["brief_contract"]
     assert all("required_voice_counts" not in section for section in request.prompt_payload["brief_contract"]["sections"])
     assert all(section["key"] != "why_this_matters" for section in request.prompt_payload["brief_contract"]["sections"])
-    assert "maintainer-delivered standup" in " ".join(request.prompt_payload["brief_contract"]["writing_contract"]["rules"]).lower()
     rules = " ".join(request.prompt_payload["brief_contract"]["writing_contract"]["rules"]).lower()
-    assert request.prompt_payload["brief_contract"]["writing_contract"]["target_style"] == "plainspoken grounded maintainer narration"
+    assert request.prompt_payload["brief_contract"]["writing_contract"]["target_style"] == "friendly grounded maintainer narration"
+    assert "thoughtful maintainer talking to a teammate" in rules
+    assert "celebrate real wins with restraint" in rules
+    assert "steady and reassuring without hiding the truth" in rules
     assert "use ordinary words another maintainer can understand on first read" in rules
-    assert "stay open and free-flowing without sounding polished, sloganized, or performed" in rules
-    assert "if a sentence sounds like a dashboard trying to sound wise" in rules
+    assert "if a tired maintainer would have to reread the sentence" in rules
     assert "vary sentence openings naturally" in rules
     assert "avoid recurring signature openings" in rules
     assert "state the unresolved problem directly" in rules
-    assert "do not wrap priority in generic labels" in rules
+    assert "instead of forcing a workstream roll call" in rules
     assert "do not lead bullets by restating long workstream titles" in rules
-    assert "do not narrate self-host status with slogan language" in rules
-    assert "carry customer need or operator consequence inside the relevant bullet" in rules
-    assert "do not write bullets as 'next up is' or 'what matters here is'" in rules
-    assert "do not keep reopening 48h bullets with 'over the last 48 hours'" in rules
-    assert "do not use stock timing wrappers" in rules
-    assert "do not use stagey metaphors or dashboard-wise abstractions" in rules
+    assert "carry consequence inside the relevant bullet" in rules
+    assert "do not write bullets as 'next up is', 'what matters here is', 'most of the work here was in'" in rules
+    assert "do not keep reopening bullets with repeated 'over the last 48 hours'" in rules
+    assert "do not use stock timing wrappers, rhetorical tests, stagey metaphors, or dashboard-wise abstractions" in rules
     assert "keep each bullet visibly tethered to the cited fact language" in rules
     assert "do not smooth the whole brief into the same polished claim-then-consequence sentence pattern" in rules
-    assert request.prompt_payload["brief_contract"]["style_examples"]["completed"][0].startswith(
-        "Two cleanup threads finally got put away."
+    assert request.prompt_payload["brief_contract"]["style_examples"]["celebration"][0].startswith(
+        "Good one to get over the line:"
     )
-    assert request.prompt_payload["brief_contract"]["style_examples"]["current_execution_executive"][0].startswith(
-        "Most of the work right now is in `B-022`."
+    assert request.prompt_payload["brief_contract"]["style_examples"]["reassurance"][0].startswith(
+        "Small but real reassurance:"
     )
 
 
@@ -564,9 +549,7 @@ def test_build_standup_brief_rejects_first_person_global_provider_voice(tmp_path
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_normalizes_joined_fact_id_tokens(tmp_path: Path) -> None:
@@ -628,16 +611,7 @@ def test_build_standup_brief_requires_freshness_evidence_when_packet_is_stale(tm
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
-    current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
-    freshness_bullet = next(
-        bullet
-        for bullet in current_execution["bullets"]
-        if bullet.get("fact_ids") == ["F-009"]
-    )
-    assert "latest linked execution proof is more than a day old" in freshness_bullet["text"].lower()
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_accepts_freshness_evidence_when_packet_is_stale(tmp_path: Path) -> None:
@@ -683,9 +657,7 @@ def test_build_standup_brief_rejects_overused_stock_leads(tmp_path: Path) -> Non
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_attention_now_priority_wrapper(tmp_path: Path) -> None:
@@ -703,9 +675,7 @@ def test_build_standup_brief_rejects_attention_now_priority_wrapper(tmp_path: Pa
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_canned_release_summary_patterns(tmp_path: Path) -> None:
@@ -719,9 +689,7 @@ def test_build_standup_brief_rejects_canned_release_summary_patterns(tmp_path: P
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_second_wave_cached_stock_framing(tmp_path: Path) -> None:
@@ -735,9 +703,7 @@ def test_build_standup_brief_rejects_second_wave_cached_stock_framing(tmp_path: 
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_repeated_polished_cadence_even_with_fact_overlap(tmp_path: Path) -> None:
@@ -763,9 +729,7 @@ def test_build_standup_brief_rejects_repeated_polished_cadence_even_with_fact_ov
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_internal_stock_templates(tmp_path: Path) -> None:
@@ -786,9 +750,7 @@ def test_build_standup_brief_rejects_internal_stock_templates(tmp_path: Path) ->
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_stagey_metaphor_voice(tmp_path: Path) -> None:
@@ -811,9 +773,7 @@ def test_build_standup_brief_rejects_stagey_metaphor_voice(tmp_path: Path) -> No
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_dashboard_polish_phrasing(tmp_path: Path) -> None:
@@ -834,9 +794,7 @@ def test_build_standup_brief_rejects_dashboard_polish_phrasing(tmp_path: Path) -
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_window_coverage_and_corpus_stock_wrappers(tmp_path: Path) -> None:
@@ -859,9 +817,36 @@ def test_build_standup_brief_rejects_window_coverage_and_corpus_stock_wrappers(t
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
+
+
+def test_build_standup_brief_rejects_stock_rollcall_linkage_and_existence_wrappers(tmp_path: Path) -> None:
+    invalid = _valid_provider_result()
+    invalid["sections"][1]["bullets"] = [
+        {
+            "text": "`B-025` is there because Compass can still drift between surfaces.",
+            "fact_ids": ["F-002"],
+        },
+        {
+            "text": "`B-025` and `B-071` are still moving together.",
+            "fact_ids": ["F-003"],
+        },
+        {
+            "text": "Most of the work here was in `B-025`, `B-071`, and `B-080`.",
+            "fact_ids": ["F-010"],
+        },
+    ]
+    provider = _FakeProvider(invalid)
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(window="48h", scope_mode="global", idea_id="", include_window_coverage_fact=True),
+        generated_utc="2026-04-10T21:19:00Z",
+        config=_reasoning_config(),
+        provider=provider,
+    )
+
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_local_developer_core_coding_slices_wrapper(tmp_path: Path) -> None:
@@ -880,9 +865,7 @@ def test_build_standup_brief_rejects_local_developer_core_coding_slices_wrapper(
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_newly_observed_release_summary_wrappers(tmp_path: Path) -> None:
@@ -941,9 +924,7 @@ def test_build_standup_brief_rejects_newly_observed_release_summary_wrappers(tmp
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_managerial_next_move_wrapper(tmp_path: Path) -> None:
@@ -959,9 +940,7 @@ def test_build_standup_brief_rejects_managerial_next_move_wrapper(tmp_path: Path
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_rejects_real_footing_stagecraft(tmp_path: Path) -> None:
@@ -977,9 +956,7 @@ def test_build_standup_brief_rejects_real_footing_stagecraft(tmp_path: Path) -> 
         provider=provider,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "validation_failed"
+    _assert_unavailable(brief, reason="validation_failed")
 
 
 def test_build_standup_brief_accepts_plainspoken_grounded_maintainer_voice(tmp_path: Path) -> None:
@@ -1249,7 +1226,7 @@ def test_provider_request_payload_uses_compact_fact_packet_view() -> None:
     assert current_execution["facts"][0]["id"] == "F-002"
 
 
-def test_validate_brief_response_injects_global_window_coverage_evidence_when_missing() -> None:
+def test_validate_brief_response_does_not_inject_global_window_coverage_rollcall_when_missing() -> None:
     packet = _fact_packet(scope_mode="global", idea_id="", include_window_coverage_fact=True)
     response = {
         "sections": [
@@ -1287,8 +1264,11 @@ def test_validate_brief_response_injects_global_window_coverage_evidence_when_mi
 
     assert not errors
     current_execution = next(section for section in _sections if section["key"] == "current_execution")
-    assert current_execution["bullets"][-1]["text"] == "Most of the work here was in B-101, B-102, and B-103."
-    assert current_execution["bullets"][-1]["fact_ids"] == ["F-010"]
+    assert [bullet["text"] for bullet in current_execution["bullets"]] == [
+        "Compass is being steered around AI-first standup narration.",
+        "Updated Compass narrative to capture implementation intent.",
+        "Projected at roughly 5 days.",
+    ]
 
 
 def test_validate_brief_response_accepts_fact_tethered_live_narration_without_false_fallback() -> None:
@@ -1373,7 +1353,7 @@ def test_provider_request_payload_keeps_48h_in_same_live_voice_as_24h() -> None:
         ),
     }
     assert (
-        "keep 24h and 48h in the same spoken maintainer register; only the evidence window widens"
+        "keep 24h and 48h in the same live spoken maintainer register; only the evidence window widens"
         in payload["brief_contract"]["writing_contract"]["rules"]
     )
 
@@ -1452,8 +1432,6 @@ def test_build_standup_brief_does_not_reuse_non_exact_validated_legacy_cache_ent
         config=_reasoning_config(),
         provider=provider,
         allow_provider=False,
-        allow_cache_recovery=False,
-        allow_deterministic_fallback=False,
     )
 
     assert brief["status"] == "unavailable"
@@ -1495,8 +1473,6 @@ def test_build_standup_brief_does_not_reuse_context_matched_current_cache_entry_
         config=_reasoning_config(),
         provider=provider,
         allow_provider=False,
-        allow_cache_recovery=False,
-        allow_deterministic_fallback=False,
     )
 
     assert brief["status"] == "unavailable"
@@ -1539,14 +1515,12 @@ def test_build_standup_brief_ignores_invalid_legacy_cache_entry(tmp_path: Path) 
         config=_reasoning_config(),
         provider=provider,
         allow_provider=False,
-        allow_cache_recovery=False,
-        allow_deterministic_fallback=False,
     )
 
     assert brief["status"] == "unavailable"
 
 
-def test_build_standup_brief_can_return_composed_current_packet_fallback(tmp_path: Path) -> None:
+def test_build_standup_brief_fails_closed_without_exact_cache_for_current_packet(tmp_path: Path) -> None:
     packet = _fact_packet(include_freshness_fact=True, scope_mode="scoped", idea_id="B-025", window="24h")
     provider = _FakeProvider(None)
 
@@ -1557,14 +1531,9 @@ def test_build_standup_brief_can_return_composed_current_packet_fallback(tmp_pat
         config=_reasoning_config(),
         provider=provider,
         allow_provider=True,
-        allow_cache_recovery=False,
-        allow_deterministic_fallback=False,
-        allow_composed_fallback=True,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "composed"
-    assert "notice" not in brief
+    _assert_unavailable(brief, reason="provider_empty")
 
 
 def test_build_standup_brief_reuses_exact_cache_when_only_freshness_wording_changes(tmp_path: Path) -> None:
@@ -1624,10 +1593,10 @@ def test_build_standup_brief_reuses_runtime_snapshot_when_local_cache_is_missing
                 "standup_brief": {
                     "24h": seeded,
                     "48h": {
-                        "status": "ready",
-                        "source": "deterministic",
+                        "status": "unavailable",
+                        "source": "unavailable",
                         "fingerprint": "ignore-48h",
-                        "generated_utc": _now_utc_iso(),
+                        "generated_utc": "",
                         "sections": [],
                     },
                 },
@@ -1654,7 +1623,7 @@ def test_build_standup_brief_reuses_runtime_snapshot_when_local_cache_is_missing
     assert cached_provider.calls == 0
 
 
-def test_build_standup_brief_salvages_runtime_snapshot_entry_that_fails_current_voice_validation(
+def test_build_standup_brief_ignores_runtime_snapshot_entry_that_fails_current_voice_validation(
     tmp_path: Path,
 ) -> None:
     packet = _fact_packet(include_freshness_fact=True, scope_mode="global", idea_id="", window="48h")
@@ -1702,12 +1671,8 @@ def test_build_standup_brief_salvages_runtime_snapshot_entry_that_fails_current_
     )
 
     assert brief["status"] == "ready"
-    assert brief["source"] == "cache"
-    current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
-    current_execution_text = " ".join(bullet["text"] for bullet in current_execution["bullets"])
-    assert "A lot moved in this window." not in current_execution_text
-    assert "This window mostly ran through" not in current_execution_text
-    assert provider.calls == 0
+    assert brief["source"] == "provider"
+    assert provider.calls == 1
 
 
 def test_build_standup_brief_ignores_runtime_snapshot_from_older_brief_contract(tmp_path: Path) -> None:
@@ -1749,7 +1714,7 @@ def test_build_standup_brief_ignores_runtime_snapshot_from_older_brief_contract(
     assert provider.calls == 1
 
 
-def test_build_standup_brief_bypasses_expired_cache_entry(tmp_path: Path) -> None:
+def test_build_standup_brief_reuses_exact_cache_even_when_it_is_old(tmp_path: Path) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
     first = narrator.build_standup_brief(
         repo_root=tmp_path,
@@ -1771,8 +1736,9 @@ def test_build_standup_brief_bypasses_expired_cache_entry(tmp_path: Path) -> Non
     )
 
     assert second["status"] == "ready"
-    assert second["source"] == "provider"
-    assert refreshed_provider.calls == 1
+    assert second["source"] == "cache"
+    assert second["cache_mode"] == "exact"
+    assert refreshed_provider.calls == 0
 
 
 def test_build_standup_brief_reuses_cache_when_live_provider_is_deferred(tmp_path: Path) -> None:
@@ -1853,8 +1819,6 @@ def test_build_standup_brief_full_refresh_can_fall_back_to_exact_current_packet_
         provider=_QueuedProvider([None, None]),
         allow_provider=True,
         prefer_provider=True,
-        allow_cache_recovery=False,
-        allow_deterministic_fallback=False,
     )
 
     assert refreshed["status"] == "ready"
@@ -1871,8 +1835,6 @@ def test_build_standup_brief_full_refresh_fails_closed_when_no_exact_cache_is_av
         provider=_QueuedProvider([None, None]),
         allow_provider=True,
         prefer_provider=True,
-        allow_cache_recovery=False,
-        allow_deterministic_fallback=False,
     )
 
     assert brief["status"] == "unavailable"
@@ -1880,7 +1842,7 @@ def test_build_standup_brief_full_refresh_fails_closed_when_no_exact_cache_is_av
     assert brief["diagnostics"]["reason"] == "provider_empty"
 
 
-def test_build_standup_brief_uses_deterministic_fallback_when_provider_returns_empty_for_changed_packet(
+def test_build_standup_brief_fails_closed_when_provider_returns_empty_for_changed_packet(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -1903,13 +1865,11 @@ def test_build_standup_brief_uses_deterministic_fallback_when_provider_returns_e
         provider=fallback_provider,
     )
 
-    assert fallback["status"] == "ready"
-    assert fallback["source"] == "deterministic"
-    assert fallback["notice"]["reason"] == "provider_empty"
+    _assert_unavailable(fallback, reason="provider_empty")
     assert fallback_provider.calls == 2
 
 
-def test_build_standup_brief_uses_deterministic_fallback_when_live_provider_is_deferred_and_fingerprint_changes(
+def test_build_standup_brief_fails_closed_when_live_provider_is_deferred_and_fingerprint_changes(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -1932,13 +1892,11 @@ def test_build_standup_brief_uses_deterministic_fallback_when_live_provider_is_d
         allow_provider=False,
     )
 
-    assert fallback["status"] == "ready"
-    assert fallback["source"] == "deterministic"
-    assert fallback["notice"]["reason"] == "provider_deferred"
+    _assert_unavailable(fallback, reason="provider_deferred")
     assert deferred_provider.calls == 0
 
 
-def test_build_standup_brief_uses_deterministic_fallback_when_global_packet_changes_even_if_old_copy_still_reads_ok(
+def test_build_standup_brief_fails_closed_when_global_packet_changes_even_if_old_copy_still_reads_ok(
     tmp_path: Path,
 ) -> None:
     baseline_packet = _fact_packet(
@@ -1984,9 +1942,7 @@ def test_build_standup_brief_uses_deterministic_fallback_when_global_packet_chan
         allow_provider=False,
     )
 
-    assert fallback["status"] == "ready"
-    assert fallback["source"] == "deterministic"
-    assert fallback["notice"]["reason"] == "provider_deferred"
+    _assert_unavailable(fallback, reason="provider_deferred")
 
 
 def test_build_standup_brief_does_not_reuse_cache_for_different_scope_or_window(tmp_path: Path) -> None:
@@ -2008,9 +1964,7 @@ def test_build_standup_brief_does_not_reuse_cache_for_different_scope_or_window(
         provider=None,
         allow_provider=False,
     )
-    assert no_match["status"] == "ready"
-    assert no_match["source"] == "deterministic"
-    assert no_match["notice"]["reason"] == "provider_deferred"
+    _assert_unavailable(no_match, reason="provider_deferred")
 
     no_window_match = narrator.build_standup_brief(
         repo_root=tmp_path,
@@ -2018,9 +1972,7 @@ def test_build_standup_brief_does_not_reuse_cache_for_different_scope_or_window(
         generated_utc=_now_utc_iso(),
         provider=None,
     )
-    assert no_window_match["status"] == "ready"
-    assert no_window_match["source"] == "deterministic"
-    assert no_window_match["notice"]["reason"] == "provider_unavailable"
+    _assert_unavailable(no_window_match, reason="provider_unavailable")
 
 
 def test_build_standup_brief_does_not_reuse_global_cache_across_windows(tmp_path: Path) -> None:
@@ -2043,9 +1995,7 @@ def test_build_standup_brief_does_not_reuse_global_cache_across_windows(tmp_path
     )
 
     assert seeded["status"] == "ready"
-    assert reused["status"] == "ready"
-    assert reused["source"] == "deterministic"
-    assert reused["notice"]["reason"] == "provider_deferred"
+    _assert_unavailable(reused, reason="provider_deferred")
 
 
 def test_build_standup_brief_does_not_reuse_scoped_cache_across_windows(
@@ -2075,12 +2025,10 @@ def test_build_standup_brief_does_not_reuse_scoped_cache_across_windows(
     )
 
     assert seeded["status"] == "ready"
-    assert reused["status"] == "ready"
-    assert reused["source"] == "deterministic"
-    assert reused["notice"]["reason"] == "provider_deferred"
+    _assert_unavailable(reused, reason="provider_deferred")
 
 
-def test_build_standup_brief_salvages_exact_cached_current_execution_section_when_one_bullet_goes_stale(
+def test_build_standup_brief_rejects_exact_cached_current_execution_section_when_one_bullet_goes_stale(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -2118,16 +2066,10 @@ def test_build_standup_brief_salvages_exact_cached_current_execution_section_whe
         allow_provider=False,
     )
 
-    assert reused["status"] == "ready"
-    assert reused["source"] == "cache"
-    assert reused["cache_mode"] == "exact"
-    current_execution_bullets = reused["sections"][1]["bullets"]
-    assert current_execution_bullets[1]["text"] == (
-        "Updated Compass narrative to capture implementation intent."
-    )
+    _assert_unavailable(reused, reason="provider_deferred")
 
 
-def test_build_standup_brief_salvages_cached_current_execution_when_freshness_evidence_is_missing(
+def test_build_standup_brief_rejects_cached_current_execution_when_freshness_evidence_is_missing(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -2169,14 +2111,10 @@ def test_build_standup_brief_salvages_cached_current_execution_when_freshness_ev
         allow_provider=False,
     )
 
-    assert reused["status"] == "ready"
-    assert reused["source"] == "cache"
-    assert reused["cache_mode"] == "exact"
-    current_execution_bullets = reused["sections"][1]["bullets"]
-    assert any("more than a day old" in bullet["text"] for bullet in current_execution_bullets)
+    _assert_unavailable(reused, reason="provider_deferred")
 
 
-def test_build_standup_brief_salvages_cached_risk_section_when_it_degrades_into_counts_only_telemetry(
+def test_build_standup_brief_rejects_cached_risk_section_when_it_degrades_into_counts_only_telemetry(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
@@ -2211,10 +2149,7 @@ def test_build_standup_brief_salvages_cached_risk_section_when_it_degrades_into_
         allow_provider=False,
     )
 
-    assert reused["status"] == "ready"
-    assert reused["source"] == "cache"
-    assert reused["cache_mode"] == "exact"
-    assert reused["sections"][3]["bullets"][0]["text"] == "No hard blocker is surfaced right now."
+    _assert_unavailable(reused, reason="provider_deferred")
 
 
 def test_build_standup_brief_does_not_reuse_stale_last_known_good_cache(tmp_path: Path) -> None:
@@ -2237,23 +2172,10 @@ def test_build_standup_brief_does_not_reuse_stale_last_known_good_cache(tmp_path
         allow_provider=False,
     )
 
-    assert stale_fallback["status"] == "ready"
-    assert stale_fallback["source"] == "deterministic"
-    assert stale_fallback["notice"]["reason"] == "provider_deferred"
-    assert stale_fallback["notice"]["title"] == "Showing deterministic local brief"
+    _assert_unavailable(stale_fallback, reason="provider_deferred")
 
 
-def test_build_standup_brief_uses_deterministic_fallback_when_exact_global_cache_is_stale(
-    tmp_path: Path,
-    monkeypatch,  # noqa: ANN001
-) -> None:
-    class _FixedDateTime(dt.datetime):
-        @classmethod
-        def now(cls, tz=None):  # noqa: ANN001
-            return cls(2026, 3, 22, 15, 30, 18, tzinfo=tz or dt.timezone.utc)
-
-    monkeypatch.setattr(narrator.dt, "datetime", _FixedDateTime)
-
+def test_build_standup_brief_reuses_exact_global_cache_even_when_it_is_old(tmp_path: Path) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
     seeded = narrator.build_standup_brief(
         repo_root=tmp_path,
@@ -2274,21 +2196,11 @@ def test_build_standup_brief_uses_deterministic_fallback_when_exact_global_cache
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "deterministic"
-    assert fallback["notice"]["reason"] == "provider_empty"
+    assert fallback["source"] == "cache"
+    assert fallback["cache_mode"] == "exact"
 
 
-def test_build_standup_brief_uses_deterministic_fallback_when_recent_exact_global_cache_is_stale(
-    tmp_path: Path,
-    monkeypatch,  # noqa: ANN001
-) -> None:
-    class _FixedDateTime(dt.datetime):
-        @classmethod
-        def now(cls, tz=None):  # noqa: ANN001
-            return cls(2026, 3, 22, 16, 10, 18, tzinfo=tz or dt.timezone.utc)
-
-    monkeypatch.setattr(narrator.dt, "datetime", _FixedDateTime)
-
+def test_build_standup_brief_reuses_recent_exact_global_cache_after_provider_empty(tmp_path: Path) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())
     seeded = narrator.build_standup_brief(
         repo_root=tmp_path,
@@ -2309,21 +2221,13 @@ def test_build_standup_brief_uses_deterministic_fallback_when_recent_exact_globa
     )
 
     assert fallback["status"] == "ready"
-    assert fallback["source"] == "deterministic"
-    assert fallback["notice"]["reason"] == "provider_empty"
+    assert fallback["source"] == "cache"
+    assert fallback["cache_mode"] == "exact"
 
 
 def test_build_standup_brief_does_not_reuse_live_global_cache_when_window_fingerprint_changes(
     tmp_path: Path,
-    monkeypatch,  # noqa: ANN001
 ) -> None:
-    class _FixedDateTime(dt.datetime):
-        @classmethod
-        def now(cls, tz=None):  # noqa: ANN001
-            return cls(2026, 3, 22, 16, 4, 57, tzinfo=tz or dt.timezone.utc)
-
-    monkeypatch.setattr(narrator.dt, "datetime", _FixedDateTime)
-
     seeded_packet = _fact_packet(scope_mode="global", idea_id="", window="24h", freshness_bucket="live")
     seeded_provider = _FakeProvider(_valid_provider_result())
     seeded = narrator.build_standup_brief(
@@ -2355,9 +2259,7 @@ def test_build_standup_brief_does_not_reuse_live_global_cache_when_window_finger
         provider=_QueuedProvider([None, None]),
     )
 
-    assert fallback["status"] == "ready"
-    assert fallback["source"] == "deterministic"
-    assert fallback["notice"]["reason"] == "provider_empty"
+    _assert_unavailable(fallback, reason="provider_empty")
 
 
 def test_build_standup_brief_does_not_recover_non_exact_legacy_global_cache_when_provider_is_deferred(
@@ -2407,16 +2309,14 @@ def test_build_standup_brief_does_not_recover_non_exact_legacy_global_cache_when
         allow_provider=False,
     )
 
-    assert recovered["status"] == "ready"
-    assert recovered["source"] == "deterministic"
-    assert recovered["notice"]["reason"] == "provider_deferred"
+    _assert_unavailable(recovered, reason="provider_deferred")
 
 
-def test_build_standup_brief_rewrites_cached_global_window_coverage_phrase_when_reusing_live_cache(
+def test_build_standup_brief_rejects_cached_global_window_coverage_rollcall_when_reusing_live_cache(
     tmp_path: Path,
 ) -> None:
     packet = _fact_packet(scope_mode="global", idea_id="", window="24h", include_window_coverage_fact=True)
-    cache_path = tmp_path / ".odylith" / "compass" / "standup-brief-cache.v22.json"
+    cache_path = tmp_path / ".odylith" / "compass" / "standup-brief-cache.v23.json"
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     sections = _valid_provider_result()["sections"]
     sections[1]["bullets"][-1] = {
@@ -2457,13 +2357,10 @@ def test_build_standup_brief_rewrites_cached_global_window_coverage_phrase_when_
         allow_provider=False,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "cache"
-    current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
-    assert current_execution["bullets"][-1]["text"] == "Most of the work here was in B-101, B-102, and B-103."
+    _assert_unavailable(brief, reason="provider_deferred")
 
 
-def test_build_standup_brief_salvages_exact_cache_when_current_execution_workstream_anchor_drifted(
+def test_build_standup_brief_rejects_exact_cache_when_current_execution_workstream_anchor_drifted(
     tmp_path: Path,
 ) -> None:
     packet = {
@@ -2609,10 +2506,43 @@ def test_build_standup_brief_salvages_exact_cache_when_current_execution_workstr
     }
     packet["facts"] = [fact for section in packet["sections"] for fact in section["facts"]]
 
-    sections = narrator.compass_standup_brief_deterministic.build_sections(
-        fact_packet=packet,
-        section_specs=narrator.STANDUP_BRIEF_SECTIONS,
-    )
+    sections = [
+        {
+            "key": "completed",
+            "label": "Completed in this window",
+            "bullets": [
+                {
+                    "text": "Two benchmark hardening plans closed in this window, and Compass refresh handling got tightened with them.",
+                    "fact_ids": ["F-001", "F-002"],
+                }
+            ],
+        },
+        {
+            "key": "current_execution",
+            "label": "Current execution",
+            "bullets": [],
+        },
+        {
+            "key": "next_planned",
+            "label": "Next planned",
+            "bullets": [
+                {
+                    "text": "Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into line first.",
+                    "fact_ids": ["F-010"],
+                }
+            ],
+        },
+        {
+            "key": "risks_to_watch",
+            "label": "Risks to watch",
+            "bullets": [
+                {
+                    "text": "Execution coherence across B-021 and B-022 can still drift while the shared dependencies stay open.",
+                    "fact_ids": ["F-012"],
+                }
+            ],
+        },
+    ]
     current_execution = next(section for section in sections if section["key"] == "current_execution")
     current_execution["bullets"] = [
         {
@@ -2633,7 +2563,7 @@ def test_build_standup_brief_salvages_exact_cache_when_current_execution_workstr
         },
     ]
 
-    cache_path = tmp_path / ".odylith" / "compass" / "standup-brief-cache.v22.json"
+    cache_path = tmp_path / ".odylith" / "compass" / "standup-brief-cache.v23.json"
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(
         json.dumps(
@@ -2663,16 +2593,7 @@ def test_build_standup_brief_salvages_exact_cache_when_current_execution_workstr
         allow_provider=False,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "cache"
-    assert brief["cache_mode"] == "exact"
-    current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
-    assert current_execution["bullets"][0]["text"].startswith("`B-025`:")
-    assert "B-071` is there because each surface" not in current_execution["bullets"][0]["text"]
-    assert current_execution["bullets"][-1]["text"] == (
-        "Most of the work here was in `B-025`, `B-071`, `B-048`, `B-060`, `B-068`, and `B-069`."
-    )
-    assert "B-021" not in current_execution["bullets"][-1]["text"]
+    _assert_unavailable(brief, reason="provider_deferred")
 
 
 def test_build_standup_brief_ignores_disabled_odylith_mode_when_provider_is_runnable(
@@ -2723,25 +2644,17 @@ def test_build_standup_brief_ignores_disabled_odylith_mode_when_provider_is_runn
     assert provider.calls == 1
 
 
-def test_build_standup_brief_uses_deterministic_fallback_when_no_provider_or_cache(tmp_path: Path) -> None:
+def test_build_standup_brief_fails_closed_when_no_provider_or_cache(tmp_path: Path) -> None:
     brief = narrator.build_standup_brief(
         repo_root=tmp_path,
         fact_packet=_fact_packet(),
         generated_utc="2026-03-13T20:00:00Z",
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "provider_unavailable"
-    assert "deterministic local brief" in brief["notice"]["message"].lower()
-    assert brief["sections"]
-    current_execution = next(section for section in brief["sections"] if section["key"] == "current_execution")
-    assert len(current_execution["bullets"]) >= 2
-    assert all("voice" not in item for item in current_execution["bullets"])
-    assert all(section["key"] != "why_this_matters" for section in brief["sections"])
+    _assert_unavailable(brief, reason="provider_unavailable")
 
 
-def test_build_standup_brief_can_defer_live_provider_and_use_deterministic_fallback(tmp_path: Path) -> None:
+def test_build_standup_brief_fails_closed_when_live_provider_is_deferred_without_exact_cache(tmp_path: Path) -> None:
     provider = _FakeProvider(_valid_provider_result())
 
     brief = narrator.build_standup_brief(
@@ -2753,11 +2666,7 @@ def test_build_standup_brief_can_defer_live_provider_and_use_deterministic_fallb
         allow_provider=False,
     )
 
-    assert brief["status"] == "ready"
-    assert brief["source"] == "deterministic"
-    assert brief["notice"]["reason"] == "provider_deferred"
-    assert brief["notice"]["title"] == "Showing deterministic local brief"
-    assert "deferred during this refresh" in brief["notice"]["message"].lower()
+    _assert_unavailable(brief, reason="provider_deferred")
     assert provider.calls == 0
 
 
@@ -2800,5 +2709,5 @@ def test_build_standup_brief_meets_hot_and_cold_latency_budgets(tmp_path: Path) 
             allow_provider=False,
         )
         cold_samples_ms.append((time.perf_counter() - started) * 1000.0)
-    assert cold["source"] == "deterministic"
+    assert cold["source"] == "unavailable"
     assert _median_ms(cold_samples_ms) < 1000.0

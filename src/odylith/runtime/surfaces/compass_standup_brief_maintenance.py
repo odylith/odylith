@@ -1,10 +1,11 @@
 """Maintained narrated-cache warming for Compass standup briefs.
 
-This module keeps refresh-time Compass cheap by moving scoped/global narrated
-cache warming into a deduped sidecar lane. Refresh writes a local-only request
-containing active high-signal fact packets, then a cheap provider-neutral
-worker warms only new fingerprints and patches the current runtime snapshot if
-it still matches the same input fingerprint.
+This module keeps refresh-time Compass cheap by moving narrated cache warming
+into a deduped sidecar lane. Refresh writes one local-only packet request
+containing any missing global windows plus any missing verified scoped briefs
+for that same runtime fingerprint, then a cheap provider-neutral worker warms
+that packet bundle and patches the current runtime snapshot only if it still
+matches the same input fingerprint.
 """
 
 from __future__ import annotations
@@ -16,11 +17,12 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 from typing import Any
 from typing import Mapping
+from typing import Sequence
 
 from odylith.runtime.context_engine import odylith_context_cache
-from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_batch
 from odylith.runtime.surfaces import compass_standup_brief_narrator
@@ -33,10 +35,11 @@ _RUNTIME_CURRENT_JSON = "odylith/compass/runtime/current.v1.json"
 _RUNTIME_CURRENT_JS = "odylith/compass/runtime/current.v1.js"
 _FAILED_RETRY_BASE_SECONDS = 300
 _FAILED_RETRY_MAX_SECONDS = 3600
+_INVALID_BATCH_RETRY_BASE_SECONDS = 1800
+_INVALID_BATCH_RETRY_MAX_SECONDS = 21600
 _PROVIDER_UNAVAILABLE_RETRY_BASE_SECONDS = 1800
 _PROVIDER_UNAVAILABLE_RETRY_MAX_SECONDS = 21600
-
-
+_RETRY_POLL_INTERVAL_SECONDS = 5
 def maintenance_request_path(*, repo_root: Path) -> Path:
     return (Path(repo_root).resolve() / _REQUEST_PATH).resolve()
 
@@ -125,11 +128,42 @@ def _terminal_state_matches(
     return dt.datetime.now(tz=dt.timezone.utc) < next_retry_dt
 
 
-def _retry_backoff_seconds(*, status: str, source: str, attempt_count: int) -> int:
+def _provider_backoff_failure(code: str) -> bool:
+    token = str(code or "").strip().lower()
+    return token in {
+        "rate_limited",
+        "credits_exhausted",
+        "timeout",
+        "provider_unavailable",
+        "transport_error",
+        "auth_error",
+        "provider_error",
+    }
+
+
+def _state_entry_is_nonready(entry: Mapping[str, Any] | None) -> bool:
+    if not isinstance(entry, Mapping):
+        return False
+    status = str(entry.get("status", "")).strip().lower()
+    return bool(status) and status != "ready"
+
+
+def _retry_backoff_seconds(
+    *,
+    status: str,
+    source: str,
+    attempt_count: int,
+    failure_code: str = "",
+    failure_reason: str = "",
+) -> int:
     status_token = str(status).strip().lower()
     source_token = str(source).strip().lower()
+    reason_token = str(failure_reason).strip().lower()
     attempts = max(1, int(attempt_count))
-    if status_token == "provider_unavailable" or source_token == "none":
+    if reason_token == "invalid_batch":
+        base = _INVALID_BATCH_RETRY_BASE_SECONDS
+        cap = _INVALID_BATCH_RETRY_MAX_SECONDS
+    elif status_token == "provider_unavailable" or source_token == "none" or _provider_backoff_failure(failure_code):
         base = _PROVIDER_UNAVAILABLE_RETRY_BASE_SECONDS
         cap = _PROVIDER_UNAVAILABLE_RETRY_MAX_SECONDS
     else:
@@ -138,18 +172,33 @@ def _retry_backoff_seconds(*, status: str, source: str, attempt_count: int) -> i
     return min(base * (2 ** (attempts - 1)), cap)
 
 
-def _scoped_candidate_allowed(*, signal: Mapping[str, Any] | None) -> bool:
-    return scope_signal_ladder.scope_signal_rank(signal or {}) >= 3 and scope_signal_ladder.budget_class_allows_reasoning(
-        str((signal or {}).get("budget_class", "")).strip()
-    )
-
-
 def _ready_narrated(brief: Mapping[str, Any] | None) -> bool:
     return (
         isinstance(brief, Mapping)
         and str(brief.get("status", "")).strip().lower() == "ready"
         and str(brief.get("source", "")).strip().lower() in {"provider", "cache"}
     )
+
+
+def _normalized_entry_diagnostics(diagnostics: Mapping[str, Any] | None) -> dict[str, Any]:
+    if not isinstance(diagnostics, Mapping):
+        return {}
+    payload: dict[str, Any] = {}
+    for key, value in diagnostics.items():
+        token = str(key or "").strip()
+        if not token:
+            continue
+        if isinstance(value, list):
+            cleaned = [str(item).strip() for item in value if str(item).strip()]
+            if cleaned:
+                payload[token] = cleaned
+            continue
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            payload[token] = text
+    return payload
 
 
 def _cheap_config(*, repo_root: Path) -> odylith_reasoning.ReasoningConfig:
@@ -222,28 +271,23 @@ def enqueue_request(
     for window_key, packets in scoped_fact_packets.items():
         packet_map = packets if isinstance(packets, Mapping) else {}
         brief_map = scoped_briefs.get(window_key, {}) if isinstance(scoped_briefs.get(window_key), Mapping) else {}
-        signal_map = scope_signals.get(window_key, {}) if isinstance(scope_signals.get(window_key), Mapping) else {}
         window_candidates: dict[str, Any] = {}
         for scope_id, fact_packet in packet_map.items():
             scope_token = str(scope_id).strip()
             if not scope_token or not isinstance(fact_packet, Mapping):
                 continue
-            signal = signal_map.get(scope_token) if isinstance(signal_map.get(scope_token), Mapping) else {}
-            if not _scoped_candidate_allowed(signal=signal):
-                continue
             brief = brief_map.get(scope_token) if isinstance(brief_map.get(scope_token), Mapping) else {}
+            key = _candidate_key(window_key=window_key, scope_id=scope_token)
             if _ready_narrated(brief):
                 continue
             if compass_standup_brief_narrator.has_reusable_cached_brief(repo_root=repo_root, fact_packet=fact_packet):
                 continue
             fingerprint = compass_standup_brief_narrator.standup_brief_fingerprint(fact_packet=fact_packet)
-            key = _candidate_key(window_key=window_key, scope_id=scope_token)
             if _terminal_state_matches(state_entries=state_entries, key=key, fingerprint=fingerprint):
                 continue
             window_candidates[scope_token] = {
                 "fingerprint": fingerprint,
                 "fact_packet": dict(fact_packet),
-                "scope_signal": dict(signal),
             }
         if window_candidates:
             payload["scoped"][str(window_key).strip()] = window_candidates
@@ -272,17 +316,34 @@ def stamp_request_runtime_input_fingerprint(
     repo_root = Path(repo_root).resolve()
     request_path = maintenance_request_path(repo_root=repo_root)
     payload = _load_json(request_path)
-    if not payload:
+    if not _request_has_entries(payload):
         return
-    payload["runtime_input_fingerprint"] = str(runtime_input_fingerprint).strip()
+    runtime_fingerprint = str(runtime_input_fingerprint).strip()
+    if not runtime_fingerprint:
+        return
+    payload["runtime_input_fingerprint"] = runtime_fingerprint
     _write_json(repo_root=repo_root, path=request_path, payload=payload)
+    state = _load_state(repo_root=repo_root)
+    global_failures, scoped_failures = _failure_results_from_state(
+        request=payload,
+        state_entries=dict(state.get("entries", {})),
+    )
+    if global_failures or scoped_failures:
+        _patch_current_runtime_payload(
+            repo_root=repo_root,
+            runtime_input_fingerprint=runtime_fingerprint,
+            global_results={},
+            scoped_results={},
+            global_failures=global_failures,
+            scoped_failures=scoped_failures,
+        )
 
 
 def maybe_spawn_background(*, repo_root: Path) -> int:
     repo_root = Path(repo_root).resolve()
     request_file = maintenance_request_path(repo_root=repo_root)
     request_payload = _load_json(request_file)
-    if not request_payload:
+    if not _request_has_entries(request_payload):
         return 0
     state = _load_state(repo_root=repo_root)
     active_pid = int(state.get("active_pid", 0) or 0)
@@ -316,7 +377,8 @@ def _record_result(
     status: str,
     scope_id: str = "",
     source: str = "",
-) -> None:
+    diagnostics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     entries = dict(state.get("entries", {}))
     key = _candidate_key(window_key=window_key, scope_id=scope_id)
     prior_entry = entries.get(key)
@@ -331,17 +393,285 @@ def _record_result(
         "attempted_utc": _now_utc_iso(),
         "attempt_count": attempt_count,
     }
+    normalized_diagnostics = _normalized_entry_diagnostics(diagnostics)
+    if normalized_diagnostics:
+        payload["diagnostics"] = normalized_diagnostics
     if payload["status"] != "ready":
         retry_at = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
             seconds=_retry_backoff_seconds(
                 status=payload["status"],
                 source=payload["source"],
                 attempt_count=attempt_count,
+                failure_code=str(normalized_diagnostics.get("provider_failure_code", "")).strip().lower(),
+                failure_reason=str(normalized_diagnostics.get("reason", "")).strip().lower(),
             )
         )
         payload["next_retry_utc"] = retry_at.replace(microsecond=0).isoformat().replace("+00:00", "Z")
     entries[key] = payload
     state["entries"] = entries
+    return payload
+
+
+def _diagnostics_from_state_entry(state_entry: Mapping[str, Any]) -> dict[str, Any]:
+    diagnostics = (
+        dict(state_entry.get("diagnostics"))
+        if isinstance(state_entry.get("diagnostics"), Mapping)
+        else {}
+    )
+    next_retry_utc = str(state_entry.get("next_retry_utc", "")).strip()
+    if next_retry_utc:
+        diagnostics["next_retry_utc"] = next_retry_utc
+    return diagnostics
+
+
+def _failure_brief(
+    *,
+    fingerprint: str,
+    generated_utc: str,
+    provider: odylith_reasoning.ReasoningProvider | None,
+    fallback_reason: str,
+    diagnostics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    if provider is not None:
+        return compass_standup_brief_narrator.unavailable_brief_for_provider_failure(
+            fingerprint=fingerprint,
+            generated_utc=generated_utc,
+            provider=provider,
+            fallback_reason=fallback_reason,
+            diagnostics=diagnostics,
+        )
+    return compass_standup_brief_narrator._unavailable_ready_brief(  # noqa: SLF001
+        fingerprint=fingerprint,
+        generated_utc=generated_utc,
+        reason=fallback_reason,
+        diagnostics=diagnostics,
+    )
+
+
+def _request_has_entries(payload: Mapping[str, Any] | None) -> bool:
+    def _valid_request_entry(entry: Any) -> bool:
+        if not isinstance(entry, Mapping):
+            return False
+        if not str(entry.get("fingerprint", "")).strip():
+            return False
+        fact_packet = entry.get("fact_packet")
+        return isinstance(fact_packet, Mapping) and bool(fact_packet)
+
+    if not isinstance(payload, Mapping):
+        return False
+    global_entries = payload.get("global")
+    if isinstance(global_entries, Mapping) and any(_valid_request_entry(entry) for entry in global_entries.values()):
+        return True
+    scoped_entries = payload.get("scoped")
+    if not isinstance(scoped_entries, Mapping):
+        return False
+    for window_entries in scoped_entries.values():
+        if isinstance(window_entries, Mapping) and any(_valid_request_entry(entry) for entry in window_entries.values()):
+            return True
+    return False
+
+
+def _pending_request_payload(
+    *,
+    request: Mapping[str, Any],
+    state_entries: Mapping[str, Any],
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "version": str(request.get("version", _REQUEST_VERSION)).strip() or _REQUEST_VERSION,
+        "generated_utc": str(request.get("generated_utc", "")).strip(),
+        "runtime_input_fingerprint": str(request.get("runtime_input_fingerprint", "")).strip(),
+        "global": {},
+        "scoped": {},
+    }
+
+    global_requests = request.get("global") if isinstance(request.get("global"), Mapping) else {}
+    for window_key, entry in global_requests.items():
+        if not isinstance(entry, Mapping) or not str(entry.get("fingerprint", "")).strip():
+            continue
+        key = _candidate_key(window_key=str(window_key).strip())
+        state_entry = state_entries.get(key) if isinstance(state_entries.get(key), Mapping) else {}
+        if str(state_entry.get("fingerprint", "")).strip() != str(entry.get("fingerprint", "")).strip():
+            payload["global"][str(window_key).strip()] = dict(entry)
+            continue
+        if str(state_entry.get("status", "")).strip().lower() == "ready":
+            continue
+        payload["global"][str(window_key).strip()] = dict(entry)
+
+    scoped_requests = request.get("scoped") if isinstance(request.get("scoped"), Mapping) else {}
+    for window_key, entries in scoped_requests.items():
+        if not isinstance(entries, Mapping):
+            continue
+        retained_window: dict[str, Any] = {}
+        for scope_id, entry in entries.items():
+            if not isinstance(entry, Mapping) or not str(entry.get("fingerprint", "")).strip():
+                continue
+            scope_token = str(scope_id).strip()
+            key = _candidate_key(window_key=str(window_key).strip(), scope_id=scope_token)
+            state_entry = state_entries.get(key) if isinstance(state_entries.get(key), Mapping) else {}
+            if str(state_entry.get("fingerprint", "")).strip() != str(entry.get("fingerprint", "")).strip():
+                retained_window[scope_token] = dict(entry)
+                continue
+            if str(state_entry.get("status", "")).strip().lower() == "ready":
+                continue
+            retained_window[scope_token] = dict(entry)
+        if retained_window:
+            payload["scoped"][str(window_key).strip()] = retained_window
+    return payload
+
+
+def _pending_request_delay_seconds(
+    *,
+    request: Mapping[str, Any],
+    state_entries: Mapping[str, Any],
+) -> float | None:
+    if not _request_has_entries(request):
+        return None
+    now = dt.datetime.now(tz=dt.timezone.utc)
+    min_delay: float | None = None
+
+    def _consider_entry(*, key: str, entry: Mapping[str, Any]) -> None:
+        nonlocal min_delay
+        state_entry = state_entries.get(key) if isinstance(state_entries.get(key), Mapping) else {}
+        if str(state_entry.get("fingerprint", "")).strip() != str(entry.get("fingerprint", "")).strip():
+            min_delay = 0.0
+            return
+        if str(state_entry.get("status", "")).strip().lower() == "ready":
+            return
+        next_retry_dt = compass_standup_brief_narrator._parse_iso_datetime(  # noqa: SLF001
+            str(state_entry.get("next_retry_utc", "")).strip()
+        )
+        if next_retry_dt is None:
+            min_delay = 0.0
+            return
+        delay_seconds = max(0.0, (next_retry_dt - now).total_seconds())
+        if min_delay is None or delay_seconds < min_delay:
+            min_delay = delay_seconds
+
+    global_requests = request.get("global") if isinstance(request.get("global"), Mapping) else {}
+    for window_key, entry in global_requests.items():
+        if not isinstance(entry, Mapping) or not str(entry.get("fingerprint", "")).strip():
+            continue
+        _consider_entry(key=_candidate_key(window_key=str(window_key).strip()), entry=entry)
+        if min_delay == 0.0:
+            return 0.0
+
+    scoped_requests = request.get("scoped") if isinstance(request.get("scoped"), Mapping) else {}
+    for window_key, entries in scoped_requests.items():
+        if not isinstance(entries, Mapping):
+            continue
+        for scope_id, entry in entries.items():
+            if not isinstance(entry, Mapping) or not str(entry.get("fingerprint", "")).strip():
+                continue
+            _consider_entry(
+                key=_candidate_key(window_key=str(window_key).strip(), scope_id=str(scope_id).strip()),
+                entry=entry,
+            )
+            if min_delay == 0.0:
+                return 0.0
+    return min_delay
+
+
+def _failure_results_from_state(
+    *,
+    request: Mapping[str, Any],
+    state_entries: Mapping[str, Any],
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, dict[str, Any]]]]:
+    generated_utc = str(request.get("generated_utc", "")).strip() or _now_utc_iso()
+    global_failures: dict[str, dict[str, Any]] = {}
+    scoped_failures: dict[str, dict[str, dict[str, Any]]] = {}
+
+    global_requests = request.get("global") if isinstance(request.get("global"), Mapping) else {}
+    for window_key, entry in global_requests.items():
+        if not isinstance(entry, Mapping):
+            continue
+        window_token = str(window_key).strip()
+        fingerprint = str(entry.get("fingerprint", "")).strip()
+        if not window_token or not fingerprint:
+            continue
+        state_entry = state_entries.get(_candidate_key(window_key=window_token))
+        if not isinstance(state_entry, Mapping):
+            continue
+        if str(state_entry.get("fingerprint", "")).strip() != fingerprint:
+            continue
+        if str(state_entry.get("status", "")).strip().lower() == "ready":
+            continue
+        diagnostics = _diagnostics_from_state_entry(state_entry)
+        global_failures[window_token] = _failure_brief(
+            fingerprint=fingerprint,
+            generated_utc=generated_utc,
+            provider=None,
+            fallback_reason=str(diagnostics.get("reason", "")).strip().lower() or str(state_entry.get("status", "")).strip().lower() or "brief_unavailable",
+            diagnostics=diagnostics,
+        )
+
+    scoped_requests = request.get("scoped") if isinstance(request.get("scoped"), Mapping) else {}
+    for window_key, entries in scoped_requests.items():
+        if not isinstance(entries, Mapping):
+            continue
+        window_token = str(window_key).strip()
+        failed_window: dict[str, dict[str, Any]] = {}
+        for scope_id, entry in entries.items():
+            if not isinstance(entry, Mapping):
+                continue
+            scope_token = str(scope_id).strip()
+            fingerprint = str(entry.get("fingerprint", "")).strip()
+            if not window_token or not scope_token or not fingerprint:
+                continue
+            state_entry = state_entries.get(_candidate_key(window_key=window_token, scope_id=scope_token))
+            if not isinstance(state_entry, Mapping):
+                continue
+            if str(state_entry.get("fingerprint", "")).strip() != fingerprint:
+                continue
+            if str(state_entry.get("status", "")).strip().lower() == "ready":
+                continue
+            diagnostics = _diagnostics_from_state_entry(state_entry)
+            failed_window[scope_token] = _failure_brief(
+                fingerprint=fingerprint,
+                generated_utc=generated_utc,
+                provider=None,
+                fallback_reason=str(diagnostics.get("reason", "")).strip().lower() or str(state_entry.get("status", "")).strip().lower() or "brief_unavailable",
+                diagnostics=diagnostics,
+            )
+        if failed_window:
+            scoped_failures[window_token] = failed_window
+
+    return global_failures, scoped_failures
+
+
+def failure_brief_for_fact_packet(
+    *,
+    repo_root: Path,
+    window_key: str,
+    fact_packet: Mapping[str, Any],
+    generated_utc: str,
+    scope_id: str = "",
+) -> dict[str, Any] | None:
+    if not isinstance(fact_packet, Mapping):
+        return None
+    repo_root = Path(repo_root).resolve()
+    fingerprint = compass_standup_brief_narrator.standup_brief_fingerprint(fact_packet=fact_packet)
+    state = _load_state(repo_root=repo_root)
+    state_entry = state.get("entries", {}).get(
+        _candidate_key(window_key=str(window_key).strip(), scope_id=str(scope_id).strip())
+    )
+    if not isinstance(state_entry, Mapping):
+        return None
+    if str(state_entry.get("fingerprint", "")).strip() != fingerprint:
+        return None
+    if str(state_entry.get("status", "")).strip().lower() == "ready":
+        return None
+    diagnostics = _diagnostics_from_state_entry(state_entry)
+    return _failure_brief(
+        fingerprint=fingerprint,
+        generated_utc=str(generated_utc).strip() or _now_utc_iso(),
+        provider=None,
+        fallback_reason=(
+            str(diagnostics.get("reason", "")).strip().lower()
+            or str(state_entry.get("status", "")).strip().lower()
+            or "brief_unavailable"
+        ),
+        diagnostics=diagnostics,
+    )
 
 
 def _patch_current_runtime_payload(
@@ -350,6 +680,8 @@ def _patch_current_runtime_payload(
     runtime_input_fingerprint: str,
     global_results: Mapping[str, Mapping[str, Any]],
     scoped_results: Mapping[str, Mapping[str, Mapping[str, Any]]],
+    global_failures: Mapping[str, Mapping[str, Any]] | None = None,
+    scoped_failures: Mapping[str, Mapping[str, Mapping[str, Any]]] | None = None,
 ) -> bool:
     current_json_path = (repo_root / _RUNTIME_CURRENT_JSON).resolve()
     current_js_path = (repo_root / _RUNTIME_CURRENT_JS).resolve()
@@ -388,6 +720,13 @@ def _patch_current_runtime_payload(
         mutable_standup_brief[str(window_key).strip()] = dict(brief)
         mutable_digest[str(window_key).strip()] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
         changed = True
+    for window_key, brief in (global_failures or {}).items():
+        if not isinstance(brief, Mapping):
+            continue
+        window_token = str(window_key).strip()
+        mutable_standup_brief[window_token] = dict(brief)
+        mutable_digest[window_token] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
+        changed = True
     for window_key, window_results in scoped_results.items():
         if not isinstance(window_results, Mapping):
             continue
@@ -404,6 +743,23 @@ def _patch_current_runtime_payload(
             changed = True
         mutable_standup_brief_scoped[str(window_key).strip()] = scoped_window
         mutable_digest_scoped[str(window_key).strip()] = digest_window
+    for window_key, window_failures in (scoped_failures or {}).items():
+        if not isinstance(window_failures, Mapping):
+            continue
+        window_token = str(window_key).strip()
+        scoped_window = dict(mutable_standup_brief_scoped.get(window_token, {}))
+        digest_window = dict(mutable_digest_scoped.get(window_token, {}))
+        for scope_id, brief in window_failures.items():
+            if not isinstance(brief, Mapping):
+                continue
+            scope_token = str(scope_id).strip()
+            if not scope_token:
+                continue
+            scoped_window[scope_token] = dict(brief)
+            digest_window[scope_token] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
+            changed = True
+        mutable_standup_brief_scoped[window_token] = scoped_window
+        mutable_digest_scoped[window_token] = digest_window
     if not changed:
         return False
     payload["standup_brief"] = mutable_standup_brief
@@ -424,6 +780,7 @@ def run_pending_request(
     *,
     repo_root: Path,
     emit_output: bool = False,
+    keep_active_pid: bool = False,
 ) -> dict[str, Any]:
     repo_root = Path(repo_root).resolve()
     request_path = maintenance_request_path(repo_root=repo_root)
@@ -433,16 +790,27 @@ def run_pending_request(
     _write_state(repo_root=repo_root, state=state)
 
     global_results: dict[str, dict[str, Any]] = {}
+    global_failure_results: dict[str, dict[str, Any]] = {}
     scoped_results: dict[str, dict[str, dict[str, Any]]] = {}
+    scoped_failure_results: dict[str, dict[str, dict[str, Any]]] = {}
     warmed = 0
     failed = 0
+    pending_request: dict[str, Any] = {}
+    pending_delay_seconds: float | None = None
 
     try:
-        if not request:
-            state["active_pid"] = 0
+        if not _request_has_entries(request):
+            state["active_pid"] = int(os.getpid()) if keep_active_pid else 0
             state["last_run_utc"] = _now_utc_iso()
             _write_state(repo_root=repo_root, state=state)
-            return {"warmed": 0, "failed": 0, "patched_current_runtime": False}
+            return {
+                "warmed": 0,
+                "failed": 0,
+                "patched_current_runtime": False,
+                "request_retained": False,
+                "next_retry_utc": "",
+                "next_retry_delay_seconds": None,
+            }
 
         cheap_config = _cheap_config(repo_root=repo_root)
         provider = _provider_for_cheap_config(repo_root=repo_root, config=cheap_config)
@@ -454,83 +822,144 @@ def run_pending_request(
             for window_key, entry in global_requests.items():
                 if not isinstance(entry, Mapping):
                     continue
-                _record_result(
+                recorded = _record_result(
                     state=state,
                     window_key=str(window_key).strip(),
                     fingerprint=str(entry.get("fingerprint", "")).strip(),
                     status="provider_unavailable",
                     source="none",
+                    diagnostics={"provider_failure_code": "provider_unavailable"},
+                )
+                global_failure_results[str(window_key).strip()] = _failure_brief(
+                    fingerprint=str(entry.get("fingerprint", "")).strip(),
+                    generated_utc=str(request.get("generated_utc", "")).strip() or _now_utc_iso(),
+                    provider=None,
+                    fallback_reason="provider_unavailable",
+                    diagnostics=_diagnostics_from_state_entry(recorded),
                 )
                 failed += 1
             for window_key, entries in scoped_requests.items():
                 if not isinstance(entries, Mapping):
                     continue
+                failed_window: dict[str, dict[str, Any]] = {}
                 for scope_id, entry in entries.items():
                     if not isinstance(entry, Mapping):
                         continue
-                    _record_result(
+                    recorded = _record_result(
                         state=state,
                         window_key=str(window_key).strip(),
                         scope_id=str(scope_id).strip(),
                         fingerprint=str(entry.get("fingerprint", "")).strip(),
                         status="provider_unavailable",
                         source="none",
+                        diagnostics={"provider_failure_code": "provider_unavailable"},
+                    )
+                    failed_window[str(scope_id).strip()] = _failure_brief(
+                        fingerprint=str(entry.get("fingerprint", "")).strip(),
+                        generated_utc=str(request.get("generated_utc", "")).strip() or _now_utc_iso(),
+                        provider=None,
+                        fallback_reason="provider_unavailable",
+                        diagnostics=_diagnostics_from_state_entry(recorded),
                     )
                     failed += 1
+                if failed_window:
+                    scoped_failure_results[str(window_key).strip()] = failed_window
         else:
+            generated_utc = str(request.get("generated_utc", "")).strip() or _now_utc_iso()
+            global_packets = {
+                str(window_key).strip(): dict(entry.get("fact_packet", {}))
+                for window_key, entry in global_requests.items()
+                if str(window_key).strip() and isinstance(entry, Mapping) and isinstance(entry.get("fact_packet"), Mapping)
+            }
+            scoped_packets = {
+                str(window_key).strip(): {
+                    str(scope_id).strip(): dict(entry.get("fact_packet", {}))
+                    for scope_id, entry in entries.items()
+                    if str(scope_id).strip() and isinstance(entry, Mapping) and isinstance(entry.get("fact_packet"), Mapping)
+                }
+                for window_key, entries in scoped_requests.items()
+                if isinstance(entries, Mapping)
+            }
+            bundle_results = compass_standup_brief_batch.build_brief_bundle(
+                repo_root=repo_root,
+                global_fact_packets_by_window=global_packets,
+                scoped_fact_packets_by_window=scoped_packets,
+                generated_utc=generated_utc,
+                config=cheap_config,
+                provider=provider,
+            )
+            global_batch_results = (
+                dict(bundle_results.get("global", {}))
+                if isinstance(bundle_results.get("global"), Mapping)
+                else {}
+            )
+            scoped_batch_results = (
+                {
+                    str(window_key).strip(): dict(window_results)
+                    for window_key, window_results in bundle_results.get("scoped", {}).items()
+                    if str(window_key).strip() and isinstance(window_results, Mapping)
+                }
+                if isinstance(bundle_results.get("scoped"), Mapping)
+                else {}
+            )
             for window_key, entry in global_requests.items():
                 if not isinstance(entry, Mapping):
                     continue
-                fact_packet = entry.get("fact_packet")
+                window_token = str(window_key).strip()
                 fingerprint = str(entry.get("fingerprint", "")).strip()
-                if not isinstance(fact_packet, Mapping):
-                    _record_result(state=state, window_key=str(window_key).strip(), fingerprint=fingerprint, status="failed")
-                    failed += 1
-                    continue
-                brief = compass_standup_brief_narrator.build_standup_brief(
-                    repo_root=repo_root,
-                    fact_packet=fact_packet,
-                    generated_utc=str(request.get("generated_utc", "")).strip() or _now_utc_iso(),
-                    config=cheap_config,
-                    provider=provider,
-                    allow_provider=True,
-                    prefer_provider=True,
-                    allow_cache_recovery=True,
-                    allow_legacy_cache_recovery=False,
-                    allow_deterministic_fallback=False,
-                    allow_composed_fallback=False,
-                )
+                brief = global_batch_results.get(window_token, {})
                 source = str(brief.get("source", "")).strip().lower()
                 if str(brief.get("status", "")).strip().lower() == "ready" and source in {"provider", "cache"}:
-                    global_results[str(window_key).strip()] = dict(brief)
+                    global_results[window_token] = dict(brief)
                     _record_result(
                         state=state,
-                        window_key=str(window_key).strip(),
+                        window_key=window_token,
                         fingerprint=fingerprint,
                         status="ready",
                         source=source,
                     )
                     warmed += 1
                 else:
-                    _record_result(state=state, window_key=str(window_key).strip(), fingerprint=fingerprint, status="failed", source=source)
+                    diagnostics = (
+                        brief.get("diagnostics")
+                        if isinstance(brief, Mapping) and isinstance(brief.get("diagnostics"), Mapping)
+                        else {}
+                    )
+                    failed_brief = _failure_brief(
+                        fingerprint=fingerprint,
+                        generated_utc=generated_utc,
+                        provider=provider,
+                        fallback_reason="invalid_batch",
+                        diagnostics=diagnostics,
+                    )
+                    recorded = _record_result(
+                        state=state,
+                        window_key=window_token,
+                        fingerprint=fingerprint,
+                        status="failed",
+                        source=source or str(failed_brief.get("source", "")).strip().lower(),
+                        diagnostics=failed_brief.get("diagnostics"),
+                    )
+                    failed_brief = _failure_brief(
+                        fingerprint=fingerprint,
+                        generated_utc=generated_utc,
+                        provider=provider,
+                        fallback_reason="invalid_batch",
+                        diagnostics=_diagnostics_from_state_entry(recorded),
+                    )
+                    global_failure_results[window_token] = failed_brief
                     failed += 1
 
             for window_key, entries in scoped_requests.items():
                 if not isinstance(entries, Mapping) or not entries:
                     continue
-                packets = {
-                    str(scope_id).strip(): dict(entry.get("fact_packet", {}))
-                    for scope_id, entry in entries.items()
-                    if str(scope_id).strip() and isinstance(entry, Mapping) and isinstance(entry.get("fact_packet"), Mapping)
-                }
-                batch_results = compass_standup_brief_batch.build_scoped_briefs(
-                    repo_root=repo_root,
-                    fact_packets_by_scope=packets,
-                    generated_utc=str(request.get("generated_utc", "")).strip() or _now_utc_iso(),
-                    config=cheap_config,
-                    provider=provider,
+                batch_results = (
+                    scoped_batch_results.get(str(window_key).strip(), {})
+                    if isinstance(scoped_batch_results.get(str(window_key).strip(), {}), Mapping)
+                    else {}
                 )
                 ready_window: dict[str, dict[str, Any]] = {}
+                failed_window: dict[str, dict[str, Any]] = {}
                 for scope_id, entry in entries.items():
                     if not isinstance(entry, Mapping):
                         continue
@@ -550,32 +979,82 @@ def run_pending_request(
                         )
                         warmed += 1
                     else:
-                        _record_result(
+                        diagnostics = (
+                            brief.get("diagnostics")
+                            if isinstance(brief, Mapping) and isinstance(brief.get("diagnostics"), Mapping)
+                            else {}
+                        )
+                        failed_brief = _failure_brief(
+                            fingerprint=fingerprint,
+                            generated_utc=generated_utc,
+                            provider=provider,
+                            fallback_reason="invalid_batch",
+                            diagnostics=diagnostics,
+                        )
+                        recorded = _record_result(
                             state=state,
                             window_key=str(window_key).strip(),
                             scope_id=scope_token,
                             fingerprint=fingerprint,
                             status="failed",
-                            source=source,
+                            source=source or str(failed_brief.get("source", "")).strip().lower(),
+                            diagnostics=failed_brief.get("diagnostics"),
                         )
+                        failed_brief = _failure_brief(
+                            fingerprint=fingerprint,
+                            generated_utc=generated_utc,
+                            provider=provider,
+                            fallback_reason="invalid_batch",
+                            diagnostics=_diagnostics_from_state_entry(recorded),
+                        )
+                        failed_window[scope_token] = failed_brief
                         failed += 1
                 if ready_window:
                     scoped_results[str(window_key).strip()] = ready_window
+                if failed_window:
+                    scoped_failure_results[str(window_key).strip()] = failed_window
 
         patched_current_runtime = _patch_current_runtime_payload(
             repo_root=repo_root,
             runtime_input_fingerprint=str(request.get("runtime_input_fingerprint", "")).strip(),
             global_results=global_results,
             scoped_results=scoped_results,
+            global_failures=global_failure_results,
+            scoped_failures=scoped_failure_results,
         )
+        pending_request = _pending_request_payload(
+            request=request,
+            state_entries=dict(state.get("entries", {})),
+        )
+        latest_request_payload = _load_json(request_path)
+        latest_runtime_input_fingerprint = str(latest_request_payload.get("runtime_input_fingerprint", "")).strip()
+        if latest_runtime_input_fingerprint and not str(pending_request.get("runtime_input_fingerprint", "")).strip():
+            pending_request["runtime_input_fingerprint"] = latest_runtime_input_fingerprint
+        pending_delay_seconds = _pending_request_delay_seconds(
+            request=pending_request,
+            state_entries=dict(state.get("entries", {})),
+        )
+        if _request_has_entries(pending_request):
+            _write_json(
+                repo_root=repo_root,
+                path=request_path,
+                payload=pending_request,
+            )
     finally:
-        state["active_pid"] = 0
+        retained_request = _request_has_entries(pending_request)
+        state["active_pid"] = int(os.getpid()) if keep_active_pid and retained_request else 0
         state["last_run_utc"] = _now_utc_iso()
         _write_state(repo_root=repo_root, state=state)
-        try:
-            request_path.unlink()
-        except FileNotFoundError:
-            pass
+        if not retained_request:
+            try:
+                request_path.unlink()
+            except FileNotFoundError:
+                pass
+
+    next_retry_utc = ""
+    if pending_delay_seconds is not None and _request_has_entries(pending_request):
+        next_retry_dt = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(seconds=pending_delay_seconds)
+        next_retry_utc = next_retry_dt.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
     result = {
         "warmed": warmed,
@@ -583,12 +1062,18 @@ def run_pending_request(
         "patched_current_runtime": patched_current_runtime,
         "globals": sorted(global_results),
         "scoped": {window: sorted(entries) for window, entries in scoped_results.items()},
+        "request_retained": _request_has_entries(pending_request),
+        "next_retry_utc": next_retry_utc,
+        "next_retry_delay_seconds": pending_delay_seconds,
     }
     if emit_output:
         print("compass standup maintenance")
         print(f"- warmed: {warmed}")
         print(f"- failed: {failed}")
         print(f"- patched_current_runtime: {'yes' if patched_current_runtime else 'no'}")
+        print(f"- request_retained: {'yes' if result['request_retained'] else 'no'}")
+        if result["next_retry_utc"]:
+            print(f"- next_retry_utc: {result['next_retry_utc']}")
     return result
 
 
@@ -608,7 +1093,27 @@ def main(argv: list[str] | None = None) -> int:
             idx += 1
             continue
         idx += 1
-    run_pending_request(repo_root=repo_root, emit_output=emit_output)
+    while True:
+        request = _load_json(maintenance_request_path(repo_root=repo_root))
+        if not _request_has_entries(request):
+            state = _load_state(repo_root=repo_root)
+            state["active_pid"] = 0
+            state["last_run_utc"] = _now_utc_iso()
+            _write_state(repo_root=repo_root, state=state)
+            break
+        state = _load_state(repo_root=repo_root)
+        state["active_pid"] = int(os.getpid())
+        _write_state(repo_root=repo_root, state=state)
+        delay_seconds = _pending_request_delay_seconds(
+            request=request,
+            state_entries=dict(state.get("entries", {})),
+        )
+        if delay_seconds is not None and delay_seconds > 0:
+            time.sleep(min(delay_seconds, float(_RETRY_POLL_INTERVAL_SECONDS)))
+            continue
+        result = run_pending_request(repo_root=repo_root, emit_output=emit_output, keep_active_pid=True)
+        if not result.get("request_retained"):
+            break
     return 0
 
 

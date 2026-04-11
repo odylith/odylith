@@ -25,6 +25,7 @@ from odylith.runtime.evaluation import odylith_benchmark_runner
 from odylith.runtime.memory import odylith_memory_backend
 from odylith.runtime.memory import odylith_remote_retrieval
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_daemon_wait_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.common.command_surface import module_invocation
 
@@ -1963,14 +1964,27 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
         payload=payload,
     )
     if command == "warmup":
-        return store.warm_projections(
+        summary = store.warm_projections(
             repo_root=repo_root,
             force=bool(payload.get("force")),
             reason=str(payload.get("reason", "daemon")).strip() or "daemon",
             scope=str(payload.get("scope", "full")).strip() or "full",
         )
+        odylith_context_engine_daemon_wait_runtime.record_projection_fingerprint(
+            repo_root=repo_root,
+            projection_fingerprint=str(summary.get("projection_fingerprint", "")).strip(),
+        )
+        return summary
     if command == "status":
         return _runtime_status_payload(repo_root=repo_root)
+    if command == "wait-projection-change":
+        current_status = _runtime_status_payload(repo_root=repo_root)
+        return odylith_context_engine_daemon_wait_runtime.wait_for_projection_change(
+            repo_root=repo_root,
+            since_fingerprint=str(payload.get("since_fingerprint", "")).strip(),
+            current_fingerprint=str(current_status.get("projection_fingerprint", "")).strip(),
+            timeout_seconds=float(payload.get("timeout_seconds", 60.0) or 60.0),
+        )
     if command == "memory-snapshot":
         optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)
         evaluation_snapshot = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
@@ -2557,6 +2571,7 @@ class _GitFsmonitorRuntimeWatcher:
 def _build_runtime_watcher(*, repo_root: Path, backend: str) -> Any:
     watch_targets = store.watch_targets(repo_root=repo_root)
     requested = str(backend or "auto").strip().lower()
+    backend_report = store.watcher_backend_report(repo_root=repo_root) if requested == "auto" else {}
     if requested == "auto":
         ordered = [store.preferred_watcher_backend(repo_root=repo_root), "watchman", "watchdog", "git-fsmonitor", "poll"]
     else:
@@ -2572,10 +2587,11 @@ def _build_runtime_watcher(*, repo_root: Path, backend: str) -> Any:
             if candidate == "watchdog":
                 return _WatchdogRuntimeWatcher(repo_root=repo_root, watch_targets=watch_targets)
             if candidate == "git-fsmonitor":
+                bootstrap_git_fsmonitor = requested == "git-fsmonitor" or bool(backend_report.get("bootstrap_recommended"))
                 return _GitFsmonitorRuntimeWatcher(
                     repo_root=repo_root,
                     watch_targets=watch_targets,
-                    bootstrap=requested == "git-fsmonitor",
+                    bootstrap=bootstrap_git_fsmonitor,
                 )
             if candidate == "poll":
                 return _PollingRuntimeWatcher()
@@ -2627,11 +2643,15 @@ def _run_serve(
             ):
                 break
             if first:
-                store.warm_projections(
+                summary = store.warm_projections(
                     repo_root=repo_root,
                     force=bool(force and first),
                     reason="serve",
                     scope=scope,
+                )
+                odylith_context_engine_daemon_wait_runtime.record_projection_fingerprint(
+                    repo_root=repo_root,
+                    projection_fingerprint=str(summary.get("projection_fingerprint", "")).strip(),
                 )
                 first = False
                 continue
@@ -2643,11 +2663,15 @@ def _run_serve(
                 idle_timeout_seconds=idle_timeout_seconds,
             ):
                 break
-            store.warm_projections(
+            summary = store.warm_projections(
                 repo_root=repo_root,
                 force=False,
                 reason="serve",
                 scope=scope,
+            )
+            odylith_context_engine_daemon_wait_runtime.record_projection_fingerprint(
+                repo_root=repo_root,
+                projection_fingerprint=str(summary.get("projection_fingerprint", "")).strip(),
             )
     except KeyboardInterrupt:
         return 130

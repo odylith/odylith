@@ -42,6 +42,7 @@ from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_refresh_runtime
 from odylith.runtime.surfaces import render_mermaid_catalog_refresh
+from odylith.runtime.surfaces import source_bundle_mirror
 
 
 _SYNC_PATH_PREFIXES: tuple[str, ...] = (
@@ -110,6 +111,15 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
 }
 _HEARTBEAT_INTERVAL_SECONDS = 10.0
 _DASHBOARD_REFRESH_TIMEOUT_SECONDS = dashboard_refresh_contract.DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS
+_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES: tuple[str, ...] = (
+    "odylith/agents-guidelines/",
+    "odylith/skills/",
+    "odylith/registry/source/",
+    "odylith/radar/source/",
+    "odylith/technical-plans/",
+    "odylith/casebook/bugs/",
+    "odylith/atlas/source/",
+)
 
 
 def _context_engine_store():
@@ -235,6 +245,50 @@ def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[
     if completed.returncode != 0:
         return ()
     return tuple(line.rstrip() for line in str(completed.stdout or "").splitlines() if line.strip())
+
+
+def _should_bundle_mirror_source_truth_path(path_token: str) -> bool:
+    token = str(path_token).strip()
+    if not token:
+        return False
+    return any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES)
+
+
+def _sync_changed_source_truth_bundle_mirrors(*, repo_root: Path) -> int:
+    changed_paths = governance.normalize_changed_paths(
+        repo_root=repo_root,
+        values=governance.collect_git_changed_paths(repo_root=repo_root),
+    )
+    live_paths: list[Path] = []
+    removed_paths: list[Path] = []
+    seen_live_paths: set[Path] = set()
+
+    for token in changed_paths:
+        if not _should_bundle_mirror_source_truth_path(token):
+            continue
+        live_path = (repo_root / token).resolve()
+        mirror_path = source_bundle_mirror.bundle_mirror_path(
+            repo_root=repo_root,
+            live_path=live_path,
+        )
+        if live_path.is_file():
+            if live_path in seen_live_paths:
+                continue
+            seen_live_paths.add(live_path)
+            live_paths.append(live_path)
+            continue
+        if mirror_path.is_file():
+            mirror_path.unlink()
+            removed_paths.append(mirror_path)
+
+    mirrored_paths = source_bundle_mirror.sync_live_paths(
+        repo_root=repo_root,
+        live_paths=live_paths,
+    )
+    print("source bundle mirror sync passed")
+    print(f"- mirrored: {len(mirrored_paths)}")
+    print(f"- removed: {len(removed_paths)}")
+    return 0
 
 
 def _execution_plan(*, headline: str, steps: Sequence[ExecutionStep], notes: Sequence[str], repo_root: Path) -> ExecutionPlan:
@@ -1720,6 +1774,15 @@ def build_sync_execution_plan(
             ),
             mutation_classes=("repo_owned_truth",),
             paths=("odylith/registry/source/components/",),
+            next_command_on_failure=sync_failure_command,
+        )
+    )
+    steps.append(
+        _execution_step(
+            "Mirror changed source-truth docs into the shipped bundle asset tree.",
+            action=lambda: _sync_changed_source_truth_bundle_mirrors(repo_root=repo_root),
+            mutation_classes=("generated_surfaces",),
+            paths=_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES,
             next_command_on_failure=sync_failure_command,
         )
     )

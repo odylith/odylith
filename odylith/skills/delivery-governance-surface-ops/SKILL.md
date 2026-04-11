@@ -70,7 +70,7 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 ./.odylith/bin/odylith atlas auto-update --repo-root . --from-git-working-tree --fail-on-stale
 ./.odylith/bin/odylith atlas render --repo-root . --fail-on-stale
 ./.odylith/bin/odylith compass log --repo-root . --kind implementation --summary "<intent-first update>"
-./.odylith/bin/odylith compass watch-transactions --repo-root . --interval-seconds 15
+./.odylith/bin/odylith compass watch-transactions --repo-root .
 ```
 
 ## Rules

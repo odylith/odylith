@@ -61,6 +61,7 @@
         "radar",
         "atlas",
         "compass",
+        "briefs-voice-contract",
         "registry",
         "casebook",
         "release",
@@ -206,7 +207,9 @@
       ],
       "workstreams": [
         "B-001",
-        "B-059"
+        "B-025",
+        "B-059",
+        "B-071"
       ],
       "diagrams": [
         "D-001",
@@ -224,6 +227,39 @@
         "manifest"
       ],
       "product_layer": "evidence_surface"
+    },
+    {
+      "component_id": "briefs-voice-contract",
+      "name": "Briefs Voice Contract",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "compass-brief-contract",
+        "brief-voice"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+        "src/odylith/runtime/surfaces/compass_standup_brief_voice_validation.py",
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "odylith/skills/compass-executive/SKILL.md"
+      ],
+      "workstreams": [
+        "B-025",
+        "B-071"
+      ],
+      "diagrams": [
+        "D-032"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Governed narration contract that keeps Compass briefs human, factual, friendly, and fail-closed.",
+      "why_tracked": "Prevents brief-quality drift by keeping prompt, validator, cache policy, skills, and guidance under one product-owned contract.",
+      "spec_ref": "odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
     },
     {
       "component_id": "registry",

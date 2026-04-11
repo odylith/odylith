@@ -1,4 +1,4 @@
-"""Compass standup brief narrator and cache.
+"""Compass standup brief narrator and exact-fingerprint cache.
 
 Compass runtime remains authoritative for fact selection, evidence ranking, and
 fingerprinting. This module owns the bounded narration layer:
@@ -7,7 +7,7 @@ fingerprinting. This module owns the bounded narration layer:
 - request a fixed four-section standup brief with schema-constrained output;
 - validate the reply against the deterministic fact packet and UI contract;
 - cache validated results by exact fact-packet fingerprint; and
-- fall back to a deterministic structured brief when live AI narration is not
+- replay only exact same-packet narration when live AI narration is not
   available.
 """
 
@@ -24,12 +24,11 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
-from odylith.runtime.surfaces import compass_standup_brief_deterministic
 from odylith.runtime.surfaces import compass_standup_brief_voice_validation
 
 
-STANDUP_BRIEF_SCHEMA_VERSION = "v22"
-STANDUP_BRIEF_CACHE_PATH = ".odylith/compass/standup-brief-cache.v22.json"
+STANDUP_BRIEF_SCHEMA_VERSION = "v23"
+STANDUP_BRIEF_CACHE_PATH = ".odylith/compass/standup-brief-cache.v23.json"
 STANDUP_BRIEF_SECTIONS: tuple[tuple[str, str], ...] = (
     ("completed", "Completed in this window"),
     ("current_execution", "Current execution"),
@@ -119,6 +118,20 @@ _GENERIC_BENCHMARK_CHALLENGE_RE = re.compile(
     r"^\s*if\s+odylith\s+is\s+genuinely\s+better,\b",
     re.IGNORECASE,
 )
+_GENERIC_COVERAGE_ROLLCALL_RE = re.compile(
+    r"^\s*(?:most\s+of\s+the\s+work\s+here\s+was\s+in|"
+    r"most\s+of\s+the\s+movement\s+this\s+window\s+sat\s+in|"
+    r"a\s+lot\s+happened,\s+but\s+most\s+of\s+it\s+came\s+through)\b",
+    re.IGNORECASE,
+)
+_GENERIC_LINKAGE_WRAPPER_RE = re.compile(
+    r"\bare\s+still\s+moving\s+together\b",
+    re.IGNORECASE,
+)
+_GENERIC_EXISTENCE_BECAUSE_RE = re.compile(
+    r"^\s*(?:`?B-\d+`?|[A-Za-z][A-Za-z0-9`'’(),/\- ]{0,90})\s+is\s+there\s+because\b",
+    re.IGNORECASE,
+)
 _INTERNAL_TEMPLATE_RE = re.compile(
     r"^\s*(?:the\s+unresolved\s+decision\s+is\s+in|"
     r"this\s+lane\s+is\s+still\s+carrying\s+real\s+weight|"
@@ -152,13 +165,7 @@ _COMPACT_RETRY_PROVIDER_FACT_LIMITS_BY_SECTION = {
     "next_planned": 1,
     "risks_to_watch": 2,
 }
-_CACHE_TTL_SECONDS_BY_FRESHNESS = {
-    "live": 15 * 60,
-    "recent": 45 * 60,
-    "aging": 2 * 60 * 60,
-    "stale": 4 * 60 * 60,
-    "unknown": 60 * 60,
-}
+_VALID_FRESHNESS_BUCKETS = {"live", "recent", "aging", "stale", "unknown"}
 def _default_compass_reasoning_config() -> odylith_reasoning.ReasoningConfig:
     return odylith_reasoning.ReasoningConfig(
         mode="auto",
@@ -251,6 +258,19 @@ def _canonicalize_fact_packet_for_fingerprint(
     return value
 
 
+def _fact_packet_freshness_bucket(*, fact_packet: Mapping[str, Any]) -> str:
+    summary = fact_packet.get("summary")
+    if not isinstance(summary, Mapping):
+        return "unknown"
+    freshness = summary.get("freshness")
+    if not isinstance(freshness, Mapping):
+        return "unknown"
+    bucket = str(freshness.get("bucket", "")).strip().lower()
+    if bucket in _VALID_FRESHNESS_BUCKETS:
+        return bucket
+    return "unknown"
+
+
 def _parse_iso_datetime(raw_value: str) -> dt.datetime | None:
     token = str(raw_value or "").strip()
     if not token:
@@ -266,41 +286,6 @@ def _parse_iso_datetime(raw_value: str) -> dt.datetime | None:
     return parsed.astimezone(dt.timezone.utc)
 
 
-def _fact_packet_freshness_bucket(*, fact_packet: Mapping[str, Any]) -> str:
-    summary = fact_packet.get("summary")
-    if not isinstance(summary, Mapping):
-        return "unknown"
-    freshness = summary.get("freshness")
-    if not isinstance(freshness, Mapping):
-        return "unknown"
-    bucket = str(freshness.get("bucket", "")).strip().lower()
-    if bucket in _CACHE_TTL_SECONDS_BY_FRESHNESS:
-        return bucket
-    return "unknown"
-
-
-def _cache_ttl_seconds(*, fact_packet: Mapping[str, Any]) -> int:
-    return _CACHE_TTL_SECONDS_BY_FRESHNESS.get(
-        _fact_packet_freshness_bucket(fact_packet=fact_packet),
-        _CACHE_TTL_SECONDS_BY_FRESHNESS["unknown"],
-    )
-
-
-def _cache_entry_is_reusable(
-    *,
-    cached_entry: Mapping[str, Any],
-    fact_packet: Mapping[str, Any],
-    now_utc: dt.datetime,
-) -> bool:
-    generated_ts = _parse_iso_datetime(str(cached_entry.get("generated_utc", "")).strip())
-    if generated_ts is None:
-        return False
-    age_seconds = (now_utc - generated_ts).total_seconds()
-    if age_seconds < 0:
-        return False
-    return age_seconds <= float(_cache_ttl_seconds(fact_packet=fact_packet))
-
-
 def _cache_context(*, fact_packet: Mapping[str, Any]) -> dict[str, str]:
     scope = fact_packet.get("scope")
     scope_mapping = scope if isinstance(scope, Mapping) else {}
@@ -314,62 +299,26 @@ def _cache_context(*, fact_packet: Mapping[str, Any]) -> dict[str, str]:
 
 
 def _provider_system_prompt(*, compact_retry: bool = False) -> str:
-    if compact_retry:
-        return (
-            "You are Compass, the standup narrator. "
-            "Write plainspoken grounded maintainer narration from the supplied fact packet only. "
-            "Keep the same human spoken voice for 24h and 48h. "
-            "Be clear, specific, natural, and free-flowing, not canned or rhythmic. "
-            "Do not use stock framing, dashboard-wise abstractions, stagey metaphors, or polished status-report phrasing. "
-            "Name the issue, movement, proof, next step, or risk directly. "
-            "For global scope, mention every touched workstream somewhere in the brief. "
-            "Keep section order and labels exactly as provided. "
-            "Do not print raw fact ids in prose; cite only supplied fact ids in fact_ids."
-        )
-    return (
-        "You are Compass, the executive standup narrator. "
-        "Write a concise four-section standup brief for maintainers who need one clear read on what changed, what is getting attention now, what comes next, and what could still go wrong. "
-        "Write in plainspoken grounded maintainer narration: like a strong maintainer speaking off notes, human, plain, specific, open, clear, lightly soulful, and free-flowing rather than branded dashboard prose. "
-        "Keep the voice consistent across 24h and 48h windows; a 48h brief is the same live standup voice as 24h, not a retrospective or strategy memo. "
-        "Write with stance: decide what deserves space, what is just bookkeeping, and where the pressure actually is. "
-        "Write like someone who has been in the work, not like a system filling four polished slots. "
-        "Use ordinary words another maintainer can understand on first read. If a sentence sounds like a dashboard trying to sound insightful, rewrite it. "
-        "Do not write in first-person singular. "
-        "Do not invent a house style or signature lead-in. Avoid stock scaffolding and repeated openings such as "
-        "'The real center of gravity is', 'The core proof lane', 'The immediate forcing function is', "
-        "'The boring but important move was', 'X is getting the attention because', 'attention stays on', "
-        "'stays hot', 'This work is active because', 'The clearest field signal is', "
-        "'Self-host posture is clean', 'Next up is', 'What matters here is', 'Under that lane', "
-        "'X is moving alongside release work because', repeated 'Over the last 48 hours' leads, "
-        "'The schedule still matters here', 'If Odylith is genuinely better', 'Work is now driving through', "
-        "'There is a live-version split to keep in view', 'Release planning and execution are running together', "
-        "'Most of the movement this window sat in', 'Next step is', 'The follow-on adds', or similar canned phrases. "
-        "Do not lean on stagey metaphors or dashboard-wise phrasing like 'pressure point', 'center of gravity', 'muddy', 'slippery', 'top lane', or 'window coverage spans'. "
-        "Do not use managerial wrappers like 'The next move is' or telemetry summaries like 'with the clearest movement around'. "
-        "Vary sentence openings naturally across sections, windows, and workstreams. "
-        "Prefer ordinary speech: say what changed, what is getting attention now, why it matters, and what could still go wrong. "
-        "The UI already tells the reader which time window is active, so do not keep reopening bullets with window labels. "
-        "Do not make every bullet sound equally polished or equally shaped. Some bullets can be blunt, some connective, some sharp. "
-        "If a bullet could fit almost any repo, it is too generic; rewrite it until it feels observed rather than summarized. "
-        "Each bullet must stay visibly tethered to the cited fact language. If the cited facts disappeared, the bullet should stop making sense. "
-        "Carry consequence inside the relevant bullet instead of carving out a separate explanation section. "
+    prompt = (
+        "You are Compass, the governed standup narrator. "
+        "Write a concise four-section standup brief from the supplied fact packet only. "
+        "Sound like a thoughtful maintainer talking to a teammate: friendly, calm, direct, simple, factual, precise, and human. "
+        "Use short plain sentences first. Carry judgment without sounding grand. "
+        "Celebrate real wins with restraint. When things are shaky, be steady and reassuring without softening the truth. "
+        "Name what changed, why it matters, what is next, and what could still break. "
+        "Keep the 24h and 48h views in the same live spoken voice; 48h widens the evidence, not the personality. "
+        "Do not sound like a dashboard, status bot, executive memo, or polished management summary. "
+        "Do not force workstream roll calls just to prove coverage. Name only the lanes that help the reader understand the window, and let the evidence carry the rest. "
+        "Do not use stock framing, repeated house phrases, stagey metaphor, or canned wrappers such as "
+        "'Most of the work here was in', 'X and Y are still moving together', 'X is there because', "
+        "'The next move is', 'Next up is', or repeated 'Over the last 48 hours' leads. "
         "Use only the supplied fact packet and cited fact ids. "
-        "Treat any live self-host or install posture facts in the packet as authoritative over older release-history narrative when they disagree. "
-        "For global scope, if the fact packet shows multiple touched workstreams in the window, make sure every touched workstream appears somewhere in the brief. "
-        "Do not collapse the window into one flagship lane and silently drop the rest. "
-        "Do not include literal fact ids in bullet text; cite them only in the fact_ids field. "
-        "Keep the section order and labels exactly as provided. "
-        "Compress hard: each bullet should carry movement, consequence, or steering context, not generic posture. "
-        "Prefer concrete pressure, friction, proof, and consequence over managerial umbrella terms. "
-        "Never open a bullet by reciting a long workstream title and then declaring it the live lane, live push, or next item. "
-        "Name the actual issue, move, proof point, or next action instead. "
-        "Do not lead completed bullets with what did not happen when concrete movement facts are available. "
-        "Do not give every bullet the same tidy claim-then-consequence cadence. "
-        "Blunt, uneven human phrasing is better than polished portable summary prose. "
-        "Prefer concrete nouns and verbs, avoid repeating the same claim across sections, and keep bullets crisp enough to scan in one breath. "
-        "Do not invent facts, do not mention raw repository paths, and do not lead bullets with raw counts-only telemetry. "
-        "Bullets should read as natural steering narrative, not checklist fragments or fact-list rewrites."
+        "Do not print raw fact ids in prose; cite only supplied fact ids in fact_ids. "
+        "Keep section order and labels exactly as provided."
     )
+    if compact_retry:
+        return prompt + " Keep the bullets especially tight, but preserve the same human voice."
+    return prompt
 
 
 def _provider_output_schema() -> dict[str, Any]:
@@ -539,17 +488,17 @@ def _provider_request_payload(*, fact_packet: Mapping[str, Any], compact_retry: 
         if key == "current_execution":
             contract["max_bullets"] = 4
             contract["objective"] = (
-                "Start with what is actually being worked now in ordinary words, then support it with the clearest proof, live posture, operator signal, or timing risk."
+                "Say what is actively being worked and why it deserves attention now. Keep it concrete, simple, and tied to the cited proof."
             )
         elif key == "risks_to_watch":
             contract["max_bullets"] = 3
-            contract["objective"] = "Name what could break the current story, not a generic calm-status recap."
+            contract["objective"] = "Name the seam to watch, what could drift, or what still feels fragile. Stay calm, clear, and factual."
         elif key == "completed":
             contract["objective"] = (
-                "Lead with the verified outcome or strongest execution movement in ordinary words, then say why it changed the work when that helps."
+                "Say what actually landed. Quietly celebrate real wins when they matter, and explain why the landing changed the room only if it helps orientation."
             )
         elif key == "next_planned":
-            contract["objective"] = "Say what happens next in plain language and what that next step unlocks."
+            contract["objective"] = "Say what is next and why it is next in plain language."
         section_contract.append(contract)
     return {
         "schema_version": STANDUP_BRIEF_SCHEMA_VERSION,
@@ -561,45 +510,45 @@ def _provider_request_payload(*, fact_packet: Mapping[str, Any], compact_retry: 
                 "rule": window_rule,
             },
             "style_examples": {
-                "completed": [
-                    "Two cleanup threads finally got put away. The first-turn bootstrap work closed, and the reasoning-package boundary work closed with it.",
-                    "This repo moved onto runtime `0.1.9`, and the hosted install smoke still lines up with the shipped path. The proof is following the thing maintainers actually hand people.",
+                "celebration": [
+                    "Good one to get over the line: the first-turn bootstrap work closed cleanly, and that takes one old loose end off the board.",
                 ],
-                "current_execution_executive": [
-                    "Most of the work right now is in `B-022`. If the benchmark stays easy to game, the proof stops meaning much.",
+                "reassurance": [
+                    "Small but real reassurance: the repo is still on the pinned dogfood path maintainers are meant to trust.",
+                ],
+                "steady_risk": [
+                    "This is the seam to watch. If the browser checks still miss drift, Compass will keep sounding more certain than it should.",
+                ],
+                "slow_window": [
+                    "Not a big movement window. The same fragile edge is still the one asking for care.",
                 ],
             },
             "writing_contract": {
-                "target_style": "plainspoken grounded maintainer narration",
+                "target_style": "friendly grounded maintainer narration",
                 "max_words_per_bullet": _MAX_BULLET_WORDS,
                 "rules": [
-                    "each bullet should carry a claim plus consequence, proof, or steering context",
-                    "sound like a maintainer-delivered standup, not a detached status report",
-                    "keep 24h and 48h in the same spoken maintainer register; only the evidence window widens",
+                    "sound like a thoughtful maintainer talking to a teammate",
+                    "use short plain sentences first",
+                    "be friendly, calm, direct, factual, and precise",
+                    "say what changed, why it matters, what is next, or what could still break",
+                    "celebrate real wins with restraint",
+                    "when things are shaky, be steady and reassuring without hiding the truth",
+                    "keep 24h and 48h in the same live spoken maintainer register; only the evidence window widens",
                     "do not write in first-person singular",
                     "use ordinary words another maintainer can understand on first read",
-                    "stay open and free-flowing without sounding polished, sloganized, or performed",
-                    "lead with what actually matters here instead of restating metadata",
-                    "carry customer need or operator consequence inside the relevant bullet instead of splitting it into a dedicated explanation section",
-                    "avoid generic portfolio-posture filler when a concrete fact exists",
-                    "prefer spoken maintainer phrasing over fact-to-bullet restatement",
-                    "prefer concrete nouns and verbs over abstract summary phrasing",
-                    "if a sentence sounds like a dashboard trying to sound wise, rewrite it in simpler language",
-                    "prefer observed pressure, friction, or proof over portfolio umbrella language",
+                    "show humane judgment without sounding grand, polished, or performed",
+                    "name only the lanes that help the reader understand the window instead of forcing a workstream roll call",
+                    "carry consequence inside the relevant bullet instead of splitting it into a dedicated explanation section",
+                    "prefer observed movement, friction, proof, or risk over portfolio umbrella language",
                     "keep each bullet visibly tethered to the cited fact language",
                     "if the cited facts disappear and the bullet still sounds plausible, it is too generic for Compass",
-                    "for global scope, if the packet carries multiple touched workstreams, mention every touched workstream somewhere in the brief",
+                    "if a tired maintainer would have to reread the sentence, rewrite it more simply",
                     "do not lead bullets by restating long workstream titles or queue labels",
-                    "do not narrate self-host status with slogan language like 'posture is clean'",
                     "do not use absence-plus-compensation leads like 'no milestone closed ..., but ...' when movement facts exist",
                     "do not write next-step bullets as 'X comes next because', 'The next move is', or start follow-ons with 'Then'",
-                    "do not write bullets as 'Next up is' or 'What matters here is'; start with the issue, action, or consequence itself",
-                    "do not write generic lane wrappers like 'under that lane' or 'X is moving alongside release work because'",
-                    "do not keep reopening 48h bullets with 'Over the last 48 hours'; the window is already visible in the surface",
-                    "do not use stock timing wrappers like 'the schedule still matters here' or rhetorical tests like 'if Odylith is genuinely better'",
-                    "do not use stagey metaphors or dashboard-wise abstractions like 'pressure point', 'center of gravity', 'muddy', 'slippery', 'top lane', 'window coverage spans', or 'with the clearest movement around'",
-                    "do not write release-summary wrappers like 'Work is now driving through', 'There is a live-version split to keep in view', 'Release planning and execution are running together', 'Most of the movement this window sat in', 'Next step is', or 'The follow-on adds'",
-                    "do not lean on abstract debt-hardening slogans when concrete outcomes or risks can be named directly",
+                    "do not write bullets as 'Next up is', 'What matters here is', 'Most of the work here was in', 'X and Y are still moving together', or 'X is there because'",
+                    "do not keep reopening bullets with repeated 'Over the last 48 hours' or similar window labels",
+                    "do not use stock timing wrappers, rhetorical tests, stagey metaphors, or dashboard-wise abstractions",
                     "avoid recurring signature openings or house phrases across sections",
                     "do not make every bullet sound equally polished, balanced, or summary-shaped",
                     "do not smooth the whole brief into the same polished claim-then-consequence sentence pattern",
@@ -615,45 +564,24 @@ def _provider_request_payload(*, fact_packet: Mapping[str, Any], compact_retry: 
                 "raw_repo_paths": True,
                 "counts_only_leads": True,
                 "discouraged_phrases": [
-                    "same window",
-                    "current portfolio direction around",
-                    "pressure point",
-                    "muddy",
-                    "slippery",
-                    "top lane",
-                    "window coverage spans",
-                    "with the clearest movement around",
+                    "Most of the work here was in",
+                    "X and Y are still moving together",
+                    "X is there because",
                     "the next move is",
-                    "work is now driving through",
-                    "there is a live-version split to keep in view",
-                    "release planning and execution are running together",
-                    "most of the movement this window sat in",
-                    "next step is",
-                    "the follow-on adds",
+                    "Next up is",
+                    "Over the last 48 hours",
+                    "pressure point",
+                    "center of gravity",
+                    "slippery",
                 ],
                 "overused_stock_leads": [
-                    "The real center of gravity is",
-                    "The core proof lane",
-                    "The immediate forcing function is",
-                    "The boring but important move was",
-                    "The big cleanup work finally landed",
-                    "The real risk is not",
-                    "X is getting the attention because",
-                    "X is where attention belongs",
-                    "Attention stays on",
-                    "X stays hot",
-                    "X stays at the top",
-                    "This work is active because",
-                    "X is the live issue because",
-                    "The clearest field signal is",
-                    "Self-host posture is clean",
+                    "Most of the work here was in",
+                    "X and Y are still moving together",
+                    "X is there because",
+                    "The next move is",
                     "Next up is",
                     "What matters here is",
-                    "Under that lane",
-                    "X is moving alongside release work because",
                     "Over the last 48 hours,",
-                    "The schedule still matters here",
-                    "If Odylith is genuinely better",
                 ],
             },
         },
@@ -749,27 +677,6 @@ def _load_cache(*, repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _legacy_cache_paths(*, repo_root: Path) -> list[Path]:
-    cache_dir = standup_brief_cache_path(repo_root=repo_root).parent
-    current_path = standup_brief_cache_path(repo_root=repo_root)
-    candidates = []
-    for path in cache_dir.glob("standup-brief-cache.v*.json"):
-        try:
-            resolved = path.resolve()
-        except OSError:
-            continue
-        if resolved == current_path:
-            continue
-        candidates.append(resolved)
-
-    def _sort_key(path: Path) -> tuple[int, str]:
-        match = re.search(r"\.v(\d+)\.json$", path.name)
-        version = int(match.group(1)) if match else 0
-        return (version, path.name)
-
-    return sorted(candidates, key=_sort_key, reverse=True)
-
-
 def _load_cache_entries_from_path(path: Path) -> dict[str, Any]:
     resolved = path.resolve()
     return _load_cache_entries_from_path_cached(
@@ -861,12 +768,6 @@ def has_reusable_cached_brief(*, repo_root: Path, fact_packet: Mapping[str, Any]
     cached_entry = entries.get(fingerprint)
     if not isinstance(cached_entry, Mapping):
         return False
-    if not _cache_entry_is_reusable(
-        cached_entry=cached_entry,
-        fact_packet=fact_packet,
-        now_utc=dt.datetime.now(tz=dt.timezone.utc),
-    ):
-        return False
     return _validated_cached_sections(
         raw_sections=cached_entry.get("sections", []),
         fact_packet=fact_packet,
@@ -919,10 +820,6 @@ def _brief_source_label(*, source: str) -> str:
         return "provider"
     if token == "cache":
         return "cache"
-    if token == "composed":
-        return "composed"
-    if token == "deterministic":
-        return "deterministic"
     return "unavailable"
 
 
@@ -1036,117 +933,45 @@ def _unavailable_brief(
     }
 
 
-def _provider_deferred_diagnostics(*, config: odylith_reasoning.ReasoningConfig) -> dict[str, Any]:
-    diagnostics = _config_diagnostics(config=config)
-    diagnostics.update(
-        {
-            "title": "Live scoped brief deferred",
-            "reason": "provider_deferred",
-            "message": (
-                "Compass deferred live scoped AI narration during dashboard refresh to keep sync bounded. "
-                "If an exact same-packet brief is already available for this scope, Compass will reuse it automatically."
-            ),
-        }
-    )
-    return diagnostics
-
-
-def _deterministic_fallback_notice(*, reason: str) -> dict[str, str]:
+def _exact_cache_replay_notice(*, reason: str) -> dict[str, str]:
     reason_token = str(reason or "").strip().lower() or "provider_unavailable"
-    message = (
-        "Compass rendered a deterministic local brief from the current fact packet "
-        "because live AI narration was unavailable for this view."
-    )
     if reason_token == "provider_deferred":
+        title = "Showing exact replayed brief"
         message = (
-            "Compass rendered a deterministic local brief from the current fact packet "
-            "because live AI narration stayed deferred during this refresh."
+            "Compass stayed on the cheap refresh path for this view, so it replayed the last "
+            "validated brief for the exact same fact packet."
         )
     elif reason_token == "provider_empty":
+        title = "Showing last validated exact brief"
         message = (
-            "Compass rendered a deterministic local brief from the current fact packet "
-            "because the AI provider returned no usable standup brief."
+            "Compass did not receive a usable live brief, so it replayed the last validated "
+            "brief for the exact same fact packet."
         )
     elif reason_token == "validation_failed":
+        title = "Showing last validated exact brief"
         message = (
-            "Compass rendered a deterministic local brief from the current fact packet "
-            "because the AI provider response did not validate against the standup contract."
+            "Compass rejected the live brief for this packet, so it replayed the last validated "
+            "brief for the exact same fact packet."
+        )
+    else:
+        title = "Showing last validated exact brief"
+        message = (
+            "Compass could not reach a live narrator, so it replayed the last validated brief "
+            "for the exact same fact packet."
         )
     return {
-        "title": "Showing deterministic local brief",
+        "title": title,
         "message": message,
         "reason": reason_token,
     }
 
 
-def _cache_reuse_notice(
-    *,
-    fact_packet: Mapping[str, Any],
-    reason: str,
-    exact_match: bool = False,
-    stale: bool = False,
-) -> dict[str, str]:
-    context = _cache_context(fact_packet=fact_packet)
-    scope_mode = context["scope_mode"]
-    if str(reason).strip() == "provider_deferred":
-        title = "Showing warmed scoped brief"
-        if stale:
-            message = (
-                "Live scoped narration stayed deferred for this render, so Compass reused "
-                "the freshest validated brief for the same scope/window even though it is outside "
-                "the normal freshness budget."
-            )
-        elif exact_match:
-            message = (
-                "Live scoped narration stayed deferred for this render, so Compass reused "
-                "the last validated brief for the exact same scope/window fact packet."
-            )
-        else:
-            message = (
-                "Live scoped narration stayed deferred for this render, so Compass reused "
-                "the freshest validated brief already warmed for this scope and window."
-            )
-    else:
-        title = "Showing last known good brief"
-        if stale and exact_match:
-            message = (
-                "Live AI narration did not produce a validated brief for this render, so Compass reused "
-                "the last validated brief for the exact same fact packet even though it is outside "
-                "the normal freshness budget."
-            )
-        elif stale:
-            message = (
-                "Live AI narration did not produce a validated brief for this render, so Compass reused "
-                "the freshest validated brief for the same scope/window even though it is outside "
-                "the normal freshness budget."
-            )
-        elif exact_match:
-            message = (
-                "Live AI narration did not produce a validated brief for this render, so Compass reused "
-                "the last validated brief for the exact same fact packet."
-            )
-        else:
-            message = (
-                "Live AI narration did not produce a validated brief for this render, so Compass reused "
-                "the freshest validated brief still inside the same scope/window freshness budget."
-            )
-    if scope_mode == "global":
-        title = "Showing last known good global brief"
-        if stale:
-            title = "Showing stale last known good global brief"
-    return {
-        "title": title,
-        "message": message,
-        "reason": str(reason or "").strip(),
-    }
-
-
-def _stale_exact_ready_brief(
+def _exact_cache_ready_brief_if_available(
     *,
     fingerprint: str,
     cached_entry: Mapping[str, Any] | None,
     fact_packet: Mapping[str, Any],
-    reason: str,
+    notice_reason: str | None = None,
 ) -> dict[str, Any] | None:
     if not isinstance(cached_entry, Mapping):
         return None
@@ -1155,61 +980,9 @@ def _stale_exact_ready_brief(
         cached_entry=cached_entry,
         fact_packet=fact_packet,
         cache_mode="exact",
-        notice=_cache_reuse_notice(
-            fact_packet=fact_packet,
-            reason=reason,
-            exact_match=True,
-            stale=True,
-        ),
-    )
-
-
-def _exact_cache_ready_brief_if_reusable(
-    *,
-    fingerprint: str,
-    cached_entry: Mapping[str, Any] | None,
-    fact_packet: Mapping[str, Any],
-    now_utc: dt.datetime,
-) -> dict[str, Any] | None:
-    if not isinstance(cached_entry, Mapping):
-        return None
-    if not _cache_entry_is_reusable(
-        cached_entry=cached_entry,
-        fact_packet=fact_packet,
-        now_utc=now_utc,
-    ):
-        return None
-    return _cache_ready_brief(
-        fingerprint=fingerprint,
-        cached_entry=cached_entry,
-        fact_packet=fact_packet,
-        cache_mode="exact",
-    )
-
-
-def _allow_stale_exact_cache_reuse(*, fact_packet: Mapping[str, Any]) -> bool:
-    context = _cache_context(fact_packet=fact_packet)
-    if context["scope_mode"] == "global":
-        return False
-    return True
-
-
-def _recover_ready_brief_from_cache(
-    *,
-    cache_entries: Mapping[str, Any],
-    fact_packet: Mapping[str, Any],
-    fingerprint: str,
-    cached_entry: Mapping[str, Any] | None,
-    now_utc: dt.datetime,
-    reason: str,
-) -> dict[str, Any] | None:
-    if not _allow_stale_exact_cache_reuse(fact_packet=fact_packet):
-        return None
-    return _stale_exact_ready_brief(
-        fingerprint=fingerprint,
-        cached_entry=cached_entry,
-        fact_packet=fact_packet,
-        reason=reason,
+        notice=_exact_cache_replay_notice(reason=notice_reason or "")
+        if notice_reason
+        else None,
     )
 
 
@@ -1262,70 +1035,73 @@ def _section_facts(
     return ranked
 
 
-def _deterministic_sections(*, fact_packet: Mapping[str, Any]) -> list[dict[str, Any]]:
-    return compass_standup_brief_deterministic.build_sections(
-        fact_packet=fact_packet,
-        section_specs=STANDUP_BRIEF_SECTIONS,
-    )
-
-
-def _deterministic_ready_brief(
-    *,
-    fact_packet: Mapping[str, Any],
-    fingerprint: str,
-    generated_utc: str,
-    reason: str,
-) -> dict[str, Any]:
-    sections = _deterministic_sections(fact_packet=fact_packet)
-    validated_sections, errors = _validate_brief_response(
-        response={"sections": sections},
-        fact_packet=fact_packet,
-    )
-    if not errors and validated_sections:
-        sections = validated_sections
-    return _ready_brief(
-        source="deterministic",
-        fingerprint=fingerprint,
-        generated_utc=generated_utc,
-        sections=sections,
-        evidence_lookup=_brief_evidence_lookup(fact_packet=fact_packet),
-        notice=_deterministic_fallback_notice(reason=reason),
-    )
-
-
-def _composed_ready_brief(
-    *,
-    fact_packet: Mapping[str, Any],
-    fingerprint: str,
-    generated_utc: str,
-) -> dict[str, Any]:
-    sections = _deterministic_sections(fact_packet=fact_packet)
-    validated_sections, errors = _validate_brief_response(
-        response={"sections": sections},
-        fact_packet=fact_packet,
-    )
-    if not errors and validated_sections:
-        sections = validated_sections
-    return _ready_brief(
-        source="composed",
-        fingerprint=fingerprint,
-        generated_utc=generated_utc,
-        sections=sections,
-        evidence_lookup=_brief_evidence_lookup(fact_packet=fact_packet),
-    )
-
-
 def _unavailable_brief_message(reason: str) -> str:
     token = str(reason or "").strip().lower()
     if token == "provider_deferred":
-        return "Compass kept the cheap refresh path here, so this brief stayed on cache or deterministic coverage instead of buying a fresh live narration call."
+        return "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+    if token == "rate_limited":
+        return "Compass hit narration provider capacity while warming this brief. It will retry on backoff."
+    if token == "credits_exhausted":
+        return "Compass could not warm this brief because the narration provider may have hit a credit or budget limit. It will retry on backoff."
+    if token == "timeout":
+        return "Compass asked the narration provider for this brief, but the reply took too long. It will retry on backoff."
     if token == "provider_unavailable":
-        return "Compass could not reach a live narration provider and no exact current-packet brief was available."
+        return "Compass could not reach the narration provider, and there was no exact current-packet brief to replay."
+    if token == "transport_error":
+        return "Compass could not reach the narration provider for this brief. It will retry on backoff."
+    if token == "auth_error":
+        return "Compass could not warm this brief because the narration provider rejected the request. Check provider access before trusting another retry."
     if token == "provider_empty":
-        return "Compass did not receive a structured AI brief and no exact current-packet brief was available."
+        return "Compass did not receive a usable narration reply, and there was no exact current-packet brief to replay."
+    if token == "provider_error":
+        return "The narration provider failed on the last attempt. Compass will retry on backoff."
+    if token == "invalid_batch":
+        return "Compass received a narration reply for this brief, but the result was not usable yet. It will retry on backoff."
     if token == "validation_failed":
-        return "Compass received an invalid AI brief and no exact current-packet brief was available."
+        return "Compass received an invalid brief, and there was no exact current-packet brief to replay."
     return "Compass could not build a current standup brief for this packet."
+
+
+def _unavailable_brief_title(reason: str) -> str:
+    token = str(reason or "").strip().lower()
+    if token == "provider_deferred":
+        return "Fresh brief still warming"
+    if token == "rate_limited":
+        return "Brief is waiting on provider capacity"
+    if token == "credits_exhausted":
+        return "Brief is waiting on provider budget"
+    if token == "timeout":
+        return "Brief timed out"
+    if token == "provider_unavailable":
+        return "Brief provider unavailable"
+    if token == "transport_error":
+        return "Brief provider could not be reached"
+    if token == "auth_error":
+        return "Brief provider access failed"
+    if token == "provider_empty":
+        return "Brief provider returned nothing usable"
+    if token == "provider_error":
+        return "Brief unavailable right now"
+    if token == "invalid_batch":
+        return "Brief needs another provider pass"
+    if token == "validation_failed":
+        return "Brief failed validation"
+    return "Standup brief unavailable"
+
+
+def _failure_reason_from_provider_code(code: str) -> str:
+    token = str(code or "").strip().lower()
+    mapping = {
+        "rate_limited": "rate_limited",
+        "credits_exhausted": "credits_exhausted",
+        "timeout": "timeout",
+        "unavailable": "provider_unavailable",
+        "transport_error": "transport_error",
+        "auth_error": "auth_error",
+        "provider_error": "provider_error",
+        "invalid_response": "invalid_batch",
+    }
+    return mapping.get(token, "")
 
 
 def _unavailable_ready_brief(
@@ -1333,19 +1109,53 @@ def _unavailable_ready_brief(
     fingerprint: str,
     generated_utc: str,
     reason: str,
+    diagnostics: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    token = str(reason or "").strip().lower() or "brief_unavailable"
+    diagnostic_payload = {
+        "reason": token,
+        "title": _unavailable_brief_title(token),
+        "message": _unavailable_brief_message(token),
+    }
+    if isinstance(diagnostics, Mapping):
+        for key, value in diagnostics.items():
+            if value in (None, "", []):
+                continue
+            diagnostic_payload[str(key)] = value
     return {
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": fingerprint,
         "generated_utc": generated_utc,
         "sections": [],
-        "diagnostics": {
-            "reason": str(reason or "").strip().lower() or "brief_unavailable",
-            "message": _unavailable_brief_message(reason),
-        },
+        "diagnostics": diagnostic_payload,
         "evidence_lookup": {},
     }
+
+
+def unavailable_brief_for_provider_failure(
+    *,
+    fingerprint: str,
+    generated_utc: str,
+    provider: Any,
+    fallback_reason: str = "provider_empty",
+    diagnostics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    failure = odylith_reasoning.provider_failure_metadata(provider)
+    reason = _failure_reason_from_provider_code(failure.get("code", "")) or str(fallback_reason or "").strip().lower()
+    payload = dict(diagnostics) if isinstance(diagnostics, Mapping) else {}
+    if failure.get("provider"):
+        payload.setdefault("provider", failure["provider"])
+    if failure.get("code"):
+        payload.setdefault("provider_failure_code", failure["code"])
+    if failure.get("detail"):
+        payload.setdefault("provider_failure_detail", failure["detail"])
+    return _unavailable_ready_brief(
+        fingerprint=fingerprint,
+        generated_utc=generated_utc,
+        reason=reason,
+        diagnostics=payload,
+    )
 
 
 def _fact_ids_by_section(fact_lookup: Mapping[str, Mapping[str, Any]]) -> dict[str, set[str]]:
@@ -1510,51 +1320,7 @@ def _validated_cached_sections(
     fact_packet: Mapping[str, Any],
     cached_evidence_lookup: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> list[dict[str, Any]] | None:
-    current_window_coverage_text = ""
-    cached_window_coverage_fact_ids: set[str] = set()
-    if isinstance(cached_evidence_lookup, Mapping):
-        cached_window_coverage_fact_ids = {
-            str(fact_id).strip()
-            for fact_id, row in cached_evidence_lookup.items()
-            if str(fact_id).strip()
-            and isinstance(row, Mapping)
-            and str(row.get("kind", "")).strip() == "window_coverage"
-        }
-    for fact in _section_facts(fact_packet=fact_packet, section_key="current_execution"):
-        if str(fact.get("kind", "")).strip() == "window_coverage":
-            current_window_coverage_text = _global_window_coverage_bullet_text(
-                fact_text=str(fact.get("text", "")).strip()
-            )
-            break
-    normalized_sections: list[dict[str, Any]] = []
-    for item in raw_sections:
-        if not isinstance(item, Mapping):
-            continue
-        section = dict(item)
-        if (
-            current_window_coverage_text
-            and str(section.get("key", "")).strip() == "current_execution"
-            and isinstance(section.get("bullets"), Sequence)
-        ):
-            rewritten_bullets: list[dict[str, Any]] = []
-            for bullet in section.get("bullets", []):
-                if not isinstance(bullet, Mapping):
-                    continue
-                bullet_row = dict(bullet)
-                text = str(bullet_row.get("text", "")).strip()
-                bullet_fact_ids = set(_normalized_fact_id_values(bullet_row.get("fact_ids")))
-                if current_window_coverage_text and cached_window_coverage_fact_ids & bullet_fact_ids:
-                    bullet_row["text"] = current_window_coverage_text
-                elif text.startswith("Most of the movement this window sat in ") or text.startswith(
-                    "A lot happened, but most of it came through "
-                ):
-                    bullet_row["text"] = current_window_coverage_text
-                rewritten_bullets.append(bullet_row)
-            section["bullets"] = rewritten_bullets
-        normalized_sections.append(section)
-    response = {
-        "sections": normalized_sections,
-    }
+    response = {"sections": [dict(item) for item in raw_sections if isinstance(item, Mapping)]}
     sections, errors = _validate_brief_response(
         response=response,
         fact_packet=fact_packet,
@@ -1562,106 +1328,7 @@ def _validated_cached_sections(
     )
     if not errors and sections:
         return sections
-    salvaged = _salvage_cached_sections(
-        raw_sections=normalized_sections,
-        fact_packet=fact_packet,
-        cached_evidence_lookup=cached_evidence_lookup,
-        validation_errors=errors,
-    )
-    if salvaged:
-        return salvaged
     return None
-
-
-def _recoverable_cached_section_keys(*, validation_errors: Sequence[str]) -> set[str]:
-    recoverable: set[str] = set()
-    for error in validation_errors:
-        message = str(error).strip()
-        if message == "Current execution must cite freshness evidence when the fact packet is aging or stale":
-            recoverable.add("current_execution")
-            continue
-        match = re.match(r"^section\s+([a-z_]+)\s+bullet\s+\d+\s+", message)
-        if not match:
-            return set()
-        section_key = str(match.group(1)).strip()
-        if message.endswith("drifts away from the cited fact language") or message.endswith(
-            "falls into portable summary cadence"
-        ) or message.endswith(
-            "leans on stagey metaphor instead of plainspoken maintainer language"
-        ) or message.endswith(
-            "slides back into dashboard-polished summary language"
-        ) or message.endswith(
-            "reuses cached stock phrasing instead of plainspoken maintainer narration"
-        ) or message.endswith(
-            "names workstreams that do not appear in the cited fact"
-        ) or message.endswith(
-            "does not match the cited whole-window coverage"
-        ) or message.endswith(
-            "leads with counts-only telemetry"
-        ):
-            recoverable.add(section_key)
-            continue
-        return set()
-    return recoverable
-
-
-def _salvage_cached_sections(
-    *,
-    raw_sections: Sequence[Mapping[str, Any]],
-    fact_packet: Mapping[str, Any],
-    cached_evidence_lookup: Mapping[str, Mapping[str, Any]] | None = None,
-    validation_errors: Sequence[str],
-) -> list[dict[str, Any]] | None:
-    recoverable_section_keys = _recoverable_cached_section_keys(validation_errors=validation_errors)
-    if not recoverable_section_keys:
-        return None
-    deterministic_sections = compass_standup_brief_deterministic.build_sections(
-        fact_packet=fact_packet,
-        section_specs=STANDUP_BRIEF_SECTIONS,
-    )
-    deterministic_by_key = {
-        str(section.get("key", "")).strip(): dict(section)
-        for section in deterministic_sections
-        if isinstance(section, Mapping) and str(section.get("key", "")).strip()
-    }
-    salvaged_sections: list[dict[str, Any]] = []
-    for section in raw_sections:
-        if not isinstance(section, Mapping):
-            continue
-        key = str(section.get("key", "")).strip()
-        if key in recoverable_section_keys and key in deterministic_by_key:
-            salvaged_sections.append(dict(deterministic_by_key[key]))
-        else:
-            salvaged_sections.append(dict(section))
-    sections, errors = _validate_brief_response(
-        response={"sections": salvaged_sections},
-        fact_packet=fact_packet,
-        cached_evidence_lookup=cached_evidence_lookup,
-    )
-    if errors or not sections:
-        return None
-    return sections
-
-
-def _global_window_coverage_bullet_text(*, fact_text: str) -> str:
-    text = " ".join(str(fact_text or "").split()).strip()
-    if not text:
-        return ""
-    detail = text.split("Window coverage:", 1)[1].strip() if "Window coverage:" in text else text
-    if detail.startswith("A lot moved in this window."):
-        remainder = detail.split(".", 1)[1].strip() if "." in detail else ""
-        remainder = re.sub(r"\s*carried most of it\.?$", "", remainder, flags=re.IGNORECASE).strip()
-        if remainder:
-            return f"Most of the work here was in {remainder}."
-    if detail.startswith("Work moved across ") and ":" in detail:
-        remainder = detail.split(":", 1)[1].strip()
-        if remainder:
-            return f"Most of the work here was in {remainder.rstrip('.')}."
-    if detail.startswith("Most of the movement this window sat in "):
-        remainder = detail.split("Most of the movement this window sat in ", 1)[1].strip()
-        if remainder:
-            return f"Most of the work here was in {remainder.rstrip('.')}."
-    return detail.rstrip(".")
 
 
 def _validate_brief_response(
@@ -1675,8 +1342,6 @@ def _validate_brief_response(
     fact_ids_by_section = _fact_ids_by_section(fact_lookup)
     fact_ids_by_section_and_kind = _fact_ids_by_section_and_kind(fact_lookup)
     freshness_bucket = _fact_packet_freshness_bucket(fact_packet=fact_packet)
-    scope_mapping = fact_packet.get("scope") if isinstance(fact_packet.get("scope"), Mapping) else {}
-    scope_mode = str(scope_mapping.get("mode", "")).strip().lower()
     sections = response.get("sections")
     if not isinstance(sections, Sequence):
         return [], ["provider response omitted the sections array"]
@@ -1752,6 +1417,12 @@ def _validate_brief_response(
                 errors.append(f"section {key} bullet {bullet_index} reuses a generic timing wrapper")
             if _GENERIC_BENCHMARK_CHALLENGE_RE.search(text):
                 errors.append(f"section {key} bullet {bullet_index} reuses a rhetorical benchmark challenge")
+            if _GENERIC_COVERAGE_ROLLCALL_RE.search(text):
+                errors.append(f"section {key} bullet {bullet_index} falls back to a stock workstream roll-call")
+            if _GENERIC_LINKAGE_WRAPPER_RE.search(text):
+                errors.append(f"section {key} bullet {bullet_index} falls back to a stock linkage wrapper")
+            if _GENERIC_EXISTENCE_BECAUSE_RE.search(text):
+                errors.append(f"section {key} bullet {bullet_index} falls back to a stock existence wrapper")
             if _INTERNAL_TEMPLATE_RE.search(text):
                 errors.append(f"section {key} bullet {bullet_index} reuses an internal stock template")
             if _FACT_ID_RE.search(text):
@@ -1810,15 +1481,6 @@ def _validate_brief_response(
                 errors.append(
                     f"section {key} bullet {bullet_index} names workstreams that do not appear in the cited fact"
                 )
-            if (
-                bullet_workstream_ids
-                and any(str(fact.get("kind", "")).strip() == "window_coverage" for fact in cited_facts)
-                and cited_workstream_ids
-                and bullet_workstream_ids != cited_workstream_ids
-            ):
-                errors.append(
-                    f"section {key} bullet {bullet_index} does not match the cited whole-window coverage"
-                )
             if normalized_fact_ids and not local_fact_ids:
                 errors.append(f"section {key} bullet {bullet_index} did not cite a section-local fact")
             bullets.append(
@@ -1831,27 +1493,6 @@ def _validate_brief_response(
             direction_ids = section_kind_ids.get("direction", set())
             if direction_ids and not (section_cited_fact_ids & direction_ids):
                 errors.append("Current execution must cite direction evidence")
-            window_coverage_ids = section_kind_ids.get("window_coverage", set())
-            if (
-                scope_mode == "global"
-                and window_coverage_ids
-                and not (section_cited_fact_ids & window_coverage_ids)
-            ):
-                coverage_fact_id = next(iter(sorted(window_coverage_ids)))
-                coverage_fact_text = str(fact_lookup.get(coverage_fact_id, {}).get("text", "")).strip()
-                coverage_text = _global_window_coverage_bullet_text(fact_text=coverage_fact_text)
-                if coverage_text:
-                    coverage_bullet = {
-                        "text": coverage_text,
-                        "_fact_ids": [coverage_fact_id],
-                    }
-                    if len(bullets) >= max_bullets:
-                        bullets = bullets[: max_bullets - 1] + [coverage_bullet]
-                    else:
-                        bullets.append(coverage_bullet)
-                    section_cited_fact_ids.add(coverage_fact_id)
-                else:
-                    errors.append("Current execution must cite whole-window coverage evidence for global scope")
             freshness_ids = section_kind_ids.get("freshness", set())
             if (
                 freshness_bucket in {"aging", "stale"}
@@ -1983,64 +1624,33 @@ def build_standup_brief(
     provider: odylith_reasoning.ReasoningProvider | None = None,
     allow_provider: bool = True,
     prefer_provider: bool = False,
-    allow_cache_recovery: bool = True,
-    allow_legacy_cache_recovery: bool = True,
-    allow_deterministic_fallback: bool = True,
-    allow_composed_fallback: bool = False,
 ) -> dict[str, Any]:
-    """Build a validated standup brief, falling back to deterministic local narration."""
+    """Build a validated standup brief with exact-fingerprint replay only."""
 
     repo_root = Path(repo_root).resolve()
     fingerprint = standup_brief_fingerprint(fact_packet=fact_packet)
-    now_utc = dt.datetime.now(tz=dt.timezone.utc)
     cache_payload = _load_cache(repo_root=repo_root)
     entries = cache_payload.get("entries")
     cache_entries = dict(entries) if isinstance(entries, Mapping) else {}
     cache_context = _cache_context(fact_packet=fact_packet)
     cached_entry = cache_entries.get(fingerprint)
-    if (
-        (not prefer_provider or not allow_provider)
-        and isinstance(cached_entry, Mapping)
-        and _cache_entry_is_reusable(
-        cached_entry=cached_entry,
-        fact_packet=fact_packet,
-        now_utc=now_utc,
-        )
-    ):
-        cached_ready = _cache_ready_brief(
+    if not prefer_provider and isinstance(cached_entry, Mapping):
+        cached_ready = _exact_cache_ready_brief_if_available(
             fingerprint=fingerprint,
             cached_entry=cached_entry,
             fact_packet=fact_packet,
-            cache_mode="exact",
         )
         if cached_ready is not None:
             return cached_ready
     resolved_config = config or odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
     if not allow_provider:
-        if allow_cache_recovery:
-            recovered_ready = _recover_ready_brief_from_cache(
-                cache_entries=cache_entries,
-                reason="provider_deferred",
-                fact_packet=fact_packet,
-                fingerprint=fingerprint,
-                cached_entry=cached_entry,
-                now_utc=now_utc,
-            )
-            if recovered_ready is not None:
-                return recovered_ready
-        if allow_composed_fallback:
-            return _composed_ready_brief(
-                fact_packet=fact_packet,
-                fingerprint=fingerprint,
-                generated_utc=generated_utc,
-            )
-        if allow_deterministic_fallback:
-            return _deterministic_ready_brief(
-                fact_packet=fact_packet,
-                fingerprint=fingerprint,
-                generated_utc=generated_utc,
-                reason="provider_deferred",
-            )
+        cached_ready = _exact_cache_ready_brief_if_available(
+            fingerprint=fingerprint,
+            cached_entry=cached_entry,
+            fact_packet=fact_packet,
+        )
+        if cached_ready is not None:
+            return cached_ready
         return _unavailable_ready_brief(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
@@ -2053,38 +1663,14 @@ def build_standup_brief(
         allow_implicit_local_provider=True,
     )
     if resolved_provider is None:
-        exact_ready = _exact_cache_ready_brief_if_reusable(
+        exact_ready = _exact_cache_ready_brief_if_available(
             fingerprint=fingerprint,
             cached_entry=cached_entry,
             fact_packet=fact_packet,
-            now_utc=now_utc,
+            notice_reason="provider_unavailable",
         )
         if exact_ready is not None:
             return exact_ready
-        if allow_cache_recovery:
-            recovered_ready = _recover_ready_brief_from_cache(
-                cache_entries=cache_entries,
-                reason="provider_unavailable",
-                fact_packet=fact_packet,
-                fingerprint=fingerprint,
-                cached_entry=cached_entry,
-                now_utc=now_utc,
-            )
-            if recovered_ready is not None:
-                return recovered_ready
-        if allow_composed_fallback:
-            return _composed_ready_brief(
-                fact_packet=fact_packet,
-                fingerprint=fingerprint,
-                generated_utc=generated_utc,
-            )
-        if allow_deterministic_fallback:
-            return _deterministic_ready_brief(
-                fact_packet=fact_packet,
-                fingerprint=fingerprint,
-                generated_utc=generated_utc,
-                reason="provider_unavailable",
-            )
         return _unavailable_ready_brief(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
@@ -2099,42 +1685,19 @@ def build_standup_brief(
         ),
     )
     if not isinstance(raw_result, Mapping):
-        exact_ready = _exact_cache_ready_brief_if_reusable(
+        exact_ready = _exact_cache_ready_brief_if_available(
             fingerprint=fingerprint,
             cached_entry=cached_entry,
             fact_packet=fact_packet,
-            now_utc=now_utc,
+            notice_reason="provider_empty",
         )
         if exact_ready is not None:
             return exact_ready
-        if allow_cache_recovery:
-            recovered_ready = _recover_ready_brief_from_cache(
-                cache_entries=cache_entries,
-                reason="provider_empty",
-                fact_packet=fact_packet,
-                fingerprint=fingerprint,
-                cached_entry=cached_entry,
-                now_utc=now_utc,
-            )
-            if recovered_ready is not None:
-                return recovered_ready
-        if allow_composed_fallback:
-            return _composed_ready_brief(
-                fact_packet=fact_packet,
-                fingerprint=fingerprint,
-                generated_utc=generated_utc,
-            )
-        if allow_deterministic_fallback:
-            return _deterministic_ready_brief(
-                fact_packet=fact_packet,
-                fingerprint=fingerprint,
-                generated_utc=generated_utc,
-                reason="provider_empty",
-            )
-        return _unavailable_ready_brief(
+        return unavailable_brief_for_provider_failure(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
-            reason="provider_empty",
+            provider=resolved_provider,
+            fallback_reason="provider_empty",
         )
 
     sections, errors = _validate_brief_response(
@@ -2162,38 +1725,14 @@ def build_standup_brief(
             else:
                 errors = repaired_errors
         if errors:
-            exact_ready = _exact_cache_ready_brief_if_reusable(
+            exact_ready = _exact_cache_ready_brief_if_available(
                 fingerprint=fingerprint,
                 cached_entry=cached_entry,
                 fact_packet=fact_packet,
-                now_utc=now_utc,
+                notice_reason="validation_failed",
             )
             if exact_ready is not None:
                 return exact_ready
-            if allow_cache_recovery:
-                recovered_ready = _recover_ready_brief_from_cache(
-                    cache_entries=cache_entries,
-                    reason="validation_failed",
-                    fact_packet=fact_packet,
-                    fingerprint=fingerprint,
-                    cached_entry=cached_entry,
-                    now_utc=now_utc,
-                )
-                if recovered_ready is not None:
-                    return recovered_ready
-            if allow_composed_fallback:
-                return _composed_ready_brief(
-                    fact_packet=fact_packet,
-                    fingerprint=fingerprint,
-                    generated_utc=generated_utc,
-                )
-            if allow_deterministic_fallback:
-                return _deterministic_ready_brief(
-                    fact_packet=fact_packet,
-                    fingerprint=fingerprint,
-                    generated_utc=generated_utc,
-                    reason="validation_failed",
-                )
             return _unavailable_ready_brief(
                 fingerprint=fingerprint,
                 generated_utc=generated_utc,

@@ -58,6 +58,119 @@ def test_runtime_fingerprint_prefers_live_daemon_in_auto_mode(
     assert watcher._runtime_fingerprint(tmp_path, runtime_mode="auto") == "daemon-fingerprint"
 
 
+def test_wait_for_runtime_change_uses_daemon_wait_when_available(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(watcher.odylith_context_engine, "_daemon_socket_available", lambda *, repo_root: True)  # noqa: SLF001
+
+    def _fake_daemon_request(**kwargs):  # noqa: ANN003
+        captured.update(kwargs)
+        return {"changed": True, "projection_fingerprint": "next-fingerprint"}
+
+    monkeypatch.setattr(watcher.odylith_context_engine, "_daemon_request", _fake_daemon_request)  # noqa: SLF001
+
+    changed, fingerprint = watcher._wait_for_runtime_change(  # noqa: SLF001
+        tmp_path,
+        runtime_mode="auto",
+        since_fingerprint="previous-fingerprint",
+        interval_seconds=1,
+        local_watcher=None,
+    )
+
+    assert (changed, fingerprint) == (True, "next-fingerprint")
+    assert captured == {
+        "repo_root": tmp_path,
+        "command": "wait-projection-change",
+        "payload": {
+            "since_fingerprint": "previous-fingerprint",
+            "timeout_seconds": watcher._DAEMON_WAIT_TIMEOUT_SECONDS,  # noqa: SLF001
+        },
+        "required": False,
+        "timeout_seconds": watcher._DAEMON_WAIT_TIMEOUT_SECONDS + 5.0,  # noqa: SLF001
+    }
+
+
+def test_wait_for_runtime_change_uses_local_watcher_without_daemon(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    class _LocalWatcher:
+        def __init__(self) -> None:
+            self.calls: list[tuple[Path, int]] = []
+
+        def wait_for_change(self, *, stop_file: Path, poll_seconds: int) -> bool:
+            self.calls.append((stop_file, poll_seconds))
+            return True
+
+    monkeypatch.setattr(watcher.odylith_context_engine, "_daemon_socket_available", lambda *, repo_root: False)  # noqa: SLF001
+    local_watcher = _LocalWatcher()
+
+    changed, fingerprint = watcher._wait_for_runtime_change(  # noqa: SLF001
+        tmp_path,
+        runtime_mode="auto",
+        since_fingerprint="previous-fingerprint",
+        interval_seconds=1,
+        local_watcher=local_watcher,
+    )
+
+    assert (changed, fingerprint) == (True, "")
+    assert local_watcher.calls == [
+        (
+            (tmp_path / watcher._LOCAL_WATCHER_STOP_FILE).resolve(),  # noqa: SLF001
+            watcher._LOCAL_WATCHER_POLL_SECONDS,  # noqa: SLF001
+        )
+    ]
+
+
+def test_wait_for_runtime_change_falls_back_to_coarse_sleep_without_daemon_or_watcher(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    slept: list[int] = []
+
+    monkeypatch.setattr(watcher.odylith_context_engine, "_daemon_socket_available", lambda *, repo_root: False)  # noqa: SLF001
+    monkeypatch.setattr(watcher.time, "sleep", lambda seconds: slept.append(seconds))
+
+    changed, fingerprint = watcher._wait_for_runtime_change(  # noqa: SLF001
+        tmp_path,
+        runtime_mode="auto",
+        since_fingerprint="previous-fingerprint",
+        interval_seconds=1,
+        local_watcher=None,
+    )
+
+    assert (changed, fingerprint) == (False, "")
+    assert slept == [5]
+
+
+def test_build_local_runtime_watcher_bootstraps_git_fsmonitor_when_recommended(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        watcher.odylith_context_engine_store,
+        "watcher_backend_report",
+        lambda *, repo_root: {
+            "preferred_backend": "poll",
+            "bootstrap_recommended": True,
+        },
+    )
+    monkeypatch.setattr(
+        watcher.odylith_context_engine,
+        "_build_runtime_watcher",
+        lambda *, repo_root, backend: captured.setdefault("backend", backend) or object(),
+    )  # noqa: SLF001
+
+    watcher._build_local_runtime_watcher(tmp_path)  # noqa: SLF001
+
+    assert captured == {"backend": "git-fsmonitor"}
+
+
 def test_refresh_outputs_runtime_uses_compass_refresh_engine_then_backlog_runtime(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001

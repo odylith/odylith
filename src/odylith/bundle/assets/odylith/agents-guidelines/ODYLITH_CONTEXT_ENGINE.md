@@ -50,7 +50,7 @@
 - If `selection_state=ambiguous|none`, `working_tree_scope_degraded=true`, `diagram_watch_gaps` is present, or `full_scan_recommended=true`, widen back to raw discovery before acting.
 
 ## Runtime Contract
-- The Odylith context-engine runtime is the canonical compiler for local maintainer projections built from the component registry, knowledge-base docs, code/test structure, Codex events, and advisory local pytest/session state.
+- The Odylith context-engine runtime is the canonical compiler for local maintainer projections built from the component registry, knowledge-base docs, code/test structure, agent events, and advisory local pytest/session state.
 - `odylith context-engine` is the only supported daemon/client surface for querying those projections.
 - Daemon request/response payloads, local projection/session schemas, and cache-backed lookup inputs must evolve additively and fail open to standalone parsing.
 - Local state under `.odylith/runtime/` and `.odylith/cache/odylith-context-engine/` is advisory maintainer state only and must never become tracked or canonical repo truth.
@@ -95,4 +95,4 @@
   stop the live daemon first rather than deleting runtime artifacts underneath
   it.
 - For deploy-, publish-, release-, and pre-commit-adjacent validation, standalone non-daemon CLI execution remains the authoritative fallback.
-- `odylith compass watch-transactions` may consume live daemon fingerprints when available, but refresh and traceability decisions must degrade to deterministic file fingerprints when the daemon is unavailable.
+- `odylith compass watch-transactions` should wait on live daemon change signals first, reuse the same local watcher stack directly when the daemon is unavailable, and fall back to coarse deterministic fingerprint polling only as a last resort.

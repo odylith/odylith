@@ -1,0 +1,79 @@
+{
+  "component_id": "briefs-voice-contract",
+  "diagrams": [
+    "D-032",
+    "D-028",
+    "D-029"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 1,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 3,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 2
+  },
+  "name": "Briefs Voice Contract",
+  "path_prefixes": [
+    "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+    "src/odylith/runtime/surfaces/compass_standup_brief_voice_validation.py",
+    "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+    "odylith/skills/compass-executive/SKILL.md"
+  ],
+  "spec_ref": "odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "odylith/skills/compass-executive/SKILL.md",
+        "src/odylith/bundle/assets/odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "src/odylith/bundle/assets/odylith/skills/compass-executive/SKILL.md",
+        "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+        "src/odylith/runtime/surfaces/compass_standup_brief_voice_validation.py",
+        "odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 67,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "briefs-voice-contract"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md, odylith/skills/compass-executive/SKILL.md +6 more",
+      "ts_iso": "2026-04-10T21:39:09-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 62,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "briefs-voice-contract",
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "Compass brief contract for v0.1.11 is now fail-closed against stock framing: scoped 24h and 48h must never borrow global prose, the old Executive/Product versus Operator/Technical split is forbidden across narration and rendering, and provider plus deterministic briefs both reject internal canned wrappers before refresh can publish them.",
+      "ts_iso": "2026-04-08T16:59:48-07:00",
+      "workstreams": []
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Governed narration contract that keeps Compass briefs human, factual, friendly, and fail-closed.",
+  "why_tracked": "Prevents brief-quality drift by keeping prompt, validator, cache policy, skills, and guidance under one product-owned contract.",
+  "workstreams": [
+    "B-025",
+    "B-071"
+  ]
+}

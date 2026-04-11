@@ -61,6 +61,29 @@ _LEGACY_CODEX_MODEL_ALIASES: frozenset[str] = frozenset(
 )
 _CHEAP_STRUCTURED_CODEX_MODEL = "gpt-5.3-codex-spark"
 _CHEAP_STRUCTURED_REASONING_EFFORT = "low"
+_PROVIDER_RATE_LIMIT_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\brate[\s-]*limit", re.IGNORECASE),
+    re.compile(r"\btoo many requests\b", re.IGNORECASE),
+    re.compile(r"\b429\b"),
+    re.compile(r"\bretry after\b", re.IGNORECASE),
+)
+_PROVIDER_CREDIT_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\binsufficient[_\s-]*quota\b", re.IGNORECASE),
+    re.compile(r"\binsufficient[_\s-]*credit", re.IGNORECASE),
+    re.compile(r"\bout of credits?\b", re.IGNORECASE),
+    re.compile(r"\bcredit limit\b", re.IGNORECASE),
+    re.compile(r"\busage limit\b", re.IGNORECASE),
+    re.compile(r"\bquota exceeded\b", re.IGNORECASE),
+    re.compile(r"\bbilling (?:hard )?limit\b", re.IGNORECASE),
+)
+_PROVIDER_AUTH_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\bunauthorized\b", re.IGNORECASE),
+    re.compile(r"\bauth(?:entication|orization)?\b", re.IGNORECASE),
+    re.compile(r"\bapi key\b", re.IGNORECASE),
+    re.compile(r"\bforbidden\b", re.IGNORECASE),
+    re.compile(r"\b401\b"),
+    re.compile(r"\b403\b"),
+)
 
 
 class ReasoningProvider(Protocol):
@@ -148,6 +171,55 @@ def _normalize_timeout_seconds(value: Any, *, default: float = 20.0) -> float:
         return max(1.0, float(value))
     except (TypeError, ValueError):
         return max(1.0, float(default))
+
+
+def _normalized_failure_excerpt(text: Any, *, max_chars: int = 280) -> str:
+    token = re.sub(r"\s+", " ", str(text or "")).strip()
+    if not token:
+        return ""
+    if len(token) <= max_chars:
+        return token
+    return token[: max_chars - 3].rstrip() + "..."
+
+
+def _match_failure_pattern(
+    patterns: Sequence[re.Pattern[str]],
+    *,
+    haystack: str,
+) -> bool:
+    return any(pattern.search(haystack) for pattern in patterns)
+
+
+def _classify_provider_failure(
+    *,
+    provider_label: str,
+    detail_text: str,
+    invalid_response_detail: str,
+    returncode: int | None = None,
+    status_code: int | None = None,
+) -> tuple[str, str]:
+    excerpt = _normalized_failure_excerpt(detail_text)
+    haystack = excerpt.lower()
+
+    if _match_failure_pattern(_PROVIDER_CREDIT_PATTERNS, haystack=haystack):
+        detail = excerpt or f"{provider_label} reported a possible credit or budget limit."
+        return "credits_exhausted", detail
+    if status_code == 429 or _match_failure_pattern(_PROVIDER_RATE_LIMIT_PATTERNS, haystack=haystack):
+        detail = excerpt or f"{provider_label} reported a rate-limit response."
+        return "rate_limited", detail
+    if status_code in {401, 403} or _match_failure_pattern(_PROVIDER_AUTH_PATTERNS, haystack=haystack):
+        detail = excerpt or f"{provider_label} rejected the request because of authentication or permission configuration."
+        return "auth_error", detail
+    if status_code is not None and status_code >= 500:
+        detail = excerpt or f"{provider_label} returned HTTP {status_code}."
+        return "provider_error", detail
+    if returncode not in (None, 0):
+        if excerpt:
+            return "provider_error", f"{provider_label} exited with status {returncode}. {excerpt}"
+        return "provider_error", f"{provider_label} exited with status {returncode}."
+    if excerpt:
+        return "invalid_response", excerpt
+    return "invalid_response", invalid_response_detail
 
 
 def _normalize_codex_reasoning_effort(value: Any) -> str:
@@ -554,10 +626,24 @@ class OpenAICompatibleReasoningProvider:
         except TimeoutError:
             self._record_failure("timeout", f"Provider request exceeded {timeout_seconds:.1f}s.")
             return None
+        except urllib.error.HTTPError as exc:
+            body = ""
+            try:
+                body = exc.read().decode("utf-8", errors="ignore")
+            except OSError:
+                body = ""
+            code, detail = _classify_provider_failure(
+                provider_label="OpenAI-compatible provider",
+                detail_text=body or str(exc),
+                invalid_response_detail="Provider returned an unsuccessful HTTP response.",
+                status_code=int(getattr(exc, "code", 0) or 0),
+            )
+            self._record_failure(code, detail)
+            return None
         except urllib.error.URLError as exc:
             self._record_failure("transport_error", str(getattr(exc, "reason", exc)).strip())
             return None
-        except (OSError, urllib.error.HTTPError) as exc:
+        except OSError as exc:
             self._record_failure("transport_error", str(exc).strip())
             return None
         try:
@@ -700,10 +786,20 @@ class CodexCliReasoningProvider:
                     return result
             result = _parse_structured_mapping_text(getattr(completed, "stdout", ""))
             if result is None:
-                self._record_failure(
-                    "invalid_response",
-                    "Codex CLI did not return schema-valid structured JSON output.",
+                code, detail = _classify_provider_failure(
+                    provider_label="Codex CLI",
+                    detail_text="\n".join(
+                        token
+                        for token in (
+                            getattr(completed, "stderr", ""),
+                            getattr(completed, "stdout", ""),
+                        )
+                        if str(token or "").strip()
+                    ),
+                    invalid_response_detail="Codex CLI did not return schema-valid structured JSON output.",
+                    returncode=int(getattr(completed, "returncode", 0) or 0),
                 )
+                self._record_failure(code, detail)
                 return None
             self._clear_failure()
             return result
@@ -799,16 +895,42 @@ class ClaudeCliReasoningProvider:
             return None
         result = _parse_claude_structured_output(getattr(completed, "stdout", ""))
         if result is None:
-            self._record_failure(
-                "invalid_response",
-                "Claude CLI did not return schema-valid structured JSON output.",
+            code, detail = _classify_provider_failure(
+                provider_label="Claude CLI",
+                detail_text="\n".join(
+                    token
+                    for token in (
+                        getattr(completed, "stderr", ""),
+                        getattr(completed, "stdout", ""),
+                    )
+                    if str(token or "").strip()
+                ),
+                invalid_response_detail="Claude CLI did not return schema-valid structured JSON output.",
+                returncode=int(getattr(completed, "returncode", 0) or 0),
             )
+            self._record_failure(code, detail)
             return None
         self._clear_failure()
         return result
 
     def generate_finding(self, *, prompt_payload: Mapping[str, Any]) -> Mapping[str, Any] | None:
         return self.generate_structured(request=_default_tribunal_request(prompt_payload=prompt_payload))
+
+
+def provider_failure_metadata(provider: Any) -> dict[str, str]:
+    if isinstance(provider, OpenAICompatibleReasoningProvider):
+        provider_name = "openai-compatible"
+    elif isinstance(provider, CodexCliReasoningProvider):
+        provider_name = "codex-cli"
+    elif isinstance(provider, ClaudeCliReasoningProvider):
+        provider_name = "claude-cli"
+    else:
+        provider_name = str(getattr(provider, "provider_name", "")).strip() or type(provider).__name__
+    return {
+        "provider": provider_name,
+        "code": str(getattr(provider, "last_failure_code", "")).strip().lower(),
+        "detail": str(getattr(provider, "last_failure_detail", "")).strip(),
+    }
 
 
 def reasoning_config_from_env(
@@ -1041,6 +1163,7 @@ __all__ = [
     "build_reasoning_payload",
     "cheap_structured_reasoning_profile",
     "persisted_reasoning_config_payload",
+    "provider_failure_metadata",
     "provider_from_config",
     "resolve_claude_bin",
     "resolve_codex_bin",

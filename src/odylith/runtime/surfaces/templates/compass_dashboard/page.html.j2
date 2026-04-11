@@ -34,10 +34,10 @@
 
     <section class="layout">
       <div class="stack">
-        <article class="card">
+        <article class="card standup-brief-card standup-brief-card--compact" id="standup-brief-card">
           <div class="card-title-row standup-brief-title-row">
             <h2>Standup Brief</h2>
-            <button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>
+            <button class="pill subtle hidden" id="copy-brief" type="button" disabled aria-hidden="true" tabindex="-1">Copy Brief</button>
           </div>
           <div id="brief-copy-status" class="brief-copy-status hidden" role="status" aria-live="polite"></div>
           <div class="bullet-list standup-brief-panel" id="digest-list"></div>

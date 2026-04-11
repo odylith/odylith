@@ -805,9 +805,6 @@
       if (String(brief && brief.status ? brief.status : "") === "ready") {
         return standupBriefToDigestLines(brief);
       }
-      if (!hasStructuredStandupBriefPayload(payload)) {
-        return legacyDigestLinesForState(payload, state);
-      }
       return [];
     }
 

@@ -336,6 +336,14 @@ h1 {
       column-gap: 10px;
       row-gap: 6px;
     }
+    .card.standup-brief-card--compact {
+      gap: 6px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .card.standup-brief-card--compact .card-title-row {
+      margin-bottom: 2px;
+    }
     .standup-brief-title-row .pill {
       flex: 0 0 auto;
     }
@@ -601,6 +609,16 @@ h1 {
     }
     .brief-status-card--info .brief-status-copy {
       color: #1e40af;
+    }
+    .brief-status-card--compact {
+      gap: 4px;
+      padding: 10px 12px;
+    }
+    .brief-status-meta {
+      color: inherit;
+      opacity: 0.88;
+      font-size: 12px;
+      line-height: 1.4;
     }
     .brief-diagnostic-grid {
       display: grid;

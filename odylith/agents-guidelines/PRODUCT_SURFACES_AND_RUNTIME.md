@@ -155,11 +155,18 @@
 - deterministic fallback rows explain themselves through `deterministic_reason` and `deterministic_reason_detail`
 
 ## Compass Brief Runtime
-- Compass standup briefs should read like a maintainer giving a concise engineering standup, not like a generic dashboard summary.
-- The default live refresh should warm the primary 24h global standup brief first; secondary global windows may reuse cache or stay deterministic until they are warmed, so normal sync does not block on every window.
-- The local brief cache is an acceleration layer only; cache fingerprints must rotate when narration semantics change, and stale warmed briefs must not imply current traction without freshness evidence.
-- Exact cache hits may reuse directly, and bounded same-scope fallback is acceptable only when live refresh fails or is intentionally deferred.
-- If the provider returns no valid brief after bounded retry and repair, the standup panel must stay fail-closed.
+- The canonical brief contract lives in [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md).
+- Compass standup briefs should read like a thoughtful maintainer talking to a teammate, not like a dashboard summary or executive memo.
+- The only truthful brief source states are fresh `provider`, exact `cache`, or explicit `unavailable`.
+- Deterministic fallback narration is retired. If the provider does not yield a valid brief and there is no exact same-packet validated cache entry, the standup panel must stay fail-closed.
+- The local brief cache is an acceleration layer only. Cache fingerprints must rotate when narration semantics change, and stale warmed briefs must never imply current traction.
+- Exact cache hits may reuse directly. Non-exact cache replay is not allowed.
+- Global and scoped Compass narration should warm as one packet-level bundle.
+  Do not reintroduce a second scoped provider queue or scope-by-scope provider
+  fanout after refresh.
+- Only ready `provider` or exact `cache` briefs get the full standup-brief stage. Warming, failed, budget-limited, or unavailable states must stay compact and clearly labeled.
+- `Copy Brief` should only appear when a real narrated brief is on screen.
+- Whole-window coverage facts stay upstream evidence; Compass must not synthesize stock coverage bullets to fill the panel.
 - Provider-output transport quirks such as missing sidecar files or transient stdout/file disagreements should degrade gracefully when the same schema-valid payload is still recoverable.
 
 ## Shared Surface Primitives

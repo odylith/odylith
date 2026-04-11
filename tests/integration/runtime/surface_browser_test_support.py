@@ -254,19 +254,24 @@ def _wait_for_compass_brief_state(
     *,
     window_token: str,
     scope_label: str,
+    statuses: tuple[str, ...] = ("ready",),
     timeout: int = 15000,
 ) -> None:  # noqa: ANN001
     page.wait_for_function(
-        """({ windowToken, scopeLabel }) => {
+        """({ windowToken, scopeLabel, statuses }) => {
             const frame = document.querySelector("#frame-compass");
             const doc = frame && frame.contentDocument;
             const target = doc && doc.querySelector("#digest-list");
             if (!target || !target.dataset) return false;
-            return (target.dataset.briefStatus || "") === "ready"
+            const status = String((target.dataset.briefStatus || "")).trim().toLowerCase();
+            const allowed = Array.isArray(statuses)
+              ? statuses.map((value) => String(value || "").trim().toLowerCase()).filter(Boolean)
+              : [];
+            return allowed.includes(status)
               && (target.dataset.briefWindow || "") === windowToken
               && (target.dataset.briefScope || "") === scopeLabel;
         }""",
-        arg={"windowToken": window_token, "scopeLabel": scope_label},
+        arg={"windowToken": window_token, "scopeLabel": scope_label, "statuses": list(statuses)},
         timeout=timeout,
     )
 

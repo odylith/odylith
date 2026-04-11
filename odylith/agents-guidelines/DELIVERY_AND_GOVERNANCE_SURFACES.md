@@ -283,45 +283,23 @@
   Registry detail surface.
 
 ## Compass Standup Contract
-- Compass standup is AI-authored only, but deterministic runtime evidence still owns fact selection, ranking, and fail-closed validation.
-- Compass voice is a product invariant: plainspoken grounded maintainer narration, live spoken maintainer register, human, plain, specific, open, clear, and lightly soulful, not branded dashboard prose or generic portfolio narration.
-- The standup contract should stay compressed and causal: verified movement, current proof, forcing function, impact, and the most relevant watch item should dominate over generic portfolio narration.
-- Repeated house phrases, workstream-title restatement, repeated window leads, priority or attention wrappers, sloganized self-host status, rhetorical benchmark challenges, and canned next/why/timing scaffolding are invalid even if the underlying facts are true.
-- Templating is also a shape failure, not just a phrase failure: Compass should not read like four evenly polished summary cards. Let vividness, asymmetry, and human emphasis survive when the evidence calls for them.
-- Stagey metaphor is a failure too. Reject `pressure point`, `center of gravity`, `muddy`, `slippery`, `top lane`, `window coverage spans`, or similar dashboard-wise phrasing even when the facts are current.
-- Rhythmic prose is not safer than stock phrases. If bullets settle into repeated claim-then-explanation cadence or sound like a dashboard performing insight, the brief has already drifted.
+- The canonical contract lives in [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md).
+- Compass standup is provider-authored only, but deterministic runtime evidence still owns fact selection, ranking, and fail-closed validation.
+- Voice is non-negotiable: a thoughtful maintainer talking to a teammate. Friendly, calm, direct, simple, factual, precise, and human.
+- Briefs should surface humane judgment: what changed, why it matters, what is next, and what could still break.
+- Celebrate real wins with restraint. When things are shaky, be steady and reassuring without hiding the truth.
+- Repeated house phrases, workstream-title restatement, workstream roll calls, repeated window leads, canned next/why/timing wrappers, stagey metaphor, and polished portable summary prose are correctness failures even when the facts are true.
+- Whole-window coverage facts are evidence, not a mandatory bullet. Compass must not inject stock coverage lines like `Most of the work here was in ...` just to satisfy bookkeeping.
 - Every bullet must stay visibly tethered to the cited fact language. If the cited facts disappear and the sentence still works as a polished status card, it is too generic for Compass.
-- Do not reintroduce `Executive/Product` or `Operator/Technical` brief bullets. Compass briefs are unlabeled narrative bullets now, and that rule applies in provider output, deterministic fallback, warmed cache reuse, browser rendering, copied brief text, and legacy compatibility shims.
-- Provider output, warmed cache reuse, and deterministic fallback all share the same voice bar. If one path cannot stay natural, it should fall back to plainer fact language, not a different template.
-- Deterministic fallback is the live-narration quality floor, not the place to
-  hide canned prose. If a Compass test blesses stock fallback wording, rewrite
-  or remove the test rather than preserving the stale phrasing.
-- Compass should not render a separate `Why this matters` section. Customer need, use-story, and operator consequence belong inside the completed/current/next/risk bullets when they sharpen the point.
-- `Next planned` should synthesize actionable near-term work, not just file paths, deferred scope, or generic portfolio posture.
-- Cache reuse must stay freshness-bound, voice-valid, and fail closed; stale or missing provider output should not masquerade as live progress, and warmed cache must never replay canned prose back into Compass.
-- Timeline audit and window-coverage material should stay deterministic and
-  precomputed. Compass brief generation should consume that upstream material
-  instead of paying repeated model cost to rediscover the same timeline shape.
-- For simple Compass brief enrichment, default to the cheap-fast coding model
-  lane: `gpt-5.3-codex-spark` with low reasoning effort. A more expensive
-  model needs evidence, not habit.
-- Hot-path Compass upkeep is budget-owned. Compass now has only two
-  acceptable runtime lanes: unchanged refresh under `50ms` of internal runtime
-  work and complete cold shell-safe refresh under `1s` of internal runtime
-  work on the normal local path. Do not revive a third slower lane.
-- Budget cuts must preserve the live voice contract by defaulting to reuse of
-  the last validated brief layer when the narrative-relevant window signature
-  is unchanged. Do not spend model or deterministic scoped-brief work just
-  because a refresh was requested if the brief story is materially the same.
-  Compass now has one bounded refresh contract only; do not revive or
-  advertise a second `full` or deep-refresh mode. If a user says "full"
-  in prose, route that request to `odylith compass refresh --repo-root . --wait`
-  instead of inventing a Compass-specific flag. Refresh may reuse a warmed
-  live global brief, and shell-safe global `24h`/`48h` should stay on
-  maintained narrated cache before deterministic fallback. It must not pay for
-  a fresh provider call on a miss, and it must not let packet-local fact-id
-  churn or one old coverage-summary sentence knock a validated narrated global
-  brief back into deterministic by default.
+- Do not reintroduce `Executive/Product` or `Operator/Technical` brief bullets, a second narrator, or any deterministic fallback voice split.
+- Compass brief runtime now has one truthful source triad only: fresh `provider`, exact `cache`, or explicit `unavailable`.
+- Cache reuse must stay exact-fingerprint only, voice-valid, and fail closed. Contract changes must rotate the brief epoch and invalidate stale warmed prose.
+- Only ready `provider` or exact `cache` briefs get the full standup-brief stage. Non-ready states should stay compact, truthful, and obviously not-final.
+- `Copy Brief` is reserved for real narrated briefs, not unavailable-state chrome.
+- Timeline-audit and window-coverage material should stay deterministic and precomputed upstream. Compass brief generation should consume that evidence instead of rediscovering timeline shape with a second narrator.
+- For simple Compass brief enrichment, default to the cheap-fast coding model lane: `gpt-5.3-codex-spark` with low reasoning effort. A more expensive model needs evidence, not habit.
+- Hot-path Compass upkeep is budget-owned. Compass now has only two acceptable runtime lanes: unchanged refresh under `50ms` of internal runtime work and complete cold shell-safe refresh under `1s` of internal runtime work on the normal local path. Do not revive a slower third lane.
+- Compass now has one bounded refresh contract only; do not revive or advertise a second `full` or deep-refresh mode. If a user says `full` in prose, route that request to `odylith compass refresh --repo-root . --wait`.
 
 ## Lifecycle Closeout
 - Treat lifecycle reconciliation as part of implementation, not postscript cleanup.
@@ -342,7 +320,7 @@
 - Plan links shown to users must target the canonical rendered Radar plan route, not raw `odylith/technical-plans/**/*.md` files.
 - Keep Compass transaction headlines intent-first and outcome-first; never degrade to file-count-only labels.
 - Treat Registry synthetic workspace activity as forensic-only support for timelines, not as a replacement for explicit Compass decision or implementation logging.
-- `odylith compass watch-transactions --repo-root . --interval-seconds <n>` is the supported near-real-time local watcher for transaction cards and Radar execution overlays.
+- `odylith compass watch-transactions --repo-root .` is the supported change-driven local watcher for transaction cards and Radar execution overlays. It should wake on daemon or local watcher signals first and fall back to coarse polling only when no push-backed watcher exists.
 
 ## Backlog Execution Programs
 - Umbrella-owned execution waves are a repo-local backlog contract, not ad hoc plan prose.

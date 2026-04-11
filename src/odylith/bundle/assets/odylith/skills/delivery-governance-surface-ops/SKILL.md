@@ -70,7 +70,7 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 ./.odylith/bin/odylith atlas auto-update --repo-root . --from-git-working-tree --fail-on-stale
 ./.odylith/bin/odylith atlas render --repo-root . --fail-on-stale
 ./.odylith/bin/odylith compass log --repo-root . --kind implementation --summary "<intent-first update>"
-./.odylith/bin/odylith compass watch-transactions --repo-root . --interval-seconds 15
+./.odylith/bin/odylith compass watch-transactions --repo-root .
 ```
 
 ## Rules
@@ -120,11 +120,25 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
   format, and do not reintroduce side-by-side or auto-fit multi-column release
   boards through renderer or shared-CSS changes unless the operator explicitly
   authorizes that layout change.
+- In the default unscoped Compass view, treat `Current Workstreams` as the
+  residual focus table after `Programs` and `Release Targets` have claimed
+  their represented workstreams. Do not duplicate those same `B-###` rows in
+  the current table unless the operator explicitly scopes to one of them.
 - Treat top-line governance KPI/stat cards as a shared shell contract too.
   Compass hero KPIs, Radar summary stats, Registry summary KPIs, and
   Casebook summary KPIs should consume the shared Dashboard KPI helpers for
   grid, card surface, and label/value typography instead of carrying local
   stat-card CSS in templates or renderers.
+- Treat generic deep-link buttons as shared shell contract too. `Registry`,
+  `Spec`, proof-reference, and `D-###` diagram buttons should reuse the
+  centralized deep-link chip helper in
+  `src/odylith/runtime/surfaces/dashboard_ui_primitives.py` instead of
+  surface-local button CSS.
+- Do not render a default proof-state or live-status card in Registry
+  component detail. Proof-state internals such as `Proof Control`,
+  `Live Blocker`, `Fingerprint`, `Frontier`, `Evidence tier`,
+  `Truthful claim`, and commit-hash deployment details belong in deeper
+  diagnostics, not the default Registry detail surface.
 - If a surface owns source-generated shell assets, keep one canonical loader
   or generator path, refresh live and bundled mirrors together, and do not
   keep a static fork of generated shared CSS when shared plus thin overrides

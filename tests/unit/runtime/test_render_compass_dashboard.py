@@ -400,7 +400,7 @@ def test_payload_satisfies_requested_refresh_allows_empty_scoped_maps_when_no_cu
     )
 
 
-def test_refresh_runtime_artifacts_reuses_matching_payload_even_when_briefs_are_deterministic(
+def test_refresh_runtime_artifacts_reuses_matching_payload_when_briefs_are_cache_backed(
     tmp_path: Path, monkeypatch
 ) -> None:
     repo_root = tmp_path
@@ -413,8 +413,8 @@ def test_refresh_runtime_artifacts_reuses_matching_payload_even_when_briefs_are_
         "version": "v1",
         "generated_utc": dt.datetime.now(tz=dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "current_workstreams": [{"idea_id": "B-101"}],
-        "standup_brief": {"24h": _brief(source="deterministic"), "48h": _brief(source="deterministic")},
-        "standup_brief_scoped": {"24h": {"B-101": _brief(source="deterministic")}, "48h": {"B-101": _brief(source="deterministic")}},
+        "standup_brief": {"24h": _brief(source="cache"), "48h": _brief(source="cache")},
+        "standup_brief_scoped": {"24h": {"B-101": _brief(source="cache")}, "48h": {"B-101": _brief(source="cache")}},
         "runtime_contract": {
             "version": "v1",
             "standup_brief_schema_version": render_compass_dashboard.compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
