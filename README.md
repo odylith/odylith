@@ -11,10 +11,9 @@
 
 > [!IMPORTANT]
 > Odylith is not a standalone app or IDE. Install it into a repo, then use it
-> through an AI coding agent such as Codex or Claude Code. In Odylith, the
-> agent is the execution interface and `odylith/index.html` is the operating
-> surface that keeps intent, constraints, topology, and execution state
-> visible.
+> through Codex. Current public support is Codex only. In Odylith, Codex is
+> the execution interface and `odylith/index.html` is the operating surface
+> that keeps intent, constraints, topology, and execution state visible.
 >
 > Odylith is GA on its supported public install platforms as of `2026-04-07`.
 
@@ -31,7 +30,7 @@ any subdirectory inside the same repo. The current GA platform contract covers
 macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). Intel macOS and Windows
 are not part of the current GA platform set.
 
-After install, open the repo in Codex or Claude Code. For first-run behavior,
+After install, open the repo in Codex. For first-run behavior,
 the first prompt to use, browser-shell behavior, and repo-root selection or
 reduced-mode details, see [First Run In An Odylith Repo](odylith/README.md#first-run).
 For more example prompts, see
@@ -45,7 +44,7 @@ From the repo you just installed into, run:
 ./.odylith/bin/odylith start --repo-root .
 ```
 
-Then paste this into Codex or Claude Code:
+Then paste this into Codex:
 
 > Use Odylith to define this repo's first governed slice. Pick one path to own, one seam to guard, one component to define, one diagram to draw, and one backlog to open, all tied to the same slice. First show me 5 bullets. Then create the Odylith files. Plain English. Real file paths only. No IDs. No hedging. Only write under `odylith/`.
 
@@ -70,7 +69,7 @@ living networks.
 
 ## Intro
 
-**Odylith changes the operating conditions for Codex or Claude Code.**
+**Odylith changes the operating conditions for Codex.**
 
 - It replaces blind repo search with scoped grounding.
 - It gives the agent durable repo-local memory and a forensic trail.
@@ -100,7 +99,7 @@ That is the real value: less time re-deriving the repository, more time making
 the right change.
 
 More on the operating frame:
-[Why Bolting Odylith Onto Codex Or Claude Code Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
+[Why Bolting Odylith Onto Codex Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
 
 ## Tribunal
 
