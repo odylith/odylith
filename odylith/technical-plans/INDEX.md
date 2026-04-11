@@ -22,6 +22,7 @@ Last updated (UTC): 2026-04-11
 | `odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md` | In progress | 2026-04-10 | 2026-04-10 | `B-083` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md` | In progress | 2026-04-11 | 2026-04-11 | `B-084` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md` | In progress | 2026-04-11 | 2026-04-11 | `B-085` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md` | In progress | 2026-04-11 | 2026-04-11 | `B-086` |
 
 ## Parked Plans
 

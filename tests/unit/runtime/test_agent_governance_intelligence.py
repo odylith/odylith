@@ -305,3 +305,91 @@ def test_build_governance_summary_includes_component_registry_counts(tmp_path: P
     assert int(component_summary.get("component_count", 0) or 0) >= 1
     assert int(component_summary.get("mapped_meaningful_event_count", 0) or 0) >= 1
     assert "odylith" not in payload
+
+
+def test_normalize_changed_paths_preserves_leading_dot_directories(tmp_path: Path) -> None:
+    """``.claude/...`` and ``.codex/...`` must not be mangled to ``claude/...``.
+
+    The previous ``.lstrip("./")`` idiom stripped every leading ``.`` and
+    ``/`` character, which silently corrupted dotfile directories into
+    broken aliases and fanned out duplicate changed-path entries.
+    """
+
+    inputs = (
+        ".claude/worktrees/funny-leavitt",
+        ".codex/config.toml",
+        ".github/workflows/ci.yml",
+        "./odylith/radar/source/INDEX.md",
+    )
+    normalized = governance.normalize_changed_paths(repo_root=tmp_path, values=inputs)
+
+    assert ".claude/worktrees/funny-leavitt" in normalized
+    assert ".codex/config.toml" in normalized
+    assert ".github/workflows/ci.yml" in normalized
+    assert "odylith/radar/source/INDEX.md" in normalized
+    assert "claude/worktrees/funny-leavitt" not in normalized
+    assert "codex/config.toml" not in normalized
+    assert "github/workflows/ci.yml" not in normalized
+
+
+def test_normalize_changed_paths_fans_out_bundle_mirror_aliases(tmp_path: Path) -> None:
+    """Bundle-mirror inputs must alias to both bundle and source-of-truth forms
+    without ever minting a broken dot-stripped variant."""
+
+    inputs = (
+        "src/odylith/bundle/assets/project-root/.claude/agents/test.md",
+        "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
+    )
+    normalized = governance.normalize_changed_paths(repo_root=tmp_path, values=inputs)
+
+    assert "src/odylith/bundle/assets/project-root/.claude/agents/test.md" in normalized
+    assert ".claude/agents/test.md" in normalized
+    assert "claude/agents/test.md" not in normalized
+    assert "src/odylith/bundle/assets/odylith/radar/source/INDEX.md" in normalized
+    assert "odylith/radar/source/INDEX.md" in normalized
+
+
+def test_collect_git_changed_paths_skips_nested_worktree_copies(tmp_path: Path) -> None:
+    """Paths whose ancestor carries a ``.git`` marker must be excluded.
+
+    A bundled copy of a nested git worktree (for example
+    ``src/odylith/bundle/assets/project-root/.claude/worktrees/<slug>``)
+    used to pollute the changed-path set and fan out broken aliases for
+    every file beneath it. The nested-worktree guard must skip that tree
+    even when its ``.git`` marker is a file starting with ``gitdir:``.
+    """
+
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "config", "user.email", "test@example.com"],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+        check=True,
+    )
+
+    # Make the repo non-empty so porcelain output is well-formed.
+    (tmp_path / "real.txt").write_text("real\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "real.txt"], check=True)
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "commit", "-q", "-m", "seed"],
+        check=True,
+    )
+
+    # Synthesize a bundled-worktree-copy tree whose root carries a
+    # ``gitdir:`` marker, just like the checked-in bundle copy of a
+    # registered worktree.
+    nested_root = tmp_path / "src" / "odylith" / "bundle" / "assets" / "project-root" / ".claude" / "worktrees" / "nested"
+    nested_root.mkdir(parents=True)
+    (nested_root / ".git").write_text(
+        "gitdir: /absolute/path/outside/repo/.git/worktrees/nested\n",
+        encoding="utf-8",
+    )
+    (nested_root / "noise.md").write_text("pretend payload\n", encoding="utf-8")
+
+    rows = governance.collect_git_changed_paths(repo_root=tmp_path)
+    assert not any("worktrees/nested" in row for row in rows), rows
+    assert not any("claude/worktrees/nested" in row for row in rows), rows

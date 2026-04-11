@@ -237,7 +237,13 @@ def legacy_truth_aliases(*, repo_root: Path | None = None, profile: Mapping[str,
 
 
 def _legacy_product_token_alias(token: str) -> str:
-    normalized = str(token or "").strip().replace("\\", "/").lstrip("./")
+    normalized = str(token or "").strip().replace("\\", "/")
+    # Strip exactly one leading ``./`` prefix. ``str.lstrip("./")`` is a
+    # broken idiom that strips every leading ``.`` or ``/`` character and
+    # silently mangles dotfile directories like ``.claude/…`` or
+    # ``.codex/…`` into ``claude/…`` / ``codex/…``.
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
     if not normalized:
         return ""
     lower = normalized.lower()

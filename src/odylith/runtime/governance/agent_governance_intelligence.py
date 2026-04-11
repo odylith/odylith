@@ -193,8 +193,24 @@ _PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX = "src/odylith/bundle/assets/odylith/"
 _PROJECT_ROOT_ASSET_MIRROR_PREFIX = "src/odylith/bundle/assets/project-root/"
 
 
+def _strip_current_dir_prefix(token: str) -> str:
+    """Strip exactly one leading ``./`` prefix if present.
+
+    ``str.lstrip("./")`` is a common but broken idiom: it strips *any*
+    leading ``.`` or ``/`` character, which corrupts dotfile paths like
+    ``.claude/…``, ``.codex/…``, ``.github/…`` into ``claude/…``,
+    ``codex/…``, ``github/…``. We only want to peel a literal ``./``
+    prefix, never an inner dot.
+    """
+
+    text = str(token or "").strip()
+    if text.startswith("./"):
+        return text[2:]
+    return text
+
+
 def _changed_path_aliases(token: str) -> tuple[str, ...]:
-    normalized = str(token or "").strip().lstrip("./")
+    normalized = _strip_current_dir_prefix(token)
     if not normalized:
         return ()
     aliases = [normalized]
@@ -215,7 +231,9 @@ def normalize_changed_paths(*, repo_root: Path, values: Iterable[str]) -> list[s
     rows: list[str] = []
     seen: set[str] = set()
     for raw in values:
-        token = ws_inference.normalize_repo_token(str(raw or "").strip(), repo_root=repo_root).lstrip("./")
+        token = _strip_current_dir_prefix(
+            ws_inference.normalize_repo_token(str(raw or "").strip(), repo_root=repo_root)
+        )
         for alias in _changed_path_aliases(token):
             if not alias or _is_retired_surface_tombstone(alias) or alias in seen:
                 continue
@@ -237,8 +255,63 @@ def _run_git(repo_root: Path, args: Sequence[str]) -> str:
     return str(completed.stdout or "")
 
 
+def _is_nested_git_worktree_path(*, repo_root: Path, relative_path: str) -> bool:
+    """Return ``True`` when ``relative_path`` points at a nested git worktree.
+
+    A nested git worktree is any directory inside the repo that contains a
+    ``.git`` marker (a directory for full clones, or a text file starting with
+    ``gitdir:`` for registered worktrees). Stray copies of such directories
+    under source-tracked trees must never pollute the changed-path set because
+    the path-alias fan-out will mint spurious variants of every file beneath
+    them.
+    """
+
+    token = str(relative_path or "").strip().strip("/")
+    if not token:
+        return False
+    try:
+        root = Path(repo_root).resolve()
+        candidate = (root / token).resolve()
+    except OSError:
+        return False
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        return False
+    # Walk the candidate and each of its ancestors up to (but excluding) the
+    # repo root. If any of them carry a ``.git`` marker, treat the whole
+    # subtree as a nested worktree.
+    current = candidate
+    while True:
+        if current == root:
+            return False
+        git_marker = current / ".git"
+        if git_marker.is_dir():
+            return True
+        if git_marker.is_file():
+            try:
+                head = git_marker.read_text(encoding="utf-8", errors="replace").lstrip()
+            except OSError:
+                return True
+            if head.startswith("gitdir:"):
+                return True
+            return True
+        parent = current.parent
+        if parent == current:
+            return False
+        current = parent
+
+
 def collect_git_changed_paths(*, repo_root: Path) -> list[str]:
-    """Collect changed paths from git status porcelain output."""
+    """Collect changed paths from git status porcelain output.
+
+    Nested git worktrees are skipped: if a candidate path lives inside a
+    directory carrying a ``.git`` marker, including the accidental checked-in
+    copies of one worktree under another (for example a bundled copy of a
+    `.claude/worktrees/<slug>` tree inside `src/odylith/bundle/assets/...`),
+    that path is excluded so the changed-path fan-out cannot mint bogus
+    aliases for every file below it.
+    """
 
     raw = _run_git(repo_root, ["status", "--porcelain", "--untracked-files=all"])
     rows: list[str] = []
@@ -252,6 +325,8 @@ def collect_git_changed_paths(*, repo_root: Path) -> list[str]:
         if " -> " in path_token:
             path_token = path_token.split(" -> ", 1)[1].strip()
         path_token = path_token.strip('"')
+        if _is_nested_git_worktree_path(repo_root=repo_root, relative_path=path_token):
+            continue
         rows.append(path_token)
     return normalize_changed_paths(repo_root=repo_root, values=rows)
 
