@@ -1,0 +1,40 @@
+{
+  "component_id": "odylith-memory-contracts",
+  "diagrams": [
+    "D-002",
+    "D-020",
+    "D-025",
+    "D-018"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [
+      "no_explicit_event",
+      "no_recent_path_match",
+      "no_mapped_workstream_evidence"
+    ],
+    "explicit_event_count": 0,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 0,
+    "spec_history_event_count": 1,
+    "status": "baseline_forensic_only",
+    "timeline_event_count": 1
+  },
+  "name": "Odylith Memory Contracts",
+  "path_prefixes": [
+    "src/odylith/runtime/memory/tooling_memory_contracts.py"
+  ],
+  "spec_ref": "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+  "timeline": [],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Neutral packet and evidence-pack compaction contract that sanitizes provenance, execution-profile tokens, and memory-derived packet fields.",
+  "why_tracked": "Makes the memory-facing packet contract explicit and benchmark-safe instead of hiding redaction, allowlisting, and compaction policy inside one helper module.",
+  "workstreams": [
+    "B-058",
+    "B-059"
+  ]
+}

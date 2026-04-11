@@ -559,6 +559,218 @@ def test_reasoning_config_from_env_defaults_to_claude_cli_when_available(
     assert config.claude_bin == str(claude_bin.resolve())
 
 
+def test_reasoning_config_from_env_prefers_active_claude_host_when_both_local_bins_exist(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    codex_bin = tmp_path / "bin" / "codex"
+    claude_bin = tmp_path / "bin" / "claude"
+    codex_bin.parent.mkdir(parents=True, exist_ok=True)
+    codex_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    claude_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    codex_bin.chmod(0o755)
+    claude_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: (
+            str(codex_bin)
+            if token == "codex"
+            else str(claude_bin)
+            if token in {"claude", "claude-code"}
+            else None
+        ),
+    )
+
+    config = odylith_reasoning.reasoning_config_from_env(
+        repo_root=tmp_path,
+        environ={
+            "CLAUDE_CODE_SIMPLE": "1",
+            "CODEX_THREAD_ID": "thread-1",
+        },
+    )
+
+    assert config.provider == "claude-cli"
+    assert config.codex_bin == str(codex_bin.resolve())
+    assert config.claude_bin == str(claude_bin.resolve())
+
+
+def test_cheap_structured_reasoning_profile_prefers_codex_on_auto_local(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    codex_bin = tmp_path / "bin" / "codex"
+    codex_bin.parent.mkdir(parents=True, exist_ok=True)
+    codex_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    codex_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: str(codex_bin) if token == "codex" else None,
+    )
+
+    profile = odylith_reasoning.cheap_structured_reasoning_profile(
+        odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="auto-local",
+            model="",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            claude_bin="claude",
+        ),
+        environ={"CODEX_THREAD_ID": "thread-1"},
+    )
+
+    assert profile.provider == "codex-cli"
+    assert profile.model == "gpt-5.3-codex-spark"
+    assert profile.reasoning_effort == "medium"
+
+
+def test_cheap_structured_reasoning_profile_prefers_claude_on_auto_local(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    claude_bin = tmp_path / "bin" / "claude"
+    claude_bin.parent.mkdir(parents=True, exist_ok=True)
+    claude_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    claude_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: str(claude_bin) if token in {"claude", "claude-code"} else None,
+    )
+
+    profile = odylith_reasoning.cheap_structured_reasoning_profile(
+        odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="auto-local",
+            model="",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            claude_bin="claude",
+        ),
+        environ={"CLAUDE_CODE_SIMPLE": "1"},
+    )
+
+    assert profile.provider == "claude-cli"
+    assert profile.model == "haiku"
+    assert profile.reasoning_effort == "medium"
+
+
+def test_cheap_structured_reasoning_profile_advances_codex_ladder_after_budget_failure(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    codex_bin = tmp_path / "bin" / "codex"
+    codex_bin.parent.mkdir(parents=True, exist_ok=True)
+    codex_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    codex_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: str(codex_bin) if token == "codex" else None,
+    )
+
+    profile = odylith_reasoning.cheap_structured_reasoning_profile(
+        odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="auto-local",
+            model="",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            claude_bin="claude",
+        ),
+        environ={"CODEX_THREAD_ID": "thread-1"},
+        previous_model="gpt-5.3-codex-spark",
+        failure_code="credits_exhausted",
+        failure_detail="You've hit your usage limit for GPT-5.3-Codex-Spark.",
+    )
+
+    assert profile.provider == "codex-cli"
+    assert profile.model == "gpt-5.3-codex"
+    assert profile.reasoning_effort == "medium"
+
+
+def test_cheap_structured_reasoning_profile_advances_claude_ladder_after_budget_failure(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    claude_bin = tmp_path / "bin" / "claude"
+    claude_bin.parent.mkdir(parents=True, exist_ok=True)
+    claude_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    claude_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: str(claude_bin) if token in {"claude", "claude-code"} else None,
+    )
+
+    profile = odylith_reasoning.cheap_structured_reasoning_profile(
+        odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="auto-local",
+            model="",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            claude_bin="claude",
+        ),
+        environ={"CLAUDE_CODE_SIMPLE": "1"},
+        previous_model="haiku",
+        failure_code="rate_limited",
+        failure_detail="Claude reported rate limit for haiku.",
+    )
+
+    assert profile.provider == "claude-cli"
+    assert profile.model == "sonnet"
+    assert profile.reasoning_effort == "medium"
+
+
+def test_cheap_structured_reasoning_profile_falls_back_to_local_host_when_openai_config_is_incomplete(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    codex_bin = tmp_path / "bin" / "codex"
+    codex_bin.parent.mkdir(parents=True, exist_ok=True)
+    codex_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    codex_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: str(codex_bin) if token == "codex" else None,
+    )
+
+    profile = odylith_reasoning.cheap_structured_reasoning_profile(
+        odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="openai-compatible",
+            model="",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            claude_bin="claude",
+        ),
+        environ={"CODEX_THREAD_ID": "thread-1"},
+    )
+
+    assert profile.provider == "codex-cli"
+    assert profile.model == "gpt-5.3-codex-spark"
+    assert profile.reasoning_effort == "medium"
+
+
 def test_reasoning_config_from_env_overrides_repo_local_file(tmp_path: Path) -> None:
     config_path = tmp_path / ".odylith" / "reasoning.config.v1.json"
     config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -953,6 +1165,74 @@ def test_claude_cli_reasoning_provider_parses_json_result_wrapper(
     assert result == {"leading_explanation": {"text": "A", "evidence_ids": ["E1"]}}
 
 
+def test_claude_cli_reasoning_provider_passes_schema_model_and_effort(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    claude_bin = tmp_path / "bin" / "claude"
+    claude_bin.parent.mkdir(parents=True, exist_ok=True)
+    claude_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    claude_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: str(claude_bin) if token in {"claude", "claude-code"} else None,
+    )
+
+    observed: dict[str, object] = {}
+
+    def _fake_run(command, **kwargs):  # noqa: ANN001
+        observed["command"] = list(command)
+        observed["stdin"] = kwargs["input"]
+        observed["timeout"] = kwargs["timeout"]
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps({"type": "result", "result": json.dumps({"ok": True})}),
+            stderr="",
+        )
+
+    monkeypatch.setattr(odylith_reasoning.subprocess, "run", _fake_run)
+
+    provider = odylith_reasoning.ClaudeCliReasoningProvider(
+        repo_root=tmp_path,
+        claude_bin="claude",
+        model="claude-default",
+        timeout_seconds=3.0,
+        reasoning_effort="high",
+    )
+    result = provider.generate_structured(
+        request=odylith_reasoning.StructuredReasoningRequest(
+            system_prompt="Return JSON only.",
+            schema_name="schema",
+            output_schema={
+                "type": "object",
+                "required": ["ok"],
+                "additionalProperties": False,
+                "properties": {"ok": {"type": "boolean"}},
+            },
+            prompt_payload={"case": "B-061"},
+            model="claude-custom",
+            reasoning_effort="low",
+            timeout_seconds=17.0,
+        )
+    )
+
+    assert result == {"ok": True}
+    command = observed["command"]
+    assert isinstance(command, list)
+    assert command[command.index("--model") + 1] == "claude-custom"
+    assert command[command.index("--effort") + 1] == "low"
+    assert json.loads(command[command.index("--json-schema") + 1]) == {
+        "type": "object",
+        "required": ["ok"],
+        "additionalProperties": False,
+        "properties": {"ok": {"type": "boolean"}},
+    }
+    assert observed["stdin"] == json.dumps({"case": "B-061"}, sort_keys=True, ensure_ascii=False)
+    assert observed["timeout"] == 17.0
+
+
 @pytest.mark.parametrize(
     ("body", "expected"),
     [
@@ -1090,6 +1370,32 @@ def test_codex_cli_provider_classifies_credit_limit_failure(
     assert provider.generate_finding(prompt_payload={"case_id": "case-workstream-B-061"}) is None
     assert provider.last_failure_code == "credits_exhausted"
     assert "credits" in provider.last_failure_detail.lower() or "quota" in provider.last_failure_detail.lower()
+
+
+def test_codex_cli_provider_failure_excerpt_keeps_tail_for_real_error_message(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    provider = odylith_reasoning.CodexCliReasoningProvider(
+        repo_root=tmp_path,
+        codex_bin="codex",
+        model="gpt-5.4",
+        timeout_seconds=2.0,
+        reasoning_effort="high",
+    )
+    monkeypatch.setattr(odylith_reasoning.shutil, "which", lambda token: "/usr/bin/codex" if token == "codex" else None)
+
+    noisy_stdout = "OpenAI Codex banner " + ("x" * 320)
+    noisy_stderr = "fatal: insufficient_quota. You have run out of credits."
+
+    def _fake_run(command, **kwargs):  # noqa: ANN001, ARG001
+        return subprocess.CompletedProcess(command, 1, stdout=noisy_stdout, stderr=noisy_stderr)
+
+    monkeypatch.setattr(odylith_reasoning.subprocess, "run", _fake_run)
+
+    assert provider.generate_finding(prompt_payload={"case_id": "case-workstream-B-061"}) is None
+    assert provider.last_failure_code == "credits_exhausted"
+    assert "insufficient_quota" in provider.last_failure_detail
 
 
 def test_openai_provider_generate_structured_uses_custom_request_contract(

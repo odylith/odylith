@@ -297,7 +297,7 @@
 - Only ready `provider` or exact `cache` briefs get the full standup-brief stage. Non-ready states should stay compact, truthful, and obviously not-final.
 - `Copy Brief` is reserved for real narrated briefs, not unavailable-state chrome.
 - Timeline-audit and window-coverage material should stay deterministic and precomputed upstream. Compass brief generation should consume that evidence instead of rediscovering timeline shape with a second narrator.
-- For simple Compass brief enrichment, default to the cheap-fast coding model lane: `gpt-5.3-codex-spark` with low reasoning effort. A more expensive model needs evidence, not habit.
+- For Compass brief enrichment, detect the active local host and stay on the bounded structured local ladder with `medium` reasoning only. On Codex that means `gpt-5.3-codex-spark` first, then `gpt-5.3-codex`, then `gpt-5.4-mini` only if the cheaper rung is exhausted or unavailable. On Claude that means `haiku` first, then `sonnet` only if the cheaper rung is exhausted or unavailable. Do not keep retrying the same failed cheap rung indefinitely, and do not escalate to a more expensive lane without evidence.
 - Hot-path Compass upkeep is budget-owned. Compass now has only two acceptable runtime lanes: unchanged refresh under `50ms` of internal runtime work and complete cold shell-safe refresh under `1s` of internal runtime work on the normal local path. Do not revive a slower third lane.
 - Compass now has one bounded refresh contract only; do not revive or advertise a second `full` or deep-refresh mode. If a user says `full` in prose, route that request to `odylith compass refresh --repo-root . --wait`.
 

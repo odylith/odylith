@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
-import re
 import time
 from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_engine_packet_runtime_bindings
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
 from odylith.runtime.context_engine import session_bootstrap_payload_compactor
@@ -60,7 +59,7 @@ def build_session_brief(
     optimization_snapshot = {} if hot_path else load_runtime_optimization_snapshot(repo_root=root)
     stage_timings["guidance_catalog"] = _elapsed_stage_ms(stage_started)
     stage_started = time.perf_counter()
-    effective_session_id = re.sub(r"[^A-Za-z0-9._-]+", "-", str(session_id or "").strip()).strip("-") or f"codex-{os.getpid()}"
+    effective_session_id = agent_runtime_contract.fallback_session_token(session_id)
     path_scope = _resolve_changed_path_scope_context(
         repo_root=root,
         explicit_paths=changed_paths,

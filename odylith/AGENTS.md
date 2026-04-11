@@ -78,7 +78,7 @@ Scope: applies to Odylith paths under `odylith/`.
 - In consumer repos, validate repo code with the repo's own `python`, `uv`, Poetry, Conda, or equivalent project toolchain after Odylith work narrows the slice.
 - In the Odylith product repo, use pinned dogfood for shipped-runtime proof and detached `source-local` only when maintainer work intentionally needs live unreleased `src/odylith/*` execution.
 - Treat routed or orchestrated native delegation as the default execution path for substantive grounded work when the current host supports it across the consumer lane and both Odylith product-repo maintainer postures: pinned dogfood and detached `source-local` maintainer dev, unless Odylith explicitly keeps the slice local.
-- Codex is the currently validated native-spawn host. In Claude Code, use the same Odylith grounding, memory, and orchestration guidance locally until native spawn support is explicitly proven there.
+- Codex and Claude Code are both validated Odylith delegation hosts. Codex uses routed `spawn_agent` payloads; Claude Code uses the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.
 
 ## Source File Size Discipline
 - Odylith coding standards now live in

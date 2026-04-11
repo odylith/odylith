@@ -19,6 +19,7 @@ Last updated (UTC): 2026-04-09
 | `odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md` | In progress | 2026-04-08 | 2026-04-08 | `B-064` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md` | In progress | 2026-04-09 | 2026-04-09 | `B-071` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md` | In progress | 2026-04-09 | 2026-04-09 | `B-072` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md` | In progress | 2026-04-10 | 2026-04-10 | `B-083` |
 
 ## Parked Plans
 

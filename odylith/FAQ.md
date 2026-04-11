@@ -59,9 +59,10 @@ If local cache or derived runtime state looks compromised, use:
 ./.odylith/bin/odylith on --repo-root .
 ```
 
-`off` removes the Odylith block in the repo-root `AGENTS.md` but keeps the
-runtime and `odylith/` tree in place. `on` restores that block and puts
-Odylith back on the default first path.
+`off` removes the Odylith block from supported repo-root guidance files such
+as `AGENTS.md` and `CLAUDE.md`, but keeps the runtime and `odylith/` tree in
+place. `on` restores those blocks and puts Odylith back on the default first
+path.
 
 ## What does uninstall remove?
 
@@ -70,8 +71,8 @@ Odylith back on the default first path.
 ```
 
 That detaches the runtime integration under `.odylith/` and removes the
-Odylith block in the repo-root `AGENTS.md`, but leaves the `odylith/` context
-tree in place.
+Odylith block from supported repo-root guidance files such as `AGENTS.md` and
+`CLAUDE.md`, but leaves the `odylith/` context tree in place.
 
 ## What does Odylith own in this repository?
 
@@ -79,7 +80,8 @@ Odylith owns:
 
 - `odylith/`
 - `.odylith/`
-- the Odylith block in the repo-root `AGENTS.md`
+- the Odylith block in supported repo-root guidance files such as
+  `AGENTS.md` and `CLAUDE.md`
 
 Everything else stays owned by the surrounding repository unless that
 repository says otherwise.

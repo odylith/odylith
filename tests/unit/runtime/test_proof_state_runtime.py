@@ -492,6 +492,23 @@ def test_load_bug_snapshot_enriches_rows_with_proof_state_and_claim_guard(tmp_pa
     assert bug["claim_guard"]["blocked_terms"] == ["fixed", "cleared", "resolved"]
 
 
+def test_casebook_index_and_bug_snapshot_ignore_claude_companion_files(tmp_path: Path) -> None:
+    _write_casebook_bug(tmp_path)
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    (bug_root / "CLAUDE.md").write_text("# CLAUDE.md\n\n@AGENTS.md\n", encoding="utf-8")
+
+    rendered_index = sync_casebook_bug_index.render_bug_index(repo_root=tmp_path)
+
+    assert "CLAUDE.md" not in rendered_index
+
+    _write_casebook_index(tmp_path)
+    rows = projection_backlog.load_bug_snapshot(repo_root=tmp_path, runtime_mode="standalone")
+
+    assert len(rows) == 1
+    assert rows[0]["bug_id"] == "CB-077"
+    assert rows[0]["source_path"].endswith("2026-04-08-live-proof-state.md")
+
+
 def test_proof_drift_warning_triggers_when_non_primary_work_dominates() -> None:
     state = {
         "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",

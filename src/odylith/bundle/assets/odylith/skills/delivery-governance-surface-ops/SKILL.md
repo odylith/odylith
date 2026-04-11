@@ -28,6 +28,15 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 - keep Compass updates intent-first and carry forward constraints plus validation obligations
 - treat Compass voice as governed truth: plainspoken grounded maintainer narration in ordinary words, with no stock framing, house phrases, queue-label restatement, repeated window leads, generic priority wrappers, rhetorical benchmark challenges, stagey metaphor, or canned current/next/why/timing scaffolding in Compass-facing summaries or updates
 - keep Compass cheap too: the one bounded Compass refresh should stay deterministic and provider-light, timeline audit inputs should be reused instead of recomputed through model calls, and if a user asks for a "full" Compass refresh the correct command is still `odylith compass refresh --repo-root . --wait`; do not add a Compass-specific `full` flag or second mode
+- for briefs, follow `LLM writes, local code thinks`:
+  - build deterministic narration substrates locally
+  - rank and budget winner facts before provider input
+  - prefer delta narration over raw packet regeneration
+  - keep one packet-level provider bundle per meaningful fingerprint
+  - never reopen per-scope provider fanout or fuzzy cache replay
+- record brief wallet/latency truth as telemetry, not folklore. Skip
+  provider calls when the winning story did not change, and let capacity or
+  budget failures slow the retry lane instead of hammering the same packet.
 - use Delivery Intelligence's shared Scope Signal Ladder when deciding what
   deserves default visibility, promotion, or expensive compute:
   - `R0 suppressed_noise`

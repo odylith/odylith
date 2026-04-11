@@ -29,7 +29,10 @@
     "D-017",
     "D-023",
     "D-024",
-    "D-027"
+    "D-027",
+    "D-033",
+    "D-034",
+    "D-035"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
@@ -54,20 +57,22 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/component_registry.v1.json",
+        "AGENTS.md",
+        "odylith/README.md",
+        "src/odylith/bundle/assets/odylith/README.md",
         "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
-        "src/odylith/bundle/assets/odylith/registry/source/component_registry.v1.json"
+        "src/odylith/bundle/assets/odylith/technical-plans/INDEX.md"
       ],
       "confidence": "high",
-      "event_index": 71,
+      "event_index": 72,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json, src/odylith/bundle/assets/odylith/radar/source/INDEX.md +1 more",
-      "ts_iso": "2026-04-10T20:08:44-07:00",
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/README.md +3 more",
+      "ts_iso": "2026-04-11T01:10:37-07:00",
       "workstreams": []
     },
     {
@@ -1502,6 +1507,7 @@
     "B-061",
     "B-060",
     "B-070",
-    "B-069"
+    "B-069",
+    "B-083"
   ]
 }

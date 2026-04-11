@@ -6,6 +6,10 @@ Last updated (UTC): 2026-04-11
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-102 | 2026-04-11 | Odylith start returns no candidates when dirty path set is dominated by bundle asset mirrors | P1 | `src/odylith/runtime/governance/workstream_inference.py`,
+  `src/odylith/runtime/context_engine/odylith_context_engine.py`,
+  `.odylith/bin/odylith` start command, changed-path to workstream evidence
+  matching logic. | Open | [2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md](2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md) |
 | CB-090 | 2026-04-09 | Low signal governance churn can outrank real execution across governance surfaces | P1 | `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
   `src/odylith/runtime/governance/delivery/scope_signal_ladder.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,

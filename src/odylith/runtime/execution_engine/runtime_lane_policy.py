@@ -64,6 +64,8 @@ def _guard_fields(summary: Mapping[str, Any]) -> dict[str, Any]:
         "history_rule_count": _int(summary.get("execution_governance_history_rule_count")),
         "host_family": _token(summary.get("execution_governance_host_family")),
         "model_family": _token(summary.get("execution_governance_model_family")),
+        "host_supports_native_spawn_present": "execution_governance_host_supports_native_spawn" in summary,
+        "host_supports_native_spawn": _bool(summary.get("execution_governance_host_supports_native_spawn")),
         "target_lane": _token(summary.get("execution_governance_target_lane")),
         "has_writable_targets": _bool(summary.get("execution_governance_has_writable_targets")),
         "requires_more_consumer_context": _bool(
@@ -76,15 +78,21 @@ def _guard_fields(summary: Mapping[str, Any]) -> dict[str, Any]:
 
 def _host_serial_reason(*, action_label: str, fields: Mapping[str, Any]) -> str:
     host_family = _token(fields.get("host_family"))
-    model_family = _token(fields.get("model_family"))
-    if host_family != "claude":
+    if not bool(fields.get("host_supports_native_spawn_present")):
         return ""
-    host_label = "Claude Code"
-    if model_family and model_family != "claude":
-        host_label = f"{host_label} `{model_family}`"
+    if bool(fields.get("host_supports_native_spawn")):
+        return ""
+    if host_family == "codex":
+        host_label = "Codex"
+    elif host_family == "claude":
+        host_label = "Claude Code"
+    elif host_family:
+        host_label = host_family.replace("_", " ").title()
+    else:
+        host_label = "the detected host"
     return (
         f"the detected host keeps this slice on local or serial follow-through because "
-        f"{host_label} does not expose native worker {action_label}"
+        f"{host_label} does not expose native delegated {action_label}"
     )
 
 

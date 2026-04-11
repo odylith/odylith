@@ -6,24 +6,39 @@
     "D-031"
   ],
   "forensic_coverage": {
-    "empty_reasons": [
-      "no_explicit_event",
-      "no_recent_path_match",
-      "no_mapped_workstream_evidence"
-    ],
+    "empty_reasons": [],
     "explicit_event_count": 0,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 3,
-    "status": "baseline_forensic_only",
-    "timeline_event_count": 3
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 1
   },
   "name": "Execution Governance",
   "path_prefixes": [
     "src/odylith/runtime/execution_engine"
   ],
   "spec_ref": "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-  "timeline": [],
+  "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/execution_engine/contract.py",
+        "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+        "src/odylith/runtime/execution_engine/runtime_surface_governance.py"
+      ],
+      "confidence": "high",
+      "event_index": 71,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "execution-governance"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/execution_engine/contract.py, src/odylith/runtime/execution_engine/runtime_lane_policy.py +1 more",
+      "ts_iso": "2026-04-11T01:10:42-07:00",
+      "workstreams": []
+    }
+  ],
   "traceability": {
     "code_references": [],
     "developer_docs": [],

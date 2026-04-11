@@ -107,7 +107,7 @@ def _bug_files(bug_root: Path) -> list[Path]:
     rows: list[Path] = []
     for path in bug_root.rglob("*.md"):
         rel = path.relative_to(bug_root).as_posix()
-        if rel in {"AGENTS.md", "INDEX.md"}:
+        if rel in {"AGENTS.md", "CLAUDE.md", "INDEX.md"}:
             continue
         if any(part.startswith(".") for part in path.relative_to(bug_root).parts):
             continue

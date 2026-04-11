@@ -10,9 +10,15 @@ Goal: Restore trustworthy live Compass and shell behavior by hardening runtime
 freshness, removing stale brief reuse, and widening headless browser proof
 across the UX/UI, including cross-surface filter and search semantics.
 
+Current architecture rule:
+- local code selects, compresses, diffs, validates, and caches
+- the provider only writes the final prose bundle
+
 Assumptions:
 - Compass staleness is a runtime reuse and projection invalidation problem, not
   source-truth loss.
+- Brief quality and brief cost are both mostly input-contract problems, not a
+  reason to reintroduce synthetic fallback narration.
 - The existing Playwright harness is the right place to prove the UX/UI
   contracts that matter here.
 - Fixing the freshness contract centrally is safer than piling on more local
@@ -106,6 +112,14 @@ Related Bugs:
       folklore, cache-salvage behavior, and skills, which kept teaching the
       old fallback worldview back into the product even after the runtime
       architecture changed.
+- [x] Raw-packet prompt payloads were still wasting model time on local
+      selection work that Compass should perform deterministically first.
+- [x] Bundle replies could still lose good sibling entries because validation
+      treated the whole response as one fate instead of salvaging valid
+      subsets.
+- [x] Hot unchanged refresh was still paying too much Python startup and
+      projection re-entry cost even when the daemon already knew the current
+      fingerprint and payload.
 - [ ] Casebook detail view repeats the same signals across summary, guidance,
       and inspect sections, which makes the human-facing bug readout noisy.
 - [ ] Casebook detail can also repeat the same evidence path in both "Direct
@@ -211,6 +225,20 @@ Related Bugs:
       Registry-owned `briefs-voice-contract` component, and guidance plus
       skills no longer teach deterministic fallback or stock coverage
       narration back into the product.
+- [x] Compass brief cache identity now keys off the deterministic narration
+      substrate fingerprint instead of raw packet identity, so non-winner
+      churn does not force avoidable cold misses.
+- [x] Compass brief generation now uses local narration substrates and
+      delta-oriented bundle payloads instead of prompting directly from full
+      fact packets.
+- [x] Provider-worthiness gating now skips narration attempts for trivial or
+      non-winner deltas and records that decision explicitly.
+- [x] Brief spend telemetry now records bundle fingerprint, substrate
+      fingerprints, latency, input/output size, salvage count, repair count,
+      skip reason, and provider failure detail.
+- [x] Daemon-backed hot refresh can now reuse the last matching Compass
+      runtime payload directly instead of rebuilding on every unchanged
+      request.
 - [x] Explicit Radar relation and traceability deep links resolve to the exact
       requested target even when stale list filters would otherwise hide it.
 - [x] Release-gating browser proof opens disclosure-gated shell UI and audits

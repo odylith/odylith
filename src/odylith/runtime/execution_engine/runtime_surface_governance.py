@@ -633,6 +633,8 @@ def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[s
             "mode": _string(frontier.get("execution_mode")) or _string(contract.get("execution_mode")),
             "host_family": _string(host_profile.get("host_family")),
             "model_family": _string(host_profile.get("model_family")),
+            "host_delegation_style": _string(host_profile.get("delegation_style")),
+            "host_supports_native_spawn": bool(host_profile.get("supports_native_spawn")),
             "outcome": _string(admissibility.get("outcome")),
             "rationale": _string(admissibility.get("rationale")),
             "requires_reanchor": bool(admissibility.get("requires_reanchor")),
@@ -710,6 +712,10 @@ def summary_fields_from_execution_governance(snapshot: Mapping[str, Any]) -> dic
         "execution_governance_history_rule_count": int(compact.get("history_rule_count", 0) or 0),
         "execution_governance_host_family": _string(compact.get("host_family")),
         "execution_governance_model_family": _string(compact.get("model_family")),
+        "execution_governance_host_delegation_style": _string(compact.get("host_delegation_style")),
+        "execution_governance_host_supports_native_spawn": bool(
+            compact.get("host_supports_native_spawn")
+        ),
         "execution_governance_turn_intent": _string(compact.get("turn_intent")),
         "execution_governance_turn_active_tab": _string(compact.get("turn_active_tab")),
         "execution_governance_turn_user_turn_id": _string(compact.get("turn_user_turn_id")),

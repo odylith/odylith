@@ -530,7 +530,7 @@ def _looks_like_prompt_visible_repo_path(token: str) -> bool:
         return False
     if "/" in normalized:
         return True
-    if normalized in {"AGENTS.md", "README.md", "Makefile", "Dockerfile"}:
+    if normalized in {"AGENTS.md", "CLAUDE.md", "README.md", "Makefile", "Dockerfile"}:
         return True
     return Path(normalized).suffix.lower() in _VALIDATION_COMPANION_FILE_SUFFIXES
 

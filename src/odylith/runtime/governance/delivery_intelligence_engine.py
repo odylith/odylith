@@ -27,6 +27,7 @@ from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import operator_readout
 from odylith.runtime.governance import proof_state
 from odylith.runtime.reasoning import odylith_reasoning
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.common.command_surface import display_command
@@ -2817,7 +2818,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "odylith/registry/source",
                 "odylith/atlas/source/catalog/diagrams.v1.json",
                 "odylith/radar/traceability-graph.v1.json",
-                "odylith/compass/runtime/codex-stream.v1.jsonl",
+                *agent_runtime_contract.candidate_stream_tokens(),
                 DEFAULT_CONTROL_POSTURE_PATH,
                 DEFAULT_ODYLITH_REASONING_PATH,
                 "src/odylith/runtime/governance",

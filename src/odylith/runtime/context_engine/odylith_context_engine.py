@@ -25,6 +25,7 @@ from odylith.runtime.evaluation import odylith_benchmark_runner
 from odylith.runtime.memory import odylith_memory_backend
 from odylith.runtime.memory import odylith_remote_retrieval
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_compass_runtime_cache
 from odylith.runtime.context_engine import odylith_context_engine_daemon_wait_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.common.command_surface import module_invocation
@@ -1984,6 +1985,23 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             since_fingerprint=str(payload.get("since_fingerprint", "")).strip(),
             current_fingerprint=str(current_status.get("projection_fingerprint", "")).strip(),
             timeout_seconds=float(payload.get("timeout_seconds", 60.0) or 60.0),
+        )
+    if command == "compass-runtime-get":
+        cached = odylith_context_engine_compass_runtime_cache.load_runtime_payload(
+            repo_root=repo_root,
+            input_fingerprint=str(payload.get("input_fingerprint", "")).strip(),
+            refresh_profile=str(payload.get("refresh_profile", "")).strip(),
+        )
+        return {
+            "hit": bool(isinstance(cached, Mapping) and cached),
+            "payload": dict(cached) if isinstance(cached, Mapping) else {},
+        }
+    if command == "compass-runtime-put":
+        return odylith_context_engine_compass_runtime_cache.record_runtime_payload(
+            repo_root=repo_root,
+            input_fingerprint=str(payload.get("input_fingerprint", "")).strip(),
+            refresh_profile=str(payload.get("refresh_profile", "")).strip(),
+            payload=dict(payload.get("runtime_payload", {})) if isinstance(payload.get("runtime_payload"), Mapping) else {},
         )
     if command == "memory-snapshot":
         optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)

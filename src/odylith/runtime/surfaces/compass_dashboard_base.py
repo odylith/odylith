@@ -17,6 +17,7 @@ import subprocess
 from typing import Any, Iterable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import plan_progress
 from odylith.runtime.context_engine import odylith_context_engine_store
@@ -723,7 +724,11 @@ def _load_agent_stream_events(
             boundary = ""
         events.append(
             {
-                "id": f"codex:{kind}:{idx}:{ts.isoformat(timespec='seconds')}",
+                "id": agent_runtime_contract.timeline_event_id(
+                    kind=kind,
+                    index=idx,
+                    ts_iso=ts.isoformat(timespec="seconds"),
+                ),
                 "kind": kind,
                 "ts": ts,
                 "ts_iso": _safe_iso(ts),

@@ -1,0 +1,71 @@
+%% Reviewed 2026-04-11 for B-083 to show where shared runtime heuristics now treat CLAUDE.md as first-class guidance alongside AGENTS.md, covering workstream inference, dirty-overlap, benchmark isolation, consumer profile, and context routing.
+flowchart LR
+    subgraph GuidanceFiles["Repo guidance files"]
+        AGENTS["AGENTS.md<br/>Canonical cross-host policy<br/>Always classified as guidance"]
+        CLAUDE["CLAUDE.md<br/>Claude-native companion (B-083)<br/>Now classified as guidance — not ordinary docs"]
+    end
+
+    subgraph Classifier["Shared guidance classifier (extended for B-083)"]
+        IsGuidance["is_guidance_file(path)<br/>returns true for AGENTS.md AND CLAUDE.md<br/>Single source of truth for all heuristics"]
+    end
+
+    AGENTS --> IsGuidance
+    CLAUDE --> IsGuidance
+
+    subgraph WorkstreamInference["workstream_inference.py"]
+        WS_In["Changed-path set scanned<br/>CLAUDE.md changes counted as guidance anchors"]
+        WS_Out["Workstream candidate narrowing<br/>CLAUDE.md repos infer workstreams correctly<br/>No longer returns no_candidates on Claude-only roots"]
+        WS_In --> WS_Out
+    end
+
+    subgraph DirtyOverlap["dirty_overlap.py"]
+        DO_In["Dirty-path overlap computation<br/>CLAUDE.md not stripped from overlap set"]
+        DO_Out["Overlap summary surfaces CLAUDE.md changes truthfully<br/>Guidance file changes appear in evidence not noise"]
+        DO_In --> DO_Out
+    end
+
+    subgraph BenchmarkIsolation["benchmark_runner.py + benchmark_isolation.py"]
+        BM_In["Workspace snapshot and clean-room reset<br/>CLAUDE.md excluded from strip and reset scope"]
+        BM_Out["Benchmark workspace retains CLAUDE.md companion<br/>Isolation boundary matches real operator environment"]
+        BM_In --> BM_Out
+    end
+
+    subgraph ConsumerProfile["consumer_profile.py"]
+        CP_In["Host posture resolution<br/>CLAUDE.md included in profile scan paths"]
+        CP_Out["Consumer profile resolved correctly<br/>Claude Code sessions get first-class Odylith posture"]
+        CP_In --> CP_Out
+    end
+
+    subgraph ContextRouting["tooling_context_routing.py"]
+        RT_In["Routing decision inputs<br/>CLAUDE.md presence treated as valid guidance signal"]
+        RT_Out["Routing posture stable for Claude-only root repos<br/>Not penalized for missing AGENTS.md if CLAUDE.md present"]
+        RT_In --> RT_Out
+    end
+
+    IsGuidance --> WS_In
+    IsGuidance --> DO_In
+    IsGuidance --> BM_In
+    IsGuidance --> CP_In
+    IsGuidance --> RT_In
+
+    subgraph Before["Before B-083 (AGENTS.md only)"]
+        B1["CLAUDE.md treated as ordinary documentation"]
+        B2["Claude-only repos failed root guidance detection"]
+        B3["Workstream inference returned no_candidates"]
+        B4["Benchmark workspace could strip CLAUDE.md"]
+        B5["Consumer profile missed Claude Code host posture"]
+    end
+
+    subgraph After["After B-083 (AGENTS.md + CLAUDE.md)"]
+        A1["CLAUDE.md classified as guidance across all heuristics"]
+        A2["Claude-only repos bootstrap and detect correctly"]
+        A3["Workstream inference narrows from CLAUDE.md anchor"]
+        A4["Benchmark workspace preserves CLAUDE.md companion"]
+        A5["Consumer profile includes Claude Code host posture"]
+    end
+
+    WS_Out --> A3
+    DO_Out --> A1
+    BM_Out --> A4
+    CP_Out --> A5
+    RT_Out --> A2

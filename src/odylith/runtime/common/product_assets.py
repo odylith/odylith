@@ -8,6 +8,10 @@ def bundled_product_root() -> Path:
     return Path(files("odylith.bundle").joinpath("assets", "odylith"))
 
 
+def bundled_project_root_assets_root() -> Path:
+    return Path(files("odylith.bundle").joinpath("assets", "project-root"))
+
+
 def resolve_product_path(*, repo_root: Path, relative_path: str | Path) -> Path:
     relative = Path(str(relative_path).strip())
     candidate = (Path(repo_root).resolve() / relative).resolve()

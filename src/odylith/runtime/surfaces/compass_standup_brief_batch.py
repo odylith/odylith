@@ -4,15 +4,20 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import time
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
+from odylith.runtime.surfaces import compass_standup_brief_substrate
+from odylith.runtime.surfaces import compass_standup_brief_telemetry
 
 
 DEFAULT_SCOPED_PROVIDER_PACK_SIZE = 12
 DEFAULT_SCOPED_PROVIDER_PACK_MAX_CHARS = 18000
-DEFAULT_BUNDLE_PROVIDER_MAX_CHARS = 36000
+DEFAULT_BUNDLE_PROVIDER_MAX_CHARS = 18000
+DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES = 4
 _ABORT_FANOUT_FAILURE_CODES = frozenset(
     {
         "rate_limited",
@@ -25,6 +30,10 @@ _ABORT_FANOUT_FAILURE_CODES = frozenset(
         "unavailable",
     }
 )
+
+
+def _mapping(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _scope_packet_payload_chars(*, fact_packet: Mapping[str, Any]) -> int:
@@ -100,6 +109,15 @@ def _sections_schema() -> dict[str, Any]:
 def _provider_failure_should_abort_fanout(provider: odylith_reasoning.ReasoningProvider) -> bool:
     metadata = odylith_reasoning.provider_failure_metadata(provider)
     return str(metadata.get("code", "")).strip().lower() in _ABORT_FANOUT_FAILURE_CODES
+
+
+def _request_profile_metadata(
+    request: odylith_reasoning.StructuredReasoningRequest,
+) -> tuple[str, str]:
+    return (
+        str(getattr(request, "model", "")).strip(),
+        str(getattr(request, "reasoning_effort", "")).strip(),
+    )
 
 
 def _batch_provider_system_prompt() -> str:
@@ -278,7 +296,7 @@ def _bundle_provider_output_schema(
     scope_ids: Sequence[str],
 ) -> dict[str, Any]:
     window_tokens = [str(window_key).strip() for window_key in window_keys if str(window_key).strip()]
-    scope_tokens = [str(scope_id).strip() for scope_id in scope_ids if str(scope_id).strip()]
+    scope_tokens = ["", *[str(scope_id).strip() for scope_id in scope_ids if str(scope_id).strip()]]
     return {
         "type": "object",
         "required": ["briefs"],
@@ -289,29 +307,15 @@ def _bundle_provider_output_schema(
                 "minItems": 1,
                 "maxItems": max(1, len(window_tokens) + len(scope_tokens)),
                 "items": {
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "required": ["entry_kind", "window_key", "sections"],
-                            "additionalProperties": False,
-                            "properties": {
-                                "entry_kind": {"type": "string", "enum": ["global"]},
-                                "window_key": {"type": "string", "enum": window_tokens},
-                                "sections": _sections_schema(),
-                            },
-                        },
-                        {
-                            "type": "object",
-                            "required": ["entry_kind", "window_key", "scope_id", "sections"],
-                            "additionalProperties": False,
-                            "properties": {
-                                "entry_kind": {"type": "string", "enum": ["scoped"]},
-                                "window_key": {"type": "string", "enum": window_tokens},
-                                "scope_id": {"type": "string", "enum": scope_tokens},
-                                "sections": _sections_schema(),
-                            },
-                        },
-                    ]
+                    "type": "object",
+                    "required": ["entry_kind", "window_key", "scope_id", "sections"],
+                    "additionalProperties": False,
+                    "properties": {
+                        "entry_kind": {"type": "string", "enum": ["global", "scoped"]},
+                        "window_key": {"type": "string", "enum": window_tokens},
+                        "scope_id": {"type": "string", "enum": scope_tokens},
+                        "sections": _sections_schema(),
+                    },
                 },
             }
         },
@@ -320,6 +324,7 @@ def _bundle_provider_output_schema(
 
 def _bundle_provider_request_payload(
     *,
+    repo_root: Path,
     global_packets_by_window: Mapping[str, Mapping[str, Any]],
     scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
 ) -> dict[str, Any]:
@@ -328,9 +333,57 @@ def _bundle_provider_request_payload(
         next(iter(next(iter(scoped_packets_by_window.values()), {}).values()), {}),
     )
     base_payload = narrator._provider_request_payload(fact_packet=first_packet)  # noqa: SLF001
+    global_entries = []
+    scoped_entries = []
+    global_substrates: dict[str, Mapping[str, Any]] = {}
+    scoped_substrates: dict[str, dict[str, Mapping[str, Any]]] = {}
+    for window_key, fact_packet in global_packets_by_window.items():
+        prepared = _prepared_substrate_entry(repo_root=repo_root, fact_packet=fact_packet)
+        current = dict(prepared["current"]) if isinstance(prepared.get("current"), Mapping) else {}
+        previous_accepted = _compact_previous_accepted_provider_view(_mapping(current.get("previous_accepted")))
+        global_substrates[str(window_key).strip()] = current
+        entry = {
+            "entry_kind": "global",
+            "window_key": str(window_key).strip(),
+            "scope_id": "",
+            "substrate_fingerprint": str(current.get("fingerprint", "")).strip(),
+            "delta": _compact_delta_provider_view(_mapping(prepared.get("delta"))),
+            "current": compass_standup_brief_substrate.provider_substrate_view(substrate=current),
+        }
+        if previous_accepted:
+            entry["previous_accepted"] = previous_accepted
+        global_entries.append(entry)
+    for window_key, window_packets in scoped_packets_by_window.items():
+        window_entries = []
+        window_substrates: dict[str, Mapping[str, Any]] = {}
+        for scope_id, fact_packet in window_packets.items():
+            prepared = _prepared_substrate_entry(repo_root=repo_root, fact_packet=fact_packet)
+            current = dict(prepared["current"]) if isinstance(prepared.get("current"), Mapping) else {}
+            previous_accepted = _compact_previous_accepted_provider_view(_mapping(current.get("previous_accepted")))
+            window_substrates[str(scope_id).strip()] = current
+            entry = {
+                "entry_kind": "scoped",
+                "window_key": str(window_key).strip(),
+                "scope_id": str(scope_id).strip(),
+                "substrate_fingerprint": str(current.get("fingerprint", "")).strip(),
+                "delta": _compact_delta_provider_view(_mapping(prepared.get("delta"))),
+                "current": compass_standup_brief_substrate.provider_substrate_view(substrate=current),
+            }
+            if previous_accepted:
+                entry["previous_accepted"] = previous_accepted
+            window_entries.append(entry)
+        if window_entries:
+            scoped_entries.extend(window_entries)
+            scoped_substrates[str(window_key).strip()] = window_substrates
+    bundle_fingerprint = _bundle_fingerprint(
+        global_substrates_by_window=global_substrates,
+        scoped_substrates_by_window=scoped_substrates,
+    )
     return {
         "schema_version": narrator.STANDUP_BRIEF_SCHEMA_VERSION,
         "brief_contract": dict(base_payload.get("brief_contract", {})),
+        "bundle_mode": "delta_substrate_update",
+        "bundle_fingerprint": bundle_fingerprint,
         "bundle_contract": {
             "window_count": len(global_packets_by_window) or len(scoped_packets_by_window),
             "global_brief_count": len(global_packets_by_window),
@@ -341,38 +394,119 @@ def _bundle_provider_request_payload(
             ),
             "rules": [
                 "return one brief per requested entry",
-                "keep each entry isolated to its own fact packet",
+                "keep each entry isolated to its own narration substrate",
                 "do not invent roll-up coverage to fill missing scoped detail",
+                "update from current winners and prior accepted brief only",
             ],
         },
-        "global_fact_packets": [
-            {
-                "window_key": window_key,
-                "fact_packet": narrator._provider_fact_packet_view(fact_packet=fact_packet),  # noqa: SLF001
-            }
-            for window_key, fact_packet in global_packets_by_window.items()
-        ],
-        "scoped_fact_packets": [
-            {
-                "window_key": window_key,
-                "scope_id": scope_id,
-                "fact_packet": narrator._provider_fact_packet_view(fact_packet=fact_packet),  # noqa: SLF001
-            }
-            for window_key, window_packets in scoped_packets_by_window.items()
-            if isinstance(window_packets, Mapping)
-            for scope_id, fact_packet in window_packets.items()
-        ],
+        "entries": global_entries + scoped_entries,
     }
+
+
+def _compact_delta_provider_view(delta: Mapping[str, Any]) -> dict[str, Any]:
+    payload: dict[str, Any] = {}
+    changed_fact_keys = [
+        str(token).strip()
+        for token in delta.get("changed_fact_keys", [])
+        if str(token).strip()
+    ] if isinstance(delta.get("changed_fact_keys"), Sequence) and not isinstance(delta.get("changed_fact_keys"), (str, bytes, bytearray)) else []
+    dropped_fact_keys = [
+        str(token).strip()
+        for token in delta.get("dropped_fact_keys", [])
+        if str(token).strip()
+    ] if isinstance(delta.get("dropped_fact_keys"), Sequence) and not isinstance(delta.get("dropped_fact_keys"), (str, bytes, bytearray)) else []
+    changed_sections = [
+        str(token).strip()
+        for token in delta.get("changed_sections", [])
+        if str(token).strip()
+    ] if isinstance(delta.get("changed_sections"), Sequence) and not isinstance(delta.get("changed_sections"), (str, bytes, bytearray)) else []
+    storyline_changed_keys = [
+        str(token).strip()
+        for token in delta.get("storyline_changed_keys", [])
+        if str(token).strip()
+    ] if isinstance(delta.get("storyline_changed_keys"), Sequence) and not isinstance(delta.get("storyline_changed_keys"), (str, bytes, bytearray)) else []
+    if changed_fact_keys:
+        payload["changed_fact_keys"] = changed_fact_keys
+        payload["changed_fact_count"] = len(changed_fact_keys)
+    if dropped_fact_keys:
+        payload["dropped_fact_keys"] = dropped_fact_keys
+        payload["dropped_fact_count"] = len(dropped_fact_keys)
+    if changed_sections:
+        payload["changed_sections"] = changed_sections
+    if storyline_changed_keys:
+        payload["storyline_changed_keys"] = storyline_changed_keys
+    if bool(delta.get("freshness_changed")):
+        payload["freshness_changed"] = True
+    return payload
+
+
+def _compact_previous_accepted_provider_view(previous_accepted: Mapping[str, Any]) -> dict[str, Any]:
+    sections_payload = []
+    for section in previous_accepted.get("sections", []):
+        if not isinstance(section, Mapping):
+            continue
+        bullets = [
+            str(bullet.get("text", "")).strip()
+            for bullet in section.get("bullets", [])
+            if isinstance(bullet, Mapping) and str(bullet.get("text", "")).strip()
+        ]
+        if bullets:
+            sections_payload.append(
+                {
+                    "key": str(section.get("key", "")).strip(),
+                    "bullets": bullets,
+                }
+            )
+    if not sections_payload:
+        return {}
+    return {
+        "generated_utc": str(previous_accepted.get("generated_utc", "")).strip(),
+        "sections": sections_payload,
+    }
+
+
+def _compact_response_for_repair(invalid_response: Mapping[str, Any]) -> dict[str, Any]:
+    briefs_payload = []
+    for brief in invalid_response.get("briefs", []):
+        if not isinstance(brief, Mapping):
+            continue
+        sections_payload = []
+        for section in brief.get("sections", []):
+            if not isinstance(section, Mapping):
+                continue
+            bullets = [
+                str(bullet.get("text", "")).strip()
+                for bullet in section.get("bullets", [])
+                if isinstance(bullet, Mapping) and str(bullet.get("text", "")).strip()
+            ]
+            if bullets:
+                sections_payload.append(
+                    {
+                        "key": str(section.get("key", "")).strip(),
+                        "bullets": bullets,
+                    }
+                )
+        briefs_payload.append(
+            {
+                "entry_kind": str(brief.get("entry_kind", "")).strip(),
+                "window_key": str(brief.get("window_key", "")).strip(),
+                "scope_id": str(brief.get("scope_id", "")).strip(),
+                "sections": sections_payload,
+            }
+        )
+    return {"briefs": briefs_payload}
 
 
 def _bundle_repair_provider_request_payload(
     *,
+    repo_root: Path,
     global_packets_by_window: Mapping[str, Mapping[str, Any]],
     scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
     invalid_response: Mapping[str, Any],
     validation_errors: Sequence[str],
 ) -> dict[str, Any]:
     payload = _bundle_provider_request_payload(
+        repo_root=repo_root,
         global_packets_by_window=global_packets_by_window,
         scoped_packets_by_window=scoped_packets_by_window,
     )
@@ -380,8 +514,96 @@ def _bundle_repair_provider_request_payload(
         "goal": "repair the invalid Compass brief bundle so every returned entry satisfies the Compass validation contract",
         "validation_errors": [str(error).strip() for error in validation_errors[:16] if str(error).strip()],
     }
-    payload["previous_response"] = dict(invalid_response)
+    payload["previous_response"] = _compact_response_for_repair(invalid_response)
     return payload
+
+
+def _bundle_entry_key(*, window_key: str, scope_id: str = "") -> str:
+    window_token = str(window_key).strip()
+    scope_token = str(scope_id).strip()
+    return f"{window_token}:{scope_token}" if scope_token else f"{window_token}:global"
+
+
+def _prepared_substrate_entry(
+    *,
+    repo_root: Path,
+    fact_packet: Mapping[str, Any],
+) -> dict[str, Any]:
+    previous_entry = narrator.latest_cached_entry_for_context(repo_root=repo_root, fact_packet=fact_packet)
+    previous_substrate = (
+        previous_entry.get("substrate")
+        if isinstance(previous_entry, Mapping) and isinstance(previous_entry.get("substrate"), Mapping)
+        else None
+    )
+    previous_brief = None
+    if isinstance(previous_entry, Mapping):
+        previous_brief = narrator._cache_ready_brief(  # noqa: SLF001
+            fingerprint=str(previous_entry.get("fingerprint", "")).strip(),
+            cached_entry=previous_entry,
+            fact_packet=fact_packet,
+            cache_mode="exact",
+        )
+    current_substrate = compass_standup_brief_substrate.build_narration_substrate(
+        fact_packet=fact_packet,
+        previous_substrate=previous_substrate,
+        previous_brief=previous_brief,
+        schema_version=narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+    )
+    should_call, decision_reason, delta = compass_standup_brief_substrate.worth_calling_provider(
+        current=current_substrate,
+        previous=previous_substrate,
+    )
+    return {
+        "current": current_substrate,
+        "previous_entry": previous_entry if isinstance(previous_entry, Mapping) else None,
+        "previous_substrate": previous_substrate if isinstance(previous_substrate, Mapping) else None,
+        "previous_brief": previous_brief if isinstance(previous_brief, Mapping) else None,
+        "should_call_provider": bool(should_call),
+        "decision_reason": str(decision_reason).strip(),
+        "delta": dict(delta),
+    }
+
+
+def _skip_brief(
+    *,
+    fingerprint: str,
+    generated_utc: str,
+    decision_reason: str,
+) -> dict[str, Any]:
+    return narrator._unavailable_ready_brief(  # noqa: SLF001
+        fingerprint=fingerprint,
+        generated_utc=generated_utc,
+        reason="skipped_not_worth_calling",
+        diagnostics={
+            "provider_decision": "skipped_not_worth_calling",
+            "skip_reason": str(decision_reason).strip(),
+        },
+    )
+
+
+def _bundle_fingerprint(
+    *,
+    global_substrates_by_window: Mapping[str, Mapping[str, Any]],
+    scoped_substrates_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
+) -> str:
+    canonical = {
+        "schema_version": narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+        "global": {
+            str(window_key).strip(): str(substrate.get("fingerprint", "")).strip()
+            for window_key, substrate in global_substrates_by_window.items()
+            if str(window_key).strip() and isinstance(substrate, Mapping)
+        },
+        "scoped": {
+            str(window_key).strip(): {
+                str(scope_id).strip(): str(substrate.get("fingerprint", "")).strip()
+                for scope_id, substrate in window_substrates.items()
+                if str(scope_id).strip() and isinstance(substrate, Mapping)
+            }
+            for window_key, window_substrates in scoped_substrates_by_window.items()
+            if str(window_key).strip() and isinstance(window_substrates, Mapping)
+        },
+    }
+    return odylith_context_cache.fingerprint_payload(canonical)
 
 
 def _batch_provider_request(
@@ -476,6 +698,7 @@ def _window_batch_repair_provider_request(
 
 def _bundle_provider_request(
     *,
+    repo_root: Path,
     global_packets_by_window: Mapping[str, Mapping[str, Any]],
     scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
     config: odylith_reasoning.ReasoningConfig | None = None,
@@ -498,6 +721,7 @@ def _bundle_provider_request(
         schema_name="compass_standup_brief_bundle",
         output_schema=_bundle_provider_output_schema(window_keys=window_keys, scope_ids=scope_ids),
         prompt_payload=_bundle_provider_request_payload(
+            repo_root=repo_root,
             global_packets_by_window=global_packets_by_window,
             scoped_packets_by_window=scoped_packets_by_window,
         ),
@@ -509,6 +733,7 @@ def _bundle_provider_request(
 
 def _bundle_repair_provider_request(
     *,
+    repo_root: Path,
     global_packets_by_window: Mapping[str, Mapping[str, Any]],
     scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
     invalid_response: Mapping[str, Any],
@@ -536,6 +761,7 @@ def _bundle_repair_provider_request(
         schema_name="compass_standup_brief_bundle_repair",
         output_schema=_bundle_provider_output_schema(window_keys=window_keys, scope_ids=scope_ids),
         prompt_payload=_bundle_repair_provider_request_payload(
+            repo_root=repo_root,
             global_packets_by_window=global_packets_by_window,
             scoped_packets_by_window=scoped_packets_by_window,
             invalid_response=invalid_response,
@@ -801,6 +1027,17 @@ def _persist_provider_results(
                 if str(fact_id).strip() and isinstance(entry, Mapping)
             },
             "context": narrator._cache_context(fact_packet=fact_packet),  # noqa: SLF001
+            "substrate_fingerprint": (
+                str(brief.get("substrate_fingerprint", "")).strip()
+                or narrator.standup_brief_fingerprint(fact_packet=fact_packet)
+            ),
+            "bundle_fingerprint": str(brief.get("bundle_fingerprint", "")).strip(),
+            "provider_decision": str(brief.get("provider_decision", "")).strip().lower() or "provider_called",
+            "last_successful_narration_fingerprint": (
+                str(brief.get("last_successful_narration_fingerprint", "")).strip()
+                or narrator.standup_brief_fingerprint(fact_packet=fact_packet)
+            ),
+            "substrate": narrator._narration_substrate(fact_packet=fact_packet),  # noqa: SLF001
         }
     narrator._write_cache(  # noqa: SLF001
         repo_root=repo_root,
@@ -830,42 +1067,234 @@ def _persist_scoped_provider_results(
 
 def _bundle_request_payload_chars(
     *,
+    repo_root: Path,
     global_packets_by_window: Mapping[str, Mapping[str, Any]],
     scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
 ) -> int:
     payload = _bundle_provider_request_payload(
+        repo_root=repo_root,
         global_packets_by_window=global_packets_by_window,
         scoped_packets_by_window=scoped_packets_by_window,
     )
     return len(json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
 
 
-def _bundle_provider_subset_by_window(
+def _copy_window_pack(
+    packets_by_window: Mapping[str, Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    return {
+        str(window_key).strip(): {
+            str(scope_id).strip(): dict(fact_packet)
+            for scope_id, fact_packet in window_packets.items()
+            if str(scope_id).strip() and isinstance(fact_packet, Mapping)
+        }
+        for window_key, window_packets in packets_by_window.items()
+        if str(window_key).strip() and isinstance(window_packets, Mapping)
+    }
+
+
+def _bundle_pack_has_entries(
     *,
     global_packets_by_window: Mapping[str, Mapping[str, Any]],
     scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
+) -> bool:
+    return bool(global_packets_by_window) or any(
+        isinstance(window_packets, Mapping) and bool(window_packets)
+        for window_packets in scoped_packets_by_window.values()
+    )
+
+
+def _bundle_pack_entry_count(
+    *,
+    global_packets_by_window: Mapping[str, Mapping[str, Any]],
+    scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
+) -> int:
+    scoped_count = sum(
+        len(window_packets)
+        for window_packets in scoped_packets_by_window.values()
+        if isinstance(window_packets, Mapping)
+    )
+    return len(global_packets_by_window) + scoped_count
+
+
+def _pack_with_added_global(
+    *,
+    global_packets_by_window: Mapping[str, Mapping[str, Any]],
+    scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
+    window_key: str,
+    fact_packet: Mapping[str, Any],
+) -> tuple[dict[str, Mapping[str, Any]], dict[str, dict[str, Mapping[str, Any]]]]:
+    updated_global = dict(global_packets_by_window)
+    updated_global[str(window_key).strip()] = dict(fact_packet)
+    return updated_global, _copy_window_pack(scoped_packets_by_window)
+
+
+def _pack_with_added_scoped(
+    *,
+    global_packets_by_window: Mapping[str, Mapping[str, Any]],
+    scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
+    window_key: str,
+    scope_id: str,
+    fact_packet: Mapping[str, Any],
+) -> tuple[dict[str, Mapping[str, Any]], dict[str, dict[str, Mapping[str, Any]]]]:
+    updated_global = dict(global_packets_by_window)
+    updated_scoped = _copy_window_pack(scoped_packets_by_window)
+    window_token = str(window_key).strip()
+    scope_token = str(scope_id).strip()
+    updated_window = dict(updated_scoped.get(window_token, {}))
+    updated_window[scope_token] = dict(fact_packet)
+    updated_scoped[window_token] = updated_window
+    return updated_global, updated_scoped
+
+
+def _provider_failure_brief_for_packet(
+    *,
+    fact_packet: Mapping[str, Any],
+    generated_utc: str,
+    provider: odylith_reasoning.ReasoningProvider,
+) -> dict[str, Any]:
+    fingerprint = narrator.standup_brief_fingerprint(fact_packet=fact_packet)
+    return narrator.unavailable_brief_for_provider_failure(
+        fingerprint=fingerprint,
+        generated_utc=generated_utc,
+        provider=provider,
+        fallback_reason="provider_error",
+    )
+
+
+def _provider_failure_briefs_for_packets(
+    *,
+    global_packets_by_window: Mapping[str, Mapping[str, Any]],
+    scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
+    generated_utc: str,
+    provider: odylith_reasoning.ReasoningProvider,
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, dict[str, Any]]]]:
+    global_failures = {
+        str(window_key).strip(): _provider_failure_brief_for_packet(
+            fact_packet=fact_packet,
+            generated_utc=generated_utc,
+            provider=provider,
+        )
+        for window_key, fact_packet in global_packets_by_window.items()
+        if str(window_key).strip() and isinstance(fact_packet, Mapping)
+    }
+    scoped_failures: dict[str, dict[str, dict[str, Any]]] = {}
+    for window_key, window_packets in scoped_packets_by_window.items():
+        if not str(window_key).strip() or not isinstance(window_packets, Mapping):
+            continue
+        failed_window = {
+            str(scope_id).strip(): _provider_failure_brief_for_packet(
+                fact_packet=fact_packet,
+                generated_utc=generated_utc,
+                provider=provider,
+            )
+            for scope_id, fact_packet in window_packets.items()
+            if str(scope_id).strip() and isinstance(fact_packet, Mapping)
+        }
+        if failed_window:
+            scoped_failures[str(window_key).strip()] = failed_window
+    return global_failures, scoped_failures
+
+
+def _bundle_provider_subset_by_window(
+    *,
+    repo_root: Path,
+    global_packets_by_window: Mapping[str, Mapping[str, Any]],
+    scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
     max_payload_chars: int,
+    max_entries: int = DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES,
 ) -> list[tuple[dict[str, Mapping[str, Any]], dict[str, dict[str, Mapping[str, Any]]]]]:
     total_chars = _bundle_request_payload_chars(
+        repo_root=repo_root,
         global_packets_by_window=global_packets_by_window,
         scoped_packets_by_window=scoped_packets_by_window,
     )
-    if total_chars <= max(1, int(max_payload_chars)):
-        return [(dict(global_packets_by_window), {str(k): dict(v) for k, v in scoped_packets_by_window.items()})]
+    if total_chars <= max(1, int(max_payload_chars)) and _bundle_pack_entry_count(
+        global_packets_by_window=global_packets_by_window,
+        scoped_packets_by_window=scoped_packets_by_window,
+    ) <= max(1, int(max_entries)):
+        return [(dict(global_packets_by_window), _copy_window_pack(scoped_packets_by_window))]
     packs: list[tuple[dict[str, Mapping[str, Any]], dict[str, dict[str, Mapping[str, Any]]]]] = []
-    for window_key in dict.fromkeys(list(global_packets_by_window) + list(scoped_packets_by_window)):
-        pack_globals: dict[str, Mapping[str, Any]] = {}
-        pack_scoped: dict[str, dict[str, Mapping[str, Any]]] = {}
-        if isinstance(global_packets_by_window.get(window_key), Mapping):
-            pack_globals[str(window_key).strip()] = dict(global_packets_by_window[window_key])
-        if isinstance(scoped_packets_by_window.get(window_key), Mapping) and scoped_packets_by_window[window_key]:
-            pack_scoped[str(window_key).strip()] = {
-                str(scope_id).strip(): dict(fact_packet)
-                for scope_id, fact_packet in scoped_packets_by_window[window_key].items()
-                if str(scope_id).strip() and isinstance(fact_packet, Mapping)
-            }
-        if pack_globals or pack_scoped:
-            packs.append((pack_globals, pack_scoped))
+    current_globals: dict[str, Mapping[str, Any]] = {}
+    current_scoped: dict[str, dict[str, Mapping[str, Any]]] = {}
+
+    for window_key, fact_packet in global_packets_by_window.items():
+        if not str(window_key).strip() or not isinstance(fact_packet, Mapping):
+            continue
+        trial_globals, trial_scoped = _pack_with_added_global(
+            global_packets_by_window=current_globals,
+            scoped_packets_by_window=current_scoped,
+            window_key=str(window_key).strip(),
+            fact_packet=fact_packet,
+        )
+        if _bundle_pack_has_entries(
+            global_packets_by_window=current_globals,
+            scoped_packets_by_window=current_scoped,
+        ) and (
+            _bundle_pack_entry_count(
+                global_packets_by_window=trial_globals,
+                scoped_packets_by_window=trial_scoped,
+            ) > max(1, int(max_entries))
+            or _bundle_request_payload_chars(
+                repo_root=repo_root,
+                global_packets_by_window=trial_globals,
+                scoped_packets_by_window=trial_scoped,
+            ) > max(1, int(max_payload_chars))
+        ):
+            packs.append((dict(current_globals), _copy_window_pack(current_scoped)))
+            current_globals = {}
+            current_scoped = {}
+        current_globals[str(window_key).strip()] = dict(fact_packet)
+    if _bundle_pack_has_entries(
+        global_packets_by_window=current_globals,
+        scoped_packets_by_window=current_scoped,
+    ):
+        packs.append((dict(current_globals), _copy_window_pack(current_scoped)))
+
+    current_globals = {}
+    current_scoped = {}
+    for window_key, window_packets in scoped_packets_by_window.items():
+        if not str(window_key).strip() or not isinstance(window_packets, Mapping):
+            continue
+        for scope_id, fact_packet in window_packets.items():
+            if not str(scope_id).strip() or not isinstance(fact_packet, Mapping):
+                continue
+            trial_globals, trial_scoped = _pack_with_added_scoped(
+                global_packets_by_window=current_globals,
+                scoped_packets_by_window=current_scoped,
+                window_key=str(window_key).strip(),
+                scope_id=str(scope_id).strip(),
+                fact_packet=fact_packet,
+            )
+            if _bundle_pack_has_entries(
+                global_packets_by_window=current_globals,
+                scoped_packets_by_window=current_scoped,
+            ) and (
+                _bundle_pack_entry_count(
+                    global_packets_by_window=trial_globals,
+                    scoped_packets_by_window=trial_scoped,
+                ) > max(1, int(max_entries))
+                or _bundle_request_payload_chars(
+                    repo_root=repo_root,
+                    global_packets_by_window=trial_globals,
+                    scoped_packets_by_window=trial_scoped,
+                ) > max(1, int(max_payload_chars))
+            ):
+                packs.append((dict(current_globals), _copy_window_pack(current_scoped)))
+                current_globals = {}
+                current_scoped = {}
+            current_globals, current_scoped = _pack_with_added_scoped(
+                global_packets_by_window=current_globals,
+                scoped_packets_by_window=current_scoped,
+                window_key=str(window_key).strip(),
+                scope_id=str(scope_id).strip(),
+                fact_packet=fact_packet,
+            )
+    if _bundle_pack_has_entries(
+        global_packets_by_window=current_globals,
+        scoped_packets_by_window=current_scoped,
+    ):
+        packs.append((dict(current_globals), _copy_window_pack(current_scoped)))
     return packs
 
 
@@ -875,20 +1304,90 @@ def _resolve_bundle_pack(
     global_packets_by_window: Mapping[str, Mapping[str, Any]],
     scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
     generated_utc: str,
+    runtime_packet_fingerprint: str,
     config: odylith_reasoning.ReasoningConfig,
     provider: odylith_reasoning.ReasoningProvider,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, dict[str, Any]]]]:
     if not global_packets_by_window and not scoped_packets_by_window:
         return {}, {}
 
-    raw_result = provider.generate_structured(
-        request=_bundle_provider_request(
-            global_packets_by_window=global_packets_by_window,
-            scoped_packets_by_window=scoped_packets_by_window,
-            config=config,
+    global_substrates = {
+        str(window_key).strip(): compass_standup_brief_substrate.build_narration_substrate(
+            fact_packet=fact_packet,
+            schema_version=narrator.STANDUP_BRIEF_SCHEMA_VERSION,
         )
+        for window_key, fact_packet in global_packets_by_window.items()
+        if str(window_key).strip() and isinstance(fact_packet, Mapping)
+    }
+    scoped_substrates = {
+        str(window_key).strip(): {
+            str(scope_id).strip(): compass_standup_brief_substrate.build_narration_substrate(
+                fact_packet=fact_packet,
+                schema_version=narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+            )
+            for scope_id, fact_packet in window_packets.items()
+            if str(scope_id).strip() and isinstance(fact_packet, Mapping)
+        }
+        for window_key, window_packets in scoped_packets_by_window.items()
+        if str(window_key).strip() and isinstance(window_packets, Mapping)
+    }
+    bundle_fingerprint = _bundle_fingerprint(
+        global_substrates_by_window=global_substrates,
+        scoped_substrates_by_window=scoped_substrates,
     )
+    substrate_fingerprints = {
+        _bundle_entry_key(window_key=window_key): str(substrate.get("fingerprint", "")).strip()
+        for window_key, substrate in global_substrates.items()
+    }
+    for window_key, window_substrates in scoped_substrates.items():
+        for scope_id, substrate in window_substrates.items():
+            substrate_fingerprints[_bundle_entry_key(window_key=window_key, scope_id=scope_id)] = str(
+                substrate.get("fingerprint", "")
+            ).strip()
+    request_started = time.perf_counter()
+    output_chars = 0
+    repair_count = 0
+    initial_input_chars = _bundle_request_payload_chars(
+        repo_root=repo_root,
+        global_packets_by_window=global_packets_by_window,
+        scoped_packets_by_window=scoped_packets_by_window,
+    )
+    repair_input_chars = 0
+
+    initial_request = _bundle_provider_request(
+        repo_root=repo_root,
+        global_packets_by_window=global_packets_by_window,
+        scoped_packets_by_window=scoped_packets_by_window,
+        config=config,
+    )
+    request_model, request_reasoning_effort = _request_profile_metadata(initial_request)
+    raw_result = provider.generate_structured(request=initial_request)
+    if isinstance(raw_result, Mapping):
+        output_chars += len(json.dumps(raw_result, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
     if not isinstance(raw_result, Mapping):
+        failure = odylith_reasoning.provider_failure_metadata(provider)
+        compass_standup_brief_telemetry.record_attempt(
+            repo_root=repo_root,
+            runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
+            bundle_fingerprint=bundle_fingerprint,
+            substrate_fingerprints=substrate_fingerprints,
+            provider_decision="provider_called",
+            input_chars=initial_input_chars,
+            output_chars=0,
+            latency_ms=(time.perf_counter() - request_started) * 1000.0,
+            repair_count=0,
+            salvage_count=0,
+            provider_call_count=1,
+            failure_kind=(
+                narrator._failure_reason_from_provider_code(failure.get("code", ""))  # noqa: SLF001
+                if hasattr(narrator, "_failure_reason_from_provider_code")
+                else ""
+            ),
+            provider_code=str(failure.get("code", "")).strip(),
+            provider_detail=str(failure.get("detail", "")).strip(),
+            model=request_model,
+            reasoning_effort=request_reasoning_effort,
+        )
         return {}, {}
 
     ready_global, ready_scoped, errors, missing_entries = _validate_bundle_response(
@@ -912,16 +1411,26 @@ def _resolve_bundle_pack(
         if window_key != "__global__" and scope_ids
     }
     if errors and (missing_global or missing_scoped):
-        repaired_result = provider.generate_structured(
-            request=_bundle_repair_provider_request(
-                global_packets_by_window=missing_global,
-                scoped_packets_by_window=missing_scoped,
-                invalid_response=raw_result,
-                validation_errors=errors,
-                config=config,
-            )
+        repair_count = 1
+        repair_request = _bundle_repair_provider_request(
+            repo_root=repo_root,
+            global_packets_by_window=missing_global,
+            scoped_packets_by_window=missing_scoped,
+            invalid_response=raw_result,
+            validation_errors=errors,
+            config=config,
         )
+        repair_input_chars = len(
+            json.dumps(repair_request.prompt_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        )
+        repair_model, repair_reasoning_effort = _request_profile_metadata(repair_request)
+        repaired_result = provider.generate_structured(request=repair_request)
         if isinstance(repaired_result, Mapping):
+            output_chars += len(json.dumps(repaired_result, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
+            if repair_model:
+                request_model = repair_model
+            if repair_reasoning_effort:
+                request_reasoning_effort = repair_reasoning_effort
             repaired_global, repaired_scoped, _repair_errors, _repair_missing = _validate_bundle_response(
                 response=repaired_result,
                 global_packets_by_window=missing_global,
@@ -933,6 +1442,47 @@ def _resolve_bundle_pack(
                 merged_window = dict(ready_scoped.get(window_key, {}))
                 merged_window.update(window_results)
                 ready_scoped[window_key] = merged_window
+    for window_key, brief in ready_global.items():
+        if isinstance(brief, Mapping):
+            brief["bundle_fingerprint"] = bundle_fingerprint
+            brief["substrate_fingerprint"] = str(global_substrates.get(window_key, {}).get("fingerprint", "")).strip()
+            brief["provider_decision"] = "provider_called"
+            brief["last_successful_narration_fingerprint"] = str(
+                global_substrates.get(window_key, {}).get("fingerprint", "")
+            ).strip()
+    for window_key, window_results in ready_scoped.items():
+        if not isinstance(window_results, Mapping):
+            continue
+        for scope_id, brief in window_results.items():
+            if not isinstance(brief, Mapping):
+                continue
+            brief["bundle_fingerprint"] = bundle_fingerprint
+            brief["substrate_fingerprint"] = str(
+                scoped_substrates.get(window_key, {}).get(scope_id, {}).get("fingerprint", "")
+            ).strip()
+            brief["provider_decision"] = "provider_called"
+            brief["last_successful_narration_fingerprint"] = str(
+                scoped_substrates.get(window_key, {}).get(scope_id, {}).get("fingerprint", "")
+            ).strip()
+    total_expected = len(global_substrates) + sum(len(window) for window in scoped_substrates.values())
+    total_ready = len(ready_global) + sum(len(window) for window in ready_scoped.values())
+    compass_standup_brief_telemetry.record_attempt(
+        repo_root=repo_root,
+        runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
+        bundle_fingerprint=bundle_fingerprint,
+        substrate_fingerprints=substrate_fingerprints,
+        provider_decision="provider_called",
+        input_chars=initial_input_chars + repair_input_chars,
+        output_chars=output_chars,
+        latency_ms=(time.perf_counter() - request_started) * 1000.0,
+        repair_count=repair_count,
+        salvage_count=max(0, total_ready - max(0, total_expected - len(missing_global) - sum(len(v) for k, v in missing_scoped.items() if k != "__global__"))),
+        failure_kind="invalid_batch" if errors and total_ready < total_expected else "",
+        repair_input_chars=repair_input_chars,
+        provider_call_count=1 + repair_count,
+        model=request_model,
+        reasoning_effort=request_reasoning_effort,
+    )
     return ready_global, ready_scoped
 
 
@@ -1193,6 +1743,7 @@ def build_window_briefs(
         require_auto_mode=False,
         allow_implicit_local_provider=True,
     )
+    resolved_profile = odylith_reasoning.cheap_structured_reasoning_profile(resolved_config)
 
     results: dict[str, dict[str, Any]] = {}
     cold_packets: dict[str, Mapping[str, Any]] = {}
@@ -1237,6 +1788,7 @@ def build_brief_bundle(
     global_fact_packets_by_window: Mapping[str, Mapping[str, Any]],
     scoped_fact_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
     generated_utc: str,
+    runtime_packet_fingerprint: str = "",
     config: odylith_reasoning.ReasoningConfig | None = None,
     provider: odylith_reasoning.ReasoningProvider | None = None,
     max_bundle_payload_chars: int = DEFAULT_BUNDLE_PROVIDER_MAX_CHARS,
@@ -1251,11 +1803,14 @@ def build_brief_bundle(
         require_auto_mode=False,
         allow_implicit_local_provider=True,
     )
+    resolved_profile = odylith_reasoning.cheap_structured_reasoning_profile(resolved_config)
 
     ready_global: dict[str, dict[str, Any]] = {}
     ready_scoped: dict[str, dict[str, dict[str, Any]]] = {}
     cold_global: dict[str, Mapping[str, Any]] = {}
     cold_scoped: dict[str, dict[str, Mapping[str, Any]]] = {}
+    skipped_global: dict[str, dict[str, Any]] = {}
+    skipped_scoped: dict[str, dict[str, dict[str, Any]]] = {}
 
     for window_key, fact_packet in global_fact_packets_by_window.items():
         cached = narrator.build_standup_brief(
@@ -1270,7 +1825,36 @@ def build_brief_bundle(
         if cached.get("status") == "ready" and cached.get("source") == "cache":
             ready_global[str(window_key).strip()] = cached
         else:
-            cold_global[str(window_key).strip()] = fact_packet
+            prepared = _prepared_substrate_entry(repo_root=repo_root, fact_packet=fact_packet)
+            if prepared.get("should_call_provider"):
+                cold_global[str(window_key).strip()] = fact_packet
+            else:
+                current_substrate = (
+                    dict(prepared.get("current"))
+                    if isinstance(prepared.get("current"), Mapping)
+                    else {}
+                )
+                fingerprint = str(current_substrate.get("fingerprint", "")).strip()
+                skipped_global[str(window_key).strip()] = _skip_brief(
+                    fingerprint=fingerprint,
+                    generated_utc=generated_utc,
+                    decision_reason=str(prepared.get("decision_reason", "")).strip() or "no_winner_change",
+                )
+                compass_standup_brief_telemetry.record_attempt(
+                    repo_root=repo_root,
+                    runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
+                    bundle_fingerprint="",
+                    substrate_fingerprints={str(window_key).strip(): fingerprint},
+                    provider_decision="skipped_not_worth_calling",
+                    input_chars=0,
+                    output_chars=0,
+                    latency_ms=0.0,
+                    repair_count=0,
+                    salvage_count=0,
+                    skip_reason=str(prepared.get("decision_reason", "")).strip(),
+                    model=str(resolved_profile.model or "").strip(),
+                    reasoning_effort=str(resolved_profile.reasoning_effort or "minimal").strip(),
+                )
 
     for window_key, window_packets in scoped_fact_packets_by_window.items():
         if not isinstance(window_packets, Mapping):
@@ -1290,13 +1874,50 @@ def build_brief_bundle(
             if cached.get("status") == "ready" and cached.get("source") == "cache":
                 cached_window[str(scope_id).strip()] = cached
             else:
-                cold_window[str(scope_id).strip()] = fact_packet
+                prepared = _prepared_substrate_entry(repo_root=repo_root, fact_packet=fact_packet)
+                if prepared.get("should_call_provider"):
+                    cold_window[str(scope_id).strip()] = fact_packet
+                else:
+                    scope_token = str(scope_id).strip()
+                    current_substrate = (
+                        dict(prepared.get("current"))
+                        if isinstance(prepared.get("current"), Mapping)
+                        else {}
+                    )
+                    fingerprint = str(current_substrate.get("fingerprint", "")).strip()
+                    skipped_window = dict(skipped_scoped.get(str(window_key).strip(), {}))
+                    skipped_window[scope_token] = _skip_brief(
+                        fingerprint=fingerprint,
+                        generated_utc=generated_utc,
+                        decision_reason=str(prepared.get("decision_reason", "")).strip() or "no_winner_change",
+                    )
+                    skipped_scoped[str(window_key).strip()] = skipped_window
+                    compass_standup_brief_telemetry.record_attempt(
+                        repo_root=repo_root,
+                        runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
+                        bundle_fingerprint="",
+                        substrate_fingerprints={_bundle_entry_key(window_key=str(window_key).strip(), scope_id=scope_token): fingerprint},
+                        provider_decision="skipped_not_worth_calling",
+                        input_chars=0,
+                        output_chars=0,
+                        latency_ms=0.0,
+                        repair_count=0,
+                        salvage_count=0,
+                        skip_reason=str(prepared.get("decision_reason", "")).strip(),
+                        model=str(resolved_profile.model or "").strip(),
+                        reasoning_effort=str(resolved_profile.reasoning_effort or "minimal").strip(),
+                    )
         if cached_window:
             ready_scoped[str(window_key).strip()] = cached_window
         if cold_window:
             cold_scoped[str(window_key).strip()] = cold_window
 
     if resolved_provider is None or (not cold_global and not cold_scoped):
+        ready_global.update(skipped_global)
+        for window_key, window_results in skipped_scoped.items():
+            merged_window = dict(ready_scoped.get(window_key, {}))
+            merged_window.update(window_results)
+            ready_scoped[window_key] = merged_window
         return {
             "global": ready_global,
             "scoped": ready_scoped,
@@ -1304,16 +1925,21 @@ def build_brief_bundle(
 
     provider_global: dict[str, dict[str, Any]] = {}
     provider_scoped: dict[str, dict[str, dict[str, Any]]] = {}
-    for pack_globals, pack_scoped in _bundle_provider_subset_by_window(
+    blocked_global: dict[str, dict[str, Any]] = {}
+    blocked_scoped: dict[str, dict[str, dict[str, Any]]] = {}
+    bundle_packs = _bundle_provider_subset_by_window(
+        repo_root=repo_root,
         global_packets_by_window=cold_global,
         scoped_packets_by_window=cold_scoped,
         max_payload_chars=max_bundle_payload_chars,
-    ):
+    )
+    for pack_index, (pack_globals, pack_scoped) in enumerate(bundle_packs):
         pack_ready_global, pack_ready_scoped = _resolve_bundle_pack(
             repo_root=repo_root,
             global_packets_by_window=pack_globals,
             scoped_packets_by_window=pack_scoped,
             generated_utc=generated_utc,
+            runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
             config=resolved_config,
             provider=resolved_provider,
         )
@@ -1322,6 +1948,36 @@ def build_brief_bundle(
             merged_window = dict(provider_scoped.get(window_key, {}))
             merged_window.update(window_results)
             provider_scoped[window_key] = merged_window
+        if _provider_failure_should_abort_fanout(resolved_provider):
+            remaining_global: dict[str, Mapping[str, Any]] = {}
+            remaining_scoped: dict[str, dict[str, Mapping[str, Any]]] = {}
+            for remaining_globals, remaining_scoped_window in bundle_packs[pack_index:]:
+                remaining_global.update(
+                    {
+                        str(window_key).strip(): dict(fact_packet)
+                        for window_key, fact_packet in remaining_globals.items()
+                        if str(window_key).strip() and isinstance(fact_packet, Mapping)
+                    }
+                )
+                for window_key, window_packets in remaining_scoped_window.items():
+                    if not str(window_key).strip() or not isinstance(window_packets, Mapping):
+                        continue
+                    merged_window = dict(remaining_scoped.get(str(window_key).strip(), {}))
+                    merged_window.update(
+                        {
+                            str(scope_id).strip(): dict(fact_packet)
+                            for scope_id, fact_packet in window_packets.items()
+                            if str(scope_id).strip() and isinstance(fact_packet, Mapping)
+                        }
+                    )
+                    remaining_scoped[str(window_key).strip()] = merged_window
+            blocked_global, blocked_scoped = _provider_failure_briefs_for_packets(
+                global_packets_by_window=remaining_global,
+                scoped_packets_by_window=remaining_scoped,
+                generated_utc=generated_utc,
+                provider=resolved_provider,
+            )
+            break
 
     _persist_provider_results(
         repo_root=repo_root,
@@ -1335,7 +1991,17 @@ def build_brief_bundle(
     )
 
     ready_global.update(provider_global)
+    ready_global.update(blocked_global)
+    ready_global.update(skipped_global)
     for window_key, window_results in provider_scoped.items():
+        merged_window = dict(ready_scoped.get(window_key, {}))
+        merged_window.update(window_results)
+        ready_scoped[window_key] = merged_window
+    for window_key, window_results in blocked_scoped.items():
+        merged_window = dict(ready_scoped.get(window_key, {}))
+        merged_window.update(window_results)
+        ready_scoped[window_key] = merged_window
+    for window_key, window_results in skipped_scoped.items():
         merged_window = dict(ready_scoped.get(window_key, {}))
         merged_window.update(window_results)
         ready_scoped[window_key] = merged_window
@@ -1436,6 +2102,7 @@ def build_scoped_briefs(
 
 __all__ = [
     "DEFAULT_BUNDLE_PROVIDER_MAX_CHARS",
+    "DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES",
     "DEFAULT_SCOPED_PROVIDER_PACK_SIZE",
     "DEFAULT_SCOPED_PROVIDER_PACK_MAX_CHARS",
     "build_brief_bundle",

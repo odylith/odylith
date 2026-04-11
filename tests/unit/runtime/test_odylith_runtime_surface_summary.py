@@ -80,7 +80,8 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
                 "execution_governance_history_rule_count": 2,
                 "execution_governance_authoritative_lane": "context_engine.governance_slice.authoritative",
                 "execution_governance_host_family": "codex",
-                "execution_governance_model_family": "codex",
+                "execution_governance_model_family": "",
+                "execution_governance_host_supports_native_spawn": True,
                 "execution_governance_target_lane": "consumer",
                 "execution_governance_candidate_target_count": 2,
                 "execution_governance_diagnostic_anchor_count": 2,
@@ -252,7 +253,8 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["latest_execution_governance_validation_archetype"] == "deploy"
     assert summary["latest_execution_governance_history_rule_count"] == 2
     assert summary["latest_execution_governance_host_family"] == "codex"
-    assert summary["latest_execution_governance_model_family"] == "codex"
+    assert summary["latest_execution_governance_model_family"] == ""
+    assert summary["latest_execution_governance_host_supports_native_spawn"] is True
     assert summary["latest_execution_governance_target_lane"] == "consumer"
     assert summary["latest_execution_governance_candidate_target_count"] == 2
     assert summary["latest_execution_governance_diagnostic_anchor_count"] == 2

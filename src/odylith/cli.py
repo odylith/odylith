@@ -798,7 +798,12 @@ def _cmd_install_common(
         else:
             print(f"Repo pin is {pinned_version}; active runtime is {final_version}.")
     if summary.repo_guidance_created:
-        print(f"Created root AGENTS.md at {summary.repo_root / 'AGENTS.md'}.")
+        created_guidance_files = tuple(str(token).strip() for token in getattr(summary, "created_guidance_files", ()) if str(token).strip())
+        if created_guidance_files:
+            rendered = ", ".join(str(summary.repo_root / token) for token in created_guidance_files)
+            print(f"Created root guidance files: {rendered}.")
+        else:
+            print(f"Created root guidance files under {summary.repo_root}.")
     if getattr(summary, "gitignore_updated", False):
         print("Added Odylith local-state ignore rules to the root `.gitignore` so runtime state stays untracked.")
     if not summary.git_repo_present:

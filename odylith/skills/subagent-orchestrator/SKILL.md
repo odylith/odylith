@@ -12,4 +12,4 @@ Use this skill when the task is about delegation planning, execution ownership, 
 - delegate only bounded work, and only spawn native subagents on hosts where Odylith has validated native spawn support
 - prefer emitted `single_leaf`, `serial_batch`, or `parallel_batch` contracts over manual fanout decisions once Odylith has a route-ready slice
 - keep validation and stop conditions explicit
-- Codex is the currently validated native-spawn host; in Claude Code, treat the emitted orchestration plan as local-only guidance and do not spawn native subagents until that host path is proven
+- Both Codex and Claude Code are validated Odylith delegation hosts; Codex executes routed leaves through `spawn_agent`, while Claude Code executes the same bounded orchestration plan through Task-tool subagents and the checked-in `.claude/` project assets

@@ -804,7 +804,7 @@ def test_agent_prompt_warns_install_slices_about_stripped_guidance_false_positiv
     assert "On this allow-no-op install slice, treat the listed focused checks as the approved first-pass proof path before opening broader runtime or guidance surfaces." in prompt
     assert "If one of the listed focused install checks passes cleanly, do not widen into adjacent CLI, shell, dashboard, or routing surfaces unless the failure output points there directly." in prompt
     assert "Do not run the full listed validator during first-pass diagnosis just to prove current truth on an allow-no-op task" in prompt
-    assert "Do not treat missing repo `AGENTS.md` files or benchmark-managed pytest temp/cache paths during your own checks as product regressions on install slices" in prompt
+    assert "Do not treat missing repo `AGENTS.md` or `CLAUDE.md` files or benchmark-managed pytest temp/cache paths during your own checks as product regressions on install slices" in prompt
 
 
 def test_agent_prompt_uses_daemon_focused_checks_as_noop_boundary() -> None:

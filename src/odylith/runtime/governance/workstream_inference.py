@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from odylith.runtime.common.consumer_profile import canonical_truth_token
+from odylith.runtime.common.guidance_paths import has_project_guidance
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
@@ -87,7 +88,7 @@ def _default_repo_root_token_for_cwd(cwd_token: str) -> str:
     if not token:
         return ""
     cwd = Path(token).resolve()
-    if (cwd / "AGENTS.md").is_file() and ((cwd / ".odylith").exists() or (cwd / "odylith").exists() or (cwd / "src" / "odylith").is_dir()):
+    if has_project_guidance(repo_root=cwd) and ((cwd / ".odylith").exists() or (cwd / "odylith").exists() or (cwd / "src" / "odylith").is_dir()):
         return str(cwd)
     return ""
 

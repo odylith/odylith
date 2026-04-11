@@ -1,0 +1,40 @@
+{
+  "component_id": "odylith-projection-snapshot",
+  "diagrams": [
+    "D-002",
+    "D-020",
+    "D-025",
+    "D-018"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [
+      "no_explicit_event",
+      "no_recent_path_match",
+      "no_mapped_workstream_evidence"
+    ],
+    "explicit_event_count": 0,
+    "mapped_workstream_evidence_count": 0,
+    "recent_path_match_count": 0,
+    "spec_history_event_count": 1,
+    "status": "baseline_forensic_only",
+    "timeline_event_count": 1
+  },
+  "name": "Odylith Projection Snapshot",
+  "path_prefixes": [
+    "src/odylith/runtime/memory/odylith_projection_snapshot.py"
+  ],
+  "spec_ref": "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
+  "timeline": [],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Compiler-owned JSON snapshot fallback read model with full tables and projection-state metadata.",
+  "why_tracked": "Defines the deterministic fallback memory contract when fast local retrieval is unavailable, stale, or intentionally bypassed.",
+  "workstreams": [
+    "B-058",
+    "B-059"
+  ]
+}

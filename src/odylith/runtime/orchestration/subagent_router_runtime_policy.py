@@ -4,6 +4,8 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.execution_engine import runtime_lane_policy
 
 def bind(host_module: Any) -> None:
@@ -128,14 +130,29 @@ def _execution_profile_mapping(
                 }
                 continue
             merged[key] = value
+    host_runtime = host_runtime_contract.resolve_host_runtime(
+        _context_lookup(root, "host_runtime"),
+        _context_lookup(context_packet, "host_runtime"),
+        _context_lookup(evidence_pack, "routing_handoff", "host_runtime"),
+        _context_lookup(evidence_pack, "routing_handoff", "odylith_execution_host_runtime"),
+        _context_lookup(optimization_snapshot, "latest_packet", "host_runtime"),
+        _context_lookup(optimization_snapshot, "latest_packet", "odylith_execution_host_runtime"),
+        merged.get("host_runtime"),
+    )
     profile = _router_profile_from_token(merged.get("profile"))
     if profile is None:
         profile = _router_profile_from_runtime(merged.get("model"), merged.get("reasoning_effort"))
         if profile is not None:
             merged["profile"] = profile.value
     if profile is not None:
-        merged["model"] = profile.model
-        merged["reasoning_effort"] = profile.reasoning_effort
+        model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(
+            profile.value,
+            host_runtime=host_runtime,
+        )
+        merged["model"] = model
+        merged["reasoning_effort"] = reasoning_effort or profile.reasoning_effort
+    if host_runtime:
+        merged["host_runtime"] = host_runtime
     if not str(merged.get("profile", "")).strip():
         synthesized = _synthesized_execution_profile_candidate(context_packet=context_packet)
         if synthesized:
@@ -1102,5 +1119,5 @@ def _top_score_lines(
     if routing_confidence <= 1:
         lines.append("manual review is recommended because the route confidence stayed low after assessment")
     if not allow_xhigh:
-        lines.append("`gpt-5.4 + xhigh` stayed gated because no critical-risk or prior-failure trigger was present")
+        lines.append("`frontier_xhigh` stayed gated because no critical-risk or prior-failure trigger was present")
     return _sanitize_user_facing_lines(lines)

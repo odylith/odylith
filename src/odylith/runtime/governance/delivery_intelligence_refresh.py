@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 from typing import Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import generated_refresh_guard
 
 DEFAULT_OUTPUT_PATH = "odylith/runtime/delivery_intelligence.v4.json"
@@ -51,7 +52,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "odylith/registry/source",
                 "odylith/atlas/source/catalog/diagrams.v1.json",
                 "odylith/radar/traceability-graph.v1.json",
-                "odylith/compass/runtime/codex-stream.v1.jsonl",
+                *agent_runtime_contract.candidate_stream_tokens(),
                 DEFAULT_CONTROL_POSTURE_PATH,
                 DEFAULT_ODYLITH_REASONING_PATH,
                 "src/odylith/runtime/governance",

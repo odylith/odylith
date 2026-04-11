@@ -47,7 +47,9 @@ from odylith.runtime.surfaces import source_bundle_mirror
 
 _SYNC_PATH_PREFIXES: tuple[str, ...] = (
     "AGENTS.md",
+    "CLAUDE.md",
     "odylith/AGENTS.md",
+    "odylith/CLAUDE.md",
     "odylith/radar/source/INDEX.md",
     "odylith/radar/source/ideas/",
     "odylith/radar/source/programs/",

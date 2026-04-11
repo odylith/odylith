@@ -13,6 +13,10 @@ _UNKNOWN_HOST_RUNTIME = "unknown"
 _CODEX_HOST_FAMILY = "codex"
 _CLAUDE_HOST_FAMILY = "claude"
 _UNKNOWN_HOST_FAMILY = "unknown"
+_UNSPECIFIED_MODEL_FAMILY = ""
+_CODEX_DELEGATION_STYLE = "routed_spawn"
+_CLAUDE_DELEGATION_STYLE = "task_tool_subagents"
+_UNKNOWN_DELEGATION_STYLE = "none"
 _CODEX_TOKENS: frozenset[str] = frozenset(
     {
         "codex",
@@ -86,7 +90,8 @@ def host_capabilities(host_runtime: Any, *, default_when_unknown: bool = False) 
         return {
             "host_runtime": normalized,
             "host_family": _CODEX_HOST_FAMILY,
-            "model_family": _CODEX_HOST_FAMILY,
+            "model_family": _UNSPECIFIED_MODEL_FAMILY,
+            "delegation_style": _CODEX_DELEGATION_STYLE,
             "supports_native_spawn": True,
             "supports_interrupt": True,
             "supports_artifact_paths": True,
@@ -97,8 +102,9 @@ def host_capabilities(host_runtime: Any, *, default_when_unknown: bool = False) 
         return {
             "host_runtime": normalized,
             "host_family": _CLAUDE_HOST_FAMILY,
-            "model_family": _CLAUDE_HOST_FAMILY,
-            "supports_native_spawn": False,
+            "model_family": _UNSPECIFIED_MODEL_FAMILY,
+            "delegation_style": _CLAUDE_DELEGATION_STYLE,
+            "supports_native_spawn": True,
             "supports_interrupt": False,
             "supports_artifact_paths": False,
             "supports_local_structured_reasoning": True,
@@ -108,7 +114,8 @@ def host_capabilities(host_runtime: Any, *, default_when_unknown: bool = False) 
         return {
             "host_runtime": normalized,
             "host_family": _UNKNOWN_HOST_FAMILY,
-            "model_family": _UNKNOWN_HOST_FAMILY,
+            "model_family": _UNSPECIFIED_MODEL_FAMILY,
+            "delegation_style": _UNKNOWN_DELEGATION_STYLE,
             "supports_native_spawn": False,
             "supports_interrupt": False,
             "supports_artifact_paths": False,
@@ -118,7 +125,8 @@ def host_capabilities(host_runtime: Any, *, default_when_unknown: bool = False) 
     return {
         "host_runtime": normalized or _UNKNOWN_HOST_RUNTIME,
         "host_family": _UNKNOWN_HOST_FAMILY,
-        "model_family": _UNKNOWN_HOST_FAMILY,
+        "model_family": _UNSPECIFIED_MODEL_FAMILY,
+        "delegation_style": _UNKNOWN_DELEGATION_STYLE,
         "supports_native_spawn": bool(default_when_unknown),
         "supports_interrupt": False,
         "supports_artifact_paths": False,

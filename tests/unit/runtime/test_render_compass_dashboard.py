@@ -40,9 +40,14 @@ def _refresh_kwargs(repo_root: Path, runtime_dir: Path) -> dict[str, object]:
 
 def _brief(*, source: str) -> dict[str, object]:
     return {
+        "schema_version": render_compass_dashboard.compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
         "status": "ready",
         "source": source,
         "fingerprint": f"{source}-fingerprint",
+        "substrate_fingerprint": f"{source}-fingerprint",
+        "bundle_fingerprint": "",
+        "provider_decision": "cache_reuse" if source == "cache" else "provider_called",
+        "last_successful_narration_fingerprint": f"{source}-fingerprint",
         "generated_utc": "2026-04-08T00:00:00Z",
         "sections": [],
         "evidence_lookup": {},
@@ -131,6 +136,148 @@ def test_refresh_runtime_artifacts_reuses_matching_runtime_payload(tmp_path: Pat
     assert reused_payload["runtime_contract"]["last_refresh_attempt"]["status"] == "passed"
     assert reused_payload["runtime_contract"]["last_refresh_attempt"]["requested_profile"] == "shell-safe"
     assert calls["write"]
+    assert paths == (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
+
+
+def test_refresh_runtime_artifacts_rebuilds_when_brief_contract_metadata_is_missing(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo_root = tmp_path
+    runtime_dir = repo_root / "odylith/compass/runtime"
+    runtime_dir.mkdir(parents=True)
+    current_json_path, current_js_path, daily_path, history_index_path, history_js_path = _runtime_paths(runtime_dir)
+    history_index_path.parent.mkdir(parents=True, exist_ok=True)
+
+    stale_payload = {
+        "version": "v1",
+        "generated_utc": dt.datetime.now(tz=dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "standup_brief": {
+            "24h": {
+                "status": "unavailable",
+                "source": "unavailable",
+                "fingerprint": "stale-brief-fingerprint",
+                "generated_utc": "2026-04-08T00:00:00Z",
+                "sections": [],
+                "diagnostics": {"reason": "provider_error"},
+                "evidence_lookup": {},
+            }
+        },
+        "runtime_contract": {
+            "version": "v1",
+            "standup_brief_schema_version": render_compass_dashboard.compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+            "input_fingerprint": "matching-fingerprint",
+        },
+    }
+    current_json_path.write_text(json.dumps(stale_payload), encoding="utf-8")
+    current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
+    daily_path.write_text("{}\n", encoding="utf-8")
+    history_index_path.write_text("{}\n", encoding="utf-8")
+    history_js_path.write_text("window.__ODYLITH_COMPASS_HISTORY__ = {};\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_compass_runtime_input_fingerprint",
+        lambda **_kwargs: "matching-fingerprint",
+    )
+    monkeypatch.setattr(render_compass_dashboard, "_runtime_daemon_available", lambda **_kwargs: False)
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_existing_runtime_payload_if_fresh",
+        lambda **_kwargs: stale_payload,
+    )
+
+    built_payload = {
+        "version": "v1",
+        "generated_utc": "2026-04-10T00:00:00Z",
+        "standup_brief": {"24h": _brief(source="cache")},
+        "standup_brief_scoped": {},
+        "runtime_contract": {
+            "version": "v1",
+            "standup_brief_schema_version": render_compass_dashboard.compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+            "input_fingerprint": "matching-fingerprint",
+        },
+    }
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_load_runtime_impl",
+        lambda: type(
+            "_FakeRuntimeImpl",
+            (),
+            {
+                "_build_runtime_payload": staticmethod(lambda **_kwargs: built_payload),
+                "_write_runtime_snapshots": staticmethod(
+                    lambda **_kwargs: (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
+                ),
+            },
+        )(),
+    )
+
+    refreshed_payload, _paths = render_compass_dashboard.refresh_runtime_artifacts(
+        **_refresh_kwargs(repo_root, runtime_dir)
+    )
+
+    assert refreshed_payload["generated_utc"] == "2026-04-10T00:00:00Z"
+    assert refreshed_payload["standup_brief"]["24h"]["schema_version"] == render_compass_dashboard.compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION
+
+
+def test_refresh_runtime_artifacts_prefers_matching_daemon_cached_payload(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path
+    runtime_dir = repo_root / "odylith/compass/runtime"
+    runtime_dir.mkdir(parents=True)
+    current_json_path, current_js_path, daily_path, history_index_path, history_js_path = _runtime_paths(runtime_dir)
+    history_index_path.parent.mkdir(parents=True, exist_ok=True)
+
+    daemon_payload = {
+        "version": "v1",
+        "generated_utc": dt.datetime.now(tz=dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "current_workstreams": [{"idea_id": "B-101"}],
+        "standup_brief": {"24h": _brief(source="cache"), "48h": _brief(source="cache")},
+        "standup_brief_scoped": {"24h": {"B-101": _brief(source="cache")}, "48h": {"B-101": _brief(source="cache")}},
+        "runtime_contract": {
+            "version": "v1",
+            "standup_brief_schema_version": render_compass_dashboard.compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+            "input_fingerprint": "daemon-fingerprint",
+        },
+    }
+
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_compass_runtime_input_fingerprint",
+        lambda **_kwargs: "daemon-fingerprint",
+    )
+    monkeypatch.setattr(render_compass_dashboard, "_runtime_daemon_available", lambda **_kwargs: True)
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_load_daemon_cached_runtime_payload",
+        lambda **_kwargs: daemon_payload,
+    )
+    daemon_records: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_record_daemon_cached_runtime_payload",
+        lambda **kwargs: daemon_records.append(dict(kwargs)),
+    )
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_existing_runtime_payload_if_fresh",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("disk snapshot reuse should not run after daemon hit")),
+    )
+
+    calls: dict[str, object] = {}
+
+    class _FakeRuntimeImpl:
+        def _write_runtime_snapshots(self, **kwargs):  # noqa: ANN003
+            calls["write"] = dict(kwargs)
+            return (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
+
+    monkeypatch.setattr(render_compass_dashboard, "_load_runtime_impl", lambda: _FakeRuntimeImpl())
+
+    reused_payload, paths = render_compass_dashboard.refresh_runtime_artifacts(**_refresh_kwargs(repo_root, runtime_dir))
+
+    assert reused_payload["runtime_contract"]["input_fingerprint"] == "daemon-fingerprint"
+    assert reused_payload["runtime_contract"]["last_refresh_attempt"]["status"] == "passed"
+    assert calls["write"]
+    assert daemon_records and daemon_records[-1]["input_fingerprint"] == "daemon-fingerprint"
     assert paths == (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
 
 

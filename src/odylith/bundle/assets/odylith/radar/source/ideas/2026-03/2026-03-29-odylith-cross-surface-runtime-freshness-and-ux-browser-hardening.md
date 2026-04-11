@@ -65,6 +65,16 @@ remove stale cross-packet global brief recovery, curate traceability
 diagnostics once so default surfaces only show operator-facing warning/error
 rows, and expand Playwright proof to assert fresh KPIs, brief posture,
 timelines, and cross-surface state restore.
+Rebuild the brief lane around one strict rule: local code selects, compresses,
+diffs, validates, and caches; the LLM only writes the final prose bundle.
+That means:
+- deterministic narration substrates instead of raw-packet prompting
+- exact cache identity on the narration substrate fingerprint
+- delta bundle narration from changed winner facts and prior accepted brief
+- provider-worthiness gating so trivial/non-winner churn never burns credits
+- spend telemetry as a first-class runtime artifact
+- daemon-backed hot refresh reuse so unchanged Compass does not repay process
+  and import costs
 That same slice also has to retire the old minute-scale deeper Compass rerender
 idea entirely. Compass should keep one bounded refresh contract, reuse a recent
 payload only when it already satisfies current bounded truth, and never ask
@@ -149,6 +159,10 @@ Extend that same model into a balanced live-shell posture:
 - the shell makes the difference between live runtime freshness and tracked
   governance drift explicit instead of leaving commit-time repair as the first
   user-visible signal
+- narration spend is bounded by substrate gating and packet-level bundle
+  generation instead of raw-packet scope fanout
+- hot refresh can return from daemon-held in-memory state when the projection
+  fingerprint did not move
 - benchmark proof stays green
 
 ## Validation
@@ -225,6 +239,11 @@ Extend that same model into a balanced live-shell posture:
   packet-level provider bundle with one repair pass max, which removes the
   separate scoped maintenance fanout and keeps provider failures on one retry
   loop instead of one scope at a time
+- implemented on 2026-04-10 for the local-substrate brief follow-up:
+  Compass now fingerprints exact brief reuse on the deterministic narration
+  substrate instead of raw packets, computes provider-worthiness locally from
+  winner deltas, records brief spend telemetry per bundle attempt, and reuses
+  daemon-held runtime payloads on hot unchanged refreshes
 - implemented on 2026-04-08 for shell freshness projection bootstrap:
   the tooling shell now preserves its precomputed Compass stale/failure status
   on first load and across runtime probes, so browser-visible shell truth no

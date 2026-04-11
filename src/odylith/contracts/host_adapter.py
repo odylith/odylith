@@ -9,6 +9,7 @@ class AgentHostAdapter:
     adapter_id: str
     host_family: str
     model_family: str
+    delegation_style: str
     supports_native_spawn: bool
     supports_interrupt: bool
     supports_artifact_paths: bool

@@ -3097,7 +3097,10 @@
         "D-002",
         "D-012",
         "D-014",
-        "D-024"
+        "D-024",
+        "D-033",
+        "D-034",
+        "D-035"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
       "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
@@ -3137,7 +3140,7 @@
       "release_history_summary": "Removed from 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 4,
+        "linked_diagram_count": 7,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -4315,6 +4318,51 @@
           "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
         }
       ]
+    },
+    {
+      "idea_id": "B-083",
+      "title": "Claude Guidance Surface Parity and Install Contract Support",
+      "status": "implementation",
+      "workstream_type": "standard",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-069"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-019",
+        "D-020",
+        "D-023",
+        "D-033",
+        "D-034",
+        "D-035"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 6,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -5201,6 +5249,13 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-10-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md"
     },
     {
+      "id": "B-083",
+      "type": "workstream",
+      "label": "Claude Guidance Surface Parity and Install Contract Support",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
+    },
+    {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
       "type": "artifact",
       "label": "docs/specs/odylith-repo-integration-contract.md",
@@ -5635,6 +5690,27 @@
       "file": "odylith/atlas/source/odylith-compass-refresh-and-maintained-narration-topology.mmd"
     },
     {
+      "id": "diagram:D-033",
+      "type": "diagram",
+      "label": "Claude Guidance Companion Surface Topology",
+      "diagram_id": "D-033",
+      "file": "odylith/atlas/source/odylith-claude-guidance-companion-surface-topology.mmd"
+    },
+    {
+      "id": "diagram:D-034",
+      "type": "diagram",
+      "label": "Claude Guidance Install And Repair Flow",
+      "diagram_id": "D-034",
+      "file": "odylith/atlas/source/odylith-claude-guidance-install-and-repair-flow.mmd"
+    },
+    {
+      "id": "diagram:D-035",
+      "type": "diagram",
+      "label": "Claude Guidance Runtime Heuristic Integration",
+      "diagram_id": "D-035",
+      "file": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.mmd"
+    },
+    {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -5933,6 +6009,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
     },
     {
       "id": "release:release-0-1-11",
@@ -7871,6 +7953,11 @@
     },
     {
       "source": "B-069",
+      "target": "B-083",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-069",
       "target": "diagram:D-002",
       "edge_type": "diagram_linkage"
     },
@@ -7887,6 +7974,21 @@
     {
       "source": "B-069",
       "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-069",
+      "target": "diagram:D-033",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-069",
+      "target": "diagram:D-034",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-069",
+      "target": "diagram:D-035",
       "edge_type": "diagram_linkage"
     },
     {
@@ -8208,6 +8310,41 @@
       "source": "B-082",
       "target": "release:release-0-1-11",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-083",
+      "target": "diagram:D-019",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-083",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-083",
+      "target": "diagram:D-023",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-083",
+      "target": "diagram:D-033",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-083",
+      "target": "diagram:D-034",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-083",
+      "target": "diagram:D-035",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-083",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+      "edge_type": "promoted_to_plan"
     }
   ],
   "coverage": {
@@ -8689,7 +8826,7 @@
     },
     "B-069": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 4,
+      "linked_diagram_count": 7,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -8784,6 +8921,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-083": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 6,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -8812,27 +8956,60 @@
       "audience": "maintainer",
       "surface_visibility": "diagnostics",
       "category": "topology_conflict",
+      "message": "B-069: autofix skipped `related_diagram_ids` due to metadata conflict",
+      "idea_id": "B-069",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md: current='D-002,D-012,D-014,D-024' candidate='D-033,D-034,D-035'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
+      "source": "odylith/radar/traceability-autofix-report.v1.json"
+    },
+    {
+      "severity": "info",
+      "audience": "maintainer",
+      "surface_visibility": "diagnostics",
+      "category": "topology_conflict",
       "message": "B-071: autofix skipped `related_diagram_ids` due to metadata conflict",
       "idea_id": "B-071",
       "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md: current='D-028,D-029' candidate='D-028,D-029,D-032'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
+    },
+    {
+      "severity": "info",
+      "audience": "maintainer",
+      "surface_visibility": "diagnostics",
+      "category": "topology_conflict",
+      "message": "B-083: autofix skipped `workstream_type` due to metadata conflict",
+      "idea_id": "B-083",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md: current='standard' candidate='standalone'. Reason: derived from parent/children topology.",
+      "source": "odylith/radar/traceability-autofix-report.v1.json"
+    },
+    {
+      "severity": "warning",
+      "audience": "operator",
+      "surface_visibility": "default",
+      "category": "topology_workstream_type",
+      "message": "B-083: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+      "idea_id": "B-083",
+      "action": "Set `workstream_type` to umbrella, child, or standalone in the idea spec metadata.",
+      "source": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
     }
   ],
   "warnings": [
     "B-010: autofix skipped `related_diagram_ids` due to metadata conflict",
     "B-058: autofix skipped `related_diagram_ids` due to metadata conflict",
-    "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
+    "B-069: autofix skipped `related_diagram_ids` due to metadata conflict",
+    "B-071: autofix skipped `related_diagram_ids` due to metadata conflict",
+    "B-083: autofix skipped `workstream_type` due to metadata conflict",
+    "B-083: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
   ],
   "summary": {
-    "workstream_count": 82,
+    "workstream_count": 83,
     "release_count": 2,
     "active_release_assignment_count": 10,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 196,
-    "edge_count": 449,
-    "warning_count": 3,
-    "warning_item_count": 3
+    "node_count": 201,
+    "edge_count": 460,
+    "warning_count": 6,
+    "warning_item_count": 6
   },
-  "generated_utc": "2026-04-10 21:37:27Z"
+  "generated_utc": "2026-04-11 07:57:18Z"
 }

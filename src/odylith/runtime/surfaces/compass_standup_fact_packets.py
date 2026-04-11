@@ -42,6 +42,7 @@ def _build_scoped_standup_fact_packet(
     _action_tokens_for_workstream = host._action_tokens_for_workstream
     _execution_status_phrase = host._execution_status_phrase
     _progress_story = host._progress_story
+    _narrative_excerpt = host._narrative_excerpt
     _timeline_clause = host._timeline_clause
     _latest_evidence_marker = host._latest_evidence_marker
     _freshness_bucket = host._freshness_bucket
@@ -68,6 +69,36 @@ def _build_scoped_standup_fact_packet(
     benefit = why_context.get("benefit", "")
     use_story = why_context.get("use_story", "") or purpose
     architecture_consequence = why_context.get("architecture_consequence", "") or benefit
+    direction_source = benefit or architecture_consequence or use_story or purpose
+    direction_source = _narrative_excerpt(direction_source, max_sentences=1, max_chars=180)
+    if (
+        direction_source.lower().startswith("for operators who ")
+        or direction_source.lower().startswith("if ")
+        or "product claim" in direction_source.lower()
+    ):
+        direction_source = _narrative_excerpt(
+            architecture_consequence or benefit or use_story or purpose,
+            max_sentences=1,
+            max_chars=180,
+        )
+    for prefix in (
+        "The architecture move is to ",
+        "The architecture move is ",
+        "The change now is to ",
+        "The change is to ",
+    ):
+        if direction_source.startswith(prefix):
+            direction_source = direction_source[len(prefix):].strip()
+            break
+    direction_source = direction_source.replace(
+        ", which gives operators a clearer contract and lower coordination risk.",
+        "",
+    ).replace(
+        " which gives operators a clearer contract and lower coordination risk.",
+        "",
+    ).strip()
+    if direction_source.lower().startswith(("this gives operators a clearer contract", "gives operators a clearer contract")):
+        direction_source = _narrative_excerpt(purpose or benefit or use_story or label, max_sentences=1, max_chars=180)
     status = str(row.get("status", "")).strip() or "unknown"
     plan = row.get("plan", {}) if isinstance(row.get("plan"), Mapping) else {}
     progress_ratio = float(plan.get("progress_ratio", 0.0) or 0.0)
@@ -100,10 +131,27 @@ def _build_scoped_standup_fact_packet(
         if str(item.get("summary", "")).strip()
     ]
     execution_highlights = list(dict.fromkeys(execution_highlights))
+    filtered_execution_highlights = [
+        summary
+        for summary in execution_highlights
+        if not any(
+            token in summary.lower()
+            for token in (
+                "activated odylith runtime",
+                "detached source-local self-host mode",
+                "repo pin is",
+                "governance runtime surfaces",
+                "governed planning surfaces",
+                "packet-level bundle",
+                "plan updated:",
+                "checklist progress updated",
+            )
+        )
+    ]
     next_tokens = _action_tokens_for_workstream(next_actions, idea_id, max_items=2)
     status_phrase = _execution_status_phrase(
         status=status,
-        has_execution_signal=bool(execution_highlights),
+        has_execution_signal=bool(filtered_execution_highlights or execution_highlights),
         progress_ratio=progress_ratio,
     )
     progress_story = _progress_story(done_tasks=done_tasks, total_tasks=total_tasks)
@@ -111,7 +159,7 @@ def _build_scoped_standup_fact_packet(
         eta_days=eta_days,
         eta_source=eta_source,
         status=status,
-        has_execution_signal=bool(execution_highlights),
+        has_execution_signal=bool(filtered_execution_highlights or execution_highlights),
     )
     timeline = row.get("timeline", {}) if isinstance(row.get("timeline"), Mapping) else {}
     latest_evidence_ts, freshness_source = _latest_evidence_marker(
@@ -146,7 +194,7 @@ def _build_scoped_standup_fact_packet(
                 section_key="completed",
                 voice_hint="operator",
                 priority=100,
-                text=f"Verified milestone closure landed for {label}: {joined}.",
+                text=f"Closed cleanly in this window: {joined}.",
                 source="plan_completion",
                 kind="plan_completion",
                 workstreams=[idea_id],
@@ -158,19 +206,19 @@ def _build_scoped_standup_fact_packet(
                 section_key="completed",
                 voice_hint="executive",
                 priority=62,
-                text=f"No verified milestone closeout landed for {label} in the last {window_hours} hours.",
+                text=f"No clean closeout landed for {label} in the last {window_hours} hours.",
                 source="window",
                 kind="window_summary",
                 workstreams=[idea_id],
             )
         )
-    for index, summary in enumerate(execution_highlights[:2]):
+    for index, summary in enumerate((filtered_execution_highlights or execution_highlights)[:2]):
         section_candidates["completed"].append(
             _standup_fact(
                 section_key="completed",
                 voice_hint="operator",
                 priority=94 - index,
-                text=f"Most concrete movement: {summary}.",
+                text=f"Concrete movement in the repo: {summary.rstrip('. ')}.",
                 source="transaction_or_event",
                 kind="execution_highlight",
                 workstreams=[idea_id],
@@ -178,7 +226,7 @@ def _build_scoped_standup_fact_packet(
         )
 
     direction_text = _decapitalize_clause(
-        purpose or f"{label} remains the active execution lane for dependent platform delivery."
+        direction_source or f"{label} remains the active execution lane for dependent platform delivery."
     )
     include_self_host_status = False
     scope_context = " ".join(part for part in [label, purpose, benefit, use_story] if part).lower()
@@ -186,7 +234,6 @@ def _build_scoped_standup_fact_packet(
         include_self_host_status = any(
             token in scope_context
             for token in (
-                "runtime",
                 "toolchain",
                 "lane boundary",
                 "pinned dogfood",
@@ -200,7 +247,7 @@ def _build_scoped_standup_fact_packet(
             section_key="current_execution",
             voice_hint="executive",
             priority=100,
-            text=f"{label} is {status_phrase} because {direction_text}.",
+            text=f"{label} is the live lane here and is {status_phrase}. The change now is to {direction_text}.",
             source="workstream_metadata",
             kind="direction",
             workstreams=[idea_id],
@@ -216,7 +263,7 @@ def _build_scoped_standup_fact_packet(
                 section_key="current_execution",
                 voice_hint="operator",
                 priority=94,
-                text=f"Primary execution signal: {execution_highlights[0]}.",
+                text=f"Concrete proof in the repo: {(filtered_execution_highlights or execution_highlights)[0].rstrip('. ')}.",
                 source="execution_highlight",
                 kind="signal",
                 workstreams=[idea_id],
@@ -282,6 +329,13 @@ def _build_scoped_standup_fact_packet(
         freshness_bucket=freshness_bucket,
         freshness_text=freshness_text,
     )
+    next_context = purpose
+    if (
+        str(next_context or "").strip().lower().startswith("for operators who ")
+        or str(next_context or "").strip().lower().startswith("if ")
+        or "product claim" in str(next_context or "").strip().lower()
+    ):
+        next_context = benefit or architecture_consequence or purpose
 
     if next_tokens:
         section_candidates["next_planned"].append(
@@ -289,7 +343,7 @@ def _build_scoped_standup_fact_packet(
                 section_key="next_planned",
                 voice_hint="operator",
                 priority=100,
-                text=_forcing_function_text(action=next_tokens[0], label=label, purpose=purpose),
+                text=_forcing_function_text(action=next_tokens[0], label=label, purpose=next_context),
                 source="plan",
                 kind="forcing_function",
                 workstreams=[idea_id],
@@ -387,7 +441,9 @@ def _build_scoped_standup_fact_packet(
             "storyline": {
                 "flagship_lane": label,
                 "direction": direction_text,
-                "proof": execution_highlights[0] if execution_highlights else "",
+                "proof": (filtered_execution_highlights or execution_highlights)[0]
+                if (filtered_execution_highlights or execution_highlights)
+                else "",
                 "forcing_function": next_tokens[0] if next_tokens else fallback_next_text,
                 "use_story": use_story,
                 "architecture_consequence": architecture_consequence,
@@ -452,6 +508,40 @@ def _build_global_standup_fact_packet(
     primary_benefit = primary_why_context.get("benefit", "")
     primary_use_story = primary_why_context.get("use_story", "") or primary_purpose
     primary_architecture_consequence = primary_why_context.get("architecture_consequence", "") or primary_benefit
+    direction_source = primary_benefit or primary_architecture_consequence or primary_use_story or primary_purpose
+    direction_source = _narrative_excerpt(direction_source, max_sentences=1, max_chars=180)
+    if (
+        direction_source.lower().startswith("for operators who ")
+        or direction_source.lower().startswith("if ")
+        or "product claim" in direction_source.lower()
+    ):
+        direction_source = _narrative_excerpt(
+            primary_architecture_consequence or primary_benefit or primary_use_story or primary_purpose,
+            max_sentences=1,
+            max_chars=180,
+        )
+    for prefix in (
+        "The architecture move is to ",
+        "The architecture move is ",
+        "The change now is to ",
+        "The change is to ",
+    ):
+        if direction_source.startswith(prefix):
+            direction_source = direction_source[len(prefix):].strip()
+            break
+    direction_source = direction_source.replace(
+        ", which gives operators a clearer contract and lower coordination risk.",
+        "",
+    ).replace(
+        " which gives operators a clearer contract and lower coordination risk.",
+        "",
+    ).strip()
+    if direction_source.lower().startswith(("this gives operators a clearer contract", "gives operators a clearer contract")):
+        direction_source = _narrative_excerpt(
+            primary_purpose or primary_benefit or primary_use_story or primary_label,
+            max_sentences=1,
+            max_chars=180,
+        )
     primary_plan = focused_primary.get("plan", {}) if isinstance(focused_primary.get("plan"), Mapping) else {}
     primary_progress_ratio = float(primary_plan.get("progress_ratio", 0.0) or 0.0)
     eta_days, eta_source = _estimate_remaining_days(focused_primary if focused_primary else {})
@@ -471,16 +561,30 @@ def _build_global_standup_fact_packet(
         if str(item.get("summary", "")).strip()
     ]
     execution_highlights = list(dict.fromkeys(execution_highlights))
+    filtered_execution_highlights = [
+        summary
+        for summary in execution_highlights
+        if not any(
+            token in summary.lower()
+            for token in (
+                "activated odylith runtime",
+                "detached source-local self-host mode",
+                "repo pin is",
+                "plan updated:",
+                "checklist progress updated",
+            )
+        )
+    ]
     status_phrase = _execution_status_phrase(
         status=primary_status,
-        has_execution_signal=bool(execution_highlights),
+        has_execution_signal=bool(filtered_execution_highlights or execution_highlights),
         progress_ratio=primary_progress_ratio,
     )
     timeline_story = _timeline_clause(
         eta_days=eta_days,
         eta_source=eta_source,
         status=primary_status,
-        has_execution_signal=bool(execution_highlights),
+        has_execution_signal=bool(filtered_execution_highlights or execution_highlights),
     )
     latest_evidence_ts, freshness_source = _latest_evidence_marker(
         window_events=window_events,
@@ -562,6 +666,23 @@ def _build_global_standup_fact_packet(
         active_count=active_count,
         freshness_bucket=freshness_bucket,
     )
+    include_self_host_status = False
+    scope_context = " ".join(
+        part for part in [primary_label, primary_purpose, primary_benefit, primary_use_story] if part
+    ).lower()
+    if isinstance(self_host_snapshot, Mapping) and scope_context:
+        include_self_host_status = any(
+            token in scope_context
+            for token in (
+                "toolchain",
+                "launcher",
+                "lane boundary",
+                "pinned dogfood",
+                "source-local",
+                "maintainer execution",
+                "consumer execution",
+            )
+        )
     section_candidates: dict[str, list[dict[str, Any]]] = {
         key: [] for key, _label in compass_standup_brief_narrator.STANDUP_BRIEF_SECTIONS
     }
@@ -572,7 +693,7 @@ def _build_global_standup_fact_packet(
                 section_key="completed",
                 voice_hint="operator",
                 priority=100,
-                text=f"Verified plan closeouts landed across the window: {'; '.join(completed_group_lines[:2])}.",
+                text=f"Closed cleanly in this window: {'; '.join(completed_group_lines[:2])}.",
                 source="plan_completion",
                 kind="plan_completion",
             )
@@ -589,26 +710,28 @@ def _build_global_standup_fact_packet(
             )
         )
     for index, summary in enumerate(execution_highlights[:2]):
+        if summary not in filtered_execution_highlights and completed_group_lines:
+            continue
         section_candidates["completed"].append(
             _standup_fact(
                 section_key="completed",
                 voice_hint="operator",
                 priority=94 - index,
-                text=f"Most concrete portfolio movement: {summary}.",
+                text=f"Concrete movement in the repo: {summary.rstrip('. ')}.",
                 source="transaction_or_event",
                 kind="execution_highlight",
             )
         )
 
     executive_direction = _decapitalize_clause(
-        primary_purpose or "focused execution remains prerequisite for dependent follow-on workstreams"
+        direction_source or "focused execution remains prerequisite for dependent follow-on workstreams"
     )
     section_candidates["current_execution"].append(
         _standup_fact(
             section_key="current_execution",
             voice_hint="executive",
             priority=100,
-            text=f"{primary_label} is the flagship lane and is {status_phrase} because {executive_direction}.",
+            text=f"{primary_label} is the lane carrying the live contract work and is {status_phrase}. The change now is to {executive_direction}.",
             source="workstream_metadata",
             kind="direction",
             workstreams=[
@@ -616,20 +739,21 @@ def _build_global_standup_fact_packet(
             ] if focused_primary else [],
         )
     )
-    if execution_highlights:
+    if filtered_execution_highlights:
         section_candidates["current_execution"].append(
             _standup_fact(
                 section_key="current_execution",
                 voice_hint="operator",
                 priority=94,
-                text=f"Primary execution signal: {execution_highlights[0]}.",
+                text=f"Concrete proof in the repo: {filtered_execution_highlights[0].rstrip('. ')}.",
                 source="execution_highlight",
                 kind="signal",
             )
         )
-    self_host_status = _self_host_status_fact(self_host_snapshot)
-    if self_host_status is not None:
-        section_candidates["current_execution"].append(self_host_status)
+    if include_self_host_status:
+        self_host_status = _self_host_status_fact(self_host_snapshot)
+        if self_host_status is not None:
+            section_candidates["current_execution"].append(self_host_status)
     portfolio_posture = ""
     if active_count <= 0:
         portfolio_posture = "No active implementation lane is currently open."
@@ -648,21 +772,21 @@ def _build_global_standup_fact_packet(
     if top_activity_labels:
         portfolio_posture = portfolio_posture.rstrip(".") + f" Live focus lanes: {', '.join(top_activity_labels)}."
     section_candidates["current_execution"].append(
-        _standup_fact(
-            section_key="current_execution",
-            voice_hint="operator",
-            priority=90,
-            text=portfolio_posture,
-            source="portfolio",
-            kind="portfolio_posture",
+            _standup_fact(
+                section_key="current_execution",
+                voice_hint="operator",
+                priority=66,
+                text=portfolio_posture,
+                source="portfolio",
+                kind="portfolio_posture",
+            )
         )
-    )
     if top_activity_labels:
         section_candidates["current_execution"].append(
             _standup_fact(
                 section_key="current_execution",
                 voice_hint="operator",
-                priority=88,
+                priority=54,
                 text=window_coverage_text,
                 source="portfolio",
                 kind="window_coverage",
@@ -670,15 +794,15 @@ def _build_global_standup_fact_packet(
             )
         )
     section_candidates["current_execution"].append(
-        _standup_fact(
-            section_key="current_execution",
-            voice_hint="operator",
-            priority=84,
-            text=f"Timeline signal on the primary lane: {timeline_story}.",
-            source="timeline",
-            kind="timeline",
+            _standup_fact(
+                section_key="current_execution",
+                voice_hint="operator",
+                priority=72,
+                text=f"Timeline signal on the primary lane: {timeline_story}.",
+                source="timeline",
+                kind="timeline",
+            )
         )
-    )
     if freshness_text:
         section_candidates["current_execution"].append(
             _standup_fact(
@@ -698,6 +822,9 @@ def _build_global_standup_fact_packet(
         ).rstrip(" .;")
         if not action:
             continue
+        action = action.replace("to the tracked corpus: ", "through ")
+        action = action.replace("to the tracked corpus", "into coverage")
+        action = action.replace("tracked corpus", "coverage")
         idea_id = str(item.get("idea_id", "")).strip()
         ws_row = ws_index.get(idea_id, {})
         label = _ws_label(ws_row) if ws_row else (idea_id or str(item.get("title", "")).strip() or "active workstream")
@@ -812,7 +939,7 @@ def _build_global_standup_fact_packet(
             "storyline": {
                 "flagship_lane": primary_label,
                 "direction": executive_direction,
-                "proof": execution_highlights[0] if execution_highlights else "",
+                "proof": filtered_execution_highlights[0] if filtered_execution_highlights else "",
                 "forcing_function": next_action_tokens[0] if next_action_tokens else fallback_next_text,
                 "use_story": primary_use_story,
                 "architecture_consequence": primary_architecture_consequence,

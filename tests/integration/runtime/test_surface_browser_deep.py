@@ -1391,11 +1391,64 @@ def test_compass_scoped_brief_missing_shows_global_live_brief_with_notice(tmp_pa
     runtime_js_path = runtime_dir / "current.v1.js"
     history_dir = runtime_dir / "history"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    payload["generated_utc"] = "2026-04-10T20:08:00Z"
     scoped_24h = (payload.get("standup_brief_scoped") or {}).get("24h")
     scoped_48h = (payload.get("standup_brief_scoped") or {}).get("48h")
     assert isinstance(scoped_24h, dict) and scoped_24h
     assert isinstance(scoped_48h, dict) and scoped_48h
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    digest = payload.get("digest") if isinstance(payload.get("digest"), dict) else {}
+
+    def _ready_global_brief(window: str) -> dict[str, object]:
+        return {
+            "status": "ready",
+            "source": "provider",
+            "fingerprint": f"seeded-global-{window}",
+            "generated_utc": payload["generated_utc"],
+            "sections": [
+                {
+                    "key": "current_execution",
+                    "label": "Current execution",
+                    "bullets": [
+                        {
+                            "text": "Compass is holding one calm global brief while scoped narration catches up.",
+                            "fact_ids": [],
+                        }
+                    ],
+                }
+            ],
+            "evidence_lookup": {},
+        }
+
+    for window in ("24h", "48h"):
+        brief = standup_brief.get(window)
+        if not isinstance(brief, dict) or brief.get("status") != "ready":
+            standup_brief[window] = _ready_global_brief(window)
+        digest[window] = ["Compass is holding one calm global brief while scoped narration catches up."]
+    payload["standup_brief"] = standup_brief
+    payload["digest"] = digest
+
     scope_value = next(iter(scoped_24h.keys()))
+    verified = payload.get("verified_scoped_workstreams") if isinstance(payload.get("verified_scoped_workstreams"), dict) else {}
+    for window in ("24h", "48h"):
+        verified_list = verified.get(window)
+        if isinstance(verified_list, list) and scope_value not in verified_list:
+            verified_list.append(scope_value)
+    payload["verified_scoped_workstreams"] = verified
+
+    for collection_key in ("current_workstreams", "workstream_catalog"):
+        rows = payload.get(collection_key)
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict) or str(row.get("idea_id", "")).strip() != scope_value:
+                continue
+            activity = row.get("activity") if isinstance(row.get("activity"), dict) else {}
+            activity["24h"] = {"commit_count": 1, "local_change_count": 1, "file_touch_count": 1}
+            activity["48h"] = {"commit_count": 1, "local_change_count": 1, "file_touch_count": 1}
+            row["activity"] = activity
+            break
+
     scoped_24h.pop(scope_value, None)
     scoped_48h.pop(scope_value, None)
     digest_scoped = payload.get("digest_scoped") if isinstance(payload.get("digest_scoped"), dict) else {}

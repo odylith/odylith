@@ -466,7 +466,7 @@ def build_agent_prompt(
                 "On install or rollback slices, keep the fix on manager, runtime, repair, and the focused install tests; do not widen into activation or policy wording when the grounded contract already holds."
             )
             task_lines.append(
-                "Do not treat missing repo `AGENTS.md` files or benchmark-managed pytest temp/cache paths during your own checks as product regressions on install slices; the harness restores stripped guidance before final validation."
+                "Do not treat missing repo `AGENTS.md` or `CLAUDE.md` files or benchmark-managed pytest temp/cache paths during your own checks as product regressions on install slices; the harness restores stripped guidance before final validation."
             )
         elif family == "daemon_security":
             task_lines.append(

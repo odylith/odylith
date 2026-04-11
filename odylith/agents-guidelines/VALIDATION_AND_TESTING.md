@@ -23,7 +23,7 @@
 - Child-surface regressions must preserve the shell-owned redirect/access contract for Radar, Atlas, Compass, Registry, and Odylith.
 - Visual dashboard changes still need rendered review after regeneration; static HTML assertions do not replace looking at the generated surface.
 - Provider-backed reasoning changes need the owning fail-closed contract checked in the same pass.
-- Compass brief work follows [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md): validate fresh `provider`, exact `cache`, explicit `unavailable`, and voice-truth rejection together.
+- Compass brief work follows [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md): validate deterministic substrate building, exact substrate-cache reuse, provider-worthiness gating, fresh `provider`, exact `cache`, explicit `unavailable`, subset repair, spend telemetry, daemon hot reuse, and voice-truth rejection together.
 - Commentary or closeout-contract changes need source, bundle, install, and benchmark-story regressions so ambient mid-task signals stay task-first, labeled `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` beats stay rare and earned, and any final `Odylith Assist:` note remains evidence-backed. Prefer `**Odylith Assist:**` when Markdown is available. Lead with the user win, keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual, link updated governance ids inline when they were actually changed, tie concrete observed counts, measured deltas, or validation outcomes back to `odylith_off` or the broader unguided path. Silence is better than filler.
 
 ## Coverage And Harness Rules
@@ -42,6 +42,10 @@
 - Mermaid acceleration or Atlas refresh changes need both worker-path and fallback regressions.
 
 ## Useful Validation Bundles
+- When changing Compass brief architecture or refresh reuse, run:
+  - `PYTHONPATH=src pytest tests/unit/runtime/test_compass_standup_brief_substrate.py tests/unit/runtime/test_compass_standup_brief_batch.py tests/unit/runtime/test_compass_standup_brief_maintenance.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/runtime/test_render_compass_dashboard.py -q`
+  - `PYTHONPATH=src pytest tests/integration/runtime/test_surface_browser_deep.py -k 'compass and brief' -q`
+  - `PYTHONPATH=src pytest tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_sync_cli_compat.py -q`
 - When changing Odylith Context Engine or local-runtime behavior, run:
   - `./.odylith/bin/odylith context-engine --repo-root . status`
   - `./.odylith/bin/odylith context-engine --repo-root . impact --working-tree`

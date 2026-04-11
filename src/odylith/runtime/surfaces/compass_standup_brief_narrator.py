@@ -1,4 +1,4 @@
-"""Compass standup brief narrator and exact-fingerprint cache.
+"""Compass standup brief narrator and exact-substrate cache.
 
 Compass runtime remains authoritative for fact selection, evidence ranking, and
 fingerprinting. This module owns the bounded narration layer:
@@ -6,7 +6,7 @@ fingerprinting. This module owns the bounded narration layer:
 - reuse the shared Odylith reasoning provider configuration and adapters;
 - request a fixed four-section standup brief with schema-constrained output;
 - validate the reply against the deterministic fact packet and UI contract;
-- cache validated results by exact fact-packet fingerprint; and
+- cache validated results by exact narration-substrate fingerprint; and
 - replay only exact same-packet narration when live AI narration is not
   available.
 """
@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import datetime as dt
 import difflib
+from dataclasses import replace
 from functools import lru_cache
 import hashlib
 import json
@@ -24,11 +25,12 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.surfaces import compass_standup_brief_substrate
 from odylith.runtime.surfaces import compass_standup_brief_voice_validation
 
 
-STANDUP_BRIEF_SCHEMA_VERSION = "v23"
-STANDUP_BRIEF_CACHE_PATH = ".odylith/compass/standup-brief-cache.v23.json"
+STANDUP_BRIEF_SCHEMA_VERSION = "v25"
+STANDUP_BRIEF_CACHE_PATH = ".odylith/compass/standup-brief-cache.v25.json"
 STANDUP_BRIEF_SECTIONS: tuple[tuple[str, str], ...] = (
     ("completed", "Completed in this window"),
     ("current_execution", "Current execution"),
@@ -169,16 +171,16 @@ _VALID_FRESHNESS_BUCKETS = {"live", "recent", "aging", "stale", "unknown"}
 def _default_compass_reasoning_config() -> odylith_reasoning.ReasoningConfig:
     return odylith_reasoning.ReasoningConfig(
         mode="auto",
-        provider="codex-cli",
+        provider="auto-local",
         model="",
         base_url="",
         api_key="",
         scope_cap=5,
         timeout_seconds=_COMPASS_PROVIDER_TIMEOUT_SECONDS,
         codex_bin="codex",
-        codex_reasoning_effort="high",
+        codex_reasoning_effort="medium",
         claude_bin="claude",
-        claude_reasoning_effort="high",
+        claude_reasoning_effort="medium",
     )
 
 
@@ -196,28 +198,27 @@ def standup_brief_cache_path(*, repo_root: Path) -> Path:
 
 
 def standup_brief_fingerprint(*, fact_packet: Mapping[str, Any]) -> str:
-    """Return a stable fingerprint for the exact deterministic fact packet."""
+    """Return the stable fingerprint for the exact deterministic narration substrate."""
 
-    freshness_bucket = ""
-    summary = fact_packet.get("summary")
-    if isinstance(summary, Mapping):
-        freshness = summary.get("freshness")
-        if isinstance(freshness, Mapping):
-            freshness_bucket = str(freshness.get("bucket", "")).strip().lower()
-
-    canonical = json.dumps(
-        {
-            "schema_version": STANDUP_BRIEF_SCHEMA_VERSION,
-            "fact_packet": _canonicalize_fact_packet_for_fingerprint(
-                fact_packet,
-                freshness_bucket=freshness_bucket,
-            ),
-        },
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
+    substrate = compass_standup_brief_substrate.build_narration_substrate(
+        fact_packet=fact_packet,
+        schema_version=STANDUP_BRIEF_SCHEMA_VERSION,
     )
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return str(substrate.get("fingerprint", "")).strip()
+
+
+def _narration_substrate(
+    *,
+    fact_packet: Mapping[str, Any],
+    previous_substrate: Mapping[str, Any] | None = None,
+    previous_brief: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    return compass_standup_brief_substrate.build_narration_substrate(
+        fact_packet=fact_packet,
+        previous_substrate=previous_substrate,
+        previous_brief=previous_brief,
+        schema_version=STANDUP_BRIEF_SCHEMA_VERSION,
+    )
 
 
 def _canonicalize_fact_packet_for_fingerprint(
@@ -368,104 +369,31 @@ def _provider_output_schema() -> dict[str, Any]:
 
 
 def _provider_fact_packet_view(*, fact_packet: Mapping[str, Any], compact_retry: bool = False) -> dict[str, Any]:
-    scope = fact_packet.get("scope")
-    scope_mapping = scope if isinstance(scope, Mapping) else {}
-    summary = fact_packet.get("summary")
-    summary_mapping = summary if isinstance(summary, Mapping) else {}
-    storyline = summary_mapping.get("storyline")
-    storyline_mapping = storyline if isinstance(storyline, Mapping) else {}
-    freshness = summary_mapping.get("freshness")
-    freshness_mapping = freshness if isinstance(freshness, Mapping) else {}
-
-    summary_view: dict[str, Any] = {
-        "window_hours": int(summary_mapping.get("window_hours", 0) or 0),
-        "freshness_bucket": str(freshness_mapping.get("bucket", "")).strip().lower() or "unknown",
-        "storyline": {
-            key: str(storyline_mapping.get(key, "")).strip()
-            for key in (
-                "flagship_lane",
-                "direction",
-                "proof",
-                "forcing_function",
-                "watch_item",
-                *(() if compact_retry else ("use_story", "architecture_consequence")),
-            )
-            if str(storyline_mapping.get(key, "")).strip()
-        },
-    }
-    for key in ("active_workstreams", "touched_workstreams", "recent_completed_plans", "critical_risks"):
-        value = summary_mapping.get(key)
-        if isinstance(value, int):
-            summary_view[key] = value
-    self_host = summary_mapping.get("self_host")
-    if isinstance(self_host, Mapping):
-        self_host_view: dict[str, Any] = {}
-        for key in ("repo_role", "posture", "runtime_source", "pinned_version", "active_version"):
-            token = str(self_host.get(key, "")).strip()
-            if token:
-                self_host_view[key] = token
-        if isinstance(self_host.get("launcher_present"), bool):
-            self_host_view["launcher_present"] = bool(self_host.get("launcher_present"))
-        release_eligible = self_host.get("release_eligible")
-        if isinstance(release_eligible, bool):
-            self_host_view["release_eligible"] = release_eligible
-        elif release_eligible is None:
-            self_host_view["release_eligible"] = None
-        if self_host_view:
-            summary_view["self_host"] = self_host_view
-
-    sections_view: list[dict[str, Any]] = []
-    sections = fact_packet.get("sections")
-    if isinstance(sections, Sequence):
-        for row in sections:
-            if not isinstance(row, Mapping):
-                continue
-            section_key = str(row.get("key", "")).strip()
-            if not section_key:
-                continue
-            fact_limits = (
-                _COMPACT_RETRY_PROVIDER_FACT_LIMITS_BY_SECTION
-                if compact_retry
-                else _PROVIDER_FACT_LIMITS_BY_SECTION
-            )
-            max_facts = fact_limits.get(section_key, 2)
-            facts_view: list[dict[str, str]] = []
-            facts = row.get("facts")
-            if isinstance(facts, Sequence):
-                for item in list(facts)[:max_facts]:
-                    if not isinstance(item, Mapping):
-                        continue
-                    fact_id = str(item.get("id", "")).strip()
-                    text = str(item.get("text", "")).strip()
-                    if not fact_id or not text:
-                        continue
-                    fact_view = {
-                        "id": fact_id,
-                        "text": text,
-                    }
-                    kind = str(item.get("kind", "")).strip().lower()
-                    if kind:
-                        fact_view["kind"] = kind
-                    facts_view.append(fact_view)
-            sections_view.append(
-                {
-                    "key": section_key,
-                    "label": str(row.get("label", "")).strip() or section_key,
-                    "facts": facts_view,
-                }
-            )
-
+    provider_view = compass_standup_brief_substrate.provider_substrate_view(
+        substrate=_narration_substrate(fact_packet=fact_packet)
+    )
+    if not compact_retry:
+        return provider_view
+    fact_limits = _COMPACT_RETRY_PROVIDER_FACT_LIMITS_BY_SECTION
+    compact_sections: list[dict[str, Any]] = []
+    for row in provider_view.get("sections", []):
+        if not isinstance(row, Mapping):
+            continue
+        section_key = str(row.get("key", "")).strip()
+        limit = int(fact_limits.get(section_key, 1) or 1)
+        compact_sections.append(
+            {
+                **dict(row),
+                "facts": [
+                    dict(item)
+                    for item in (row.get("facts", []) if isinstance(row.get("facts"), Sequence) else [])[:limit]
+                    if isinstance(item, Mapping)
+                ],
+            }
+        )
     return {
-        "version": str(fact_packet.get("version", "")).strip() or STANDUP_BRIEF_SCHEMA_VERSION,
-        "window": str(fact_packet.get("window", "")).strip(),
-        "scope": {
-            "mode": str(scope_mapping.get("mode", "")).strip().lower() or "global",
-            "label": str(scope_mapping.get("label", "")).strip() or "Global",
-            "idea_id": str(scope_mapping.get("idea_id", "")).strip(),
-            "status": str(scope_mapping.get("status", "")).strip(),
-        },
-        "summary": summary_view,
-        "sections": sections_view,
+        **provider_view,
+        "sections": compact_sections,
     }
 
 
@@ -543,11 +471,14 @@ def _provider_request_payload(*, fact_packet: Mapping[str, Any], compact_retry: 
                     "keep each bullet visibly tethered to the cited fact language",
                     "if the cited facts disappear and the bullet still sounds plausible, it is too generic for Compass",
                     "if a tired maintainer would have to reread the sentence, rewrite it more simply",
+                    "treat plan closure as proof that a change landed; do not write the bullet as an administrative plan-status update",
                     "do not lead bullets by restating long workstream titles or queue labels",
                     "do not use absence-plus-compensation leads like 'no milestone closed ..., but ...' when movement facts exist",
                     "do not write next-step bullets as 'X comes next because', 'The next move is', or start follow-ons with 'Then'",
                     "do not write bullets as 'Next up is', 'What matters here is', 'Most of the work here was in', 'X and Y are still moving together', or 'X is there because'",
                     "do not keep reopening bullets with repeated 'Over the last 48 hours' or similar window labels",
+                    "do not paraphrase packet bookkeeping such as plan closeouts, repo pins, product claims, tracked corpus coverage, or governance seams as if they were the story itself",
+                    "do not turn plan posture, checklist counts, timeline signals, or closure-discipline warnings into the headline unless the fact packet gives no more concrete movement",
                     "do not use stock timing wrappers, rhetorical tests, stagey metaphors, or dashboard-wise abstractions",
                     "avoid recurring signature openings or house phrases across sections",
                     "do not make every bullet sound equally polished, balanced, or summary-shaped",
@@ -726,6 +657,11 @@ def _runtime_snapshot_cache_entries(*, current_path: Path, signature_token: str)
                 "scope_mode": str(scope_mode).strip(),
                 "scope_id": str(scope_id).strip(),
             },
+            "substrate_fingerprint": str(brief.get("substrate_fingerprint", "")).strip() or fingerprint,
+            "bundle_fingerprint": str(brief.get("bundle_fingerprint", "")).strip(),
+            "last_successful_narration_fingerprint": (
+                str(brief.get("last_successful_narration_fingerprint", "")).strip() or fingerprint
+            ),
         }
 
     standup_brief = payload.get("standup_brief")
@@ -744,6 +680,36 @@ def _runtime_snapshot_cache_entries(*, current_path: Path, signature_token: str)
                     _record(str(window), brief, scope_mode="scoped", scope_id=str(scope_id).strip())
 
     return entries
+
+
+def latest_cached_entry_for_context(
+    *,
+    repo_root: Path,
+    fact_packet: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    entries = _load_cache(repo_root=repo_root).get("entries", {})
+    if not isinstance(entries, Mapping):
+        return None
+    target_context = _cache_context(fact_packet=fact_packet)
+    winner: dict[str, Any] | None = None
+    winner_generated_utc = ""
+    for fingerprint, entry in entries.items():
+        if not str(fingerprint).strip() or not isinstance(entry, Mapping):
+            continue
+        context = entry.get("context")
+        if not isinstance(context, Mapping):
+            continue
+        if (
+            str(context.get("window", "")).strip() != str(target_context.get("window", "")).strip()
+            or str(context.get("scope_mode", "")).strip() != str(target_context.get("scope_mode", "")).strip()
+            or str(context.get("scope_id", "")).strip() != str(target_context.get("scope_id", "")).strip()
+        ):
+            continue
+        generated_utc = str(entry.get("generated_utc", "")).strip()
+        if generated_utc >= winner_generated_utc:
+            winner_generated_utc = generated_utc
+            winner = {"fingerprint": str(fingerprint).strip(), **dict(entry)}
+    return winner
 
 
 def _write_cache(*, repo_root: Path, payload: Mapping[str, Any]) -> None:
@@ -784,7 +750,7 @@ def _config_diagnostics(*, config: odylith_reasoning.ReasoningConfig) -> dict[st
         missing.append("local_provider")
         message = (
             "Compass could not find a runnable local provider for AI-authored standup briefs. "
-            "Install or expose Codex or Claude Code in this environment before refreshing Compass."
+            "Install or expose a supported local reasoning host in this environment before refreshing Compass."
         )
     elif provider == "openai-compatible":
         if not str(config.base_url or "").strip():
@@ -832,6 +798,10 @@ def _ready_brief(
     evidence_lookup: Mapping[str, Mapping[str, Any]] | None = None,
     cache_mode: str = "",
     notice: Mapping[str, Any] | None = None,
+    substrate_fingerprint: str = "",
+    bundle_fingerprint: str = "",
+    provider_decision: str = "",
+    last_successful_narration_fingerprint: str = "",
 ) -> dict[str, Any]:
     payload = {
         "schema_version": STANDUP_BRIEF_SCHEMA_VERSION,
@@ -845,6 +815,13 @@ def _ready_brief(
             for fact_id, entry in (evidence_lookup or {}).items()
             if str(fact_id).strip() and isinstance(entry, Mapping)
         },
+        "substrate_fingerprint": str(substrate_fingerprint or fingerprint).strip() or str(fingerprint).strip(),
+        "bundle_fingerprint": str(bundle_fingerprint).strip(),
+        "provider_decision": str(provider_decision).strip().lower()
+        or ("cache_reuse" if _brief_source_label(source=source) == "cache" else "provider_called"),
+        "last_successful_narration_fingerprint": (
+            str(last_successful_narration_fingerprint or substrate_fingerprint or fingerprint).strip()
+        ),
     }
     cache_mode_token = str(cache_mode or "").strip().lower()
     if payload["source"] == "cache" and cache_mode_token in {"exact", "fallback"}:
@@ -887,6 +864,12 @@ def _cache_ready_brief(
         evidence_lookup=cached_entry.get("evidence_lookup", {}),
         cache_mode=cache_mode,
         notice=notice,
+        substrate_fingerprint=str(cached_entry.get("substrate_fingerprint", "")).strip() or fingerprint,
+        bundle_fingerprint=str(cached_entry.get("bundle_fingerprint", "")).strip(),
+        provider_decision="cache_reuse",
+        last_successful_narration_fingerprint=(
+            str(cached_entry.get("last_successful_narration_fingerprint", "")).strip() or fingerprint
+        ),
     )
 
 
@@ -904,6 +887,9 @@ def _persist_current_cache_entry(
         "sections": [dict(item) for item in sections if isinstance(item, Mapping)],
         "evidence_lookup": _brief_evidence_lookup(fact_packet=fact_packet),
         "context": _cache_context(fact_packet=fact_packet),
+        "substrate_fingerprint": fingerprint,
+        "last_successful_narration_fingerprint": fingerprint,
+        "substrate": _narration_substrate(fact_packet=fact_packet),
     }
     _write_cache(
         repo_root=repo_root,
@@ -921,9 +907,14 @@ def _unavailable_brief(
     diagnostics: Mapping[str, Any],
 ) -> dict[str, Any]:
     return {
+        "schema_version": STANDUP_BRIEF_SCHEMA_VERSION,
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": fingerprint,
+        "substrate_fingerprint": str(fingerprint).strip(),
+        "bundle_fingerprint": "",
+        "provider_decision": str(dict(diagnostics).get("provider_decision", "")).strip().lower() or "unavailable",
+        "last_successful_narration_fingerprint": "",
         "generated_utc": "",
         "diagnostics": {
             **dict(diagnostics),
@@ -1037,6 +1028,8 @@ def _section_facts(
 
 def _unavailable_brief_message(reason: str) -> str:
     token = str(reason or "").strip().lower()
+    if token == "skipped_not_worth_calling":
+        return "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
     if token == "provider_deferred":
         return "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     if token == "rate_limited":
@@ -1064,6 +1057,8 @@ def _unavailable_brief_message(reason: str) -> str:
 
 def _unavailable_brief_title(reason: str) -> str:
     token = str(reason or "").strip().lower()
+    if token == "skipped_not_worth_calling":
+        return "Brief stayed on wallet-safe local truth"
     if token == "provider_deferred":
         return "Fresh brief still warming"
     if token == "rate_limited":
@@ -1104,6 +1099,49 @@ def _failure_reason_from_provider_code(code: str) -> str:
     return mapping.get(token, "")
 
 
+_FAILOVER_PROVIDER_FAILURE_REASONS: frozenset[str] = frozenset(
+    {"credits_exhausted", "rate_limited", "provider_error"}
+)
+
+
+def _alternate_local_provider_name(provider_name: str) -> str:
+    token = str(provider_name or "").strip().lower()
+    if token == "codex-cli":
+        return "claude-cli"
+    if token == "claude-cli":
+        return "codex-cli"
+    return ""
+
+
+def _retryable_provider_failure(provider: Any) -> tuple[str, dict[str, Any]]:
+    failure = odylith_reasoning.provider_failure_metadata(provider)
+    reason = _failure_reason_from_provider_code(failure.get("code", ""))
+    if reason in _FAILOVER_PROVIDER_FAILURE_REASONS:
+        return reason, failure
+    return "", failure
+
+
+def _alternate_local_provider(
+    *,
+    repo_root: Path,
+    config: odylith_reasoning.ReasoningConfig,
+    failed_provider: Any,
+) -> tuple[odylith_reasoning.ReasoningProvider | None, odylith_reasoning.ReasoningConfig | None, dict[str, Any]]:
+    reason, failure = _retryable_provider_failure(failed_provider)
+    failed_provider_name = str(failure.get("provider", "")).strip().lower()
+    alternate_name = _alternate_local_provider_name(failed_provider_name)
+    if not reason or not alternate_name:
+        return None, None, failure
+    alternate_config = replace(config, provider=alternate_name, model="")
+    alternate_provider = odylith_reasoning.provider_from_config(
+        alternate_config,
+        repo_root=repo_root,
+        require_auto_mode=False,
+        allow_implicit_local_provider=True,
+    )
+    return alternate_provider, alternate_config, failure
+
+
 def _unavailable_ready_brief(
     *,
     fingerprint: str,
@@ -1123,9 +1161,14 @@ def _unavailable_ready_brief(
                 continue
             diagnostic_payload[str(key)] = value
     return {
+        "schema_version": STANDUP_BRIEF_SCHEMA_VERSION,
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": fingerprint,
+        "substrate_fingerprint": str(fingerprint).strip(),
+        "bundle_fingerprint": "",
+        "provider_decision": str(diagnostic_payload.get("provider_decision", "")).strip().lower() or token,
+        "last_successful_narration_fingerprint": "",
         "generated_utc": generated_utc,
         "sections": [],
         "diagnostics": diagnostic_payload,
@@ -1150,6 +1193,10 @@ def unavailable_brief_for_provider_failure(
         payload.setdefault("provider_failure_code", failure["code"])
     if failure.get("detail"):
         payload.setdefault("provider_failure_detail", failure["detail"])
+    if failure.get("model"):
+        payload.setdefault("provider_model", failure["model"])
+    if failure.get("reasoning_effort"):
+        payload.setdefault("provider_reasoning_effort", failure["reasoning_effort"])
     return _unavailable_ready_brief(
         fingerprint=fingerprint,
         generated_utc=generated_utc,
@@ -1628,7 +1675,26 @@ def build_standup_brief(
     """Build a validated standup brief with exact-fingerprint replay only."""
 
     repo_root = Path(repo_root).resolve()
-    fingerprint = standup_brief_fingerprint(fact_packet=fact_packet)
+    previous_entry = latest_cached_entry_for_context(repo_root=repo_root, fact_packet=fact_packet)
+    previous_substrate = (
+        previous_entry.get("substrate")
+        if isinstance(previous_entry, Mapping) and isinstance(previous_entry.get("substrate"), Mapping)
+        else None
+    )
+    previous_brief = None
+    if isinstance(previous_entry, Mapping):
+        previous_brief = _cache_ready_brief(
+            fingerprint=str(previous_entry.get("fingerprint", "")).strip(),
+            cached_entry=previous_entry,
+            fact_packet=fact_packet,
+            cache_mode="exact",
+        )
+    substrate = _narration_substrate(
+        fact_packet=fact_packet,
+        previous_substrate=previous_substrate,
+        previous_brief=previous_brief,
+    )
+    fingerprint = str(substrate.get("fingerprint", "")).strip()
     cache_payload = _load_cache(repo_root=repo_root)
     entries = cache_payload.get("entries")
     cache_entries = dict(entries) if isinstance(entries, Mapping) else {}
@@ -1677,6 +1743,7 @@ def build_standup_brief(
             reason="provider_unavailable",
         )
 
+    failover_diagnostics: dict[str, Any] = {}
     raw_result = _request_provider_with_empty_retry(
         provider=resolved_provider,
         requests=_provider_requests_for_empty_retry(
@@ -1684,6 +1751,34 @@ def build_standup_brief(
             config=resolved_config,
         ),
     )
+    if not isinstance(raw_result, Mapping) and provider is None:
+        alternate_provider, alternate_config, primary_failure = _alternate_local_provider(
+            repo_root=repo_root,
+            config=resolved_config,
+            failed_provider=resolved_provider,
+        )
+        if alternate_provider is not None and alternate_config is not None:
+            failover_diagnostics = {
+                "primary_provider": primary_failure.get("provider", ""),
+                "primary_provider_failure_code": primary_failure.get("code", ""),
+            }
+            raw_result = _request_provider_with_empty_retry(
+                provider=alternate_provider,
+                requests=_provider_requests_for_empty_retry(
+                    fact_packet=fact_packet,
+                    config=alternate_config,
+                ),
+            )
+            if isinstance(raw_result, Mapping):
+                resolved_provider = alternate_provider
+                resolved_config = alternate_config
+                failover_diagnostics["fallback_provider"] = odylith_reasoning.provider_failure_metadata(
+                    alternate_provider
+                ).get("provider", "") or alternate_config.provider
+            else:
+                alternate_failure = odylith_reasoning.provider_failure_metadata(alternate_provider)
+                failover_diagnostics["fallback_provider"] = alternate_failure.get("provider", "") or alternate_config.provider
+                failover_diagnostics["fallback_provider_failure_code"] = alternate_failure.get("code", "")
     if not isinstance(raw_result, Mapping):
         exact_ready = _exact_cache_ready_brief_if_available(
             fingerprint=fingerprint,
@@ -1698,6 +1793,7 @@ def build_standup_brief(
             generated_utc=generated_utc,
             provider=resolved_provider,
             fallback_reason="provider_empty",
+            diagnostics=failover_diagnostics,
         )
 
     sections, errors = _validate_brief_response(
@@ -1745,12 +1841,22 @@ def build_standup_brief(
         generated_utc=generated_utc,
         sections=sections,
         evidence_lookup=_brief_evidence_lookup(fact_packet=fact_packet),
+        substrate_fingerprint=fingerprint,
+        provider_decision=(
+            "provider_failover"
+            if failover_diagnostics.get("primary_provider") and failover_diagnostics.get("fallback_provider")
+            else "provider_called"
+        ),
+        last_successful_narration_fingerprint=fingerprint,
     )
     cache_entries[fingerprint] = {
         "generated_utc": ready["generated_utc"],
         "sections": ready["sections"],
         "evidence_lookup": ready["evidence_lookup"],
         "context": cache_context,
+        "substrate_fingerprint": fingerprint,
+        "last_successful_narration_fingerprint": fingerprint,
+        "substrate": substrate,
     }
     _write_cache(
         repo_root=repo_root,
@@ -1820,6 +1926,7 @@ __all__ = [
     "brief_to_digest_lines",
     "build_standup_brief",
     "has_reusable_cached_brief",
+    "latest_cached_entry_for_context",
     "standup_brief_cache_path",
     "standup_brief_fingerprint",
 ]

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, load_casebook_bug_id_from_markdown, resolve_casebook_bug_id
 
 
@@ -326,7 +327,11 @@ def _load_codex_event_projection(*, repo_root: Path) -> list[dict[str, Any]]:
         ] if isinstance(payload.get("components"), list) else []
         rows.append(
             {
-                "event_id": f"codex:{kind}:{idx}:{ts_iso}",
+                "event_id": agent_runtime_contract.timeline_event_id(
+                    kind=kind,
+                    index=idx,
+                    ts_iso=ts_iso,
+                ),
                 "ts_iso": ts_iso,
                 "kind": kind,
                 "summary": summary,

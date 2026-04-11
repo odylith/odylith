@@ -418,6 +418,24 @@ def test_synthesized_execution_profile_candidate_routes_governance_support_to_sp
     assert profile["selection_mode"] == "support_fast_lane"
 
 
+def test_synthesized_execution_profile_candidate_omits_explicit_model_on_claude_host(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CLAUDE_CODE", "1")
+    monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
+    monkeypatch.delenv("CODEX_SHELL", raising=False)
+
+    profile = router._synthesized_execution_profile_candidate(  # noqa: SLF001
+        context_packet=_context_packet_for_synthesis(
+            family="implementation",
+            tests=1,
+            commands=1,
+        )
+    )
+
+    assert profile["profile"] == router.RouterProfile.CODEX_HIGH.value
+    assert profile["model"] == ""
+    assert profile["reasoning_effort"] == router.RouterProfile.CODEX_HIGH.reasoning_effort
+
+
 def test_route_request_infers_profile_from_model_and_reasoning_only(tmp_path: Path) -> None:
     request = _route_request(
         prompt="Review the bounded analysis slice.",
@@ -561,7 +579,7 @@ def test_route_request_spawn_payloads_never_inherit_parent_defaults(tmp_path: Pa
     assert any("do not inherit the parent thread model or reasoning weight" in line for line in decision.spawn_contract_lines)
 
 
-def test_route_request_omits_native_spawn_payloads_for_claude_host(
+def test_route_request_emits_task_tool_payloads_for_claude_host(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -588,14 +606,19 @@ def test_route_request_omits_native_spawn_payloads_for_claude_host(
     decision = router.route_request(request, repo_root=tmp_path)
 
     assert decision.delegate is True
-    assert decision.spawn_overrides == {}
+    assert decision.spawn_overrides["subagent_type"] == "general-purpose"
+    assert decision.spawn_overrides["preferred_project_subagent"] == "odylith-workstream"
     assert decision.spawn_agent_overrides == {}
     assert decision.close_agent_overrides == {}
-    assert decision.native_spawn_payload == {}
+    assert decision.native_spawn_payload["tool_name"] == "Task"
+    assert decision.native_spawn_payload["subagent_type"] == "general-purpose"
+    assert decision.native_spawn_payload["preferred_project_subagent"] == "odylith-workstream"
+    assert decision.native_spawn_payload["isolation"] == "worktree"
     assert decision.host_tool_contract["host_runtime"] == "claude_cli"
-    assert decision.host_tool_contract["native_spawn_supported"] is False
-    assert decision.host_tool_contract["local_guidance_only"] is True
-    assert any("local execution guidance only" in line for line in decision.spawn_contract_lines)
+    assert decision.host_tool_contract["native_spawn_supported"] is True
+    assert decision.host_tool_contract["delegation_style"] == "task_tool_subagents"
+    assert decision.host_tool_contract["tool_name"] == "Task"
+    assert any("Claude Code `Task`" in line for line in decision.spawn_contract_lines)
 
 
 def test_route_request_omits_native_spawn_payloads_for_unknown_host(
@@ -1262,7 +1285,7 @@ def test_orchestrator_leaf_payload_uses_routed_reasoning_without_parent_default_
     )
 
 
-def test_orchestrator_leaf_payload_omits_native_spawn_payload_for_claude_host(
+def test_orchestrator_leaf_payload_emits_task_tool_payload_for_claude_host(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -1321,9 +1344,11 @@ def test_orchestrator_leaf_payload_omits_native_spawn_payload_for_claude_host(
 
     assert decision.delegate is True
     assert decision.spawn_agent_overrides == {}
-    assert decision.native_spawn_payload == {}
+    assert decision.native_spawn_payload["tool_name"] == "Task"
+    assert decision.native_spawn_payload["subagent_type"] == "general-purpose"
     assert subtask.route_spawn_agent_overrides == {}
-    assert subtask.route_native_spawn_payload == {}
+    assert subtask.route_native_spawn_payload["tool_name"] == "Task"
+    assert subtask.route_native_spawn_payload["isolation"] == "worktree"
 
 
 def test_orchestrator_leaf_payload_infers_parent_runtime_from_model_and_reasoning_only(
@@ -1563,7 +1588,7 @@ def test_router_execution_governance_reanchor_blocks_delegation() -> None:
             "execution_governance_mode": "recover",
             "execution_governance_next_move": "recover.current_blocker",
             "execution_governance_host_family": "codex",
-            "execution_governance_model_family": "codex",
+            "execution_governance_host_supports_native_spawn": True,
         },
     )
 
@@ -1600,7 +1625,7 @@ def test_orchestrator_parallel_fanout_stays_serial_while_waiting_on_verify_front
             "execution_governance_wait_status": "building",
             "execution_governance_wait_detail": "deploying cell-01",
             "execution_governance_host_family": "codex",
-            "execution_governance_model_family": "codex",
+            "execution_governance_host_supports_native_spawn": True,
         },
     )
 
@@ -1634,7 +1659,7 @@ def test_orchestrator_keeps_claude_host_local_when_worker_delegation_is_unavaila
             "execution_governance_outcome": "admit",
             "execution_governance_mode": "implement",
             "execution_governance_host_family": "claude",
-            "execution_governance_model_family": "claude",
+            "execution_governance_host_supports_native_spawn": False,
         },
     )
 

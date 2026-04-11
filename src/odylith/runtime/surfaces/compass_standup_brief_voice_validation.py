@@ -27,6 +27,29 @@ _CACHED_STOCK_PHRASE_RE = re.compile(
     r"paper-only\s+signal)\b",
     re.IGNORECASE,
 )
+_PACKET_BOOKKEEPING_RE = re.compile(
+    r"\b(?:plans?\s+are\s+confirmed\s+complete|"
+    r"known\s+outcomes\s+rather\s+than\s+pending\s+items|"
+    r"tracks\s+the\s+stated\s+product\s+promise|"
+    r"plan\s+posture|"
+    r"timeline\s+signal|"
+    r"closure\s+discipline|"
+    r"execution\s+checklist|"
+    r"most\s+concrete\s+movement|"
+    r"concrete\s+movement\s+in\s+the\s+repo|"
+    r"concrete\s+proof\s+in\s+the\s+repo|"
+    r"tracked\s+corpus|"
+    r"repo\s+pin\b|"
+    r"governance\s+(?:gap|seam)|"
+    r"flagship\s+lane|"
+    r"product\s+claim|"
+    r"core-path\s+alignment\s+work|"
+    r"core-path\s+alignment|"
+    r"operator\s+onboarding|"
+    r"maintainer-facing\s+coverage|"
+    r"plan\s+closeouts?\s+landed)\b",
+    re.IGNORECASE,
+)
 _SHORT_TOKEN_ALLOWLIST = {"ai", "ci", "ga", "qa", "ui", "ux"}
 _STOPWORDS = {
     "a",
@@ -192,6 +215,10 @@ def bullet_shape_errors(
     if _CACHED_STOCK_PHRASE_RE.search(text):
         errors.append(
             f"section {section_key} bullet {bullet_index} reuses cached stock phrasing instead of plainspoken maintainer narration"
+        )
+    if _PACKET_BOOKKEEPING_RE.search(text):
+        errors.append(
+            f"section {section_key} bullet {bullet_index} paraphrases packet bookkeeping instead of live maintainer narration"
         )
     if _BALANCED_CADENCE_RE.search(text) and generic_count >= 3 and len(overlap) < 2:
         errors.append(f"section {section_key} bullet {bullet_index} falls into portable summary cadence")

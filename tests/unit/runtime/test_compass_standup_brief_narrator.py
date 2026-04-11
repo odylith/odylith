@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import time
 
+import pytest
+
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
 from odylith.runtime.reasoning import odylith_reasoning
 
@@ -36,6 +38,25 @@ class _QueuedProvider:
         if not self._results:
             return None
         return self._results.pop(0)
+
+    def generate_finding(self, *, prompt_payload):  # noqa: ANN001, ARG002
+        raise AssertionError("Compass standup narration should use structured generation only.")
+
+
+class _FailingProvider:
+    def __init__(self, *, provider_name: str, failure_code: str, failure_detail: str = "") -> None:
+        self.provider_name = provider_name
+        self.last_failure_code = ""
+        self.last_failure_detail = ""
+        self.calls = 0
+        self._failure_code = failure_code
+        self._failure_detail = failure_detail or failure_code
+
+    def generate_structured(self, *, request):  # noqa: ANN001, ARG002
+        self.calls += 1
+        self.last_failure_code = self._failure_code
+        self.last_failure_detail = self._failure_detail
+        return None
 
     def generate_finding(self, *, prompt_payload):  # noqa: ANN001, ARG002
         raise AssertionError("Compass standup narration should use structured generation only.")
@@ -486,7 +507,18 @@ def test_build_standup_brief_rejects_cross_section_fact_citations(tmp_path: Path
     _assert_unavailable(brief, reason="validation_failed")
 
 
-def test_provider_request_contract_emphasizes_maintainer_voice_without_a_dedicated_why_section() -> None:
+def test_provider_request_contract_emphasizes_maintainer_voice_without_a_dedicated_why_section(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        narrator,
+        "_provider_request_profile",
+        lambda config=None: odylith_reasoning.StructuredReasoningProfile(  # noqa: ARG005
+            provider="claude-cli",
+            model="",
+            reasoning_effort="medium",
+        ),
+    )
     request = narrator._provider_request(fact_packet=_fact_packet())  # noqa: SLF001
 
     assert "thoughtful maintainer talking to a teammate" in request.system_prompt.lower()
@@ -503,8 +535,8 @@ def test_provider_request_contract_emphasizes_maintainer_voice_without_a_dedicat
     assert "do not print raw fact ids in prose" in request.system_prompt.lower()
     assert "x is there because" in request.system_prompt.lower()
     assert "over the last 48 hours" in request.system_prompt.lower()
-    assert request.model == "gpt-5.3-codex-spark"
-    assert request.reasoning_effort == "low"
+    assert request.model == ""
+    assert request.reasoning_effort == "medium"
     assert request.timeout_seconds == 30.0
 
     assert "voice_values" not in request.prompt_payload["brief_contract"]
@@ -769,6 +801,25 @@ def test_build_standup_brief_rejects_stagey_metaphor_voice(tmp_path: Path) -> No
         repo_root=tmp_path,
         fact_packet=packet,
         generated_utc="2026-04-09T03:30:00Z",
+        config=_reasoning_config(),
+        provider=provider,
+    )
+
+    _assert_unavailable(brief, reason="validation_failed")
+
+
+def test_build_standup_brief_rejects_packet_bookkeeping_paraphrase(tmp_path: Path) -> None:
+    invalid = _valid_provider_result()
+    invalid["sections"][0]["bullets"][0]["text"] = (
+        "Local Provider Autodetect and Compass AI Brief Recovery plans are confirmed complete. "
+        "The repo now has those behaviors as known outcomes rather than pending items, which shrinks uncertainty for operator onboarding."
+    )
+    provider = _FakeProvider(invalid)
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(window="24h", scope_mode="global", idea_id=""),
+        generated_utc="2026-04-11T08:18:18Z",
         config=_reasoning_config(),
         provider=provider,
     )
@@ -1210,19 +1261,11 @@ def test_provider_request_payload_uses_compact_fact_packet_view() -> None:
     assert provider_packet["summary"]["freshness_bucket"] == "recent"
     assert "latest_evidence_utc" not in provider_packet["summary"]
     assert "source" not in provider_packet["summary"]
-    assert provider_packet["summary"]["self_host"] == {
-        "repo_role": "product_repo",
-        "posture": "pinned_release",
-        "runtime_source": "pinned_runtime",
-        "pinned_version": "0.1.4",
-        "active_version": "0.1.4",
-        "launcher_present": True,
-        "release_eligible": True,
-    }
+    assert "self_host" not in provider_packet["summary"]
     current_execution = next(
         section for section in provider_packet["sections"] if section["key"] == "current_execution"
     )
-    assert len(current_execution["facts"]) <= 4
+    assert len(current_execution["facts"]) <= 3
     assert current_execution["facts"][0]["id"] == "F-002"
 
 
@@ -1441,7 +1484,7 @@ def test_build_standup_brief_does_not_reuse_non_exact_validated_legacy_cache_ent
     assert narrator.standup_brief_fingerprint(fact_packet=packet) not in migrated
 
 
-def test_build_standup_brief_does_not_reuse_context_matched_current_cache_entry_when_packet_changes(
+def test_build_standup_brief_reuses_exact_cache_when_packet_only_changes_nonwinner_fact(
     tmp_path: Path,
 ) -> None:
     packet = _fact_packet(scope_mode="scoped", idea_id="B-025", window="24h")
@@ -1475,11 +1518,12 @@ def test_build_standup_brief_does_not_reuse_context_matched_current_cache_entry_
         allow_provider=False,
     )
 
-    assert brief["status"] == "unavailable"
-    assert brief["source"] == "unavailable"
+    assert brief["status"] == "ready"
+    assert brief["source"] == "cache"
+    assert brief["cache_mode"] == "exact"
     assert provider.calls == 0
     migrated = narrator._load_cache(repo_root=tmp_path)["entries"]  # noqa: SLF001
-    assert narrator.standup_brief_fingerprint(fact_packet=changed_packet) not in migrated
+    assert narrator.standup_brief_fingerprint(fact_packet=changed_packet) in migrated
 
 
 def test_build_standup_brief_ignores_invalid_legacy_cache_entry(tmp_path: Path) -> None:
@@ -1856,10 +1900,15 @@ def test_build_standup_brief_fails_closed_when_provider_returns_empty_for_change
     assert seeded["status"] == "ready"
     assert seeded["source"] == "provider"
 
+    changed_packet = _set_fact_text(
+        _fact_packet(),
+        kind="direction",
+        text="Compass narration split again across surfaces and needs hard repair.",
+    )
     fallback_provider = _QueuedProvider([None, None])
     fallback = narrator.build_standup_brief(
         repo_root=tmp_path,
-        fact_packet=_fact_packet(include_freshness_fact=True),
+        fact_packet=changed_packet,
         generated_utc=_now_utc_iso(),
         config=_reasoning_config(),
         provider=fallback_provider,
@@ -1882,10 +1931,15 @@ def test_build_standup_brief_fails_closed_when_live_provider_is_deferred_and_fin
     )
     assert seeded["status"] == "ready"
 
+    changed_packet = _set_fact_text(
+        _fact_packet(),
+        kind="direction",
+        text="Compass narration split again across surfaces and needs hard repair.",
+    )
     deferred_provider = _FakeProvider(None)
     fallback = narrator.build_standup_brief(
         repo_root=tmp_path,
-        fact_packet=_fact_packet(include_freshness_fact=True),
+        fact_packet=changed_packet,
         generated_utc=_now_utc_iso(),
         config=_reasoning_config(),
         provider=deferred_provider,
@@ -2163,9 +2217,14 @@ def test_build_standup_brief_does_not_reuse_stale_last_known_good_cache(tmp_path
     )
     assert seeded["status"] == "ready"
 
+    changed_packet = _set_fact_text(
+        _fact_packet(),
+        kind="direction",
+        text="Compass narration split again across surfaces and needs hard repair.",
+    )
     stale_fallback = narrator.build_standup_brief(
         repo_root=tmp_path,
-        fact_packet=_fact_packet(include_freshness_fact=True),
+        fact_packet=changed_packet,
         generated_utc=_now_utc_iso(),
         config=_reasoning_config(),
         provider=None,
@@ -2642,6 +2701,99 @@ def test_build_standup_brief_ignores_disabled_odylith_mode_when_provider_is_runn
     assert observed["allow_implicit_local_provider"] is True
     assert observed["mode"] == "disabled"
     assert provider.calls == 1
+
+
+def test_build_standup_brief_default_config_uses_auto_local_provider_contract(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    provider = _FakeProvider(_valid_provider_result())
+    observed: dict[str, object] = {}
+
+    def _provider_from_config(  # noqa: ANN001
+        config,
+        *,
+        repo_root=None,
+        require_auto_mode=True,
+        allow_implicit_local_provider=False,
+    ):
+        observed["provider"] = config.provider
+        observed["repo_root"] = repo_root
+        observed["require_auto_mode"] = require_auto_mode
+        observed["allow_implicit_local_provider"] = allow_implicit_local_provider
+        return provider
+
+    monkeypatch.setattr(odylith_reasoning, "provider_from_config", _provider_from_config)
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(),
+        generated_utc="2026-03-13T20:00:00Z",
+    )
+
+    assert brief["status"] == "ready"
+    assert brief["source"] == "provider"
+    assert observed["provider"] == "auto-local"
+    assert observed["require_auto_mode"] is False
+    assert observed["allow_implicit_local_provider"] is True
+    assert narrator._default_compass_reasoning_config().codex_reasoning_effort == "medium"  # noqa: SLF001
+    assert narrator._default_compass_reasoning_config().claude_reasoning_effort == "medium"  # noqa: SLF001
+    assert provider.calls == 1
+
+
+def test_build_standup_brief_fails_over_to_alternate_local_provider_on_budget_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    codex_provider = _FailingProvider(
+        provider_name="codex-cli",
+        failure_code="credits_exhausted",
+        failure_detail="codex budget exhausted",
+    )
+    claude_provider = _FakeProvider(_valid_provider_result())
+
+    def _provider_from_config(  # noqa: ANN001
+        config,
+        *,
+        repo_root=None,
+        require_auto_mode=True,
+        allow_implicit_local_provider=False,
+    ):
+        assert repo_root == tmp_path
+        assert require_auto_mode is False
+        assert allow_implicit_local_provider is True
+        if config.provider == "codex-cli":
+            return codex_provider
+        if config.provider == "claude-cli":
+            return claude_provider
+        return None
+
+    monkeypatch.setattr(odylith_reasoning, "provider_from_config", _provider_from_config)
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(),
+        generated_utc="2026-03-13T20:00:00Z",
+        config=odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=3.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+            claude_bin="claude",
+            claude_reasoning_effort="medium",
+        ),
+    )
+
+    assert brief["status"] == "ready"
+    assert brief["source"] == "provider"
+    assert brief["provider_decision"] == "provider_failover"
+    assert codex_provider.calls == 2
+    assert claude_provider.calls == 1
 
 
 def test_build_standup_brief_fails_closed_when_no_provider_or_cache(tmp_path: Path) -> None:

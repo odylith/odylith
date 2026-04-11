@@ -6,7 +6,7 @@ explicit model and reasoning-effort profile.
 
 Invariants:
 - Hard main-thread refusal gates always win over weighted scoring.
-- `gpt-5.4` `xhigh` remains a gated tier and is never the default score winner
+- `frontier_xhigh` remains a gated tier and is never the default score winner
   unless a critical-risk gate or explicit escalation unlocks it.
 - Adaptive tuning only shifts soft profile bias in local gitignored state under
   `.odylith/`; it never changes hard-gate semantics.
@@ -58,6 +58,13 @@ _DEFAULT_WAITING_POLICY = "send_input_or_close"
 _DEFAULT_IDLE_TIMEOUT_ACTION = "close_agent"
 _DEFAULT_IDLE_TIMEOUT_ESCALATION = "resume_main_thread_or_reroute_fresh_slice"
 _HOST_SUPPORTED_AGENT_TYPES: tuple[str, ...] = ("default", "explorer", "worker")
+_CLAUDE_TASK_TOOL_AGENT_TYPES: tuple[str, ...] = (
+    "general-purpose",
+    "Explore",
+    "Plan",
+    "statusline-setup",
+    "claude-code-guide",
+)
 _HOST_UI_VISIBILITY_NOTE = (
     "Some host UIs may still show parent-thread model/reasoning controls in the delegated thread UI "
     "for some combinations even when explicit spawn overrides are passed."
@@ -307,6 +314,7 @@ _EXPLICIT_ROOT_FILES: frozenset[str] = frozenset(
     {
         ".gitignore",
         "AGENTS.md",
+        "CLAUDE.md",
         "Makefile",
         "README.md",
         "hatch.toml",
@@ -437,25 +445,13 @@ class RouterProfile(str, Enum):
 
     @property
     def model(self) -> str:
-        if self in {RouterProfile.ANALYSIS_MEDIUM, RouterProfile.ANALYSIS_HIGH}:
-            return "gpt-5.4-mini"
-        if self is RouterProfile.FAST_WORKER:
-            return "gpt-5.3-codex-spark"
-        if self in {RouterProfile.WRITE_MEDIUM, RouterProfile.WRITE_HIGH}:
-            return "gpt-5.3-codex"
-        if self is RouterProfile.MAIN_THREAD:
-            return ""
-        return "gpt-5.4"
+        model, _ = agent_runtime_contract.execution_profile_runtime_fields(self.value)
+        return model
 
     @property
     def reasoning_effort(self) -> str:
-        if self in {RouterProfile.ANALYSIS_MEDIUM, RouterProfile.FAST_WORKER, RouterProfile.WRITE_MEDIUM}:
-            return "medium"
-        if self is RouterProfile.FRONTIER_XHIGH:
-            return "xhigh"
-        if self is RouterProfile.MAIN_THREAD:
-            return ""
-        return "high"
+        _, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(self.value)
+        return reasoning_effort
 
 
 def _router_profile_from_token(value: Any) -> RouterProfile | None:
@@ -785,6 +781,14 @@ def _native_spawn_supported_for_assessment(assessment: TaskAssessment) -> bool:
         _assessment_host_runtime(assessment),
         default_when_unknown=False,
     )
+
+
+def _assessment_host_capabilities(assessment: TaskAssessment) -> dict[str, Any]:
+    return host_runtime_contract.resolve_host_capabilities(_assessment_host_runtime(assessment))
+
+
+def _delegation_style_for_assessment(assessment: TaskAssessment) -> str:
+    return str(_assessment_host_capabilities(assessment).get("delegation_style", "")).strip() or "none"
 
 
 def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
@@ -1158,16 +1162,16 @@ def _synthesized_execution_profile_candidate(
             _normalize_bool(governance.get("governed_surface_sync_required")),
         )
     )
+    host_runtime = host_runtime_contract.resolve_host_runtime(
+        context_packet.get("host_runtime"),
+        _context_lookup(context_packet, "execution_profile", "host_runtime"),
+    )
     profile = RouterProfile.ANALYSIS_MEDIUM.value
-    model = "gpt-5.4-mini"
-    reasoning_effort = "medium"
     agent_role = "explorer"
     selection_mode = "analysis_scout"
     if family in {"implementation", "write", "bugfix"}:
         if governance_contract and _int_value(governance.get("strict_gate_command_count")) > 0:
             profile = RouterProfile.FRONTIER_HIGH.value
-            model = "gpt-5.4"
-            reasoning_effort = "high"
             selection_mode = "deep_validation"
         else:
             profile = (
@@ -1175,20 +1179,14 @@ def _synthesized_execution_profile_candidate(
                 if confidence == "high" and (validation_count > 0 or guidance_count >= 2)
                 else RouterProfile.WRITE_MEDIUM.value
             )
-            model = "gpt-5.3-codex"
-            reasoning_effort = "high" if profile == RouterProfile.WRITE_HIGH.value else "medium"
             selection_mode = "bounded_write"
         agent_role = "worker"
     elif family == "validation":
         profile = RouterProfile.WRITE_HIGH.value if confidence == "high" or validation_count >= 2 else RouterProfile.WRITE_MEDIUM.value
-        model = "gpt-5.3-codex"
-        reasoning_effort = "high" if profile == RouterProfile.WRITE_HIGH.value else "medium"
         agent_role = "worker"
         selection_mode = "validation_focused"
     elif family in {"docs", "governance"}:
         profile = RouterProfile.FAST_WORKER.value if governance_contract else RouterProfile.ANALYSIS_MEDIUM.value
-        model = "gpt-5.3-codex-spark" if profile == RouterProfile.FAST_WORKER.value else "gpt-5.4-mini"
-        reasoning_effort = "medium"
         agent_role = "worker" if profile == RouterProfile.FAST_WORKER.value else "explorer"
         selection_mode = "support_fast_lane" if profile == RouterProfile.FAST_WORKER.value else "analysis_scout"
     elif family in {"analysis", "review", "diagnosis"}:
@@ -1197,10 +1195,12 @@ def _synthesized_execution_profile_candidate(
             if confidence == "high" or governance_contract or validation_count > 0 or guidance_count > 0
             else RouterProfile.ANALYSIS_MEDIUM.value
         )
-        model = "gpt-5.4-mini"
-        reasoning_effort = "high" if profile == RouterProfile.ANALYSIS_HIGH.value else "medium"
         agent_role = "explorer"
         selection_mode = "analysis_synthesis" if profile == RouterProfile.ANALYSIS_HIGH.value else "analysis_scout"
+    model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(
+        profile,
+        host_runtime=host_runtime,
+    )
     return {
         "profile": profile,
         "model": model,
@@ -1209,6 +1209,7 @@ def _synthesized_execution_profile_candidate(
         "selection_mode": selection_mode,
         "delegate_preference": "delegate",
         "source": "context_packet_route",
+        "host_runtime": host_runtime,
     }
 
 
@@ -1288,14 +1289,65 @@ def _agent_role_for_assessment(
     return "worker"
 
 
+def _task_tool_subagent_type(*, assessment: TaskAssessment, agent_role: str) -> str:
+    if not assessment.needs_write and assessment.task_family in {"analysis_review", "triage_diagnosis"}:
+        return "Explore"
+    if assessment.task_family in {"architecture_review", "governance_closeout"} and not assessment.needs_write:
+        return "Plan"
+    return "general-purpose" if agent_role == "worker" else "Explore"
+
+
+def _preferred_project_subagent_name(*, assessment: TaskAssessment, agent_role: str) -> str:
+    if not assessment.needs_write and assessment.task_family in {"analysis_review", "triage_diagnosis"}:
+        return "odylith-reviewer"
+    if agent_role == "worker":
+        return "odylith-workstream"
+    return ""
+
+
 def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -> dict[str, Any]:
     if profile is RouterProfile.MAIN_THREAD:
         return {}
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
-    host_runtime = _assessment_host_runtime(assessment)
+    host_runtime = _assessment_host_runtime(assessment) or "unknown"
     native_spawn_supported = _native_spawn_supported_for_assessment(assessment)
+    delegation_style = _delegation_style_for_assessment(assessment)
+    requested_model = profile.model if delegation_style == "routed_spawn" else ""
+    requested_reasoning_effort = profile.reasoning_effort if delegation_style == "routed_spawn" else ""
+    preferred_project_subagent = _preferred_project_subagent_name(assessment=assessment, agent_role=agent_role)
+    if delegation_style == "task_tool_subagents":
+        contract = {
+            "tool_name": "Task",
+            "delegation_style": delegation_style,
+            "built_in_agent_types_only": False,
+            "supported_agent_types": list(_CLAUDE_TASK_TOOL_AGENT_TYPES),
+            "named_custom_agent_type_supported": True,
+            "ui_controls_authoritative_for_requested_runtime": False,
+            "requested_runtime_source_fields": [
+                "native_spawn_payload",
+                "runtime_banner_lines",
+                "spawn_overrides",
+            ],
+            "visibility_notice": (
+                "Treat the structured Task payload and routed runtime banner as the authoritative delegated "
+                "contract for this leaf. Claude-host model selection remains host-managed unless a project "
+                "subagent frontmatter pins it."
+            ),
+            "custom_agent_type_note": (
+                "Project subagents in `.claude/agents/*.md` may be selected when they match the routed role; "
+                "otherwise use the closest built-in `subagent_type`."
+            ),
+            "agent_role": agent_role,
+            "host_runtime": host_runtime,
+            "native_spawn_supported": native_spawn_supported,
+            "preferred_subagent_type": _task_tool_subagent_type(assessment=assessment, agent_role=agent_role),
+        }
+        if preferred_project_subagent:
+            contract["preferred_project_subagent"] = preferred_project_subagent
+        return contract
     contract = {
         "tool_name": "spawn_agent",
+        "delegation_style": delegation_style,
         "built_in_agent_types_only": True,
         "supported_agent_types": list(_HOST_SUPPORTED_AGENT_TYPES),
         "named_custom_agent_type_supported": False,
@@ -1316,15 +1368,15 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
         ),
         "custom_agent_type_note": _HOST_CUSTOM_AGENT_TYPE_NOTE,
         "agent_role": agent_role,
-        "requested_model": profile.model,
-        "requested_reasoning_effort": profile.reasoning_effort,
-        "host_runtime": host_runtime or "unknown",
+        "requested_model": requested_model,
+        "requested_reasoning_effort": requested_reasoning_effort,
+        "host_runtime": host_runtime,
         "native_spawn_supported": native_spawn_supported,
     }
     if not native_spawn_supported:
         contract["local_guidance_only"] = True
         contract["unsupported_reason"] = (
-            "Native subagent spawn is validated only on selected hosts today; keep this routed runtime as local execution guidance in the current host unless native spawn is explicitly proven there."
+            "Native delegated execution is not available in the current host/runtime, so keep this routed runtime as local execution guidance only."
         )
     return contract
 
@@ -1335,6 +1387,7 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
     banner_reason = _task_class_policy_for(assessment).rationale
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
     host_runtime = _assessment_host_runtime(assessment) or "unknown"
+    delegation_style = _delegation_style_for_assessment(assessment)
     if not _native_spawn_supported_for_assessment(assessment):
         return [
             f"REQUESTED RUNTIME: {profile.model} / {profile.reasoning_effort}",
@@ -1347,6 +1400,18 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
                 f"(`{host_runtime}`); treat this routed runtime as local execution guidance only."
             ),
         ]
+    if delegation_style == "task_tool_subagents":
+        preferred_project_subagent = _preferred_project_subagent_name(assessment=assessment, agent_role=agent_role)
+        lines = [
+            f"REQUESTED EXECUTION PROFILE: {profile.value}",
+            f"WHY THIS TIER: {banner_reason}",
+            f"AGENT ROLE: {agent_role}",
+            f"PREFERRED SUBAGENT TYPE: {_task_tool_subagent_type(assessment=assessment, agent_role=agent_role)}",
+            "HOST NOTE: Use the routed Task payload as the authoritative delegated contract for this leaf.",
+        ]
+        if preferred_project_subagent:
+            lines.append(f"PREFERRED PROJECT SUBAGENT: {preferred_project_subagent}")
+        return lines
     return [
         f"REQUESTED RUNTIME: {profile.model} / {profile.reasoning_effort}",
         f"WHY THIS TIER: {banner_reason}",
@@ -1386,6 +1451,22 @@ def _spawn_task_message(
 def _native_spawn_payload(*, profile: RouterProfile, assessment: TaskAssessment, message: str) -> dict[str, Any]:
     if profile is RouterProfile.MAIN_THREAD or not _native_spawn_supported_for_assessment(assessment):
         return {}
+    delegation_style = _delegation_style_for_assessment(assessment)
+    agent_role = _agent_role_for_assessment(assessment, profile=profile)
+    if delegation_style == "task_tool_subagents":
+        payload = {
+            "tool_name": "Task",
+            "subagent_type": _task_tool_subagent_type(assessment=assessment, agent_role=agent_role),
+            "description": f"Bounded {agent_role} leaf for `{assessment.task_family}`",
+            "prompt": message,
+            "run_in_background": False,
+        }
+        if assessment.needs_write:
+            payload["isolation"] = "worktree"
+        preferred_project_subagent = _preferred_project_subagent_name(assessment=assessment, agent_role=agent_role)
+        if preferred_project_subagent:
+            payload["preferred_project_subagent"] = preferred_project_subagent
+        return payload
     spawn_agent_overrides = _spawn_agent_overrides(profile=profile, assessment=assessment)
     return {
         "tool_name": "spawn_agent",
@@ -1427,7 +1508,8 @@ def _delegated_leaf_lifecycle_payload(
 ) -> DelegatedLeafLifecyclePayload:
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
     termination_expectation = _termination_expectation(assessment)
-    if _native_spawn_supported_for_assessment(assessment):
+    delegation_style = _delegation_style_for_assessment(assessment)
+    if delegation_style == "routed_spawn" and _native_spawn_supported_for_assessment(assessment):
         spawn_overrides = {
             "agent_role": agent_role,
             "model": profile.model,
@@ -1467,6 +1549,30 @@ def _delegated_leaf_lifecycle_payload(
             "waiting_policy": _DEFAULT_WAITING_POLICY,
             "termination_expectation": termination_expectation,
         }
+    elif delegation_style == "task_tool_subagents" and _native_spawn_supported_for_assessment(assessment):
+        spawn_overrides = {
+            "agent_role": agent_role,
+            "subagent_type": _task_tool_subagent_type(assessment=assessment, agent_role=agent_role),
+            "preferred_project_subagent": _preferred_project_subagent_name(
+                assessment=assessment,
+                agent_role=agent_role,
+            ),
+            "run_in_background": False,
+            "isolation": "worktree" if assessment.needs_write else "inherit",
+            "close_after_result": True,
+            "default_post_result_action": "return_result",
+            "queued_followup_required_for_reuse": True,
+            "allow_prequeue_same_scope_reuse_claim": True,
+            "prequeue_same_scope_reuse_claim_minutes": _DEFAULT_PREQUEUE_SAME_SCOPE_REUSE_CLAIM_MINUTES,
+            "idle_timeout_minutes": _DEFAULT_IDLE_TIMEOUT_MINUTES,
+            "idle_timeout_action": _DEFAULT_IDLE_TIMEOUT_ACTION,
+            "idle_timeout_escalation": _DEFAULT_IDLE_TIMEOUT_ESCALATION,
+            "reuse_window": _DEFAULT_REUSE_WINDOW,
+            "waiting_policy": _DEFAULT_WAITING_POLICY,
+            "termination_expectation": termination_expectation,
+        }
+        spawn_agent_overrides = {}
+        close_agent_overrides = {}
     else:
         spawn_overrides = {}
         spawn_agent_overrides = {}
@@ -1498,11 +1604,12 @@ def _close_agent_overrides(*, profile: RouterProfile, assessment: TaskAssessment
 
 def _spawn_contract_lines(*, profile: RouterProfile, assessment: TaskAssessment) -> list[str]:
     lifecycle = _delegated_leaf_lifecycle_payload(profile=profile, assessment=assessment)
+    delegation_style = _delegation_style_for_assessment(assessment)
     if not lifecycle.spawn_overrides:
         host_runtime = _assessment_host_runtime(assessment) or "unknown"
         return [
             (
-                "native `spawn_agent` is not supported in the current host "
+                "native delegated execution is not supported in the current host "
                 f"(`{host_runtime}`), so keep this routed runtime as local execution guidance only"
             ),
             (
@@ -1514,6 +1621,40 @@ def _spawn_contract_lines(*, profile: RouterProfile, assessment: TaskAssessment)
     spawn_overrides = lifecycle.spawn_overrides
     spawn_agent_overrides = lifecycle.spawn_agent_overrides
     close_agent_overrides = lifecycle.close_agent_overrides
+    if delegation_style == "task_tool_subagents":
+        preferred_project_subagent = str(spawn_overrides.get("preferred_project_subagent", "")).strip()
+        preferred_subagent_line = (
+            f"prefer the project subagent `{preferred_project_subagent}` when it matches this slice"
+            if preferred_project_subagent
+            else "use the closest built-in Claude subagent type for this bounded leaf"
+        )
+        return [
+            (
+                f"spawn one `{spawn_overrides['agent_role']}` leaf through Claude Code `Task` with "
+                f"`subagent_type={spawn_overrides['subagent_type']}`"
+            ),
+            preferred_subagent_line,
+            "use the emitted `route_native_spawn_payload` directly for the Task tool call instead of rebuilding it",
+            (
+                "do not treat parent-thread model or reasoning controls as authoritative for Claude-host delegated "
+                "leaves; the routed task payload and project subagent frontmatter own that decision"
+            ),
+            (
+                f"if the leaf edits files, request `isolation={spawn_overrides['isolation']}` so the delegated "
+                "slice stays bounded"
+            ),
+            (
+                f"if the delegated leaf remains `waiting on instruction` for "
+                f"`{_DEFAULT_IDLE_TIMEOUT_MINUTES}` minutes or longer, `{_DEFAULT_IDLE_TIMEOUT_ACTION}` "
+                f"and `{_DEFAULT_IDLE_TIMEOUT_ESCALATION}`"
+            ),
+            (
+                f"if the main thread has a real immediate same-scope reuse case but has not queued the next prompt yet, "
+                f"it may record a bounded reuse claim for up to `{_DEFAULT_PREQUEUE_SAME_SCOPE_REUSE_CLAIM_MINUTES}` "
+                "minutes before either queuing that follow-up or closing the leaf"
+            ),
+            f"termination expectation: {spawn_overrides['termination_expectation']}",
+        ]
     return [
         (
             f"spawn one `{spawn_overrides['agent_role']}` subagent and override parent defaults with "

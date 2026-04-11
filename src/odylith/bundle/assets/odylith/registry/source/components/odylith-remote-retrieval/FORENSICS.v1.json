@@ -1,0 +1,86 @@
+{
+  "component_id": "odylith-remote-retrieval",
+  "diagrams": [
+    "D-002",
+    "D-020",
+    "D-025",
+    "D-018"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 1,
+    "mapped_workstream_evidence_count": 1,
+    "recent_path_match_count": 0,
+    "spec_history_event_count": 2,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 1
+  },
+  "name": "Odylith Remote Retrieval",
+  "path_prefixes": [
+    "src/odylith/runtime/memory/odylith_remote_retrieval.py"
+  ],
+  "spec_ref": "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "README.md",
+        "docs/benchmarks/README.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+      ],
+      "confidence": "high",
+      "event_index": 42,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.",
+      "ts_iso": "2026-04-05T19:43:45-07:00",
+      "workstreams": [
+        "B-021",
+        "B-022"
+      ]
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Optional Vespa-backed remote retrieval and sync contract that can augment or replace local lookup when explicitly configured.",
+  "why_tracked": "Keeps networked retrieval opt-in, fail-closed, and auditable instead of burying hosted memory behavior inside the local backend.",
+  "workstreams": [
+    "B-021",
+    "B-058",
+    "B-059"
+  ]
+}

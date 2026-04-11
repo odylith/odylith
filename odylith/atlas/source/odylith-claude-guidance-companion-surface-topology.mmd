@@ -1,0 +1,51 @@
+%% Reviewed 2026-04-11 for B-083 to show the AGENTS.md + CLAUDE.md companion surface model across the repo root, odylith/ subtree, and consumer repo posture, including ownership model and runtime classification.
+flowchart TD
+    subgraph HostContract["Cross-host canonical contract"]
+        AGENTS_ROOT["AGENTS.md<br/>Repo root — canonical cross-host policy<br/>Read by all agents on all hosts"]
+        AGENTS_ODYLITH["odylith/AGENTS.md<br/>Odylith subtree — scoped canonical policy"]
+        AGENTS_SUB["Subtree AGENTS.md files<br/>e.g. odylith/radar/source/AGENTS.md<br/>Override parent for their scope"]
+        AGENTS_ODYLITH --> AGENTS_SUB
+        AGENTS_ROOT --> AGENTS_ODYLITH
+    end
+
+    subgraph ClaudeCompanion["Claude-native companion surfaces (B-083)"]
+        CLAUDE_ROOT["CLAUDE.md<br/>Repo root — Claude Code entrypoint shim<br/>Defers to AGENTS.md as canonical truth"]
+        CLAUDE_ODYLITH["odylith/CLAUDE.md<br/>Odylith subtree — Claude Code entrypoint shim<br/>Defers to odylith/AGENTS.md as canonical truth"]
+        CLAUDE_SUB["Subtree CLAUDE.md files<br/>e.g. odylith/radar/source/CLAUDE.md<br/>Scoped shims for deeper Claude Code entry"]
+        CLAUDE_ROOT --> CLAUDE_ODYLITH
+        CLAUDE_ODYLITH --> CLAUDE_SUB
+    end
+
+    subgraph Ownership["Ownership and materialization model"]
+        RepoOwned["Repo-owned truth<br/>AGENTS.md files authored by maintainers<br/>Never overwritten by Odylith install or repair"]
+        ProductManaged["Product-managed companions<br/>CLAUDE.md files materialized by odylith install/repair<br/>Managed Odylith surface — not repo-owned guidance"]
+        RepoOwned --> AGENTS_ROOT
+        ProductManaged --> CLAUDE_ROOT
+        ProductManaged --> CLAUDE_ODYLITH
+    end
+
+    subgraph Detection["Root guidance detection (B-083 change)"]
+        Either["Accept AGENTS.md OR CLAUDE.md<br/>as the repo-root guidance marker<br/>Either alone is sufficient to bootstrap"]
+        Bootstrap["Bootstrap grounding and consumer profile<br/>from whichever root marker is present"]
+        Either --> Bootstrap
+        AGENTS_ROOT --> Either
+        CLAUDE_ROOT --> Either
+    end
+
+    subgraph RuntimeClass["Runtime guidance classification (B-083 change)"]
+        GuidanceClass["is_guidance_file()<br/>returns true for AGENTS.md AND CLAUDE.md<br/>Both protected from ordinary-doc treatment"]
+        WSInfer["workstream_inference.py<br/>CLAUDE.md anchors workstream candidate narrowing"]
+        DirtyOverlap["dirty_overlap.py<br/>CLAUDE.md preserved in dirty-path summaries"]
+        BenchmarkIso["benchmark_runner.py<br/>CLAUDE.md excluded from workspace strip and reset"]
+        ConsProf["consumer_profile.py<br/>CLAUDE.md included in host posture resolution"]
+        CtxRouting["tooling_context_routing.py<br/>CLAUDE.md presence influences routing decisions"]
+        GuidanceClass --> WSInfer
+        GuidanceClass --> DirtyOverlap
+        GuidanceClass --> BenchmarkIso
+        GuidanceClass --> ConsProf
+        GuidanceClass --> CtxRouting
+    end
+
+    AGENTS_ROOT -. companion defers to .-> CLAUDE_ROOT
+    AGENTS_ODYLITH -. companion defers to .-> CLAUDE_ODYLITH
+    Bootstrap --> GuidanceClass

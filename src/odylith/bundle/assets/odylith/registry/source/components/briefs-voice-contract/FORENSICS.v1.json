@@ -26,24 +26,23 @@
     {
       "artifacts": [
         "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md",
         "odylith/skills/compass-executive/SKILL.md",
         "src/odylith/bundle/assets/odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "src/odylith/bundle/assets/odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md",
         "src/odylith/bundle/assets/odylith/skills/compass-executive/SKILL.md",
-        "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
-        "src/odylith/runtime/surfaces/compass_standup_brief_voice_validation.py",
-        "odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md"
+        "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py"
       ],
       "confidence": "high",
-      "event_index": 67,
+      "event_index": 68,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "briefs-voice-contract"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md, odylith/skills/compass-executive/SKILL.md +6 more",
-      "ts_iso": "2026-04-10T21:39:09-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md, odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md +5 more",
+      "ts_iso": "2026-04-11T01:14:52-07:00",
       "workstreams": []
     },
     {

@@ -3,10 +3,11 @@
 1. Run the latest Odylith release bootstrap command from the repository or folder you want to augment. A repo root is ideal, but Odylith also supports subdirectories and folder-only installs.
 2. Use a supported platform: macOS (Apple Silicon) or Linux
    (`x86_64` or `ARM64`).
-3. Let that bootstrap detect the install boundary, create a root `AGENTS.md`
-   if it is missing, create `./.odylith/bin/odylith`, install Odylith's own
-   managed runtime under `.odylith/`, and materialize the managed `odylith/`
-   tree.
+3. Let that bootstrap detect the install boundary, create any missing root
+   `AGENTS.md` and `CLAUDE.md` guidance files, materialize the repo-root
+   `.claude/` project assets, create `./.odylith/bin/odylith`, install
+   Odylith's own managed runtime under `.odylith/`, and materialize the
+   managed `odylith/` tree.
 4. Run `./.odylith/bin/odylith doctor --repo-root .`.
 5. Use `./.odylith/bin/odylith reinstall --repo-root . --latest` later when you want to rematerialize the local install and align the runtime plus repo pin in one step.
 6. If you just need the local shell current, use `./.odylith/bin/odylith dashboard refresh --repo-root .`.

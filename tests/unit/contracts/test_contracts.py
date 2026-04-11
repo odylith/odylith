@@ -6,6 +6,7 @@ def test_agent_host_adapter_payload_round_trip_shape() -> None:
         adapter_id="desktop",
         host_family="codex",
         model_family="codex",
+        delegation_style="routed_spawn",
         supports_native_spawn=True,
         supports_interrupt=True,
         supports_artifact_paths=True,
@@ -16,6 +17,7 @@ def test_agent_host_adapter_payload_round_trip_shape() -> None:
     assert payload["adapter_id"] == "desktop"
     assert payload["supports_native_spawn"] is True
     assert payload["model_family"] == "codex"
+    assert payload["delegation_style"] == "routed_spawn"
     assert payload["supports_local_structured_reasoning"] is True
 
 

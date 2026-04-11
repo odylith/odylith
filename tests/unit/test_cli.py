@@ -751,6 +751,7 @@ def test_install_reports_created_guidance_and_non_git_caveat(monkeypatch, tmp_pa
             repo_root=tmp_path,
             launcher_path=launcher_path,
             repo_guidance_created=True,
+            created_guidance_files=("AGENTS.md", "CLAUDE.md"),
             git_repo_present=False,
             gitignore_updated=True,
         ),
@@ -765,7 +766,9 @@ def test_install_reports_created_guidance_and_non_git_caveat(monkeypatch, tmp_pa
     captured = capsys.readouterr()
 
     assert rc == 0
-    assert "Created root AGENTS.md" in captured.out
+    assert "Created root guidance files:" in captured.out
+    assert "AGENTS.md" in captured.out
+    assert "CLAUDE.md" in captured.out
     assert "Added Odylith local-state ignore rules to the root `.gitignore`" in captured.out
     assert "This folder is not backed by Git yet." in captured.out
     assert "working-tree intelligence, background autospawn, and git-fsmonitor watcher help" in captured.out

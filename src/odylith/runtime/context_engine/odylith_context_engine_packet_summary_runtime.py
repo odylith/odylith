@@ -103,7 +103,8 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
         odylith_execution = dict(context_packet.get("execution_profile", {}))
     if odylith_execution and not str(odylith_execution.get("model", "")).strip():
         model, reasoning_effort = odylith_context_engine_hot_path_packet_core_runtime._hot_path_execution_profile_runtime_fields(
-            str(odylith_execution.get("profile", "")).strip()
+            str(odylith_execution.get("profile", "")).strip(),
+            host_runtime=str(odylith_execution.get("host_runtime", "")).strip(),
         )
         if model:
             odylith_execution["model"] = model

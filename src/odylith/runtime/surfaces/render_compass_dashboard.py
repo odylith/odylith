@@ -90,6 +90,80 @@ def _emit_progress(
     progress_callback(str(stage).strip(), dict(detail or {}))
 
 
+def _runtime_daemon_available(*, repo_root: Path) -> bool:
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    return odylith_context_engine_store.runtime_daemon_transport(repo_root=repo_root) is not None
+
+
+def _load_daemon_cached_runtime_payload(
+    *,
+    repo_root: Path,
+    input_fingerprint: str,
+    refresh_profile: str,
+) -> dict[str, Any] | None:
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    result = odylith_context_engine_store.request_runtime_daemon(
+        repo_root=repo_root,
+        command="compass-runtime-get",
+        payload={
+            "input_fingerprint": str(input_fingerprint).strip(),
+            "refresh_profile": _normalize_refresh_profile(refresh_profile),
+        },
+        required=False,
+        timeout_seconds=2.0,
+    )
+    if result is None:
+        return None
+    payload, _runtime_execution = result
+    if not isinstance(payload, Mapping) or not bool(payload.get("hit")):
+        return None
+    cached_payload = payload.get("payload")
+    return dict(cached_payload) if isinstance(cached_payload, Mapping) else None
+
+
+def _record_daemon_cached_runtime_payload(
+    *,
+    repo_root: Path,
+    input_fingerprint: str,
+    refresh_profile: str,
+    runtime_payload: Mapping[str, Any],
+) -> None:
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    odylith_context_engine_store.request_runtime_daemon(
+        repo_root=repo_root,
+        command="compass-runtime-put",
+        payload={
+            "input_fingerprint": str(input_fingerprint).strip(),
+            "refresh_profile": _normalize_refresh_profile(refresh_profile),
+            "runtime_payload": dict(runtime_payload),
+        },
+        required=False,
+        timeout_seconds=2.0,
+    )
+
+
+def _brief_contract_fields_present(*, brief: Mapping[str, Any]) -> bool:
+    status = str(brief.get("status", "")).strip().lower()
+    if not status:
+        return True
+    if str(brief.get("schema_version", "")).strip() != compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION:
+        return False
+    if not str(brief.get("substrate_fingerprint", "")).strip():
+        return False
+    if not str(brief.get("provider_decision", "")).strip():
+        return False
+    return all(
+        key in brief
+        for key in (
+            "bundle_fingerprint",
+            "last_successful_narration_fingerprint",
+        )
+    )
+
+
 def _write_current_runtime_payload(
     *,
     repo_root: Path,
@@ -380,6 +454,57 @@ def refresh_runtime_artifacts(
             "runtime_mode": str(runtime_mode).strip().lower() or "auto",
         },
     )
+    daemon_cached_payload = None
+    if str(runtime_mode).strip().lower() != "standalone" and _runtime_daemon_available(repo_root=repo_root):
+        daemon_cached_payload = _load_daemon_cached_runtime_payload(
+            repo_root=repo_root,
+            input_fingerprint=input_fingerprint,
+            refresh_profile=normalized_profile,
+        )
+    if daemon_cached_payload is not None and _payload_satisfies_requested_refresh(
+        payload=daemon_cached_payload,
+        requested_profile=normalized_profile,
+    ):
+        runtime_contract = (
+            dict(daemon_cached_payload.get("runtime_contract", {}))
+            if isinstance(daemon_cached_payload.get("runtime_contract"), Mapping)
+            else {}
+        )
+        runtime_contract["refresh_profile"] = normalized_profile
+        daemon_cached_payload = {
+            **dict(daemon_cached_payload),
+            "runtime_contract": runtime_contract,
+        }
+        updated_daemon_payload = _apply_refresh_attempt_state(
+            payload=daemon_cached_payload,
+            requested_profile=normalized_profile,
+            applied_profile=normalized_profile,
+            runtime_mode=runtime_mode,
+            status="passed",
+        )
+        daemon_runtime_paths = _load_runtime_impl()._write_runtime_snapshots(
+            repo_root=repo_root,
+            runtime_dir=runtime_dir,
+            payload=updated_daemon_payload,
+            retention_days=retention_days,
+        )
+        _emit_progress(
+            progress_callback,
+            stage="runtime_payload_built",
+            detail={"message": "reused the daemon-held Compass runtime payload because the input fingerprint still matches"},
+        )
+        _emit_progress(
+            progress_callback,
+            stage="runtime_snapshots_written",
+            detail={"message": "rewrote the current runtime snapshot from the daemon-held payload"},
+        )
+        _record_daemon_cached_runtime_payload(
+            repo_root=repo_root,
+            input_fingerprint=input_fingerprint,
+            refresh_profile=normalized_profile,
+            runtime_payload=updated_daemon_payload,
+        )
+        return updated_daemon_payload, daemon_runtime_paths
     existing_payload = _existing_runtime_payload_if_fresh(
         current_json_path=current_json_path,
         input_fingerprint=input_fingerprint,
@@ -422,6 +547,13 @@ def refresh_runtime_artifacts(
             stage="runtime_snapshots_written",
             detail={"message": "rewrote the current runtime snapshot and daily history files from the reused payload"},
         )
+        if str(runtime_mode).strip().lower() != "standalone" and _runtime_daemon_available(repo_root=repo_root):
+            _record_daemon_cached_runtime_payload(
+                repo_root=repo_root,
+                input_fingerprint=input_fingerprint,
+                refresh_profile=normalized_profile,
+                runtime_payload=updated_existing_payload,
+            )
         return updated_existing_payload, reused_runtime_paths
 
     runtime_impl = _load_runtime_impl()
@@ -498,6 +630,13 @@ def refresh_runtime_artifacts(
     )
     if normalized_profile == compass_refresh_contract.DEFAULT_REFRESH_PROFILE:
         compass_standup_brief_maintenance.maybe_spawn_background(repo_root=repo_root)
+    if str(runtime_mode).strip().lower() != "standalone" and _runtime_daemon_available(repo_root=repo_root):
+        _record_daemon_cached_runtime_payload(
+            repo_root=repo_root,
+            input_fingerprint=final_input_fingerprint,
+            refresh_profile=normalized_profile,
+            runtime_payload=payload,
+        )
     return payload, paths
 
 
@@ -528,6 +667,7 @@ def _compass_runtime_input_fingerprint(
                 "bugs_index": odylith_context_cache.path_signature(bugs_index_path),
                 "traceability_graph": odylith_context_cache.path_signature(traceability_graph_path),
                 "mermaid_catalog": odylith_context_cache.path_signature(mermaid_catalog_path),
+                "agent_stream": odylith_context_cache.path_signature(codex_stream_path),
                 "codex_stream": odylith_context_cache.path_signature(codex_stream_path),
             },
             "settings": {
@@ -594,6 +734,8 @@ def _payload_satisfies_requested_refresh(
         for window_map in scoped.values():
             ready_briefs.extend(_brief_rows(window_map))
     for brief in ready_briefs:
+        if not _brief_contract_fields_present(brief=brief):
+            return False
         if str(brief.get("status", "")).strip().lower() != "ready":
             continue
         sections = brief.get("sections")

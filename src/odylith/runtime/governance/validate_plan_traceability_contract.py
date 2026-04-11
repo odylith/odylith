@@ -16,6 +16,8 @@ from pathlib import Path
 import re
 from typing import Sequence
 
+from odylith.runtime.common.guidance_paths import has_project_guidance
+
 
 _REQUIRED_TRACEABILITY_SUBSECTIONS: tuple[str, ...] = (
     "Runbooks",
@@ -85,7 +87,7 @@ def _infer_repo_root_from_path(path: Path) -> Path | None:
     target = path.resolve()
     for candidate in (target, *target.parents):
         try:
-            if (candidate / ".git").exists() or (candidate / "AGENTS.md").is_file():
+            if (candidate / ".git").exists() or has_project_guidance(repo_root=candidate):
                 return candidate
         except OSError:
             continue

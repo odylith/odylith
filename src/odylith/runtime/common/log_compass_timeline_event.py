@@ -14,7 +14,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
 from pathlib import Path
 import re
 from typing import Any
@@ -22,7 +21,6 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
-from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.proof_state.contract import DEPLOYMENT_TRUTH_FIELDS
 from odylith.runtime.governance.proof_state.contract import PROOF_STATUSES
@@ -90,15 +88,13 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=component_registry.DEFAULT_IDEAS_ROOT,
         help="Backlog ideas root for impacted-component inference.",
     )
-    detected_capabilities = host_runtime_contract.resolve_host_capabilities()
-    default_author = str(detected_capabilities.get("model_family", "")).strip() or "agent"
-    default_source = str(detected_capabilities.get("host_family", "")).strip() or "agent"
+    default_author, default_source = agent_runtime_contract.default_event_metadata()
     parser.add_argument("--author", default=default_author, help="Author label in timeline metadata.")
     parser.add_argument("--source", default=default_source, help="Source label in timeline metadata.")
     parser.add_argument(
         "--session-id",
         default="",
-        help="Optional session identifier. Defaults to CODEX_THREAD_ID when present.",
+        help="Optional session identifier. Defaults to a host-provided thread/session id when available.",
     )
     parser.add_argument(
         "--transaction-id",
@@ -260,8 +256,8 @@ def append_event(
     workstream_values: Sequence[str],
     artifact_values: Sequence[str],
     component_values: Sequence[str],
-    author: str = "codex",
-    source: str = "codex",
+    author: str = "",
+    source: str = "",
     manifest_path: Path | None = None,
     catalog_path: Path | None = None,
     ideas_root: Path | None = None,
@@ -350,7 +346,10 @@ def append_event(
             "pass --component or use artifacts/workstreams mapped in component_registry.v1.json"
         )
 
-    resolved_session = _normalize_summary(session_id) or _normalize_summary(os.getenv("CODEX_THREAD_ID", ""))
+    default_author, default_source = agent_runtime_contract.default_event_metadata()
+    resolved_author = _normalize_summary(author) or default_author
+    resolved_source = _normalize_summary(source) or default_source
+    resolved_session = _normalize_summary(session_id) or agent_runtime_contract.default_host_session_id()
     resolved_transaction = _normalize_summary(transaction_id)
     resolved_context = _normalize_summary(context)
     resolved_headline_hint = _normalize_summary(headline_hint)
@@ -365,8 +364,8 @@ def append_event(
         "kind": canonical_kind,
         "summary": normalized_summary,
         "ts_iso": ts.isoformat(timespec="seconds"),
-        "author": _normalize_summary(author),
-        "source": _normalize_summary(source),
+        "author": resolved_author,
+        "source": resolved_source,
         "workstreams": workstreams,
         "artifacts": artifacts,
     }

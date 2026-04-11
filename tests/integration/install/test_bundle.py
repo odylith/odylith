@@ -1,28 +1,59 @@
 from odylith.bundle import bundle_root
+from odylith.runtime.common.product_assets import bundled_project_root_assets_root
 
 
 def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     root = bundle_root()
     assert (root / "AGENTS.md").is_file()
+    assert (root / "CLAUDE.md").is_file()
     assert (root / "agents-guidelines").is_dir()
     assert (root / "skills").is_dir()
     assert (root / "skills" / "diagram-catalog" / "SKILL.md").is_file()
+
+    project_root = bundled_project_root_assets_root()
+    assert (project_root / ".claude" / "CLAUDE.md").is_file()
+    assert (project_root / ".claude" / "settings.json").is_file()
+    assert (project_root / ".claude" / "commands" / "odylith-start.md").is_file()
+    assert (project_root / ".claude" / "commands" / "odylith-context.md").is_file()
+    assert (project_root / ".claude" / "commands" / "odylith-query.md").is_file()
+    assert (project_root / ".claude" / "commands" / "odylith-plan.md").is_file()
+    assert (project_root / ".claude" / "commands" / "odylith-worktree.md").is_file()
+    assert (project_root / ".claude" / "commands" / "odylith-sync-governance.md").is_file()
+    assert (project_root / ".claude" / "agents" / "odylith-reviewer.md").is_file()
+    assert (project_root / ".claude" / "agents" / "odylith-workstream.md").is_file()
+    assert (project_root / ".claude" / "agents" / "odylith-validator.md").is_file()
+    assert (project_root / ".claude" / "agents" / "odylith-governance-scribe.md").is_file()
+    assert (project_root / ".claude" / "hooks" / "odylith_claude_support.py").is_file()
+    assert (project_root / ".claude" / "hooks" / "subagent-start-ground.py").is_file()
+    assert (project_root / ".claude" / "hooks" / "refresh-governance-after-edit.py").is_file()
+    assert (project_root / ".claude" / "hooks" / "session-start-ground.py").is_file()
+    assert (project_root / ".claude" / "hooks" / "log-stop-summary.py").is_file()
+    assert (project_root / ".claude" / "hooks" / "guard-destructive-bash.py").is_file()
+    assert (project_root / ".claude" / "skills" / "subagent-router" / "SKILL.md").is_file()
+    assert (project_root / ".claude" / "skills" / "delivery-governance-surface-ops" / "SKILL.md").is_file()
+    assert (project_root / ".claude" / "rules" / "odylith-governance.md").is_file()
 
 
 def test_bundle_root_contains_managed_governance_surface_assets() -> None:
     root = bundle_root()
     assert (root / "atlas" / "source" / "AGENTS.md").is_file()
+    assert (root / "atlas" / "source" / "CLAUDE.md").is_file()
     assert (root / "atlas" / "source" / "architecture-domains.v1.json").is_file()
     assert (root / "compass" / "runtime" / "AGENTS.md").is_file()
+    assert (root / "compass" / "runtime" / "CLAUDE.md").is_file()
     assert (root / "radar" / "source" / "AGENTS.md").is_file()
+    assert (root / "radar" / "source" / "CLAUDE.md").is_file()
     assert (root / "casebook" / "bugs" / "AGENTS.md").is_file()
+    assert (root / "casebook" / "bugs" / "CLAUDE.md").is_file()
     assert (root / "registry" / "source" / "AGENTS.md").is_file()
+    assert (root / "registry" / "source" / "CLAUDE.md").is_file()
     assert (root / "registry" / "source" / "component_registry.v1.json").is_file()
     assert (root / "runtime" / "contracts" / "delivery_intelligence_snapshot.v4.schema.json").is_file()
     assert (root / "runtime" / "contracts" / "tribunal_case.v1.schema.json").is_file()
     assert (root / "runtime" / "contracts" / "tribunal_outcome.v1.schema.json").is_file()
     assert (root / "runtime" / "contracts" / "correction_packet.v1.schema.json").is_file()
     assert (root / "technical-plans" / "AGENTS.md").is_file()
+    assert (root / "technical-plans" / "CLAUDE.md").is_file()
     assert (root / "casebook" / "bugs" / "INDEX.md").is_file()
 
 

@@ -553,7 +553,22 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     summary = install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
 
     guidance_path = repo_root / "odylith" / "AGENTS.md"
+    claude_guidance_path = repo_root / "odylith" / "CLAUDE.md"
     assert guidance_path.is_file()
+    assert claude_guidance_path.is_file()
+    assert (repo_root / ".claude" / "CLAUDE.md").is_file()
+    assert (repo_root / ".claude" / "settings.json").is_file()
+    assert (repo_root / ".claude" / "commands" / "odylith-start.md").is_file()
+    assert (repo_root / ".claude" / "commands" / "odylith-context.md").is_file()
+    assert (repo_root / ".claude" / "commands" / "odylith-query.md").is_file()
+    assert (repo_root / ".claude" / "commands" / "odylith-sync-governance.md").is_file()
+    assert (repo_root / ".claude" / "agents" / "odylith-reviewer.md").is_file()
+    assert (repo_root / ".claude" / "agents" / "odylith-workstream.md").is_file()
+    assert (repo_root / ".claude" / "hooks" / "odylith_claude_support.py").is_file()
+    assert (repo_root / ".claude" / "hooks" / "subagent-start-ground.py").is_file()
+    assert (repo_root / ".claude" / "hooks" / "refresh-governance-after-edit.py").is_file()
+    assert (repo_root / ".claude" / "hooks" / "log-stop-summary.py").is_file()
+    assert (repo_root / ".claude" / "rules" / "odylith-governance.md").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "tooling_shell.v1.json").is_file()
     assert (repo_root / "odylith" / "index.html").is_file()
@@ -575,6 +590,11 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert (repo_root / "odylith" / "atlas" / "source").is_dir()
     assert (repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json").is_file()
     assert not (repo_root / "odylith" / "atlas" / "README.md").exists()
+    bundled_claude_relpaths = sorted(path.relative_to(BUNDLE_ROOT) for path in BUNDLE_ROOT.rglob("CLAUDE.md"))
+    assert bundled_claude_relpaths
+    for relative_path in bundled_claude_relpaths:
+        installed_path = repo_root / "odylith" / relative_path
+        assert installed_path.is_file(), f"missing consumer CLAUDE companion: {installed_path}"
 
     consumer_profile = repo_root / ".odylith" / "consumer-profile.json"
     assert consumer_profile.is_file()
@@ -595,7 +615,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "./.odylith/bin/odylith sync --repo-root . --force --impact-mode full" in shell_index_html
     guidance_text = guidance_path.read_text(encoding="utf-8")
     assert "local repo truth, not a copy of the Odylith product repo" in guidance_text
-    assert "`odylith/AGENTS.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets" in guidance_text
+    assert "`.claude/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets" in guidance_text
     assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in guidance_text
     assert "keep the active workstream, component, or packet in scope" in guidance_text
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in guidance_text
@@ -620,7 +640,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "stop at diagnosis and maintainer-ready feedback" in guidance_text
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in guidance_text
-    assert "Treat the managed guidance files under `odylith/AGENTS.md`, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer" in guidance_text
+    assert "Treat the managed guidance files under `.claude/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer" in guidance_text
     assert "Treat backlog/workstream, plan, Registry, Atlas, Casebook, Compass, and session upkeep as part of the same grounded Odylith workflow" in guidance_text
     assert "Queued backlog items" in guidance_text
     assert "do not pick it up automatically" in guidance_text
@@ -628,6 +648,10 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
     assert "Use Odylith packets and managed skills to narrow the slice, gather proof, and keep intent plus constraints alive across turns" in guidance_text
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in guidance_text
+    root_claude = (repo_root / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "@AGENTS.md" in root_claude
+    assert ".claude/CLAUDE.md" in root_claude
+    assert "<!-- odylith-scope:start -->" in root_claude
     root_agents = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
     assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in root_agents
     assert "keep the active workstream, component, or packet in scope" in root_agents
@@ -670,6 +694,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert (repo_root / ".odylith" / "bin" / "odylith").is_file()
     assert (repo_root / ".odylith" / "runtime" / "current").is_symlink()
     assert "<!-- odylith-scope:start -->" in root_agents
+    assert summary.created_guidance_files == ("CLAUDE.md",)
     assert summary.version == "1.2.3"
 
 
@@ -828,17 +853,24 @@ def test_upgrade_install_prunes_previous_consumer_release_notes_and_keeps_curren
     assert "Target upgrade note." in (notes_root / f"v{target_version}.md").read_text(encoding="utf-8")
 
 
-def test_install_bundle_creates_root_agents_file_when_missing(tmp_path: Path) -> None:
+def test_install_bundle_creates_root_guidance_files_when_missing(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
 
     summary = install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
 
     root_guidance = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
+    root_claude = (repo_root / "CLAUDE.md").read_text(encoding="utf-8")
     assert "# Repo Guidance" in root_guidance
     assert "<!-- odylith-scope:start -->" in root_guidance
     assert "If this folder is not backed by Git yet" in root_guidance
+    assert "# CLAUDE.md" in root_claude
+    assert "<!-- odylith-scope:start -->" in root_claude
+    assert "@AGENTS.md" in root_claude
+    assert ".claude/CLAUDE.md" in root_claude
+    assert (repo_root / ".claude" / "CLAUDE.md").is_file()
     assert summary.repo_guidance_created is True
+    assert summary.created_guidance_files == ("AGENTS.md", "CLAUDE.md")
     assert summary.git_repo_present is False
     assert summary.gitignore_updated is True
     assert (repo_root / ".gitignore").read_text(encoding="utf-8") == (
@@ -846,6 +878,20 @@ def test_install_bundle_creates_root_agents_file_when_missing(tmp_path: Path) ->
         "/odylith/compass/runtime/refresh-state.v1.json\n"
     )
     assert summary.version == "1.2.3"
+
+
+def test_install_bundle_accepts_claude_only_root_guidance(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "CLAUDE.md").write_text("# Repo Root\n\nBody\n", encoding="utf-8")
+
+    summary = install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+
+    assert (repo_root / "AGENTS.md").is_file()
+    assert "<!-- odylith-scope:start -->" in (repo_root / "AGENTS.md").read_text(encoding="utf-8")
+    assert "<!-- odylith-scope:start -->" in (repo_root / "CLAUDE.md").read_text(encoding="utf-8")
+    assert summary.repo_guidance_created is True
+    assert summary.created_guidance_files == ("AGENTS.md",)
 
 
 def test_install_bundle_adds_odylith_state_root_to_gitignore_for_git_repo(tmp_path: Path) -> None:
@@ -1122,6 +1168,7 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
 
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
     (repo_root / "odylith" / "AGENTS.md").write_text("stale consumer guidance\n", encoding="utf-8")
+    (repo_root / "odylith" / "radar" / "source" / "CLAUDE.md").unlink()
     (repo_root / "odylith" / "skills" / "subagent-router" / "SKILL.md").unlink()
 
     upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
@@ -1146,6 +1193,7 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
+    assert (repo_root / "odylith" / "radar" / "source" / "CLAUDE.md").is_file()
     assert (repo_root / "odylith" / "skills" / "subagent-router" / "SKILL.md").is_file()
 
 
@@ -1580,6 +1628,7 @@ def test_doctor_bundle_detects_partial_starter_tree_and_repairs_it(tmp_path: Pat
 
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
     (repo_root / "odylith" / "AGENTS.md").unlink()
+    (repo_root / "odylith" / "CLAUDE.md").unlink()
 
     healthy, message = doctor_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", repair=False)
     assert healthy is False
@@ -1589,6 +1638,7 @@ def test_doctor_bundle_detects_partial_starter_tree_and_repairs_it(tmp_path: Pat
     assert repaired is True
     assert "repair completed" in repaired_message.lower()
     assert (repo_root / "odylith" / "AGENTS.md").is_file()
+    assert (repo_root / "odylith" / "CLAUDE.md").is_file()
 
 
 def test_doctor_bundle_recreates_real_repo_pin_after_source_local_override(tmp_path: Path) -> None:
@@ -1882,6 +1932,7 @@ def test_uninstall_bundle_detaches_but_preserves_customer_truth_and_local_state(
     assert state["detached"] is True
     assert state["integration_enabled"] is False
     assert "<!-- odylith-scope:start -->" not in (repo_root / "AGENTS.md").read_text(encoding="utf-8")
+    assert "<!-- odylith-scope:start -->" not in (repo_root / "CLAUDE.md").read_text(encoding="utf-8")
 
 
 def test_rollback_install_returns_to_previous_verified_version(tmp_path: Path, monkeypatch) -> None:
@@ -3012,7 +3063,7 @@ def test_install_bundle_preserves_legacy_odylith_created_truth_in_customer_tree(
     assert legacy_radar.is_file()
 
 
-def test_set_agents_integration_toggles_root_agents_without_removing_runtime(tmp_path: Path) -> None:
+def test_set_agents_integration_toggles_root_guidance_without_removing_runtime(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _write_repo_root(repo_root)
@@ -3023,6 +3074,7 @@ def test_set_agents_integration_toggles_root_agents_without_removing_runtime(tmp
     assert "now off" in disable_message.lower()
     assert "fall back" in disable_message.lower()
     assert "<!-- odylith-scope:start -->" not in (repo_root / "AGENTS.md").read_text(encoding="utf-8")
+    assert "<!-- odylith-scope:start -->" not in (repo_root / "CLAUDE.md").read_text(encoding="utf-8")
     assert load_install_state(repo_root=repo_root)["integration_enabled"] is False
     assert (repo_root / ".odylith" / "bin" / "odylith").is_file()
 
@@ -3035,4 +3087,5 @@ def test_set_agents_integration_toggles_root_agents_without_removing_runtime(tmp
     assert "now on" in enable_message.lower()
     assert "default first path" in enable_message.lower()
     assert "<!-- odylith-scope:start -->" in (repo_root / "AGENTS.md").read_text(encoding="utf-8")
+    assert "<!-- odylith-scope:start -->" in (repo_root / "CLAUDE.md").read_text(encoding="utf-8")
     assert load_install_state(repo_root=repo_root)["integration_enabled"] is True

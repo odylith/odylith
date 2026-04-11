@@ -112,8 +112,17 @@ def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
     utility_score = 4 if authority_graph_edge_count >= 6 else 3 if authority_graph_edge_count >= 3 or required_reads else 2 if route_ready else 1
     confidence_score = 4 if confidence_tier == "high" else 3 if confidence_tier == "medium" else 1
     selection_mode = "architecture_grounding" if risk_tier == "high" or mode == "local_or_single_leaf" else "architecture_synthesis"
-    model = _normalize_string(_mapping_lookup(execution_hint, "model")) or ("gpt-5.4" if risk_tier == "high" else "gpt-5.4-mini")
-    reasoning_effort = _normalize_string(_mapping_lookup(execution_hint, "reasoning_effort")) or ("high" if risk_tier == "high" else "medium")
+    profile_token = (
+        agent_runtime_contract.FRONTIER_HIGH_PROFILE
+        if risk_tier == "high"
+        else agent_runtime_contract.ANALYSIS_HIGH_PROFILE
+    )
+    default_model, default_reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(
+        profile_token,
+    )
+    requested_model = _normalize_string(_mapping_lookup(execution_hint, "model"))
+    model = requested_model if default_model and requested_model else default_model
+    reasoning_effort = _normalize_string(_mapping_lookup(execution_hint, "reasoning_effort")) or default_reasoning_effort
     agent_role = "worker" if risk_tier == "high" or mode == "local_or_single_leaf" else "explorer"
     delegate_preference = "delegate" if route_ready else "hold_local"
     native_spawn_ready = bool(
@@ -124,9 +133,7 @@ def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
     )
     execution_profile = {
         "profile": (
-            agent_runtime_contract.FRONTIER_HIGH_PROFILE
-            if risk_tier == "high"
-            else agent_runtime_contract.ANALYSIS_HIGH_PROFILE
+            profile_token
         ),
         "model": model,
         "reasoning_effort": reasoning_effort,
@@ -859,23 +866,24 @@ def _intent_confidence_score(value: Any) -> int:
 
 def _profile_runtime_fields(profile_token: str) -> tuple[str, str, str]:
     profile = _normalize_token(profile_token)
+    model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(profile)
     if profile in {
         leaf_router.RouterProfile.MINI_MEDIUM.value,
         leaf_router.RouterProfile.MINI_HIGH.value,
     }:
-        return "gpt-5.4-mini", "medium" if profile == leaf_router.RouterProfile.MINI_MEDIUM.value else "high", "explorer"
+        return model, reasoning_effort, "explorer"
     if profile == leaf_router.RouterProfile.SPARK_MEDIUM.value:
-        return "gpt-5.3-codex-spark", "medium", "worker"
+        return model, reasoning_effort, "worker"
     if profile in {
         leaf_router.RouterProfile.CODEX_MEDIUM.value,
         leaf_router.RouterProfile.CODEX_HIGH.value,
     }:
-        return "gpt-5.3-codex", "medium" if profile == leaf_router.RouterProfile.CODEX_MEDIUM.value else "high", "worker"
+        return model, reasoning_effort, "worker"
     if profile in {
         leaf_router.RouterProfile.GPT54_HIGH.value,
         leaf_router.RouterProfile.GPT54_XHIGH.value,
     }:
-        return "gpt-5.4", "xhigh" if profile == leaf_router.RouterProfile.GPT54_XHIGH.value else "high", "worker"
+        return model, reasoning_effort, "worker"
     return "", "", "main_thread"
 
 

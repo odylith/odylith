@@ -347,6 +347,7 @@ def _hot_path_synthesized_execution_profile(
     strict_gate_command_count: int,
     plan_binding_required: bool,
     governed_surface_sync_required: bool,
+    host_runtime: str = "",
 ) -> dict[str, Any]:
     if not route_ready or not within_budget or full_scan_recommended or narrowing_required:
         return {}
@@ -360,15 +361,11 @@ def _hot_path_synthesized_execution_profile(
     )
     supportive_contract = bool(governance_contract or validation_count > 0 or guidance_count > 0)
     profile = agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
-    model = "gpt-5.4-mini"
-    reasoning_effort = "medium"
     agent_role = "explorer"
     selection_mode = "analysis_scout"
     if family in {"implementation", "write", "bugfix", "ui_layout", "surface_copy", "surface_binding"}:
         if governance_contract and strict_gate_command_count > 0:
             profile = agent_runtime_contract.FRONTIER_HIGH_PROFILE
-            model = "gpt-5.4"
-            reasoning_effort = "high"
             selection_mode = "deep_validation"
         else:
             profile = (
@@ -376,8 +373,6 @@ def _hot_path_synthesized_execution_profile(
                 if confidence == "high" and (validation_count > 0 or guidance_count >= 2)
                 else agent_runtime_contract.WRITE_MEDIUM_PROFILE
             )
-            model = "gpt-5.3-codex"
-            reasoning_effort = "high" if profile == agent_runtime_contract.WRITE_HIGH_PROFILE else "medium"
             selection_mode = "bounded_write"
         agent_role = "worker"
     elif family == "validation":
@@ -386,8 +381,6 @@ def _hot_path_synthesized_execution_profile(
             if confidence == "high" or validation_count >= 2 or strict_gate_command_count > 0
             else agent_runtime_contract.WRITE_MEDIUM_PROFILE
         )
-        model = "gpt-5.3-codex"
-        reasoning_effort = "high" if profile == agent_runtime_contract.WRITE_HIGH_PROFILE else "medium"
         agent_role = "worker"
         selection_mode = "validation_focused"
     elif family in {"docs", "governance"}:
@@ -396,12 +389,6 @@ def _hot_path_synthesized_execution_profile(
             if governance_contract
             else agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
         )
-        model = (
-            "gpt-5.3-codex-spark"
-            if profile == agent_runtime_contract.FAST_WORKER_PROFILE
-            else "gpt-5.4-mini"
-        )
-        reasoning_effort = "medium"
         agent_role = "worker" if profile == agent_runtime_contract.FAST_WORKER_PROFILE else "explorer"
         selection_mode = "support_fast_lane" if profile == agent_runtime_contract.FAST_WORKER_PROFILE else "analysis_scout"
     elif family in {"analysis", "review", "diagnosis"}:
@@ -410,12 +397,14 @@ def _hot_path_synthesized_execution_profile(
             if confidence == "high" or supportive_contract
             else agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
         )
-        model = "gpt-5.4-mini"
-        reasoning_effort = "high" if profile == agent_runtime_contract.ANALYSIS_HIGH_PROFILE else "medium"
         agent_role = "explorer"
         selection_mode = "analysis_synthesis" if profile == agent_runtime_contract.ANALYSIS_HIGH_PROFILE else "analysis_scout"
+    model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(
+        profile,
+        host_runtime=host_runtime,
+    )
     confidence_score = 4 if confidence == "high" else 3 if confidence == "medium" else 2
-    return {
+    payload = {
         "profile": profile,
         "model": model,
         "reasoning_effort": reasoning_effort,
@@ -428,6 +417,9 @@ def _hot_path_synthesized_execution_profile(
             "level": "high" if confidence_score >= 4 else "medium" if confidence_score >= 3 else "low",
         },
     }
+    if host_runtime:
+        payload["host_runtime"] = host_runtime
+    return payload
 
 def _hot_path_recomputed_readiness(
     *,
@@ -554,6 +546,7 @@ def _hot_path_recomputed_readiness(
             ),
             plan_binding_required=bool(validation_bundle.get("plan_binding_required")),
             governed_surface_sync_required=bool(validation_bundle.get("governed_surface_sync_required")),
+            host_runtime=str(execution_profile.get("host_runtime", "")).strip(),
         )
     native_spawn_ready = routing.native_spawn_execution_ready(
         route_ready=route_ready,
@@ -613,23 +606,11 @@ def _encode_hot_path_execution_profile(profile: Mapping[str, Any]) -> str:
 def _decode_hot_path_execution_profile(value: Any) -> dict[str, Any]:
     return tooling_memory_contracts.compact_execution_profile_mapping(value)
 
-def _hot_path_execution_profile_runtime_fields(profile: str) -> tuple[str, str]:
-    token = agent_runtime_contract.canonical_execution_profile(profile)
-    if token == agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE:
-        return "gpt-5.4-mini", "medium"
-    if token == agent_runtime_contract.ANALYSIS_HIGH_PROFILE:
-        return "gpt-5.4-mini", "high"
-    if token == agent_runtime_contract.FAST_WORKER_PROFILE:
-        return "gpt-5.3-codex-spark", "medium"
-    if token == agent_runtime_contract.WRITE_MEDIUM_PROFILE:
-        return "gpt-5.3-codex", "medium"
-    if token == agent_runtime_contract.WRITE_HIGH_PROFILE:
-        return "gpt-5.3-codex", "high"
-    if token == agent_runtime_contract.FRONTIER_HIGH_PROFILE:
-        return "gpt-5.4", "high"
-    if token == agent_runtime_contract.FRONTIER_XHIGH_PROFILE:
-        return "gpt-5.4", "xhigh"
-    return "", ""
+def _hot_path_execution_profile_runtime_fields(profile: str, *, host_runtime: str = "") -> tuple[str, str]:
+    return agent_runtime_contract.execution_profile_runtime_fields(
+        profile,
+        host_runtime=host_runtime,
+    )
 
 def _compact_hot_path_payload_within_budget(
     *,
@@ -692,6 +673,7 @@ def _synthesized_hot_path_execution_profile_from_context_packet(context_packet: 
         strict_gate_command_count=max(0, int(governance.get("strict_gate_command_count", 0) or 0)),
         plan_binding_required=bool(governance.get("plan_binding_required")),
         governed_surface_sync_required=bool(governance.get("governed_surface_sync_required")),
+        host_runtime=str(context_packet.get("host_runtime", "")).strip(),
     )
 
 def _governance_closeout_doc_count(obligations: Mapping[str, Any]) -> int:

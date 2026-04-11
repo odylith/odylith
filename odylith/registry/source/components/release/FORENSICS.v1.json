@@ -15,10 +15,10 @@
     "empty_reasons": [],
     "explicit_event_count": 18,
     "mapped_workstream_evidence_count": 3,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 18
+    "timeline_event_count": 19
   },
   "name": "Release",
   "path_prefixes": [
@@ -44,6 +44,23 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 78,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-10T23:33:24-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/install.json",

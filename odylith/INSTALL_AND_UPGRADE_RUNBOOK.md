@@ -97,7 +97,8 @@ Other useful lifecycle commands:
 - Consumer launchers fail closed if the active runtime pointer leaves
   `.odylith/runtime/versions/`; they do not silently fall back into
   consumer-machine Python.
-- The root `AGENTS.md` gets one Odylith pointer block.
+- The root `AGENTS.md` and `CLAUDE.md` each get one Odylith pointer block
+  when those guidance files exist after install.
 
 ## Isolation Guarantees
 
@@ -177,4 +178,5 @@ Other useful lifecycle commands:
 - In consumer repos, repair must restage the pinned verified runtime or fail
   closed. It must not recreate Odylith through host-Python wrapper fallback.
 - Uninstall preserves consumer-owned `odylith/` truth and only removes the
-  Odylith block in the root `AGENTS.md`.
+  Odylith block from supported root guidance files such as `AGENTS.md` and
+  `CLAUDE.md`.

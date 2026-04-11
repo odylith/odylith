@@ -15,6 +15,7 @@ import datetime as dt
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import time
@@ -26,6 +27,7 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_batch
 from odylith.runtime.surfaces import compass_standup_brief_narrator
+from odylith.runtime.surfaces import compass_standup_brief_telemetry
 
 _REQUEST_VERSION = "v1"
 _STATE_VERSION = "v1"
@@ -40,6 +42,14 @@ _INVALID_BATCH_RETRY_MAX_SECONDS = 21600
 _PROVIDER_UNAVAILABLE_RETRY_BASE_SECONDS = 1800
 _PROVIDER_UNAVAILABLE_RETRY_MAX_SECONDS = 21600
 _RETRY_POLL_INTERVAL_SECONDS = 5
+_MAX_SCOPED_REQUESTS_PER_WINDOW = 4
+_WORKER_EPOCH_RELATIVE_PATHS = (
+    "src/odylith/runtime/surfaces/compass_standup_brief_maintenance.py",
+    "src/odylith/runtime/surfaces/compass_standup_brief_batch.py",
+    "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+    "src/odylith/runtime/surfaces/compass_standup_brief_substrate.py",
+    "src/odylith/runtime/surfaces/compass_standup_brief_telemetry.py",
+)
 def maintenance_request_path(*, repo_root: Path) -> Path:
     return (Path(repo_root).resolve() / _REQUEST_PATH).resolve()
 
@@ -73,6 +83,8 @@ def _load_state(*, repo_root: Path) -> dict[str, Any]:
         "version": _STATE_VERSION,
         "active_pid": int(state.get("active_pid", 0) or 0),
         "last_run_utc": str(state.get("last_run_utc", "")).strip(),
+        "worker_epoch": str(state.get("worker_epoch", "")).strip(),
+        "worker_python_bin": str(state.get("worker_python_bin", "")).strip(),
         "entries": dict(entries) if isinstance(entries, Mapping) else {},
     }
 
@@ -85,6 +97,8 @@ def _write_state(*, repo_root: Path, state: Mapping[str, Any]) -> None:
             "version": _STATE_VERSION,
             "active_pid": int(state.get("active_pid", 0) or 0),
             "last_run_utc": str(state.get("last_run_utc", "")).strip(),
+            "worker_epoch": str(state.get("worker_epoch", "")).strip(),
+            "worker_python_bin": str(state.get("worker_python_bin", "")).strip(),
             "entries": dict(state.get("entries", {})) if isinstance(state.get("entries"), Mapping) else {},
         },
     )
@@ -100,6 +114,91 @@ def _pid_alive(pid: int) -> bool:
     except PermissionError:
         return True
     return True
+
+
+def _worker_python_bin() -> str:
+    return str(Path(sys.executable).resolve()) if str(sys.executable).strip() else "python3"
+
+
+def _worker_epoch(*, repo_root: Path) -> str:
+    root = Path(repo_root).resolve()
+    return odylith_context_cache.fingerprint_payload(
+        {
+            "state_version": _STATE_VERSION,
+            "request_version": _REQUEST_VERSION,
+            "standup_brief_schema_version": compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+            "paths": {
+                relative_path: odylith_context_cache.path_signature(root / relative_path)
+                for relative_path in _WORKER_EPOCH_RELATIVE_PATHS
+            },
+        }
+    )
+
+
+def _worker_matches_current(*, repo_root: Path, state: Mapping[str, Any], python_bin: str) -> bool:
+    return (
+        str(state.get("worker_epoch", "")).strip() == _worker_epoch(repo_root=repo_root)
+        and str(state.get("worker_python_bin", "")).strip() == str(python_bin).strip()
+    )
+
+
+def _terminate_worker(pid: int) -> None:
+    if not _pid_alive(pid):
+        return
+    try:
+        os.kill(int(pid), signal.SIGTERM)
+    except ProcessLookupError:
+        return
+    except PermissionError:
+        return
+
+
+def _maintenance_worker_pids(*, repo_root: Path) -> list[int]:
+    repo_root_token = str(Path(repo_root).resolve())
+    try:
+        completed = subprocess.run(  # noqa: S603
+            ["ps", "-ax", "-o", "pid=,command="],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return []
+    if completed.returncode != 0:
+        return []
+    pids: list[int] = []
+    for raw_line in str(completed.stdout or "").splitlines():
+        line = str(raw_line).strip()
+        if not line:
+            continue
+        parts = line.split(None, 1)
+        if len(parts) != 2:
+            continue
+        pid_token, command = parts
+        if (
+            "odylith.runtime.surfaces.compass_standup_brief_maintenance" not in command
+            or "--repo-root" not in command
+            or repo_root_token not in command
+        ):
+            continue
+        try:
+            pid = int(pid_token)
+        except ValueError:
+            continue
+        if pid > 0:
+            pids.append(pid)
+    return sorted(set(pids))
+    deadline = time.time() + 1.0
+    while time.time() < deadline:
+        if not _pid_alive(pid):
+            return
+        time.sleep(0.05)
+    try:
+        os.kill(int(pid), signal.SIGKILL)
+    except ProcessLookupError:
+        return
+    except PermissionError:
+        return
 
 
 def _candidate_key(*, window_key: str, scope_id: str = "") -> str:
@@ -118,14 +217,7 @@ def _terminal_state_matches(
     if str(entry.get("fingerprint", "")).strip() != str(fingerprint).strip():
         return False
     status = str(entry.get("status", "")).strip().lower()
-    if status == "ready":
-        return True
-    next_retry_dt = compass_standup_brief_narrator._parse_iso_datetime(  # noqa: SLF001
-        str(entry.get("next_retry_utc", "")).strip()
-    )
-    if next_retry_dt is None:
-        return False
-    return dt.datetime.now(tz=dt.timezone.utc) < next_retry_dt
+    return status in {"ready", "skipped"}
 
 
 def _provider_backoff_failure(code: str) -> bool:
@@ -145,7 +237,43 @@ def _state_entry_is_nonready(entry: Mapping[str, Any] | None) -> bool:
     if not isinstance(entry, Mapping):
         return False
     status = str(entry.get("status", "")).strip().lower()
-    return bool(status) and status != "ready"
+    return bool(status) and status not in {"ready", "skipped"}
+
+
+def _scope_signal_priority(
+    *,
+    signal_entry: Mapping[str, Any] | None,
+    state_entry: Mapping[str, Any] | None,
+    fingerprint: str,
+    scope_id: str,
+) -> tuple[int, int, int, int, int, int, int, str]:
+    signal_mapping = dict(signal_entry) if isinstance(signal_entry, Mapping) else {}
+    feature_vector = (
+        dict(signal_mapping.get("feature_vector"))
+        if isinstance(signal_mapping.get("feature_vector"), Mapping)
+        else {}
+    )
+    same_fingerprint_retry = int(
+        _state_entry_is_nonready(state_entry)
+        and str(state_entry.get("fingerprint", "")).strip() == str(fingerprint).strip()
+    )
+    rung_order = {
+        "R4": 4,
+        "R3": 3,
+        "R2": 2,
+        "R1": 1,
+        "R0": 0,
+    }
+    return (
+        same_fingerprint_retry,
+        int(bool(feature_vector.get("verified_completion"))),
+        int(bool(feature_vector.get("implementation_evidence"))),
+        int(bool(feature_vector.get("decision_evidence"))),
+        int(bool(feature_vector.get("meaningful_scope_activity"))),
+        int(rung_order.get(str(signal_mapping.get("rung", "")).strip().upper(), 0)),
+        int(signal_mapping.get("rank", 0) or 0),
+        str(scope_id).strip(),
+    )
 
 
 def _retry_backoff_seconds(
@@ -201,9 +329,162 @@ def _normalized_entry_diagnostics(diagnostics: Mapping[str, Any] | None) -> dict
     return payload
 
 
-def _cheap_config(*, repo_root: Path) -> odylith_reasoning.ReasoningConfig:
+def _requested_state_failure_context(
+    *,
+    state: Mapping[str, Any] | None,
+    request: Mapping[str, Any] | None,
+) -> dict[str, str]:
+    state_entries = state.get("entries") if isinstance(state, Mapping) else {}
+    if not isinstance(state_entries, Mapping) or not isinstance(request, Mapping):
+        return {}
+
+    winner_attempted_utc = ""
+    winner: dict[str, str] = {}
+
+    def _consider(*, key: str, fingerprint: str) -> None:
+        nonlocal winner_attempted_utc, winner
+        entry = state_entries.get(key)
+        if not isinstance(entry, Mapping):
+            return
+        if str(entry.get("fingerprint", "")).strip() != str(fingerprint).strip():
+            return
+        diagnostics = entry.get("diagnostics")
+        diagnostics_mapping = diagnostics if isinstance(diagnostics, Mapping) else {}
+        failure_code = (
+            str(diagnostics_mapping.get("provider_failure_code", "")).strip().lower()
+            or str(diagnostics_mapping.get("reason", "")).strip().lower()
+        )
+        failure_detail = str(diagnostics_mapping.get("provider_failure_detail", "")).strip()
+        attempted_model = str(diagnostics_mapping.get("provider_model", "")).strip()
+        if not failure_code and not failure_detail:
+            return
+        attempted_utc = str(entry.get("attempted_utc", "")).strip()
+        if attempted_utc < winner_attempted_utc:
+            return
+        winner_attempted_utc = attempted_utc
+        winner = {
+            "failure_code": failure_code,
+            "failure_detail": failure_detail,
+            "previous_model": attempted_model,
+        }
+
+    global_entries = request.get("global")
+    if isinstance(global_entries, Mapping):
+        for window_key, entry in global_entries.items():
+            if isinstance(entry, Mapping):
+                _consider(
+                    key=_candidate_key(window_key=str(window_key).strip()),
+                    fingerprint=str(entry.get("fingerprint", "")).strip(),
+                )
+
+    scoped_entries = request.get("scoped")
+    if isinstance(scoped_entries, Mapping):
+        for window_key, entries in scoped_entries.items():
+            if not isinstance(entries, Mapping):
+                continue
+            for scope_id, entry in entries.items():
+                if isinstance(entry, Mapping):
+                    _consider(
+                        key=_candidate_key(window_key=str(window_key).strip(), scope_id=str(scope_id).strip()),
+                        fingerprint=str(entry.get("fingerprint", "")).strip(),
+                    )
+    return winner
+
+
+def _requested_telemetry_failure_context(
+    *,
+    repo_root: Path,
+    request: Mapping[str, Any] | None,
+) -> dict[str, str]:
+    if not isinstance(request, Mapping):
+        return {}
+    request_fingerprints: set[str] = set()
+
+    global_entries = request.get("global")
+    if isinstance(global_entries, Mapping):
+        for entry in global_entries.values():
+            if isinstance(entry, Mapping):
+                fingerprint = str(entry.get("fingerprint", "")).strip()
+                if fingerprint:
+                    request_fingerprints.add(fingerprint)
+
+    scoped_entries = request.get("scoped")
+    if isinstance(scoped_entries, Mapping):
+        for entries in scoped_entries.values():
+            if not isinstance(entries, Mapping):
+                continue
+            for entry in entries.values():
+                if isinstance(entry, Mapping):
+                    fingerprint = str(entry.get("fingerprint", "")).strip()
+                    if fingerprint:
+                        request_fingerprints.add(fingerprint)
+
+    if not request_fingerprints:
+        return {}
+
+    telemetry_payload = _load_json(compass_standup_brief_telemetry.telemetry_path(repo_root=repo_root))
+    attempts = telemetry_payload.get("attempts")
+    if not isinstance(attempts, Sequence):
+        return {}
+
+    winner_recorded_utc = ""
+    winner: dict[str, str] = {}
+    for attempt in attempts:
+        if not isinstance(attempt, Mapping):
+            continue
+        substrate_fingerprints = attempt.get("substrate_fingerprints")
+        if not isinstance(substrate_fingerprints, Mapping):
+            continue
+        attempt_fingerprints = {
+            str(value).strip()
+            for value in substrate_fingerprints.values()
+            if str(value).strip()
+        }
+        if not request_fingerprints.intersection(attempt_fingerprints):
+            continue
+        recorded_utc = str(attempt.get("recorded_utc", "")).strip()
+        if recorded_utc < winner_recorded_utc:
+            continue
+        winner_recorded_utc = recorded_utc
+        winner = {
+            "failure_code": (
+                str(attempt.get("provider_code", "")).strip().lower()
+                or str(attempt.get("failure_kind", "")).strip().lower()
+            ),
+            "failure_detail": str(attempt.get("provider_detail", "")).strip(),
+            "previous_model": str(attempt.get("model", "")).strip(),
+            "previous_reasoning_effort": str(attempt.get("reasoning_effort", "")).strip().lower(),
+        }
+    return winner
+
+
+def _cheap_config(
+    *,
+    repo_root: Path,
+    request: Mapping[str, Any] | None = None,
+    state: Mapping[str, Any] | None = None,
+) -> odylith_reasoning.ReasoningConfig:
     base_config = odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
-    profile = odylith_reasoning.cheap_structured_reasoning_profile(base_config)
+    retry_context = _requested_state_failure_context(state=state, request=request)
+    telemetry_context = _requested_telemetry_failure_context(repo_root=repo_root, request=request)
+    if not str(retry_context.get("previous_model", "")).strip() and str(
+        telemetry_context.get("previous_model", "")
+    ).strip():
+        retry_context["previous_model"] = str(telemetry_context.get("previous_model", "")).strip()
+    if not str(retry_context.get("failure_code", "")).strip() and str(
+        telemetry_context.get("failure_code", "")
+    ).strip():
+        retry_context["failure_code"] = str(telemetry_context.get("failure_code", "")).strip()
+    if not str(retry_context.get("failure_detail", "")).strip() and str(
+        telemetry_context.get("failure_detail", "")
+    ).strip():
+        retry_context["failure_detail"] = str(telemetry_context.get("failure_detail", "")).strip()
+    profile = odylith_reasoning.cheap_structured_reasoning_profile(
+        base_config,
+        previous_model=str(retry_context.get("previous_model", "")).strip(),
+        failure_code=str(retry_context.get("failure_code", "")).strip(),
+        failure_detail=str(retry_context.get("failure_detail", "")).strip(),
+    )
     provider = str(profile.provider or base_config.provider).strip()
     updates: dict[str, Any] = {
         "provider": provider,
@@ -271,13 +552,16 @@ def enqueue_request(
     for window_key, packets in scoped_fact_packets.items():
         packet_map = packets if isinstance(packets, Mapping) else {}
         brief_map = scoped_briefs.get(window_key, {}) if isinstance(scoped_briefs.get(window_key), Mapping) else {}
-        window_candidates: dict[str, Any] = {}
+        signal_map = scope_signals.get(window_key, {}) if isinstance(scope_signals.get(window_key), Mapping) else {}
+        ranked_candidates: list[tuple[tuple[int, int, int, int, int, int, int, str], str, dict[str, Any]]] = []
         for scope_id, fact_packet in packet_map.items():
             scope_token = str(scope_id).strip()
             if not scope_token or not isinstance(fact_packet, Mapping):
                 continue
             brief = brief_map.get(scope_token) if isinstance(brief_map.get(scope_token), Mapping) else {}
             key = _candidate_key(window_key=window_key, scope_id=scope_token)
+            state_entry = state_entries.get(key) if isinstance(state_entries.get(key), Mapping) else None
+            signal_entry = signal_map.get(scope_token) if isinstance(signal_map.get(scope_token), Mapping) else {}
             if _ready_narrated(brief):
                 continue
             if compass_standup_brief_narrator.has_reusable_cached_brief(repo_root=repo_root, fact_packet=fact_packet):
@@ -285,12 +569,44 @@ def enqueue_request(
             fingerprint = compass_standup_brief_narrator.standup_brief_fingerprint(fact_packet=fact_packet)
             if _terminal_state_matches(state_entries=state_entries, key=key, fingerprint=fingerprint):
                 continue
-            window_candidates[scope_token] = {
-                "fingerprint": fingerprint,
-                "fact_packet": dict(fact_packet),
+            budget_class = str(signal_entry.get("budget_class", "")).strip().lower()
+            if budget_class not in {"fast_simple"} and not (
+                _state_entry_is_nonready(state_entry)
+                and str(state_entry.get("fingerprint", "")).strip() == fingerprint
+            ):
+                continue
+            ranked_candidates.append(
+                (
+                    _scope_signal_priority(
+                        signal_entry=signal_entry,
+                        state_entry=state_entry,
+                        fingerprint=fingerprint,
+                        scope_id=scope_token,
+                    ),
+                    scope_token,
+                    {
+                        "fingerprint": fingerprint,
+                        "fact_packet": dict(fact_packet),
+                    },
+                )
+            )
+        if ranked_candidates:
+            ranked_candidates.sort(
+                key=lambda item: (
+                    -item[0][0],
+                    -item[0][1],
+                    -item[0][2],
+                    -item[0][3],
+                    -item[0][4],
+                    -item[0][5],
+                    -item[0][6],
+                    item[0][7],
+                )
+            )
+            payload["scoped"][str(window_key).strip()] = {
+                scope_token: candidate
+                for _priority, scope_token, candidate in ranked_candidates[:_MAX_SCOPED_REQUESTS_PER_WINDOW]
             }
-        if window_candidates:
-            payload["scoped"][str(window_key).strip()] = window_candidates
 
     if not payload["global"] and not payload["scoped"]:
         request_file = maintenance_request_path(repo_root=repo_root)
@@ -347,9 +663,20 @@ def maybe_spawn_background(*, repo_root: Path) -> int:
         return 0
     state = _load_state(repo_root=repo_root)
     active_pid = int(state.get("active_pid", 0) or 0)
-    if _pid_alive(active_pid):
+    python_bin = _worker_python_bin()
+    live_worker_pids = [
+        pid for pid in _maintenance_worker_pids(repo_root=repo_root) if int(pid) != int(os.getpid())
+    ]
+    if active_pid in live_worker_pids and _worker_matches_current(repo_root=repo_root, state=state, python_bin=python_bin):
+        for pid in live_worker_pids:
+            if pid != active_pid:
+                _terminate_worker(pid)
         return active_pid
-    python_bin = str(Path(sys.executable).resolve()) if str(sys.executable).strip() else "python3"
+    for pid in live_worker_pids:
+        _terminate_worker(pid)
+    if _pid_alive(active_pid):
+        _terminate_worker(active_pid)
+    state["active_pid"] = 0
     worker = subprocess.Popen(  # noqa: S603
         [
             python_bin,
@@ -365,6 +692,8 @@ def maybe_spawn_background(*, repo_root: Path) -> int:
         start_new_session=True,
     )
     state["active_pid"] = int(worker.pid or 0)
+    state["worker_epoch"] = _worker_epoch(repo_root=repo_root)
+    state["worker_python_bin"] = python_bin
     _write_state(repo_root=repo_root, state=state)
     return int(worker.pid or 0)
 
@@ -394,9 +723,14 @@ def _record_result(
         "attempt_count": attempt_count,
     }
     normalized_diagnostics = _normalized_entry_diagnostics(diagnostics)
+    if (
+        str(normalized_diagnostics.get("reason", "")).strip().lower() == "skipped_not_worth_calling"
+        or str(normalized_diagnostics.get("provider_decision", "")).strip().lower() == "skipped_not_worth_calling"
+    ):
+        payload["status"] = "skipped"
     if normalized_diagnostics:
         payload["diagnostics"] = normalized_diagnostics
-    if payload["status"] != "ready":
+    if payload["status"] not in {"ready", "skipped"}:
         retry_at = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
             seconds=_retry_backoff_seconds(
                 status=payload["status"],
@@ -493,7 +827,7 @@ def _pending_request_payload(
         if str(state_entry.get("fingerprint", "")).strip() != str(entry.get("fingerprint", "")).strip():
             payload["global"][str(window_key).strip()] = dict(entry)
             continue
-        if str(state_entry.get("status", "")).strip().lower() == "ready":
+        if str(state_entry.get("status", "")).strip().lower() in {"ready", "skipped"}:
             continue
         payload["global"][str(window_key).strip()] = dict(entry)
 
@@ -511,7 +845,7 @@ def _pending_request_payload(
             if str(state_entry.get("fingerprint", "")).strip() != str(entry.get("fingerprint", "")).strip():
                 retained_window[scope_token] = dict(entry)
                 continue
-            if str(state_entry.get("status", "")).strip().lower() == "ready":
+            if str(state_entry.get("status", "")).strip().lower() in {"ready", "skipped"}:
                 continue
             retained_window[scope_token] = dict(entry)
         if retained_window:
@@ -535,7 +869,7 @@ def _pending_request_delay_seconds(
         if str(state_entry.get("fingerprint", "")).strip() != str(entry.get("fingerprint", "")).strip():
             min_delay = 0.0
             return
-        if str(state_entry.get("status", "")).strip().lower() == "ready":
+        if str(state_entry.get("status", "")).strip().lower() in {"ready", "skipped"}:
             return
         next_retry_dt = compass_standup_brief_narrator._parse_iso_datetime(  # noqa: SLF001
             str(state_entry.get("next_retry_utc", "")).strip()
@@ -593,7 +927,7 @@ def _failure_results_from_state(
             continue
         if str(state_entry.get("fingerprint", "")).strip() != fingerprint:
             continue
-        if str(state_entry.get("status", "")).strip().lower() == "ready":
+        if str(state_entry.get("status", "")).strip().lower() in {"ready", "skipped"}:
             continue
         diagnostics = _diagnostics_from_state_entry(state_entry)
         global_failures[window_token] = _failure_brief(
@@ -622,7 +956,7 @@ def _failure_results_from_state(
                 continue
             if str(state_entry.get("fingerprint", "")).strip() != fingerprint:
                 continue
-            if str(state_entry.get("status", "")).strip().lower() == "ready":
+            if str(state_entry.get("status", "")).strip().lower() in {"ready", "skipped"}:
                 continue
             diagnostics = _diagnostics_from_state_entry(state_entry)
             failed_window[scope_token] = _failure_brief(
@@ -658,7 +992,7 @@ def failure_brief_for_fact_packet(
         return None
     if str(state_entry.get("fingerprint", "")).strip() != fingerprint:
         return None
-    if str(state_entry.get("status", "")).strip().lower() == "ready":
+    if str(state_entry.get("status", "")).strip().lower() in {"ready", "skipped"}:
         return None
     diagnostics = _diagnostics_from_state_entry(state_entry)
     return _failure_brief(
@@ -787,6 +1121,8 @@ def run_pending_request(
     request = _load_json(request_path)
     state = _load_state(repo_root=repo_root)
     state["active_pid"] = int(os.getpid())
+    state["worker_epoch"] = _worker_epoch(repo_root=repo_root)
+    state["worker_python_bin"] = _worker_python_bin()
     _write_state(repo_root=repo_root, state=state)
 
     global_results: dict[str, dict[str, Any]] = {}
@@ -812,7 +1148,7 @@ def run_pending_request(
                 "next_retry_delay_seconds": None,
             }
 
-        cheap_config = _cheap_config(repo_root=repo_root)
+        cheap_config = _cheap_config(repo_root=repo_root, request=request, state=state)
         provider = _provider_for_cheap_config(repo_root=repo_root, config=cheap_config)
 
         global_requests = request.get("global", {}) if isinstance(request.get("global"), Mapping) else {}
@@ -885,6 +1221,7 @@ def run_pending_request(
                 global_fact_packets_by_window=global_packets,
                 scoped_fact_packets_by_window=scoped_packets,
                 generated_utc=generated_utc,
+                runtime_packet_fingerprint=str(request.get("runtime_input_fingerprint", "")).strip(),
                 config=cheap_config,
                 provider=provider,
             )
@@ -925,30 +1262,44 @@ def run_pending_request(
                         if isinstance(brief, Mapping) and isinstance(brief.get("diagnostics"), Mapping)
                         else {}
                     )
+                    failure_reason = (
+                        str(diagnostics.get("reason", "")).strip().lower()
+                        or str(diagnostics.get("provider_decision", "")).strip().lower()
+                        or "invalid_batch"
+                    )
+                    is_skipped = failure_reason == "skipped_not_worth_calling"
                     failed_brief = _failure_brief(
                         fingerprint=fingerprint,
                         generated_utc=generated_utc,
                         provider=provider,
-                        fallback_reason="invalid_batch",
+                        fallback_reason=failure_reason,
                         diagnostics=diagnostics,
                     )
                     recorded = _record_result(
                         state=state,
                         window_key=window_token,
                         fingerprint=fingerprint,
-                        status="failed",
+                        status="skipped" if is_skipped else "failed",
                         source=source or str(failed_brief.get("source", "")).strip().lower(),
                         diagnostics=failed_brief.get("diagnostics"),
                     )
-                    failed_brief = _failure_brief(
-                        fingerprint=fingerprint,
-                        generated_utc=generated_utc,
-                        provider=provider,
-                        fallback_reason="invalid_batch",
-                        diagnostics=_diagnostics_from_state_entry(recorded),
+                    failed_brief = (
+                        dict(brief)
+                        if is_skipped and isinstance(brief, Mapping)
+                        else _failure_brief(
+                            fingerprint=fingerprint,
+                            generated_utc=generated_utc,
+                            provider=provider,
+                            fallback_reason=(
+                                str(_diagnostics_from_state_entry(recorded).get("reason", "")).strip().lower()
+                                or failure_reason
+                            ),
+                            diagnostics=_diagnostics_from_state_entry(recorded),
+                        )
                     )
                     global_failure_results[window_token] = failed_brief
-                    failed += 1
+                    if not is_skipped:
+                        failed += 1
 
             for window_key, entries in scoped_requests.items():
                 if not isinstance(entries, Mapping) or not entries:
@@ -984,11 +1335,17 @@ def run_pending_request(
                             if isinstance(brief, Mapping) and isinstance(brief.get("diagnostics"), Mapping)
                             else {}
                         )
+                        failure_reason = (
+                            str(diagnostics.get("reason", "")).strip().lower()
+                            or str(diagnostics.get("provider_decision", "")).strip().lower()
+                            or "invalid_batch"
+                        )
+                        is_skipped = failure_reason == "skipped_not_worth_calling"
                         failed_brief = _failure_brief(
                             fingerprint=fingerprint,
                             generated_utc=generated_utc,
                             provider=provider,
-                            fallback_reason="invalid_batch",
+                            fallback_reason=failure_reason,
                             diagnostics=diagnostics,
                         )
                         recorded = _record_result(
@@ -996,19 +1353,27 @@ def run_pending_request(
                             window_key=str(window_key).strip(),
                             scope_id=scope_token,
                             fingerprint=fingerprint,
-                            status="failed",
+                            status="skipped" if is_skipped else "failed",
                             source=source or str(failed_brief.get("source", "")).strip().lower(),
                             diagnostics=failed_brief.get("diagnostics"),
                         )
-                        failed_brief = _failure_brief(
-                            fingerprint=fingerprint,
-                            generated_utc=generated_utc,
-                            provider=provider,
-                            fallback_reason="invalid_batch",
-                            diagnostics=_diagnostics_from_state_entry(recorded),
+                        failed_brief = (
+                            dict(brief)
+                            if is_skipped and isinstance(brief, Mapping)
+                            else _failure_brief(
+                                fingerprint=fingerprint,
+                                generated_utc=generated_utc,
+                                provider=provider,
+                                fallback_reason=(
+                                    str(_diagnostics_from_state_entry(recorded).get("reason", "")).strip().lower()
+                                    or failure_reason
+                                ),
+                                diagnostics=_diagnostics_from_state_entry(recorded),
+                            )
                         )
                         failed_window[scope_token] = failed_brief
-                        failed += 1
+                        if not is_skipped:
+                            failed += 1
                 if ready_window:
                     scoped_results[str(window_key).strip()] = ready_window
                 if failed_window:

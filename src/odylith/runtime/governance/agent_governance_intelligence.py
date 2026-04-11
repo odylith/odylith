@@ -45,6 +45,9 @@ _LIVE_PHASE_ADVANCE_RE = re.compile(
 
 _GLOBAL_IMPACT_PREFIXES: tuple[str, ...] = (
     "AGENTS.md",
+    "CLAUDE.md",
+    "odylith/AGENTS.md",
+    "odylith/CLAUDE.md",
     "agents-guidelines/",
     "skills/",
     "odylith/FAQ.md",
@@ -118,7 +121,7 @@ _IMPLEMENTATION_NOISE_PREFIXES: tuple[str, ...] = (
     "odylith/technical-plans/",
     "skills/",
 )
-_IMPLEMENTATION_NOISE_EXACT: set[str] = {"AGENTS.md"}
+_IMPLEMENTATION_NOISE_EXACT: set[str] = {"AGENTS.md", "CLAUDE.md", "odylith/AGENTS.md", "odylith/CLAUDE.md"}
 _IMPLEMENTATION_NOISE_EXACT_LOWER: set[str] = {item.lower() for item in _IMPLEMENTATION_NOISE_EXACT}
 
 
@@ -186,18 +189,38 @@ class SuccessorCreationResult:
     linked_plan: str
 
 
+_PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX = "src/odylith/bundle/assets/odylith/"
+_PROJECT_ROOT_ASSET_MIRROR_PREFIX = "src/odylith/bundle/assets/project-root/"
+
+
+def _changed_path_aliases(token: str) -> tuple[str, ...]:
+    normalized = str(token or "").strip().lstrip("./")
+    if not normalized:
+        return ()
+    aliases = [normalized]
+    if normalized.startswith(_PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX):
+        suffix = normalized.removeprefix(_PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX).strip("/")
+        if suffix:
+            aliases.append(f"odylith/{suffix}")
+    if normalized.startswith(_PROJECT_ROOT_ASSET_MIRROR_PREFIX):
+        suffix = normalized.removeprefix(_PROJECT_ROOT_ASSET_MIRROR_PREFIX).strip("/")
+        if suffix:
+            aliases.append(suffix)
+    return tuple(aliases)
+
+
 def normalize_changed_paths(*, repo_root: Path, values: Iterable[str]) -> list[str]:
     """Normalize changed paths into unique repository-relative tokens."""
 
     rows: list[str] = []
     seen: set[str] = set()
     for raw in values:
-        token = ws_inference.normalize_repo_token(str(raw or "").strip(), repo_root=repo_root)
-        token = token.lstrip("./")
-        if not token or _is_retired_surface_tombstone(token) or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
+        token = ws_inference.normalize_repo_token(str(raw or "").strip(), repo_root=repo_root).lstrip("./")
+        for alias in _changed_path_aliases(token):
+            if not alias or _is_retired_surface_tombstone(alias) or alias in seen:
+                continue
+            seen.add(alias)
+            rows.append(alias)
     return rows
 
 

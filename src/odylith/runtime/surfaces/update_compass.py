@@ -23,6 +23,7 @@ from odylith.runtime.context_engine import odylith_context_engine_store
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    default_author, default_source = agent_runtime_contract.default_event_metadata()
     parser = argparse.ArgumentParser(
         prog="odylith compass update",
         description="Capture Update Compass statements into timeline + standup inputs.",
@@ -90,8 +91,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=timeline_logger.component_registry.DEFAULT_IDEAS_ROOT,
         help="Backlog ideas root for impacted-component inference.",
     )
-    parser.add_argument("--author", default="codex", help="Author label.")
-    parser.add_argument("--source", default="codex", help="Source label.")
+    parser.add_argument("--author", default=default_author, help="Author label.")
+    parser.add_argument("--source", default=default_source, help="Source label.")
     parser.add_argument(
         "--session-id",
         default="",

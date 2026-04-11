@@ -81,7 +81,10 @@ def _fallback_scan_commands(*, fallback_scan: Mapping[str, Any], retained_paths:
             for path in candidate_paths[:4]
         )
         return f"rg --files | rg {_shell_quote(pattern)}", followup
-    return r"rg --files | rg 'AGENTS\.md|odylith/AGENTS\.md|pyproject\.toml'", "sed -n '1,200p' AGENTS.md"
+    return (
+        r"rg --files | rg 'AGENTS\.md|CLAUDE\.md|odylith/(AGENTS|CLAUDE)\.md|pyproject\.toml'",
+        "if [ -f AGENTS.md ]; then sed -n '1,200p' AGENTS.md; else sed -n '1,200p' CLAUDE.md; fi",
+    )
 
 
 def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
@@ -168,26 +171,10 @@ def _score_from_level(value: Any) -> int:
 
 
 def _explicit_model_selection_fields(*, profile: str, host_capabilities: Mapping[str, Any]) -> tuple[str, str]:
-    canonical_profile = agent_runtime_contract.canonical_execution_profile(profile)
-    if not canonical_profile or not bool(host_capabilities.get("supports_explicit_model_selection")):
-        return "", ""
-    if canonical_profile in {
-        agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE,
-        agent_runtime_contract.ANALYSIS_HIGH_PROFILE,
-    }:
-        return "gpt-5.4-mini", "high" if canonical_profile == agent_runtime_contract.ANALYSIS_HIGH_PROFILE else "medium"
-    if canonical_profile == agent_runtime_contract.FAST_WORKER_PROFILE:
-        return "gpt-5.3-codex-spark", "medium"
-    if canonical_profile in {
-        agent_runtime_contract.WRITE_MEDIUM_PROFILE,
-        agent_runtime_contract.WRITE_HIGH_PROFILE,
-    }:
-        return "gpt-5.3-codex", "high" if canonical_profile == agent_runtime_contract.WRITE_HIGH_PROFILE else "medium"
-    if canonical_profile == agent_runtime_contract.FRONTIER_XHIGH_PROFILE:
-        return "gpt-5.4", "xhigh"
-    if canonical_profile == agent_runtime_contract.FRONTIER_HIGH_PROFILE:
-        return "gpt-5.4", "high"
-    return "", ""
+    return agent_runtime_contract.execution_profile_runtime_fields(
+        profile,
+        host_capabilities=host_capabilities,
+    )
 
 
 def grounded_ambiguous_write_candidate(

@@ -30,6 +30,8 @@ After install, you should have:
 - repo-local launcher at `./.odylith/bin/odylith`
 - local Odylith shell at `odylith/index.html`
 - managed starter tree under `odylith/`
+- repo-root Claude project assets under `.claude/` including `CLAUDE.md`,
+  `settings.json`, commands, hooks, rules, and subagents
 - root `.gitignore` updated with `/.odylith/` when the repo is Git-backed
 - gitignored managed-runtime trust anchors under
   `.odylith/trust/managed-runtime-trust/` when the repo is Git-backed
@@ -38,6 +40,10 @@ Odylith is not a standalone app or IDE. Use it through an AI coding agent such
 as Codex or Claude Code. In Odylith, the agent is the execution interface and
 `odylith/index.html` is the operating surface that keeps intent, constraints,
 topology, and execution state visible.
+
+Codex and Claude Code are both supported host lanes for Odylith. The shared
+grounding and governance contract is the same; the checked-in `.claude/`
+surface exists so Claude Code gets a first-class project-native lane too.
 
 For the default grounded first turn, run:
 
@@ -65,16 +71,17 @@ to suppress that.
 > [!CAUTION]
 > **Odylith is designed to anchor to a git repo root.** If there is no
 > enclosing `.git`, install still succeeds, but Odylith treats the current
-> folder as the repo root, creates a root `AGENTS.md` there, and runs with
-> reduced Git-aware behavior until that folder is backed by Git.
+> folder as the repo root, creates root `AGENTS.md` and `CLAUDE.md` guidance
+> files there if they are missing, and runs with reduced Git-aware behavior
+> until that folder is backed by Git.
 
 Before activation, the installer picks the install boundary like this:
 
-- If it finds a root `AGENTS.md`, it uses that repo root.
+- If it finds a root `AGENTS.md` or `CLAUDE.md`, it uses that repo root.
 - Otherwise, if it finds an enclosing `.git`, it uses that Git root and
-  creates a root `AGENTS.md` there.
-- Otherwise, it treats the current folder as the repo root and creates a root
-  `AGENTS.md` in place.
+  creates any missing root `AGENTS.md` and `CLAUDE.md` guidance files there.
+- Otherwise, it treats the current folder as the repo root and creates root
+  `AGENTS.md` and `CLAUDE.md` guidance files in place.
 
 If no `.git` exists yet, install still succeeds, but Git-aware features stay
 limited until the folder is Git-backed.
@@ -129,7 +136,13 @@ and factual. Silence is better than filler.
 ## What Is Here
 
 - `AGENTS.md`
-  Odylith guidance entrypoint for this tree.
+  Canonical Odylith guidance entrypoint for this tree.
+- `CLAUDE.md`
+  Claude Code shim that points back to `AGENTS.md` for this tree.
+- repo-root `.claude/`
+  Claude project assets Odylith ships for commands, hooks, rules, and
+  subagents so Claude Code stays a supported first-class host alongside
+  Codex.
 - `agents-guidelines/`
   Shared Odylith operating guidance.
 - `skills/`

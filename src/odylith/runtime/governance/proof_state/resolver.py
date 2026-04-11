@@ -86,7 +86,7 @@ def _bug_proof_rows(repo_root: Path) -> list[dict[str, Any]]:
     if not bug_root.is_dir():
         return rows
     for path in sorted(bug_root.glob("*.md")):
-        if path.name in {"INDEX.md", "AGENTS.md"}:
+        if path.name in {"INDEX.md", "AGENTS.md", "CLAUDE.md"}:
             continue
         text = path.read_text(encoding="utf-8")
         fields = _parse_bug_fields(text.splitlines())
@@ -134,7 +134,7 @@ def _plan_proof_rows(repo_root: Path) -> list[dict[str, Any]]:
     if not plan_root.is_dir():
         return rows
     for path in sorted(plan_root.rglob("*.md")):
-        if path.name in {"INDEX.md", "AGENTS.md"}:
+        if path.name in {"INDEX.md", "AGENTS.md", "CLAUDE.md"}:
             continue
         text = path.read_text(encoding="utf-8")
         fields = _parse_plan_fields(text.splitlines())

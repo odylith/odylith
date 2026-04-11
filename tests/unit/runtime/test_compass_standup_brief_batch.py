@@ -7,6 +7,7 @@ from pathlib import Path
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_batch as batch
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
+from odylith.runtime.surfaces import compass_standup_brief_telemetry
 
 
 class _QueuedProvider:
@@ -294,7 +295,7 @@ def test_build_scoped_briefs_reuses_exact_cache_before_batch_provider(tmp_path: 
     assert provider.requests[0].schema_name == "compass_standup_brief"
 
 
-def test_build_scoped_briefs_does_not_reuse_context_matched_cache_before_batch_provider(tmp_path: Path) -> None:
+def test_build_scoped_briefs_reuses_exact_substrate_cache_when_only_nonwinner_fact_changes(tmp_path: Path) -> None:
     cached_packet = _fact_packet(idea_id="B-111")
     changed_packet = json.loads(json.dumps(cached_packet))
     changed_fact = {
@@ -317,7 +318,7 @@ def test_build_scoped_briefs_does_not_reuse_context_matched_cache_before_batch_p
         provider=seed_provider,
     )
 
-    provider = _QueuedProvider([_batch_response({"B-222": cold_packet})])
+    provider = _QueuedProvider([_single_scope_response(cold_packet)])
     results = batch.build_scoped_briefs(
         repo_root=tmp_path,
         fact_packets_by_scope={
@@ -329,14 +330,13 @@ def test_build_scoped_briefs_does_not_reuse_context_matched_cache_before_batch_p
         provider=provider,
     )
 
-    assert "B-111" not in results
+    assert results["B-111"]["source"] == "cache"
     assert results["B-222"]["source"] == "provider"
-    assert provider.calls >= 1
-    scoped_packets = provider.requests[0].prompt_payload["scoped_fact_packets"]
-    assert {row["scope_id"] for row in scoped_packets} == {"B-111", "B-222"}
+    assert provider.calls == 1
+    assert provider.requests[0].schema_name == "compass_standup_brief"
 
 
-def test_build_single_scope_brief_fails_closed_when_exact_cache_is_missing(tmp_path: Path) -> None:
+def test_build_single_scope_brief_reuses_exact_substrate_cache_when_only_nonwinner_fact_changes(tmp_path: Path) -> None:
     cached_packet = _fact_packet(idea_id="B-111")
     changed_packet = json.loads(json.dumps(cached_packet))
     changed_fact = {
@@ -368,8 +368,8 @@ def test_build_single_scope_brief_fails_closed_when_exact_cache_is_missing(tmp_p
         provider=provider,
     )
 
-    assert results == {}
-    assert provider.calls == 2
+    assert results["B-111"]["source"] == "cache"
+    assert provider.calls == 0
 
 
 def test_build_scoped_briefs_batches_cold_scopes_into_bounded_packs(tmp_path: Path) -> None:
@@ -696,8 +696,68 @@ def test_build_brief_bundle_reuses_cache_and_warms_globals_and_scopes_in_one_pro
     assert results["global"]["48h"]["source"] == "provider"
     assert results["scoped"]["24h"]["B-011"]["source"] == "cache"
     assert results["scoped"]["24h"]["B-012"]["source"] == "provider"
+    assert results["global"]["48h"]["provider_decision"] == "provider_called"
+    assert results["global"]["48h"]["bundle_fingerprint"]
+    assert results["global"]["48h"]["substrate_fingerprint"] == results["global"]["48h"]["fingerprint"]
+    assert results["scoped"]["24h"]["B-012"]["provider_decision"] == "provider_called"
     assert provider.calls == 1
     assert provider.requests[0].schema_name == "compass_standup_brief_bundle"
+    assert "global_fact_packets" not in provider.requests[0].prompt_payload
+    assert "scoped_fact_packets" not in provider.requests[0].prompt_payload
+    cache_payload = narrator._load_cache(repo_root=tmp_path)  # noqa: SLF001
+    cached_entry = cache_payload["entries"][results["global"]["48h"]["fingerprint"]]
+    assert cached_entry["bundle_fingerprint"] == results["global"]["48h"]["bundle_fingerprint"]
+    assert cached_entry["substrate_fingerprint"] == results["global"]["48h"]["substrate_fingerprint"]
+    assert cached_entry["provider_decision"] == "provider_called"
+    assert cached_entry["substrate"]["fingerprint"] == results["global"]["48h"]["substrate_fingerprint"]
+
+
+def test_bundle_provider_request_payload_compacts_delta_and_empty_previous_accepted(tmp_path: Path) -> None:
+    packet = _fact_packet(idea_id="B-777", window="24h")
+
+    payload = batch._bundle_provider_request_payload(  # noqa: SLF001
+        repo_root=tmp_path,
+        global_packets_by_window={},
+        scoped_packets_by_window={"24h": {"B-777": packet}},
+    )
+
+    entry = payload["entries"][0]
+    assert entry["delta"]["changed_fact_count"] == len(entry["delta"]["changed_fact_keys"])
+    assert "unchanged_fact_keys" not in entry["delta"]
+    assert "previous_accepted" not in entry
+    assert "provider_decision" not in entry
+    assert "decision_reason" not in entry
+
+
+def test_bundle_repair_provider_request_payload_compacts_previous_response(tmp_path: Path) -> None:
+    packet = _fact_packet(idea_id="B-778", window="24h")
+
+    payload = batch._bundle_repair_provider_request_payload(  # noqa: SLF001
+        repo_root=tmp_path,
+        global_packets_by_window={},
+        scoped_packets_by_window={"24h": {"B-778": packet}},
+        invalid_response={
+            "briefs": [
+                {
+                    "entry_kind": "scoped",
+                    "window_key": "24h",
+                    "scope_id": "B-778",
+                    "sections": [
+                        {
+                            "key": "completed",
+                            "bullets": [
+                                {"text": "Concrete movement landed.", "fact_ids": ["F-001"]},
+                            ],
+                        }
+                    ],
+                }
+            ]
+        },
+        validation_errors=["section completed bullet 1 paraphrases packet bookkeeping"],
+    )
+
+    brief = payload["previous_response"]["briefs"][0]
+    assert brief["sections"] == [{"key": "completed", "bullets": ["Concrete movement landed."]}]
 
 
 def test_build_brief_bundle_repairs_missing_entries_once_without_scoped_fanout(tmp_path: Path) -> None:
@@ -738,3 +798,197 @@ def test_build_brief_bundle_repairs_missing_entries_once_without_scoped_fanout(t
     assert provider.calls == 2
     assert provider.requests[0].schema_name == "compass_standup_brief_bundle"
     assert provider.requests[1].schema_name == "compass_standup_brief_bundle_repair"
+
+
+def test_bundle_provider_subset_by_window_respects_entry_cap(tmp_path: Path) -> None:
+    scoped_packets = {
+        "24h": {
+            "B-001": _fact_packet(idea_id="B-001", window="24h"),
+            "B-002": _fact_packet(idea_id="B-002", window="24h"),
+            "B-003": _fact_packet(idea_id="B-003", window="24h"),
+            "B-004": _fact_packet(idea_id="B-004", window="24h"),
+            "B-005": _fact_packet(idea_id="B-005", window="24h"),
+        }
+    }
+
+    packs = batch._bundle_provider_subset_by_window(  # noqa: SLF001
+        repo_root=tmp_path,
+        global_packets_by_window={},
+        scoped_packets_by_window=scoped_packets,
+        max_payload_chars=100000,
+        max_entries=4,
+    )
+
+    assert len(packs) == 2
+    assert [sum(len(window) for window in scoped.values()) + len(globals_) for globals_, scoped in packs] == [4, 1]
+
+
+def test_build_brief_bundle_skips_provider_for_nonwinner_summary_churn_and_records_telemetry(tmp_path: Path) -> None:
+    baseline_packet = _fact_packet(idea_id="B-901", window="24h")
+    changed_packet = json.loads(json.dumps(baseline_packet))
+    changed_packet["summary"]["touched_workstreams"] = 7
+    generated_utc = _generated_utc()
+
+    seed_provider = _QueuedProvider([_single_scope_response(baseline_packet)])
+    narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=baseline_packet,
+        generated_utc=generated_utc,
+        config=_reasoning_config(),
+        provider=seed_provider,
+    )
+
+    provider = _QueuedProvider([])
+    results = batch.build_brief_bundle(
+        repo_root=tmp_path,
+        global_fact_packets_by_window={"24h": changed_packet},
+        scoped_fact_packets_by_window={},
+        generated_utc=generated_utc,
+        runtime_packet_fingerprint="runtime-fp-901",
+        config=_reasoning_config(),
+        provider=provider,
+    )
+
+    skipped = results["global"]["24h"]
+    assert skipped["status"] == "unavailable"
+    assert skipped["diagnostics"]["reason"] == "skipped_not_worth_calling"
+    assert skipped["diagnostics"]["skip_reason"] == "no_winner_change"
+    assert skipped["provider_decision"] == "skipped_not_worth_calling"
+    assert provider.calls == 0
+
+    telemetry_payload = json.loads(
+        compass_standup_brief_telemetry.telemetry_path(repo_root=tmp_path).read_text(encoding="utf-8")
+    )
+    attempt = telemetry_payload["attempts"][-1]
+    assert attempt["runtime_packet_fingerprint"] == "runtime-fp-901"
+    assert attempt["provider_decision"] == "skipped_not_worth_calling"
+    assert attempt["skip_reason"] == "no_winner_change"
+    assert attempt["estimated_cost"]["total_tokens"] == 0
+
+
+def test_build_brief_bundle_records_provider_failure_telemetry(tmp_path: Path) -> None:
+    packet = _fact_packet(idea_id="B-902", window="24h")
+    provider = _QueuedProvider(
+        [None],
+        failure_codes=["credits_exhausted"],
+        failure_details=["Error: insufficient_quota. You have run out of credits."],
+    )
+
+    results = batch.build_brief_bundle(
+        repo_root=tmp_path,
+        global_fact_packets_by_window={"24h": packet},
+        scoped_fact_packets_by_window={},
+        generated_utc=_generated_utc(),
+        runtime_packet_fingerprint="runtime-fp-902",
+        config=_reasoning_config(),
+        provider=provider,
+    )
+
+    assert results["global"]["24h"]["status"] == "unavailable"
+    assert results["global"]["24h"]["diagnostics"]["reason"] == "credits_exhausted"
+    telemetry_payload = json.loads(
+        compass_standup_brief_telemetry.telemetry_path(repo_root=tmp_path).read_text(encoding="utf-8")
+    )
+    attempt = telemetry_payload["attempts"][-1]
+    assert attempt["runtime_packet_fingerprint"] == "runtime-fp-902"
+    assert attempt["provider_decision"] == "provider_called"
+    assert attempt["failure_kind"] == "credits_exhausted"
+    assert attempt["provider_code"] == "credits_exhausted"
+    assert attempt["provider_call_count"] == 1
+
+
+def test_build_brief_bundle_telemetry_counts_repair_input_chars(tmp_path: Path) -> None:
+    packets_global = {
+        "24h": _fact_packet(idea_id="B-801", window="24h"),
+        "48h": _fact_packet(idea_id="B-802", window="48h"),
+    }
+    packets_scoped = {
+        "24h": {
+            "B-021": _fact_packet(idea_id="B-021", window="24h"),
+            "B-048": _fact_packet(idea_id="B-048", window="24h"),
+        }
+    }
+    provider = _QueuedProvider(
+        [
+            _bundle_response(
+                global_packets={"24h": packets_global["24h"]},
+                scoped_packets={"24h": {"B-021": packets_scoped["24h"]["B-021"]}},
+            ),
+            _bundle_response(
+                global_packets={"48h": packets_global["48h"]},
+                scoped_packets={"24h": {"B-048": packets_scoped["24h"]["B-048"]}},
+            ),
+        ]
+    )
+
+    batch.build_brief_bundle(
+        repo_root=tmp_path,
+        global_fact_packets_by_window=packets_global,
+        scoped_fact_packets_by_window=packets_scoped,
+        generated_utc=_generated_utc(),
+        runtime_packet_fingerprint="runtime-fp-repair",
+        config=_reasoning_config(),
+        provider=provider,
+    )
+
+    telemetry_payload = json.loads(
+        compass_standup_brief_telemetry.telemetry_path(repo_root=tmp_path).read_text(encoding="utf-8")
+    )
+    attempt = telemetry_payload["attempts"][-1]
+    assert attempt["runtime_packet_fingerprint"] == "runtime-fp-repair"
+    assert attempt["repair_count"] == 1
+    assert attempt["provider_call_count"] == 2
+    assert attempt["repair_input_chars"] > 0
+    assert attempt["input_chars"] > attempt["repair_input_chars"]
+
+
+def test_bundle_provider_output_schema_avoids_oneof_for_codex_structured_outputs() -> None:
+    schema = batch._bundle_provider_output_schema(window_keys=["24h", "48h"], scope_ids=["B-021"])  # noqa: SLF001
+    assert "oneOf" not in json.dumps(schema, sort_keys=True)
+    assert "scope_id" in schema["properties"]["briefs"]["items"]["required"]
+    assert "" in schema["properties"]["briefs"]["items"]["properties"]["scope_id"]["enum"]
+
+
+def test_build_brief_bundle_stops_after_provider_budget_failure_and_blocks_later_scopes(
+    tmp_path: Path,
+) -> None:
+    packets_global = {
+        "24h": _fact_packet(idea_id="B-910", window="24h"),
+        "48h": _fact_packet(idea_id="B-911", window="48h"),
+    }
+    packets_scoped = {
+        "24h": {
+            "B-012": _fact_packet(idea_id="B-012", window="24h"),
+            "B-025": _fact_packet(idea_id="B-025", window="24h"),
+        },
+        "48h": {
+            "B-048": _fact_packet(idea_id="B-048", window="48h"),
+        },
+    }
+    provider = _QueuedProvider(
+        [None],
+        failure_codes=["credits_exhausted"],
+        failure_details=["Error: insufficient_quota. You have run out of credits."],
+    )
+
+    results = batch.build_brief_bundle(
+        repo_root=tmp_path,
+        global_fact_packets_by_window=packets_global,
+        scoped_fact_packets_by_window=packets_scoped,
+        generated_utc=_generated_utc(),
+        runtime_packet_fingerprint="runtime-fp-910",
+        config=_reasoning_config(),
+        provider=provider,
+        max_bundle_payload_chars=6000,
+    )
+
+    assert provider.calls == 1
+    assert provider.requests[0].schema_name == "compass_standup_brief_bundle"
+    assert provider.requests[0].prompt_payload["entries"]
+    assert {entry["entry_kind"] for entry in provider.requests[0].prompt_payload["entries"]} == {"global"}
+    assert sorted(results["global"]) == ["24h", "48h"]
+    assert results["global"]["24h"]["diagnostics"]["reason"] == "credits_exhausted"
+    assert results["global"]["48h"]["diagnostics"]["reason"] == "credits_exhausted"
+    assert results["scoped"]["24h"]["B-012"]["diagnostics"]["reason"] == "credits_exhausted"
+    assert results["scoped"]["24h"]["B-025"]["diagnostics"]["reason"] == "credits_exhausted"
+    assert results["scoped"]["48h"]["B-048"]["diagnostics"]["reason"] == "credits_exhausted"

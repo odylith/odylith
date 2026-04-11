@@ -1291,7 +1291,7 @@ def _odylith_path_role(path: str) -> str:
     normalized = _normalized_repo_path(path)
     if not normalized.startswith("odylith/"):
         return ""
-    if normalized == "odylith/AGENTS.md":
+    if normalized in {"odylith/AGENTS.md", "odylith/CLAUDE.md"}:
         return "contract"
     if normalized.startswith(_ODYLITH_GOVERNANCE_PATH_PREFIXES):
         return "governance"
@@ -1318,7 +1318,7 @@ def _scope_role(paths: Sequence[str], *, needs_write: bool) -> str:
     odylith_roles = {_odylith_path_role(path) for path in paths if _odylith_path_role(path)}
     if not needs_write:
         return "analysis"
-    if paths and all(path.endswith("AGENTS.md") or path == "AGENTS.md" for path in paths if path):
+    if paths and all(path.endswith(("AGENTS.md", "CLAUDE.md")) or path in {"AGENTS.md", "CLAUDE.md"} for path in paths if path):
         return "docs"
     if odylith_roles and len(odylith_roles) == 1:
         return next(iter(odylith_roles))
@@ -2470,12 +2470,12 @@ def orchestrate_prompt(
         "Do not merge partial leaf outputs before all planned leaves report back.",
     ]
     execution_contract_notes = [
-        "For native `spawn_agent` calls, pass each leaf's `spawn_task_message` verbatim as `message`; do not rebuild the runtime banner or task contract from fragments.",
+        "For native host delegation calls, pass each leaf's `spawn_task_message` verbatim into the emitted payload; do not rebuild the runtime banner or task contract from fragments.",
         "Each delegated subtask now includes a ready-to-send `route_native_spawn_payload`; prefer it when issuing native host spawn calls.",
-        "For native `spawn_agent` calls, prefer the structured `route_spawn_agent_overrides` payload; use `route_spawn_overrides` for the richer lifecycle and idle-policy contract.",
+        "When the host supports `spawn_agent`, prefer the structured `route_spawn_agent_overrides` payload; use `route_spawn_overrides` for the richer lifecycle and idle-policy contract.",
         "Persist and reuse the per-decision inspection ledger at `inspection_artifacts.ledger_path`; it is the durable source of truth for spawned leaf ids, routed spawn payloads, transcript pointers, result handoffs, and `completion_closeout_overrides`-driven closeout state after agents are closed.",
-        "When a native payload is unavailable, explicitly pass route_model plus route_reasoning_effort instead of inheriting parent defaults.",
-        "The current native host accepts only built-in `agent_type` values and may still render parent-thread controls in the subagent UI; treat the routed runtime banner inside the delegated prompt as the authoritative requested runtime.",
+        "When a native payload is unavailable, explicitly carry the routed execution profile instead of inheriting parent defaults.",
+        "Some hosts accept only built-in delegated agent types and may still render parent-thread controls in the subagent UI; treat the routed runtime banner and native spawn payload as the authoritative requested runtime.",
         "Respect the emitted task-class routing policy fields; they are the explicit per-family baseline for model and reasoning selection.",
         "Treat `waiting on instruction` as an idle state owned by the main thread: either queue the next bounded follow-up immediately or close the agent.",
         "If a delegated leaf stays `waiting on instruction` for its emitted `route_idle_timeout_minutes` threshold, follow `route_idle_timeout_action` and `route_idle_timeout_escalation` instead of leaving the stale leaf open.",

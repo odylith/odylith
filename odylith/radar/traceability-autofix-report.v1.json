@@ -20,22 +20,36 @@
       "reason": "inferred from Mermaid catalog related_backlog/related_workstreams"
     },
     {
+      "idea_id": "B-069",
+      "field": "related_diagram_ids",
+      "current": "D-002,D-012,D-014,D-024",
+      "candidate": "D-033,D-034,D-035",
+      "reason": "inferred from Mermaid catalog related_backlog/related_workstreams"
+    },
+    {
       "idea_id": "B-071",
       "field": "related_diagram_ids",
       "current": "D-028,D-029",
       "candidate": "D-028,D-029,D-032",
       "reason": "inferred from Mermaid catalog related_backlog/related_workstreams"
+    },
+    {
+      "idea_id": "B-083",
+      "field": "workstream_type",
+      "current": "standard",
+      "candidate": "standalone",
+      "reason": "derived from parent/children topology"
     }
   ],
   "fields_unresolved": [],
   "warnings": [],
   "summary": {
-    "ideas_seen": 82,
+    "ideas_seen": 83,
     "files_modified": 0,
     "fields_filled": 0,
-    "conflicts": 3,
+    "conflicts": 5,
     "unresolved": 0,
     "warnings": 0
   },
-  "generated_utc": "2026-04-10 21:37:26Z"
+  "generated_utc": "2026-04-11 07:57:17Z"
 }

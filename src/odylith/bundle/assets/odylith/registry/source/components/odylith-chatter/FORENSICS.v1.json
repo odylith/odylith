@@ -51,25 +51,37 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+        "odylith/README.md",
+        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
         "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
         "odylith/skills/delivery-governance-surface-ops/SKILL.md",
-        "odylith/skills/session-context/SKILL.md",
-        "src/odylith/bundle/assets/odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/subagent-router/SKILL.md",
+        "src/odylith/bundle/assets/odylith/AGENTS.md",
+        "src/odylith/bundle/assets/odylith/README.md",
+        "src/odylith/bundle/assets/odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
         "src/odylith/bundle/assets/odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
         "src/odylith/bundle/assets/odylith/skills/delivery-governance-surface-ops/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/session-context/SKILL.md"
+        "src/odylith/bundle/assets/odylith/skills/subagent-orchestrator/SKILL.md",
+        "src/odylith/bundle/assets/odylith/skills/subagent-router/SKILL.md",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py"
       ],
       "confidence": "high",
-      "event_index": 72,
+      "event_index": 73,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-chatter"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md, odylith/agents-guidelines/VALIDATION_AND_TESTING.md +6 more",
-      "ts_iso": "2026-04-10T17:40:15-07:00",
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/AGENTS.md +18 more",
+      "ts_iso": "2026-04-11T01:13:38-07:00",
       "workstreams": []
     },
     {

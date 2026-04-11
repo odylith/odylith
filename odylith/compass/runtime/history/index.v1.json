@@ -1,8 +1,9 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-11T04:41:47Z",
+  "generated_utc": "2026-04-11T09:04:35Z",
   "retention_days": 15,
   "dates": [
+    "2026-04-11",
     "2026-04-10",
     "2026-04-09",
     "2026-04-08",
@@ -17,16 +18,17 @@
     "2026-03-30",
     "2026-03-29",
     "2026-03-28",
-    "2026-03-27",
-    "2026-03-26"
+    "2026-03-27"
   ],
   "restored_dates": [],
   "archive": {
     "compressed": true,
     "path": "archive",
-    "count": 0,
-    "dates": [],
-    "newest_date": "",
-    "oldest_date": ""
+    "count": 1,
+    "dates": [
+      "2026-03-26"
+    ],
+    "newest_date": "2026-03-26",
+    "oldest_date": "2026-03-26"
   }
 }

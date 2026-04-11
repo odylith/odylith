@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_maintenance as maintenance
 
 
@@ -20,13 +21,24 @@ def _brief(*, source: str, status: str = "ready") -> dict[str, object]:
     }
 
 
-def _signal(*, rung: str, budget_class: str, verified_completion: bool = False) -> dict[str, object]:
+def _signal(
+    *,
+    rung: str,
+    budget_class: str,
+    verified_completion: bool = False,
+    implementation_evidence: bool = False,
+    decision_evidence: bool = False,
+    meaningful_scope_activity: bool = True,
+) -> dict[str, object]:
     return {
         "rung": rung,
         "budget_class": budget_class,
         "rank": int(str(rung).replace("R", "")),
         "feature_vector": {
             "verified_completion": bool(verified_completion),
+            "implementation_evidence": bool(implementation_evidence),
+            "decision_evidence": bool(decision_evidence),
+            "meaningful_scope_activity": bool(meaningful_scope_activity),
         },
     }
 
@@ -96,10 +108,10 @@ def test_enqueue_request_only_selects_active_scope_candidates(tmp_path: Path, mo
     )
 
     assert request["global"] == {}
-    assert sorted(request["scoped"]["24h"]) == ["B-001", "B-002", "B-004"]
+    assert sorted(request["scoped"]["24h"]) == ["B-001", "B-004"]
 
 
-def test_enqueue_request_skips_failed_candidate_until_retry_window_expires(tmp_path: Path, monkeypatch) -> None:
+def test_enqueue_request_keeps_failed_candidate_queued_during_retry_backoff(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     state_path = maintenance.maintenance_state_path(repo_root=repo_root)
     state_path.parent.mkdir(parents=True, exist_ok=True)
@@ -144,10 +156,155 @@ def test_enqueue_request_skips_failed_candidate_until_retry_window_expires(tmp_p
         scope_signals={"24h": {"B-004": _signal(rung="R3", budget_class="fast_simple")}},
     )
 
-    assert request == {}
+    assert list(request["scoped"]["24h"]) == ["B-004"]
 
 
-def test_enqueue_request_keeps_all_scoped_candidates_in_bundle_request(
+def test_cheap_config_advances_requested_codex_model_after_budget_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    codex_bin = tmp_path / "bin" / "codex"
+    codex_bin.parent.mkdir(parents=True, exist_ok=True)
+    codex_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    codex_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: str(codex_bin) if token == "codex" else None,
+    )
+    monkeypatch.setattr(
+        maintenance.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **_kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="high",
+            claude_bin="claude",
+            claude_reasoning_effort="high",
+        ),
+    )
+
+    config = maintenance._cheap_config(  # noqa: SLF001
+        repo_root=tmp_path,
+        request={
+            "global": {
+                "24h": {
+                    "fingerprint": "fp-24h",
+                    "fact_packet": {"scope_id": "global-24h"},
+                }
+            }
+        },
+        state={
+            "entries": {
+                "global:24h": {
+                    "fingerprint": "fp-24h",
+                    "attempted_utc": "2026-04-11T07:41:28Z",
+                    "diagnostics": {
+                        "provider_failure_code": "credits_exhausted",
+                        "provider_failure_detail": "You've hit your usage limit for GPT-5.3-Codex-Spark.",
+                        "provider_model": "gpt-5.3-codex-spark",
+                    },
+                }
+            }
+        },
+    )
+
+    assert config.provider == "codex-cli"
+    assert config.model == "gpt-5.3-codex"
+    assert config.codex_reasoning_effort == "medium"
+
+
+def test_cheap_config_uses_matching_telemetry_model_when_old_state_lacks_provider_model(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    codex_bin = tmp_path / "bin" / "codex"
+    codex_bin.parent.mkdir(parents=True, exist_ok=True)
+    codex_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    codex_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: str(codex_bin) if token == "codex" else None,
+    )
+    monkeypatch.setattr(
+        maintenance.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **_kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="high",
+            claude_bin="claude",
+            claude_reasoning_effort="high",
+        ),
+    )
+    telemetry_path = maintenance.compass_standup_brief_telemetry.telemetry_path(repo_root=tmp_path)
+    telemetry_path.parent.mkdir(parents=True, exist_ok=True)
+    telemetry_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "attempts": [
+                    {
+                        "recorded_utc": "2026-04-11T07:42:00Z",
+                        "substrate_fingerprints": {"global:24h": "fp-24h"},
+                        "provider_decision": "provider_called",
+                        "failure_kind": "credits_exhausted",
+                        "provider_code": "credits_exhausted",
+                        "provider_detail": "You've hit your usage limit for GPT-5.3-Codex-Spark.",
+                        "model": "gpt-5.3-codex-spark",
+                        "reasoning_effort": "low",
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    config = maintenance._cheap_config(  # noqa: SLF001
+        repo_root=tmp_path,
+        request={
+            "global": {
+                "24h": {
+                    "fingerprint": "fp-24h",
+                    "fact_packet": {"scope_id": "global-24h"},
+                }
+            }
+        },
+        state={
+            "entries": {
+                "global:24h": {
+                    "fingerprint": "fp-24h",
+                    "attempted_utc": "2026-04-11T07:41:28Z",
+                    "diagnostics": {
+                        "provider_failure_code": "credits_exhausted",
+                        "provider_failure_detail": "Provider reported a possible credit or budget limit.",
+                    },
+                }
+            }
+        },
+    )
+
+    assert config.provider == "codex-cli"
+    assert config.model == "gpt-5.3-codex"
+    assert config.codex_reasoning_effort == "medium"
+
+
+def test_enqueue_request_caps_scoped_candidates_per_window(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -217,10 +374,10 @@ def test_enqueue_request_keeps_all_scoped_candidates_in_bundle_request(
         },
     )
 
-    assert list(request["scoped"]["24h"]) == ["B-001", "B-002", "B-003", "B-004", "B-005", "B-006"]
+    assert list(request["scoped"]["24h"]) == ["B-006", "B-001", "B-002", "B-003"]
 
 
-def test_enqueue_request_preserves_scope_order_for_bundle_request(
+def test_enqueue_request_prioritizes_verified_completion_then_active_implementation(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -261,14 +418,14 @@ def test_enqueue_request_preserves_scope_order_for_bundle_request(
             "24h": {
                 "B-001": _signal(rung="R3", budget_class="fast_simple"),
                 "B-012": _signal(rung="R3", budget_class="fast_simple", verified_completion=True),
-                "B-025": _signal(rung="R3", budget_class="fast_simple"),
+                "B-025": _signal(rung="R3", budget_class="fast_simple", implementation_evidence=True),
                 "B-048": _signal(rung="R3", budget_class="fast_simple"),
                 "B-063": _signal(rung="R3", budget_class="fast_simple"),
             }
         },
     )
 
-    assert list(request["scoped"]["24h"]) == ["B-001", "B-012", "B-025", "B-048", "B-063"]
+    assert list(request["scoped"]["24h"]) == ["B-012", "B-025", "B-001", "B-048"]
 
 
 def test_run_pending_request_warms_cache_and_patches_current_runtime(tmp_path: Path, monkeypatch) -> None:
@@ -416,6 +573,62 @@ def test_run_pending_request_failed_scoped_result_sets_retry_backoff(tmp_path: P
     retry_dt = dt.datetime.fromisoformat(entry["next_retry_utc"].replace("Z", "+00:00"))
     attempted_dt = dt.datetime.fromisoformat(entry["attempted_utc"].replace("Z", "+00:00"))
     assert retry_dt > attempted_dt
+
+
+def test_run_pending_request_records_skipped_result_as_terminal_without_retry(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path
+    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path.parent.mkdir(parents=True, exist_ok=True)
+    request_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-09T00:00:00Z",
+                "runtime_input_fingerprint": "runtime-fp",
+                "global": {
+                    "24h": {
+                        "fingerprint": "global-fp",
+                        "fact_packet": {"scope_id": "global-24h"},
+                    }
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(maintenance, "_cheap_config", lambda **_kwargs: object())
+    monkeypatch.setattr(maintenance, "_provider_for_cheap_config", lambda **_kwargs: object())
+    monkeypatch.setattr(
+        maintenance.compass_standup_brief_batch,
+        "build_brief_bundle",
+        lambda **_kwargs: {
+            "global": {
+                "24h": {
+                    **_brief(source="unavailable", status="unavailable"),
+                    "fingerprint": "global-fp",
+                    "provider_decision": "skipped_not_worth_calling",
+                    "diagnostics": {
+                        "reason": "skipped_not_worth_calling",
+                        "provider_decision": "skipped_not_worth_calling",
+                        "skip_reason": "no_winner_change",
+                    },
+                }
+            },
+            "scoped": {},
+        },
+    )
+
+    result = maintenance.run_pending_request(repo_root=repo_root)
+    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
+    entry = state["entries"]["global:24h"]
+
+    assert result["warmed"] == 0
+    assert result["failed"] == 0
+    assert result["request_retained"] is False
+    assert entry["status"] == "skipped"
+    assert entry.get("next_retry_utc", "") == ""
 
 
 def test_pending_request_delay_seconds_waits_until_retry_window(tmp_path: Path) -> None:
@@ -926,12 +1139,137 @@ def test_maybe_spawn_background_starts_worker_once(tmp_path: Path, monkeypatch) 
         "Popen",
         lambda command, **_kwargs: _FakePopen(list(command)),
     )
+    monkeypatch.setattr(maintenance, "_maintenance_worker_pids", lambda **_kwargs: [])
 
     pid = maintenance.maybe_spawn_background(repo_root=repo_root)
     state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
 
     assert pid == 4321
     assert calls and "odylith.runtime.surfaces.compass_standup_brief_maintenance" in calls[0]
+    assert state["active_pid"] == 4321
+    assert state["worker_epoch"]
+    assert state["worker_python_bin"]
+
+
+def test_maybe_spawn_background_restarts_stale_worker_when_worker_epoch_changes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root = tmp_path
+    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path.parent.mkdir(parents=True, exist_ok=True)
+    request_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "global": {
+                    "24h": {
+                        "fingerprint": "global-fp",
+                        "fact_packet": {"scope_id": "global-24h"},
+                    }
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    maintenance.maintenance_state_path(repo_root=repo_root).write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "active_pid": 1111,
+                "worker_epoch": "stale-epoch",
+                "worker_python_bin": "/tmp/old-python",
+                "entries": {},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(maintenance, "_pid_alive", lambda pid: int(pid) == 1111)
+    terminated: list[int] = []
+    monkeypatch.setattr(maintenance, "_terminate_worker", lambda pid: terminated.append(int(pid)))
+    monkeypatch.setattr(maintenance, "_worker_epoch", lambda **_kwargs: "fresh-epoch")
+    monkeypatch.setattr(maintenance, "_worker_python_bin", lambda: "/tmp/fresh-python")
+
+    calls: list[list[str]] = []
+
+    class _FakePopen:
+        def __init__(self, command: list[str]) -> None:
+            self.pid = 4321
+            calls.append(command)
+
+    monkeypatch.setattr(
+        maintenance.subprocess,
+        "Popen",
+        lambda command, **_kwargs: _FakePopen(list(command)),
+    )
+    monkeypatch.setattr(maintenance, "_maintenance_worker_pids", lambda **_kwargs: [])
+
+    pid = maintenance.maybe_spawn_background(repo_root=repo_root)
+    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
+
+    assert pid == 4321
+    assert terminated == [1111]
+    assert calls and calls[0][0] == "/tmp/fresh-python"
+    assert state["active_pid"] == 4321
+    assert state["worker_epoch"] == "fresh-epoch"
+    assert state["worker_python_bin"] == "/tmp/fresh-python"
+
+
+def test_maybe_spawn_background_terminates_orphan_worker_before_spawning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root = tmp_path
+    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path.parent.mkdir(parents=True, exist_ok=True)
+    request_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "global": {
+                    "24h": {
+                        "fingerprint": "global-fp",
+                        "fact_packet": {"scope_id": "global-24h"},
+                    }
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(maintenance, "_maintenance_worker_pids", lambda **_kwargs: [1111])
+    monkeypatch.setattr(maintenance, "_worker_epoch", lambda **_kwargs: "fresh-epoch")
+    monkeypatch.setattr(maintenance, "_worker_python_bin", lambda: "/tmp/fresh-python")
+
+    terminated: list[int] = []
+    monkeypatch.setattr(maintenance, "_terminate_worker", lambda pid: terminated.append(int(pid)))
+
+    calls: list[list[str]] = []
+
+    class _FakePopen:
+        def __init__(self, command: list[str]) -> None:
+            self.pid = 4321
+            calls.append(command)
+
+    monkeypatch.setattr(
+        maintenance.subprocess,
+        "Popen",
+        lambda command, **_kwargs: _FakePopen(list(command)),
+    )
+
+    pid = maintenance.maybe_spawn_background(repo_root=repo_root)
+    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
+
+    assert pid == 4321
+    assert terminated == [1111]
+    assert calls and calls[0][0] == "/tmp/fresh-python"
     assert state["active_pid"] == 4321
 
 

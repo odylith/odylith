@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from odylith.runtime.common import agent_runtime_contract
 from typing import Any
 
 
@@ -706,11 +707,11 @@ def _bug_excerpt(text: str, field: str) -> str:
     return str(match.group(1)).strip() if match is not None else ""
 
 def _session_record_path(*, repo_root: Path, session_id: str) -> Path:
-    token = re.sub(r"[^A-Za-z0-9._-]+", "-", str(session_id or "").strip()).strip("-") or f"codex-{os.getpid()}"
+    token = agent_runtime_contract.fallback_session_token(session_id)
     return (sessions_root(repo_root=repo_root) / f"{token}.json").resolve()
 
 def _bootstrap_record_path(*, repo_root: Path, session_id: str) -> Path:
-    token = re.sub(r"[^A-Za-z0-9._-]+", "-", str(session_id or "").strip()).strip("-") or f"codex-{os.getpid()}"
+    token = agent_runtime_contract.fallback_session_token(session_id)
     return (bootstraps_root(repo_root=repo_root) / f"{token}.json").resolve()
 
 def _parse_iso_utc(value: str) -> dt.datetime | None:
@@ -991,7 +992,7 @@ def register_session_state(
         claimed_paths=claimed_paths,
     )
     record = {
-        "session_id": re.sub(r"[^A-Za-z0-9._-]+", "-", str(session_id or "").strip()).strip("-") or f"codex-{os.getpid()}",
+        "session_id": agent_runtime_contract.fallback_session_token(session_id),
         "updated_utc": _utc_now(),
         "workstream": str(workstream or "").strip().upper(),
         "intent": str(intent or "").strip(),

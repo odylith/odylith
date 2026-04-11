@@ -30,12 +30,22 @@ def _dedupe(values: tuple[str, ...] | list[str] | None) -> tuple[str, ...]:
     return tuple(ordered)
 
 
+def _host_display_name(host_family: str) -> str:
+    normalized = str(host_family or "").strip().lower()
+    if normalized == "codex":
+        return "Codex"
+    if normalized == "claude":
+        return "Claude Code"
+    return normalized.title() or "Unknown Host"
+
+
 @dataclass(frozen=True)
 class ExecutionHostProfile:
     host_family: str
     host_display_name: str
     model_family: str
     model_name: str
+    delegation_style: str
     supports_native_spawn: bool
     supports_local_structured_reasoning: bool
     supports_explicit_model_selection: bool
@@ -52,47 +62,45 @@ class ExecutionHostProfile:
         normalized_host = str(host_family or "").strip().lower() or "unknown"
         normalized_model_name = str(model_name or "").strip()
         normalized_model_family = str(model_family or "").strip().lower()
-        if not normalized_model_family:
-            if normalized_host == "codex":
-                normalized_model_family = "codex"
-            elif normalized_host == "claude":
-                normalized_model_family = "claude"
-            else:
-                normalized_model_family = "generic"
 
         if normalized_host == "codex":
             return cls(
                 host_family="codex",
-                host_display_name="Codex",
+                host_display_name=_host_display_name(normalized_host),
                 model_family=normalized_model_family,
-                model_name=normalized_model_name or "gpt-5.4",
+                model_name=normalized_model_name,
+                delegation_style="routed_spawn",
                 supports_native_spawn=True,
                 supports_local_structured_reasoning=True,
                 supports_explicit_model_selection=True,
                 execution_hints=(
                     "native_spawn_available",
+                    "delegation_style:routed_spawn",
                     "prefer_parallel_workers_for_disjoint_write_sets",
                 ),
             )
         if normalized_host == "claude":
             return cls(
                 host_family="claude",
-                host_display_name="Claude Code",
+                host_display_name=_host_display_name(normalized_host),
                 model_family=normalized_model_family,
-                model_name=normalized_model_name or "claude",
-                supports_native_spawn=False,
+                model_name=normalized_model_name,
+                delegation_style="task_tool_subagents",
+                supports_native_spawn=True,
                 supports_local_structured_reasoning=True,
                 supports_explicit_model_selection=False,
                 execution_hints=(
-                    "keep_shared_contract_host_general",
-                    "prefer_local_or_serial_followthrough_when_spawn_unavailable",
+                    "native_spawn_available",
+                    "delegation_style:task_tool_subagents",
+                    "prefer_task_tool_subagents_for_bounded_delegation",
                 ),
             )
         return cls(
             host_family=normalized_host,
-            host_display_name=normalized_host.title() or "Unknown Host",
+            host_display_name=_host_display_name(normalized_host),
             model_family=normalized_model_family,
             model_name=normalized_model_name,
+            delegation_style="none",
             supports_native_spawn=False,
             supports_local_structured_reasoning=False,
             supports_explicit_model_selection=False,
@@ -113,6 +121,7 @@ class ExecutionHostProfile:
             host_family=str(capabilities.get("host_family", "")).strip(),
             model_name=str(model_name or "").strip(),
             model_family=str(capabilities.get("model_family", "")).strip(),
+            delegation_style=str(capabilities.get("delegation_style", "")).strip() or "none",
             supports_native_spawn=bool(capabilities.get("supports_native_spawn")),
             supports_local_structured_reasoning=bool(
                 capabilities.get("supports_local_structured_reasoning")
@@ -120,15 +129,22 @@ class ExecutionHostProfile:
             supports_explicit_model_selection=bool(
                 capabilities.get("supports_explicit_model_selection")
             ),
-            host_display_name=str(capabilities.get("host_family", "")).strip().title() or "Unknown Host",
+            host_display_name=_host_display_name(str(capabilities.get("host_family", "")).strip()),
             execution_hints=tuple(
                 hint
                 for hint in (
                     "native_spawn_available" if bool(capabilities.get("supports_native_spawn")) else "",
                     (
+                        f"delegation_style:{str(capabilities.get('delegation_style', '')).strip() or 'none'}"
+                    ),
+                    (
                         "prefer_parallel_workers_for_disjoint_write_sets"
-                        if bool(capabilities.get("supports_native_spawn"))
-                        else "prefer_local_or_serial_followthrough_when_spawn_unavailable"
+                        if str(capabilities.get("delegation_style", "")).strip() == "routed_spawn"
+                        else (
+                            "prefer_task_tool_subagents_for_bounded_delegation"
+                            if str(capabilities.get("delegation_style", "")).strip() == "task_tool_subagents"
+                            else "prefer_local_or_serial_followthrough_when_spawn_unavailable"
+                        )
                     ),
                     (
                         "explicit_model_selection_available"

@@ -79,10 +79,11 @@ If `./.odylith/bin/odylith` itself is missing, use:
 ./.odylith/bin/odylith on --repo-root .
 ```
 
-`off` removes the Odylith block in the root `AGENTS.md` file but keeps the
-local runtime and `odylith/` context in place, so Codex falls back to the
-surrounding repo's default behavior. `on` restores that block and puts Odylith
-back on the always-on first path for grounded turns.
+`off` removes the Odylith block from supported root guidance files such as
+`AGENTS.md` and `CLAUDE.md`, but keeps the local runtime and `odylith/`
+context in place, so the host agent falls back to the surrounding repo's
+default behavior. `on` restores those blocks and puts Odylith back on the
+always-on first path for grounded turns.
 
 ## What does uninstall remove?
 
@@ -91,8 +92,8 @@ back on the always-on first path for grounded turns.
 ```
 
 That removes the repo-local runtime integration under `.odylith/` and the
-Odylith block in the root `AGENTS.md` file, but it leaves the `odylith/`
-context tree in place.
+Odylith block from supported root guidance files such as `AGENTS.md` and
+`CLAUDE.md`, but it leaves the `odylith/` context tree in place.
 
 ## What does Odylith own in this repository?
 
@@ -100,7 +101,8 @@ Odylith owns:
 
 - `odylith/`
 - `.odylith/`
-- the Odylith block in the repository root `AGENTS.md`
+- the Odylith block in supported repository root guidance files such as
+  `AGENTS.md` and `CLAUDE.md`
 
 Everything else remains owned by the surrounding repository unless that
 repository explicitly says otherwise.

@@ -74,7 +74,7 @@ def evaluate_admissibility(
         "delegate"
     ):
         outcome = "deny"
-        rationale = "detected host profile does not support native spawn for delegated execution"
+        rationale = "detected host profile does not support native delegated execution"
         violated.append("host_capability:native_spawn")
         alternative = "main_thread_followup"
 

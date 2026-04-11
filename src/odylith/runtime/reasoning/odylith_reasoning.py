@@ -27,6 +27,7 @@ import urllib.error
 import urllib.request
 from typing import Any, Mapping, Protocol, Sequence
 
+from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.reasoning import tribunal_engine
 
 
@@ -60,7 +61,29 @@ _LEGACY_CODEX_MODEL_ALIASES: frozenset[str] = frozenset(
     }
 )
 _CHEAP_STRUCTURED_CODEX_MODEL = "gpt-5.3-codex-spark"
-_CHEAP_STRUCTURED_REASONING_EFFORT = "low"
+_CHEAP_STRUCTURED_CODEX_MODEL_LADDER: tuple[str, ...] = (
+    "gpt-5.3-codex-spark",
+    "gpt-5.3-codex",
+    "gpt-5.4-mini",
+)
+_CHEAP_STRUCTURED_CLAUDE_MODEL_LADDER: tuple[str, ...] = (
+    "haiku",
+    "sonnet",
+)
+_CHEAP_STRUCTURED_REASONING_EFFORT = "medium"
+_CHEAP_STRUCTURED_LADDER_ADVANCE_FAILURE_CODES: frozenset[str] = frozenset(
+    {
+        "credits_exhausted",
+        "rate_limited",
+    }
+)
+_CHEAP_STRUCTURED_MODEL_UNAVAILABLE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\bswitch to another model\b", re.IGNORECASE),
+    re.compile(r"\bunknown model\b", re.IGNORECASE),
+    re.compile(r"\bmodel\b.*\bnot found\b", re.IGNORECASE),
+    re.compile(r"\bmodel\b.*\bunavailable\b", re.IGNORECASE),
+    re.compile(r"\bunsupported model\b", re.IGNORECASE),
+)
 _PROVIDER_RATE_LIMIT_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(r"\brate[\s-]*limit", re.IGNORECASE),
     re.compile(r"\btoo many requests\b", re.IGNORECASE),
@@ -173,13 +196,19 @@ def _normalize_timeout_seconds(value: Any, *, default: float = 20.0) -> float:
         return max(1.0, float(default))
 
 
+def _normalized_failure_text(text: Any) -> str:
+    return re.sub(r"\s+", " ", str(text or "")).strip()
+
+
 def _normalized_failure_excerpt(text: Any, *, max_chars: int = 280) -> str:
-    token = re.sub(r"\s+", " ", str(text or "")).strip()
+    token = _normalized_failure_text(text)
     if not token:
         return ""
     if len(token) <= max_chars:
         return token
-    return token[: max_chars - 3].rstrip() + "..."
+    head_chars = max(80, min(max_chars - 40, 140))
+    tail_chars = max(40, max_chars - head_chars - 5)
+    return f"{token[:head_chars].rstrip()} ... {token[-tail_chars:].lstrip()}"
 
 
 def _match_failure_pattern(
@@ -198,8 +227,9 @@ def _classify_provider_failure(
     returncode: int | None = None,
     status_code: int | None = None,
 ) -> tuple[str, str]:
-    excerpt = _normalized_failure_excerpt(detail_text)
-    haystack = excerpt.lower()
+    normalized_detail = _normalized_failure_text(detail_text)
+    excerpt = _normalized_failure_excerpt(normalized_detail)
+    haystack = normalized_detail.lower()
 
     if _match_failure_pattern(_PROVIDER_CREDIT_PATTERNS, haystack=haystack):
         detail = excerpt or f"{provider_label} reported a possible credit or budget limit."
@@ -292,18 +322,11 @@ def _is_truthy_env(value: Any) -> bool:
 
 
 def _current_local_provider_hint(*, environ: Mapping[str, str]) -> str:
-    bundle_id = str(environ.get("__CFBundleIdentifier", "")).strip().lower()
-    if (
-        any(str(environ.get(key, "")).strip() for key in ("CODEX_THREAD_ID", "CODEX_SHELL"))
-        or "codex" in bundle_id
-    ):
-        return "codex-cli"
-    if (
-        any(key.startswith("CLAUDE_CODE") and _is_truthy_env(environ.get(key, "")) for key in environ)
-        or "claude" in bundle_id
-        or "anthropic" in bundle_id
-    ):
+    detected_host = host_runtime_contract.detect_host_runtime(environ=environ)
+    if detected_host == "claude_cli":
         return "claude-cli"
+    if detected_host == "codex_cli":
+        return "codex-cli"
     return ""
 
 
@@ -406,12 +429,16 @@ def cheap_structured_reasoning_profile(
     config: ReasoningConfig,
     *,
     environ: Mapping[str, str] | None = None,
+    previous_model: str = "",
+    failure_code: str = "",
+    failure_detail: str = "",
 ) -> StructuredReasoningProfile:
     """Return the cheap provider-aware profile for bounded structured narration.
 
     This keeps lightweight structured update jobs fast and cheap across local
-    providers while preserving an explicit override path when a repo or
-    operator has already pinned a model.
+    providers. For local-host narration the ladder is fixed and medium-reasoning:
+    pick the cheapest supported local model first, then step to the next cheap
+    rung only after a provider-budget or model-availability failure.
     """
 
     env = dict(os.environ if environ is None else environ)
@@ -422,7 +449,53 @@ def cheap_structured_reasoning_profile(
             codex_bin=getattr(config, "codex_bin", "codex"),
             claude_bin=getattr(config, "claude_bin", "claude"),
         )
+    elif provider == "openai-compatible":
+        has_endpoint = all(
+            str(token or "").strip()
+            for token in (
+                getattr(config, "base_url", ""),
+                getattr(config, "api_key", ""),
+                getattr(config, "model", ""),
+            )
+        )
+        if not has_endpoint and _allow_implicit_local_provider(environ=env):
+            implicit_provider = _implicit_local_provider_name(
+                environ=env,
+                codex_bin=getattr(config, "codex_bin", "codex"),
+                claude_bin=getattr(config, "claude_bin", "claude"),
+            )
+            if implicit_provider:
+                provider = implicit_provider
     model = _normalize_local_provider_model(provider, getattr(config, "model", ""))
+    ladder: tuple[str, ...]
+    if provider == "codex-cli":
+        ladder = _CHEAP_STRUCTURED_CODEX_MODEL_LADDER
+    elif provider == "claude-cli":
+        ladder = _CHEAP_STRUCTURED_CLAUDE_MODEL_LADDER
+    else:
+        ladder = ()
+    if ladder:
+        prior_model = _normalize_local_provider_model(provider, previous_model)
+        if not prior_model and failure_detail:
+            haystack = _normalized_failure_text(failure_detail).lower()
+            for candidate in ladder:
+                if str(candidate).strip().lower() in haystack:
+                    prior_model = candidate
+                    break
+        advance = str(failure_code or "").strip().lower() in _CHEAP_STRUCTURED_LADDER_ADVANCE_FAILURE_CODES
+        if not advance and failure_detail:
+            advance = _match_failure_pattern(
+                _CHEAP_STRUCTURED_MODEL_UNAVAILABLE_PATTERNS,
+                haystack=_normalized_failure_text(failure_detail),
+            )
+        selected_model = ladder[0]
+        if advance and prior_model in ladder:
+            selected_model = ladder[min(ladder.index(prior_model) + 1, len(ladder) - 1)]
+        return StructuredReasoningProfile(
+            provider=provider,
+            model=selected_model,
+            reasoning_effort=_CHEAP_STRUCTURED_REASONING_EFFORT,
+        )
     if provider == "codex-cli":
         return StructuredReasoningProfile(
             provider=provider,
@@ -569,6 +642,8 @@ class OpenAICompatibleReasoningProvider:
         self._timeout_seconds = float(timeout_seconds)
         self.last_failure_code = ""
         self.last_failure_detail = ""
+        self.last_request_model = ""
+        self.last_request_reasoning_effort = ""
 
     def _clear_failure(self) -> None:
         self.last_failure_code = ""
@@ -580,6 +655,8 @@ class OpenAICompatibleReasoningProvider:
 
     def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
         request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
+        self.last_request_model = request_model
+        self.last_request_reasoning_effort = str(getattr(request, "reasoning_effort", "")).strip().lower()
         if not self._base_url or not self._api_key or not request_model:
             self._record_failure(
                 "unavailable",
@@ -703,6 +780,10 @@ class CodexCliReasoningProvider:
         self._reasoning_effort = str(reasoning_effort or "").strip().lower() or "high"
         self.last_failure_code = ""
         self.last_failure_detail = ""
+        self.last_request_model = ""
+        self.last_request_reasoning_effort = ""
+        self.last_request_model = ""
+        self.last_request_reasoning_effort = ""
 
     def _clear_failure(self) -> None:
         self.last_failure_code = ""
@@ -720,6 +801,8 @@ class CodexCliReasoningProvider:
             _normalize_string(getattr(request, "reasoning_effort", ""), default=self._reasoning_effort)
         )
         request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
+        self.last_request_model = request_model
+        self.last_request_reasoning_effort = reasoning_effort
         timeout_seconds = _resolved_request_timeout_seconds(
             getattr(request, "timeout_seconds", 0.0),
             default=self._timeout_seconds,
@@ -845,6 +928,8 @@ class ClaudeCliReasoningProvider:
             _normalize_string(getattr(request, "reasoning_effort", ""), default=self._reasoning_effort)
         )
         request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
+        self.last_request_model = request_model
+        self.last_request_reasoning_effort = reasoning_effort
         timeout_seconds = _resolved_request_timeout_seconds(
             getattr(request, "timeout_seconds", 0.0),
             default=self._timeout_seconds,
@@ -930,6 +1015,8 @@ def provider_failure_metadata(provider: Any) -> dict[str, str]:
         "provider": provider_name,
         "code": str(getattr(provider, "last_failure_code", "")).strip().lower(),
         "detail": str(getattr(provider, "last_failure_detail", "")).strip(),
+        "model": str(getattr(provider, "last_request_model", "")).strip(),
+        "reasoning_effort": str(getattr(provider, "last_request_reasoning_effort", "")).strip().lower(),
     }
 
 

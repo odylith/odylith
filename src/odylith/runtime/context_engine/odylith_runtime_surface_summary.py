@@ -155,6 +155,7 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
             "latest_execution_governance_authoritative_lane": "",
             "latest_execution_governance_host_family": "",
             "latest_execution_governance_model_family": "",
+            "latest_execution_governance_host_supports_native_spawn": False,
             "latest_execution_governance_target_lane": "",
             "latest_execution_governance_candidate_target_count": 0,
             "latest_execution_governance_diagnostic_anchor_count": 0,
@@ -454,6 +455,9 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
         ),
         "latest_execution_governance_model_family": _string(
             latest_packet.get("execution_governance_model_family")
+        ),
+        "latest_execution_governance_host_supports_native_spawn": bool(
+            latest_packet.get("execution_governance_host_supports_native_spawn")
         ),
         "latest_execution_governance_target_lane": _string(
             latest_packet.get("execution_governance_target_lane")

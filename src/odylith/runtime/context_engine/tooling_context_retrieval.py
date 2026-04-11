@@ -109,7 +109,7 @@ def _infer_task_families(
         families.append(normalized_family)
     seed_paths = _dedupe_strings([*map(str, changed_paths), *map(str, explicit_paths)])
     for path_ref in seed_paths:
-        if path_ref == "AGENTS.md" or path_ref.startswith("agents-guidelines/"):
+        if path_ref in {"AGENTS.md", "CLAUDE.md"} or path_ref.startswith("agents-guidelines/"):
             families.extend(["workflow", "prompt-hygiene", "grounding"])
         if path_ref.startswith("src/odylith/"):
             families.extend(["implementation", "tooling"])
@@ -724,6 +724,7 @@ def build_working_memory_tiers(
         guidance_limit = 2
     cold_sources = [
         "AGENTS.md",
+        "CLAUDE.md",
         "agents-guidelines/indexable-guidance-chunks.v1.json",
         "odylith/registry/source/component_registry.v1.json",
         "odylith/radar/source/INDEX.md",

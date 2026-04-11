@@ -156,15 +156,31 @@
 
 ## Compass Brief Runtime
 - The canonical brief contract lives in [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md).
+- `LLM writes, local code thinks` is the governing implementation rule for
+  Compass briefs.
 - Compass standup briefs should read like a thoughtful maintainer talking to a teammate, not like a dashboard summary or executive memo.
 - The only truthful brief source states are fresh `provider`, exact `cache`, or explicit `unavailable`.
 - Deterministic fallback narration is retired. If the provider does not yield a valid brief and there is no exact same-packet validated cache entry, the standup panel must stay fail-closed.
 - The local brief cache is an acceleration layer only. Cache fingerprints must rotate when narration semantics change, and stale warmed briefs must never imply current traction.
-- Exact cache hits may reuse directly. Non-exact cache replay is not allowed.
+- Exact cache hits may reuse directly, but exact now means exact narration-substrate identity rather than raw packet identity. Non-exact cache replay is not allowed.
+- Build a deterministic narration substrate locally before the provider call:
+  top winner facts, hard section budgets, compact storyline/self-host fields,
+  and prior accepted brief snapshot only.
+- Prefer delta narration over full regeneration. The provider should update
+  from changed winner facts and the prior accepted brief, not reread a giant
+  packet.
+- Call the provider only when the winner story moved materially. Freshness-only
+  drift, non-winner summary churn, and exact substrate matches must stay local.
+- Partial salvage is required. Keep valid global or scoped entries from a mixed
+  bundle response and repair only the missing subset once.
+- Record narration spend telemetry locally: input/output size, latency, repair
+  count, salvage count, skip reason, failure kind, and provider code/detail.
 - Global and scoped Compass narration should warm as one packet-level bundle.
   Do not reintroduce a second scoped provider queue or scope-by-scope provider
   fanout after refresh.
-- Only ready `provider` or exact `cache` briefs get the full standup-brief stage. Warming, failed, budget-limited, or unavailable states must stay compact and clearly labeled.
+- Non-ready Compass brief states must stay explicit and clearly labeled; they
+  must not silently impersonate a ready narrated brief for the selected scope
+  or packet.
 - `Copy Brief` should only appear when a real narrated brief is on screen.
 - Whole-window coverage facts stay upstream evidence; Compass must not synthesize stock coverage bullets to fill the panel.
 - Provider-output transport quirks such as missing sidecar files or transient stdout/file disagreements should degrade gracefully when the same schema-valid payload is still recoverable.
@@ -184,7 +200,14 @@
 ## Runtime Cadence And Overhead
 - Cheap observer polling stays adaptive and fingerprint-based.
 - The default active observer cadence is `30s`, with idle backoff up to `300s`.
+- Compass refresh should be push-first and daemon-first whenever possible:
+  changed projection fingerprint first, daemon-held hot payload second, local
+  rebuild only when the fingerprint actually moved.
 - Tribunal reasoning runs only when a case dossier fingerprint changes or leverage/uncertainty thresholds justify it.
 - Missing Tribunal cache during sync or shell refresh is not a license to start an implicit provider-backed reasoning pass; use deterministic Tribunal fallback there and keep explicit provider use on dedicated reasoning flows.
 - Systemic synthesis runs more selectively still, and remediation only proceeds after explicit approval.
 - The default maintainer loop is `sync + on-demand`; continuous watchers are optional local accelerators, not required background truth.
+- For Compass specifically:
+  - hot unchanged refresh should come from daemon-held in-memory state
+  - shell-safe blocking refresh spends `0` foreground provider calls
+  - live narration spend belongs to the background bundle lane only

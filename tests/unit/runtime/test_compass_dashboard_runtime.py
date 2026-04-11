@@ -568,7 +568,7 @@ def test_build_global_standup_fact_packet_includes_live_self_host_state() -> Non
 
     assert packet["summary"]["self_host"]["active_version"] == "0.1.4"
     current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
-    assert any(fact["kind"] == "self_host_status" for fact in current_execution["facts"])
+    assert not any(fact["kind"] == "self_host_status" for fact in current_execution["facts"])
 
 
 def test_build_scoped_standup_fact_packet_carries_live_self_host_summary_for_runtime_lane() -> None:
@@ -615,6 +615,112 @@ def test_build_scoped_standup_fact_packet_carries_live_self_host_summary_for_run
     assert packet["summary"]["self_host"]["posture"] == "detached_source_local"
     current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
     assert any(fact["kind"] == "self_host_status" for fact in current_execution["facts"])
+
+
+def test_build_scoped_standup_fact_packet_humanizes_direction_and_repo_proof() -> None:
+    packet = runtime._build_scoped_standup_fact_packet(
+        row={
+            "idea_id": "B-083",
+            "title": "Claude Guidance Surface Parity and Install Contract Support",
+            "status": "implementation",
+            "why": {
+                "why_now": "Claude support is already part of the product claim.",
+                "opportunity": (
+                    "Make `CLAUDE.md` a first-class managed companion surface so install, repair, and runtime "
+                    "classification stop treating it like an afterthought."
+                ),
+            },
+            "plan": {
+                "progress_ratio": 0.0,
+                "done_tasks": 0,
+                "total_tasks": 17,
+            },
+            "timeline": {
+                "last_activity_iso": "2026-04-11T07:30:00Z",
+            },
+        },
+        next_actions=[],
+        recent_completed=[],
+        window_events=[],
+        window_transactions=[],
+        execution_updates=[
+            {"summary": "Collapse Compass brief warming into packet-level bundle."},
+            {"summary": "Land CLAUDE.md companion surface install and repair flow."},
+        ],
+        transaction_updates=[],
+        window_hours=24,
+        risk_rows={"bugs": [], "traceability": [], "stale_diagrams": []},
+        risk_summary="Risk posture: traceability warnings need cleanup.",
+        self_host_snapshot={
+            "repo_role": "product_repo",
+            "posture": "pinned_release",
+            "runtime_source": "pinned_runtime",
+            "release_eligible": True,
+            "pinned_version": "0.1.10",
+            "active_version": "0.1.10",
+            "launcher_present": True,
+        },
+        now=dt.datetime(2026, 4, 11, 8, 0, 0, tzinfo=dt.timezone.utc),
+    )
+
+    completed = next(section for section in packet["sections"] if section["key"] == "completed")
+    current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
+    assert any(
+        "Concrete movement in the repo: Land CLAUDE.md companion surface install and repair flow."
+        == fact["text"]
+        for fact in completed["facts"]
+    )
+    direction_fact = next(fact for fact in current_execution["facts"] if fact["kind"] == "direction")
+    assert "product claim" not in direction_fact["text"]
+    assert "The change now is to make `CLAUDE.md` a first-class managed companion surface" in direction_fact["text"]
+    assert not any(fact["kind"] == "self_host_status" for fact in current_execution["facts"])
+
+
+def test_build_scoped_standup_fact_packet_avoids_conditional_direction_fragment() -> None:
+    packet = runtime._build_scoped_standup_fact_packet(
+        row={
+            "idea_id": "B-025",
+            "title": "Cross-Surface Runtime Freshness and UX Browser Hardening",
+            "status": "implementation",
+            "why": {
+                "why_now": "Odylith cannot claim a live operating layer if Compass can go stale.",
+                "opportunity": (
+                    "If Compass and the broader shell invalidate stale runtime state correctly and the browser suite "
+                    "proves cross-tab, reload, and rolling-window behavior, then the Odylith UX feels reactive."
+                ),
+                "architecture_move": (
+                    "The architecture move is to harden runtime freshness across Compass and related shell flows."
+                ),
+            },
+            "plan": {
+                "progress_ratio": 0.2,
+                "done_tasks": 10,
+                "total_tasks": 50,
+            },
+            "timeline": {
+                "last_activity_iso": "2026-04-11T07:30:00Z",
+            },
+        },
+        next_actions=[{"backlog": "B-025", "task": "land the next browser-backed freshness checkpoint"}],
+        recent_completed=[],
+        window_events=[],
+        window_transactions=[],
+        execution_updates=[{"summary": "Checkpoint in-flight runtime and Compass work."}],
+        transaction_updates=[],
+        window_hours=24,
+        risk_rows={"bugs": [], "traceability": [], "stale_diagrams": []},
+        risk_summary="Risk posture: no critical blockers are currently surfaced.",
+        self_host_snapshot={},
+        now=dt.datetime(2026, 4, 11, 8, 0, 0, tzinfo=dt.timezone.utc),
+    )
+
+    current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
+    next_planned = next(section for section in packet["sections"] if section["key"] == "next_planned")
+    direction_fact = next(fact for fact in current_execution["facts"] if fact["kind"] == "direction")
+    next_fact = next(iter(next_planned["facts"]))
+    assert "The change now is to if " not in direction_fact["text"]
+    assert "this gives operators a clearer contract" not in direction_fact["text"]
+    assert "Cross-Surface Runtime Freshness and UX Browser Hardening" in next_fact["text"]
 
 
 def test_build_global_standup_fact_packet_surfaces_live_self_host_risk() -> None:

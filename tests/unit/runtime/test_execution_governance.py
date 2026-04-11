@@ -63,8 +63,19 @@ def test_detect_execution_host_profile_reflects_host_capabilities() -> None:
     assert codex.supports_native_spawn is True
     assert "native_spawn_available" in codex.execution_hints
     assert claude.host_family == "claude"
-    assert claude.supports_native_spawn is False
-    assert "prefer_local_or_serial_followthrough_when_spawn_unavailable" in claude.execution_hints
+    assert claude.delegation_style == "task_tool_subagents"
+    assert claude.supports_native_spawn is True
+    assert "prefer_task_tool_subagents_for_bounded_delegation" in claude.execution_hints
+
+
+def test_detect_execution_host_profile_does_not_backfill_vendor_model_identity() -> None:
+    codex = detect_execution_host_profile("codex_cli")
+    claude = detect_execution_host_profile("claude_code")
+
+    assert codex.model_name == ""
+    assert codex.model_family == ""
+    assert claude.model_name == ""
+    assert claude.model_family == ""
 
 
 def test_evaluate_admissibility_denies_verify_mode_side_exploration_and_requires_reanchor() -> None:
@@ -131,7 +142,7 @@ def test_resource_closure_receipts_validation_and_contradictions_cover_execution
         ["deploy-group-a", "cell-01"],
         dependency_graph={"cell-01": ["deploy-group-a"]},
     )
-    contract = _contract(host_family="claude_code", model_name="claude-sonnet")
+    contract = _contract(host_family="unsupported")
     deploy_decision = policy.evaluate_admissibility(contract, "delegate_verification")
     matrix = validation.synthesize_validation_matrix(contract)
     contradiction_rows = contradictions.detect_contradictions(
@@ -152,7 +163,7 @@ def test_resource_closure_receipts_validation_and_contradictions_cover_execution
     assert any("local fixture" in row.conflicting_evidence for row in contradiction_rows)
 
 
-def test_runtime_lane_policy_blocks_wait_state_and_claude_parallelism() -> None:
+def test_runtime_lane_policy_blocks_wait_state_and_unknown_host_parallelism() -> None:
     wait_guard = runtime_lane_policy.delegation_guard(
         {
             "execution_governance_present": True,
@@ -160,18 +171,26 @@ def test_runtime_lane_policy_blocks_wait_state_and_claude_parallelism() -> None:
             "execution_governance_wait_detail": "deploying cell-01",
         }
     )
+    unknown_guard = runtime_lane_policy.parallelism_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_host_family": "unknown",
+            "execution_governance_host_supports_native_spawn": False,
+        }
+    )
     claude_guard = runtime_lane_policy.parallelism_guard(
         {
             "execution_governance_present": True,
             "execution_governance_host_family": "claude",
-            "execution_governance_model_family": "claude",
+            "execution_governance_host_supports_native_spawn": True,
         }
     )
 
     assert wait_guard.blocked is True
     assert "resume the active external dependency" in wait_guard.reason
-    assert claude_guard.blocked is True
-    assert "Claude Code" in claude_guard.reason
+    assert unknown_guard.blocked is True
+    assert "detected host" in unknown_guard.reason
+    assert claude_guard.blocked is False
 
 
 def test_execution_governance_snapshot_carries_turn_target_and_presentation_policy() -> None:

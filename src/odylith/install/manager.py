@@ -21,7 +21,7 @@ from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_FEATURE_PACK_FILENAME,
     MANAGED_RUNTIME_FEATURE_PACK_SCHEMA_VERSION,
 )
-from odylith.install.agents import has_managed_block, update_agents_file
+from odylith.install.agents import GUIDANCE_FILENAMES, has_managed_block, update_guidance_file
 from odylith.install.migration_audit import LegacyReferenceAudit
 from odylith.install.migration_audit import audit_legacy_odyssey_references
 from odylith.install.repair import reset_local_state as reset_install_local_state
@@ -62,7 +62,12 @@ from odylith.install.state import (
     write_version_pin,
 )
 from odylith.runtime.common.consumer_profile import consumer_profile_path, write_consumer_profile
-from odylith.runtime.common.product_assets import bundled_product_root
+from odylith.runtime.common.guidance_paths import (
+    PROJECT_GUIDANCE_DISPLAY,
+    existing_top_level_guidance_paths,
+    has_project_guidance,
+)
+from odylith.runtime.common.product_assets import bundled_product_root, bundled_project_root_assets_root
 from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.memory import odylith_memory_backend
@@ -143,6 +148,7 @@ class InstallSummary:
     gitignore_updated: bool = False
     pin_changed: bool = False
     pinned_version: str = ""
+    created_guidance_files: tuple[str, ...] = ()
     retention_warnings: tuple[str, ...] = ()
     migration: MigrationSummary | None = None
 
@@ -243,9 +249,8 @@ class StartPreflight:
 
 def _repo_root(path: str | Path, *, require_agents: bool = True) -> Path:
     root = Path(path).expanduser().resolve()
-    agents_file = root / "AGENTS.md"
-    if require_agents and not agents_file.is_file():
-        raise ValueError(f"repo root does not contain AGENTS.md: {root}")
+    if require_agents and not has_project_guidance(repo_root=root):
+        raise ValueError(f"repo root does not contain {PROJECT_GUIDANCE_DISPLAY}: {root}")
     return root
 
 
@@ -615,8 +620,11 @@ def plan_install_lifecycle(
             "repo_owned_truth",
             paths=(
                 "AGENTS.md",
+                "CLAUDE.md",
+                ".claude/",
                 ".gitignore",
                 "odylith/AGENTS.md",
+                "odylith/CLAUDE.md",
                 "odylith/agents-guidelines/",
                 "odylith/skills/",
                 "odylith/runtime/source/",
@@ -717,8 +725,11 @@ def plan_reinstall_lifecycle(
             "managed_guidance",
             paths=(
                 "AGENTS.md",
+                "CLAUDE.md",
+                ".claude/",
                 ".gitignore",
                 "odylith/AGENTS.md",
+                "odylith/CLAUDE.md",
                 "odylith/agents-guidelines/",
                 "odylith/skills/",
             ),
@@ -789,7 +800,7 @@ def plan_upgrade_lifecycle(
         _lifecycle_step(
             "Refresh the consumer profile and managed guidance before changing the active runtime.",
             "managed_guidance",
-            paths=("AGENTS.md", "odylith/AGENTS.md", "odylith/agents-guidelines/", "odylith/skills/"),
+            paths=("AGENTS.md", "CLAUDE.md", ".claude/", "odylith/AGENTS.md", "odylith/CLAUDE.md", "odylith/agents-guidelines/", "odylith/skills/"),
         )
     )
     if source_repo_token:
@@ -1019,12 +1030,55 @@ def _repo_root_guidance_source() -> str:
     )
 
 
+def _repo_root_claude_source() -> str:
+    return "\n".join(
+        [
+            "# CLAUDE.md",
+            "",
+            "@AGENTS.md",
+            "",
+            "## Claude Code",
+            "- This file keeps Claude aligned with the repo-root `AGENTS.md` contract instead of branching into a Claude-only lane.",
+            "- This repo also ships committed Claude project assets under `.claude/`, including `.claude/CLAUDE.md`; use them for Claude-native commands, hooks, rules, subagents, and the auto-memory bridge.",
+            "- Keep this file, the `.claude/` tree, and the scoped `odylith/**/CLAUDE.md` companions aligned with the same Odylith contract.",
+            "- Claude Code is a first-class Odylith delegation host. Codex executes routed leaves through `spawn_agent`; Claude Code executes the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.",
+            "",
+        ]
+    )
+
+
 def _ensure_repo_root_agents_file(*, repo_root: Path) -> bool:
     path = Path(repo_root).resolve() / "AGENTS.md"
     if path.is_file():
         return False
     atomic_write_text(path, _repo_root_guidance_source(), encoding="utf-8")
     return True
+
+
+def _ensure_repo_root_claude_file(*, repo_root: Path) -> bool:
+    path = Path(repo_root).resolve() / "CLAUDE.md"
+    if path.is_file():
+        return False
+    atomic_write_text(path, _repo_root_claude_source(), encoding="utf-8")
+    return True
+
+
+def _ensure_repo_root_guidance_files(*, repo_root: Path) -> tuple[str, ...]:
+    created: list[str] = []
+    if _ensure_repo_root_agents_file(repo_root=repo_root):
+        created.append("AGENTS.md")
+    if _ensure_repo_root_claude_file(repo_root=repo_root):
+        created.append("CLAUDE.md")
+    return tuple(created)
+
+
+def _existing_root_guidance_paths(*, repo_root: Path) -> tuple[Path, ...]:
+    return existing_top_level_guidance_paths(repo_root=repo_root)
+
+
+def _update_root_guidance_files(*, repo_root: Path, install_active: bool, repo_role: str) -> None:
+    for path in _existing_root_guidance_paths(repo_root=repo_root):
+        update_guidance_file(path, install_active=install_active, repo_role=repo_role)
 
 
 def _pyproject_payload(*, repo_root: Path) -> dict[str, object]:
@@ -1074,7 +1128,7 @@ def _customer_bootstrap_guidance() -> str:
             "- `odylith/runtime/source/tooling_shell.v1.json` is local repo shell metadata and stays customer-owned.",
             "- `.odylith/trust/managed-runtime-trust/` is local Odylith runtime trust state and may be refreshed by install, upgrade, feature-pack activation, or doctor.",
             "- `odylith/surfaces/brand/` is an Odylith-managed starter asset set for local HTML surfaces; first install and explicit repair may restore it, but normal upgrades should not rewrite it.",
-            "- `odylith/AGENTS.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets and may be refreshed by install, upgrade, or doctor.",
+            "- `.claude/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets and may be refreshed by install, upgrade, or doctor.",
             "- Truth under `odylith/radar/`, `odylith/technical-plans/`, `odylith/casebook/`, `odylith/registry/`, and `odylith/atlas/` belongs to this repository and must not be rewritten by normal upgrades.",
             "- Product runtime code and product-managed assets run from `.odylith/` and the installed Odylith runtime package.",
             "- Do not treat this folder as disposable cache; it belongs to the repository using Odylith.",
@@ -1099,8 +1153,8 @@ def _customer_bootstrap_guidance() -> str:
             "- If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation; if the issue is Odylith itself in a consumer repo, produce a maintainer-ready feedback packet instead.",
             "- Use Odylith packets and managed skills to narrow the slice, gather proof, and keep intent plus constraints alive across turns, but do not treat grounding as permission to patch `odylith/` for consumer Odylith-fix requests.",
             "- Treat routed or orchestrated native delegation as the default execution path for substantive grounded consumer-lane work when the current host supports it unless Odylith explicitly keeps the slice local.",
-            "- Codex is the currently validated native-spawn host. In Claude Code, use Odylith grounding, memory, surfaces, and local orchestration guidance until native spawn support is explicitly proven there.",
-            "- Treat the managed guidance files under `odylith/AGENTS.md`, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer; keep repo-specific truth in the governance surfaces beside them.",
+            "- Codex and Claude Code are both validated Odylith delegation hosts. Codex uses routed `spawn_agent` payloads; Claude Code uses Task-tool subagents plus the installed `.claude/` project assets under the same grounding, memory, surfaces, and orchestration contract.",
+            "- Treat the managed guidance files under `.claude/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer; keep repo-specific truth in the governance surfaces beside them.",
             "",
             "## Routing",
             "- Context engine behavior: `agents-guidelines/ODYLITH_CONTEXT_ENGINE.md`",
@@ -1132,6 +1186,23 @@ def _customer_bootstrap_guidance() -> str:
             "## Consumer Boundary",
             "- Consumer installs intentionally exclude Odylith product-maintainer release workflow from the local repo guidance and skill set.",
             "- Use the installed Odylith guidance and skills to power repo work here; do not mirror the Odylith product repo release process into this repository.",
+            "",
+        ]
+    )
+
+
+def _customer_bootstrap_claude_source() -> str:
+    return "\n".join(
+        [
+            "# CLAUDE.md",
+            "",
+            "@AGENTS.md",
+            "",
+            "## Claude Code",
+            "- This file exists so Claude Code loads the `odylith/` contract from the sibling `AGENTS.md`.",
+            "- For repo-owned paths outside `odylith/`, follow the repo-root `AGENTS.md` bridge loaded from root `CLAUDE.md` or `.claude/CLAUDE.md`.",
+            "- Use the shared Claude project assets under `../.claude/`, including the auto-memory bridge, project commands, rules, hooks, and subagents, but do not skip the repo-local `odylith` launcher or the governed workflow contract.",
+            "- Claude Code is a first-class Odylith delegation host for this tree. Use the same routed grounding and validation contract as Codex, but execute delegated leaves through Task-tool subagents and the shared `.claude/` project assets.",
             "",
         ]
     )
@@ -1320,6 +1391,9 @@ def _refresh_consumer_managed_guidance(*, repo_root: Path, repo_role: str, inclu
     if str(repo_role).strip() == PRODUCT_REPO_ROLE:
         return
     atomic_write_text(repo_root / "odylith" / "AGENTS.md", _customer_bootstrap_guidance(), encoding="utf-8")
+    atomic_write_text(repo_root / "odylith" / "CLAUDE.md", _customer_bootstrap_claude_source(), encoding="utf-8")
+    _sync_managed_project_claude_assets(repo_root=repo_root)
+    _sync_managed_scoped_guidance(repo_root=repo_root)
     _sync_managed_agents_guidelines(repo_root=repo_root)
     _sync_managed_skills(repo_root=repo_root)
     _sync_managed_release_notes(repo_root=repo_root, version=version)
@@ -1336,6 +1410,7 @@ def _sync_consumer_casebook_bug_index(*, repo_root: Path, repo_role: str) -> Non
 def _ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str = CONSUMER_REPO_ROLE) -> None:
     directories = (
         repo_root / "odylith",
+        repo_root / ".claude",
         repo_root / "odylith" / "runtime" / "source",
         repo_root / "odylith" / "runtime" / "source" / "release-notes",
         repo_root / "odylith" / "agents-guidelines",
@@ -1400,6 +1475,34 @@ def _sync_managed_agents_guidelines(*, repo_root: Path) -> None:
         shutil.copy2(source_path, target_path)
 
 
+def _sync_managed_scoped_guidance(*, repo_root: Path) -> None:
+    source_root = bundled_product_root()
+    target_root = repo_root / "odylith"
+    target_root.mkdir(parents=True, exist_ok=True)
+    for source_path in source_root.rglob("*"):
+        if not source_path.is_file() or source_path.name not in GUIDANCE_FILENAMES:
+            continue
+        relative_path = source_path.relative_to(source_root)
+        if len(relative_path.parts) == 1:
+            continue
+        target_path = target_root / relative_path
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, target_path)
+
+
+def _sync_managed_project_claude_assets(*, repo_root: Path) -> None:
+    source_root = bundled_project_root_assets_root()
+    if not source_root.is_dir():
+        return
+    target_root = Path(repo_root).resolve()
+    for source_path in source_root.rglob("*"):
+        if not source_path.is_file() or source_path.name == ".DS_Store":
+            continue
+        target_path = target_root / source_path.relative_to(source_root)
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, target_path)
+
+
 def _sync_managed_skills(*, repo_root: Path) -> None:
     source_root = bundled_product_root() / "skills"
     if not source_root.is_dir():
@@ -1450,7 +1553,7 @@ def _sync_managed_release_notes(*, repo_root: Path, version: str = "") -> None:
 
 def _has_customer_starter_tree(*, repo_root: Path) -> bool:
     odylith_root = repo_root / "odylith"
-    return odylith_root.is_dir() and (odylith_root / "AGENTS.md").is_file()
+    return odylith_root.is_dir() and any((odylith_root / name).is_file() for name in GUIDANCE_FILENAMES)
 
 
 def _runtime_python(runtime_root: Path | None) -> Path | None:
@@ -2216,8 +2319,9 @@ def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
             repo_schema_version=pin.repo_schema_version,
             migration_required=False,
         )
-    update_agents_file(
-        root / "AGENTS.md",
+    _ensure_repo_root_guidance_files(repo_root=root)
+    _update_root_guidance_files(
+        repo_root=root,
         install_active=install_integration_enabled(state),
         repo_role=repo_role,
     )
@@ -2254,7 +2358,8 @@ def install_bundle(
     root = _repo_root(repo_root, require_agents=False)
     migration = _migrate_legacy_install_if_needed(repo_root=root)
     with install_lock(repo_root=root):
-        repo_guidance_created = _ensure_repo_root_agents_file(repo_root=root)
+        created_guidance_files = _ensure_repo_root_guidance_files(repo_root=root)
+        repo_guidance_created = bool(created_guidance_files)
         git_repo_present = _git_repo_present(repo_root=root)
         gitignore_updated = _ensure_odylith_gitignore_entry(repo_root=root, git_repo_present=git_repo_present)
         previous_state = load_install_state(repo_root=root)
@@ -2264,7 +2369,7 @@ def install_bundle(
         repo_role = product_repo_role(repo_root=root)
         _ensure_customer_bootstrap(repo_root=root, version=resolved_version, repo_role=repo_role)
         written_profile = write_consumer_profile(repo_root=root)
-        update_agents_file(root / "AGENTS.md", install_active=integration_enabled, repo_role=repo_role)
+        _update_root_guidance_files(repo_root=root, install_active=integration_enabled, repo_role=repo_role)
         existing_runtime = current_runtime_root(repo_root=root)
         existing_version = current_runtime_version(repo_root=root)
         runtime_verification: dict[str, object] = (
@@ -2409,6 +2514,7 @@ def install_bundle(
             gitignore_updated=gitignore_updated,
             pin_changed=pin_changed,
             pinned_version=pinned_version,
+            created_guidance_files=created_guidance_files,
             retention_warnings=retention_warnings,
             migration=migration,
         )
@@ -2436,7 +2542,7 @@ def upgrade_install(
             raise ValueError("customer Odylith starter tree missing; run `odylith install --repo-root .` or `odylith doctor --repo-root . --repair`")
         written_profile = write_consumer_profile(repo_root=root)
         integration_enabled = install_integration_enabled(previous_state)
-        update_agents_file(root / "AGENTS.md", install_active=integration_enabled, repo_role=repo_role)
+        _update_root_guidance_files(repo_root=root, install_active=integration_enabled, repo_role=repo_role)
         _refresh_consumer_managed_guidance(
             repo_root=root,
             repo_role=repo_role,
@@ -2754,7 +2860,7 @@ def reinstall_install(
         raise ValueError(
             "`odylith reinstall` is only supported for consumer repos; use `odylith upgrade` or `odylith doctor --repo-root . --repair` in the Odylith product repo"
         )
-    _ensure_repo_root_agents_file(repo_root=root)
+    _ensure_repo_root_guidance_files(repo_root=root)
     _ensure_odylith_gitignore_entry(repo_root=root)
     request_token = str(version or "").strip() or "latest"
     resolved_release = fetch_release(repo_root=root, repo=release_repo, version=request_token)
@@ -2868,7 +2974,7 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
 
         written_profile = write_consumer_profile(repo_root=root)
         integration_enabled = install_integration_enabled(state)
-        update_agents_file(root / "AGENTS.md", install_active=integration_enabled, repo_role=repo_role)
+        _update_root_guidance_files(repo_root=root, install_active=integration_enabled, repo_role=repo_role)
         verification = {}
         installed_versions_payload = state.get("installed_versions")
         if isinstance(installed_versions_payload, Mapping):
@@ -2935,7 +3041,11 @@ def uninstall_bundle(*, repo_root: str | Path) -> None:
     root = _repo_root(repo_root)
     with install_lock(repo_root=root):
         state = load_install_state(repo_root=root)
-        update_agents_file(root / "AGENTS.md", install_active=False, repo_role=product_repo_role(repo_root=root))
+        _update_root_guidance_files(
+            repo_root=root,
+            install_active=False,
+            repo_role=product_repo_role(repo_root=root),
+        )
         if state:
             updated_state = dict(state)
             updated_state["detached"] = True
@@ -2960,7 +3070,11 @@ def set_agents_integration(*, repo_root: str | Path, enabled: bool) -> tuple[boo
     with install_lock(repo_root=root):
         state = load_install_state(repo_root=root)
         write_consumer_profile(repo_root=root)
-        update_agents_file(root / "AGENTS.md", install_active=enabled, repo_role=product_repo_role(repo_root=root))
+        _update_root_guidance_files(
+            repo_root=root,
+            install_active=enabled,
+            repo_role=product_repo_role(repo_root=root),
+        )
         updated_state = dict(state)
         active_version = _observed_active_version(repo_root=root, state=updated_state)
         updated_state["detached"] = _effective_detached(state=updated_state, active_version=active_version)
@@ -3085,8 +3199,8 @@ def doctor_bundle(
     if reset_local_state and not repair:
         raise ValueError("reset_local_state requires repair=True")
     candidate_root = Path(repo_root).expanduser().resolve()
-    if not (candidate_root / "AGENTS.md").is_file():
-        return False, f"repo root does not contain AGENTS.md: {candidate_root}"
+    if not has_project_guidance(repo_root=candidate_root):
+        return False, f"repo root does not contain {PROJECT_GUIDANCE_DISPLAY}: {candidate_root}"
 
     root = _repo_root(candidate_root)
     cleared_paths: list[str] = []
@@ -3099,8 +3213,10 @@ def doctor_bundle(
     has_customer_tree = _has_customer_starter_tree(repo_root=root)
     has_consumer_profile = consumer_profile_path(repo_root=root).is_file()
     has_version_pin = version_pin_path(repo_root=root).is_file()
-    agents_text = (root / "AGENTS.md").read_text(encoding="utf-8")
-    has_managed = has_managed_block(agents_text)
+    guidance_block_state = {
+        path.name: has_managed_block(path.read_text(encoding="utf-8"))
+        for path in _existing_root_guidance_paths(repo_root=root)
+    }
     integration_enabled = install_integration_enabled(state)
     status = version_status(repo_root=root)
     repo_role = status.repo_role
@@ -3127,7 +3243,8 @@ def doctor_bundle(
     if consumer_lane_violation:
         runtime_healthy = False
         runtime_reasons.append(consumer_lane_violation)
-    healthy = runtime_healthy and has_customer_tree and has_consumer_profile and has_version_pin and has_managed == integration_enabled and bool(state)
+    has_expected_guidance_state = all(guidance_block_state.values()) if integration_enabled else not any(guidance_block_state.values())
+    healthy = runtime_healthy and has_customer_tree and has_consumer_profile and has_version_pin and has_expected_guidance_state and bool(state)
 
     if repair:
         _ensure_customer_bootstrap(
@@ -3137,7 +3254,7 @@ def doctor_bundle(
         )
         _ensure_odylith_gitignore_entry(repo_root=root)
         written_profile = write_consumer_profile(repo_root=root)
-        update_agents_file(root / "AGENTS.md", install_active=integration_enabled, repo_role=repo_role)
+        _update_root_guidance_files(repo_root=root, install_active=integration_enabled, repo_role=repo_role)
         runtime_verification: dict[str, object] = runtime_verification_evidence(runtime_root) if runtime_root is not None else {}
         if not runtime_healthy:
             if repo_role == PRODUCT_REPO_ROLE:
@@ -3253,7 +3370,7 @@ def doctor_bundle(
         and has_customer_tree
         and has_consumer_profile
         and has_version_pin
-        and has_managed == integration_enabled
+        and has_expected_guidance_state
         and bool(state)
     ):
         if status.repo_role == PRODUCT_REPO_ROLE:
@@ -3301,10 +3418,14 @@ def doctor_bundle(
         reasons.append("install state missing")
     if not has_version_pin:
         reasons.append("product version pin missing")
-    if integration_enabled and not has_managed:
-        reasons.append("Odylith scope block missing from AGENTS.md")
-    elif not integration_enabled and has_managed:
-        reasons.append("Odylith scope block present while Odylith is off")
+    if integration_enabled:
+        for filename, managed in sorted(guidance_block_state.items()):
+            if not managed:
+                reasons.append(f"Odylith scope block missing from {filename}")
+    else:
+        for filename, managed in sorted(guidance_block_state.items()):
+            if managed:
+                reasons.append(f"Odylith scope block present in {filename} while Odylith is off")
     if not has_consumer_profile:
         reasons.append("consumer profile missing")
     return False, "; ".join(reasons)

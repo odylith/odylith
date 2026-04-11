@@ -91,11 +91,11 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert " ██████╗ ██████╗ ██╗   ██╗██╗     ██╗████████╗██╗  ██╗" in text
     assert "██╔═══██╗██╔══██╗╚██╗ ██╔╝██║     ██║╚══██╔══╝██║  ██║" in text
     assert " ╚═════╝ ╚═════╝    ╚═╝   ╚══════╝╚═╝   ╚═╝   ╚═╝  ╚═╝" in text
-    assert "repo_root_reason='agents'" in text
+    assert "repo_root_reason='guidance'" in text
     assert "repo_root_reason='git'" in text
     assert "repo_root_reason='folder'" in text
-    assert "No root AGENTS.md was found above this directory. Odylith will create one at the detected Git root." in text
-    assert "No enclosing AGENTS.md or .git was found. Odylith will treat the current folder as the repo root and create a root AGENTS.md here." in text
+    assert "No root AGENTS.md, CLAUDE.md, or .claude/CLAUDE.md was found above this directory. Odylith will create the root guidance entrypoints at the detected Git root and sync the Claude project assets there." in text
+    assert "No enclosing AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, or .git was found. Odylith will treat the current folder as the repo root and create root AGENTS.md, root CLAUDE.md, and project .claude assets here." in text
     assert "Git-aware features stay limited until this folder is backed by Git." in text
     assert "working-tree intelligence, background autospawn, and git-fsmonitor watcher help stay reduced for now." in text
     assert 'say "Odylith is getting this repo ready."' in text
@@ -184,7 +184,53 @@ def test_generated_install_script_detect_repo_root_is_strict_mode_safe_from_nest
     completed = _run_detect_repo_root(tmp_path=tmp_path, install_script_text=output_path.read_text(encoding="utf-8"), cwd=nested)
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    assert completed.stdout.splitlines() == [str(repo_root), "agents"]
+    assert completed.stdout.splitlines() == [str(repo_root), "guidance"]
+
+
+def test_generated_install_script_detect_repo_root_accepts_nested_claude_path(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    repo_root = tmp_path / "fresh-install"
+    repo_root.mkdir()
+    (repo_root / "CLAUDE.md").write_text("# Repo Root\n", encoding="utf-8")
+    nested = repo_root / "workspace" / "nested"
+    nested.mkdir(parents=True)
+
+    completed = _run_detect_repo_root(tmp_path=tmp_path, install_script_text=output_path.read_text(encoding="utf-8"), cwd=nested)
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout.splitlines() == [str(repo_root), "guidance"]
+
+
+def test_generated_install_script_detect_repo_root_accepts_nested_project_claude_path(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    repo_root = tmp_path / "fresh-install"
+    (repo_root / ".claude").mkdir(parents=True)
+    (repo_root / ".claude" / "CLAUDE.md").write_text("# Project Root\n", encoding="utf-8")
+    nested = repo_root / "workspace" / "nested"
+    nested.mkdir(parents=True)
+
+    completed = _run_detect_repo_root(tmp_path=tmp_path, install_script_text=output_path.read_text(encoding="utf-8"), cwd=nested)
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout.splitlines() == [str(repo_root), "guidance"]
 
 
 def test_generated_install_script_detect_repo_root_falls_back_to_current_folder_without_markers(tmp_path: Path) -> None:

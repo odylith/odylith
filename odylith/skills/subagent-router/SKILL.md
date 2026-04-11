@@ -11,4 +11,4 @@ Use this skill when the task is about choosing local execution versus delegation
 - keep reasons-to-stay-local explicit
 - let Odylith-earned depth and delegation readiness drive the model ladder instead of manually jumping to the heaviest tier
 - prefer additive routing contracts over prompt-only conventions
-- treat native spawn routes as capability-gated; Codex is the validated native-spawn host today, while other runtimes use the same routed contract as local guidance until their spawn path is explicitly tested
+- treat native delegation as capability-gated by host contract; Codex uses routed `spawn_agent` payloads, while Claude Code uses Task-tool subagents plus the same routed contract and checked-in `.claude/` project assets

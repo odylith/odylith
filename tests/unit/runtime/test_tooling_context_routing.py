@@ -67,8 +67,8 @@ def test_build_narrowing_guidance_uses_concrete_repo_grounding_fallback_when_no_
     )
 
     assert guidance["required"] is True
-    assert guidance["next_fallback_command"] == r"rg --files | rg 'AGENTS\.md|odylith/AGENTS\.md|pyproject\.toml'"
-    assert guidance["next_fallback_followup"] == "sed -n '1,200p' AGENTS.md"
+    assert guidance["next_fallback_command"] == r"rg --files | rg 'AGENTS\.md|CLAUDE\.md|odylith/(AGENTS|CLAUDE)\.md|pyproject\.toml'"
+    assert guidance["next_fallback_followup"] == "if [ -f AGENTS.md ]; then sed -n '1,200p' AGENTS.md; else sed -n '1,200p' CLAUDE.md; fi"
 
 
 def test_build_narrowing_guidance_keeps_working_tree_scope_degraded_task_first() -> None:

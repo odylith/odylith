@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.install.fs import atomic_write_text
+from odylith.runtime.common.guidance_paths import has_project_guidance
 
 
 PROFILE_VERSION = "v1"
@@ -224,7 +225,7 @@ def _resolve_repo_root_for_profile(repo_root: Path | None = None) -> Path | None
     if repo_root is not None:
         return Path(repo_root).resolve()
     cwd = Path.cwd().resolve()
-    if not (cwd / "AGENTS.md").is_file():
+    if not has_project_guidance(repo_root=cwd):
         return None
     if (cwd / ".odylith").exists() or (cwd / "odylith").exists() or (cwd / "src" / "odylith").is_dir():
         return cwd

@@ -181,7 +181,10 @@ workstream list from traceability before the operator trusts the page.
 Compass is exposed through the top-level CLI:
 - `odylith compass refresh`
   Canonical Compass runtime refresh command with one bounded refresh contract
-  plus explicit `--wait`/`--status`.
+  plus explicit `--wait`/`--status`. When the context-engine daemon is
+  available, this command should behave like a thin client over daemon-held
+  hot state instead of paying fresh process/import costs for unchanged
+  fingerprints.
 - `odylith compass log`
   Append one timeline event.
 - `odylith compass update`
@@ -206,16 +209,31 @@ than assuming the newly activated launcher already exposes the direct
 `odylith compass refresh` subcommand surface.
 
 ## Runtime Pipeline
-### 1. Collect evidence
+### 1. Detect meaningful change
+Compass is change-driven, not timer-driven.
+- best path: context-engine daemon wait on projection-fingerprint change
+- second path: local watcher reuse when the daemon is absent
+- last resort: coarse polling only on machines with no real watcher backend
+
+### 2. Collect evidence
 Compass loads backlog, plan, bug, diagram, and stream inputs and resolves
 component/workstream linkage.
 
-### 2. Select source events
-`compass_dashboard_runtime.py` ranks recent events by event kind, workstream
-signal, and source-vs-generated artifact mix so implementation and decision
-events dominate the visible narrative.
+### 3. Build local runtime DAG
+Compass should think locally before it narrates:
+- projection inputs and activity collection
+- execution projection
+- window facts
+- narration substrates
+- narrated bundle metadata
+- runtime payload
+- shell/history writes
 
-### 3. Build runtime payload
+Each node has its own fingerprint and reusable output. Hot refresh should
+short-circuit when the projection fingerprint is unchanged, and no-op writes
+must stay no-op when the rendered bytes did not change.
+
+### 4. Build runtime payload
 The runtime builder shapes:
 - current workstream state
 - current release summary
@@ -228,9 +246,9 @@ The runtime builder shapes:
 - freshness posture
 - product-repo self-host posture
 - Tribunal or operator readout slices
-- standup brief inputs
+- standup brief inputs and narration substrates
 
-### 4. Write snapshots and history
+### 5. Write snapshots and history
 `refresh_runtime_artifacts(...)` writes current snapshot files, keeps a 15-day
 active daily history lane by default, compresses older daily snapshots into
 `history/archive/`, and honors explicit restore pins for older dates that must
@@ -239,11 +257,18 @@ not to a small recency window; when the current payload still matches, Compass
 must reuse it and cheaply rewrite today's daily history files instead of
 forcing a full runtime rebuild just because the date rolled over.
 
-### 5. Render shell
+### 6. Render shell
 The shell renderer externalizes the payload and control script into the checked
 in surface bundle.
 
-### 6. Reconcile stale runtime truth
+### 7. Warm live narration in the background
+Foreground Compass refresh stays provider-free under `shell-safe`.
+- exact ready narration may replay from cache immediately
+- fresh narration warms later through one packet-level bundle
+- the maintenance lane dedupes by runtime packet fingerprint and uses explicit
+  provider failure classes plus slow wallet-safe backoff
+
+### 8. Reconcile stale runtime truth
 At page load, Compass compares the visible runtime snapshot against the live
 traceability release read model. If the active release id, targeted members,
 completed members, or current-workstream rows drift, Compass patches the view
@@ -277,6 +302,7 @@ Compass consumes that contract through the prompt, voice validator, cache
 epoch, renderer, copied brief text, and fail-closed runtime states:
 - Compass brief source states are only `provider`, exact `cache`, or explicit
   `unavailable`.
+- `LLM writes, local code thinks` is the governing implementation rule.
 - Deterministic or templated fallback narration is retired. If Compass cannot
   validate a provider-authored brief and no exact same-packet narrated brief
   exists, the standup panel must say so explicitly.
@@ -285,6 +311,27 @@ epoch, renderer, copied brief text, and fail-closed runtime states:
 - Whole-window coverage facts are evidence, not a required workstream roll
   call. Compass must not inject stock coverage bullets just to satisfy
   bookkeeping.
+- Provider-facing narration inputs must come from the deterministic narration
+  substrate, not the raw fact packet.
+- Exact cache identity keys off the narration substrate fingerprint, not
+  unrelated packet noise.
+- Provider generation is delta-first:
+  - previous accepted brief snapshot
+  - changed winner facts
+  - dropped winner facts
+  - current winning substrate
+- Provider-worthiness gating is local and deterministic. If the winner story
+  did not move, Compass must skip the provider call and record that explicitly
+  instead of retrying or pretending the brief failed.
+- One packet change means one narrated bundle request in the normal path, with
+  one subset repair pass max.
+- Partial salvage is required. Valid global and scoped entries from a mixed
+  bundle response must persist immediately instead of being discarded because a
+  sibling entry was malformed.
+- Narration spend telemetry is a runtime artifact, not a dashboard anecdote.
+  Compass records input/output size, latency, repair count, salvage count,
+  skip reason, failure kind, and provider code/detail for every bundle
+  attempt.
 - The brief should read like a thoughtful maintainer talking to a teammate:
   friendly, calm, direct, simple, factual, precise, and human.
 - Quiet celebration is allowed when something real landed. Calm reassurance is
@@ -293,12 +340,9 @@ epoch, renderer, copied brief text, and fail-closed runtime states:
   roll-call bullets are correctness failures, not copy polish.
 - If the cited facts disappear and a bullet still sounds plausible, Compass has
   drifted into generic narration and the brief is invalid.
-- The full standup-brief stage is reserved for ready `provider` or exact
-  `cache` briefs. Warming, failed, budget-limited, or unavailable states must
-  collapse into a compact truthful status instead of taking the same visual
-  weight as a finished narrated brief.
-- `Copy Brief` belongs to the live brief contract. Compass should expose it
-  only when a real narrated brief is on screen.
+- Non-ready Compass brief states must stay explicit, truthful, and visibly
+  labeled. They must not impersonate a ready narrated brief for the selected
+  scope or packet.
 - Global and scoped narration are one bundle contract, not two independent
   provider products. For one new runtime packet, Compass warms one narrated
   bundle containing any missing global windows plus any missing verified scoped
@@ -359,22 +403,25 @@ churn does not drown out meaningful implementation evidence.
   enough to feed Compass without model calls on the normal path, and Compass
   should consume that upstream material instead of rediscovering the same
   timeline meaning scope by scope.
-- The expensive live narration path is no longer the main long pole on the
-  default shell-safe refresh. The remaining runtime wall clock now sits mostly
-  in upstream window-fact preparation, so future latency cuts should target
-  fact-packet reuse and incremental projection before widening model work.
+- The expensive live narration path must not be the main long pole on the
+  default shell-safe refresh. When runtime still misses budget, fix local DAG
+  reuse, daemon hot-state reuse, and no-op write behavior before widening
+  model work.
 - `odylith compass refresh --repo-root .` is the canonical operator refresh
   path. Compass now exposes one bounded refresh contract: it writes
   `refresh-state.v1.json`, returns queued truth promptly when not waiting, and
   exposes request status instead of pretending minute-scale deep rerenders are
   a healthy interactive product behavior.
-- The bounded Compass refresh may reuse only exact same-packet narration on the
-  foreground path. `shell-safe` refresh never blocks on a fresh provider call:
+- The bounded Compass refresh may reuse only exact same-substrate narration on
+  the foreground path. `shell-safe` refresh never blocks on a fresh provider call:
   it reuses exact global or scoped brief cache when available, otherwise
   returns the truthful current brief state immediately, enqueues one packet
   bundle containing any missing global and verified scoped briefs, and lets the
   UI pick up the warmed results later. Non-exact cache carry-forward is not
   allowed.
+- The provider should receive compact delta substrates, not giant raw packets.
+  Local code must rank, compress, and diff first so the model only spends
+  tokens writing prose.
 - Cheapness is part of the product contract, not an implementation detail.
   Compass has only two acceptable runtime lanes now: hot unchanged refresh
   under `50ms` of internal runtime work and complete cold shell-safe refresh
@@ -418,10 +465,14 @@ churn does not drown out meaningful implementation evidence.
   or operator asks for a "full" Compass refresh in prose, route that intent to
   `odylith compass refresh --repo-root . --wait` instead of inventing a second
   noun, flag, or stricter acceptance bar.
-- When live provider narration is needed for Compass briefs or similar simple
-  refresh-time brief enrichment, the default model class is the cheap-fast
-  coding path: `gpt-5.3-codex-spark` with low reasoning effort, unless a
-  narrower slice proves that a more expensive model is required.
+- When live provider narration is needed for Compass briefs or similar
+  refresh-time brief enrichment, detect the active local host and stay on the
+  bounded structured local ladder with `medium` reasoning only. On Codex that means
+  `gpt-5.3-codex-spark` first, then `gpt-5.3-codex`, then `gpt-5.4-mini` only
+  if the cheaper rung is exhausted or unavailable. On Claude that means
+  `haiku` first, then `sonnet` only if the cheaper rung is exhausted or
+  unavailable. Do not keep retrying the same failed cheap rung indefinitely,
+  and do not escalate to a more expensive lane without evidence.
 - Runtime mode for a refresh request resolves once before launch. Timeout or
   mid-run failure must be terminal for that request rather than silently
   retrying the same render through a second wrapper path.
@@ -555,7 +606,6 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 - 2026-04-10: Centralized Compass brief voice under the Registry-owned `briefs-voice-contract` component, retired deterministic brief fallback, and tightened the brief runtime to fresh provider, exact cache, or explicit unavailable. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
-- 2026-04-10: Tightened standup-brief presentation so only real narrated briefs keep the full card, non-ready states stay compact and truthful, and the copy action hides unless a real brief is on screen. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Collapsed global and scoped standup warming into one packet-level narrated bundle, removed separate scoped maintenance fanout, and made verified scoped briefs warm through the same provider transaction as their parent global windows. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Reaffirmed that the default unscoped `Current Workstreams` board is residual-only. Lanes already visible in `Programs` or `Release Targets` are filtered out there, while explicit scoped selection may still surface the chosen workstream directly. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-095`)
 - 2026-04-09: Removed the backend `12`-row truncation from `Current Workstreams` so Compass now ranks the full eligible set and lets the visible scope/window filters decide what remains on screen instead of hiding rows before the operator's chosen focus rules apply. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

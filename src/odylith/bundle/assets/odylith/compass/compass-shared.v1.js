@@ -345,11 +345,15 @@ initQuickTooltips();
         const globalReadySource = String(globalReady && globalReady.source ? globalReady.source : "").trim();
         if (hasScopedSelection && scopedReady) return scopedReady;
         if (hasScopedSelection && scopedBrief) {
+          const diagnostics = scopedBrief.diagnostics && typeof scopedBrief.diagnostics === "object" ? scopedBrief.diagnostics : {};
+          const reason = String(diagnostics.reason || "").trim().toLowerCase();
+          if (reason === "scoped_window_inactive") {
+            return scopedBrief;
+          }
           if (globalReady) {
-            const diagnostics = scopedBrief.diagnostics && typeof scopedBrief.diagnostics === "object" ? scopedBrief.diagnostics : {};
-            const reason = String(diagnostics.reason || "").trim().toLowerCase() || "scoped_brief_unavailable";
+            const fallbackReason = reason || "scoped_brief_unavailable";
             const message = scopedLiveBriefFallbackMessage(scopedWorkstream, diagnostics);
-            return scopedFallbackToGlobalBrief(globalReady, scopedWorkstream, message, `scoped_${reason}_showing_global`);
+            return scopedFallbackToGlobalBrief(globalReady, scopedWorkstream, message, `scoped_${fallbackReason}_showing_global`);
           }
           return scopedBrief;
         }

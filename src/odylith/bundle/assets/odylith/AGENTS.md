@@ -57,7 +57,7 @@ Scope: applies to Odylith paths under `odylith/`.
   files the agent may edit. Interpreter choice and file-edit authority are
   separate concerns.
 - In Codex, treat routed or orchestrated native spawn as the default execution path for substantive grounded consumer-lane work unless Odylith explicitly keeps the slice local.
-- Native subagent spawning is a Codex-only workflow today. Do not assume the same spawn contract is supported in Claude Code.
+- Codex and Claude Code are both validated Odylith delegation hosts. Codex uses routed `spawn_agent` payloads; Claude Code uses Task-tool subagents plus the checked-in `.claude/` project assets under the same grounding and validation contract.
 
 ## Source File Size Discipline
 - For Odylith-owned hand-maintained source-of-truth fixes, follow the product

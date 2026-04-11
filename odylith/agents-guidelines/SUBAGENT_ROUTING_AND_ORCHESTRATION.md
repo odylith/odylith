@@ -1,6 +1,6 @@
 # Subagent Routing And Orchestration
 
-- Native subagent spawning through Odylith is capability-gated. Codex is the currently validated native-spawn host; treat Claude Code as local-guidance-only until Odylith's spawn contract is explicitly tested there.
+- Native delegation through Odylith remains capability-gated by host contract, not by product loyalty. Codex executes routed leaves through `spawn_agent`; Claude Code executes the same bounded delegation contract through Task-tool subagents plus the checked-in `.claude/` commands, hooks, rules, skills, and project assets.
 - For both Codex and Claude Code, Odylith grounding comes before agent-native repo search on substantive repo work; local search is fallback after Odylith signals ambiguity, missing anchors, or widening.
 - Use bounded delegation by default for substantive grounded work when the current host supports native spawn across the consumer lane and both Odylith product-repo maintainer postures, including pinned dogfood and detached `source-local` maintainer dev, when it improves correctness, speed, or separation of concerns.
 - Consumer Odylith-fix requests are the hard exception: delegated leaves must not write under `odylith/` or `.odylith/`, and routed plans should stay local when the proposed fix is local Odylith mutation rather than diagnosis and handoff.
@@ -26,7 +26,7 @@
 - Keep `main_thread_followups` in the main thread after delegated leaves integrate; they are not missing worker tasks.
 - Pass emitted `context_signals`, `spawn_task_message`, `model`, and `reasoning_effort` through unchanged instead of rebuilding the contract manually.
 - Once the retained contract marks the slice route-ready, prefer spawning through the emitted payload instead of improvising your own model ladder or decomposition.
-- In Claude Code or any non-Codex agent runtime, use the emitted plan as local execution guidance and do not try to spawn native subagents.
+- In Claude Code or any non-Codex agent runtime, use the emitted plan together with the checked-in `.claude/` project assets as local execution guidance and do not try to spawn native subagents.
 
 ## Delegated Leaf Contract
 - Spawn delegated leaves with the emitted `model` and `reasoning_effort` explicitly; never inherit parent-thread defaults.

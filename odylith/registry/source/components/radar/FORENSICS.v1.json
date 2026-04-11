@@ -48,24 +48,24 @@
     {
       "artifacts": [
         "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
         "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
         "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "odylith/radar/source/CLAUDE.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+        "src/odylith/bundle/assets/odylith/radar/source/CLAUDE.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
       ],
       "confidence": "high",
-      "event_index": 74,
+      "event_index": 76,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md, odylith/radar/source/ideas/2026-03/2026-03-29-odylith-local-provider-autodetect-and-compass-ai-brief-recovery.md +6 more",
-      "ts_iso": "2026-04-10T21:40:20-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md, src/odylith/bundle/assets/odylith/radar/source/INDEX.md +6 more",
+      "ts_iso": "2026-04-11T01:10:37-07:00",
       "workstreams": []
     },
     {

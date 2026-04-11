@@ -37,6 +37,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.common.consumer_profile import is_component_forensics_path
 from odylith.runtime.common.consumer_profile import truth_root_path
+from odylith.runtime.common.guidance_paths import has_project_guidance
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference
 from odylith.runtime.governance.component_registry_path_aliases import equivalent_component_artifact_tokens
@@ -1086,7 +1087,7 @@ def _extract_feature_history_plan_refs(*, spec_path: Path, summary: str) -> list
             candidate
             for candidate in (spec_path.parent, *spec_path.parents)
             if (candidate / ".git").exists()
-            or (candidate / "AGENTS.md").is_file()
+            or has_project_guidance(repo_root=candidate)
             or (candidate / "odylith").is_dir()
         ),
         spec_path.parent,

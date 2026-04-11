@@ -16,6 +16,8 @@
 > surface that keeps intent, constraints, topology, and execution state
 > visible.
 >
+> Odylith supports both Codex and Claude Code as first-class agent hosts.
+>
 > Odylith is GA on its supported public install platforms as of `2026-04-07`.
 
 ## Quick Start
@@ -31,9 +33,10 @@ any subdirectory inside the same repo. The current GA platform contract covers
 macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). Intel macOS and Windows
 are not part of the current GA platform set.
 
-After install, open the repo in Codex or Claude Code. For first-run behavior,
-the first prompt to use, browser-shell behavior, and repo-root selection or
-reduced-mode details, see [First Run In An Odylith Repo](odylith/README.md#first-run).
+After install, open the repo in Codex or Claude Code. Both are supported
+interactive host lanes. For first-run behavior, the first prompt to use,
+browser-shell behavior, and repo-root selection or reduced-mode details, see
+[First Run In An Odylith Repo](odylith/README.md#first-run).
 For more example prompts, see
 [Starter Prompt Inspirations](docs/STARTER_PROMPT_INSPIRATIONS.md).
 
@@ -247,10 +250,10 @@ In README framing, `odylith_off` is the raw host CLI lane.
 
 Current public proof posture is local-first memory on LanceDB plus Tantivy.
 These are first public eval runs and should be read as a baseline, not a
-ceiling. The current published live proof is Codex-host-scoped, but the
-benchmark contract itself is host-neutral. Odylith wins by grounding and
-operationalizing shared repo truth better, not by hiding truth from the
-baseline lane.
+ceiling. Odylith supports both Codex and Claude Code, but the current
+published live proof is still Codex-host-scoped; the benchmark contract itself
+is host-neutral. Odylith wins by grounding and operationalizing shared repo
+truth better, not by hiding truth from the baseline lane.
 
 ### Grounding Benchmark
 

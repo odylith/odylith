@@ -23,11 +23,15 @@ Odylith keeps its boundary separate from the host repo's own toolchain.
 
 ## Root Guidance Handoff
 
-- The repo-root `AGENTS.md` stays repository-owned.
-- Odylith adds one managed Odylith pointer block after install.
+- The repo-root `AGENTS.md` and `CLAUDE.md` stay repository-owned.
+- Odylith adds one managed Odylith pointer block to each supported repo-root
+  guidance file that exists after install.
 - That block points agents to Odylith first and makes governed workflow the
   default for substantive repo work.
-- `odylith/AGENTS.md` carries the consumer bootstrap guidance.
+- Install creates missing root `AGENTS.md` and `CLAUDE.md` companion guidance
+  files when the repo does not already provide them.
+- `odylith/AGENTS.md` carries the consumer bootstrap guidance, and
+  `odylith/CLAUDE.md` is the Claude-specific shim that points back to it.
 - `odylith on` and `odylith off` toggle the Odylith block without removing the
   installed runtime.
 
