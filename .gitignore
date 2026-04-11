@@ -5,5 +5,9 @@ build/
 __pycache__/
 .pytest_cache/
 .DS_Store
+.artifact-snapshots/
+.claude/settings.local.json
+.claude/worktrees/
+.claude/hooks/__pycache__/
 .odylith/
 odylith/compass/runtime/refresh-state.v1.json

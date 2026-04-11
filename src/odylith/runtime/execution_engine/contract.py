@@ -88,10 +88,11 @@ class ExecutionHostProfile:
                 delegation_style="task_tool_subagents",
                 supports_native_spawn=True,
                 supports_local_structured_reasoning=True,
-                supports_explicit_model_selection=False,
+                supports_explicit_model_selection=True,
                 execution_hints=(
                     "native_spawn_available",
                     "delegation_style:task_tool_subagents",
+                    "explicit_model_selection_available",
                     "prefer_task_tool_subagents_for_bounded_delegation",
                 ),
             )

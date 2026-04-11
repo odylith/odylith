@@ -1,6 +1,6 @@
 ---
 name: odylith-registry-scribe
-description: Update component specs and registry-owned dossiers for the active Odylith component slice.
+description: Update component specs and registry-owned dossiers for the active Odylith component slice. Use PROACTIVELY when a component boundary, runtime contract, or proof obligation shifts and `components/*/CURRENT_SPEC.md` or registry source manifests need a bounded, traceable update.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 color: yellow

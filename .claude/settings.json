@@ -8,8 +8,14 @@
       "Bash(./.odylith/bin/odylith version:*)",
       "Bash(./.odylith/bin/odylith compass refresh:*)",
       "Bash(./.odylith/bin/odylith compass log:*)",
-      "Bash(./.odylith/bin/odylith context-engine:*)"
+      "Bash(./.odylith/bin/odylith context-engine:*)",
+      "Bash(./.odylith/bin/odylith claude:*)"
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/statusline.sh",
+    "padding": 0
   },
   "hooks": {
     "SessionStart": [
@@ -66,6 +72,17 @@
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/refresh-governance-after-edit.py \"$CLAUDE_PROJECT_DIR\"",
             "async": true,
             "timeout": 180
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude pre-compact-snapshot --repo-root \"$CLAUDE_PROJECT_DIR\" --quiet",
+            "timeout": 20
           }
         ]
       }

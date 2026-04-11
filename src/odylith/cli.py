@@ -80,6 +80,10 @@ _ATLAS_COMMAND_MODULES = {
     "scaffold": "odylith.runtime.surfaces.scaffold_mermaid_diagram",
     "install-autosync-hook": "odylith.runtime.surfaces.install_mermaid_autosync_hook",
 }
+_CLAUDE_HOST_COMMAND_MODULES = {
+    "statusline": "odylith.runtime.surfaces.claude_host_statusline",
+    "pre-compact-snapshot": "odylith.runtime.surfaces.claude_host_precompact_snapshot",
+}
 
 
 def _load_module(name: str):
@@ -1474,6 +1478,23 @@ def _cmd_atlas_install_autosync_hook(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_claude_statusline(args: argparse.Namespace) -> int:
+    return _run_module_main(
+        _CLAUDE_HOST_COMMAND_MODULES["statusline"],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=getattr(args, "forwarded", [])),
+    )
+
+
+def _cmd_claude_precompact_snapshot(args: argparse.Namespace) -> int:
+    forwarded = list(getattr(args, "forwarded", []) or [])
+    if bool(getattr(args, "quiet", False)) and "--quiet" not in forwarded:
+        forwarded.append("--quiet")
+    return _run_module_main(
+        _CLAUDE_HOST_COMMAND_MODULES["pre-compact-snapshot"],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=forwarded),
+    )
+
+
 def _parse_dashboard_refresh_fast_args(*, repo_root: str, forwarded: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith dashboard refresh",
@@ -1896,6 +1917,29 @@ def build_parser() -> argparse.ArgumentParser:
     atlas_hook.add_argument("--repo-root", default=".", help="Consumer repository root.")
     atlas_hook.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
+    claude_host = subparsers.add_parser(
+        "claude",
+        help="Render Odylith-grounded Claude Code host surfaces.",
+    )
+    claude_host_subparsers = claude_host.add_subparsers(dest="claude_command", required=True)
+    claude_statusline = claude_host_subparsers.add_parser(
+        "statusline",
+        help="Render the Odylith-grounded Claude Code statusline string.",
+    )
+    claude_statusline.add_argument("--repo-root", default=".", help="Repository root for Compass runtime resolution.")
+    claude_statusline.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    claude_precompact = claude_host_subparsers.add_parser(
+        "pre-compact-snapshot",
+        help="Write the active Odylith slice into Claude's project auto-memory directory.",
+    )
+    claude_precompact.add_argument("--repo-root", default=".", help="Repository root for Compass runtime resolution.")
+    claude_precompact.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress the 'snapshot written at ...' confirmation line.",
+    )
+    claude_precompact.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
     return parser
 
 
@@ -2048,6 +2092,17 @@ def main(argv: list[str] | None = None) -> int:
                 _SUBAGENT_ORCHESTRATOR_MODULE,
                 ensure_nested_subcommand_repo_root_args(repo_root=repo_root, argv=forwarded)
             )
+        if tokens[0] == "claude" and len(tokens) >= 2 and tokens[1] in _CLAUDE_HOST_COMMAND_MODULES:
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            claude_command = tokens[1]
+            namespace = argparse.Namespace(
+                repo_root=repo_root,
+                forwarded=forwarded,
+                quiet="--quiet" in forwarded,
+            )
+            if claude_command == "statusline":
+                return _cmd_claude_statusline(namespace)
+            return _cmd_claude_precompact_snapshot(namespace)
         if tokens[0] == "atlas" and len(tokens) >= 2 and tokens[1] in {"render", "auto-update", "scaffold", "install-autosync-hook"}:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             atlas_command = tokens[1]
@@ -2153,6 +2208,10 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_atlas_scaffold(args)
     if args.command == "atlas" and args.atlas_command == "install-autosync-hook":
         return _cmd_atlas_install_autosync_hook(args)
+    if args.command == "claude" and args.claude_command == "statusline":
+        return _cmd_claude_statusline(args)
+    if args.command == "claude" and args.claude_command == "pre-compact-snapshot":
+        return _cmd_claude_precompact_snapshot(args)
     parser.error(f"unsupported command: {args.command}")
     return 2
 

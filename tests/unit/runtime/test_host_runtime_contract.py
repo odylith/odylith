@@ -27,7 +27,10 @@ def test_resolve_host_capabilities_for_claude() -> None:
     assert capabilities["delegation_style"] == "task_tool_subagents"
     assert capabilities["supports_native_spawn"] is True
     assert capabilities["supports_local_structured_reasoning"] is True
-    assert capabilities["supports_explicit_model_selection"] is False
+    # B-084/CB-103: Claude Code is a first-class delegation host; the
+    # execution profile ladder must resolve to a real model, so the host
+    # capability contract must declare explicit model selection available.
+    assert capabilities["supports_explicit_model_selection"] is True
 
 
 def test_resolve_host_capabilities_for_unknown_host() -> None:

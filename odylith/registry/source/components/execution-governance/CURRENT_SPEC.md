@@ -1,8 +1,8 @@
 # Execution Governance
-Last updated: 2026-04-10
+Last updated: 2026-04-11
 
 
-Last updated (UTC): 2026-04-10
+Last updated (UTC): 2026-04-11
 
 ## Purpose
 Execution Governance is Odylith's constraint-aware execution runtime. It
@@ -104,10 +104,31 @@ The detected execution-runtime profile. Important fields include:
 - `host_display_name`
 - `model_family`
 - `model_name`
+- `delegation_style`
 - `supports_native_spawn`
 - `supports_local_structured_reasoning`
 - `supports_explicit_model_selection`
 - `execution_hints`
+
+Both validated host families (Codex and Claude Code) declare
+`supports_explicit_model_selection=True` and `supports_native_spawn=True`.
+Codex resolves the execution profile ladder onto its Codex model tuples;
+Claude resolves the same semantic ladder onto haiku, sonnet, or opus
+through the per-host-family axis described in the runtime profile ladder
+section below. Unknown hosts continue to fail closed without a delegation
+style.
+
+### Runtime Profile Ladder
+The canonical execution profiles in
+`src/odylith/runtime/common/agent_runtime_contract.py` are semantic
+(`analysis_medium`, `analysis_high`, `fast_worker`, `write_medium`,
+`write_high`, `frontier_high`, `frontier_xhigh`). The profile-to-model
+table carries a host-family axis so each validated host returns a real
+model. Codex column tuples are canonical and must not drift; the Claude
+column maps each profile onto haiku (analysis/fast), sonnet (write), or
+opus (frontier). `execution_profile_runtime_fields(profile, *,
+host_runtime)` returns `(model, reasoning_effort)` for the resolved
+host-family row, and never returns an empty model for a validated host.
 
 ### `ExecutionContract`
 The active machine-readable task contract. Important fields include:
@@ -221,3 +242,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Promoted execution governance into a first-class Registry component so Odylith can turn grounded truth into admissible next-action control, preserve hard user constraints, and keep the shared execution contract host-general across Codex and Claude Code. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-09: Added shared runtime-lane policy and compact surface summaries so packet reads, router or orchestrator guards, shell or Compass posture, and deterministic remediation all consume the same execution-governance snapshot instead of re-deriving local policy. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-10: Expanded the runtime contract so packet summaries can carry structured `turn_context`, lane-fenced `target_resolution`, and `presentation_policy` through the shared execution-governance snapshot. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
+- 2026-04-11: Grew the execution profile ladder to a `(host_family, profile) -> (model, reasoning_effort)` map so Claude delegation resolves to haiku, sonnet, or opus while Codex tuples stay byte-identical, and flipped the host-capability contract to declare `supports_explicit_model_selection=True` for both validated host families. (Plan: [B-084](odylith/radar/radar.html?view=plan&workstream=B-084), Bug: [CB-103](odylith/casebook/casebook.html?view=bug&bug=CB-103))

@@ -67,14 +67,31 @@ _ALIASED_STREAM_PATHS: dict[str, str] = {
     **{legacy: AGENT_STREAM_PATH for legacy in LEGACY_AGENT_STREAM_PATHS},
 }
 
-_EXECUTION_PROFILE_RUNTIME_FIELDS: dict[str, tuple[str, str]] = {
-    ANALYSIS_MEDIUM_PROFILE: ("gpt-5.4-mini", "medium"),
-    ANALYSIS_HIGH_PROFILE: ("gpt-5.4-mini", "high"),
-    FAST_WORKER_PROFILE: ("gpt-5.3-codex-spark", "medium"),
-    WRITE_MEDIUM_PROFILE: ("gpt-5.3-codex", "medium"),
-    WRITE_HIGH_PROFILE: ("gpt-5.3-codex", "high"),
-    FRONTIER_HIGH_PROFILE: ("gpt-5.4", "high"),
-    FRONTIER_XHIGH_PROFILE: ("gpt-5.4", "xhigh"),
+_CODEX_HOST_FAMILY = "codex"
+_CLAUDE_HOST_FAMILY = "claude"
+
+# Host-family axis for the canonical execution profile ladder. Every validated
+# host family must return a non-empty model for every canonical profile; unknown
+# hosts fall through to an empty model via `execution_profile_runtime_fields`.
+_EXECUTION_PROFILE_RUNTIME_FIELDS_BY_HOST: dict[str, dict[str, tuple[str, str]]] = {
+    _CODEX_HOST_FAMILY: {
+        ANALYSIS_MEDIUM_PROFILE: ("gpt-5.4-mini", "medium"),
+        ANALYSIS_HIGH_PROFILE: ("gpt-5.4-mini", "high"),
+        FAST_WORKER_PROFILE: ("gpt-5.3-codex-spark", "medium"),
+        WRITE_MEDIUM_PROFILE: ("gpt-5.3-codex", "medium"),
+        WRITE_HIGH_PROFILE: ("gpt-5.3-codex", "high"),
+        FRONTIER_HIGH_PROFILE: ("gpt-5.4", "high"),
+        FRONTIER_XHIGH_PROFILE: ("gpt-5.4", "xhigh"),
+    },
+    _CLAUDE_HOST_FAMILY: {
+        ANALYSIS_MEDIUM_PROFILE: ("claude-haiku-4-5", "medium"),
+        ANALYSIS_HIGH_PROFILE: ("claude-haiku-4-5", "high"),
+        FAST_WORKER_PROFILE: ("claude-haiku-4-5", "medium"),
+        WRITE_MEDIUM_PROFILE: ("claude-sonnet-4-6", "medium"),
+        WRITE_HIGH_PROFILE: ("claude-sonnet-4-6", "high"),
+        FRONTIER_HIGH_PROFILE: ("claude-opus-4-6", "high"),
+        FRONTIER_XHIGH_PROFILE: ("claude-opus-4-6", "xhigh"),
+    },
 }
 
 
@@ -107,12 +124,14 @@ def execution_profile_runtime_fields(
     canonical = canonical_execution_profile(value)
     if not canonical:
         return "", ""
-    model, reasoning_effort = _EXECUTION_PROFILE_RUNTIME_FIELDS.get(canonical, ("", ""))
     capabilities = (
         dict(host_capabilities)
         if isinstance(host_capabilities, Mapping)
         else host_runtime_contract.resolve_host_capabilities(host_runtime)
     )
+    host_family = str(capabilities.get("host_family") or "").strip().lower()
+    host_table = _EXECUTION_PROFILE_RUNTIME_FIELDS_BY_HOST.get(host_family, {})
+    model, reasoning_effort = host_table.get(canonical, ("", ""))
     if not bool(capabilities.get("supports_explicit_model_selection")):
         return "", reasoning_effort
     return model, reasoning_effort

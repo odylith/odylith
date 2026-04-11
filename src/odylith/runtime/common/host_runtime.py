@@ -108,7 +108,7 @@ def host_capabilities(host_runtime: Any, *, default_when_unknown: bool = False) 
             "supports_interrupt": False,
             "supports_artifact_paths": False,
             "supports_local_structured_reasoning": True,
-            "supports_explicit_model_selection": False,
+            "supports_explicit_model_selection": True,
         }
     if normalized == _UNSUPPORTED_HOST_RUNTIME:
         return {

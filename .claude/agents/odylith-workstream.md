@@ -1,6 +1,6 @@
 ---
 name: odylith-workstream
-description: Implement a bounded Odylith workstream slice while respecting repo guidance, governance, and validation contracts.
+description: Implement a bounded Odylith workstream slice while respecting repo guidance, governance, and validation contracts. Use PROACTIVELY when a routed workstream leaf needs bounded implementation in a separate context with source-of-truth discipline and explicit validation handoff.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 color: blue
