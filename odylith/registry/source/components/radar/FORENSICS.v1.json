@@ -47,25 +47,26 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
-        "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
-        "odylith/radar/source/CLAUDE.md",
         "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
-        "src/odylith/bundle/assets/odylith/radar/source/CLAUDE.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+        "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
+        "src/odylith/bundle/assets/odylith/radar/source/releases/release-assignment-events.v1.jsonl"
       ],
       "confidence": "high",
-      "event_index": 76,
+      "event_index": 74,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md, src/odylith/bundle/assets/odylith/radar/source/INDEX.md +6 more",
-      "ts_iso": "2026-04-11T01:10:37-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl +7 more",
+      "ts_iso": "2026-04-11T11:05:52-07:00",
       "workstreams": []
     },
     {

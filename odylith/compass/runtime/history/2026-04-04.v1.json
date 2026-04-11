@@ -5662,43 +5662,43 @@
           "fallback:bin/release-version-preview",
           "fallback:bin/release-version-show",
           "fallback:bin/validate",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/install.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/install.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
           "fallback:docs/ADVANCED_OPERATOR_USE_CASES.md",
           "fallback:docs/LICENSE_AND_ATTRIBUTION.md",
           "fallback:docs/STARTER_PROMPT_INSPIRATIONS.md",
@@ -7174,43 +7174,43 @@
           "fallback:bin/release-version-preview",
           "fallback:bin/release-version-show",
           "fallback:bin/validate",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/install.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/install.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
           "fallback:docs/ADVANCED_OPERATOR_USE_CASES.md",
           "fallback:docs/LICENSE_AND_ATTRIBUTION.md",
           "fallback:docs/STARTER_PROMPT_INSPIRATIONS.md",
@@ -8663,43 +8663,43 @@
           "fallback:bin/release-version-preview",
           "fallback:bin/release-version-show",
           "fallback:bin/validate",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/install.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/install.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
           "fallback:docs/ADVANCED_OPERATOR_USE_CASES.md",
           "fallback:docs/LICENSE_AND_ATTRIBUTION.md",
           "fallback:docs/STARTER_PROMPT_INSPIRATIONS.md",
@@ -10105,43 +10105,43 @@
           "fallback:bin/release-version-preview",
           "fallback:bin/release-version-show",
           "fallback:bin/validate",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/install.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/install.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
           "fallback:docs/ADVANCED_OPERATOR_USE_CASES.md",
           "fallback:docs/LICENSE_AND_ATTRIBUTION.md",
           "fallback:docs/STARTER_PROMPT_INSPIRATIONS.md",
@@ -11556,43 +11556,43 @@
           "fallback:bin/release-version-preview",
           "fallback:bin/release-version-show",
           "fallback:bin/validate",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/install.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/install.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
           "fallback:docs/ADVANCED_OPERATOR_USE_CASES.md",
           "fallback:docs/LICENSE_AND_ATTRIBUTION.md",
           "fallback:docs/STARTER_PROMPT_INSPIRATIONS.md",
@@ -18795,15 +18795,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+      "id": "local:M:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Modified codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+      "summary": "Modified artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js"
+        "artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js"
       ],
       "source": "local",
       "session_id": "",
@@ -18814,15 +18814,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
+      "id": "local:M:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Modified codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
+      "summary": "Modified artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js"
+        "artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js"
       ],
       "source": "local",
       "session_id": "",
@@ -18833,15 +18833,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
+      "id": "local:M:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Modified codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
+      "summary": "Modified artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json"
       ],
       "source": "local",
       "session_id": "",
@@ -18852,15 +18852,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
+      "id": "local:M:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Modified codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
+      "summary": "Modified artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md"
       ],
       "source": "local",
       "session_id": "",
@@ -18871,15 +18871,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+      "id": "local:M:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Modified codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+      "summary": "Modified artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md"
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md"
       ],
       "source": "local",
       "session_id": "",
@@ -18890,15 +18890,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+      "id": "local:M:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Modified codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+      "summary": "Modified artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json"
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -18909,15 +18909,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
+      "id": "local:M:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Modified codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
+      "summary": "Modified artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html"
+        "artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html"
       ],
       "source": "local",
       "session_id": "",
@@ -18928,15 +18928,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:M:codex-artifacts/release-surface-demo/odylith/index.html",
+      "id": "local:M:artifact-snapshots/release-surface-demo/odylith/index.html",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Modified codex-artifacts/release-surface-demo/odylith/index.html",
+      "summary": "Modified artifact-snapshots/release-surface-demo/odylith/index.html",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/index.html"
+        "artifact-snapshots/release-surface-demo/odylith/index.html"
       ],
       "source": "local",
       "session_id": "",
@@ -33710,15 +33710,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -33729,15 +33729,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -33748,15 +33748,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -33767,15 +33767,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl"
       ],
       "source": "local",
       "session_id": "",
@@ -33786,15 +33786,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -33805,15 +33805,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js"
       ],
       "source": "local",
       "session_id": "",
@@ -33824,15 +33824,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl"
       ],
       "source": "local",
       "session_id": "",
@@ -33843,15 +33843,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -33862,15 +33862,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -33881,15 +33881,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl"
       ],
       "source": "local",
       "session_id": "",
@@ -33900,15 +33900,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl"
       ],
       "source": "local",
       "session_id": "",
@@ -33919,15 +33919,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -33938,15 +33938,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -33957,15 +33957,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -33976,15 +33976,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -33995,15 +33995,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34014,15 +34014,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34033,15 +34033,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34052,15 +34052,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34071,15 +34071,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34090,15 +34090,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34109,15 +34109,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34128,15 +34128,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34147,15 +34147,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34166,15 +34166,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock"
       ],
       "source": "local",
       "session_id": "",
@@ -34185,15 +34185,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/install.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/install.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/install.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/install.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/install.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/install.json"
       ],
       "source": "local",
       "session_id": "",
@@ -34204,15 +34204,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json"
       ],
       "source": "local",
       "session_id": "",
@@ -34223,15 +34223,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json"
       ],
       "source": "local",
       "session_id": "",
@@ -34242,15 +34242,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-04T23:54:00-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json"
+        "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -41928,44 +41928,44 @@
       ],
       "files": [
         "README.md",
-        "codex-artifacts/release-surface-demo/AGENTS.md",
-        "codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-        "codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-        "codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-        "codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-        "codex-artifacts/release-surface-demo/odylith/index.html",
-        "codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-        "codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
-        "codex-artifacts/release-surface-demo/odylith/registry/registry.html",
-        "codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
-        "codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-128.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-16.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-256.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-32.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-48.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-512.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-64.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome-512.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1200x300.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1600x400.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome-1600x400.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-        "codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-        "codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
-        "codex-artifacts/release-surface-demo/popup-v0.1.7.png",
-        "codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+        "artifact-snapshots/release-surface-demo/AGENTS.md",
+        "artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+        "artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+        "artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+        "artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+        "artifact-snapshots/release-surface-demo/odylith/index.html",
+        "artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+        "artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+        "artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
+        "artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+        "artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-128.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-16.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-256.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-32.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-48.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-512.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-64.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome-512.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1200x300.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1600x400.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome-1600x400.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+        "artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+        "artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
+        "artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
+        "artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
         "docs/ADVANCED_OPERATOR_USE_CASES.md",
         "docs/LICENSE_AND_ATTRIBUTION.md",
         "docs/STARTER_PROMPT_INSPIRATIONS.md",
@@ -42381,43 +42381,43 @@
       ],
       "files": [
         "bin/_odylith.sh",
-        "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-        "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-        "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-        "codex-artifacts/release-surface-demo/.odyssey/install.json",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
-        "codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
-        "codex-artifacts/release-surface-demo/odylith/index.html",
-        "codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-        "codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-        "codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+        "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/install.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+        "artifact-snapshots/release-surface-demo/odylith/index.html",
+        "artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+        "artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+        "artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
         "docs/benchmarks/diagnostic/odyssey-benchmark-family-heatmap.svg",
         "docs/benchmarks/diagnostic/odyssey-benchmark-frontier.svg",
         "docs/benchmarks/diagnostic/odyssey-benchmark-operating-posture.svg",
@@ -43370,15 +43370,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+          "id": "local:M:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Modified codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+          "summary": "Modified artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js"
+            "artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js"
           ],
           "source": "local",
           "session_id": "",
@@ -43389,15 +43389,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
+          "id": "local:M:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Modified codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
+          "summary": "Modified artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js"
+            "artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js"
           ],
           "source": "local",
           "session_id": "",
@@ -43408,15 +43408,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "id": "local:M:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Modified codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "summary": "Modified artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json"
           ],
           "source": "local",
           "session_id": "",
@@ -43427,15 +43427,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
+          "id": "local:M:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Modified codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
+          "summary": "Modified artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md"
           ],
           "source": "local",
           "session_id": "",
@@ -43446,15 +43446,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "id": "local:M:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Modified codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "summary": "Modified artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md"
+            "artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md"
           ],
           "source": "local",
           "session_id": "",
@@ -43465,15 +43465,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "id": "local:M:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Modified codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "summary": "Modified artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json"
+            "artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -43484,15 +43484,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "id": "local:M:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Modified codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "summary": "Modified artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html"
+            "artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html"
           ],
           "source": "local",
           "session_id": "",
@@ -43503,15 +43503,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:M:codex-artifacts/release-surface-demo/odylith/index.html",
+          "id": "local:M:artifact-snapshots/release-surface-demo/odylith/index.html",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Modified codex-artifacts/release-surface-demo/odylith/index.html",
+          "summary": "Modified artifact-snapshots/release-surface-demo/odylith/index.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/index.html"
+            "artifact-snapshots/release-surface-demo/odylith/index.html"
           ],
           "source": "local",
           "session_id": "",
@@ -58285,15 +58285,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/release-upgrade-spotlight.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58304,15 +58304,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-memory-backend.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58323,15 +58323,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-memory/odyssey-judgment-memory.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58342,15 +58342,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-timings.v1.jsonl"
           ],
           "source": "local",
           "session_id": "",
@@ -58361,15 +58361,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58380,15 +58380,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-state.v1.js"
           ],
           "source": "local",
           "session_id": "",
@@ -58399,15 +58399,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-context-engine-events.v1.jsonl"
           ],
           "source": "local",
           "session_id": "",
@@ -58418,15 +58418,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-snapshot.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58437,15 +58437,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/projection-manifest.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58456,15 +58456,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/edges.v1.jsonl"
           ],
           "source": "local",
           "session_id": "",
@@ -58475,15 +58475,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/documents.v1.jsonl"
           ],
           "source": "local",
           "session_id": "",
@@ -58494,15 +58494,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/runtime/odyssey-compiler/architecture-bundle.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58513,15 +58513,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-85d71a7a0670af3e.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58532,15 +58532,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-memory-odysse-2a79007127680a7a.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58551,15 +58551,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.json.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58570,15 +58570,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-state.v1.js.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58589,15 +58589,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engine-events.v1.jsonl.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58608,15 +58608,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-context-engin-fe14b6e06e2e0369.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58627,15 +58627,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58646,15 +58646,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-proj-ea8a4e7686c3b2f9.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58665,15 +58665,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-runtime-odyssey-compiler-arch-7cff9d22e34136f0.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58684,15 +58684,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-e66ca51c10529b1b.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58703,15 +58703,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58722,15 +58722,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58741,15 +58741,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock"
+            "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock"
           ],
           "source": "local",
           "session_id": "",
@@ -58760,15 +58760,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/install.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/install.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/install.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/install.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/install.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/install.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58779,15 +58779,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58798,15 +58798,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json"
           ],
           "source": "local",
           "session_id": "",
@@ -58817,15 +58817,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-04T23:54:00-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json"
+            "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -67704,44 +67704,44 @@
       ],
       "files": [
         "README.md",
-        "codex-artifacts/release-surface-demo/AGENTS.md",
-        "codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-        "codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-        "codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-        "codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-        "codex-artifacts/release-surface-demo/odylith/index.html",
-        "codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-        "codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
-        "codex-artifacts/release-surface-demo/odylith/registry/registry.html",
-        "codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
-        "codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-128.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-16.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-256.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-32.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-48.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-512.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-64.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome-512.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1200x300.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1600x400.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome-1600x400.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-        "codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-        "codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
-        "codex-artifacts/release-surface-demo/popup-v0.1.7.png",
-        "codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+        "artifact-snapshots/release-surface-demo/AGENTS.md",
+        "artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+        "artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+        "artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+        "artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+        "artifact-snapshots/release-surface-demo/odylith/index.html",
+        "artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+        "artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+        "artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
+        "artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+        "artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-128.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-16.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-256.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-32.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-48.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-512.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-64.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome-512.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1200x300.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1600x400.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome-1600x400.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+        "artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+        "artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
+        "artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
+        "artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
         "docs/ADVANCED_OPERATOR_USE_CASES.md",
         "docs/LICENSE_AND_ATTRIBUTION.md",
         "docs/STARTER_PROMPT_INSPIRATIONS.md",
@@ -67871,44 +67871,44 @@
           ],
           "files": [
             "README.md",
-            "codex-artifacts/release-surface-demo/AGENTS.md",
-            "codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-            "codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-            "codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-            "codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-            "codex-artifacts/release-surface-demo/odylith/index.html",
-            "codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-            "codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
-            "codex-artifacts/release-surface-demo/odylith/registry/registry.html",
-            "codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
-            "codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-            "codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-            "codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-128.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-16.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-256.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-32.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-48.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-512.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-64.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome-512.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome.svg",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon.svg",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1200x300.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1600x400.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome-1600x400.png",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome.svg",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal.svg",
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-            "codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-            "codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
-            "codex-artifacts/release-surface-demo/popup-v0.1.7.png",
-            "codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+            "artifact-snapshots/release-surface-demo/AGENTS.md",
+            "artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+            "artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+            "artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+            "artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+            "artifact-snapshots/release-surface-demo/odylith/index.html",
+            "artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+            "artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+            "artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
+            "artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+            "artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+            "artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+            "artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-128.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-16.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-256.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-32.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-48.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-512.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-64.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome-512.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon-monochrome.svg",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odyssey-icon.svg",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1200x300.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-1600x400.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome-1600x400.png",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal-monochrome.svg",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odyssey-lockup-horizontal.svg",
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+            "artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+            "artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
+            "artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
+            "artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
             "docs/ADVANCED_OPERATOR_USE_CASES.md",
             "docs/LICENSE_AND_ATTRIBUTION.md",
             "docs/STARTER_PROMPT_INSPIRATIONS.md",
@@ -68852,13 +68852,13 @@
       "risk_signal_count": 0,
       "top_files": [
         "bin/_odylith.sh",
-        "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-        "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-        "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-        "codex-artifacts/release-surface-demo/.odyssey/install.json",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-        "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
+        "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/install.json",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+        "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
       ],
       "source_files_count": 829,
       "generated_files_count": 0,
@@ -68901,13 +68901,13 @@
         "risk_signal_count": 0,
         "top_files": [
           "bin/_odylith.sh",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-          "codex-artifacts/release-surface-demo/.odyssey/install.json",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/install.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
         ],
         "source_files_count": 829,
         "generated_files_count": 0,
@@ -68949,13 +68949,13 @@
         "risk_signal_count": 0,
         "top_files": [
           "bin/_odylith.sh",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-          "codex-artifacts/release-surface-demo/.odyssey/install.json",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/install.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
         ],
         "source_files_count": 829,
         "generated_files_count": 0,
@@ -68997,13 +68997,13 @@
         "risk_signal_count": 0,
         "top_files": [
           "bin/_odylith.sh",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-          "codex-artifacts/release-surface-demo/.odyssey/install.json",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/install.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
         ],
         "source_files_count": 829,
         "generated_files_count": 0,
@@ -69045,13 +69045,13 @@
         "risk_signal_count": 0,
         "top_files": [
           "bin/_odylith.sh",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
-          "codex-artifacts/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
-          "codex-artifacts/release-surface-demo/.odyssey/install.json",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
-          "codex-artifacts/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.codex-artifacts-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/guidance/compiled-catalog-v1.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-index/component-index.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/cache/odyssey-context-engine/registry/component-report/component-report.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/install.json",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/odyssey-context-engine-projections.lock",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-2a1c527e8e8cf0c8.lock",
+          "artifact-snapshots/release-surface-demo/.odyssey/locks/odyssey-context-engine/users-freedom-code-odyssey-.artifact-snapshots-release-surface-demo-.odyssey-cache-odyssey-context-engine-34eccc3afd95050a.lock"
         ],
         "source_files_count": 829,
         "generated_files_count": 0,

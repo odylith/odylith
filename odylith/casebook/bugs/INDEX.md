@@ -10,6 +10,19 @@ Last updated (UTC): 2026-04-11
   `src/odylith/runtime/context_engine/odylith_context_engine.py`,
   `.odylith/bin/odylith` start command, changed-path to workstream evidence
   matching logic. | Open | [2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md](2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md) |
+| CB-103 | 2026-04-11 | Claude host profile blanks execution model via supports explicit model selection flag | P0 | `src/odylith/runtime/execution_engine/contract.py`,
+  `src/odylith/runtime/common/host_runtime.py`,
+  `src/odylith/runtime/common/agent_runtime_contract.py`,
+  `src/odylith/runtime/orchestration/subagent_router.py`,
+  `src/odylith/runtime/orchestration/subagent_orchestrator.py`,
+  `src/odylith/runtime/context_engine/tooling_context_routing.py`,
+  `.claude/agents/*.md`, and the `execution-governance` Registry component. | In progress | [2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md](2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md) |
+| CB-104 | 2026-04-11 | Agents hand edited governed truth when odylith cli commands existed | P1 | `agent-governance policy` (cross-cutting guidance
+  contract), `odylith/agents-guidelines/CLI_FIRST_POLICY.md`,
+  `odylith/agents-guidelines/*.md` (9 canonical guidance files),
+  `odylith/skills/*/SKILL.md` (16 shared skills),
+  `odylith/AGENTS.md`, `odylith/CLAUDE.md`, `AGENTS.md`, `CLAUDE.md`,
+  and the shared Odylith CLI surface anchored at `./.odylith/bin/odylith`. | In progress | [2026-04-11-agents-hand-edited-governed-truth-when-odylith-cli-commands-existed.md](2026-04-11-agents-hand-edited-governed-truth-when-odylith-cli-commands-existed.md) |
 | CB-090 | 2026-04-09 | Low signal governance churn can outrank real execution across governance surfaces | P1 | `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
   `src/odylith/runtime/governance/delivery/scope_signal_ladder.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,

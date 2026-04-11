@@ -27,3 +27,6 @@
 {"action": "add", "recorded_at": "2026-04-10T03:47:54Z", "release_id": "release-0-1-11", "workstream_id": "B-079"}
 {"action": "add", "note": "Add the execution-governance umbrella to the active v0.1.11 release so Compass shows the live umbrella lane alongside its active child waves.", "recorded_at": "2026-04-10T04:12:44Z", "release_id": "release-0-1-11", "workstream_id": "B-072"}
 {"action": "add", "note": "Bind the structured turn-intake and lane-fenced target-resolution child workstream into the active v0.1.11 wave.", "recorded_at": "2026-04-10T12:15:00Z", "release_id": "release-0-1-11", "workstream_id": "B-082"}
+{"action": "add", "recorded_at": "2026-04-11T17:57:18Z", "release_id": "release-0-1-11", "workstream_id": "B-083"}
+{"action": "add", "recorded_at": "2026-04-11T17:57:24Z", "release_id": "release-0-1-11", "workstream_id": "B-084"}
+{"action": "add", "recorded_at": "2026-04-11T17:57:25Z", "release_id": "release-0-1-11", "workstream_id": "B-085"}

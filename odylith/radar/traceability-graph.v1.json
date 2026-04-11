@@ -3360,7 +3360,10 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3373,7 +3376,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 9,
+        "active_workstream_count": 12,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3455,7 +3458,10 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3468,7 +3474,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 9,
+        "active_workstream_count": 12,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3559,7 +3565,10 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3572,7 +3581,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 9,
+        "active_workstream_count": 12,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3664,7 +3673,10 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3677,7 +3689,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 9,
+        "active_workstream_count": 12,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3768,7 +3780,10 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3781,7 +3796,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 9,
+        "active_workstream_count": 12,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3872,7 +3887,10 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3885,7 +3903,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 9,
+        "active_workstream_count": 12,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3976,7 +3994,10 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3989,7 +4010,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 9,
+        "active_workstream_count": 12,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4078,7 +4099,10 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4091,7 +4115,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 9,
+        "active_workstream_count": 12,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4270,7 +4294,10 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4283,7 +4310,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 9,
+        "active_workstream_count": 12,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4325,7 +4352,9 @@
       "status": "implementation",
       "workstream_type": "standard",
       "workstream_parent": "",
-      "workstream_children": [],
+      "workstream_children": [
+        "B-084"
+      ],
       "workstream_depends_on": [
         "B-069"
       ],
@@ -4351,13 +4380,263 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 12,
+        "completed_workstream_count": 7
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-083",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-11T17:57:18Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 6,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-084",
+      "title": "Claude Delegation Runtime Parity - Host Capability, Model Ladder, and Claude-Native Surface Expansion",
+      "status": "implementation",
+      "workstream_type": "standard",
+      "workstream_parent": "B-083",
+      "workstream_children": [
+        "B-085"
+      ],
+      "workstream_depends_on": [
+        "B-083"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-047"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 12,
+        "completed_workstream_count": 7
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-084",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-11T17:57:24Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-085",
+      "title": "Claude Host Python Surface Bake - Statusline, PreCompact Snapshot, and CLI Subcommand",
+      "status": "implementation",
+      "workstream_type": "standard",
+      "workstream_parent": "B-084",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-084"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-047"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 12,
+        "completed_workstream_count": 7
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-085",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-11T17:57:25Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -4391,7 +4670,10 @@
         "B-077",
         "B-078",
         "B-079",
-        "B-082"
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-085"
       ],
       "completed_workstreams": [
         "B-061",
@@ -4404,7 +4686,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 9,
+      "active_workstream_count": 12,
       "completed_workstream_count": 7
     },
     {
@@ -4459,7 +4741,10 @@
         "B-077",
         "B-078",
         "B-079",
-        "B-082"
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-085"
       ],
       "completed_workstreams": [
         "B-061",
@@ -4472,7 +4757,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 9,
+      "active_workstream_count": 12,
       "completed_workstream_count": 7
     },
     "next": {
@@ -4526,7 +4811,10 @@
       "B-077",
       "B-078",
       "B-079",
-      "B-082"
+      "B-082",
+      "B-083",
+      "B-084",
+      "B-085"
     ],
     "completed_workstreams": [
       "B-061",
@@ -4539,7 +4827,7 @@
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 9,
+    "active_workstream_count": 12,
     "completed_workstream_count": 7
   },
   "next_release": {
@@ -4570,7 +4858,7 @@
   "release_summary": {
     "release_count": 2,
     "alias_count": 2,
-    "active_assignment_count": 10
+    "active_assignment_count": 13
   },
   "execution_programs": [
     {
@@ -5254,6 +5542,20 @@
       "label": "Claude Guidance Surface Parity and Install Contract Support",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
+    },
+    {
+      "id": "B-084",
+      "type": "workstream",
+      "label": "Claude Delegation Runtime Parity - Host Capability, Model Ladder, and Claude-Native Surface Expansion",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md"
+    },
+    {
+      "id": "B-085",
+      "type": "workstream",
+      "label": "Claude Host Python Surface Bake - Statusline, PreCompact Snapshot, and CLI Subcommand",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md"
     },
     {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
@@ -6015,6 +6317,18 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md"
     },
     {
       "id": "release:release-0-1-11",
@@ -8313,6 +8627,16 @@
     },
     {
       "source": "B-083",
+      "target": "B-084",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-083",
+      "target": "B-084",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-083",
       "target": "diagram:D-019",
       "edge_type": "diagram_linkage"
     },
@@ -8345,6 +8669,41 @@
       "source": "B-083",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-083",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-084",
+      "target": "B-085",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-084",
+      "target": "B-085",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-084",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-084",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-085",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-085",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
     }
   ],
   "coverage": {
@@ -8928,6 +9287,20 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-084": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-085": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -8978,7 +9351,27 @@
       "category": "topology_conflict",
       "message": "B-083: autofix skipped `workstream_type` due to metadata conflict",
       "idea_id": "B-083",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md: current='standard' candidate='standalone'. Reason: derived from parent/children topology.",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md: current='standard' candidate='umbrella'. Reason: derived from parent/children topology.",
+      "source": "odylith/radar/traceability-autofix-report.v1.json"
+    },
+    {
+      "severity": "info",
+      "audience": "maintainer",
+      "surface_visibility": "diagnostics",
+      "category": "topology_conflict",
+      "message": "B-084: autofix skipped `workstream_type` due to metadata conflict",
+      "idea_id": "B-084",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md: current='standard' candidate='umbrella'. Reason: derived from parent/children topology.",
+      "source": "odylith/radar/traceability-autofix-report.v1.json"
+    },
+    {
+      "severity": "info",
+      "audience": "maintainer",
+      "surface_visibility": "diagnostics",
+      "category": "topology_conflict",
+      "message": "B-085: autofix skipped `workstream_type` due to metadata conflict",
+      "idea_id": "B-085",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md: current='standard' candidate='child'. Reason: derived from parent/children topology.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
     },
     {
@@ -8990,6 +9383,46 @@
       "idea_id": "B-083",
       "action": "Set `workstream_type` to umbrella, child, or standalone in the idea spec metadata.",
       "source": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
+    },
+    {
+      "severity": "warning",
+      "audience": "operator",
+      "surface_visibility": "default",
+      "category": "topology_workstream_type",
+      "message": "B-084: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
+      "idea_id": "B-084",
+      "action": "Set `workstream_type` to umbrella, child, or standalone in the idea spec metadata.",
+      "source": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md"
+    },
+    {
+      "severity": "warning",
+      "audience": "operator",
+      "surface_visibility": "default",
+      "category": "diagram_link_missing",
+      "message": "B-084: related diagram `D-047` not found in catalog",
+      "idea_id": "B-084",
+      "action": "Add the diagram to odylith/atlas/source/catalog/diagrams.v1.json or remove stale diagram linkage.",
+      "source": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md"
+    },
+    {
+      "severity": "warning",
+      "audience": "operator",
+      "surface_visibility": "default",
+      "category": "topology_workstream_type",
+      "message": "B-085: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
+      "idea_id": "B-085",
+      "action": "Set `workstream_type` to umbrella, child, or standalone in the idea spec metadata.",
+      "source": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md"
+    },
+    {
+      "severity": "warning",
+      "audience": "operator",
+      "surface_visibility": "default",
+      "category": "diagram_link_missing",
+      "message": "B-085: related diagram `D-047` not found in catalog",
+      "idea_id": "B-085",
+      "action": "Add the diagram to odylith/atlas/source/catalog/diagrams.v1.json or remove stale diagram linkage.",
+      "source": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md"
     }
   ],
   "warnings": [
@@ -8998,18 +9431,24 @@
     "B-069: autofix skipped `related_diagram_ids` due to metadata conflict",
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict",
     "B-083: autofix skipped `workstream_type` due to metadata conflict",
-    "B-083: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
+    "B-083: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+    "B-084: autofix skipped `workstream_type` due to metadata conflict",
+    "B-084: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
+    "B-084: related diagram `D-047` not found in catalog",
+    "B-085: autofix skipped `workstream_type` due to metadata conflict",
+    "B-085: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
+    "B-085: related diagram `D-047` not found in catalog"
   ],
   "summary": {
-    "workstream_count": 83,
+    "workstream_count": 85,
     "release_count": 2,
-    "active_release_assignment_count": 10,
+    "active_release_assignment_count": 13,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 201,
-    "edge_count": 460,
-    "warning_count": 6,
-    "warning_item_count": 6
+    "node_count": 205,
+    "edge_count": 469,
+    "warning_count": 12,
+    "warning_item_count": 12
   },
-  "generated_utc": "2026-04-11 07:57:18Z"
+  "generated_utc": "2026-04-11 18:01:11Z"
 }

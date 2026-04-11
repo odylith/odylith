@@ -5094,218 +5094,218 @@
       "casebook": true,
       "reasons": {
         "radar": [
-          "fallback:codex-artifacts/release-surface-demo/AGENTS.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-          "fallback:codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/registry.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/popup-v0.1.7.png",
-          "fallback:codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/AGENTS.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
           "fallback:pyproject.toml",
           "fallback:src/odylith/__init__.py",
           "odylith/runtime/source/product-version.v1.json",
           "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md"
         ],
         "atlas": [
-          "fallback:codex-artifacts/release-surface-demo/AGENTS.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-          "fallback:codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/registry.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/popup-v0.1.7.png",
-          "fallback:codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/AGENTS.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
           "fallback:pyproject.toml",
           "fallback:src/odylith/__init__.py",
           "odylith/runtime/source/product-version.v1.json"
         ],
         "compass": [
-          "fallback:codex-artifacts/release-surface-demo/AGENTS.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-          "fallback:codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/registry.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/popup-v0.1.7.png",
-          "fallback:codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/AGENTS.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
           "fallback:pyproject.toml",
           "fallback:src/odylith/__init__.py",
           "odylith/compass/runtime/codex-stream.v1.jsonl",
           "odylith/runtime/source/product-version.v1.json"
         ],
         "registry": [
-          "fallback:codex-artifacts/release-surface-demo/AGENTS.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-          "fallback:codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/registry.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/popup-v0.1.7.png",
-          "fallback:codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/AGENTS.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
           "fallback:pyproject.toml",
           "fallback:src/odylith/__init__.py",
           "odylith/runtime/source/product-version.v1.json"
         ],
         "casebook": [
-          "fallback:codex-artifacts/release-surface-demo/AGENTS.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-          "fallback:codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/index.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/registry.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
-          "fallback:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
-          "fallback:codex-artifacts/release-surface-demo/popup-v0.1.7.png",
-          "fallback:codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/AGENTS.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/index.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
+          "fallback:artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
+          "fallback:artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
           "fallback:pyproject.toml",
           "fallback:src/odylith/__init__.py",
           "odylith/casebook/bugs/2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md",
@@ -10597,15 +10597,15 @@
   ],
   "timeline_events": [
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/release-note-v0.1.7.png"
+        "artifact-snapshots/release-surface-demo/release-note-v0.1.7.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10616,15 +10616,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/popup-v0.1.7.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/popup-v0.1.7.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/popup-v0.1.7.png"
+        "artifact-snapshots/release-surface-demo/popup-v0.1.7.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10635,15 +10635,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js"
+        "artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js"
       ],
       "source": "local",
       "session_id": "",
@@ -10654,15 +10654,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js"
+        "artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js"
       ],
       "source": "local",
       "session_id": "",
@@ -10673,15 +10673,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json"
       ],
       "source": "local",
       "session_id": "",
@@ -10692,15 +10692,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg"
       ],
       "source": "local",
       "session_id": "",
@@ -10711,15 +10711,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg"
       ],
       "source": "local",
       "session_id": "",
@@ -10730,15 +10730,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10749,15 +10749,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10768,15 +10768,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10787,15 +10787,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg"
       ],
       "source": "local",
       "session_id": "",
@@ -10806,15 +10806,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg"
       ],
       "source": "local",
       "session_id": "",
@@ -10825,15 +10825,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10844,15 +10844,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10863,15 +10863,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10882,15 +10882,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10901,15 +10901,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10920,15 +10920,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10939,15 +10939,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10958,15 +10958,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png"
       ],
       "source": "local",
       "session_id": "",
@@ -10977,15 +10977,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg"
       ],
       "source": "local",
       "session_id": "",
@@ -10996,15 +10996,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png"
       ],
       "source": "local",
       "session_id": "",
@@ -11015,15 +11015,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png"
       ],
       "source": "local",
       "session_id": "",
@@ -11034,15 +11034,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png"
       ],
       "source": "local",
       "session_id": "",
@@ -11053,15 +11053,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md"
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md"
       ],
       "source": "local",
       "session_id": "",
@@ -11072,15 +11072,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md"
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md"
       ],
       "source": "local",
       "session_id": "",
@@ -11091,15 +11091,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json"
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -11110,15 +11110,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html"
+        "artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html"
       ],
       "source": "local",
       "session_id": "",
@@ -11129,15 +11129,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md"
+        "artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md"
       ],
       "source": "local",
       "session_id": "",
@@ -11148,15 +11148,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/registry/registry.html",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/registry/registry.html",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/registry/registry.html"
+        "artifact-snapshots/release-surface-demo/odylith/registry/registry.html"
       ],
       "source": "local",
       "session_id": "",
@@ -11167,15 +11167,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md"
+        "artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md"
       ],
       "source": "local",
       "session_id": "",
@@ -11186,15 +11186,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/radar/radar.html",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/radar/radar.html",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/radar/radar.html"
+        "artifact-snapshots/release-surface-demo/odylith/radar/radar.html"
       ],
       "source": "local",
       "session_id": "",
@@ -11205,15 +11205,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/index.html",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/index.html",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/index.html",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/index.html",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/index.html"
+        "artifact-snapshots/release-surface-demo/odylith/index.html"
       ],
       "source": "local",
       "session_id": "",
@@ -11224,15 +11224,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/compass/compass.html",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/compass/compass.html",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/compass/compass.html"
+        "artifact-snapshots/release-surface-demo/odylith/compass/compass.html"
       ],
       "source": "local",
       "session_id": "",
@@ -11243,15 +11243,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/casebook/casebook.html"
+        "artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html"
       ],
       "source": "local",
       "session_id": "",
@@ -11262,15 +11262,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd"
+        "artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd"
       ],
       "source": "local",
       "session_id": "",
@@ -11281,15 +11281,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
+      "id": "local:??:artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
+      "summary": "Added artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/odylith/atlas/atlas.html"
+        "artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html"
       ],
       "source": "local",
       "session_id": "",
@@ -11300,15 +11300,15 @@
       "headline_hint": ""
     },
     {
-      "id": "local:??:codex-artifacts/release-surface-demo/AGENTS.md",
+      "id": "local:??:artifact-snapshots/release-surface-demo/AGENTS.md",
       "kind": "local_change",
       "ts_iso": "2026-04-03T22:19:09-07:00",
-      "summary": "Added codex-artifacts/release-surface-demo/AGENTS.md",
+      "summary": "Added artifact-snapshots/release-surface-demo/AGENTS.md",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/AGENTS.md"
+        "artifact-snapshots/release-surface-demo/AGENTS.md"
       ],
       "source": "local",
       "session_id": "",
@@ -12531,65 +12531,65 @@
       "session_id": "",
       "start_ts_iso": "2026-04-03T22:19:09-07:00",
       "end_ts_iso": "2026-04-03T22:19:09-07:00",
-      "headline": "Updated codex-artifacts artifacts + bugs index",
+      "headline": "Updated artifact-snapshots artifacts + bugs index",
       "context": "",
       "event_count": 39,
       "files_count": 39,
       "workstreams": [],
       "files": [
-        "codex-artifacts/release-surface-demo/AGENTS.md",
-        "codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-        "codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-        "codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-        "codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-        "codex-artifacts/release-surface-demo/odylith/index.html",
-        "codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-        "codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
-        "codex-artifacts/release-surface-demo/odylith/registry/registry.html",
-        "codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
-        "codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
-        "codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
-        "codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
-        "codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
-        "codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
-        "codex-artifacts/release-surface-demo/popup-v0.1.7.png",
-        "codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+        "artifact-snapshots/release-surface-demo/AGENTS.md",
+        "artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+        "artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+        "artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+        "artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+        "artifact-snapshots/release-surface-demo/odylith/index.html",
+        "artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+        "artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+        "artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
+        "artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+        "artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+        "artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+        "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
+        "artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
+        "artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
+        "artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
+        "artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
         "odylith/casebook/bugs/INDEX.md"
       ],
       "explicit_open": false,
       "explicit_closed": false,
       "events": [
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/release-note-v0.1.7.png"
+            "artifact-snapshots/release-surface-demo/release-note-v0.1.7.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12600,15 +12600,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/popup-v0.1.7.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/popup-v0.1.7.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/popup-v0.1.7.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/popup-v0.1.7.png"
+            "artifact-snapshots/release-surface-demo/popup-v0.1.7.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12619,15 +12619,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/tooling-payload.v1.js"
+            "artifact-snapshots/release-surface-demo/odylith/tooling-payload.v1.js"
           ],
           "source": "local",
           "session_id": "",
@@ -12638,15 +12638,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/tooling-app.v1.js"
+            "artifact-snapshots/release-surface-demo/odylith/tooling-app.v1.js"
           ],
           "source": "local",
           "session_id": "",
@@ -12657,15 +12657,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/manifest.json"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/manifest.json"
           ],
           "source": "local",
           "session_id": "",
@@ -12676,15 +12676,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg"
           ],
           "source": "local",
           "session_id": "",
@@ -12695,15 +12695,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome.svg"
           ],
           "source": "local",
           "session_id": "",
@@ -12714,15 +12714,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-monochrome-1600x400.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12733,15 +12733,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1600x400.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12752,15 +12752,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/lockup/odylith-lockup-horizontal-1200x300.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12771,15 +12771,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon.svg"
           ],
           "source": "local",
           "session_id": "",
@@ -12790,15 +12790,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome.svg"
           ],
           "source": "local",
           "session_id": "",
@@ -12809,15 +12809,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-monochrome-512.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12828,15 +12828,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-64.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12847,15 +12847,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-512.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12866,15 +12866,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-48.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12885,15 +12885,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-32.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12904,15 +12904,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-256.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12923,15 +12923,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-16.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12942,15 +12942,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/icon/odylith-icon-128.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12961,15 +12961,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon.svg"
           ],
           "source": "local",
           "session_id": "",
@@ -12980,15 +12980,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-48.png"
           ],
           "source": "local",
           "session_id": "",
@@ -12999,15 +12999,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-32.png"
           ],
           "source": "local",
           "session_id": "",
@@ -13018,15 +13018,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/favicon/favicon-16.png"
           ],
           "source": "local",
           "session_id": "",
@@ -13037,15 +13037,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/surfaces/brand/README.md"
+            "artifact-snapshots/release-surface-demo/odylith/surfaces/brand/README.md"
           ],
           "source": "local",
           "session_id": "",
@@ -13056,15 +13056,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md"
+            "artifact-snapshots/release-surface-demo/odylith/runtime/source/release-notes/v0.1.7.md"
           ],
           "source": "local",
           "session_id": "",
@@ -13075,15 +13075,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/runtime/source/product-version.v1.json"
+            "artifact-snapshots/release-surface-demo/odylith/runtime/source/product-version.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -13094,15 +13094,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/release-notes/0.1.7.html"
+            "artifact-snapshots/release-surface-demo/odylith/release-notes/0.1.7.html"
           ],
           "source": "local",
           "session_id": "",
@@ -13113,15 +13113,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md"
+            "artifact-snapshots/release-surface-demo/odylith/registry/source/components/billing/CURRENT_SPEC.md"
           ],
           "source": "local",
           "session_id": "",
@@ -13132,15 +13132,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/registry/registry.html",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/registry/registry.html",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/registry/registry.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/registry/registry.html"
+            "artifact-snapshots/release-surface-demo/odylith/registry/registry.html"
           ],
           "source": "local",
           "session_id": "",
@@ -13151,15 +13151,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md"
+            "artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md"
           ],
           "source": "local",
           "session_id": "",
@@ -13170,15 +13170,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/radar/radar.html",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/radar/radar.html",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/radar/radar.html"
+            "artifact-snapshots/release-surface-demo/odylith/radar/radar.html"
           ],
           "source": "local",
           "session_id": "",
@@ -13189,15 +13189,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/index.html",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/index.html",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/index.html",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/index.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/index.html"
+            "artifact-snapshots/release-surface-demo/odylith/index.html"
           ],
           "source": "local",
           "session_id": "",
@@ -13208,15 +13208,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/compass/compass.html",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/compass/compass.html",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/compass/compass.html"
+            "artifact-snapshots/release-surface-demo/odylith/compass/compass.html"
           ],
           "source": "local",
           "session_id": "",
@@ -13227,15 +13227,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/casebook/casebook.html"
+            "artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html"
           ],
           "source": "local",
           "session_id": "",
@@ -13246,15 +13246,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd"
+            "artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd"
           ],
           "source": "local",
           "session_id": "",
@@ -13265,15 +13265,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
+          "id": "local:??:artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
+          "summary": "Added artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/odylith/atlas/atlas.html"
+            "artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html"
           ],
           "source": "local",
           "session_id": "",
@@ -13284,15 +13284,15 @@
           "headline_hint": ""
         },
         {
-          "id": "local:??:codex-artifacts/release-surface-demo/AGENTS.md",
+          "id": "local:??:artifact-snapshots/release-surface-demo/AGENTS.md",
           "kind": "local_change",
           "ts_iso": "2026-04-03T22:19:09-07:00",
-          "summary": "Added codex-artifacts/release-surface-demo/AGENTS.md",
+          "summary": "Added artifact-snapshots/release-surface-demo/AGENTS.md",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "codex-artifacts/release-surface-demo/AGENTS.md"
+            "artifact-snapshots/release-surface-demo/AGENTS.md"
           ],
           "source": "local",
           "session_id": "",
@@ -15371,7 +15371,7 @@
       "transaction_id": "txn:global:auto-global-0027:0027",
       "session_id": "",
       "context": "",
-      "headline": "Updated codex-artifacts artifacts + bugs index",
+      "headline": "Updated artifact-snapshots artifacts + bugs index",
       "last_event_iso": "2026-04-03T22:19:09-07:00",
       "start_ts_iso": "2026-04-03T22:19:09-07:00",
       "workstreams": [],
@@ -15386,20 +15386,20 @@
       "activity_signal_count": 39,
       "risk_signal_count": 0,
       "top_files": [
-        "codex-artifacts/release-surface-demo/AGENTS.md",
-        "codex-artifacts/release-surface-demo/odylith/atlas/atlas.html",
-        "codex-artifacts/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
-        "codex-artifacts/release-surface-demo/odylith/casebook/casebook.html",
-        "codex-artifacts/release-surface-demo/odylith/compass/compass.html",
-        "codex-artifacts/release-surface-demo/odylith/index.html",
-        "codex-artifacts/release-surface-demo/odylith/radar/radar.html",
-        "codex-artifacts/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md"
+        "artifact-snapshots/release-surface-demo/AGENTS.md",
+        "artifact-snapshots/release-surface-demo/odylith/atlas/atlas.html",
+        "artifact-snapshots/release-surface-demo/odylith/atlas/source/billing-boundary-map.mmd",
+        "artifact-snapshots/release-surface-demo/odylith/casebook/casebook.html",
+        "artifact-snapshots/release-surface-demo/odylith/compass/compass.html",
+        "artifact-snapshots/release-surface-demo/odylith/index.html",
+        "artifact-snapshots/release-surface-demo/odylith/radar/radar.html",
+        "artifact-snapshots/release-surface-demo/odylith/radar/source/ideas/B-001-first-item.md"
       ],
       "source_files_count": 38,
       "generated_files_count": 1,
       "generated_only_batch": false,
       "latest_event_kind": "local_change",
-      "latest_event_summary": "Added codex-artifacts/release-surface-demo/release-note-v0.1.7.png",
+      "latest_event_summary": "Added artifact-snapshots/release-surface-demo/release-note-v0.1.7.png",
       "has_implementation_signal": true,
       "focus_reason": "recent_activity_signal",
       "selection_mode": "active_implementation",

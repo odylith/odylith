@@ -10,13 +10,17 @@
     "D-029"
   ],
   "forensic_coverage": {
-    "empty_reasons": [],
+    "empty_reasons": [
+      "no_explicit_event",
+      "no_recent_path_match",
+      "no_mapped_workstream_evidence"
+    ],
     "explicit_event_count": 0,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 3,
-    "status": "forensic_coverage_present",
-    "timeline_event_count": 1
+    "status": "baseline_forensic_only",
+    "timeline_event_count": 3
   },
   "name": "Proof State",
   "path_prefixes": [
@@ -24,24 +28,7 @@
     "odylith/runtime/odylith-proof-surfaces.v1.json"
   ],
   "spec_ref": "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
-  "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/runtime/governance/proof_state/resolver.py"
-      ],
-      "confidence": "high",
-      "event_index": 75,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "proof-state"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/proof_state/resolver.py",
-      "ts_iso": "2026-04-11T00:34:48-07:00",
-      "workstreams": []
-    }
-  ],
+  "timeline": [],
   "traceability": {
     "code_references": [],
     "developer_docs": [],

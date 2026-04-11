@@ -18,7 +18,7 @@ promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-
 execution_model: standard
 workstream_type: standard
 workstream_parent:
-workstream_children:
+workstream_children: B-084
 workstream_depends_on: B-069
 workstream_blocks:
 related_diagram_ids: D-019,D-020,D-023,D-033,D-034,D-035

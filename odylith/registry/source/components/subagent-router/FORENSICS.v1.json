@@ -23,16 +23,17 @@
     "D-019",
     "D-024",
     "D-030",
-    "D-031"
+    "D-031",
+    "D-047"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 12,
-    "mapped_workstream_evidence_count": 3,
+    "explicit_event_count": 14,
+    "mapped_workstream_evidence_count": 5,
     "recent_path_match_count": 1,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 13
+    "timeline_event_count": 15
   },
   "name": "Subagent Router",
   "path_prefixes": [
@@ -43,21 +44,77 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/skills/subagent-router/SKILL.md",
-        "src/odylith/bundle/assets/odylith/skills/subagent-router/SKILL.md",
-        "src/odylith/runtime/orchestration/subagent_router.py"
+        "odylith/skills/subagent-router/SKILL.md"
       ],
       "confidence": "high",
-      "event_index": 81,
+      "event_index": 78,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/skills/subagent-router/SKILL.md, src/odylith/bundle/assets/odylith/skills/subagent-router/SKILL.md +1 more",
-      "ts_iso": "2026-04-11T01:13:15-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/skills/subagent-router/SKILL.md",
+      "ts_iso": "2026-04-11T12:14:52-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 67,
+      "explicit_components": [
+        "compass",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Bound B-083, B-084, and B-085 to release-0-1-11. Updated technical-plans/INDEX.md, B-083 workstream_children, and the B-084 parent plan Must-Ship state. Ran mutating selective sync and compass refresh so the release-target view shows all three Claude workstreams in the active 0.1.11 set. 44 runtime tests passed (test_host_runtime_contract, test_agent_runtime_contract, test_execution_governance, test_claude_host_statusline, test_claude_host_precompact_snapshot, test_claude_project_hooks).",
+      "ts_iso": "2026-04-11T11:04:10-07:00",
+      "workstreams": [
+        "B-084"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md"
+      ],
+      "confidence": "high",
+      "event_index": 66,
+      "explicit_components": [
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-084/CB-103 in-flight: flip Claude supports_explicit_model_selection to True, restructure execution profile ladder with (host_family, profile) axis so Claude resolves to haiku/sonnet/opus while Codex tuples stay byte-identical, differentiate 8 .claude/agents/ models, and co-land the flag flip with the ladder column in one commit per CB-103 invariant.",
+      "ts_iso": "2026-04-11T09:17:11-07:00",
+      "workstreams": [
+        "B-084"
+      ]
     },
     {
       "artifacts": [
@@ -435,6 +492,7 @@
     "B-013",
     "B-015",
     "B-031",
-    "B-069"
+    "B-069",
+    "B-084"
   ]
 }

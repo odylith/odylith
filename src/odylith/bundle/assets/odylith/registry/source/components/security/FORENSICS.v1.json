@@ -26,18 +26,19 @@
   "timeline": [
     {
       "artifacts": [
-        "github/workflows/test.yml"
+        "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
+        "odylith/skills/security-hardening/SKILL.md"
       ],
       "confidence": "high",
-      "event_index": 79,
+      "event_index": 76,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "security"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: github/workflows/test.yml",
-      "ts_iso": "2026-04-11T00:38:28-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/SECURITY_AND_TRUST.md, odylith/skills/security-hardening/SKILL.md",
+      "ts_iso": "2026-04-11T12:14:42-07:00",
       "workstreams": []
     },
     {

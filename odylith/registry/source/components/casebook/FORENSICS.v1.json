@@ -46,7 +46,7 @@
         "src/odylith/bundle/assets/odylith/casebook/bugs/INDEX.md"
       ],
       "confidence": "high",
-      "event_index": 69,
+      "event_index": 70,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -54,7 +54,7 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/casebook/bugs/INDEX.md",
-      "ts_iso": "2026-04-11T00:57:28-07:00",
+      "ts_iso": "2026-04-11T11:05:52-07:00",
       "workstreams": []
     },
     {

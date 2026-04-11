@@ -33,16 +33,17 @@
     "D-031",
     "D-033",
     "D-034",
-    "D-035"
+    "D-035",
+    "D-047"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 35,
-    "mapped_workstream_evidence_count": 5,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 37,
+    "mapped_workstream_evidence_count": 7,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 7,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 36
+    "timeline_event_count": 37
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -52,29 +53,62 @@
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifacts": [
-        "src/odylith/runtime/context_engine/odylith_architecture_mode.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_governance_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_packet_core_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
-        "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
-        "src/odylith/runtime/context_engine/tooling_context_retrieval.py",
-        "src/odylith/runtime/context_engine/tooling_context_routing.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_compass_runtime_cache.py"
-      ],
+      "artifacts": [],
       "confidence": "high",
-      "event_index": 74,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 67,
+      "explicit_components": [
+        "compass",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "odylith-context-engine"
+        "compass",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/context_engine/odylith_architecture_mode.py, src/odylith/runtime/context_engine/odylith_context_engine.py +8 more",
-      "ts_iso": "2026-04-11T01:13:56-07:00",
-      "workstreams": []
+      "summary": "Bound B-083, B-084, and B-085 to release-0-1-11. Updated technical-plans/INDEX.md, B-083 workstream_children, and the B-084 parent plan Must-Ship state. Ran mutating selective sync and compass refresh so the release-target view shows all three Claude workstreams in the active 0.1.11 set. 44 runtime tests passed (test_host_runtime_contract, test_agent_runtime_contract, test_execution_governance, test_claude_host_statusline, test_claude_host_precompact_snapshot, test_claude_project_hooks).",
+      "ts_iso": "2026-04-11T11:04:10-07:00",
+      "workstreams": [
+        "B-084"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md"
+      ],
+      "confidence": "high",
+      "event_index": 66,
+      "explicit_components": [
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-084/CB-103 in-flight: flip Claude supports_explicit_model_selection to True, restructure execution profile ladder with (host_family, profile) axis so Claude resolves to haiku/sonnet/opus while Codex tuples stay byte-identical, differentiate 8 .claude/agents/ models, and co-land the flag flip with the ladder column in one commit per CB-103 invariant.",
+      "ts_iso": "2026-04-11T09:17:11-07:00",
+      "workstreams": [
+        "B-084"
+      ]
     },
     {
       "artifacts": [
@@ -1129,6 +1163,7 @@
     "B-069",
     "B-081",
     "B-083",
-    "B-082"
+    "B-082",
+    "B-084"
   ]
 }

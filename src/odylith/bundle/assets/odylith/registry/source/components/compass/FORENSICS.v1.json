@@ -35,9 +35,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 53,
-    "mapped_workstream_evidence_count": 3,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 54,
+    "mapped_workstream_evidence_count": 4,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 26,
     "status": "forensic_coverage_present",
     "timeline_event_count": 54
@@ -51,23 +51,34 @@
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifacts": [
-        "odylith/registry/source/components/compass/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/odylith/registry/source/components/compass/CURRENT_SPEC.md",
-        "src/odylith/runtime/surfaces/render_compass_dashboard.py",
-        "src/odylith/bundle/assets/odylith/compass/runtime/CLAUDE.md"
-      ],
+      "artifacts": [],
       "confidence": "high",
-      "event_index": 70,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 67,
+      "explicit_components": [
+        "compass",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "compass"
+        "compass",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/compass/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/registry/source/components/compass/CURRENT_SPEC.md +2 more",
-      "ts_iso": "2026-04-11T01:14:36-07:00",
-      "workstreams": []
+      "summary": "Bound B-083, B-084, and B-085 to release-0-1-11. Updated technical-plans/INDEX.md, B-083 workstream_children, and the B-084 parent plan Must-Ship state. Ran mutating selective sync and compass refresh so the release-target view shows all three Claude workstreams in the active 0.1.11 set. 44 runtime tests passed (test_host_runtime_contract, test_agent_runtime_contract, test_execution_governance, test_claude_host_statusline, test_claude_host_precompact_snapshot, test_claude_project_hooks).",
+      "ts_iso": "2026-04-11T11:04:10-07:00",
+      "workstreams": [
+        "B-084"
+      ]
     },
     {
       "artifacts": [

@@ -37,19 +37,33 @@
       "idea_id": "B-083",
       "field": "workstream_type",
       "current": "standard",
-      "candidate": "standalone",
+      "candidate": "umbrella",
+      "reason": "derived from parent/children topology"
+    },
+    {
+      "idea_id": "B-084",
+      "field": "workstream_type",
+      "current": "standard",
+      "candidate": "umbrella",
+      "reason": "derived from parent/children topology"
+    },
+    {
+      "idea_id": "B-085",
+      "field": "workstream_type",
+      "current": "standard",
+      "candidate": "child",
       "reason": "derived from parent/children topology"
     }
   ],
   "fields_unresolved": [],
   "warnings": [],
   "summary": {
-    "ideas_seen": 83,
+    "ideas_seen": 85,
     "files_modified": 0,
     "fields_filled": 0,
-    "conflicts": 5,
+    "conflicts": 7,
     "unresolved": 0,
     "warnings": 0
   },
-  "generated_utc": "2026-04-11 07:57:17Z"
+  "generated_utc": "2026-04-11 18:01:09Z"
 }
