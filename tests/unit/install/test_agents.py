@@ -63,6 +63,11 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in block
     assert "Start substantive turns with `./.odylith/bin/odylith start --repo-root .`" in block
     assert "`./.odylith/bin/odylith context --repo-root . <ref>` before raw repo search." in block
+    assert "CLI-first is non-negotiable for both Codex and Claude Code." in block
+    assert "Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting." in block
+    assert "hard policy violation, not a stylistic preference" in block
+    assert "odylith/agents-guidelines/CLI_FIRST_POLICY.md" in block
+    assert "CB-104" in block
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in block
     assert "the exact file/workstream, the bug under test, or the validation in flight" in block
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in block

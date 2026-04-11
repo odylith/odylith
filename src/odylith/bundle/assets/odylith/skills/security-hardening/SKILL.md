@@ -1,13 +1,22 @@
 # Security Hardening
 
+## CLI-First Non-Negotiable
+- CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
+
 Use this skill when a task changes Odylith's runtime trust boundary,
 release-asset verification, workflow supply-chain posture, daemon/process
-lifetime, or the documented security contract for installed consumer repos.
+lifetime, or the documented security contract across consumer, dogfood, and
+detached `source-local` lanes.
 
 ## Lane Boundary
 - Consumer lane:
   - keep `./.odylith/bin/odylith` on a verified managed runtime
   - do not rely on insecure local-release or Sigstore-bypass env vars
+- Product-repo maintainer mode:
+  - pinned dogfood proves the shipped runtime
+  - detached `source-local` is the explicit live-source development posture
+  - local hosted-release overrides are allowed only for bounded maintainer
+    rehearsal
 
 ## Default Flow
 - identify the active lane and the exact trust boundary first
@@ -35,5 +44,6 @@ pytest tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py tests/
 ## Rules
 - Fail closed on ambiguous runtime or release trust.
 - Prefer immutable workflow/action pins over floating tags.
+- Do not describe detached `source-local` as a secure immutable lane.
 - Keep process-lifetime fixes honest: no retry loop or timeout path is done
   until the owned Python process exits.
