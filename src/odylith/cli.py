@@ -84,6 +84,14 @@ _CLAUDE_HOST_COMMAND_MODULES = {
     "statusline": "odylith.runtime.surfaces.claude_host_statusline",
     "pre-compact-snapshot": "odylith.runtime.surfaces.claude_host_precompact_snapshot",
 }
+_CODEX_HOST_COMMAND_MODULES = {
+    "session-start-ground": "odylith.runtime.surfaces.codex_host_session_brief",
+    "prompt-context": "odylith.runtime.surfaces.codex_host_prompt_context",
+    "bash-guard": "odylith.runtime.surfaces.codex_host_bash_guard",
+    "post-bash-checkpoint": "odylith.runtime.surfaces.codex_host_post_bash_checkpoint",
+    "stop-summary": "odylith.runtime.surfaces.codex_host_stop_summary",
+    "compatibility": "odylith.runtime.surfaces.codex_host_compatibility",
+}
 
 
 def _load_module(name: str):
@@ -1495,6 +1503,14 @@ def _cmd_claude_precompact_snapshot(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_codex_host_command(args: argparse.Namespace) -> int:
+    codex_command = str(getattr(args, "codex_command", "") or "").strip()
+    return _run_module_main(
+        _CODEX_HOST_COMMAND_MODULES[codex_command],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=getattr(args, "forwarded", [])),
+    )
+
+
 def _parse_dashboard_refresh_fast_args(*, repo_root: str, forwarded: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith dashboard refresh",
@@ -1939,6 +1955,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Suppress the 'snapshot written at ...' confirmation line.",
     )
     claude_precompact.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    codex_host = subparsers.add_parser(
+        "codex",
+        help="Render Odylith-grounded Codex host hook surfaces.",
+    )
+    codex_host_subparsers = codex_host.add_subparsers(dest="codex_command", required=True)
+    for command, help_text in (
+        ("session-start-ground", "Render the Odylith-grounded Codex SessionStart hook output."),
+        ("prompt-context", "Render the Odylith-grounded Codex UserPromptSubmit hook output."),
+        ("bash-guard", "Evaluate the Odylith destructive-command guard for Codex Bash hooks."),
+        ("post-bash-checkpoint", "Nudge Odylith checkpointing after edit-like Codex Bash commands."),
+        ("stop-summary", "Log meaningful Codex stop summaries to Compass."),
+        ("compatibility", "Inspect the local Codex compatibility posture for Odylith."),
+    ):
+        subparser = codex_host_subparsers.add_parser(command, help=help_text)
+        subparser.add_argument("--repo-root", default=".", help="Repository root for Compass runtime resolution.")
+        subparser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
     return parser
 
@@ -2103,6 +2135,15 @@ def main(argv: list[str] | None = None) -> int:
             if claude_command == "statusline":
                 return _cmd_claude_statusline(namespace)
             return _cmd_claude_precompact_snapshot(namespace)
+        if tokens[0] == "codex" and len(tokens) >= 2 and tokens[1] in _CODEX_HOST_COMMAND_MODULES:
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            return _cmd_codex_host_command(
+                argparse.Namespace(
+                    repo_root=repo_root,
+                    forwarded=forwarded,
+                    codex_command=tokens[1],
+                )
+            )
         if tokens[0] == "atlas" and len(tokens) >= 2 and tokens[1] in {"render", "auto-update", "scaffold", "install-autosync-hook"}:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             atlas_command = tokens[1]
@@ -2212,6 +2253,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_claude_statusline(args)
     if args.command == "claude" and args.claude_command == "pre-compact-snapshot":
         return _cmd_claude_precompact_snapshot(args)
+    if args.command == "codex" and args.codex_command in _CODEX_HOST_COMMAND_MODULES:
+        return _cmd_codex_host_command(args)
     parser.error(f"unsupported command: {args.command}")
     return 2
 

@@ -351,6 +351,46 @@
         "B-001",
         "B-038"
       ]
+    },
+    {
+      "chunk_id": "codex-host-contract-project-assets-trust",
+      "note_kind": "workflow",
+      "canonical_source": "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+      "chunk_path": "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+      "title": "Codex Host Contract",
+      "section": "Trusted project-root Codex assets",
+      "summary": "Keep checked-in Codex project assets under `.codex/` and `.agents/skills/` distinct from the routed built-in-role `spawn_agent` contract, and do not overclaim unsupported hook or statusline surfaces.",
+      "tags": [
+        "codex",
+        "project-assets",
+        "host-contract"
+      ],
+      "task_families": [
+        "agent_activation",
+        "cross_file_feature",
+        "exact_anchor_recall",
+        "orchestration_feedback"
+      ],
+      "risk_class": "host_contract_overclaim",
+      "component_affinity": [
+        "odylith",
+        "subagent-router"
+      ],
+      "path_prefixes": [
+        ".codex/",
+        ".agents/skills/",
+        "odylith/agents-guidelines/"
+      ],
+      "path_refs": [
+        ".codex/config.toml",
+        ".codex/hooks.json",
+        ".codex/agents/odylith-workstream.toml",
+        ".agents/skills/subagent-router/SKILL.md"
+      ],
+      "workstreams": [
+        "B-069",
+        "B-087"
+      ]
     }
   ]
 }

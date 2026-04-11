@@ -19,6 +19,7 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (project_root / ".claude" / "commands" / "odylith-plan.md").is_file()
     assert (project_root / ".claude" / "commands" / "odylith-worktree.md").is_file()
     assert (project_root / ".claude" / "commands" / "odylith-sync-governance.md").is_file()
+    assert (project_root / ".claude" / "agents" / "odylith-compass-narrator.md").is_file()
     assert (project_root / ".claude" / "agents" / "odylith-reviewer.md").is_file()
     assert (project_root / ".claude" / "agents" / "odylith-workstream.md").is_file()
     assert (project_root / ".claude" / "agents" / "odylith-validator.md").is_file()
@@ -29,9 +30,16 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (project_root / ".claude" / "hooks" / "session-start-ground.py").is_file()
     assert (project_root / ".claude" / "hooks" / "log-stop-summary.py").is_file()
     assert (project_root / ".claude" / "hooks" / "guard-destructive-bash.py").is_file()
+    assert (project_root / ".claude" / "output-styles" / "odylith-grounded.md").is_file()
     assert (project_root / ".claude" / "skills" / "subagent-router" / "SKILL.md").is_file()
     assert (project_root / ".claude" / "skills" / "delivery-governance-surface-ops" / "SKILL.md").is_file()
     assert (project_root / ".claude" / "rules" / "odylith-governance.md").is_file()
+    assert (project_root / ".codex" / "config.toml").is_file()
+    assert (project_root / ".codex" / "hooks.json").is_file()
+    assert (project_root / ".codex" / "agents" / "odylith-workstream.toml").is_file()
+    codex_hooks = (project_root / ".codex" / "hooks.json").read_text(encoding="utf-8")
+    assert "./.odylith/bin/odylith codex session-start-ground --repo-root ." in codex_hooks
+    assert (project_root / ".agents" / "skills" / "subagent-router" / "SKILL.md").is_file()
 
 
 def test_bundle_root_contains_managed_governance_surface_assets() -> None:
@@ -55,13 +63,11 @@ def test_bundle_root_contains_managed_governance_surface_assets() -> None:
     assert (root / "technical-plans" / "AGENTS.md").is_file()
     assert (root / "technical-plans" / "CLAUDE.md").is_file()
     assert (root / "casebook" / "bugs" / "INDEX.md").is_file()
+    assert (root / "agents-guidelines" / "CODEX_HOST_CONTRACT.md").is_file()
 
 
-def test_bundle_root_does_not_ship_public_workstream_or_bug_records_into_consumer_truth_roots() -> None:
+def test_bundle_root_does_not_ship_volatile_runtime_artifacts_into_consumer_truth_roots() -> None:
     root = bundle_root()
-    assert not (root / "radar" / "source" / "ideas").exists()
-    assert not (root / "technical-plans" / "in-progress").exists()
-    assert not (root / "casebook" / "bugs" / "2026-02-15-mirror-registry-barrier-deadlock-in-tests.md").exists()
     assert not (root / "compass" / "runtime" / "codex-stream.v1.jsonl").exists()
     assert not (root / "compass" / "runtime" / "current.v1.json").exists()
     assert not (root / "compass" / "runtime" / "current.v1.js").exists()

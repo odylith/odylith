@@ -172,7 +172,7 @@ def build_compass_runtime_truth_drift(
         or str(source_current_release.get("version", "")).strip()
         or source_current_release_id
         or runtime_current_release_id
-        or "the current release"
+        or "the active target release"
     )
     body_parts: list[str] = []
     if any(

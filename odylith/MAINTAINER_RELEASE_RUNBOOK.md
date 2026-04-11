@@ -159,11 +159,11 @@ Run the targets in this order.
     version.
 
     Before closing the lane, advance repo-local release planning truth for the
-    shipped line: move unfinished workstreams forward, keep the current
-    release visible until you explicitly transition it to `shipped` or
-    `closed`, and ensure `current` and `next` aliases now point only at
+    shipped line: move unfinished workstreams forward, keep the active
+    target release owned by the `current` alias visible until you explicitly
+    transition it to `shipped` or `closed`, and ensure `current` and `next` aliases now point only at
     non-terminal planning records before or with that terminal lifecycle
-    update. An empty current release is still active planning truth, not
+    update. An empty active target release is still active planning truth, not
     implicit GA, and finished work from that release may remain visible in
     Compass as completed release history until you perform the explicit close.
 
@@ -259,7 +259,7 @@ Run the targets in this order.
   aliases. They cannot remain attached to `shipped` or `closed` release
   records, so advance aliases to non-terminal follow-on records before
   terminal lifecycle updates.
-- The current active release remains visible in Compass until the maintainer
+- The active target release remains visible in Compass until the maintainer
   explicitly marks it `shipped` or `closed`. Do not treat zero targeted
   workstreams as an implicit closeout signal.
 - Finished work removed during closeout may still appear under that release as
@@ -277,7 +277,7 @@ Run the targets in this order.
 - If the chosen tag already exists without a published GitHub release,
   preflight must reuse that same tag instead of burning the next patch version.
   If the tag is still unpublished and points at an older retry commit,
-  preflight may rebind that unpublished tag to the current release commit
+  preflight may rebind that unpublished tag to the active target release commit
   before dispatch.
 - The GitHub workflow will refuse to publish unless the requested `tag`, the
   session `expected_sha`, and `GITHUB_SHA` all match.

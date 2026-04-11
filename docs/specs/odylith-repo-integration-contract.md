@@ -16,6 +16,7 @@ Odylith keeps its boundary separate from the host repo's own toolchain.
 | `odylith/runtime/source/tooling_shell.v1.json` | tracked tooling-shell starter metadata |
 | `odylith/surfaces/brand/` | starter assets for local Odylith HTML surfaces |
 | `odylith/agents-guidelines/` | the Odylith-managed guidance subtree |
+| `.claude/`, `.codex/`, `.agents/skills/` | managed project-root host assets for Claude Code and Codex CLI |
 | `.odylith/` | launcher, staged runtimes, caches, ledgers, trust evidence, and mutable runtime integration |
 
 `odylith/` is never a copied mirror of the Odylith product repo's own
@@ -32,6 +33,10 @@ Odylith keeps its boundary separate from the host repo's own toolchain.
   files when the repo does not already provide them.
 - `odylith/AGENTS.md` carries the consumer bootstrap guidance, and
   `odylith/CLAUDE.md` is the Claude-specific shim that points back to it.
+- Checked-in project-root host assets live beside that root guidance:
+  `.claude/` for Claude Code, `.codex/` for Codex CLI project config plus
+  hooks/agents, and `.agents/skills/` for Codex repo-scoped skill shims.
+- Codex only activates the checked-in `.codex/` layer for trusted projects.
 - `odylith on` and `odylith off` toggle the Odylith block without removing the
   installed runtime.
 
@@ -45,7 +50,8 @@ Odylith keeps its boundary separate from the host repo's own toolchain.
 - Consumer starter assets such as `odylith/surfaces/brand/` may be seeded on
   first install and restored by explicit repair, but they are not part of
   normal upgrade mutation.
-- The only consumer-side subtree Odylith may refresh during normal upgrade is
+- Normal upgrade may refresh the managed project-root host assets
+  (`.claude/`, `.codex/`, `.agents/skills/`) together with
   `odylith/agents-guidelines/`.
 - Installed Odylith reads local plans, bugs, specs, diagrams, and other repo
   truth in place instead of packaging that context into the product itself.

@@ -10,10 +10,10 @@
     "empty_reasons": [],
     "explicit_event_count": 2,
     "mapped_workstream_evidence_count": 2,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 3
+    "timeline_event_count": 2
   },
   "name": "Execution Governance",
   "path_prefixes": [
@@ -50,24 +50,6 @@
       "workstreams": [
         "B-084"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-        "src/odylith/runtime/execution_engine/contract.py"
-      ],
-      "confidence": "high",
-      "event_index": 71,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "execution-governance"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/execution-governance/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/registry/source/components/execution-governance/CURRENT_SPEC.md +1 more",
-      "ts_iso": "2026-04-11T11:01:20-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [
@@ -117,6 +99,7 @@
     "B-078",
     "B-082",
     "B-084",
-    "B-085"
+    "B-085",
+    "B-087"
   ]
 }

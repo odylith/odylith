@@ -1,0 +1,60 @@
+{
+  "SessionStart": [
+    {
+      "matcher": "startup|resume",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "./.odylith/bin/odylith codex session-start-ground --repo-root .",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "./.odylith/bin/odylith codex prompt-context --repo-root .",
+          "timeout": 20
+        }
+      ]
+    }
+  ],
+  "PreToolUse": [
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "./.odylith/bin/odylith codex bash-guard --repo-root .",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "./.odylith/bin/odylith codex post-bash-checkpoint --repo-root .",
+          "timeout": 20
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "./.odylith/bin/odylith codex stop-summary --repo-root .",
+          "timeout": 20
+        }
+      ]
+    }
+  ]
+}

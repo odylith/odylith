@@ -70,9 +70,11 @@ _HOST_UI_VISIBILITY_NOTE = (
     "for some combinations even when explicit spawn overrides are passed."
 )
 _HOST_CUSTOM_AGENT_TYPE_NOTE = (
-    "The current native `spawn_agent` tool accepts only built-in `agent_type` values "
-    "(`default`, `explorer`, `worker`), so named custom agents from `.codex/agents/` "
-    "are not selectable through this host tool."
+    "Codex CLI supports repo-scoped custom project agents under `.codex/agents/*.toml`, "
+    "but the current native `spawn_agent` tool in this host integration still accepts only "
+    "built-in `agent_type` values (`default`, `explorer`, `worker`). Treat the checked-in "
+    "Codex project agents as host-native project assets, not as routed `spawn_agent` types, "
+    "until this integration proves named-agent selection end to end."
 )
 _PROFILE_PRIORITY: dict[str, int] = {
     "main_thread": 0,
@@ -784,7 +786,10 @@ def _native_spawn_supported_for_assessment(assessment: TaskAssessment) -> bool:
 
 
 def _assessment_host_capabilities(assessment: TaskAssessment) -> dict[str, Any]:
-    return host_runtime_contract.resolve_host_capabilities(_assessment_host_runtime(assessment))
+    return host_runtime_contract.resolve_host_capabilities(
+        _assessment_host_runtime(assessment),
+        repo_root=Path.cwd(),
+    )
 
 
 def _delegation_style_for_assessment(assessment: TaskAssessment) -> str:
@@ -1373,6 +1378,15 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
         "host_runtime": host_runtime,
         "native_spawn_supported": native_spawn_supported,
     }
+    if str(host_runtime).strip() == "codex_cli":
+        if bool(_assessment_host_capabilities(assessment).get("supports_project_hooks")):
+            contract["project_assets_activation_note"] = (
+                "Local Codex capability probing reports project hooks support, so the managed `.codex/` lane remains an active best-effort enhancement alongside the baseline-safe AGENTS.md + launcher contract."
+            )
+        else:
+            contract["project_assets_activation_note"] = (
+                "Local Codex capability probing did not prove project hooks support, so keep the baseline-safe AGENTS.md + launcher lane authoritative and treat `.codex/` assets as optional enhancements until `odylith codex compatibility` reports otherwise."
+            )
     if not native_spawn_supported:
         contract["local_guidance_only"] = True
         contract["unsupported_reason"] = (
@@ -1412,7 +1426,7 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
         if preferred_project_subagent:
             lines.append(f"PREFERRED PROJECT SUBAGENT: {preferred_project_subagent}")
         return lines
-    return [
+    lines = [
         f"REQUESTED RUNTIME: {profile.model} / {profile.reasoning_effort}",
         f"WHY THIS TIER: {banner_reason}",
         f"MODEL: {profile.model}",
@@ -1424,6 +1438,12 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
             "requested runtime for this leaf."
         ),
     ]
+    if str(host_runtime).strip() == "codex_cli":
+        if bool(_assessment_host_capabilities(assessment).get("supports_project_hooks")):
+            lines.append("HOST CAPABILITY: Codex project hooks are supported locally; the managed `.codex/` lane can stay active as a best-effort enhancement.")
+        else:
+            lines.append("HOST CAPABILITY: Codex project hooks are not proven locally; the baseline-safe AGENTS.md + launcher lane stays authoritative.")
+    return lines
 
 
 def _spawn_task_message(

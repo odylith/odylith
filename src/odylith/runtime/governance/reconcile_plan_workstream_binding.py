@@ -3,6 +3,8 @@
 This command is intentionally conservative and deterministic:
 - scope is limited to touched/new active plans,
 - queued links are promoted to planning and moved into execution table,
+- already-active links repair execution-table placement when drift leaves them in
+  the ranked backlog,
 - finished links are rebound through a new successor workstream,
 - all writes occur in canonical markdown sources.
 """
@@ -25,6 +27,14 @@ _WORKSTREAM_RE = re.compile(r"^B-(\d{3,})$")
 _SECTION_RE = re.compile(r"^##\s+(.+?)\s*$")
 _BACKLOG_ROW_COL_COUNT = len(backlog_contract._INDEX_COLS)
 _BACKLOG_STATUS_COL_INDEX = backlog_contract._INDEX_COLS.index("status")
+_EXECUTION_STATUS_ORDER = {
+    "implementation": 0,
+    "planning": 1,
+}
+_EXECUTION_SECTION_TITLES = (
+    "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress` or an active parent wave)",
+    "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)",
+)
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -205,6 +215,14 @@ def _find_section_bounds(lines: list[str], title: str) -> tuple[int, int]:
     return start, end
 
 
+def _find_execution_section_bounds(lines: list[str]) -> tuple[int, int]:
+    for title in _EXECUTION_SECTION_TITLES:
+        start, end = _find_section_bounds(lines, title)
+        if start != -1:
+            return start, end
+    return -1, -1
+
+
 def _collect_table_row_indexes(lines: list[str], *, section_start: int, section_end: int) -> list[int]:
     row_indexes: list[int] = []
     for idx in range(section_start, section_end):
@@ -232,23 +250,191 @@ def _update_backlog_last_updated(content: str, *, today: dt.date) -> str:
 
 
 def _append_execution_row(backlog_index_path: Path, *, row_cells: Sequence[str], today: dt.date) -> None:
+    snapshot = backlog_contract._build_backlog_index_snapshot(backlog_index_path)  # noqa: SLF001
+    execution_rows = backlog_contract.rows_as_mapping(
+        section=snapshot.get("execution", {}),
+        expected_headers=backlog_contract._INDEX_COLS,
+    )
+    execution_rows = [row for row in execution_rows if str(row.get("idea_id", "")).strip() != str(row_cells[1]).strip()]
+    execution_rows.append(dict(zip(backlog_contract._INDEX_COLS, [str(item) for item in row_cells], strict=True)))
+    _rewrite_execution_section(backlog_index_path, execution_rows=execution_rows, today=today)
+
+
+def _rewrite_execution_section(
+    backlog_index_path: Path,
+    *,
+    execution_rows: Sequence[Mapping[str, str]],
+    today: dt.date,
+) -> None:
+    normalized_rows = [dict(row) for row in execution_rows]
+    normalized_rows.sort(
+        key=lambda row: (
+            _EXECUTION_STATUS_ORDER.get(str(row.get("status", "")).strip().lower(), 99),
+            -int(str(row.get("ordering_score", "0")).strip() or "0"),
+            str(row.get("idea_id", "")).strip(),
+        )
+    )
+    formatted_rows = [
+        [
+            "-",
+            str(row.get("idea_id", "")).strip(),
+            str(row.get("title", "")).strip(),
+            str(row.get("priority", "")).strip(),
+            str(row.get("ordering_score", "")).strip(),
+            str(row.get("commercial_value", "")).strip(),
+            str(row.get("product_impact", "")).strip(),
+            str(row.get("market_value", "")).strip(),
+            str(row.get("sizing", "")).strip(),
+            str(row.get("complexity", "")).strip(),
+            str(row.get("status", "")).strip(),
+            str(row.get("link", "")).strip(),
+        ]
+        for row in normalized_rows
+    ]
+
     lines = backlog_index_path.read_text(encoding="utf-8").splitlines()
-    exec_start, exec_end = _find_section_bounds(lines, "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)")
+    exec_start, exec_end = _find_execution_section_bounds(lines)
     if exec_start == -1:
         raise ValueError("missing execution section in odylith/radar/source/INDEX.md")
 
     row_indexes = _collect_table_row_indexes(lines, section_start=exec_start, section_end=exec_end)
-    insert_at = exec_end
     if row_indexes:
-        insert_at = row_indexes[-1] + 1
-    line = _format_table_row(row_cells)
-    lines.insert(insert_at, line)
+        first_row = row_indexes[0]
+        del lines[first_row : row_indexes[-1] + 1]
+        for offset, row in enumerate(formatted_rows):
+            lines.insert(first_row + offset, _format_table_row(row))
+    else:
+        insert_at = exec_start + 4
+        for offset, row in enumerate(formatted_rows):
+            lines.insert(insert_at + offset, _format_table_row(row))
 
     content = "\n".join(lines)
     content = backlog_authoring._update_backlog_last_updated(content, today=today)
     if not content.endswith("\n"):
         content += "\n"
     backlog_index_path.write_text(content, encoding="utf-8")
+
+
+def _remove_active_row_and_rewrite_rationale(
+    backlog_index_path: Path,
+    *,
+    idea_id: str,
+    today: dt.date,
+) -> dict[str, str] | None:
+    snapshot = backlog_contract._build_backlog_index_snapshot(backlog_index_path)  # noqa: SLF001
+    active_rows = backlog_contract.rows_as_mapping(
+        section=snapshot.get("active", {}),
+        expected_headers=backlog_contract._INDEX_COLS,
+    )
+    target_row: dict[str, str] | None = None
+    remaining_rows: list[dict[str, str]] = []
+    for row in active_rows:
+        if str(row.get("idea_id", "")).strip() == idea_id:
+            target_row = dict(row)
+            continue
+        remaining_rows.append(dict(row))
+    if target_row is None:
+        return None
+
+    existing_reorder = {
+        str(key): (
+            str(value.get("heading", "")).strip(),
+            [str(line) for line in value.get("lines", [])]
+            if isinstance(value, Mapping) and isinstance(value.get("lines"), list)
+            else [],
+        )
+        for key, value in dict(snapshot.get("reorder_sections", {})).items()
+        if isinstance(snapshot.get("reorder_sections"), Mapping) and isinstance(value, Mapping)
+    }
+    active_ids = {str(row.get("idea_id", "")).strip() for row in remaining_rows}
+    formatted_rows: list[list[str]] = []
+    rationale_sections: list[tuple[str, str, list[str]]] = []
+    for rank, row in enumerate(remaining_rows, start=1):
+        row_idea_id = str(row.get("idea_id", "")).strip()
+        formatted_rows.append(
+            [
+                str(rank),
+                row_idea_id,
+                str(row.get("title", "")).strip(),
+                str(row.get("priority", "")).strip(),
+                str(row.get("ordering_score", "")).strip(),
+                str(row.get("commercial_value", "")).strip(),
+                str(row.get("product_impact", "")).strip(),
+                str(row.get("market_value", "")).strip(),
+                str(row.get("sizing", "")).strip(),
+                str(row.get("complexity", "")).strip(),
+                str(row.get("status", "")).strip(),
+                str(row.get("link", "")).strip(),
+            ]
+        )
+        _existing_heading, existing_lines = existing_reorder.get(row_idea_id, ("", []))
+        rationale_sections.append((row_idea_id, f"{row_idea_id} (rank {rank})", existing_lines))
+    rationale_sections.extend(backlog_authoring._preserved_reorder_sections(snapshot, active_ids=active_ids))  # noqa: SLF001
+
+    rewritten = backlog_authoring._rewrite_active_backlog_section(  # noqa: SLF001
+        backlog_index_path=backlog_index_path,
+        active_rows=formatted_rows,
+        reorder_sections=rationale_sections,
+        today=today,
+    )
+    backlog_index_path.write_text(rewritten, encoding="utf-8")
+    return target_row
+
+
+def _normalize_backlog_index_layout(backlog_index_path: Path, *, today: dt.date) -> None:
+    snapshot = backlog_contract._build_backlog_index_snapshot(backlog_index_path)  # noqa: SLF001
+    active_rows = backlog_contract.rows_as_mapping(
+        section=snapshot.get("active", {}),
+        expected_headers=backlog_contract._INDEX_COLS,
+    )
+    existing_reorder = {
+        str(key): (
+            str(value.get("heading", "")).strip(),
+            [str(line) for line in value.get("lines", [])]
+            if isinstance(value, Mapping) and isinstance(value.get("lines"), list)
+            else [],
+        )
+        for key, value in dict(snapshot.get("reorder_sections", {})).items()
+        if isinstance(snapshot.get("reorder_sections"), Mapping) and isinstance(value, Mapping)
+    }
+    active_ids = {str(row.get("idea_id", "")).strip() for row in active_rows}
+    formatted_active_rows: list[list[str]] = []
+    rationale_sections: list[tuple[str, str, list[str]]] = []
+    for rank, row in enumerate(active_rows, start=1):
+        idea_id = str(row.get("idea_id", "")).strip()
+        formatted_active_rows.append(
+            [
+                str(rank),
+                idea_id,
+                str(row.get("title", "")).strip(),
+                str(row.get("priority", "")).strip(),
+                str(row.get("ordering_score", "")).strip(),
+                str(row.get("commercial_value", "")).strip(),
+                str(row.get("product_impact", "")).strip(),
+                str(row.get("market_value", "")).strip(),
+                str(row.get("sizing", "")).strip(),
+                str(row.get("complexity", "")).strip(),
+                str(row.get("status", "")).strip(),
+                str(row.get("link", "")).strip(),
+            ]
+        )
+        _existing_heading, existing_lines = existing_reorder.get(idea_id, ("", []))
+        rationale_sections.append((idea_id, f"{idea_id} (rank {rank})", existing_lines))
+    rationale_sections.extend(backlog_authoring._preserved_reorder_sections(snapshot, active_ids=active_ids))  # noqa: SLF001
+    rewritten = backlog_authoring._rewrite_active_backlog_section(  # noqa: SLF001
+        backlog_index_path=backlog_index_path,
+        active_rows=formatted_active_rows,
+        reorder_sections=rationale_sections,
+        today=today,
+    )
+    backlog_index_path.write_text(rewritten, encoding="utf-8")
+
+    refreshed_snapshot = backlog_contract._build_backlog_index_snapshot(backlog_index_path)  # noqa: SLF001
+    execution_rows = backlog_contract.rows_as_mapping(
+        section=refreshed_snapshot.get("execution", {}),
+        expected_headers=backlog_contract._INDEX_COLS,
+    )
+    _rewrite_execution_section(backlog_index_path, execution_rows=execution_rows, today=today)
 
 
 def _move_active_row_to_execution_status(
@@ -262,54 +448,23 @@ def _move_active_row_to_execution_status(
     if normalized_status not in {"planning", "implementation"}:
         raise ValueError(f"unsupported execution status `{status}`")
 
-    lines = backlog_index_path.read_text(encoding="utf-8").splitlines()
-
-    active_start, active_end = _find_section_bounds(lines, "## Ranked Active Backlog")
-    exec_start, exec_end = _find_section_bounds(lines, "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)")
-    if active_start == -1 or exec_start == -1:
-        raise ValueError("missing required backlog index sections")
-
-    active_rows = _collect_table_row_indexes(lines, section_start=active_start, section_end=active_end)
-    target_idx = -1
-    target_cells: list[str] = []
-    for idx in active_rows:
-        cells = _split_table_cells(lines[idx].strip())
-        if len(cells) == _BACKLOG_ROW_COL_COUNT and cells[1] == idea_id:
-            target_idx = idx
-            target_cells = cells
-            break
-    if target_idx == -1:
+    target_row = _remove_active_row_and_rewrite_rationale(
+        backlog_index_path,
+        idea_id=idea_id,
+        today=today,
+    )
+    if target_row is None:
         return False
-
-    del lines[target_idx]
-
-    # Recompute active rank sequence.
-    active_start, active_end = _find_section_bounds(lines, "## Ranked Active Backlog")
-    active_rows = _collect_table_row_indexes(lines, section_start=active_start, section_end=active_end)
-    next_rank = 1
-    for idx in active_rows:
-        cells = _split_table_cells(lines[idx].strip())
-        if len(cells) != _BACKLOG_ROW_COL_COUNT:
-            continue
-        cells[0] = str(next_rank)
-        next_rank += 1
-        lines[idx] = _format_table_row(cells)
-
-    target_cells[0] = "-"
-    target_cells[_BACKLOG_STATUS_COL_INDEX] = normalized_status
-
-    exec_start, exec_end = _find_section_bounds(lines, "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)")
-    exec_rows = _collect_table_row_indexes(lines, section_start=exec_start, section_end=exec_end)
-    insert_at = exec_end
-    if exec_rows:
-        insert_at = exec_rows[-1] + 1
-    lines.insert(insert_at, _format_table_row(target_cells))
-
-    content = "\n".join(lines)
-    content = backlog_authoring._update_backlog_last_updated(content, today=today)
-    if not content.endswith("\n"):
-        content += "\n"
-    backlog_index_path.write_text(content, encoding="utf-8")
+    target_row["rank"] = "-"
+    target_row["status"] = normalized_status
+    snapshot = backlog_contract._build_backlog_index_snapshot(backlog_index_path)  # noqa: SLF001
+    execution_rows = backlog_contract.rows_as_mapping(
+        section=snapshot.get("execution", {}),
+        expected_headers=backlog_contract._INDEX_COLS,
+    )
+    execution_rows = [row for row in execution_rows if str(row.get("idea_id", "")).strip() != idea_id]
+    execution_rows.append(target_row)
+    _rewrite_execution_section(backlog_index_path, execution_rows=execution_rows, today=today)
     return True
 
 
@@ -644,6 +799,26 @@ def reconcile_plan_workstream_binding(
                         details="Aligned `promoted_to_plan` to touched active plan path.",
                     )
                 )
+            moved = _move_active_row_to_execution_status(
+                backlog_index_path,
+                idea_id=spec.idea_id,
+                status=status,
+                today=today,
+            )
+            if moved:
+                decisions.append(
+                    governance.PlanBindingDecision(
+                        plan_path=plan_path,
+                        backlog_before=spec.idea_id,
+                        backlog_after=spec.idea_id,
+                        action="repair_execution_section_status",
+                        details=(
+                            "Repaired backlog placement so an already-active workstream bound to a touched plan "
+                            "lives in the execution section."
+                        ),
+                    )
+                )
+            _normalize_backlog_index_layout(backlog_index_path, today=today)
             continue
 
         if status == "finished":

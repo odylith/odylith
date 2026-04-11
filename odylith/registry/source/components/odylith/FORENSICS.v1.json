@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 51,
+    "explicit_event_count": 52,
     "mapped_workstream_evidence_count": 9,
     "recent_path_match_count": 1,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 52
+    "timeline_event_count": 53
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -58,20 +58,37 @@
   "timeline": [
     {
       "artifacts": [
-        "AGENTS.md",
+        "odylith/README.md",
+        "src/odylith/bundle/assets/odylith/README.md",
         "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
         "src/odylith/bundle/assets/odylith/technical-plans/INDEX.md"
       ],
       "confidence": "high",
-      "event_index": 72,
+      "event_index": 78,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, src/odylith/bundle/assets/odylith/radar/source/INDEX.md +1 more",
-      "ts_iso": "2026-04-11T12:15:23-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/README.md, src/odylith/bundle/assets/odylith/README.md +2 more",
+      "ts_iso": "2026-04-11T16:16:34-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 74,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Hardened the Codex baseline-safe contract around repo-root AGENTS.md plus ./.odylith/bin/odylith, added odylith codex compatibility, proved the live lane on codex-cli 0.119.0-alpha.28 with prompt-input guidance detection, and synced the bundle plus runbook surfaces so .codex assets stay best-effort enhancements instead of boot prerequisites.",
+      "ts_iso": "2026-04-11T15:08:03-07:00",
       "workstreams": []
     },
     {
@@ -1567,6 +1584,9 @@
     "B-069",
     "B-083",
     "B-084",
-    "B-085"
+    "B-085",
+    "B-088",
+    "B-087",
+    "B-086"
   ]
 }

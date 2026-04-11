@@ -24,7 +24,7 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 - create a missing workstream and bound plan before non-trivial implementation when the slice is genuinely new
 - in the Odylith product repo, name Radar workstreams after the slice itself and do not prefix the title with `Odylith`
 - add child workstreams or execution waves when the slice is truly umbrella-shaped
-- use the release-planning contract when the operator talks about `current release`, `next release`, `release x.y.z`, or adding/removing/moving `B-###` work between releases
+- use the release-planning contract when the operator talks about `current release`, `next release`, `release x.y.z`, or adding/removing/moving `B-###` work between releases; in human-facing copy prefer `active target release` for the live planning lane and `latest shipped release` for the last GA version
 - suggest or deepen Registry components and living specs when new or clarified system boundaries appear
 - update or create Atlas coverage when a materially changed flow, seam, or contract lacks truthful diagrams
 - run Casebook preflight and capture named failures or repeat-debug loops in the same turn

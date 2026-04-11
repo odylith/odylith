@@ -32,6 +32,9 @@ After install, you should have:
 - managed starter tree under `odylith/`
 - repo-root Claude project assets under `.claude/` including `CLAUDE.md`,
   `settings.json`, commands, hooks, rules, and subagents
+- repo-root Codex project assets under `.codex/` including `config.toml`,
+  `hooks.json`, and custom project agents under `.codex/agents/`
+- repo-root Codex skill shims under `.agents/skills/`
 - root `.gitignore` updated with `/.odylith/` when the repo is Git-backed
 - gitignored managed-runtime trust anchors under
   `.odylith/trust/managed-runtime-trust/` when the repo is Git-backed
@@ -42,8 +45,9 @@ as Codex or Claude Code. In Odylith, the agent is the execution interface and
 topology, and execution state visible.
 
 Codex and Claude Code are both supported host lanes for Odylith. The shared
-grounding and governance contract is the same; the checked-in `.claude/`
-surface exists so Claude Code gets a first-class project-native lane too.
+grounding and governance contract is the same; `.claude/` gives Claude Code a
+first-class project-native lane, while `.codex/` and `.agents/skills/` do the
+same for trusted Codex CLI projects.
 
 For the default grounded first turn, run:
 
@@ -143,6 +147,12 @@ and factual. Silence is better than filler.
   Claude project assets Odylith ships for commands, hooks, rules, and
   subagents so Claude Code stays a supported first-class host alongside
   Codex.
+- repo-root `.codex/`
+  Codex CLI project assets Odylith ships for project config, supported hooks,
+  and repo-scoped custom agents.
+- repo-root `.agents/skills/`
+  Codex repo-scoped skill shims that mirror the shared Odylith skills in a
+  host-native discovery path.
 - `agents-guidelines/`
   Shared Odylith operating guidance.
 - `skills/`

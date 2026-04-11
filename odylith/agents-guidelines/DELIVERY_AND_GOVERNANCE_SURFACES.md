@@ -336,12 +336,12 @@
 - Execution-program metadata is additive only. Generic workstream topology stays canonical for repo-wide relationships, and deployment waves are a separate concept.
 - Repo-local release planning is a separate additive layer again: execution waves describe staged umbrella execution, while releases describe target ship lanes for individual workstreams.
 - Keep release closeout lifecycle-driven instead of member-count-driven: the
-  current active release stays visible in Compass until an explicit `shipped`
-  or `closed` lifecycle update, even if its targeted workstream count falls to
-  zero.
+  active target release owned by the `current` alias stays visible in Compass
+  until an explicit `shipped` or `closed` lifecycle update, even if its
+  targeted workstream count falls to zero.
 - During that closeout window, Compass may show finished work completed in the
-  current release as historical completed members while keeping active-target
-  membership separate.
+  active target release as historical completed members while keeping
+  active-target membership separate.
 - When umbrella-owned execution waves evolve, update the program files, validator/traceability consumers, tests, and docs together in the same slice.
 
 ## Odylith Intelligence Plane

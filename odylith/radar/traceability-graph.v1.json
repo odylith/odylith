@@ -199,7 +199,7 @@
           "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
         ],
         "code_references": [
-          "github/workflows/release.yml",
+          ".github/workflows/release.yml",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
           "src/odylith/runtime/governance/validate_self_host_posture.py",
@@ -260,7 +260,7 @@
           "odylith/registry/source/components/release/CURRENT_SPEC.md"
         ],
         "code_references": [
-          "github/workflows/test.yml",
+          ".github/workflows/test.yml",
           "src/odylith/cli.py",
           "src/odylith/install/managed_runtime.py",
           "src/odylith/install/manager.py",
@@ -3363,7 +3363,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3376,7 +3378,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3461,7 +3463,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3474,7 +3478,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3568,7 +3572,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3581,7 +3587,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3676,7 +3682,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3689,7 +3697,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3783,7 +3791,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3796,7 +3806,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3890,7 +3900,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -3903,7 +3915,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -3997,7 +4009,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4010,7 +4024,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4102,7 +4116,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4115,7 +4131,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4297,7 +4313,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4310,7 +4328,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4409,7 +4427,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4422,7 +4442,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4507,7 +4527,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4520,7 +4542,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4603,7 +4625,9 @@
           "B-082",
           "B-083",
           "B-084",
-          "B-085"
+          "B-085",
+          "B-087",
+          "B-088"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4616,7 +4640,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 12,
+        "active_workstream_count": 14,
         "completed_workstream_count": 7
       },
       "release_history": [
@@ -4637,6 +4661,250 @@
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-086",
+      "title": "Governance Path Normalization Hardening And Nested Worktree Guard",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-087",
+      "title": "Codex Project-Asset Parity, Mirror Hygiene, and Install Contract",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-069",
+        "B-083",
+        "B-084",
+        "B-085",
+        "B-086"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 14,
+        "completed_workstream_count": 7
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-087",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-11T20:51:57Z",
+          "note": "Bind the first Codex project-asset parity slice to the next release after v0.1.11.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-087",
+          "release_id": "release-0-1-11",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-11",
+          "recorded_at": "2026-04-11T21:13:22Z",
+          "note": "Rebind the first Codex project-asset parity slice to the current unreleased GA target v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.11"
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Latest move: 0.1.12 -> 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-088",
+      "title": "Codex Host Runtime Parity, CLI Dispatch, and Target-Release Wording Hardening",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-087"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 14,
+        "completed_workstream_count": 7
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-088",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-11T21:20:23Z",
+          "note": "Bind the Codex host-runtime parity and target-release wording slice to the current v0.1.11 target.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -4673,7 +4941,9 @@
         "B-082",
         "B-083",
         "B-084",
-        "B-085"
+        "B-085",
+        "B-087",
+        "B-088"
       ],
       "completed_workstreams": [
         "B-061",
@@ -4686,7 +4956,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 12,
+      "active_workstream_count": 14,
       "completed_workstream_count": 7
     },
     {
@@ -4744,7 +5014,9 @@
         "B-082",
         "B-083",
         "B-084",
-        "B-085"
+        "B-085",
+        "B-087",
+        "B-088"
       ],
       "completed_workstreams": [
         "B-061",
@@ -4757,7 +5029,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 12,
+      "active_workstream_count": 14,
       "completed_workstream_count": 7
     },
     "next": {
@@ -4814,7 +5086,9 @@
       "B-082",
       "B-083",
       "B-084",
-      "B-085"
+      "B-085",
+      "B-087",
+      "B-088"
     ],
     "completed_workstreams": [
       "B-061",
@@ -4827,7 +5101,7 @@
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 12,
+    "active_workstream_count": 14,
     "completed_workstream_count": 7
   },
   "next_release": {
@@ -4858,7 +5132,7 @@
   "release_summary": {
     "release_count": 2,
     "alias_count": 2,
-    "active_assignment_count": 13
+    "active_assignment_count": 15
   },
   "execution_programs": [
     {
@@ -5558,25 +5832,46 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md"
     },
     {
+      "id": "B-086",
+      "type": "workstream",
+      "label": "Governance Path Normalization Hardening And Nested Worktree Guard",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md"
+    },
+    {
+      "id": "B-087",
+      "type": "workstream",
+      "label": "Codex Project-Asset Parity, Mirror Hygiene, and Install Contract",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md"
+    },
+    {
+      "id": "B-088",
+      "type": "workstream",
+      "label": "Codex Host Runtime Parity, CLI Dispatch, and Target-Release Wording Hardening",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md"
+    },
+    {
+      "id": "artifact:.github/workflows/release.yml",
+      "type": "artifact",
+      "label": ".github/workflows/release.yml",
+      "bucket": "code_references",
+      "file": ".github/workflows/release.yml"
+    },
+    {
+      "id": "artifact:.github/workflows/test.yml",
+      "type": "artifact",
+      "label": ".github/workflows/test.yml",
+      "bucket": "code_references",
+      "file": ".github/workflows/test.yml"
+    },
+    {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
       "type": "artifact",
       "label": "docs/specs/odylith-repo-integration-contract.md",
       "bucket": "developer_docs",
       "file": "docs/specs/odylith-repo-integration-contract.md"
-    },
-    {
-      "id": "artifact:github/workflows/release.yml",
-      "type": "artifact",
-      "label": "github/workflows/release.yml",
-      "bucket": "code_references",
-      "file": "github/workflows/release.yml"
-    },
-    {
-      "id": "artifact:github/workflows/test.yml",
-      "type": "artifact",
-      "label": "github/workflows/test.yml",
-      "bucket": "code_references",
-      "file": "github/workflows/test.yml"
     },
     {
       "id": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
@@ -6331,6 +6626,24 @@
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md"
     },
     {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md"
+    },
+    {
       "id": "release:release-0-1-11",
       "type": "release",
       "label": "0.1.11",
@@ -6652,13 +6965,13 @@
     },
     {
       "source": "B-004",
-      "target": "artifact:docs/specs/odylith-repo-integration-contract.md",
-      "edge_type": "plan_traceability:developer_docs"
+      "target": "artifact:.github/workflows/release.yml",
+      "edge_type": "plan_traceability:code_references"
     },
     {
       "source": "B-004",
-      "target": "artifact:github/workflows/release.yml",
-      "edge_type": "plan_traceability:code_references"
+      "target": "artifact:docs/specs/odylith-repo-integration-contract.md",
+      "edge_type": "plan_traceability:developer_docs"
     },
     {
       "source": "B-004",
@@ -6747,7 +7060,7 @@
     },
     {
       "source": "B-005",
-      "target": "artifact:github/workflows/test.yml",
+      "target": "artifact:.github/workflows/test.yml",
       "edge_type": "plan_traceability:code_references"
     },
     {
@@ -8272,6 +8585,11 @@
     },
     {
       "source": "B-069",
+      "target": "B-087",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-069",
       "target": "diagram:D-002",
       "edge_type": "diagram_linkage"
     },
@@ -8637,6 +8955,11 @@
     },
     {
       "source": "B-083",
+      "target": "B-087",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-083",
       "target": "diagram:D-019",
       "edge_type": "diagram_linkage"
     },
@@ -8687,6 +9010,11 @@
     },
     {
       "source": "B-084",
+      "target": "B-087",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-084",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
       "edge_type": "promoted_to_plan"
     },
@@ -8697,11 +9025,51 @@
     },
     {
       "source": "B-085",
+      "target": "B-087",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-085",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
       "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-085",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-086",
+      "target": "B-087",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-086",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-087",
+      "target": "B-088",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-087",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-087",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-088",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-088",
       "target": "release:release-0-1-11",
       "edge_type": "active_release"
     }
@@ -9301,6 +9669,27 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-086": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-087": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-088": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -9440,15 +9829,15 @@
     "B-085: related diagram `D-047` not found in catalog"
   ],
   "summary": {
-    "workstream_count": 85,
+    "workstream_count": 88,
     "release_count": 2,
-    "active_release_assignment_count": 13,
+    "active_release_assignment_count": 15,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 205,
-    "edge_count": 469,
+    "node_count": 211,
+    "edge_count": 480,
     "warning_count": 12,
     "warning_item_count": 12
   },
-  "generated_utc": "2026-04-11 18:01:11Z"
+  "generated_utc": "2026-04-11 21:44:50Z"
 }

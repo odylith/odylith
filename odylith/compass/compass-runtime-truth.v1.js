@@ -225,7 +225,7 @@
         || runtimeCurrentRelease.effective_name
         || runtimeCurrentRelease.version
         || runtimeCurrentRelease.release_id
-        || "the current release"
+        || "the active target release"
       ).trim();
       const warningParts = [];
       const sourceLabel = normalizedSourceTruth.kind === "source_truth" ? "the governed source-truth snapshot" : "the traceability-graph fallback";

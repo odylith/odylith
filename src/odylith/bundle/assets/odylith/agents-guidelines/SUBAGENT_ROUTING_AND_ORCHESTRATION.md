@@ -3,7 +3,7 @@
 ## CLI-First Non-Negotiable
 - CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
 
-- Native delegation through Odylith remains capability-gated by host contract, not by product loyalty. Codex executes routed leaves through `spawn_agent`; Claude Code executes the same bounded delegation contract through Task-tool subagents plus the checked-in `.claude/` commands, hooks, rules, skills, and project assets.
+- Native delegation through Odylith remains capability-gated by host contract, not by product loyalty. Codex executes routed leaves through `spawn_agent` and also supports checked-in project-native Codex assets under `.codex/` and `.agents/skills/`; Claude Code executes the same bounded delegation contract through Task-tool subagents plus the checked-in `.claude/` commands, hooks, rules, skills, and project assets.
 - For both Codex and Claude Code, Odylith grounding comes before agent-native repo search on substantive repo work; local search is fallback after Odylith signals ambiguity, missing anchors, or widening.
 - Use bounded delegation by default for substantive grounded work when the current host supports native spawn across the consumer lane and both Odylith product-repo maintainer postures, including pinned dogfood and detached `source-local` maintainer dev, when it improves correctness, speed, or separation of concerns.
 - Consumer Odylith-fix requests are the hard exception: delegated leaves must not write under `odylith/` or `.odylith/`, and routed plans should stay local when the proposed fix is local Odylith mutation rather than diagnosis and handoff.
@@ -29,7 +29,9 @@
 - Keep `main_thread_followups` in the main thread after delegated leaves integrate; they are not missing worker tasks.
 - Pass emitted `context_signals`, `spawn_task_message`, `model`, and `reasoning_effort` through unchanged instead of rebuilding the contract manually.
 - Once the retained contract marks the slice route-ready, prefer spawning through the emitted payload instead of improvising your own model ladder or decomposition.
-- In Claude Code, use the emitted plan to spawn the matching project subagent under `.claude/agents/` through the Task tool; the project subagents carry the same bounded-leaf contract as Codex routed spawns and resolve through the per-host-family execution profile ladder. For other non-Codex, non-Claude agent runtimes, use the emitted plan together with the checked-in `.claude/` project assets as local execution guidance until that host is validated.
+- In Claude Code, use the emitted plan to spawn the matching project subagent under `.claude/agents/` through the Task tool; the project subagents carry the same bounded-leaf contract as Codex routed spawns and resolve through the per-host-family execution profile ladder.
+- In Codex, keep two layers distinct: routed `spawn_agent` still uses built-in agent roles only, while the checked-in `.codex/agents/*.toml`, `.codex/hooks.json`, and `.agents/skills/*/SKILL.md` files are repo-scoped Codex CLI project assets. Do not flatten those into one contract or claim named `.codex/agents/*` selection through `spawn_agent` until host proof exists.
+- For other non-Codex, non-Claude agent runtimes, use the emitted plan together with the checked-in host assets as local execution guidance until that host is validated.
 
 ## Delegated Leaf Contract
 - Spawn delegated leaves with the emitted `model` and `reasoning_effort` explicitly; never inherit parent-thread defaults.
@@ -46,7 +48,7 @@
 - Accuracy-first model selection remains intentional: lighter tiers for bounded read-only or mechanical work, stronger tiers for bounded implementation, and `xhigh` only for maximum-accuracy cases.
 
 ## Direct Native Spawn Defaults
-- These defaults apply when the current host supports native spawn. Codex and Claude Code are both first-class delegation hosts for Odylith: Codex executes routed leaves through `spawn_agent`, and Claude Code executes the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.
+- These defaults apply when the current host supports native spawn. Codex and Claude Code are both first-class delegation hosts for Odylith: Codex executes routed leaves through `spawn_agent` while the checked-in `.codex/` and `.agents/skills/` trees provide the separate repo-scoped Codex CLI project-asset layer, and Claude Code executes the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.
 - The semantic profile ladder is host-portable. Odylith's execution-governance resolver returns `(model, reasoning_effort)` per `(host_family, profile)` through `execution_profile_runtime_fields`, so the same ladder position resolves to a real Codex tuple on Codex and a real Claude tuple on Claude Code.
 - If no routed leaf exists and you still need direct delegation on a native-spawn-capable host, pick the semantic profile first and let the resolver pick the model:
   - bounded read-only exploration or evidence gathering: `analysis_medium`
@@ -60,3 +62,4 @@
   - reserve `frontier_xhigh` for maximum-accuracy or failure-driven cases after the narrower tiers look unsafe
     (Codex: `gpt-5.4` / `xhigh`; Claude: `claude-opus-4-6` / `xhigh`)
 - When router/orchestrator already emitted a delegated leaf, prefer the routed native-spawn payload directly and pass `spawn_task_message` verbatim as the spawned message. On Claude Code, use the emitted profile together with the matching project subagent under `.claude/agents/` (for example `odylith-reviewer` for frontier-tier review, `odylith-context-engine` for haiku-tier retrieval) instead of improvising a local model override.
+- For the Codex project-asset surface itself, see `CODEX_HOST_CONTRACT.md`; that document is the source of truth for trusted-project gating, supported hooks, skill shims, and the native-blocked gaps that remain outside the routed `spawn_agent` contract.

@@ -418,7 +418,7 @@ def test_synthesized_execution_profile_candidate_routes_governance_support_to_sp
     assert profile["selection_mode"] == "support_fast_lane"
 
 
-def test_synthesized_execution_profile_candidate_omits_explicit_model_on_claude_host(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_synthesized_execution_profile_candidate_uses_host_specific_model_on_claude_host(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CLAUDE_CODE", "1")
     monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
     monkeypatch.delenv("CODEX_SHELL", raising=False)
@@ -432,7 +432,7 @@ def test_synthesized_execution_profile_candidate_omits_explicit_model_on_claude_
     )
 
     assert profile["profile"] == router.RouterProfile.CODEX_HIGH.value
-    assert profile["model"] == ""
+    assert profile["model"] == "claude-sonnet-4-6"
     assert profile["reasoning_effort"] == router.RouterProfile.CODEX_HIGH.reasoning_effort
 
 
@@ -576,6 +576,10 @@ def test_route_request_spawn_payloads_never_inherit_parent_defaults(tmp_path: Pa
     assert decision.native_spawn_payload["model"] == decision.model
     assert decision.native_spawn_payload["reasoning_effort"] == decision.reasoning_effort
     assert decision.native_spawn_payload["message"] == decision.spawn_task_message
+    assert decision.host_tool_contract["built_in_agent_types_only"] is True
+    assert decision.host_tool_contract["named_custom_agent_type_supported"] is False
+    assert ".codex/agents/*.toml" in decision.host_tool_contract["custom_agent_type_note"]
+    assert "built-in `agent_type` values" in decision.host_tool_contract["custom_agent_type_note"]
     assert any("do not inherit the parent thread model or reasoning weight" in line for line in decision.spawn_contract_lines)
 
 

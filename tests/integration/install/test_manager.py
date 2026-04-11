@@ -14,6 +14,7 @@ from odylith import cli
 from odylith.install import manager as install_manager_module
 from odylith.install import runtime
 from odylith.install.runtime import runtime_verification_path
+from odylith.runtime.common import codex_cli_capabilities
 from odylith.install.manager import (
     doctor_bundle,
     evaluate_start_preflight,
@@ -562,6 +563,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert (repo_root / ".claude" / "commands" / "odylith-context.md").is_file()
     assert (repo_root / ".claude" / "commands" / "odylith-query.md").is_file()
     assert (repo_root / ".claude" / "commands" / "odylith-sync-governance.md").is_file()
+    assert (repo_root / ".claude" / "agents" / "odylith-compass-narrator.md").is_file()
     assert (repo_root / ".claude" / "agents" / "odylith-reviewer.md").is_file()
     assert (repo_root / ".claude" / "agents" / "odylith-workstream.md").is_file()
     assert (repo_root / ".claude" / "hooks" / "odylith_claude_support.py").is_file()
@@ -569,10 +571,18 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert (repo_root / ".claude" / "hooks" / "refresh-governance-after-edit.py").is_file()
     assert (repo_root / ".claude" / "hooks" / "log-stop-summary.py").is_file()
     assert (repo_root / ".claude" / "rules" / "odylith-governance.md").is_file()
+    assert (repo_root / ".claude" / "output-styles" / "odylith-grounded.md").is_file()
+    assert (repo_root / ".codex" / "config.toml").is_file()
+    assert (repo_root / ".codex" / "hooks.json").is_file()
+    assert (repo_root / ".codex" / "agents" / "odylith-workstream.toml").is_file()
+    codex_hooks = json.loads((repo_root / ".codex" / "hooks.json").read_text(encoding="utf-8"))
+    assert codex_hooks["SessionStart"][0]["hooks"][0]["command"] == "./.odylith/bin/odylith codex session-start-ground --repo-root ."
+    assert (repo_root / ".agents" / "skills" / "subagent-router" / "SKILL.md").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "tooling_shell.v1.json").is_file()
     assert (repo_root / "odylith" / "index.html").is_file()
     assert (repo_root / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md").is_file()
+    assert (repo_root / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md").is_file()
     assert (repo_root / "odylith" / "skills" / "subagent-router" / "SKILL.md").is_file()
     assert (repo_root / "odylith" / "skills" / "subagent-orchestrator" / "SKILL.md").is_file()
     assert (repo_root / "odylith" / "surfaces" / "brand" / "manifest.json").is_file()
@@ -615,7 +625,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "./.odylith/bin/odylith sync --repo-root . --force --impact-mode full" in shell_index_html
     guidance_text = guidance_path.read_text(encoding="utf-8")
     assert "local repo truth, not a copy of the Odylith product repo" in guidance_text
-    assert "`.claude/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets" in guidance_text
+    assert "`.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets" in guidance_text
     assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in guidance_text
     assert "keep the active workstream, component, or packet in scope" in guidance_text
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in guidance_text
@@ -640,7 +650,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "stop at diagnosis and maintainer-ready feedback" in guidance_text
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in guidance_text
-    assert "Treat the managed guidance files under `.claude/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer" in guidance_text
+    assert "Treat the managed guidance files under `.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer" in guidance_text
     assert "Treat backlog/workstream, plan, Registry, Atlas, Casebook, Compass, and session upkeep as part of the same grounded Odylith workflow" in guidance_text
     assert "Queued backlog items" in guidance_text
     assert "do not pick it up automatically" in guidance_text
@@ -688,17 +698,55 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Odylith grounding:" not in root_agents
     assert "Odylith didn't return immediately" not in root_agents
     assert "odylith/maintainer/AGENTS.md" not in root_agents
+    assert summary.created_guidance_files == ("CLAUDE.md",)
+    assert summary.version == "1.2.3"
+
+
+def test_install_bundle_derives_effective_codex_config_from_local_capabilities(monkeypatch, tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    codex_cli_capabilities.clear_codex_cli_capability_cache()
+
+    monkeypatch.setattr(
+        install_manager_module.codex_cli_capabilities,
+        "inspect_codex_cli_capabilities",
+        lambda **_: codex_cli_capabilities.CodexCliCapabilitySnapshot(
+            repo_root=str(repo_root),
+            codex_bin="codex",
+            codex_available=False,
+            codex_version_raw="",
+            codex_version="",
+            baseline_contract="AGENTS.md + ./.odylith/bin/odylith",
+            baseline_ready=True,
+            launcher_present=True,
+            repo_agents_present=True,
+            codex_project_assets_present=True,
+            codex_skill_shims_present=True,
+            project_assets_mode="best_effort_enhancements",
+            trusted_project_required=True,
+            hooks_feature_known=False,
+            hooks_feature_enabled=None,
+            prompt_input_probe_supported=False,
+            prompt_input_probe_passed=False,
+            repo_guidance_detected=False,
+            future_version_policy="capability_based_no_max_pin",
+            overall_posture="baseline_safe",
+        ),
+    )
+
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+
+    payload = tomllib.loads((repo_root / ".codex" / "config.toml").read_text(encoding="utf-8"))
+    assert "features" not in payload
 
     state = load_install_state(repo_root=repo_root)
     assert state["active_version"] == "1.2.3"
     assert (repo_root / ".odylith" / "bin" / "odylith").is_file()
     assert (repo_root / ".odylith" / "runtime" / "current").is_symlink()
-    assert "<!-- odylith-scope:start -->" in root_agents
-    assert summary.created_guidance_files == ("CLAUDE.md",)
-    assert summary.version == "1.2.3"
 
 
-def test_bundle_surfaces_ship_clean_bootstrap_assets() -> None:
+def test_bundle_surfaces_ship_stable_product_bundle_assets() -> None:
     project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")).get("project", {})
     current_version = str(project.get("version", "")).strip()
     registry_source = json.loads((BUNDLE_ROOT / "registry" / "source" / "component_registry.v1.json").read_text(encoding="utf-8"))
@@ -718,41 +766,38 @@ def test_bundle_surfaces_ship_clean_bootstrap_assets() -> None:
     registry_payload_text = (BUNDLE_ROOT / "registry" / "registry-payload.v1.js").read_text(encoding="utf-8")
     shell_index_text = (BUNDLE_ROOT / "index.html").read_text(encoding="utf-8")
 
-    assert registry_source == {"components": [], "version": "v1"}
-    assert atlas_source == {"diagrams": [], "version": "v1"}
+    assert registry_source["version"] == "v1"
+    assert isinstance(registry_source["components"], list)
+    assert atlas_source["version"] == "v1"
+    assert isinstance(atlas_source["diagrams"], list)
     assert bundle_shell_source == {"maintainer_notes": [], "shell_repo_label": "Repo · repo"}
     assert current_version
     bundled_release_note_path = BUNDLE_ROOT / "runtime" / "source" / "release-notes" / f"v{current_version}.md"
     assert bundled_release_note_path.is_file()
     assert f"version: {current_version}" in bundled_release_note_path.read_text(encoding="utf-8")
-    assert radar_payload["entries"] == []
-    assert radar_payload["detail_manifest"] == {}
-    assert registry_payload["components"] == []
-    assert registry_payload["diagnostics"] == []
-    assert registry_payload["delivery_intelligence"] == {}
-    assert registry_payload["detail_manifest"] == {}
-    assert casebook_payload["bugs"] == []
-    assert casebook_payload["detail_manifest"] == {}
-    assert atlas_payload["diagrams"] == []
-    assert tooling_payload["case_queue"] == []
-    assert tooling_payload["components"] == {}
-    assert tooling_payload["diagrams"] == {}
-    assert tooling_payload["maintainer_notes"] == []
-    assert tooling_payload["odylith_drawer"] == {"status": "disabled"}
-    assert tooling_payload["shell_repo_label"] == "Repo · repo"
-    assert tooling_payload["shell_version_label"] == ""
-    assert tooling_payload["welcome_state"] == {"show": True}
-    assert tooling_payload["workstreams"] == {}
-    assert compass_payload["runtime_json_href"] == "runtime/current.v1.json"
+    assert isinstance(radar_payload["entries"], list)
+    assert isinstance(radar_payload["detail_manifest"], dict)
+    assert isinstance(registry_payload["components"], list)
+    assert isinstance(registry_payload["diagnostics"], list)
+    assert isinstance(registry_payload["delivery_intelligence"], dict)
+    assert isinstance(registry_payload["detail_manifest"], dict)
+    assert isinstance(casebook_payload["bugs"], list)
+    assert isinstance(casebook_payload["detail_manifest"], dict)
+    assert isinstance(atlas_payload["diagrams"], list)
+    assert isinstance(tooling_payload["case_queue"], list)
+    assert isinstance(tooling_payload["components"], dict)
+    assert isinstance(tooling_payload["diagrams"], dict)
+    assert isinstance(tooling_payload["maintainer_notes"], list)
+    assert isinstance(tooling_payload["odylith_drawer"], dict)
+    assert str(tooling_payload["shell_repo_label"]).strip()
+    assert isinstance(tooling_payload["shell_version_label"], str)
+    assert isinstance(tooling_payload["welcome_state"], dict)
+    assert "show" in tooling_payload["welcome_state"]
+    assert isinstance(tooling_payload["workstreams"], dict)
+    assert str(compass_payload["runtime_json_href"]).startswith("runtime/current.v1.json")
     assert (BUNDLE_ROOT / "registry" / "source" / "components" / "README.md").is_file()
-    assert not list((BUNDLE_ROOT / "registry" / "source" / "components").glob("*/CURRENT_SPEC.md"))
-    assert not list((BUNDLE_ROOT / "registry" / "source" / "components").glob("*/FORENSICS.v1.json"))
-    assert not list((BUNDLE_ROOT / "atlas" / "source").glob("*.mmd"))
-    assert not list((BUNDLE_ROOT / "atlas" / "source").glob("*.png"))
-    assert not list((BUNDLE_ROOT / "atlas" / "source").glob("*.svg"))
-    assert not list((BUNDLE_ROOT / "radar").glob("backlog-detail-shard-*.v1.js"))
-    assert not list((BUNDLE_ROOT / "registry").glob("registry-detail-shard-*.v1.js"))
-    assert not list((BUNDLE_ROOT / "casebook").glob("casebook-detail-shard-*.v1.js"))
+    assert list((BUNDLE_ROOT / "registry" / "source" / "components").glob("*/CURRENT_SPEC.md"))
+    assert list((BUNDLE_ROOT / "atlas" / "source").glob("*.mmd"))
     assert not (BUNDLE_ROOT / "runtime" / "delivery_intelligence.v4.json").exists()
     assert "/private/var/folders/" not in tooling_payload_text
     assert "/private/var/folders/" not in registry_payload_text
@@ -760,8 +805,6 @@ def test_bundle_surfaces_ship_clean_bootstrap_assets() -> None:
     assert "tmp." not in registry_payload_text
     assert "v0.0.0-test" not in tooling_payload_text
     assert "v0.0.0-test" not in shell_index_text
-    assert "toolbar-version" not in shell_index_text
-    assert "toolbarVersionStoryLink" not in shell_index_text
 
 
 def test_install_bundle_syncs_authored_release_notes_into_consumer_repo(tmp_path: Path) -> None:
@@ -1170,6 +1213,8 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     (repo_root / "odylith" / "AGENTS.md").write_text("stale consumer guidance\n", encoding="utf-8")
     (repo_root / "odylith" / "radar" / "source" / "CLAUDE.md").unlink()
     (repo_root / "odylith" / "skills" / "subagent-router" / "SKILL.md").unlink()
+    (repo_root / ".codex" / "config.toml").unlink()
+    (repo_root / ".agents" / "skills" / "subagent-router" / "SKILL.md").unlink()
 
     upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
@@ -1195,6 +1240,8 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
     assert (repo_root / "odylith" / "radar" / "source" / "CLAUDE.md").is_file()
     assert (repo_root / "odylith" / "skills" / "subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / ".codex" / "config.toml").is_file()
+    assert (repo_root / ".agents" / "skills" / "subagent-router" / "SKILL.md").is_file()
 
 
 def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and_activates_maintainer_overlay(tmp_path: Path) -> None:

@@ -1,0 +1,47 @@
+from __future__ import annotations
+
+import io
+import json
+
+from odylith.runtime.surfaces import codex_host_prompt_context
+
+
+def test_render_codex_prompt_context_uses_first_explicit_anchor(monkeypatch) -> None:
+    seen: list[str] = []
+
+    def _fake_context_summary(*, project_dir: str, ref: str, payload_override=None) -> str:
+        del project_dir, payload_override
+        seen.append(ref)
+        return f"Odylith anchor {ref}: primary target src/example.py."
+
+    monkeypatch.setattr(codex_host_prompt_context.codex_host_shared, "context_summary", _fake_context_summary)
+
+    rendered = codex_host_prompt_context.render_codex_prompt_context(
+        prompt="Check B-088 against CB-102 before touching D-030.",
+    )
+
+    assert rendered == "Odylith anchor B-088: primary target src/example.py."
+    assert seen == ["B-088"]
+
+
+def test_render_codex_prompt_context_returns_empty_without_anchor() -> None:
+    assert codex_host_prompt_context.render_codex_prompt_context(prompt="Explain the change.") == ""
+
+
+def test_main_writes_user_prompt_hook_json(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "Please inspect B-088 next."})),
+    )
+    monkeypatch.setattr(
+        codex_host_prompt_context.codex_host_shared,
+        "context_summary",
+        lambda **_: "Odylith anchor B-088: primary target src/odylith/cli.py.",
+    )
+
+    exit_code = codex_host_prompt_context.main(["--repo-root", "."])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "src/odylith/cli.py" in payload["hookSpecificOutput"]["additionalContext"]

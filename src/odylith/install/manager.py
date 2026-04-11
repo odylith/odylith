@@ -62,6 +62,7 @@ from odylith.install.state import (
     write_version_pin,
 )
 from odylith.runtime.common.consumer_profile import consumer_profile_path, write_consumer_profile
+from odylith.runtime.common import codex_cli_capabilities
 from odylith.runtime.common.guidance_paths import (
     PROJECT_GUIDANCE_DISPLAY,
     existing_top_level_guidance_paths,
@@ -622,6 +623,8 @@ def plan_install_lifecycle(
                 "AGENTS.md",
                 "CLAUDE.md",
                 ".claude/",
+                ".codex/",
+                ".agents/skills/",
                 ".gitignore",
                 "odylith/AGENTS.md",
                 "odylith/CLAUDE.md",
@@ -727,6 +730,8 @@ def plan_reinstall_lifecycle(
                 "AGENTS.md",
                 "CLAUDE.md",
                 ".claude/",
+                ".codex/",
+                ".agents/skills/",
                 ".gitignore",
                 "odylith/AGENTS.md",
                 "odylith/CLAUDE.md",
@@ -800,7 +805,17 @@ def plan_upgrade_lifecycle(
         _lifecycle_step(
             "Refresh the consumer profile and managed guidance before changing the active runtime.",
             "managed_guidance",
-            paths=("AGENTS.md", "CLAUDE.md", ".claude/", "odylith/AGENTS.md", "odylith/CLAUDE.md", "odylith/agents-guidelines/", "odylith/skills/"),
+            paths=(
+                "AGENTS.md",
+                "CLAUDE.md",
+                ".claude/",
+                ".codex/",
+                ".agents/skills/",
+                "odylith/AGENTS.md",
+                "odylith/CLAUDE.md",
+                "odylith/agents-guidelines/",
+                "odylith/skills/",
+            ),
         )
     )
     if source_repo_token:
@@ -1128,7 +1143,7 @@ def _customer_bootstrap_guidance() -> str:
             "- `odylith/runtime/source/tooling_shell.v1.json` is local repo shell metadata and stays customer-owned.",
             "- `.odylith/trust/managed-runtime-trust/` is local Odylith runtime trust state and may be refreshed by install, upgrade, feature-pack activation, or doctor.",
             "- `odylith/surfaces/brand/` is an Odylith-managed starter asset set for local HTML surfaces; first install and explicit repair may restore it, but normal upgrades should not rewrite it.",
-            "- `.claude/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets and may be refreshed by install, upgrade, or doctor.",
+            "- `.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets and may be refreshed by install, upgrade, or doctor.",
             "- Truth under `odylith/radar/`, `odylith/technical-plans/`, `odylith/casebook/`, `odylith/registry/`, and `odylith/atlas/` belongs to this repository and must not be rewritten by normal upgrades.",
             "- Product runtime code and product-managed assets run from `.odylith/` and the installed Odylith runtime package.",
             "- Do not treat this folder as disposable cache; it belongs to the repository using Odylith.",
@@ -1153,8 +1168,8 @@ def _customer_bootstrap_guidance() -> str:
             "- If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation; if the issue is Odylith itself in a consumer repo, produce a maintainer-ready feedback packet instead.",
             "- Use Odylith packets and managed skills to narrow the slice, gather proof, and keep intent plus constraints alive across turns, but do not treat grounding as permission to patch `odylith/` for consumer Odylith-fix requests.",
             "- Treat routed or orchestrated native delegation as the default execution path for substantive grounded consumer-lane work when the current host supports it unless Odylith explicitly keeps the slice local.",
-            "- Codex and Claude Code are both validated Odylith delegation hosts. Codex uses routed `spawn_agent` payloads; Claude Code uses Task-tool subagents plus the installed `.claude/` project assets under the same grounding, memory, surfaces, and orchestration contract.",
-            "- Treat the managed guidance files under `.claude/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer; keep repo-specific truth in the governance surfaces beside them.",
+            "- Codex and Claude Code are both validated Odylith delegation hosts. On Codex, the baseline-safe lane is the repo-root `AGENTS.md` contract plus `./.odylith/bin/odylith`; the managed `.codex/` and `.agents/skills/` project assets are best-effort enhancements for hosts that honor them, and install or repair derives the effective `.codex/config.toml` from the local Codex capability snapshot when possible. Claude Code uses Task-tool subagents plus the installed `.claude/` project assets under the same grounding, memory, surfaces, and orchestration contract.",
+            "- Treat the managed guidance files under `.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer; keep repo-specific truth in the governance surfaces beside them.",
             "",
             "## Routing",
             "- Context engine behavior: `agents-guidelines/ODYLITH_CONTEXT_ENGINE.md`",
@@ -1392,7 +1407,7 @@ def _refresh_consumer_managed_guidance(*, repo_root: Path, repo_role: str, inclu
         return
     atomic_write_text(repo_root / "odylith" / "AGENTS.md", _customer_bootstrap_guidance(), encoding="utf-8")
     atomic_write_text(repo_root / "odylith" / "CLAUDE.md", _customer_bootstrap_claude_source(), encoding="utf-8")
-    _sync_managed_project_claude_assets(repo_root=repo_root)
+    _sync_managed_project_root_assets(repo_root=repo_root)
     _sync_managed_scoped_guidance(repo_root=repo_root)
     _sync_managed_agents_guidelines(repo_root=repo_root)
     _sync_managed_skills(repo_root=repo_root)
@@ -1411,6 +1426,8 @@ def _ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str 
     directories = (
         repo_root / "odylith",
         repo_root / ".claude",
+        repo_root / ".codex",
+        repo_root / ".agents" / "skills",
         repo_root / "odylith" / "runtime" / "source",
         repo_root / "odylith" / "runtime" / "source" / "release-notes",
         repo_root / "odylith" / "agents-guidelines",
@@ -1490,7 +1507,7 @@ def _sync_managed_scoped_guidance(*, repo_root: Path) -> None:
         shutil.copy2(source_path, target_path)
 
 
-def _sync_managed_project_claude_assets(*, repo_root: Path) -> None:
+def _sync_managed_project_root_assets(*, repo_root: Path) -> None:
     source_root = bundled_project_root_assets_root()
     if not source_root.is_dir():
         return
@@ -1501,6 +1518,15 @@ def _sync_managed_project_claude_assets(*, repo_root: Path) -> None:
         target_path = target_root / source_path.relative_to(source_root)
         target_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, target_path)
+    _write_effective_codex_project_config(repo_root=target_root)
+
+
+def _write_effective_codex_project_config(*, repo_root: Path) -> None:
+    target_root = Path(repo_root).resolve()
+    codex_root = target_root / ".codex"
+    if not codex_root.is_dir():
+        return
+    codex_cli_capabilities.write_effective_codex_project_config(repo_root=target_root)
 
 
 def _sync_managed_skills(*, repo_root: Path) -> None:

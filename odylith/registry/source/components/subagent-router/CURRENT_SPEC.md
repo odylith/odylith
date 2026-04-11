@@ -233,10 +233,12 @@ Important guardrails:
 - `frontier_xhigh` is not a default winner and should appear only after explicit
   risk or escalation logic unlocks it.
 - Execution-governance defer or deny posture beats route-readiness scoring.
-- Host integration supports only native agent types:
-  `default`, `explorer`, and `worker`.
-- Custom named agents from `.codex/agents/` are not part of the router's host
-  contract.
+- The current routed Codex host-tool contract still supports only native
+  `spawn_agent` agent types: `default`, `explorer`, and `worker`.
+- Odylith may also ship repo-scoped Codex CLI custom project agents under
+  `.codex/agents/*.toml`, but those are project-native Codex assets rather than
+  router-selectable `spawn_agent` types until the host integration proves
+  named-agent selection end to end.
 
 ## Tuning Model
 Tuning is local-only and bias-bounded:

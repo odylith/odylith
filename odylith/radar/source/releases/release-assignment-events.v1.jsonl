@@ -30,3 +30,6 @@
 {"action": "add", "recorded_at": "2026-04-11T17:57:18Z", "release_id": "release-0-1-11", "workstream_id": "B-083"}
 {"action": "add", "recorded_at": "2026-04-11T17:57:24Z", "release_id": "release-0-1-11", "workstream_id": "B-084"}
 {"action": "add", "recorded_at": "2026-04-11T17:57:25Z", "release_id": "release-0-1-11", "workstream_id": "B-085"}
+{"action": "add", "note": "Bind the first Codex project-asset parity slice to the next release after v0.1.11.", "recorded_at": "2026-04-11T20:51:57Z", "release_id": "release-0-1-12", "workstream_id": "B-087"}
+{"action": "move", "from_release_id": "release-0-1-12", "note": "Rebind the first Codex project-asset parity slice to the current unreleased GA target v0.1.11.", "recorded_at": "2026-04-11T21:13:22Z", "to_release_id": "release-0-1-11", "workstream_id": "B-087"}
+{"action": "add", "note": "Bind the Codex host-runtime parity and target-release wording slice to the current v0.1.11 target.", "recorded_at": "2026-04-11T21:20:23Z", "release_id": "release-0-1-11", "workstream_id": "B-088"}

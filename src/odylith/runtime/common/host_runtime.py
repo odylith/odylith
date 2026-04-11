@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any, Mapping
+
+from odylith.runtime.common import codex_cli_capabilities
 
 
 _CODEX_HOST_RUNTIME = "codex_cli"
@@ -84,10 +87,15 @@ def resolve_host_runtime(*candidates: Any, environ: Mapping[str, str] | None = N
     return detect_host_runtime(environ=environ)
 
 
-def host_capabilities(host_runtime: Any, *, default_when_unknown: bool = False) -> dict[str, Any]:
+def host_capabilities(
+    host_runtime: Any,
+    *,
+    default_when_unknown: bool = False,
+    repo_root: Path | str | None = None,
+) -> dict[str, Any]:
     normalized = normalize_host_runtime(host_runtime)
     if normalized == _CODEX_HOST_RUNTIME:
-        return {
+        payload = {
             "host_runtime": normalized,
             "host_family": _CODEX_HOST_FAMILY,
             "model_family": _UNSPECIFIED_MODEL_FAMILY,
@@ -98,6 +106,22 @@ def host_capabilities(host_runtime: Any, *, default_when_unknown: bool = False) 
             "supports_local_structured_reasoning": True,
             "supports_explicit_model_selection": True,
         }
+        snapshot = codex_cli_capabilities.inspect_codex_cli_capabilities(
+            repo_root=repo_root or ".",
+            probe_prompt_input=False,
+        )
+        payload.update(
+            {
+                "codex_cli_available": snapshot.codex_available,
+                "codex_cli_version": snapshot.codex_version,
+                "supports_project_hooks": bool(snapshot.hooks_feature_enabled),
+                "trusted_project_required": snapshot.trusted_project_required,
+                "project_assets_mode": snapshot.project_assets_mode,
+                "compatibility_posture": snapshot.overall_posture,
+                "baseline_contract": snapshot.baseline_contract,
+            }
+        )
+        return payload
     if normalized == _CLAUDE_HOST_RUNTIME:
         return {
             "host_runtime": normalized,
@@ -135,10 +159,15 @@ def host_capabilities(host_runtime: Any, *, default_when_unknown: bool = False) 
     }
 
 
-def resolve_host_capabilities(*candidates: Any, environ: Mapping[str, str] | None = None) -> dict[str, Any]:
+def resolve_host_capabilities(
+    *candidates: Any,
+    environ: Mapping[str, str] | None = None,
+    repo_root: Path | str | None = None,
+) -> dict[str, Any]:
     return host_capabilities(
         resolve_host_runtime(*candidates, environ=environ),
         default_when_unknown=False,
+        repo_root=repo_root,
     )
 
 

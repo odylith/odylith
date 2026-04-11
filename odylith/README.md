@@ -32,6 +32,13 @@ After install, you should have:
 - managed starter tree under `odylith/`
 - repo-root Claude project assets under `.claude/` including `CLAUDE.md`,
   `settings.json`, commands, hooks, rules, and subagents
+- repo-root Codex project assets under `.codex/` including `config.toml`,
+  `hooks.json`, and custom project agents under `.codex/agents/`
+- repo-root Codex skill shims under `.agents/skills/`, including explicit
+  command-skills such as `$odylith-start`, `$odylith-context`,
+  `$odylith-query`, `$odylith-sync`, `$odylith-doctor`,
+  `$odylith-atlas-render`, `$odylith-backlog-create`, and
+  `$odylith-registry-validate`
 - root `.gitignore` updated with `/.odylith/` when the repo is Git-backed
 - gitignored managed-runtime trust anchors under
   `.odylith/trust/managed-runtime-trust/` when the repo is Git-backed
@@ -42,8 +49,23 @@ as Codex or Claude Code. In Odylith, the agent is the execution interface and
 topology, and execution state visible.
 
 Codex and Claude Code are both supported host lanes for Odylith. The shared
-grounding and governance contract is the same; the checked-in `.claude/`
-surface exists so Claude Code gets a first-class project-native lane too.
+grounding and governance contract is the same; `.claude/` gives Claude Code a
+first-class project-native lane, while `.codex/` and `.agents/skills/` do the
+same for trusted Codex CLI projects.
+
+On Codex, the repo-root `AGENTS.md` plus `./.odylith/bin/odylith` are the
+baseline-safe contract. The checked-in `.codex/` and `.agents/skills/` layers
+are best-effort host enhancements rather than hard prerequisites, so Odylith
+should still start safely even when a local Codex build ignores some
+project-asset features. To inspect the local Codex posture, run:
+
+```bash
+./.odylith/bin/odylith codex compatibility --repo-root .
+```
+
+Consumer install and repair also derive the effective `.codex/config.toml`
+from the local Codex capability snapshot when possible, so hook enablement
+tracks the detected Codex host instead of one static feature assumption.
 
 For the default grounded first turn, run:
 
@@ -143,6 +165,14 @@ and factual. Silence is better than filler.
   Claude project assets Odylith ships for commands, hooks, rules, and
   subagents so Claude Code stays a supported first-class host alongside
   Codex.
+- repo-root `.codex/`
+  Codex CLI project assets Odylith ships for project config, supported hooks,
+  and repo-scoped custom agents. These reinforce the baseline Codex contract;
+  they do not replace repo-root `AGENTS.md` plus the Odylith launcher.
+- repo-root `.agents/skills/`
+  Codex repo-scoped skill shims that mirror the shared Odylith skills in a
+  host-native discovery path and expose the curated explicit Odylith
+  command-skill surface.
 - `agents-guidelines/`
   Shared Odylith operating guidance.
 - `skills/`

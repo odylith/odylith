@@ -8,6 +8,21 @@
 - Use `odylith sync`, `odylith context-engine`, `odylith benchmark`, `odylith compass ...`, and `odylith atlas ...` as the public workflow.
 - Do not default back to removed local wrapper modules when the CLI already owns the surface.
 
+## Project-Root Host Assets
+- Odylith's managed project-root host assets are now split by host family:
+  `.claude/` for Claude Code, `.codex/` for Codex CLI project config, hooks,
+  and custom agents, and `.agents/skills/` for Codex repo-scoped skill shims.
+- The installer refreshes those assets through one shared project-root bundle
+  sync path; do not invent a second host-specific install pipeline for Codex.
+- Codex only activates the checked-in `.codex/` layer for trusted projects, so
+  the Codex project-asset contract is partly install-time and partly host trust
+  posture.
+- Keep `AGENTS.md` canonical across hosts. Checked-in host assets reinforce the
+  shared repo contract; they do not replace it.
+- The current routed `spawn_agent` host-tool contract and the checked-in Codex
+  CLI project assets are separate layers. Project agents in `.codex/agents/`
+  are not yet router-selectable `agent_type` values through this integration.
+
 ## Lane Matrix
 - Consumer lane:
   - `./.odylith/bin/odylith` runs Odylith on Odylith's managed runtime

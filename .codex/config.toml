@@ -1,0 +1,10 @@
+project_root_markers = [".git", "AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md"]
+project_doc_max_bytes = 65536
+project_doc_fallback_filenames = ["CLAUDE.md"]
+
+[features]
+codex_hooks = true
+
+[agents]
+max_threads = 6
+max_depth = 1

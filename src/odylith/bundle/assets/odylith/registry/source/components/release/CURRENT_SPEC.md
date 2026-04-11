@@ -105,9 +105,9 @@ governed subsystem.
   release names.
 - `current` and `next` are explicit source aliases, not inferred from semver,
   dates, or release-history ordering.
-- The current active release stays surfaced in governed read models until
-  maintainers explicitly update it to `shipped` or `closed`; zero targeted
-  workstreams is an empty state, not implicit GA.
+- The active target release owned by the `current` alias stays surfaced in
+  governed read models until maintainers explicitly update it to `shipped` or
+  `closed`; zero targeted workstreams is an empty state, not implicit GA.
 - Governed read models may also surface finished work completed in that active
   release as historical completed members while keeping active-target
   membership at zero.

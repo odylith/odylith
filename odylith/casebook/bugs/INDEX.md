@@ -6,6 +6,13 @@ Last updated (UTC): 2026-04-11
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-102 | 2026-04-11 | Odylith start returns no candidates when dirty path set is dominated by bundle asset mirrors | P1 | `src/odylith/runtime/governance/agent_governance_intelligence.py`
+  (`_changed_path_aliases`, `normalize_changed_paths`,
+  `collect_git_changed_paths`),
+  `src/odylith/runtime/common/consumer_profile.py`
+  (`_legacy_product_token_alias`),
+  `./.odylith/bin/odylith start` command, and every downstream consumer
+  of `normalize_repo_token` and the changed-path fan-out pipeline. | Resolved | [2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md](2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md) |
 | CB-103 | 2026-04-11 | Claude host profile blanks execution model via supports explicit model selection flag | P0 | `src/odylith/runtime/execution_engine/contract.py`,
   `src/odylith/runtime/common/host_runtime.py`,
   `src/odylith/runtime/common/agent_runtime_contract.py`,
@@ -144,11 +151,6 @@ Last updated (UTC): 2026-04-11
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-102 | 2026-04-11 | Odylith start returns no candidates when dirty path set is dominated by bundle asset mirrors | P1 | `src/odylith/runtime/governance/agent_governance_intelligence.py`,
-  `src/odylith/runtime/common/consumer_profile.py`,
-  `tests/unit/runtime/test_agent_governance_intelligence.py`,
-  `./.odylith/bin/odylith` start command, nested-worktree filter, and
-  dotfile-preserving path normalization pipeline. | Resolved | [2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md](2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md) |
 | CB-101 | 2026-04-10 | Dashboard and upgrade can queue compass behind a command the activated launcher does not expose | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
   `src/odylith/runtime/governance/dashboard_refresh_contract.py`,
   `tests/unit/runtime/test_sync_cli_compat.py`, Compass component spec, and

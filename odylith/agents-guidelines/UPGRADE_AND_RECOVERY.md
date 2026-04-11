@@ -27,6 +27,25 @@
 - Use the reset-local-state repair path when cache, tuning, or derived runtime state looks compromised.
 - `off`/`on` are the lightweight switch for coding agents; uninstall removes `.odylith/` runtime integration but keeps the `odylith/` context tree.
   `off` detaches Odylith-first repo-root guidance so the current coding host falls back to the surrounding repo's default behavior; `on` restores Odylith as the default first path.
+- Install, upgrade, reinstall, and `doctor --repair` may refresh the managed
+  project-root host assets under `.claude/`, `.codex/`, and `.agents/skills/`
+  together with `odylith/AGENTS.md`, `odylith/CLAUDE.md`,
+  `odylith/agents-guidelines/`, and `odylith/skills/`.
+- Those Codex project assets are best-effort host enhancements, not the core
+  Odylith boot contract. The baseline Codex lane stays the repo-root
+  `AGENTS.md` plus `./.odylith/bin/odylith`, so a local Codex build that
+  ignores `.codex/` features should not leave Odylith dead out of the box.
+- Install, upgrade, reinstall, and `doctor --repair` now rewrite the effective
+  `.codex/config.toml` from the local Codex capability snapshot when possible,
+  so hook enablement follows the detected host instead of one static config
+  assumption.
+- Codex project assets only activate when the repo is trusted by Codex, so a
+  healthy install can still require an explicit trust step in the host before
+  `.codex/hooks.json` and `.codex/agents/*.toml` take effect.
+- After install or upgrade, use
+  `./.odylith/bin/odylith codex compatibility --repo-root .` to inspect the
+  local Codex capability posture instead of assuming one exact CLI version is
+  the only safe release lane.
 - Consumer lane:
   - stays on the installed pinned Odylith-managed runtime
   - never activates `source-local`

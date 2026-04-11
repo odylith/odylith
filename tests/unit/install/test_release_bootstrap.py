@@ -94,8 +94,8 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "repo_root_reason='guidance'" in text
     assert "repo_root_reason='git'" in text
     assert "repo_root_reason='folder'" in text
-    assert "No root AGENTS.md, CLAUDE.md, or .claude/CLAUDE.md was found above this directory. Odylith will create the root guidance entrypoints at the detected Git root and sync the Claude project assets there." in text
-    assert "No enclosing AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, or .git was found. Odylith will treat the current folder as the repo root and create root AGENTS.md, root CLAUDE.md, and project .claude assets here." in text
+    assert "No root AGENTS.md, CLAUDE.md, or .claude/CLAUDE.md was found above this directory. Odylith will create the root guidance entrypoints at the detected Git root and sync the managed Claude and Codex project assets there." in text
+    assert "No enclosing AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, or .git was found. Odylith will treat the current folder as the repo root and create root AGENTS.md, root CLAUDE.md, and managed project-root Claude and Codex assets here." in text
     assert "Git-aware features stay limited until this folder is backed by Git." in text
     assert "working-tree intelligence, background autospawn, and git-fsmonitor watcher help stay reduced for now." in text
     assert 'say "Odylith is getting this repo ready."' in text

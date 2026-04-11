@@ -47,26 +47,24 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
         "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
         "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
-        "src/odylith/bundle/assets/odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+        "src/odylith/bundle/assets/odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+        "odylith/radar/source/ideas/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md"
       ],
       "confidence": "high",
-      "event_index": 74,
+      "event_index": 80,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl +7 more",
-      "ts_iso": "2026-04-11T11:05:52-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/releases/release-assignment-events.v1.jsonl, src/odylith/bundle/assets/odylith/radar/source/INDEX.md +5 more",
+      "ts_iso": "2026-04-11T16:01:08-07:00",
       "workstreams": []
     },
     {

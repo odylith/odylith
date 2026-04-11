@@ -44,18 +44,20 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/skills/subagent-router/SKILL.md"
+        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_router.py"
       ],
       "confidence": "high",
-      "event_index": 78,
+      "event_index": 82,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/skills/subagent-router/SKILL.md",
-      "ts_iso": "2026-04-11T12:14:52-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/subagent-router/CURRENT_SPEC.md, src/odylith/bundle/assets/odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more",
+      "ts_iso": "2026-04-11T15:42:33-07:00",
       "workstreams": []
     },
     {
@@ -493,6 +495,7 @@
     "B-015",
     "B-031",
     "B-069",
-    "B-084"
+    "B-084",
+    "B-087"
   ]
 }
