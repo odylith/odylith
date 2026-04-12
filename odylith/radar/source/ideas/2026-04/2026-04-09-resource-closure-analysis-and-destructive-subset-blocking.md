@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-076
 title: Resource Closure Analysis and Destructive-Subset Blocking
 date: 2026-04-09
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Closure analysis is how the execution engine blocks technically valid but incomplete destructive subsets before they execute. It should land once frontier and mode posture exist.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-12-resource-closure-analysis-and-destructive-subset-blocking.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-072

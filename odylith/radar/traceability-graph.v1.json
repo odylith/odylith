@@ -3297,7 +3297,7 @@
     {
       "idea_id": "B-072",
       "title": "Execution Governance Engines, Admissibility Control, and Constraint-Aware Action Runtime",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "umbrella",
       "workstream_parent": "",
       "workstream_children": [
@@ -3329,59 +3329,14 @@
         "D-031"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -3394,9 +3349,21 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-072",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T21:59:19Z",
+          "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 3,
@@ -3409,7 +3376,7 @@
     {
       "idea_id": "B-073",
       "title": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-072",
       "workstream_children": [],
@@ -3429,59 +3396,14 @@
         "D-030"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-task-contract-event-ledger-and-hard-constraint-promotion.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-12-task-contract-event-ledger-and-hard-constraint-promotion.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -3494,11 +3416,23 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-073",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T21:59:19Z",
+          "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -3509,7 +3443,7 @@
           "umbrella_id": "B-072",
           "wave_id": "W1",
           "wave_label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-          "wave_status": "active",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
         }
@@ -3518,7 +3452,7 @@
     {
       "idea_id": "B-074",
       "title": "Admissibility Policy Middleware and Re-Anchor Triggers",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-072",
       "workstream_children": [],
@@ -3538,59 +3472,14 @@
         "D-030"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-admissibility-policy-middleware-and-re-anchor-triggers.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-12-admissibility-policy-middleware-and-re-anchor-triggers.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -3603,11 +3492,23 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-074",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T21:59:19Z",
+          "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -3618,7 +3519,7 @@
           "umbrella_id": "B-072",
           "wave_id": "W2",
           "wave_label": "Admissibility Policy Middleware and Re-Anchor Triggers",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
         }
@@ -3627,7 +3528,7 @@
     {
       "idea_id": "B-075",
       "title": "Frontier Extraction, User-Correction Invariants, and Critical-Path Modes",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-072",
       "workstream_children": [],
@@ -3648,59 +3549,14 @@
         "D-030"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-frontier-extraction-user-correction-invariants-and-critical-path-modes.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-12-frontier-extraction-user-correction-invariants-and-critical-path-modes.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -3713,11 +3569,23 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-075",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T21:59:19Z",
+          "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -3728,7 +3596,7 @@
           "umbrella_id": "B-072",
           "wave_id": "W3",
           "wave_label": "Frontier Extraction, User-Correction Invariants, and Critical-Path Modes",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
         }
@@ -3737,7 +3605,7 @@
     {
       "idea_id": "B-076",
       "title": "Resource Closure Analysis and Destructive-Subset Blocking",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-072",
       "workstream_children": [],
@@ -3757,59 +3625,14 @@
         "D-030"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-resource-closure-analysis-and-destructive-subset-blocking.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-12-resource-closure-analysis-and-destructive-subset-blocking.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -3822,11 +3645,23 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-076",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T21:59:19Z",
+          "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -3837,7 +3672,7 @@
           "umbrella_id": "B-072",
           "wave_id": "W4",
           "wave_label": "Resource Closure Analysis and Destructive-Subset Blocking",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
         }
@@ -3846,7 +3681,7 @@
     {
       "idea_id": "B-077",
       "title": "External Dependency Semantics, Receipts, and Resumability",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-072",
       "workstream_children": [],
@@ -3866,59 +3701,14 @@
         "D-030"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-external-dependency-semantics-receipts-and-resumability.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-12-external-dependency-semantics-receipts-and-resumability.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -3931,11 +3721,23 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-077",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T21:59:19Z",
+          "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -3946,7 +3748,7 @@
           "umbrella_id": "B-072",
           "wave_id": "W5",
           "wave_label": "External Dependency Semantics, Receipts, and Resumability",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
         }
@@ -3955,7 +3757,7 @@
     {
       "idea_id": "B-078",
       "title": "Validation Matrix Synthesis, Contradiction Detection, and History-Based Failure Blocking",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-072",
       "workstream_children": [],
@@ -3975,59 +3777,14 @@
         "D-031"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-12-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -4040,11 +3797,23 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-078",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T21:59:19Z",
+          "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -4055,7 +3824,7 @@
           "umbrella_id": "B-072",
           "wave_id": "W6",
           "wave_label": "Validation Matrix Synthesis, Contradiction Detection, and History-Based Failure Blocking",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
         }
@@ -4064,7 +3833,7 @@
     {
       "idea_id": "B-079",
       "title": "Program/Wave Authoring CLI and Agent Ergonomics",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-072",
       "workstream_children": [],
@@ -4082,59 +3851,14 @@
         "D-031"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-program-wave-authoring-cli-and-agent-ergonomics.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-12-program-wave-authoring-cli-and-agent-ergonomics.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -4147,11 +3871,23 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-079",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T21:59:19Z",
+          "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -4162,7 +3898,7 @@
           "umbrella_id": "B-072",
           "wave_id": "W1",
           "wave_label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-          "wave_status": "active",
+          "wave_status": "complete",
           "role": "in_band",
           "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
         }
@@ -4258,7 +3994,7 @@
     {
       "idea_id": "B-082",
       "title": "Shared Turn Intake With Hard Consumer Fencing and Dev-Maintainer Odylith Targeting",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-072",
       "workstream_children": [],
@@ -4279,59 +4015,14 @@
         "D-031"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-10-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-12-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -4344,11 +4035,23 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-082",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T21:59:19Z",
+          "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -4359,7 +4062,7 @@
           "umbrella_id": "B-072",
           "wave_id": "W1",
           "wave_label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-          "wave_status": "active",
+          "wave_status": "complete",
           "role": "in_band",
           "source_file": "odylith/radar/source/programs/B-072.execution-waves.v1.json"
         }
@@ -4417,15 +4120,6 @@
           "current"
         ],
         "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
           "B-083",
           "B-084",
           "B-085",
@@ -4439,12 +4133,21 @@
           "B-066",
           "B-067",
           "B-068",
-          "B-069"
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
+        "active_workstream_count": 5,
+        "completed_workstream_count": 16
       },
       "release_history": [
         {
@@ -4517,15 +4220,6 @@
           "current"
         ],
         "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
           "B-083",
           "B-084",
           "B-085",
@@ -4539,12 +4233,21 @@
           "B-066",
           "B-067",
           "B-068",
-          "B-069"
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
+        "active_workstream_count": 5,
+        "completed_workstream_count": 16
       },
       "release_history": [
         {
@@ -4615,15 +4318,6 @@
           "current"
         ],
         "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
           "B-083",
           "B-084",
           "B-085",
@@ -4637,12 +4331,21 @@
           "B-066",
           "B-067",
           "B-068",
-          "B-069"
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
+        "active_workstream_count": 5,
+        "completed_workstream_count": 16
       },
       "release_history": [
         {
@@ -4751,15 +4454,6 @@
           "current"
         ],
         "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
           "B-083",
           "B-084",
           "B-085",
@@ -4773,12 +4467,21 @@
           "B-066",
           "B-067",
           "B-068",
-          "B-069"
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
+        "active_workstream_count": 5,
+        "completed_workstream_count": 16
       },
       "release_history": [
         {
@@ -4859,15 +4562,6 @@
           "current"
         ],
         "active_workstreams": [
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082",
           "B-083",
           "B-084",
           "B-085",
@@ -4881,12 +4575,21 @@
           "B-066",
           "B-067",
           "B-068",
-          "B-069"
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 14,
-        "completed_workstream_count": 7
+        "active_workstream_count": 5,
+        "completed_workstream_count": 16
       },
       "release_history": [
         {
@@ -5046,15 +4749,6 @@
         "current"
       ],
       "active_workstreams": [
-        "B-072",
-        "B-073",
-        "B-074",
-        "B-075",
-        "B-076",
-        "B-077",
-        "B-078",
-        "B-079",
-        "B-082",
         "B-083",
         "B-084",
         "B-085",
@@ -5068,12 +4762,21 @@
         "B-066",
         "B-067",
         "B-068",
-        "B-069"
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082"
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 14,
-      "completed_workstream_count": 7
+      "active_workstream_count": 5,
+      "completed_workstream_count": 16
     },
     {
       "release_id": "release-0-1-12",
@@ -5119,15 +4822,6 @@
         "current"
       ],
       "active_workstreams": [
-        "B-072",
-        "B-073",
-        "B-074",
-        "B-075",
-        "B-076",
-        "B-077",
-        "B-078",
-        "B-079",
-        "B-082",
         "B-083",
         "B-084",
         "B-085",
@@ -5141,12 +4835,21 @@
         "B-066",
         "B-067",
         "B-068",
-        "B-069"
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082"
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 14,
-      "completed_workstream_count": 7
+      "active_workstream_count": 5,
+      "completed_workstream_count": 16
     },
     "next": {
       "release_id": "release-0-1-12",
@@ -5191,15 +4894,6 @@
       "current"
     ],
     "active_workstreams": [
-      "B-072",
-      "B-073",
-      "B-074",
-      "B-075",
-      "B-076",
-      "B-077",
-      "B-078",
-      "B-079",
-      "B-082",
       "B-083",
       "B-084",
       "B-085",
@@ -5213,12 +4907,21 @@
       "B-066",
       "B-067",
       "B-068",
-      "B-069"
+      "B-069",
+      "B-072",
+      "B-073",
+      "B-074",
+      "B-075",
+      "B-076",
+      "B-077",
+      "B-078",
+      "B-079",
+      "B-082"
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 14,
-    "completed_workstream_count": 7
+    "active_workstream_count": 5,
+    "completed_workstream_count": 16
   },
   "next_release": {
     "release_id": "release-0-1-12",
@@ -5248,7 +4951,7 @@
   "release_summary": {
     "release_count": 2,
     "alias_count": 2,
-    "active_assignment_count": 15
+    "active_assignment_count": 6
   },
   "execution_programs": [
     {
@@ -5259,7 +4962,7 @@
         {
           "wave_id": "W1",
           "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-          "status": "active",
+          "status": "complete",
           "summary": "Stand up the event-sourced execution contract, host-profile envelope, and hard-constraint promotion while carrying the thin program/wave authoring sidecar and structured turn-intake lane in band.",
           "depends_on": [],
           "primary_workstreams": [
@@ -5270,12 +4973,28 @@
             "B-079",
             "B-082"
           ],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-073",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-12-task-contract-event-ledger-and-hard-constraint-promotion.md",
+              "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion gate"
+            },
+            {
+              "workstream_id": "B-079",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-12-program-wave-authoring-cli-and-agent-ergonomics.md",
+              "label": "Program/Wave Authoring CLI and Agent Ergonomics gate"
+            },
+            {
+              "workstream_id": "B-082",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-12-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md",
+              "label": "Shared Turn Intake With Hard Consumer Fencing and Dev-Maintainer Odylith Targeting gate"
+            }
+          ]
         },
         {
           "wave_id": "W2",
           "label": "Admissibility Policy Middleware and Re-Anchor Triggers",
-          "status": "planned",
+          "status": "complete",
           "summary": "Add `admit|deny|defer` policy decisions in front of execution surfaces and trigger re-anchor after repeated drift or contradiction.",
           "depends_on": [
             "W1"
@@ -5285,12 +5004,18 @@
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-074",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-12-admissibility-policy-middleware-and-re-anchor-triggers.md",
+              "label": "Admissibility Policy Middleware and Re-Anchor Triggers gate"
+            }
+          ]
         },
         {
           "wave_id": "W3",
           "label": "Frontier Extraction, User-Correction Invariants, and Critical-Path Modes",
-          "status": "planned",
+          "status": "complete",
           "summary": "Derive one truthful frontier and explicit execution modes so verify/recover lanes stop branching indefinitely.",
           "depends_on": [
             "W2"
@@ -5300,12 +5025,18 @@
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-075",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-12-frontier-extraction-user-correction-invariants-and-critical-path-modes.md",
+              "label": "Frontier Extraction, User-Correction Invariants, and Critical-Path Modes gate"
+            }
+          ]
         },
         {
           "wave_id": "W4",
           "label": "Resource Closure Analysis and Destructive-Subset Blocking",
-          "status": "planned",
+          "status": "complete",
           "summary": "Compute safe, incomplete, and destructive scope for the first resource domains instead of relying on operator intuition.",
           "depends_on": [
             "W3"
@@ -5315,12 +5046,18 @@
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-076",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-12-resource-closure-analysis-and-destructive-subset-blocking.md",
+              "label": "Resource Closure Analysis and Destructive-Subset Blocking gate"
+            }
+          ]
         },
         {
           "wave_id": "W5",
           "label": "External Dependency Semantics, Receipts, and Resumability",
-          "status": "planned",
+          "status": "complete",
           "summary": "Normalize semantic wait states, emit receipts, and default reruns to reattachment when work is already in flight.",
           "depends_on": [
             "W3"
@@ -5330,12 +5067,18 @@
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-077",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-12-external-dependency-semantics-receipts-and-resumability.md",
+              "label": "External Dependency Semantics, Receipts, and Resumability gate"
+            }
+          ]
         },
         {
           "wave_id": "W6",
           "label": "Validation Matrix Synthesis, Contradiction Detection, and History-Based Failure Blocking",
-          "status": "planned",
+          "status": "complete",
           "summary": "Close the loop with validation synthesis, contradiction records, and executable preflight rules from known failure classes.",
           "depends_on": [
             "W4",
@@ -5346,7 +5089,13 @@
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-078",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-12-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md",
+              "label": "Validation Matrix Synthesis, Contradiction Detection, and History-Based Failure Blocking gate"
+            }
+          ]
         }
       ]
     }
@@ -5853,56 +5602,56 @@
       "id": "B-072",
       "type": "workstream",
       "label": "Execution Governance Engines, Admissibility Control, and Constraint-Aware Action Runtime",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
     },
     {
       "id": "B-073",
       "type": "workstream",
       "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-09-task-contract-event-ledger-and-hard-constraint-promotion.md"
     },
     {
       "id": "B-074",
       "type": "workstream",
       "label": "Admissibility Policy Middleware and Re-Anchor Triggers",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-09-admissibility-policy-middleware-and-re-anchor-triggers.md"
     },
     {
       "id": "B-075",
       "type": "workstream",
       "label": "Frontier Extraction, User-Correction Invariants, and Critical-Path Modes",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-09-frontier-extraction-user-correction-invariants-and-critical-path-modes.md"
     },
     {
       "id": "B-076",
       "type": "workstream",
       "label": "Resource Closure Analysis and Destructive-Subset Blocking",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-09-resource-closure-analysis-and-destructive-subset-blocking.md"
     },
     {
       "id": "B-077",
       "type": "workstream",
       "label": "External Dependency Semantics, Receipts, and Resumability",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-09-external-dependency-semantics-receipts-and-resumability.md"
     },
     {
       "id": "B-078",
       "type": "workstream",
       "label": "Validation Matrix Synthesis, Contradiction Detection, and History-Based Failure Blocking",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-09-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md"
     },
     {
       "id": "B-079",
       "type": "workstream",
       "label": "Program/Wave Authoring CLI and Agent Ergonomics",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-09-program-wave-authoring-cli-and-agent-ergonomics.md"
     },
     {
@@ -5923,7 +5672,7 @@
       "id": "B-082",
       "type": "workstream",
       "label": "Shared Turn Intake With Hard Consumer Fencing and Dev-Maintainer Odylith Targeting",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-10-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md"
     },
     {
@@ -6680,6 +6429,60 @@
       "file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
     },
     {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-12-admissibility-policy-middleware-and-re-anchor-triggers.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-12-admissibility-policy-middleware-and-re-anchor-triggers.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-12-admissibility-policy-middleware-and-re-anchor-triggers.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-12-external-dependency-semantics-receipts-and-resumability.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-12-external-dependency-semantics-receipts-and-resumability.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-12-external-dependency-semantics-receipts-and-resumability.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-12-frontier-extraction-user-correction-invariants-and-critical-path-modes.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-12-frontier-extraction-user-correction-invariants-and-critical-path-modes.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-12-frontier-extraction-user-correction-invariants-and-critical-path-modes.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-12-program-wave-authoring-cli-and-agent-ergonomics.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-12-program-wave-authoring-cli-and-agent-ergonomics.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-12-program-wave-authoring-cli-and-agent-ergonomics.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-12-resource-closure-analysis-and-destructive-subset-blocking.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-12-resource-closure-analysis-and-destructive-subset-blocking.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-12-resource-closure-analysis-and-destructive-subset-blocking.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-12-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-12-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-12-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-12-task-contract-event-ledger-and-hard-constraint-promotion.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-12-task-contract-event-ledger-and-hard-constraint-promotion.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-12-task-contract-event-ledger-and-hard-constraint-promotion.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-12-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-12-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-12-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md"
+    },
+    {
       "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
@@ -6738,12 +6541,6 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md"
-    },
-    {
-      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
-      "type": "plan",
-      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
-      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
@@ -8887,13 +8684,8 @@
     },
     {
       "source": "B-072",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md",
       "edge_type": "promoted_to_plan"
-    },
-    {
-      "source": "B-072",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
     },
     {
       "source": "B-073",
@@ -8932,8 +8724,8 @@
     },
     {
       "source": "B-073",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-12-task-contract-event-ledger-and-hard-constraint-promotion.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-074",
@@ -8952,8 +8744,8 @@
     },
     {
       "source": "B-074",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-12-admissibility-policy-middleware-and-re-anchor-triggers.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-075",
@@ -8982,8 +8774,8 @@
     },
     {
       "source": "B-075",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-12-frontier-extraction-user-correction-invariants-and-critical-path-modes.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-076",
@@ -9002,8 +8794,8 @@
     },
     {
       "source": "B-076",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-12-resource-closure-analysis-and-destructive-subset-blocking.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-077",
@@ -9022,8 +8814,8 @@
     },
     {
       "source": "B-077",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-12-external-dependency-semantics-receipts-and-resumability.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-078",
@@ -9037,8 +8829,8 @@
     },
     {
       "source": "B-078",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-12-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-079",
@@ -9047,8 +8839,8 @@
     },
     {
       "source": "B-079",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-12-program-wave-authoring-cli-and-agent-ergonomics.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-080",
@@ -9112,8 +8904,8 @@
     },
     {
       "source": "B-082",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-12-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-083",
@@ -9797,49 +9589,49 @@
       "code_reference_count": 0
     },
     "B-073": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-074": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-075": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-076": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-077": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-078": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-079": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -9860,7 +9652,7 @@
       "code_reference_count": 0
     },
     "B-082": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -9981,13 +9773,13 @@
   "summary": {
     "workstream_count": 91,
     "release_count": 2,
-    "active_release_assignment_count": 15,
+    "active_release_assignment_count": 6,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 218,
-    "edge_count": 491,
+    "node_count": 226,
+    "edge_count": 490,
     "warning_count": 4,
     "warning_item_count": 4
   },
-  "generated_utc": "2026-04-12 17:09:29Z"
+  "generated_utc": "2026-04-12 22:01:11Z"
 }

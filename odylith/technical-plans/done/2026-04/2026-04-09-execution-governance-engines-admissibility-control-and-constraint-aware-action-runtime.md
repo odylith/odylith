@@ -1,4 +1,4 @@
-Status: In progress
+Status: Done
 
 Created: 2026-04-09
 
@@ -59,13 +59,13 @@ Related Bugs:
 - CB-094 - Compass current-workstream ranking can hide active release and wave lanes
 
 ## Learnings
-- [ ] Odylith's dominant failure mode is not missing one more document; it is
+- [x] Odylith's dominant failure mode is not missing one more document; it is
       allowing a non-admissible next action after enough context already
       exists.
-- [ ] Host-neutral shared contracts and host-specific execution affordances are
+- [x] Host-neutral shared contracts and host-specific execution affordances are
       separate concerns. The execution-governance layer must preserve that
       distinction instead of backsliding to Codex-default behavior.
-- [ ] Program/wave ergonomics matters, but it should remain an authoring thin
+- [x] Program/wave ergonomics matters, but it should remain an authoring thin
       layer over the existing execution-wave contract rather than becoming a
       second planning system.
 
@@ -119,13 +119,13 @@ Related Bugs:
       language.
 
 ## Defer
-- [ ] Full-fidelity Shell, Compass, and packet UX for every
+- [x] Full-fidelity Shell, Compass, and packet UX for every
       execution-governance artifact can continue in later waves after the base
       summary and posture fields are proven stable.
-- [ ] Rich external dependency adapters beyond local long-running commands,
+- [x] Rich external dependency adapters beyond local long-running commands,
       Compass/agent-stream state, and GitHub Actions are not required in this
       first slice.
-- [ ] Full policy middleware insertion in front of every existing execution
+- [x] Full policy middleware insertion in front of every existing execution
       surface can be phased after the base package and CLI are present.
 
 ## Success Criteria
@@ -149,27 +149,27 @@ Related Bugs:
       standalone `--check-only --runtime-mode standalone`.
 
 ## Non-Goals
-- [ ] Replacing release planning with execution waves.
-- [ ] Treating larger memory or retrieval breadth as the primary solution to
+- [x] Replacing release planning with execution waves.
+- [x] Treating larger memory or retrieval breadth as the primary solution to
       execution failure.
-- [ ] Claiming Claude-native delegation parity or other host capabilities
+- [x] Claiming Claude-native delegation parity or other host capabilities
       without explicit runtime detection and proof.
 
 ## Impacted Areas
-- [ ] `odylith/radar/source/ideas/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md`
-- [ ] `odylith/radar/source/programs/B-072.execution-waves.v1.json`
-- [ ] `odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md`
-- [ ] `odylith/registry/source/component_registry.v1.json`
-- [ ] `odylith/registry/source/components/execution-governance/CURRENT_SPEC.md`
-- [ ] `odylith/atlas/source/catalog/diagrams.v1.json`
-- [ ] `odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd`
-- [ ] `odylith/atlas/source/odylith-execution-governance-engine-stack.mmd`
-- [ ] `odylith/atlas/source/odylith-program-wave-authoring-and-agent-command-flow.mmd`
-- [ ] `src/odylith/runtime/execution_engine/`
-- [ ] `src/odylith/runtime/governance/`
-- [ ] `src/odylith/cli.py`
-- [ ] `tests/unit/runtime/test_execution_governance.py`
-- [ ] `tests/unit/runtime/test_program_wave_authoring.py`
+- [x] `odylith/radar/source/ideas/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md`
+- [x] `odylith/radar/source/programs/B-072.execution-waves.v1.json`
+- [x] `odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md`
+- [x] `odylith/registry/source/component_registry.v1.json`
+- [x] `odylith/registry/source/components/execution-governance/CURRENT_SPEC.md`
+- [x] `odylith/atlas/source/catalog/diagrams.v1.json`
+- [x] `odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd`
+- [x] `odylith/atlas/source/odylith-execution-governance-engine-stack.mmd`
+- [x] `odylith/atlas/source/odylith-program-wave-authoring-and-agent-command-flow.mmd`
+- [x] `src/odylith/runtime/execution_engine/`
+- [x] `src/odylith/runtime/governance/`
+- [x] `src/odylith/cli.py`
+- [x] `tests/unit/runtime/test_execution_governance.py`
+- [x] `tests/unit/runtime/test_program_wave_authoring.py`
 
 ## Rollout
 1. Author the umbrella/child workstream truth, program file, and umbrella

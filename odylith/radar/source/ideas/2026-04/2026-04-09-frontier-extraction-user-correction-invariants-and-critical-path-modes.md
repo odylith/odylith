@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-075
 title: Frontier Extraction, User-Correction Invariants, and Critical-Path Modes
 date: 2026-04-09
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Once admissibility exists, Odylith still needs one canonical frontier and explicit critical-path mode so execution does not collapse back into open-ended exploration. This wave turns the contract into a truthful current-state runtime.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-12-frontier-extraction-user-correction-invariants-and-critical-path-modes.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-072

@@ -18,7 +18,6 @@ Last updated (UTC): 2026-04-12
 | `odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md` | In progress | 2026-04-07 | 2026-04-07 | `B-060` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md` | In progress | 2026-04-08 | 2026-04-08 | `B-064` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md` | In progress | 2026-04-09 | 2026-04-09 | `B-071` |
-| `odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md` | In progress | 2026-04-09 | 2026-04-09 | `B-072` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md` | In progress | 2026-04-10 | 2026-04-10 | `B-083` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md` | In progress | 2026-04-11 | 2026-04-11 | `B-084` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md` | In progress | 2026-04-11 | 2026-04-11 | `B-085` |
@@ -33,6 +32,20 @@ Last updated (UTC): 2026-04-12
 
 | Plan | Status | Created | Updated | Backlog |
 | --- | --- | --- | --- | --- |
+
+## Recently Completed (2026-04-12)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md` | Done | 2026-04-09 | 2026-04-12 | `B-072` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-task-contract-event-ledger-and-hard-constraint-promotion.md` | Done | 2026-04-12 | 2026-04-12 | `B-073` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-admissibility-policy-middleware-and-re-anchor-triggers.md` | Done | 2026-04-12 | 2026-04-12 | `B-074` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-frontier-extraction-user-correction-invariants-and-critical-path-modes.md` | Done | 2026-04-12 | 2026-04-12 | `B-075` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-resource-closure-analysis-and-destructive-subset-blocking.md` | Done | 2026-04-12 | 2026-04-12 | `B-076` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-external-dependency-semantics-receipts-and-resumability.md` | Done | 2026-04-12 | 2026-04-12 | `B-077` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md` | Done | 2026-04-12 | 2026-04-12 | `B-078` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-program-wave-authoring-cli-and-agent-ergonomics.md` | Done | 2026-04-12 | 2026-04-12 | `B-079` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md` | Done | 2026-04-12 | 2026-04-12 | `B-082` |
 
 ## Recently Completed (2026-04-09)
 

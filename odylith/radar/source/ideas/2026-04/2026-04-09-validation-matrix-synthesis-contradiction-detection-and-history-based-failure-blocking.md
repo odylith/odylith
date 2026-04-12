@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-078
 title: Validation Matrix Synthesis, Contradiction Detection, and History-Based Failure Blocking
 date: 2026-04-09
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: This wave closes the loop by turning known failure classes, contradictions, and validation obligations into executable product behavior instead of searchable memory. It depends on closure and receipts so the engine can reason from real scope and state.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-12-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-072

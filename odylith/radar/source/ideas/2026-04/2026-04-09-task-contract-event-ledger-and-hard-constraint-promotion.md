@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-073
 title: Task Contract, Event Ledger, and Hard-Constraint Promotion
 date: 2026-04-09
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: The execution-governance package needs one canonical state model before any admissibility or frontier policy can be trustworthy. This workstream establishes the typed contract and event-sourced execution ledger the rest of the engine depends on.
 confidence: high
 founder_override: yes
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-12-task-contract-event-ledger-and-hard-constraint-promotion.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-072

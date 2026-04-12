@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-079
 title: Program/Wave Authoring CLI and Agent Ergonomics
 date: 2026-04-09
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: The sidecar matters because coding agents should not hand-edit execution-wave JSON, but the critical path is still the execution-governance engine itself. This workstream keeps the ergonomics thin and attached to the canonical contract instead of turning into a second planning system.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-12-program-wave-authoring-cli-and-agent-ergonomics.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-072

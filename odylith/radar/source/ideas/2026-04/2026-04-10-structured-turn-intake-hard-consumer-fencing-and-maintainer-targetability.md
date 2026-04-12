@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-082
 title: Shared Turn Intake With Hard Consumer Fencing and Dev-Maintainer Odylith Targeting
 date: 2026-04-10
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Odylith needs one structured turn-intake path that can ground from copied UI text and visible surfaces without collapsing consumer turns into Odylith write targets. The same intake pipeline must still allow maintainer-authorized Odylith targeting in the product repo, so the lane boundary has to be explicit and enforced rather than inferred from prose.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-12-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-072

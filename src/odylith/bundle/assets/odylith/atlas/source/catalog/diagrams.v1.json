@@ -80,8 +80,8 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "120bd8a915f7d1d55a9ebd335c9395ecb072b72ecadd5d404b7dde65604adb48",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "d48218fced4fc62fe34602e025419adb9a43955a669a753feaf9392e995f33ee",
-        "odylith/radar/source/INDEX.md": "3c184a155d4ba46f9e90e5b27e120c2a4f62bca3aa4c891be359f833c534ed41",
-        "odylith/technical-plans/INDEX.md": "4d4f6a083ca07a15589f3078e8a339d30bb16d9760a127d0f1de061aa94907bb"
+        "odylith/radar/source/INDEX.md": "297a84caed218daad11cc3f12bb92f1392682161334aa9eb2ecf41b6b0f2a41a",
+        "odylith/technical-plans/INDEX.md": "4ec1017a9a9edf3935f49a07e7c652c8c55b1fd5f1688598f9404a39831fa410"
       }
     },
     {
@@ -127,7 +127,7 @@
         "odylith/technical-plans/done/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
         "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
         "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
-        "odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
+        "odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
       ],
       "related_docs": [
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
@@ -2641,7 +2641,7 @@
         "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md": "91a6302d9217711cc1413a3c7890a2411c0275ecbdd4382756b2430cc523d80f",
         "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md": "4166d4a6d35da31e714a1d200867e09970adfdb7e19bef129a1d3b262e917318",
         "odylith/radar/source/releases/releases.v1.json": "f5ba79d451241f24bbf4fb21ce35a7123f6e57ccc525c6e9db084f1cf4d6f243",
-        "odylith/radar/source/releases/release-assignment-events.v1.jsonl": "c036574fc57d8df51be393bdeab880e0dace69d15192c4cb173334cc07d3de21",
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl": "90e36134f28acbd47b3c7058e4e850a7f4603ad86934a16adf48f7600d8fa371",
         "odylith/runtime/source/release-notes/v0.1.11.md": "1eeb7380cabaf6f134ba55057c95b5230f0c0001179e1002c44540e21296f9e0",
         "src/odylith/runtime/governance/release_planning_contract.py": "9052cb86ae8ccfbba30ef475118c089c1c5486ffd68806bfc3cdeda8953a3b5c",
         "src/odylith/runtime/governance/release_planning_authoring.py": "7e7b12255148884acba095c0ee1fd9fb5db7e50089167c783ad19d5a8d3a4692",
@@ -2848,7 +2848,7 @@
         "odylith/radar/source/ideas/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
       ],
       "related_plans": [
-        "odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
+        "odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
       ],
       "related_docs": [
         "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
@@ -2930,7 +2930,7 @@
         "odylith/radar/source/ideas/2026-04/2026-04-09-program-wave-authoring-cli-and-agent-ergonomics.md"
       ],
       "related_plans": [
-        "odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
+        "odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
       ],
       "related_docs": [
         "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
@@ -2955,7 +2955,7 @@
         "src/odylith/runtime/governance/program_wave_authoring.py": "3cbe29be1df680d14e1a568e20a7e54dce4609f3a32558828927c0d7bef2e84f",
         "src/odylith/runtime/governance/execution_wave_contract.py": "dae2c05bbdb9b20c8a32101c3de0ee39bccc97711b1acbb9408d2cc59fb16a7e",
         "src/odylith/cli.py": "f837292f1802d5c6124da3c54d32277a83be1dea461ea9e3c719c3959c8cc3e5",
-        "odylith/radar/source/programs/B-072.execution-waves.v1.json": "c908bd69f1beb7113605d04c6381ea8ddeee726732dfe56ca01dc4d8751a982d",
+        "odylith/radar/source/programs/B-072.execution-waves.v1.json": "dbcf32a47eb81295643e717615d72b36308372195f45a1c2b02b509508146697",
         "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md": "0a4b6866a86e52343dcc4af8f803e3acdc3ffd460ea88692775065faa26aca2e"
       },
       "render_source_fingerprint": "deb0cf4f47fcfb258597bcbc7793bb341ab79cb618d32ec886a66665d44a4f63"

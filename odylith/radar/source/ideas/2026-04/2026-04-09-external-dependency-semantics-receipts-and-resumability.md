@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-077
 title: External Dependency Semantics, Receipts, and Resumability
 date: 2026-04-09
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Opaque waiting and replay-from-scratch behavior undermine execution trust even when the agent stayed on the right lane. This wave adds semantic wait states and typed resumability after the frontier exists.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-12-external-dependency-semantics-receipts-and-resumability.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-072

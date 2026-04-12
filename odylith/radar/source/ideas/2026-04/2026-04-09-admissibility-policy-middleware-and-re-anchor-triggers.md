@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-074
 title: Admissibility Policy Middleware and Re-Anchor Triggers
 date: 2026-04-09
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Admissibility screening is the biggest single product improvement because it blocks the wrong next move before the tool call happens. It depends on the contract layer and should land immediately after it.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-12-admissibility-policy-middleware-and-re-anchor-triggers.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-072

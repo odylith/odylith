@@ -1,5 +1,5 @@
 ---
-status: implementation
+status: finished
 idea_id: B-072
 title: Execution Governance Engines, Admissibility Control, and Constraint-Aware Action Runtime
 date: 2026-04-09
@@ -14,7 +14,7 @@ ordering_score: 70
 ordering_rationale: Odylith is already reasonably strong at grounding and context routing, but its dominant failure mode is still execution governance. Until the product materializes a contract-aware execution runtime that blocks non-admissible next moves, operator trust will keep failing in the same domain-independent way even when the agent already has enough context.
 confidence: high
 founder_override: no
-promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md
 execution_model: umbrella_waves
 workstream_type: umbrella
 workstream_parent:
