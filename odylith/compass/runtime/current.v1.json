@@ -42,10 +42,16 @@
   },
   "digest": {
     "24h": [
-      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      "Completed in this window: Governed sync QA follow-up is finalized, which is concrete proof the last cleanup lane is closed. | Governance surfaces were refreshed after the B-090 test-contract catch-up, so repo-facing state now matches that lane.",
+      "Current execution: B-090 is live in implementation now: orchestrator profile inference benchmark routing and governance refactors are bounded as a queued workstream so execution can attach in one place. | Finalized governed sync QA is the strongest current proof that lane work has landed and can move into the next phase. | Timeline is still projected at roughly zero days with high confidence, so this remains an execution-first window.",
+      "Next planned: After this window, the forcing line is B-021: bring Registry, Radar, Atlas, Compass, and benchmark docs back into the corpus. | The follow-on is to push real maintainer coding through the CLI contract so B-021 becomes implemented work, not just planning.",
+      "Risks to watch: Open P1 risk remains: hand-editing governed truth when CLI paths existed. If unresolved, progress can encode drift before the contract work is truly clean."
     ],
     "48h": [
-      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      "Completed in this window: Two plans closed cleanly in this window: B-012 local provider autodetect + compass AI brief recovery, and B-080 atlas sub-second sync and refresh hot paths. | Governed sync QA follow-up also landed, so the wrap-up has visible repo proof, not just a plan label.",
+      "Current execution: B-090 remains the active contract lane. Test contract catch-up for orchestrator profile inference routing and governance refactors is now bound as queued work, keeping implementation attached. | Repository proof still points to the finalized governed sync QA follow-up, which is the concrete anchor for this active lane. | Primary lane timing is at roughly zero days with high confidence, so coordination pressure is on execution, not discovery.",
+      "Next planned: After this window, B-021 is the next forcing function: fold Registry, Radar, Atlas, Compass, and benchmark docs back into the corpus. | Its follow-on is to increase real maintainer coding through CLI contract paths so the expansion is materially implemented.",
+      "Risks to watch: Open P1 risk is unchanged: hand-edited governed truth where odylith CLI commands existed. This seam can silently reintroduce drift if it is not corrected first."
     ]
   },
   "digest_scoped": {
@@ -633,39 +639,334 @@
   "standup_brief": {
     "24h": {
       "schema_version": "v25",
-      "status": "unavailable",
-      "source": "unavailable",
+      "status": "ready",
+      "source": "provider",
       "fingerprint": "624efcafab0448e69ddf5a58173d4dbe816715f98021e17decb709ea4acc4e0a",
-      "substrate_fingerprint": "624efcafab0448e69ddf5a58173d4dbe816715f98021e17decb709ea4acc4e0a",
-      "bundle_fingerprint": "",
-      "provider_decision": "provider_deferred",
-      "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-04-12T06:08:37Z",
-      "sections": [],
-      "diagnostics": {
-        "reason": "provider_deferred",
-        "title": "Fresh brief still warming",
-        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      "sections": [
+        {
+          "key": "completed",
+          "label": "Completed in this window",
+          "bullets": [
+            {
+              "text": "Governed sync QA follow-up is finalized, which is concrete proof the last cleanup lane is closed.",
+              "fact_ids": [
+                "F-001"
+              ]
+            },
+            {
+              "text": "Governance surfaces were refreshed after the B-090 test-contract catch-up, so repo-facing state now matches that lane.",
+              "fact_ids": [
+                "F-002"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "current_execution",
+          "label": "Current execution",
+          "bullets": [
+            {
+              "text": "B-090 is live in implementation now: orchestrator profile inference benchmark routing and governance refactors are bounded as a queued workstream so execution can attach in one place.",
+              "fact_ids": [
+                "F-004"
+              ]
+            },
+            {
+              "text": "Finalized governed sync QA is the strongest current proof that lane work has landed and can move into the next phase.",
+              "fact_ids": [
+                "F-005"
+              ]
+            },
+            {
+              "text": "Timeline is still projected at roughly zero days with high confidence, so this remains an execution-first window.",
+              "fact_ids": [
+                "F-006"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "next_planned",
+          "label": "Next planned",
+          "bullets": [
+            {
+              "text": "After this window, the forcing line is B-021: bring Registry, Radar, Atlas, Compass, and benchmark docs back into the corpus.",
+              "fact_ids": [
+                "F-009"
+              ]
+            },
+            {
+              "text": "The follow-on is to push real maintainer coding through the CLI contract so B-021 becomes implemented work, not just planning.",
+              "fact_ids": [
+                "F-010"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "risks_to_watch",
+          "label": "Risks to watch",
+          "bullets": [
+            {
+              "text": "Open P1 risk remains: hand-editing governed truth when CLI paths existed. If unresolved, progress can encode drift before the contract work is truly clean.",
+              "fact_ids": [
+                "F-011"
+              ]
+            }
+          ]
+        }
+      ],
+      "evidence_lookup": {
+        "F-001": {
+          "text": "Concrete movement in the repo: Finalize governed sync QA follow-up.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-002": {
+          "text": "Concrete movement in the repo: Refresh governed surfaces after B-090 test contract catch-up.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-003": {
+          "text": "No verified milestone closeout landed across the portfolio in the last 24 hours.",
+          "section_key": "completed",
+          "kind": "window_summary"
+        },
+        "F-004": {
+          "text": "Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors (B-090) is the lane carrying the live contract work and is in active implementation. The change now is to bound Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors as a queued workstream so implementation can attach to one.",
+          "section_key": "current_execution",
+          "kind": "direction",
+          "workstreams": [
+            "B-090"
+          ]
+        },
+        "F-005": {
+          "text": "Concrete proof in the repo: Finalize governed sync QA follow-up.",
+          "section_key": "current_execution",
+          "kind": "signal"
+        },
+        "F-006": {
+          "text": "Timeline signal on the primary lane: projected at roughly 0 days (high confidence).",
+          "section_key": "current_execution",
+          "kind": "timeline"
+        },
+        "F-007": {
+          "text": "Planning and implementation are running in parallel across active lanes, and some implementation lanes still lack captured checklist progress Live focus lanes: Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors (B-090), Cross-Host Contract Hardening and Codex-Claude Separation (B-069).",
+          "section_key": "current_execution",
+          "kind": "portfolio_posture"
+        },
+        "F-008": {
+          "text": "Most of the movement this window sat in B-090, B-069, B-083, B-084, B-089, and B-025.",
+          "section_key": "current_execution",
+          "kind": "window_coverage",
+          "workstreams": [
+            "B-090",
+            "B-069",
+            "B-083",
+            "B-084",
+            "B-089",
+            "B-025",
+            "B-071",
+            "B-085",
+            "B-086",
+            "B-063",
+            "B-087",
+            "B-088"
+          ]
+        },
+        "F-009": {
+          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "section_key": "next_planned",
+          "kind": "forcing_function"
+        },
+        "F-010": {
+          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
+          "section_key": "next_planned",
+          "kind": "follow_on"
+        },
+        "F-011": {
+          "text": "Primary blocker is an open P1 bug: Agents hand edited governed truth when odylith cli commands existed.",
+          "section_key": "risks_to_watch",
+          "kind": "bug"
+        },
+        "F-012": {
+          "text": "Governance gap still needs cleanup: B-083: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md.",
+          "section_key": "risks_to_watch",
+          "kind": "traceability"
+        }
       },
-      "evidence_lookup": {}
+      "substrate_fingerprint": "624efcafab0448e69ddf5a58173d4dbe816715f98021e17decb709ea4acc4e0a",
+      "bundle_fingerprint": "5b5ca1ee5cdfbb738b531d2720f50f80b1f653ddab19cb4562eaa4f4dd3b182a",
+      "provider_decision": "provider_called",
+      "last_successful_narration_fingerprint": "624efcafab0448e69ddf5a58173d4dbe816715f98021e17decb709ea4acc4e0a"
     },
     "48h": {
       "schema_version": "v25",
-      "status": "unavailable",
-      "source": "unavailable",
+      "status": "ready",
+      "source": "provider",
       "fingerprint": "7e6863a3b6838d10a5e785af9fc5b7c3a07d1915ca837e97c01cb8b4990a46c8",
-      "substrate_fingerprint": "7e6863a3b6838d10a5e785af9fc5b7c3a07d1915ca837e97c01cb8b4990a46c8",
-      "bundle_fingerprint": "",
-      "provider_decision": "provider_deferred",
-      "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-04-12T06:08:37Z",
-      "sections": [],
-      "diagnostics": {
-        "reason": "provider_deferred",
-        "title": "Fresh brief still warming",
-        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      "sections": [
+        {
+          "key": "completed",
+          "label": "Completed in this window",
+          "bullets": [
+            {
+              "text": "Two plans closed cleanly in this window: B-012 local provider autodetect + compass AI brief recovery, and B-080 atlas sub-second sync and refresh hot paths.",
+              "fact_ids": [
+                "F-001"
+              ]
+            },
+            {
+              "text": "Governed sync QA follow-up also landed, so the wrap-up has visible repo proof, not just a plan label.",
+              "fact_ids": [
+                "F-002"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "current_execution",
+          "label": "Current execution",
+          "bullets": [
+            {
+              "text": "B-090 remains the active contract lane. Test contract catch-up for orchestrator profile inference routing and governance refactors is now bound as queued work, keeping implementation attached.",
+              "fact_ids": [
+                "F-004"
+              ]
+            },
+            {
+              "text": "Repository proof still points to the finalized governed sync QA follow-up, which is the concrete anchor for this active lane.",
+              "fact_ids": [
+                "F-005"
+              ]
+            },
+            {
+              "text": "Primary lane timing is at roughly zero days with high confidence, so coordination pressure is on execution, not discovery.",
+              "fact_ids": [
+                "F-006"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "next_planned",
+          "label": "Next planned",
+          "bullets": [
+            {
+              "text": "After this window, B-021 is the next forcing function: fold Registry, Radar, Atlas, Compass, and benchmark docs back into the corpus.",
+              "fact_ids": [
+                "F-009"
+              ]
+            },
+            {
+              "text": "Its follow-on is to increase real maintainer coding through CLI contract paths so the expansion is materially implemented.",
+              "fact_ids": [
+                "F-010"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "risks_to_watch",
+          "label": "Risks to watch",
+          "bullets": [
+            {
+              "text": "Open P1 risk is unchanged: hand-edited governed truth where odylith CLI commands existed. This seam can silently reintroduce drift if it is not corrected first.",
+              "fact_ids": [
+                "F-011"
+              ]
+            }
+          ]
+        }
+      ],
+      "evidence_lookup": {
+        "F-001": {
+          "text": "Closed cleanly in this window: Local Provider Autodetect and Compass AI Brief Recovery (B-012) -> odylith local provider autodetect and compass ai brief recovery; Atlas Sub-Second Sync and Refresh Hot Paths (B-080) -> atlas sub second sync and refresh hot paths.",
+          "section_key": "completed",
+          "kind": "plan_completion"
+        },
+        "F-002": {
+          "text": "Concrete movement in the repo: Finalize governed sync QA follow-up.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-003": {
+          "text": "Concrete movement in the repo: Refresh governed surfaces after B-090 test contract catch-up.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-004": {
+          "text": "Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors (B-090) is the lane carrying the live contract work and is in active implementation. The change now is to bound Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors as a queued workstream so implementation can attach to one.",
+          "section_key": "current_execution",
+          "kind": "direction",
+          "workstreams": [
+            "B-090"
+          ]
+        },
+        "F-005": {
+          "text": "Concrete proof in the repo: Finalize governed sync QA follow-up.",
+          "section_key": "current_execution",
+          "kind": "signal"
+        },
+        "F-006": {
+          "text": "Timeline signal on the primary lane: projected at roughly 0 days (high confidence).",
+          "section_key": "current_execution",
+          "kind": "timeline"
+        },
+        "F-007": {
+          "text": "Planning and implementation are running in parallel across active lanes, and some implementation lanes still lack captured checklist progress Live focus lanes: Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors (B-090), Cross-Host Contract Hardening and Codex-Claude Separation (B-069).",
+          "section_key": "current_execution",
+          "kind": "portfolio_posture"
+        },
+        "F-008": {
+          "text": "Most of the movement this window sat in B-090, B-069, B-083, B-025, B-071, and B-084.",
+          "section_key": "current_execution",
+          "kind": "window_coverage",
+          "workstreams": [
+            "B-090",
+            "B-069",
+            "B-083",
+            "B-025",
+            "B-071",
+            "B-084",
+            "B-089",
+            "B-048",
+            "B-085",
+            "B-086",
+            "B-012",
+            "B-063",
+            "B-080",
+            "B-087",
+            "B-088"
+          ]
+        },
+        "F-009": {
+          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "section_key": "next_planned",
+          "kind": "forcing_function"
+        },
+        "F-010": {
+          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
+          "section_key": "next_planned",
+          "kind": "follow_on"
+        },
+        "F-011": {
+          "text": "Primary blocker is an open P1 bug: Agents hand edited governed truth when odylith cli commands existed.",
+          "section_key": "risks_to_watch",
+          "kind": "bug"
+        },
+        "F-012": {
+          "text": "Governance gap still needs cleanup: B-083: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md.",
+          "section_key": "risks_to_watch",
+          "kind": "traceability"
+        }
       },
-      "evidence_lookup": {}
+      "substrate_fingerprint": "7e6863a3b6838d10a5e785af9fc5b7c3a07d1915ca837e97c01cb8b4990a46c8",
+      "bundle_fingerprint": "5b5ca1ee5cdfbb738b531d2720f50f80b1f653ddab19cb4562eaa4f4dd3b182a",
+      "provider_decision": "provider_called",
+      "last_successful_narration_fingerprint": "7e6863a3b6838d10a5e785af9fc5b7c3a07d1915ca837e97c01cb8b4990a46c8"
     }
   },
   "standup_brief_scoped": {
@@ -1275,7 +1576,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T11:43:41Z"
+          "next_retry_utc": "2026-04-12T12:09:28Z"
         },
         "evidence_lookup": {}
       },
@@ -3006,7 +3307,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T11:43:41Z"
+          "next_retry_utc": "2026-04-12T12:09:28Z"
         },
         "evidence_lookup": {}
       },
@@ -3339,7 +3640,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T07:43:41Z"
+          "next_retry_utc": "2026-04-12T10:09:28Z"
         },
         "evidence_lookup": {}
       },
@@ -3625,7 +3926,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T11:43:41Z"
+          "next_retry_utc": "2026-04-12T12:09:28Z"
         },
         "evidence_lookup": {}
       },
@@ -4359,7 +4660,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T11:43:41Z"
+          "next_retry_utc": "2026-04-12T12:09:28Z"
         },
         "evidence_lookup": {}
       },
