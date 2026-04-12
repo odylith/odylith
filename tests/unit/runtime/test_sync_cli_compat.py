@@ -923,6 +923,37 @@ def test_sync_changed_source_truth_bundle_mirrors_updates_changed_docs(tmp_path:
     assert mirror_path.read_text(encoding="utf-8") == "change-driven watcher\n"
 
 
+def test_sync_changed_source_truth_bundle_mirrors_updates_runtime_source_corpus(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path
+    live_path = repo_root / "odylith" / "runtime" / "source" / "optimization-evaluation-corpus.v1.json"
+    mirror_path = (
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "runtime"
+        / "source"
+        / "optimization-evaluation-corpus.v1.json"
+    )
+    live_path.parent.mkdir(parents=True, exist_ok=True)
+    mirror_path.parent.mkdir(parents=True, exist_ok=True)
+    live_path.write_text("{\"version\": \"v1\", \"scenarios\": [\"fresh\"]}\n", encoding="utf-8")
+    mirror_path.write_text("{\"version\": \"v1\", \"scenarios\": [\"stale\"]}\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_git_changed_paths",
+        lambda *, repo_root: ("odylith/runtime/source/optimization-evaluation-corpus.v1.json",),
+    )
+
+    rc = sync_workstream_artifacts._sync_changed_source_truth_bundle_mirrors(repo_root=repo_root)  # noqa: SLF001
+
+    assert rc == 0
+    assert mirror_path.read_text(encoding="utf-8") == "{\"version\": \"v1\", \"scenarios\": [\"fresh\"]}\n"
+
+
 def test_build_sync_execution_plan_appends_source_bundle_mirror_step(tmp_path: Path) -> None:
     plan = sync_workstream_artifacts.build_sync_execution_plan(
         repo_root=tmp_path,

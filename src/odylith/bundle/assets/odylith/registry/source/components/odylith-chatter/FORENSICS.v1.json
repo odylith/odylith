@@ -13,10 +13,10 @@
     "empty_reasons": [],
     "explicit_event_count": 12,
     "mapped_workstream_evidence_count": 4,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 12
+    "timeline_event_count": 13
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -49,6 +49,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "docs/benchmarks/METRICS_AND_PRIORITIES.md"
+      ],
+      "confidence": "high",
+      "event_index": 99,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/METRICS_AND_PRIORITIES.md",
+      "ts_iso": "2026-04-12T15:49:04-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",

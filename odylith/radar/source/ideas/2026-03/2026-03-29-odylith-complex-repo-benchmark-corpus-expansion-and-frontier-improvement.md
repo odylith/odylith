@@ -18,7 +18,7 @@ promoted_to_plan: odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith
 execution_model: standard
 workstream_type: standalone
 workstream_parent:
-workstream_children: B-068
+workstream_children: B-068,B-092
 workstream_depends_on: B-009, B-019, B-020
 workstream_blocks:
 related_diagram_ids: D-024

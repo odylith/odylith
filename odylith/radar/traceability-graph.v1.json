@@ -902,7 +902,8 @@
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [
-        "B-068"
+        "B-068",
+        "B-092"
       ],
       "workstream_depends_on": [
         "B-009",
@@ -4729,6 +4730,49 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-092",
+      "title": "Execution Governance Benchmark Family and Honest Ablation Proof",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-021",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-021",
+        "B-072",
+        "B-091"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024",
+        "D-030"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-12-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -5739,6 +5783,13 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md"
     },
     {
+      "id": "B-092",
+      "type": "workstream",
+      "label": "Execution Governance Benchmark Family and Honest Ablation Proof",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-12-execution-governance-benchmark-family-and-honest-ablation-proof.md"
+    },
+    {
       "id": "artifact:.github/workflows/release.yml",
       "type": "artifact",
       "label": ".github/workflows/release.yml",
@@ -6601,6 +6652,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md"
     },
     {
       "id": "release:release-0-1-11",
@@ -7515,6 +7572,16 @@
     {
       "source": "B-021",
       "target": "B-068",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-021",
+      "target": "B-092",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-021",
+      "target": "B-092",
       "edge_type": "parent_child"
     },
     {
@@ -8669,6 +8736,11 @@
     },
     {
       "source": "B-072",
+      "target": "B-092",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-072",
       "target": "diagram:D-002",
       "edge_type": "diagram_linkage"
     },
@@ -9064,6 +9136,11 @@
     },
     {
       "source": "B-091",
+      "target": "B-092",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-091",
       "target": "diagram:D-005",
       "edge_type": "diagram_linkage"
     },
@@ -9080,6 +9157,21 @@
     {
       "source": "B-091",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-092",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-092",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-092",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md",
       "edge_type": "promoted_to_plan"
     }
   ],
@@ -9720,6 +9812,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-092": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -9771,15 +9870,15 @@
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 91,
+    "workstream_count": 92,
     "release_count": 2,
     "active_release_assignment_count": 6,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 226,
-    "edge_count": 490,
+    "node_count": 228,
+    "edge_count": 497,
     "warning_count": 4,
     "warning_item_count": 4
   },
-  "generated_utc": "2026-04-12 22:01:11Z"
+  "generated_utc": "2026-04-12 22:50:05Z"
 }

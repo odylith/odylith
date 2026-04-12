@@ -5,6 +5,7 @@ _ZERO_SUPPORT_DOC_EXPANSION_FAMILIES = frozenset(
     {
         "component_governance",
         "context_engine_grounding",
+        "execution_governance",
         "compass_brief_freshness",
         "consumer_profile_compatibility",
         "cross_file_feature",
@@ -78,6 +79,16 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
         if lowered.endswith("/components/odylith-context-engine/current_spec.md"):
             return 1
         if lowered.endswith("/atlas/source/odylith-context-and-agent-execution-stack.mmd"):
+            return 2
+        return 4
+    if normalized_family == "execution_governance":
+        if lowered.endswith("/components/execution-governance/current_spec.md"):
+            return 0
+        if lowered.endswith("/atlas/source/odylith-execution-governance-engine-stack.mmd"):
+            return 1
+        if lowered.endswith(
+            "/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
+        ):
             return 2
         return 4
     if normalized_family == "compass_brief_freshness":

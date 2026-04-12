@@ -983,6 +983,37 @@ def test_compass_outer_governance_cards_keep_distinct_surface_tints_in_compact_b
     _assert_compass_outer_governance_cards_keep_distinct_surface_tints(*compact_browser_context)
 
 
+def _assert_compass_governance_summaries_use_phrasing_content(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+
+    for selector in (
+        "#execution-waves-host .execution-wave-section > summary",
+        "#release-groups-host .execution-wave-section > summary",
+    ):
+        summary = compass.locator(selector).first
+        summary.wait_for(timeout=15000)
+        invalid_descendant_count = summary.evaluate("(node) => node.querySelectorAll('div').length")
+        assert invalid_descendant_count == 0
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_governance_summaries_use_phrasing_content_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_governance_summaries_use_phrasing_content(*browser_context)
+
+
+def test_compass_governance_summaries_use_phrasing_content_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_governance_summaries_use_phrasing_content(*compact_browser_context)
+
+
 def _assert_compass_release_targets_start_collapsed(  # noqa: ANN001
     base_url: str,
     context,

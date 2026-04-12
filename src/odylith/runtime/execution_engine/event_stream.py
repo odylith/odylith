@@ -28,6 +28,7 @@ def build_execution_event_stream(
     closure: ResourceClosure | None = None,
     external_state: ExternalDependencyState | None = None,
     receipt: SemanticReceipt | None = None,
+    context_pressure: str = "",
 ) -> tuple[ExecutionEvent, ...]:
     events: list[ExecutionEvent] = []
     if last_successful_phase:
@@ -96,6 +97,18 @@ def build_execution_event_stream(
                 pressure_signals=(f"wait:{external_state.semantic_status}",),
                 external_state=external_state,
                 receipt=receipt,
+            )
+        )
+    if context_pressure in {"high", "critical"}:
+        events.append(
+            ExecutionEvent(
+                event_id=_event_id(len(events), "context-pressure"),
+                event_type="context_pressure",
+                phase=current_phase,
+                blocker=blocker,
+                next_move=next_move,
+                execution_mode=execution_mode,
+                pressure_signals=(f"context_pressure:{context_pressure}",),
             )
         )
     events.append(

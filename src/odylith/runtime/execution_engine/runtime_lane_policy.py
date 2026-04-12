@@ -99,6 +99,8 @@ def _guard_fields(summary: Mapping[str, Any]) -> dict[str, Any]:
         "model_family": _token(summary.get("execution_governance_model_family")),
         "host_supports_native_spawn_present": "execution_governance_host_supports_native_spawn" in summary,
         "host_supports_native_spawn": _bool(summary.get("execution_governance_host_supports_native_spawn")),
+        "host_supports_artifact_paths_present": "execution_governance_host_supports_artifact_paths" in summary,
+        "host_supports_artifact_paths": _bool(summary.get("execution_governance_host_supports_artifact_paths")),
         "target_lane": _token(summary.get("execution_governance_target_lane")),
         "has_writable_targets": _bool(summary.get("execution_governance_has_writable_targets")),
         "requires_more_consumer_context": _bool(
@@ -254,6 +256,21 @@ def _action_guard(summary: Mapping[str, Any], *, action_label: str) -> LaneGover
             blocked=True,
             code="execution-governance-critical-path",
             reason=f"the slice is on a {fields['mode']}-first critical path, so {action_label} should wait{blocker_suffix}",
+        )
+
+    if (
+        _token(action_label) == "parallel_fan_out"
+        and bool(fields.get("host_supports_artifact_paths_present"))
+        and not bool(fields.get("host_supports_artifact_paths"))
+        and fields["closure"] in _UNSAFE_CLOSURE_CLASSES
+    ):
+        return LaneGovernanceGuard(
+            blocked=True,
+            code="execution-governance-no-artifact-paths",
+            reason=(
+                f"the detected host does not support artifact paths between workers; "
+                f"keep scope coordination local before any new {action_label}"
+            ),
         )
 
     if "destructive_subset_blocked" in history_rule_hits:

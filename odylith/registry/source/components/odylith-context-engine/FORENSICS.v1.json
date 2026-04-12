@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 37,
-    "mapped_workstream_evidence_count": 7,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 38,
+    "mapped_workstream_evidence_count": 8,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 7,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 37
+    "timeline_event_count": 39
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -51,6 +51,54 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_delivery_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 100,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/optimization-evaluation-corpus.v1.json, src/odylith/runtime/context_engine/odylith_context_engine_hot_path_delivery_runtime.py +1 more",
+      "ts_iso": "2026-04-12T15:52:28-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md"
+      ],
+      "confidence": "high",
+      "event_index": 91,
+      "explicit_components": [
+        "benchmark",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "benchmark",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Plan binding: advanced B-092 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+      "ts_iso": "2026-04-12T15:35:08-07:00",
+      "workstreams": [
+        "B-092"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -1163,6 +1211,7 @@
     "B-081",
     "B-083",
     "B-082",
-    "B-084"
+    "B-084",
+    "B-092"
   ]
 }

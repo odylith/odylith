@@ -65,6 +65,25 @@ Current Context Engine grounding metrics when Context Engine benchmark scenarios
 - `context_engine_fail_closed_ambiguity_rate = 1.0`
 - `context_engine_session_namespace_rate = 1.0` whenever the sampled corpus actually includes runtime-backed Context Engine rows
 
+Current execution-governance metrics when execution-governance benchmark scenarios are present:
+
+- `execution_governance_present_rate = 1.0`
+- `execution_governance_resume_token_present_rate = 1.0`
+- `execution_governance_outcome_accuracy_rate = 1.0`
+- `execution_governance_mode_accuracy_rate = 1.0`
+- `execution_governance_next_move_accuracy_rate = 1.0`
+- `execution_governance_closure_accuracy_rate = 1.0`
+- `execution_governance_wait_status_accuracy_rate = 1.0` whenever the sampled corpus actually includes wait-backed rows
+- `execution_governance_validation_archetype_accuracy_rate = 1.0`
+- `execution_governance_current_phase_accuracy_rate = 1.0` whenever the sampled corpus actually includes stable phase rows
+- `execution_governance_last_successful_phase_accuracy_rate = 1.0` whenever the sampled corpus actually includes stable phase-history rows
+- `execution_governance_authoritative_lane_accuracy_rate = 1.0`
+- `execution_governance_target_lane_accuracy_rate = 1.0` whenever the sampled corpus actually includes target-lane rows
+- `execution_governance_resume_token_accuracy_rate = 1.0`
+- `execution_governance_host_family_accuracy_rate = 1.0`
+- `execution_governance_model_family_accuracy_rate = 1.0` whenever the sampled corpus actually includes model-family rows
+- `execution_governance_reanchor_accuracy_rate = 1.0`
+
 ## What Each Tier Means
 
 | Tier | What It Asks |
@@ -91,6 +110,14 @@ grounding-control checks:
 - Did the packet resolve the right workstream or say `none` explicitly?
 - Did ambiguous scope stay fail-closed instead of becoming route-ready by accident?
 - Did runtime-backed slices keep session scope namespaced?
+
+For execution-engine work, those tiers are also supplemented by
+execution-governance checks:
+
+- Did the packet and runtime summary preserve the real `admit|deny|defer` posture?
+- Did the engine keep one truthful next move instead of collapsing into generic route hints?
+- Did broad or ambiguous scope fail closed into `recover` with the right closure posture?
+- Did resume tokens and authoritative lanes survive carry-through into the public surfaces?
 
 ## Release Rule
 

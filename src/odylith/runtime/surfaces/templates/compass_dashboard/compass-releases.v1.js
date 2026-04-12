@@ -316,16 +316,16 @@
         return `
           <details class="execution-wave-section"${openAttr}>
             <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
-              <div class="execution-wave-section-copy">
-                <div class="execution-wave-section-title-row">
-                  <div class="execution-wave-section-title">${escapeHtml(group.display_label)}</div>
-                  ${titleChips.length ? `<div class="execution-wave-section-title-meta">${titleChips.join("")}</div>` : ""}
-                </div>
-                <div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>
-                <div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(lifecycleBits.join(" · "))}</div>
-              </div>
+              <span class="execution-wave-section-copy">
+                <span class="execution-wave-section-title-row">
+                  <span class="execution-wave-section-title">${escapeHtml(group.display_label)}</span>
+                  ${titleChips.length ? `<span class="execution-wave-section-title-meta">${titleChips.join("")}</span>` : ""}
+                </span>
+                <span class="execution-wave-section-line">${escapeHtml(contextLine)}</span>
+                <span class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(lifecycleBits.join(" · "))}</span>
+              </span>
               <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
-              ${sectionChips.length ? `<div class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</div>` : ""}
+              ${sectionChips.length ? `<span class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</span>` : ""}
             </summary>
             <div class="execution-wave-section-body">
               <div class="execution-wave-board">

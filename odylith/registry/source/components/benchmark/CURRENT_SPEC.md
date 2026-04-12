@@ -1,8 +1,8 @@
 # Benchmark
-Last updated: 2026-04-09
+Last updated: 2026-04-12
 
 
-Last updated (UTC): 2026-04-09
+Last updated (UTC): 2026-04-12
 
 ## Purpose
 Benchmark is Odylith's local proof subsystem for measuring whether Odylith-on
@@ -61,6 +61,12 @@ reviewer framing that explains how Odylith should be compared.
   scope-resolution behavior. That family measures whether adaptive and
   governance packets choose the right lane, keep the right workstream anchor,
   and stay fail-closed on broad or unresolved scope.
+- The tracked corpus now also includes a dedicated
+  `execution_governance` family for execution-engine contract posture and
+  honest guardrail proof. That family measures whether packets and runtime
+  summaries preserve the real `admit|deny|defer` decision, mode, next move,
+  closure posture, resume handle, authoritative lane, and fail-closed
+  recovery shape instead of collapsing back to stale or generic route hints.
 - Proof-discipline summary metrics are first-class benchmark outputs now:
   `proof_state_present_rate`, `false_clearance_rate`,
   `proof_frontier_gate_accuracy_rate`, `proof_claim_guard_accuracy_rate`, and
@@ -71,6 +77,24 @@ reviewer framing that explains how Odylith should be compared.
   `context_engine_workstream_accuracy_rate`,
   `context_engine_fail_closed_ambiguity_rate`, and
   `context_engine_session_namespace_rate` when runtime-backed rows are present.
+- Execution-governance summary metrics are first-class benchmark outputs now
+  too: `execution_governance_present_rate`,
+  `execution_governance_resume_token_present_rate`,
+  `execution_governance_outcome_accuracy_rate`,
+  `execution_governance_mode_accuracy_rate`,
+  `execution_governance_next_move_accuracy_rate`,
+  `execution_governance_closure_accuracy_rate`,
+  `execution_governance_wait_status_accuracy_rate`,
+  `execution_governance_validation_archetype_accuracy_rate`,
+  `execution_governance_current_phase_accuracy_rate`,
+  `execution_governance_last_successful_phase_accuracy_rate`,
+  `execution_governance_authoritative_lane_accuracy_rate`,
+  `execution_governance_target_lane_accuracy_rate`,
+  `execution_governance_resume_token_accuracy_rate`,
+  `execution_governance_host_family_accuracy_rate`,
+  `execution_governance_model_family_accuracy_rate`, and
+  `execution_governance_reanchor_accuracy_rate` when execution-backed rows are
+  present.
 - A live `odylith_on` versus `odylith_off` comparison only counts as benchmark
   proof when both lanes run the same host CLI model, reasoning effort,
   sandbox policy, approval posture, validator contract, and stripped workspace
@@ -151,6 +175,10 @@ reviewer framing that explains how Odylith should be compared.
 - Keep Context Engine benchmark slices honest: packet-lane accuracy,
   selection-state accuracy, workstream accuracy, and ambiguity fail-closed
   behavior must stay at `1.0` whenever the sampled corpus includes those rows.
+- Keep execution-governance benchmark slices honest: execution-governance
+  presence, resume-token presence, outcome accuracy, mode accuracy, truthful
+  next-move accuracy, closure accuracy, and authoritative-lane accuracy must
+  stay at `1.0` whenever the sampled corpus includes those rows.
 - Keep the first shipped release proof local-memory-first; hybrid rerank and
   remote retrieval remain experiment lanes until they improve proof without
   harming the current pass.
@@ -172,6 +200,8 @@ Benchmark publication now leads with the developer-facing core:
 - Governance / Release Integrity, including live blocker proof discipline
 - Architecture Review
 - Grounding / Orchestration Control
+- Execution posture is measured inside Grounding / Orchestration Control as a
+  first-class family now, not as an implicit byproduct of context grounding.
 
 That ordering is non-cosmetic. The benchmark keeps Odylith's governance and
 architecture truth, but the public heatmaps and family tables should now start

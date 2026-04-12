@@ -30,6 +30,8 @@ def canonicalize_history_rule(value: Any) -> str:
         "reanchor_triggered",
         "lane_drift_preflight",
         "user_correction_requires_promotion",
+        "context_exhaustion_detected",
+        "subagent_timeout_detected",
     }:
         return token
     if "destructive" in token and ("subset" in token or "prune" in token):
@@ -46,6 +48,10 @@ def canonicalize_history_rule(value: Any) -> str:
         return "user_correction_requires_promotion"
     if "reanchor" in token:
         return "reanchor_triggered"
+    if "context" in token and any(sub in token for sub in ("exhaust", "pressure", "compact")):
+        return "context_exhaustion_detected"
+    if "subagent" in token and "timeout" in token:
+        return "subagent_timeout_detected"
     if raw.startswith("CB-"):
         return f"casebook:{raw}"
     return token

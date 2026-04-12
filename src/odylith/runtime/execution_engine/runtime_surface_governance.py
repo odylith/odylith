@@ -465,7 +465,9 @@ def build_packet_execution_governance_snapshot(
     routing_handoff: Mapping[str, Any] | None = None,
     host_candidates: Sequence[Any] = (),
     environ: Mapping[str, str] | None = None,
+    context_pressure: str = "",
 ) -> dict[str, Any]:
+    context_pressure = context_pressure or _string(payload.get("context_pressure"))
     context = _mapping(context_packet) or _mapping(payload.get("context_packet"))
     handoff = _mapping(routing_handoff) or _mapping(payload.get("routing_handoff"))
     session = _mapping(payload.get("session"))
@@ -473,6 +475,7 @@ def build_packet_execution_governance_snapshot(
     route = _mapping(context.get("route"))
     turn_context = _turn_context(payload.get("turn_context") or session.get("turn_context"))
     presentation_policy = _presentation_policy(payload.get("presentation_policy"))
+    has_explicit_presentation_policy = "presentation_policy" in payload
     target_resolution = _target_resolution(payload.get("target_resolution"))
     raw_payload_proof_state = _mapping(payload.get("proof_state"))
     raw_context_proof_state = _mapping(context.get("proof_state"))
@@ -551,6 +554,11 @@ def build_packet_execution_governance_snapshot(
         model_name=_string(_mapping(context.get("execution_profile")).get("model")),
         environ=environ,
     )
+    if presentation_policy is None and not has_explicit_presentation_policy and host_profile.host_family == "claude":
+        presentation_policy = TurnPresentationPolicy(
+            commentary_mode="task_first",
+            suppress_routing_receipts=True,
+        )
     active_blocker = _string(proof_state_signals.get("current_blocker")) or full_scan_reason
     external_state = _infer_external_dependency_state(
         payload=payload,
@@ -711,6 +719,7 @@ def build_packet_execution_governance_snapshot(
         closure=closure,
         external_state=external_state,
         receipt=receipt,
+        context_pressure=context_pressure,
     )
     frontier = frontier_engine.derive_execution_frontier(events, default_mode=execution_mode)
     admissibility = policy_engine.evaluate_admissibility(
@@ -775,6 +784,7 @@ def build_packet_execution_governance_snapshot(
         "history_rule_hits": list(history_rule_hits),
         "nearby_denials": nearby_denials,
         "runtime_contract": runtime_contract,
+        "context_pressure": context_pressure,
     }
 
 
@@ -816,6 +826,9 @@ def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[s
             "model_family": _string(host_profile.get("model_family")),
             "host_delegation_style": _string(host_profile.get("delegation_style")),
             "host_supports_native_spawn": bool(host_profile.get("supports_native_spawn")),
+            "host_supports_interrupt": bool(host_profile.get("supports_interrupt")),
+            "host_supports_artifact_paths": bool(host_profile.get("supports_artifact_paths")),
+            "host_execution_hints": list(host_profile.get("execution_hints") or [])[:4],
             "outcome": _string(admissibility.get("outcome")),
             "rationale": _string(admissibility.get("rationale")),
             "requires_reanchor": bool(admissibility.get("requires_reanchor")),
@@ -871,6 +884,7 @@ def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[s
             "runtime_sync_generation": int(runtime_contract.get("sync_generation", 0) or 0),
             "runtime_settled_sync_session": bool(runtime_contract.get("settled_sync_session")),
             "runtime_invalidated_by_step": _string(runtime_contract.get("invalidated_by_step")),
+            "context_pressure": _string(snapshot.get("context_pressure")),
         }.items()
         if value not in ("", [], {}, None, 0)
     }
@@ -919,6 +933,15 @@ def summary_fields_from_execution_governance(snapshot: Mapping[str, Any]) -> dic
         "execution_governance_host_supports_native_spawn": bool(
             compact.get("host_supports_native_spawn")
         ),
+        "execution_governance_host_supports_interrupt": bool(
+            compact.get("host_supports_interrupt")
+        ),
+        "execution_governance_host_supports_artifact_paths": bool(
+            compact.get("host_supports_artifact_paths")
+        ),
+        "execution_governance_host_execution_hints": _strings(
+            compact.get("host_execution_hints")
+        ),
         "execution_governance_turn_intent": _string(compact.get("turn_intent")),
         "execution_governance_turn_active_tab": _string(compact.get("turn_active_tab")),
         "execution_governance_turn_user_turn_id": _string(compact.get("turn_user_turn_id")),
@@ -955,6 +978,7 @@ def summary_fields_from_execution_governance(snapshot: Mapping[str, Any]) -> dic
         "execution_governance_runtime_invalidated_by_step": _string(
             compact.get("runtime_invalidated_by_step")
         ),
+        "execution_governance_context_pressure": _string(compact.get("context_pressure")),
     }
 
 

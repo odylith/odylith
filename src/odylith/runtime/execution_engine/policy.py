@@ -170,7 +170,11 @@ def evaluate_admissibility(
         outcome = "deny"
         rationale = "detected host profile does not support native delegated execution"
         violated.append("host_capability:native_spawn")
-        alternative = "main_thread_followup"
+        alternative = (
+            "bounded_task_subagent"
+            if contract.host_profile is not None and contract.host_profile.host_family == "claude"
+            else "main_thread_followup"
+        )
 
     if contract.authoritative_lane:
         for constraint in contract.hard_constraints:
@@ -279,6 +283,8 @@ def evaluate_admissibility(
 
     if frontier is not None and contract.execution_mode in {"verify", "recover"} and frontier.active_blocker and _is_mutating_action(action_token):
         pressure_signals.append("frontier:blocker_active")
+        if contract.host_profile is not None and not contract.host_profile.supports_interrupt:
+            pressure_signals.append("host:no_interrupt")
         outcome = "defer"
         rationale = "the frontier still has an active blocker; clear it before starting new mutation work"
         violated.append("frontier:blocker_active")

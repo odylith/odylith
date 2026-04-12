@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 58,
-    "mapped_workstream_evidence_count": 15,
+    "explicit_event_count": 59,
+    "mapped_workstream_evidence_count": 16,
     "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 58
+    "timeline_event_count": 59
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -56,6 +56,36 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md"
+      ],
+      "confidence": "high",
+      "event_index": 91,
+      "explicit_components": [
+        "benchmark",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "benchmark",
+        "execution-governance",
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Plan binding: advanced B-092 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+      "ts_iso": "2026-04-12T15:35:08-07:00",
+      "workstreams": [
+        "B-092"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "medium",

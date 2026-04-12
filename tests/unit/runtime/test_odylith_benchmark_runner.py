@@ -4504,6 +4504,9 @@ def test_live_corpus_workstream_ids_exist_in_repo_truth() -> None:
         "B-063",
         "B-062",
         "B-067",
+        "B-073",
+        "B-074",
+        "B-078",
     }
 
 

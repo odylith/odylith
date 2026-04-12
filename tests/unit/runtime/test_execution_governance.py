@@ -539,3 +539,561 @@ def test_execution_governance_snapshot_accepts_external_mapping_without_explicit
 
     assert snapshot["external_dependency"]["semantic_status"] == "queued"
     assert snapshot["external_dependency"]["external_id"] == "gha workflow pending"
+
+
+def test_detect_execution_host_profile_captures_interrupt_and_artifact_paths() -> None:
+    codex = detect_execution_host_profile("codex_cli")
+    claude = detect_execution_host_profile("claude_code")
+    unknown = detect_execution_host_profile("unsupported")
+
+    assert codex.supports_interrupt is True
+    assert codex.supports_artifact_paths is True
+    assert claude.supports_interrupt is False
+    assert claude.supports_artifact_paths is False
+    assert unknown.supports_interrupt is False
+    assert unknown.supports_artifact_paths is False
+
+
+def test_evaluate_admissibility_claude_delegation_denial_carries_bounded_subagent_hint() -> None:
+    contract = _contract(execution_mode="verify", host_family="claude_code")
+
+    decision = policy.evaluate_admissibility(contract, "delegate.parallel_workers")
+
+    assert decision.outcome == "deny"
+    assert "prefer_task_tool_subagents_for_bounded_delegation" in decision.host_hints
+    assert "delegation_style:task_tool_subagents" in decision.host_hints
+
+
+def test_evaluate_admissibility_no_interrupt_pressure_signal_on_frontier_blocker() -> None:
+    contract = _contract(execution_mode="verify", host_family="claude_code")
+    frontier_obj = frontier.derive_execution_frontier(
+        [
+            ExecutionEvent(
+                event_id="evt-1",
+                event_type="phase",
+                phase="verify",
+                blocker="waiting on subagent",
+                next_move="recover.current_blocker",
+                execution_mode="verify",
+            )
+        ]
+    )
+
+    decision = policy.evaluate_admissibility(
+        contract,
+        "implement.target_scope",
+        frontier=frontier_obj,
+    )
+
+    assert decision.outcome == "defer"
+    assert "frontier:blocker_active" in decision.pressure_signals
+    assert "host:no_interrupt" in decision.pressure_signals
+
+
+def test_canonicalize_history_rule_recognizes_claude_specific_failure_classes() -> None:
+    from odylith.runtime.execution_engine.history_rules import canonicalize_history_rule
+
+    assert canonicalize_history_rule("context_exhaustion_detected") == "context_exhaustion_detected"
+    assert canonicalize_history_rule("subagent_timeout_detected") == "subagent_timeout_detected"
+    assert canonicalize_history_rule("context pressure compaction") == "context_exhaustion_detected"
+    assert canonicalize_history_rule("subagent timeout on task tool") == "subagent_timeout_detected"
+    assert canonicalize_history_rule("context exhaustion warning") == "context_exhaustion_detected"
+
+
+def test_build_execution_event_stream_emits_context_pressure_event() -> None:
+    from odylith.runtime.execution_engine.event_stream import build_execution_event_stream
+
+    contract = _contract(host_family="claude_code")
+    admissibility = policy.evaluate_admissibility(contract, "implement.target_scope")
+
+    events_high = build_execution_event_stream(
+        current_phase="implement",
+        last_successful_phase="",
+        blocker="",
+        next_move="implement.target_scope",
+        execution_mode="implement",
+        admissibility=admissibility,
+        context_pressure="high",
+    )
+    events_none = build_execution_event_stream(
+        current_phase="implement",
+        last_successful_phase="",
+        blocker="",
+        next_move="implement.target_scope",
+        execution_mode="implement",
+        admissibility=admissibility,
+    )
+
+    pressure_types = {e.event_type for e in events_high}
+    assert "context_pressure" in pressure_types
+    pressure_event = next(e for e in events_high if e.event_type == "context_pressure")
+    assert "context_pressure:high" in pressure_event.pressure_signals
+    assert "context_pressure" not in {e.event_type for e in events_none}
+
+
+def test_runtime_lane_policy_artifact_path_guard_blocks_unsafe_parallel_fanout() -> None:
+    no_artifact_guard = runtime_lane_policy.parallelism_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_host_family": "claude",
+            "execution_governance_host_supports_native_spawn": True,
+            "execution_governance_host_supports_artifact_paths": False,
+            "execution_governance_closure": "incomplete",
+        }
+    )
+    safe_closure_guard = runtime_lane_policy.parallelism_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_host_family": "claude",
+            "execution_governance_host_supports_native_spawn": True,
+            "execution_governance_host_supports_artifact_paths": False,
+            "execution_governance_closure": "safe",
+        }
+    )
+
+    assert no_artifact_guard.blocked is True
+    assert no_artifact_guard.code == "execution-governance-no-artifact-paths"
+    assert "artifact paths" in no_artifact_guard.reason
+    assert safe_closure_guard.blocked is False
+
+
+def test_execution_governance_snapshot_applies_claude_presentation_defaults() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["claude_code"],
+    )
+
+    contract = snapshot["contract"]
+    assert contract["presentation_policy"]["commentary_mode"] == "task_first"
+    assert contract["presentation_policy"]["suppress_routing_receipts"] is True
+
+    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+    assert summary["execution_governance_commentary_mode"] == "task_first"
+    assert summary["execution_governance_suppress_routing_receipts"] is True
+    assert summary["execution_governance_host_supports_artifact_paths"] is False
+    assert summary["execution_governance_host_supports_interrupt"] is False
+
+
+def test_runtime_lane_policy_artifact_path_guard_does_not_fire_for_delegation() -> None:
+    delegation_guard = runtime_lane_policy.delegation_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_host_family": "claude",
+            "execution_governance_host_supports_native_spawn": True,
+            "execution_governance_host_supports_artifact_paths": False,
+            "execution_governance_closure": "incomplete",
+        }
+    )
+
+    assert delegation_guard.code != "execution-governance-no-artifact-paths"
+
+
+def test_build_execution_event_stream_emits_critical_context_pressure() -> None:
+    from odylith.runtime.execution_engine.event_stream import build_execution_event_stream
+
+    admissibility = policy.evaluate_admissibility(
+        _contract(host_family="claude_code"), "implement.target_scope"
+    )
+    events = build_execution_event_stream(
+        current_phase="implement",
+        last_successful_phase="",
+        blocker="",
+        next_move="implement.target_scope",
+        execution_mode="implement",
+        admissibility=admissibility,
+        context_pressure="critical",
+    )
+    pressure_event = next(e for e in events if e.event_type == "context_pressure")
+    assert "context_pressure:critical" in pressure_event.pressure_signals
+
+    events_low = build_execution_event_stream(
+        current_phase="implement",
+        last_successful_phase="",
+        blocker="",
+        next_move="implement.target_scope",
+        execution_mode="implement",
+        admissibility=admissibility,
+        context_pressure="low",
+    )
+    assert "context_pressure" not in {e.event_type for e in events_low}
+
+
+def test_execution_governance_snapshot_surfaces_context_pressure() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["claude_code"],
+        context_pressure="high",
+    )
+
+    assert snapshot["context_pressure"] == "high"
+    compact = runtime_surface_governance.compact_execution_governance_snapshot(snapshot)
+    assert compact["context_pressure"] == "high"
+    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+    assert summary["execution_governance_context_pressure"] == "high"
+
+
+def test_execution_governance_snapshot_explicit_empty_presentation_policy_skips_claude_defaults() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "presentation_policy": {},
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["claude_code"],
+    )
+
+    assert "presentation_policy" not in snapshot["contract"]
+
+
+# ---------------------------------------------------------------------------
+# Hardening: end-to-end regression and edge-case coverage
+# ---------------------------------------------------------------------------
+
+
+def test_execution_host_profile_from_capabilities_round_trips_new_fields() -> None:
+    from odylith.runtime.execution_engine.contract import ExecutionHostProfile
+
+    claude_caps = {
+        "host_family": "claude",
+        "model_family": "claude",
+        "delegation_style": "task_tool_subagents",
+        "supports_native_spawn": True,
+        "supports_local_structured_reasoning": True,
+        "supports_explicit_model_selection": True,
+        "supports_interrupt": False,
+        "supports_artifact_paths": False,
+    }
+    profile = ExecutionHostProfile.from_capabilities(claude_caps, model_name="claude-opus-4-6")
+
+    assert profile.supports_interrupt is False
+    assert profile.supports_artifact_paths is False
+    assert profile.model_name == "claude-opus-4-6"
+
+    roundtrip = profile.to_dict()
+    assert roundtrip["supports_interrupt"] is False
+    assert roundtrip["supports_artifact_paths"] is False
+
+    codex_caps = dict(claude_caps, host_family="codex", delegation_style="routed_spawn",
+                      supports_interrupt=True, supports_artifact_paths=True)
+    codex_profile = ExecutionHostProfile.from_capabilities(codex_caps)
+    assert codex_profile.supports_interrupt is True
+    assert codex_profile.supports_artifact_paths is True
+
+
+def test_execution_host_profile_unknown_host_defaults_are_safe() -> None:
+    from odylith.runtime.execution_engine.contract import ExecutionHostProfile
+
+    unknown = ExecutionHostProfile.detected(host_family="")
+    assert unknown.host_family == "unknown"
+    assert unknown.supports_native_spawn is False
+    assert unknown.supports_interrupt is False
+    assert unknown.supports_artifact_paths is False
+    assert unknown.delegation_style == "none"
+    assert "unknown_host_fail_closed" in unknown.execution_hints
+
+
+def test_evaluate_admissibility_codex_delegation_denied_uses_main_thread_followup() -> None:
+    """Codex host without native spawn (hypothetical) gets main_thread_followup, not bounded_task_subagent."""
+    from odylith.runtime.execution_engine.contract import ExecutionHostProfile
+
+    codex_no_spawn = ExecutionHostProfile(
+        host_family="codex", host_display_name="Codex",
+        model_family="gpt", model_name="gpt-5.4",
+        delegation_style="routed_spawn",
+        supports_native_spawn=False,
+        supports_local_structured_reasoning=True,
+        supports_explicit_model_selection=True,
+        supports_interrupt=True, supports_artifact_paths=True,
+    )
+    contract = ExecutionContract.create(
+        objective="test", authoritative_lane="test", target_scope=["a"],
+        environment="test", resource_set=["a"], success_criteria=["pass"],
+        validation_plan=["check"], allowed_moves=["verify", "re_anchor"],
+        forbidden_moves=[], external_dependencies=[], critical_path=["a"],
+        host_profile=codex_no_spawn,
+    )
+
+    decision = policy.evaluate_admissibility(contract, "delegate.something")
+    assert decision.outcome == "deny"
+    assert decision.nearest_admissible_alternative == "main_thread_followup"
+
+
+def test_evaluate_admissibility_claude_hypothetical_no_spawn_uses_bounded_task_subagent() -> None:
+    """Claude host without native spawn (hypothetical) gets bounded_task_subagent."""
+    from odylith.runtime.execution_engine.contract import ExecutionHostProfile
+
+    claude_no_spawn = ExecutionHostProfile(
+        host_family="claude", host_display_name="Claude Code",
+        model_family="claude", model_name="claude-sonnet-4-6",
+        delegation_style="task_tool_subagents",
+        supports_native_spawn=False,
+        supports_local_structured_reasoning=True,
+        supports_explicit_model_selection=True,
+        supports_interrupt=False, supports_artifact_paths=False,
+    )
+    contract = ExecutionContract.create(
+        objective="test", authoritative_lane="test", target_scope=["a"],
+        environment="test", resource_set=["a"], success_criteria=["pass"],
+        validation_plan=["check"], allowed_moves=["verify", "re_anchor"],
+        forbidden_moves=[], external_dependencies=[], critical_path=["a"],
+        host_profile=claude_no_spawn,
+    )
+
+    decision = policy.evaluate_admissibility(contract, "delegate.something")
+    assert decision.outcome == "deny"
+    assert decision.nearest_admissible_alternative == "bounded_task_subagent"
+    assert "host_capability:native_spawn" in decision.violated_preconditions
+
+
+def test_evaluate_admissibility_no_interrupt_signal_absent_on_codex() -> None:
+    contract = _contract(execution_mode="verify", host_family="codex_cli")
+    frontier_obj = frontier.derive_execution_frontier(
+        [
+            ExecutionEvent(
+                event_id="evt-1", event_type="phase", phase="verify",
+                blocker="waiting on CI", next_move="recover.current_blocker",
+                execution_mode="verify",
+            )
+        ]
+    )
+
+    decision = policy.evaluate_admissibility(
+        contract, "implement.target_scope", frontier=frontier_obj,
+    )
+
+    assert "frontier:blocker_active" in decision.pressure_signals
+    assert "host:no_interrupt" not in decision.pressure_signals
+
+
+def test_canonicalize_history_rule_no_false_positives_on_similar_tokens() -> None:
+    from odylith.runtime.execution_engine.history_rules import canonicalize_history_rule
+
+    assert canonicalize_history_rule("context_switch_detected") != "context_exhaustion_detected"
+    assert canonicalize_history_rule("agent_timeout") != "subagent_timeout_detected"
+    assert canonicalize_history_rule("subagent_error") != "subagent_timeout_detected"
+    assert canonicalize_history_rule("context_change") != "context_exhaustion_detected"
+
+
+def test_build_execution_event_stream_context_pressure_ordering() -> None:
+    """Context pressure event must appear BEFORE the admissibility_decision event."""
+    from odylith.runtime.execution_engine.event_stream import build_execution_event_stream
+
+    admissibility = policy.evaluate_admissibility(
+        _contract(host_family="claude_code"), "implement.target_scope"
+    )
+    events = build_execution_event_stream(
+        current_phase="implement", last_successful_phase="",
+        blocker="", next_move="implement.target_scope",
+        execution_mode="implement", admissibility=admissibility,
+        context_pressure="high",
+    )
+    event_types = [e.event_type for e in events]
+    pressure_idx = event_types.index("context_pressure")
+    decision_idx = event_types.index("admissibility_decision")
+    assert pressure_idx < decision_idx
+
+
+def test_runtime_lane_policy_artifact_path_guard_does_not_fire_without_presence_key() -> None:
+    """When host_supports_artifact_paths is absent from summary, guard stays open (fail-open)."""
+    guard = runtime_lane_policy.parallelism_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_host_family": "claude",
+            "execution_governance_host_supports_native_spawn": True,
+            "execution_governance_closure": "incomplete",
+        }
+    )
+    assert guard.code != "execution-governance-no-artifact-paths"
+
+
+def test_runtime_lane_policy_delegation_guard_unaffected_by_artifact_path_fields() -> None:
+    """delegation_guard never fires the artifact-path code regardless of field values."""
+    guard = runtime_lane_policy.delegation_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_host_family": "claude",
+            "execution_governance_host_supports_native_spawn": True,
+            "execution_governance_host_supports_artifact_paths": False,
+            "execution_governance_closure": "destructive",
+        }
+    )
+    assert guard.code != "execution-governance-no-artifact-paths"
+
+
+def test_execution_governance_snapshot_codex_host_no_presentation_defaults() -> None:
+    """Codex host should NOT get Claude presentation defaults."""
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["codex_cli"],
+    )
+    assert "presentation_policy" not in snapshot["contract"]
+
+
+def test_execution_governance_snapshot_claude_explicit_policy_overrides_defaults() -> None:
+    """Explicit presentation_policy on Claude host takes priority over defaults."""
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "presentation_policy": {
+                "commentary_mode": "verbose",
+                "suppress_routing_receipts": False,
+            },
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["claude_code"],
+    )
+
+    contract = snapshot["contract"]
+    assert contract["presentation_policy"]["commentary_mode"] == "verbose"
+    assert contract["presentation_policy"]["suppress_routing_receipts"] is False
+
+
+def test_execution_governance_snapshot_context_pressure_absent_by_default() -> None:
+    """When no context_pressure is passed, it should be empty/absent in snapshot."""
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["claude_code"],
+    )
+
+    assert snapshot["context_pressure"] == ""
+    compact = runtime_surface_governance.compact_execution_governance_snapshot(snapshot)
+    assert "context_pressure" not in compact
+
+
+def test_execution_governance_snapshot_payload_context_pressure_fallback() -> None:
+    """context_pressure in the payload dict is used as fallback."""
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_pressure": "critical",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["claude_code"],
+    )
+
+    assert snapshot["context_pressure"] == "critical"
+    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+    assert summary["execution_governance_context_pressure"] == "critical"
+
+
+def test_execution_governance_compact_new_host_fields_are_additive() -> None:
+    """New compact fields do not break the existing compact shape contract."""
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["claude_code"],
+    )
+    compact = runtime_surface_governance.compact_execution_governance_snapshot(snapshot)
+
+    assert compact["host_supports_native_spawn"] is True
+    assert compact.get("host_supports_interrupt", False) is False
+    assert compact.get("host_supports_artifact_paths", False) is False
+    assert isinstance(compact.get("host_execution_hints"), list)
+    assert len(compact.get("host_execution_hints", [])) <= 4
+
+    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+    assert "execution_governance_host_supports_interrupt" in summary
+    assert "execution_governance_host_supports_artifact_paths" in summary
+    assert "execution_governance_host_execution_hints" in summary
+    assert isinstance(summary["execution_governance_host_execution_hints"], tuple)
+
+
+def test_execution_governance_summary_fields_are_superset_of_existing_contract() -> None:
+    """Existing summary field keys must still be present after the new additions."""
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["codex_cli"],
+    )
+    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+
+    required_keys = [
+        "execution_governance_present",
+        "execution_governance_outcome",
+        "execution_governance_mode",
+        "execution_governance_host_family",
+        "execution_governance_model_family",
+        "execution_governance_host_delegation_style",
+        "execution_governance_host_supports_native_spawn",
+        "execution_governance_host_supports_interrupt",
+        "execution_governance_host_supports_artifact_paths",
+        "execution_governance_host_execution_hints",
+        "execution_governance_commentary_mode",
+        "execution_governance_suppress_routing_receipts",
+        "execution_governance_surface_fast_lane",
+        "execution_governance_context_pressure",
+    ]
+    for key in required_keys:
+        assert key in summary, f"missing required summary key: {key}"
+
+
+def test_history_rule_collect_includes_new_failure_classes() -> None:
+    """collect_history_rule_hits passes through carried Claude-specific failure classes."""
+    from odylith.runtime.execution_engine.history_rules import collect_history_rule_hits
+
+    closure = resource_closure.classify_resource_closure(["cell-01"])
+    admissibility = policy.evaluate_admissibility(_contract(), "implement.target_scope")
+    no_contradictions: list[contradictions.ContradictionRecord] = []
+
+    hits = collect_history_rule_hits(
+        closure=closure,
+        admissibility=admissibility,
+        contradictions=no_contradictions,
+        proof_same_fingerprint_reopened=False,
+        carried_history=["context exhaustion compaction", "subagent timeout"],
+    )
+
+    assert "context_exhaustion_detected" in hits
+    assert "subagent_timeout_detected" in hits

@@ -565,6 +565,401 @@
       }
     },
     {
+      "case_id": "execution-governance-contract-verify-closure-discipline",
+      "label": "Execution governance keeps verify posture and closure truth on core contract slices",
+      "family": "execution_governance",
+      "priority": "high",
+      "summary": "Execution-governance core slices should expose the truthful verify posture, next move, closure pressure, and resumability instead of falling back to generic grounded packet success.",
+      "benchmark": {
+        "prompt": "Inspect the execution-governance contract and policy slice and keep the packet truthful about admissibility, verify posture, closure pressure, and the exact next move without widening into generic benchmark scaffolding.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_governance.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_governance.py",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+          "odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_governance.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_governance.py"
+        ],
+        "intent": "implementation validation",
+        "allow_noop_completion": true,
+        "workstream": "B-073",
+        "component": "execution-governance"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_governance.py"
+        ]
+      },
+      "expect": {
+        "packet_kind": [
+          "governance_slice"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "native_spawn_ready": true,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-073"
+        ],
+        "execution_governance_present": true,
+        "execution_governance_outcome": [
+          "admit"
+        ],
+        "execution_governance_requires_reanchor": false,
+        "execution_governance_mode": [
+          "verify"
+        ],
+        "execution_governance_next_move": [
+          "verify.selected_matrix"
+        ],
+        "execution_governance_current_phase": [
+          "in_progress"
+        ],
+        "execution_governance_last_successful_phase": [
+          "in_progress"
+        ],
+        "execution_governance_closure": [
+          "incomplete"
+        ],
+        "execution_governance_resume_token": [
+          "resume:governance_slice"
+        ],
+        "execution_governance_validation_archetype": [
+          "verify"
+        ],
+        "execution_governance_authoritative_lane": [
+          "context_engine.governance_slice.authoritative"
+        ],
+        "execution_governance_host_family": [
+          "codex"
+        ]
+      }
+    },
+    {
+      "case_id": "execution-governance-runtime-surface-phase-carry-through",
+      "label": "Execution governance carries phase truth into runtime surfaces",
+      "family": "execution_governance",
+      "priority": "high",
+      "summary": "Execution-governance runtime-surface slices should preserve the current phase, next move, closure, and resumability when shared summaries and packet views are rebuilt.",
+      "benchmark": {
+        "prompt": "Inspect the execution-governance runtime-surface summary path and keep the packet truthful about current phase, closure, and resumability instead of flattening execution posture into a generic grounded summary.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
+          "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
+          "tests/unit/runtime/test_odylith_runtime_surface_summary.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
+          "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
+          "tests/unit/runtime/test_odylith_runtime_surface_summary.py",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+          "odylith/atlas/source/odylith-execution-governance-engine-stack.mmd"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_execution_governance.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_execution_governance.py"
+        ],
+        "intent": "implementation validation",
+        "allow_noop_completion": true,
+        "workstream": "B-078",
+        "component": "execution-governance"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
+          "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
+          "tests/unit/runtime/test_odylith_runtime_surface_summary.py"
+        ]
+      },
+      "expect": {
+        "packet_kind": [
+          "governance_slice"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "native_spawn_ready": true,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-078"
+        ],
+        "execution_governance_present": true,
+        "execution_governance_outcome": [
+          "admit"
+        ],
+        "execution_governance_requires_reanchor": false,
+        "execution_governance_mode": [
+          "verify"
+        ],
+        "execution_governance_next_move": [
+          "verify.selected_matrix"
+        ],
+        "execution_governance_current_phase": [
+          "verify"
+        ],
+        "execution_governance_last_successful_phase": [
+          "verify"
+        ],
+        "execution_governance_closure": [
+          "incomplete"
+        ],
+        "execution_governance_resume_token": [
+          "resume:governance_slice"
+        ],
+        "execution_governance_validation_archetype": [
+          "verify"
+        ],
+        "execution_governance_authoritative_lane": [
+          "context_engine.governance_slice.authoritative"
+        ],
+        "execution_governance_host_family": [
+          "codex"
+        ]
+      }
+    },
+    {
+      "case_id": "execution-governance-router-recovery-posture",
+      "label": "Execution governance keeps recovery posture truthful on router slices",
+      "family": "execution_governance",
+      "priority": "high",
+      "summary": "Execution-governance slices that touch router recovery should expose recover mode, a blocker-first next move, and the impact authoritative lane instead of pretending the slice is route-ready for normal implementation.",
+      "benchmark": {
+        "prompt": "Inspect the router execution-governance slice and keep the packet truthful about recovery posture, blocker-driven next move, and impact-lane authority instead of flattening the slice into generic implementation readiness.",
+        "packet_source": "impact",
+        "paths": [
+          "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+          "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
+          "tests/unit/runtime/test_subagent_reasoning_ladder.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+          "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
+          "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+          "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_execution_governance.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_execution_governance.py"
+        ],
+        "intent": "implementation validation",
+        "allow_noop_completion": true,
+        "workstream": "B-074",
+        "component": "subagent-router"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py",
+          "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
+          "tests/unit/runtime/test_subagent_reasoning_ladder.py"
+        ]
+      },
+      "expect": {
+        "packet_kind": [
+          "impact"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": false,
+        "native_spawn_ready": false,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-074"
+        ],
+        "execution_governance_present": true,
+        "execution_governance_outcome": [
+          "admit"
+        ],
+        "execution_governance_requires_reanchor": false,
+        "execution_governance_mode": [
+          "recover"
+        ],
+        "execution_governance_next_move": [
+          "recover.current_blocker"
+        ],
+        "execution_governance_current_phase": [
+          "status synthesis"
+        ],
+        "execution_governance_closure": [
+          "incomplete"
+        ],
+        "execution_governance_resume_token": [
+          "resume:impact"
+        ],
+        "execution_governance_validation_archetype": [
+          "recover"
+        ],
+        "execution_governance_authoritative_lane": [
+          "context_engine.impact.authoritative"
+        ],
+        "execution_governance_host_family": [
+          "codex"
+        ]
+      }
+    },
+    {
+      "case_id": "execution-governance-broad-scope-recover-fail-closed",
+      "label": "Execution governance keeps broad shared scope fail-closed",
+      "family": "execution_governance",
+      "priority": "medium",
+      "summary": "Execution-governance slices on broad shared inputs should stay fail-closed and recover-oriented instead of emitting route-ready or implementation-shaped packets.",
+      "benchmark": {
+        "prompt": "Inspect a broad shared execution-governance slice and keep the packet fail-closed, recovery-oriented, and resumable instead of promoting it to generic implementation readiness.",
+        "packet_source": "impact",
+        "paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ],
+        "required_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
+        ],
+        "allow_noop_completion": true
+      },
+      "match": {
+        "paths_all": [
+          "AGENTS.md",
+          "odylith/AGENTS.md"
+        ]
+      },
+      "expect": {
+        "packet_kind": [
+          "impact"
+        ],
+        "packet_state": [
+          "gated_broad_scope"
+        ],
+        "within_budget": true,
+        "route_ready": false,
+        "native_spawn_ready": false,
+        "selection_state": [
+          "none"
+        ],
+        "execution_governance_present": true,
+        "execution_governance_outcome": [
+          "admit"
+        ],
+        "execution_governance_requires_reanchor": false,
+        "execution_governance_mode": [
+          "recover"
+        ],
+        "execution_governance_next_move": [
+          "recover.current_blocker"
+        ],
+        "execution_governance_closure": [
+          "safe"
+        ],
+        "execution_governance_resume_token": [
+          "resume:impact"
+        ],
+        "execution_governance_validation_archetype": [
+          "recover"
+        ],
+        "execution_governance_host_family": [
+          "codex"
+        ]
+      }
+    },
+    {
+      "case_id": "execution-governance-governance-slice-ambiguity-recovery",
+      "label": "Execution governance keeps governance-slice ambiguity in recovery",
+      "family": "execution_governance",
+      "priority": "medium",
+      "summary": "Governance-slice execution-governance work should keep ambiguity visible and stay in recovery posture instead of collapsing into a fake explicit route-ready slice.",
+      "benchmark": {
+        "prompt": "Inspect a governance-slice execution-governance ambiguity case and keep the packet truthful about ambiguity, recovery posture, closure pressure, and resumability instead of flattening it into an explicit route-ready slice.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "odylith/radar/source/INDEX.md",
+          "odylith/technical-plans/INDEX.md"
+        ],
+        "required_paths": [
+          "odylith/radar/source/INDEX.md",
+          "odylith/technical-plans/INDEX.md",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
+        ],
+        "allow_noop_completion": true
+      },
+      "match": {
+        "paths_all": [
+          "odylith/radar/source/INDEX.md",
+          "odylith/technical-plans/INDEX.md"
+        ]
+      },
+      "expect": {
+        "packet_kind": [
+          "governance_slice"
+        ],
+        "packet_state": [
+          "gated_broad_scope"
+        ],
+        "within_budget": true,
+        "route_ready": false,
+        "native_spawn_ready": false,
+        "selection_state": [
+          "ambiguous"
+        ],
+        "execution_governance_present": true,
+        "execution_governance_outcome": [
+          "admit"
+        ],
+        "execution_governance_requires_reanchor": false,
+        "execution_governance_mode": [
+          "recover"
+        ],
+        "execution_governance_next_move": [
+          "recover.current_blocker"
+        ],
+        "execution_governance_closure": [
+          "incomplete"
+        ],
+        "execution_governance_resume_token": [
+          "resume:governance_slice"
+        ],
+        "execution_governance_validation_archetype": [
+          "recover"
+        ],
+        "execution_governance_authoritative_lane": [
+          "context_engine.governance_slice.authoritative"
+        ],
+        "execution_governance_host_family": [
+          "codex"
+        ]
+      }
+    },
+    {
       "case_id": "cross-file-feature-budget-discipline",
       "label": "Cross-file feature slices stay budget-disciplined",
       "family": "cross_file_feature",

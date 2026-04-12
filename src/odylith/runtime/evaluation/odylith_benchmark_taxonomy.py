@@ -72,6 +72,7 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
         families=(
             "broad_shared_scope",
             "context_engine_grounding",
+            "execution_governance",
             "exact_path_ambiguity",
             "exact_anchor_recall",
             "explicit_workstream",

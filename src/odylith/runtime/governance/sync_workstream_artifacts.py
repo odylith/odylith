@@ -140,6 +140,7 @@ _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES: tuple[str, ...] = (
     "odylith/technical-plans/",
     "odylith/casebook/bugs/",
     "odylith/atlas/source/",
+    "odylith/runtime/source/",
 )
 _PROJECTION_INVALIDATION_PREFIXES: tuple[str, ...] = (
     "odylith/radar/source/",

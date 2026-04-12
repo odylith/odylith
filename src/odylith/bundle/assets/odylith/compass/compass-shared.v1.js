@@ -1141,14 +1141,14 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       <section class="block">
         <details class="execution-wave-section"${openAttr}>
           <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
-            <div class="execution-wave-section-copy">
-              <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>
-              ${programLabel ? `<div class="execution-wave-section-line">${escapeHtml(programLabel)}</div>` : ""}
-              ${contextLine ? `<div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>` : ""}
-              ${summaryLine ? `<div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
-            </div>
+            <span class="execution-wave-section-copy">
+              <span class="execution-wave-section-title">${escapeHtml(sectionTitle)}</span>
+              ${programLabel ? `<span class="execution-wave-section-line">${escapeHtml(programLabel)}</span>` : ""}
+              ${contextLine ? `<span class="execution-wave-section-line">${escapeHtml(contextLine)}</span>` : ""}
+              ${summaryLine ? `<span class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</span>` : ""}
+            </span>
             <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
-            ${sectionChips.length ? `<div class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</div>` : ""}
+            ${sectionChips.length ? `<span class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</span>` : ""}
           </summary>
           <div class="execution-wave-section-body">${boardsHtml}</div>
         </details>
@@ -1159,16 +1159,16 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
     <section class="block">
       <details class="execution-wave-section"${openAttr}>
         <summary class="execution-wave-section-summary">
-          <div class="execution-wave-section-copy">
-            <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>
-            ${programLabel ? `<div class="execution-wave-section-line">${escapeHtml(programLabel)}</div>` : ""}
-            ${contextLine ? `<div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>` : ""}
-            ${summaryLine ? `<div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
-          </div>
-          <div class="execution-wave-section-meta">
+          <span class="execution-wave-section-copy">
+            <span class="execution-wave-section-title">${escapeHtml(sectionTitle)}</span>
+            ${programLabel ? `<span class="execution-wave-section-line">${escapeHtml(programLabel)}</span>` : ""}
+            ${contextLine ? `<span class="execution-wave-section-line">${escapeHtml(contextLine)}</span>` : ""}
+            ${summaryLine ? `<span class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</span>` : ""}
+          </span>
+          <span class="execution-wave-section-meta">
             ${sectionChips.join("")}
             <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
-          </div>
+          </span>
         </summary>
         <div class="execution-wave-section-body">${boardsHtml}</div>
       </details>

@@ -36,11 +36,12 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         if isinstance(case, dict)
     }
 
-    assert len(scenarios) >= 39
+    assert len(scenarios) >= 44
     assert len(architecture_scenarios) >= 5
     assert {
         "install_upgrade_runtime",
         "live_proof_discipline",
+        "execution_governance",
         "release_publication",
         "browser_surface_reliability",
         "context_engine_grounding",
@@ -69,6 +70,11 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "context-engine-governance-boundary-grounding",
         "context-engine-broad-scope-fail-closed",
         "context-engine-release-resolution-grounding",
+        "execution-governance-contract-verify-closure-discipline",
+        "execution-governance-runtime-surface-phase-carry-through",
+        "execution-governance-router-recovery-posture",
+        "execution-governance-broad-scope-recover-fail-closed",
+        "execution-governance-governance-slice-ambiguity-recovery",
         "live-proof-frontier-verified-control-panel",
         "live-proof-no-fake-precision-without-a-lane",
         "product-runtime-state-js-companion-contract",

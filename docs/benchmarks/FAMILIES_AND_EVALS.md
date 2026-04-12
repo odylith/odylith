@@ -8,7 +8,7 @@ The source of truth is
 ## Coverage At A Glance
 
 - Tracked corpus:
-  `39` implementation scenarios plus `5` architecture scenarios, `44` total
+  `44` implementation scenarios plus `5` architecture scenarios, `49` total
 - Latest published proof snapshot:
   report `52aa3f76538cf12f`, status `provisional_pass`, `37` scenarios
 - Latest published diagnostic snapshot:
@@ -28,7 +28,7 @@ author sorts by token delta.
 | Docs + Code Closeout | 5 | `docs_code_closeout`, `governed_surface_sync`, `cross_surface_governance_sync` | Keeps code, docs, specs, and mirrors aligned. |
 | Governance / Release Integrity | 6 | `component_governance`, `live_proof_discipline`, `release_publication` | Important to product truth, and now explicitly measures whether live blocker lanes stay honest instead of being cleared early. |
 | Architecture Review | 4 | `architecture` | Keeps grounded design-review quality visible after direct coding work. |
-| Grounding / Orchestration Control | 13 | `broad_shared_scope`, `context_engine_grounding`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains Odylith's mechanism without dominating the public story, including direct Context Engine packet-lane and scope-resolution quality. |
+| Grounding / Orchestration Control | 18 | `broad_shared_scope`, `context_engine_grounding`, `execution_governance`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains Odylith's mechanism without dominating the public story, including direct Context Engine packet-lane, execution-governance guardrail quality, and scope-resolution quality. |
 
 ## Current Published Attention Areas
 
@@ -67,6 +67,7 @@ The current expansion wave is biased toward developer-legible shapes:
 | `cli_contract_regression` | 1 | public CLI regression repair with unit-test-backed operator contract |
 | `compass_brief_freshness` | 1 | freshness and reactivity of Compass brief generation |
 | `context_engine_grounding` | 4 | Context Engine packet-lane selection, scope resolution, and fail-closed ambiguity behavior |
+| `execution_governance` | 5 | Execution-governance contract posture, truthful next-move carry-through, fail-closed recovery, and resume-token discipline |
 | `component_governance` | 2 | Registry and Atlas alignment for benchmark or component truth |
 | `consumer_profile_compatibility` | 1 | consumer config and truth-root compatibility repair |
 | `cross_file_feature` | 1 | multi-file implementation with bounded packet discipline |
@@ -99,6 +100,7 @@ The current expansion wave is biased toward developer-legible shapes:
 | `cli_contract_regression` | `cli-install-first-run-onboarding-contract` |
 | `compass_brief_freshness` | `compass-brief-freshness-and-reactivity` |
 | `context_engine_grounding` | `context-engine-split-adaptive-grounding`, `context-engine-governance-boundary-grounding`, `context-engine-broad-scope-fail-closed`, `context-engine-release-resolution-grounding` |
+| `execution_governance` | `execution-governance-contract-verify-closure-discipline`, `execution-governance-runtime-surface-phase-carry-through`, `execution-governance-router-recovery-posture`, `execution-governance-broad-scope-recover-fail-closed`, `execution-governance-governance-slice-ambiguity-recovery` |
 | `component_governance` | `benchmark-component-governance-truth`, `benchmark-component-honesty-governance` |
 | `consumer_profile_compatibility` | `consumer-profile-truth-root-compatibility` |
 | `cross_file_feature` | `cross-file-feature-budget-discipline` |

@@ -136,6 +136,7 @@ def _impact_family_profile(
     prefer_explicit_workstream = bool(str(workstream_hint or "").strip()) and family != "architecture"
     prefer_explicit_component = bool(str(component_hint or "").strip()) and family in {
         "component_governance",
+        "execution_governance",
         "live_proof_discipline",
         "release_publication",
     }
@@ -144,6 +145,7 @@ def _impact_family_profile(
         "component_governance",
         "cross_surface_governance_sync",
         "daemon_security",
+        "execution_governance",
         "governed_surface_sync",
         "install_upgrade_runtime",
         "live_proof_discipline",
@@ -155,6 +157,7 @@ def _impact_family_profile(
         "cross_file_feature",
         "daemon_security",
         "exact_anchor_recall",
+        "execution_governance",
         "explicit_workstream",
         "live_proof_discipline",
         "orchestration_feedback",
@@ -167,6 +170,7 @@ def _impact_family_profile(
         "cross_file_feature",
         "exact_anchor_recall",
         "docs_code_closeout",
+        "execution_governance",
         "orchestration_feedback",
         "orchestration_intelligence",
         "retrieval_miss_recovery",
@@ -183,6 +187,7 @@ def _impact_family_profile(
         "cross_file_feature",
         "exact_anchor_recall",
         "docs_code_closeout",
+        "execution_governance",
         "orchestration_feedback",
         "orchestration_intelligence",
         "retrieval_miss_recovery",
@@ -199,6 +204,7 @@ def _impact_family_profile(
         "cross_file_feature",
         "exact_anchor_recall",
         "governed_surface_sync",
+        "execution_governance",
         "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
@@ -209,6 +215,7 @@ def _impact_family_profile(
     component_light_families = {
         "broad_shared_scope",
         "exact_path_ambiguity",
+        "execution_governance",
         "explicit_workstream",
         "install_upgrade_runtime",
         "live_proof_discipline",
@@ -226,6 +233,7 @@ def _impact_family_profile(
         "cross_file_feature",
         "cross_surface_governance_sync",
         "daemon_security",
+        "execution_governance",
         "exact_anchor_recall",
         "exact_path_ambiguity",
         "explicit_workstream",

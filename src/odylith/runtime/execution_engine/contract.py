@@ -49,6 +49,8 @@ class ExecutionHostProfile:
     supports_native_spawn: bool
     supports_local_structured_reasoning: bool
     supports_explicit_model_selection: bool
+    supports_interrupt: bool = False
+    supports_artifact_paths: bool = False
     execution_hints: tuple[str, ...] = field(default_factory=tuple)
 
     @classmethod
@@ -73,6 +75,8 @@ class ExecutionHostProfile:
                 supports_native_spawn=True,
                 supports_local_structured_reasoning=True,
                 supports_explicit_model_selection=True,
+                supports_interrupt=True,
+                supports_artifact_paths=True,
                 execution_hints=(
                     "native_spawn_available",
                     "delegation_style:routed_spawn",
@@ -89,6 +93,8 @@ class ExecutionHostProfile:
                 supports_native_spawn=True,
                 supports_local_structured_reasoning=True,
                 supports_explicit_model_selection=True,
+                supports_interrupt=False,
+                supports_artifact_paths=False,
                 execution_hints=(
                     "native_spawn_available",
                     "delegation_style:task_tool_subagents",
@@ -130,6 +136,8 @@ class ExecutionHostProfile:
             supports_explicit_model_selection=bool(
                 capabilities.get("supports_explicit_model_selection")
             ),
+            supports_interrupt=bool(capabilities.get("supports_interrupt")),
+            supports_artifact_paths=bool(capabilities.get("supports_artifact_paths")),
             host_display_name=_host_display_name(str(capabilities.get("host_family", "")).strip()),
             execution_hints=tuple(
                 hint

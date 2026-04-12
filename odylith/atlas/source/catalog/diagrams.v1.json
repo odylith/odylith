@@ -80,8 +80,8 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "120bd8a915f7d1d55a9ebd335c9395ecb072b72ecadd5d404b7dde65604adb48",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "d48218fced4fc62fe34602e025419adb9a43955a669a753feaf9392e995f33ee",
-        "odylith/radar/source/INDEX.md": "297a84caed218daad11cc3f12bb92f1392682161334aa9eb2ecf41b6b0f2a41a",
-        "odylith/technical-plans/INDEX.md": "4ec1017a9a9edf3935f49a07e7c652c8c55b1fd5f1688598f9404a39831fa410"
+        "odylith/radar/source/INDEX.md": "c064268249e955ef9f574707aa69b9b11f915cbc9085d228c3b33e4ccf91975b",
+        "odylith/technical-plans/INDEX.md": "b14ff1540a7f4cbdbfd401a2611c7f811a214a3008d18ce0fa083467851d0497"
       }
     },
     {
@@ -2267,7 +2267,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-11",
+      "last_reviewed_utc": "2026-04-12",
       "source_mmd": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
       "source_svg": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.svg",
       "source_png": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.png",
@@ -2341,7 +2341,7 @@
       ],
       "render_source_fingerprint": "3e3334298a4bd7d19ce5dbb79f9e9b88e8654e0886dd83f32f10025be9c77e0d",
       "reviewed_watch_fingerprints": {
-        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md": "837907cbd7a9c81c8f83da755ee1c64c9085840aecb19f2d45cdae488c4191e0",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md": "8b75ed7f58678322c9b4c07eb73e8efcb2ac3bd256e619569c23bdd8e8a2af20",
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md": "04d7318be2519093358f5939f9b77b2bac1cdeb07fede8e49e0b1a9ff0db3b92",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md": "ff0dfa85e11e8e60cf99199351e16c544a7e749e18273714c4bb3afcece9432b",
         "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md": "7cc825b53fefdf1fa2db49938862da91ac8eb2141f35619aa470c491549ad1b6",
@@ -2349,11 +2349,11 @@
         "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md": "0a59534a4363d58f87445f9265edf360641d12be832499ec5635c393dc292101",
         "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md": "60949dfbba815d20b031d5f11e43c332bb95c8cd96600006510ba80d4d2ca8e6",
         "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md": "958ec9194bd70118e9a3ec37f401a57f0712d61702ff48d48f80f062c4bf0b70",
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "f83dd79429f6fd115a5d167a8c044a061f937c4871f54504f91d07bc021b2abd",
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "cbe2f6342f184f5e4059bc82681a3a589e75cef7eed997602bdeb9e431c7d53c",
         "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py": "ad3f486d4f2e69809e974c75869f82d6e9ce79bd31214c758a0bbc124a2ed605",
         "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py": "662c32dc53bd8556a33891908a894d471e3e88ccaff01a9da32080576a05a040",
         "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py": "78c045f3ed9863f8caef7aeb6bda05d3342f282058b6fb5ed1a6407e46641bba",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json": "0bd6bf66da52ef965587787a93819b503cf425ca149e8d5efa1b4a480c60dc77",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json": "3e42e6bef0a017ec47e5259f641dbc40b75e2ba9aaf75382005f47b44c71c57b",
         "README.md": "4b6af902319b693cce584c4f55f93978ed0d1b3b43006162804ee49cb1ebfe5d",
         "docs/benchmarks/README.md": "7edf19e390ae831c9533f0ebc31fb5232f558f670346e2ead4835ef67cadc4fc",
         "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md": "756b18aff889c405fa424c3c49c047d07549f49ee3960d33109b155eec43148a",
