@@ -2,7 +2,7 @@
 Last updated: 2026-04-12
 
 
-Last updated (UTC): 2026-04-10
+Last updated (UTC): 2026-04-12
 
 ## Purpose
 Compass is Odylith's execution, decision, and runtime-posture surface. It turns
@@ -334,10 +334,27 @@ epoch, renderer, copied brief text, and fail-closed runtime states:
   attempt.
 - The brief should read like a thoughtful maintainer talking to a teammate:
   friendly, calm, direct, simple, factual, precise, and human.
+- Compass keeps the wording free-flowing. Deterministic rules stop at
+  evidence selection, cache/reuse identity, and rejection of known drift
+  modes; the live brief itself must not collapse into rigid sentence
+  templates.
 - Quiet celebration is allowed when something real landed. Calm reassurance is
   allowed when the work is still shaky. Both still have to stay factual.
+- `Completed in this window` should only mention concrete movement that
+  actually finished in the selected slice and window.
+- `Current execution` should usually stay on one active lane and one concrete
+  action, not widen into portfolio summary or strategy commentary.
+- `Next planned` should stay on the immediate next move from that same lane
+  unless the active lane is explicitly blocked or done.
+- `Risks to watch` should name explicit blockers, freshness seams, or proof
+  gaps instead of abstract posture commentary.
+- If the active packet is thin, Compass should render a shorter brief instead
+  of padding it with broader synthesis.
 - Stock framing, stagey metaphor, portable summary prose, and workstream
   roll-call bullets are correctness failures, not copy polish.
+- Manager-speak such as `forcing function`, `execution coherence`,
+  `room to tighten`, or similar abstract posture fillers is also a correctness
+  failure in the live brief path.
 - If the cited facts disappear and a bullet still sounds plausible, Compass has
   drifted into generic narration and the brief is invalid.
 - Non-ready Compass brief states must stay explicit, truthful, and visibly
@@ -605,6 +622,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-12: Tightened Compass live narration around the human-voice contract again: deterministic rules now explicitly govern evidence eligibility and fail-closed drift rejection, while the brief itself stays free-flowing. `Current execution` now prefers one live lane plus one concrete action, `Next planned` stays on the immediate next move, `Risks to watch` must name explicit seams, and thin evidence packets are expected to produce shorter output instead of broader portfolio prose. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Centralized Compass brief voice under the Registry-owned `briefs-voice-contract` component, retired deterministic brief fallback, and tightened the brief runtime to fresh provider, exact cache, or explicit unavailable. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Collapsed global and scoped standup warming into one packet-level narrated bundle, removed separate scoped maintenance fanout, and made verified scoped briefs warm through the same provider transaction as their parent global windows. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Reaffirmed that the default unscoped `Current Workstreams` board is residual-only. Lanes already visible in `Programs` or `Release Targets` are filtered out there, while explicit scoped selection may still surface the chosen workstream directly. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-095`)

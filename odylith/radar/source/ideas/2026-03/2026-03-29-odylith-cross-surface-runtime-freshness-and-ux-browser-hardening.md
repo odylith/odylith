@@ -75,6 +75,18 @@ That means:
 - spend telemetry as a first-class runtime artifact
 - daemon-backed hot refresh reuse so unchanged Compass does not repay process
   and import costs
+Keep the prose human and free-flowing. The governed contract should be strict
+about evidence eligibility and banned drift patterns, not about sentence
+templates. In practice that means:
+- `Completed in this window` stays on concrete completed movement in the
+  selected slice
+- `Current execution` usually stays on one active lane and one concrete action
+- `Next planned` stays on the immediate next move from that lane
+- `Risks to watch` names explicit blockers, freshness seams, or proof gaps
+- thin packets shorten the brief instead of widening into portfolio synthesis
+The voice contract should reject abstract maintainer/status language such as
+`forcing function`, `execution coherence`, or `room to tighten` even when the
+underlying facts are current.
 That same slice also has to retire the old minute-scale deeper Compass rerender
 idea entirely. Compass should keep one bounded refresh contract, reuse a recent
 payload only when it already satisfies current bounded truth, and never ask
@@ -163,6 +175,11 @@ Extend that same model into a balanced live-shell posture:
   generation instead of raw-packet scope fanout
 - hot refresh can return from daemon-held in-memory state when the projection
   fingerprint did not move
+- live narration stays simple, crisp, clear, insightful, human, and live
+  without turning deterministic; the hard rules stay on evidence scope and
+  drift rejection, not sentence templates
+- thin evidence produces a shorter, more grounded brief instead of a broader
+  portfolio-style summary
 - benchmark proof stays green
 
 ## Validation
@@ -320,6 +337,11 @@ Extend that same model into a balanced live-shell posture:
   Compass-specific freshness, fail-closed refresh, stale-disclosure, and
   retained-history claims are now closed; the remaining open workstream scope
   is broader cross-surface hardening, not unresolved Compass behavior
+- recorded on 2026-04-12 for the live-narration contract retune:
+  the governed brief posture now explicitly prefers free-flowing human prose,
+  with deterministic rules limited to evidence eligibility, one-lane
+  execution focus, immediate next move, concrete risk seams, thin-packet
+  shortening, and rejection of abstract status prose
 
 ## Rollout
 Ship as a freshness-and-proof hardening slice. No data migration is required,

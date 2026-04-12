@@ -37,10 +37,10 @@
     "empty_reasons": [],
     "explicit_event_count": 56,
     "mapped_workstream_evidence_count": 4,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 26,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 27,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 56
+    "timeline_event_count": 57
   },
   "name": "Compass",
   "path_prefixes": [
@@ -50,6 +50,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 89,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-12T12:18:17-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

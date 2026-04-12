@@ -1,8 +1,8 @@
 # Briefs Voice Contract
-Last updated: 2026-04-11
+Last updated: 2026-04-12
 
 
-Last updated (UTC): 2026-04-11
+Last updated (UTC): 2026-04-12
 
 ## Purpose
 Briefs Voice Contract is the governed narration contract for Compass standup
@@ -65,10 +65,23 @@ maintainer-friendly narration.
   failure. Do not keep retrying the same exhausted cheap rung indefinitely.
 - Friendly, calm, direct, simple, precise, and factual beats polished.
 - Short plain sentences come first.
+- Keep the prose free-flowing and human. Deterministic rules belong in
+  evidence eligibility, cache identity, and rejection of known drift modes,
+  not in sentence templates.
 - Show judgment: what changed, why it matters, what is next, and what could
   still break.
 - Celebrate real wins with restraint.
 - When things are shaky, be steady and reassuring without hiding the truth.
+- `Completed in this window` should speak only from concrete completed
+  movement in the selected slice and window.
+- `Current execution` should usually stay on one active lane and one concrete
+  action, not widen into portfolio summary.
+- `Next planned` should usually name the immediate next move from that same
+  lane, not jump to a distant forcing-function backlog item.
+- `Risks to watch` should name explicit blockers, freshness seams, or proof
+  gaps instead of abstract execution commentary.
+- If the evidence packet is thin, the brief should get shorter rather than
+  broader.
 - Do not force workstream coverage into prose. Name only the lanes that help
   the reader understand the window.
 - If a bullet could fit any repo, it is too generic.
@@ -179,8 +192,13 @@ maintainer-friendly narration.
 - No stock wrappers such as `Most of the work here was in`,
   `X and Y are still moving together`, `X is there because`,
   `The next move is`, or repeated `Over the last 48 hours` leads.
+- No manager-speak or strategy-memo abstractions such as `forcing function`,
+  `execution coherence`, `room to tighten`, `current immediate track`, or
+  similar phrases that narrate posture instead of the actual work.
 - No stagey metaphor or dashboard-wise abstractions such as `pressure point`,
   `center of gravity`, `muddy`, or `slippery`.
+- No portfolio drift inside section bullets that are meant to orient the
+  reader on one live lane.
 - No even polished summary-card rhythm across the whole brief.
 - No raw fact ids in prose.
 - No raw-packet prompting on the normal provider path. Provider-facing payloads
@@ -224,6 +242,7 @@ This section captures synchronized requirement and contract signals derived from
 - No synchronized requirement or contract signals yet.
 <!-- registry-requirements:end -->
 ## Feature History
+- 2026-04-12: Tightened the governed brief voice again around founder feedback: deterministic rules now explicitly stop at evidence eligibility and drift rejection, while the prose itself stays free-flowing, one-lane, immediate, and human. `Current execution` now prefers one active lane plus one concrete action, `Next planned` now stays on the immediate next move, `Risks to watch` now names explicit seams instead of abstract coherence language, and thin packets are required to produce shorter briefs instead of broader summary prose. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Re-architected Compass brief generation around deterministic narration substrates, exact substrate-fingerprint cache identity, delta bundle narration, provider-worthiness gating, partial salvage, spend telemetry, and daemon-backed hot refresh reuse. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Promoted the Compass brief voice, exact-cache replay rule, and explicit unavailable state into one governed component, removed deterministic fallback narration from the Compass brief runtime, and invalidated stale cache epochs so old stock prose cannot survive a contract change. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Collapsed global and verified-scoped Compass warming into one packet-level narrated bundle so scope views keep live narration without reopening a second scoped provider queue. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))

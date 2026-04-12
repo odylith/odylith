@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-10
+Updated: 2026-04-12
 
 Backlog: B-025
 
@@ -13,12 +13,18 @@ across the UX/UI, including cross-surface filter and search semantics.
 Current architecture rule:
 - local code selects, compresses, diffs, validates, and caches
 - the provider only writes the final prose bundle
+- deterministic guards decide which evidence may speak and which drift modes
+  fail closed
+- the provider prose stays free-flowing, human, and non-template inside that
+  bounded evidence cone
 
 Assumptions:
 - Compass staleness is a runtime reuse and projection invalidation problem, not
   source-truth loss.
 - Brief quality and brief cost are both mostly input-contract problems, not a
   reason to reintroduce synthetic fallback narration.
+- Good live narration comes from better evidence shaping and drift rejection,
+  not from hard-coded sentence structure.
 - The existing Playwright harness is the right place to prove the UX/UI
   contracts that matter here.
 - Fixing the freshness contract centrally is safer than piling on more local
@@ -108,6 +114,9 @@ Related Bugs:
 - [x] Compass standup narration can still sound templated even when the facts
       are current, because both the provider contract and the then-active
       fallback narrator reused the same stock lead-ins.
+- [ ] Compass live narration can still drift into portfolio/status prose when
+      it broadens past one active lane or compensates for thin evidence with
+      abstract maintainer language.
 - [x] The governed Compass brief contract was still scattered across prompt
       folklore, cache-salvage behavior, and skills, which kept teaching the
       old fallback worldview back into the product even after the runtime
@@ -221,10 +230,16 @@ Related Bugs:
       grounded maintainer narration: open, natural, clear, lightly soulful,
       ordinary-language brief writing with validator coverage against stagey
       metaphors, dashboard-polished abstractions, and rhythmic summary prose.
+- [ ] Live narration keeps the prose free-flowing and human while the hard
+      gates stay on evidence eligibility, one-lane scope, immediate next move,
+      concrete risk seams, and banned abstraction patterns instead of sentence
+      templates.
 - [x] The governed Compass brief contract now has one durable home in the
       Registry-owned `briefs-voice-contract` component, and guidance plus
       skills no longer teach deterministic fallback or stock coverage
       narration back into the product.
+- [ ] Thin evidence packets make the brief shorter instead of pushing it into
+      broader portfolio synthesis.
 - [x] Compass brief cache identity now keys off the deterministic narration
       substrate fingerprint instead of raw packet identity, so non-winner
       churn does not force avoidable cold misses.
@@ -707,3 +722,10 @@ Related Bugs:
 - [x] Compass closeout is complete on this plan. Remaining unchecked items
       belong to broader cross-surface or benchmark follow-on work, not to
       unresolved Compass freshness, narrator, or shell-disclosure claims.
+- recorded on 2026-04-12 for the founder-feedback live-narration retune:
+  the governed brief contract now says prose should stay simple, crisp, clear,
+  insightful, human, live, and free-flowing; deterministic rules stop at
+  evidence eligibility, one active lane, one immediate next move, concrete
+  risk seams, thin-packet shortening, and rejection of abstract
+  manager-speak such as `forcing function`, `execution coherence`, or
+  `room to tighten`
