@@ -827,6 +827,56 @@ def test_build_standup_brief_rejects_packet_bookkeeping_paraphrase(tmp_path: Pat
     _assert_unavailable(brief, reason="validation_failed")
 
 
+def test_build_standup_brief_rejects_live_snapshot_stock_framing(tmp_path: Path) -> None:
+    invalid = _valid_provider_result()
+    invalid["sections"][0]["bullets"] = [
+        {
+            "text": "The repo saw concrete movement: the live Compass runtime snapshot was updated.",
+            "fact_ids": ["F-001"],
+        }
+    ]
+    invalid["sections"][1]["bullets"] = [
+        {
+            "text": (
+                "The team is implementing a shared sync-scoped session so root path, profile, truth-root, "
+                "canonical path tokens, and parsed idea specs are carried together."
+            ),
+            "fact_ids": ["F-002"],
+        },
+        {
+            "text": "The updated live snapshot is still the same proof point, showing this is active execution rather than a stale report.",
+            "fact_ids": ["F-003"],
+        },
+        {
+            "text": "Primary lane timing is still projected at roughly 5 days, so this is a current, immediate track.",
+            "fact_ids": ["F-004"],
+        },
+    ]
+    invalid["sections"][2]["bullets"] = [
+        {
+            "text": "B-021 is next: land the Compass renderer cleanly.",
+            "fact_ids": ["F-005"],
+        }
+    ]
+    invalid["sections"][3]["bullets"] = [
+        {
+            "text": "A P1 blocker is still open: no hard blocker is surfaced right now.",
+            "fact_ids": ["F-008"],
+        }
+    ]
+    provider = _FakeProvider(invalid)
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(),
+        generated_utc="2026-04-12T16:30:00Z",
+        config=_reasoning_config(),
+        provider=provider,
+    )
+
+    _assert_unavailable(brief, reason="validation_failed")
+
+
 def test_build_standup_brief_rejects_dashboard_polish_phrasing(tmp_path: Path) -> None:
     packet = _fact_packet(scope_mode="global", idea_id="", include_window_coverage_fact=True)
     invalid = _valid_provider_result()
@@ -2406,6 +2456,73 @@ def test_build_standup_brief_rejects_cached_global_window_coverage_rollcall_when
         + "\n",
         encoding="utf-8",
     )
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=None,
+        allow_provider=False,
+    )
+
+    _assert_unavailable(brief, reason="provider_deferred")
+
+
+def test_build_standup_brief_rejects_exact_cached_live_snapshot_stock_framing(
+    tmp_path: Path,
+) -> None:
+    packet = _fact_packet(scope_mode="global", idea_id="", window="24h")
+    seeded_provider = _FakeProvider(_valid_provider_result())
+    seeded = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=packet,
+        generated_utc=_now_utc_iso(),
+        config=_reasoning_config(),
+        provider=seeded_provider,
+    )
+    assert seeded["status"] == "ready"
+
+    cache_path = narrator.standup_brief_cache_path(repo_root=tmp_path)
+    cache_payload = json.loads(cache_path.read_text(encoding="utf-8"))
+    fingerprint = narrator.standup_brief_fingerprint(fact_packet=packet)
+    entry = cache_payload["entries"][fingerprint]
+    entry["sections"][0]["bullets"] = [
+        {
+            "text": "The repo saw concrete movement: the live Compass runtime snapshot was updated.",
+            "fact_ids": ["F-001"],
+        }
+    ]
+    entry["sections"][1]["bullets"] = [
+        {
+            "text": (
+                "The team is implementing a shared sync-scoped session so root path, profile, truth-root, "
+                "canonical path tokens, and parsed idea specs are carried together."
+            ),
+            "fact_ids": ["F-002"],
+        },
+        {
+            "text": "The updated live snapshot is still the same proof point, showing this is active execution rather than a stale report.",
+            "fact_ids": ["F-003"],
+        },
+        {
+            "text": "Primary lane timing is still projected at roughly 5 days, so this is a current, immediate track.",
+            "fact_ids": ["F-004"],
+        },
+    ]
+    entry["sections"][2]["bullets"] = [
+        {
+            "text": "B-021 is next: land the Compass renderer cleanly.",
+            "fact_ids": ["F-005"],
+        }
+    ]
+    entry["sections"][3]["bullets"] = [
+        {
+            "text": "A P1 blocker is still open: no hard blocker is surfaced right now.",
+            "fact_ids": ["F-008"],
+        }
+    ]
+    cache_path.write_text(json.dumps(cache_payload, indent=2) + "\n", encoding="utf-8")
 
     brief = narrator.build_standup_brief(
         repo_root=tmp_path,

@@ -899,6 +899,12 @@
 .welcome-state-compact {
   width: min(640px, calc(100% - (var(--brief-handle-width) + 48px)));
   max-height: none;
+  pointer-events: none;
+}
+
+.welcome-state-compact button,
+.welcome-state-compact a {
+  pointer-events: auto;
 }
 
 .welcome-state-launchpad {

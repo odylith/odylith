@@ -666,13 +666,12 @@ def test_build_scoped_standup_fact_packet_humanizes_direction_and_repo_proof() -
     completed = next(section for section in packet["sections"] if section["key"] == "completed")
     current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
     assert any(
-        "Concrete movement in the repo: Land CLAUDE.md companion surface install and repair flow."
-        == fact["text"]
+        "Land CLAUDE.md companion surface install and repair flow." == fact["text"]
         for fact in completed["facts"]
     )
     direction_fact = next(fact for fact in current_execution["facts"] if fact["kind"] == "direction")
     assert "product claim" not in direction_fact["text"]
-    assert "The change now is to make `CLAUDE.md` a first-class managed companion surface" in direction_fact["text"]
+    assert direction_fact["text"].startswith("Make `CLAUDE.md` a first-class managed companion surface")
     assert not any(fact["kind"] == "self_host_status" for fact in current_execution["facts"])
 
 
@@ -718,7 +717,7 @@ def test_build_scoped_standup_fact_packet_avoids_conditional_direction_fragment(
     next_planned = next(section for section in packet["sections"] if section["key"] == "next_planned")
     direction_fact = next(fact for fact in current_execution["facts"] if fact["kind"] == "direction")
     next_fact = next(iter(next_planned["facts"]))
-    assert "The change now is to if " not in direction_fact["text"]
+    assert "land if " not in direction_fact["text"].lower()
     assert "this gives operators a clearer contract" not in direction_fact["text"]
     assert "Cross-Surface Runtime Freshness and UX Browser Hardening" in next_fact["text"]
 

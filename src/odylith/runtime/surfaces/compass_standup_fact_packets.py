@@ -40,7 +40,8 @@ def _direction_fact_text(
     action = str(direction_text or "").strip().rstrip(".")
     if not action:
         return _sentence(f"{label} is {status_phrase}")
-    if not _ACTION_LEAD_RE.match(action):
+    match_candidate = action.lstrip("`'\"“”‘’")
+    if not _ACTION_LEAD_RE.match(match_candidate):
         action = f"land {action}"
     return _sentence(f"{action}; {label} is {status_phrase}")
 
@@ -151,7 +152,11 @@ def _build_scoped_standup_fact_packet(
     ).strip()
     if direction_source.lower().startswith(("this gives operators a clearer contract", "gives operators a clearer contract")):
         direction_source = _narrative_excerpt(purpose or benefit or use_story or label, max_sentences=1, max_chars=180)
-    direction_clause = _action_clause_for_narrative(direction_source) or direction_source
+    direction_lead = direction_source.lstrip("`'\"“”‘’").replace("`", "")
+    if _ACTION_LEAD_RE.match(direction_lead):
+        direction_clause = direction_source
+    else:
+        direction_clause = _action_clause_for_narrative(direction_source) or direction_source
     status = str(row.get("status", "")).strip() or "unknown"
     plan = row.get("plan", {}) if isinstance(row.get("plan"), Mapping) else {}
     progress_ratio = float(plan.get("progress_ratio", 0.0) or 0.0)
@@ -592,7 +597,11 @@ def _build_global_standup_fact_packet(
             max_sentences=1,
             max_chars=180,
         )
-    direction_clause = _action_clause_for_narrative(direction_source) or direction_source
+    direction_lead = direction_source.lstrip("`'\"“”‘’").replace("`", "")
+    if _ACTION_LEAD_RE.match(direction_lead):
+        direction_clause = direction_source
+    else:
+        direction_clause = _action_clause_for_narrative(direction_source) or direction_source
     primary_plan = focused_primary.get("plan", {}) if isinstance(focused_primary.get("plan"), Mapping) else {}
     primary_progress_ratio = float(primary_plan.get("progress_ratio", 0.0) or 0.0)
     eta_days, eta_source = _estimate_remaining_days(focused_primary if focused_primary else {})
