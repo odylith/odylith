@@ -20,6 +20,7 @@ from typing import Any, Mapping, Sequence
 from urllib.parse import quote
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_time
@@ -705,6 +706,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     )
     if skip_rebuild:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == repo_root:
+            session.record_surface_decision(
+                surface="radar",
+                cache_hit=True,
+                built_from="refresh_guard_cache",
+                details={"input_fingerprint": input_fingerprint},
+            )
         print("backlog ui render passed")
         print(f"- output: {output_path}")
         print(f"- standalone_pages: {standalone_pages_path}")
@@ -921,6 +932,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             "available_backends": ["runtime", "staticSnapshot"],
             "runtime_base_url": "",
         },
+        "runtime_contract": derivation_provenance.build_surface_runtime_contract(
+            repo_root=repo_root,
+            surface="radar",
+            runtime_mode=str(args.runtime_mode),
+            built_from="surface_render",
+            cache_hit=False,
+            output_path=output_path,
+            extra={"input_fingerprint": input_fingerprint},
+        ),
         "traceability_graph_file": (
             _as_repo_path(repo_root=repo_root, target=traceability_graph_path)
             if traceability_graph_path.is_file()
@@ -1055,6 +1075,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "detail_shards": len(detail_shards),
                 "document_shards": len(document_shards),
             },
+        )
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None and session.repo_root == repo_root:
+        session.record_surface_decision(
+            surface="radar",
+            cache_hit=False,
+            built_from="surface_render",
+            details={"input_fingerprint": input_fingerprint},
         )
 
     legacy_ui_root = (repo_root / "backlog" / "ui").resolve()

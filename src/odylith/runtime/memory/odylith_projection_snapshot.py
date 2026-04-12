@@ -42,6 +42,7 @@ def write_snapshot(
     tables: Mapping[str, Any],
     projection_state: Mapping[str, Any],
     updated_projections: list[str],
+    provenance: Mapping[str, Any] | None = None,
     source: str = "projection_compile",
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
@@ -56,6 +57,7 @@ def write_snapshot(
         "projection_scope": str(projection_scope).strip().lower() or "default",
         "input_fingerprint": str(input_fingerprint).strip(),
         "updated_projections": [str(token).strip() for token in updated_projections if str(token).strip()],
+        "provenance": dict(provenance) if isinstance(provenance, Mapping) else {},
         "tables": dict(tables),
         "projection_state": dict(projection_state),
     }

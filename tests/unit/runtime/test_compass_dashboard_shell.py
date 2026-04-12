@@ -196,7 +196,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert '<div class="execution-wave-member-head">' in releases_js
     assert '<div class="execution-wave-member-title-chips">' in releases_js
     assert '<div class="execution-wave-title-row">' not in releases_js
-    assert 'Current Release</span>' in releases_js
+    assert 'Target Release</span>' in releases_js
     assert 'const metaChips = [' in releases_js
     assert "Release-owned targeted workstreams for this release." not in releases_js
     assert "Release-owned targeted workstreams for this selection." not in releases_js
@@ -373,7 +373,7 @@ def test_summary_and_timeline_assets_preserve_risk_and_component_spec_context() 
     timeline_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-timeline.v1.js")
 
     assert 'riskRows.bugs.length + riskRows.selfHost.length + riskRows.traceCritical.length + riskRows.stale.length' in summary_js
-    assert 'rows.push(["Current Release", currentReleaseLabel, "stat-release-only"])' in summary_js
+    assert 'rows.push(["Target Release", currentReleaseLabel, "stat-release-only"])' in summary_js
     assert 'rows.push(["Active Waves"' not in summary_js
     assert 'rows.push(["Next Release", nextReleaseLabel]);' not in summary_js
     assert 'rows.push([null, currentReleaseLabel, "stat-release-only"])' not in summary_js

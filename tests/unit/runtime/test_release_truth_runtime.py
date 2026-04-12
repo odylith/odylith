@@ -241,6 +241,41 @@ def test_build_compass_runtime_truth_drift_is_empty_when_runtime_matches_source_
     assert drift == {}
 
 
+def test_build_compass_runtime_truth_drift_ignores_non_active_visible_current_rows(tmp_path: Path) -> None:
+    _seed_release_truth_repo(tmp_path)
+    runtime_payload = {
+        "release_summary": {
+            "current_release": {
+                "release_id": "release-0-1-11",
+                "display_label": "0.1.11",
+                "active_workstreams": ["B-068"],
+                "completed_workstreams": ["B-067"],
+            }
+        },
+        "current_workstreams": [
+            {
+                "idea_id": "B-068",
+                "status": "implementation",
+            },
+            {
+                "idea_id": "B-067",
+                "status": "finished",
+            },
+            {
+                "idea_id": "B-070",
+                "status": "queued",
+            },
+        ],
+    }
+
+    drift = release_truth_runtime.build_compass_runtime_truth_drift(
+        repo_root=tmp_path,
+        runtime_payload=runtime_payload,
+    )
+
+    assert drift == {}
+
+
 def test_build_compass_runtime_truth_drift_prefers_traceability_graph_for_compass_read_model(
     tmp_path: Path,
 ) -> None:

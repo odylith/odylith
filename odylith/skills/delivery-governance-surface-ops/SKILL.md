@@ -61,6 +61,12 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 - prefer proof bundles over prose summaries
 - fail closed when the evidence is incomplete
 - use strict refresh and strict check intentionally, not interchangeably
+- treat shared sync/runtime reuse as governed contract, not hidden optimization:
+  generation-aware provenance must match before Compass, Radar, or Registry
+  trust a warm substrate or cached payload
+- when a surface is reused or rebuilt, expect additive runtime provenance in
+  the payload and a matching cache-explain trail under
+  `.odylith/cache/odylith-context-engine/`
 
 ## Canonical Commands
 
@@ -71,6 +77,7 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 ./.odylith/bin/odylith dashboard refresh --repo-root . --surfaces shell,radar,compass
 ./.odylith/bin/odylith dashboard refresh --repo-root . --surfaces atlas --atlas-sync
 ./.odylith/bin/odylith sync --repo-root . --force --impact-mode full --check-clean
+./.odylith/bin/odylith sync --repo-root . --debug-cache
 ./.odylith/bin/odylith sync --repo-root . --check-only --check-clean --runtime-mode standalone
 ./.odylith/bin/odylith validate plan-traceability --repo-root .
 ./.odylith/bin/odylith validate plan-risk-mitigation --repo-root .

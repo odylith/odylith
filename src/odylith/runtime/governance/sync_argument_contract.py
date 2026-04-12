@@ -71,6 +71,11 @@ def configure_sync_parser(
         help="Show the full dirty-overlap listing instead of the compact summary.",
     )
     parser.add_argument(
+        "--debug-cache",
+        action="store_true",
+        help="Print governed sync cache/provenance decisions while the plan runs.",
+    )
+    parser.add_argument(
         "--proceed-with-overlap",
         action="store_true",
         help=(
@@ -174,6 +179,8 @@ def namespace_to_argv(args: argparse.Namespace, *, include_repo_root: bool = Tru
         argv.append("--dry-run")
     if bool(getattr(args, "verbose", False)):
         argv.append("--verbose")
+    if bool(getattr(args, "debug_cache", False)):
+        argv.append("--debug-cache")
     if bool(getattr(args, "proceed_with_overlap", False)):
         argv.append("--proceed-with-overlap")
     if bool(getattr(args, "no_traceability_autofix", False)):

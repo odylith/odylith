@@ -74,6 +74,7 @@ def write_bundle(
     projection_fingerprint: str,
     projection_scope: str,
     input_fingerprint: str,
+    provenance: Mapping[str, Any] | None = None,
     source: str = "projection_compile",
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
@@ -95,6 +96,7 @@ def write_bundle(
         "input_fingerprint": str(input_fingerprint).strip(),
         "document_count": len(documents),
         "edge_count": len(edges),
+        "provenance": dict(provenance) if isinstance(provenance, Mapping) else {},
         "documents_path": str(docs_target.relative_to(root)),
         "edges_path": str(edges_target.relative_to(root)),
     }

@@ -240,11 +240,28 @@
 ## Refresh, Sync, And Clean Proof
 - `odylith sync --repo-root . --force --odylith-mode refresh --registry-policy-mode enforce-critical --enforce-deep-skills` is the strict canonical refresh path.
 - `odylith sync --repo-root .` is the normal selective fast path for in-session upkeep.
+- `odylith sync --repo-root . --debug-cache` is the operator-facing cache
+  explain lane when you need to inspect why a shared substrate or surface was
+  reused or rebuilt.
 - Use `--check-commit-ready` for staged commit validation and `--check-clean` for strict clean-snapshot proof; do not conflate those contracts.
 - Do not rely on the optional autosync hook against a mixed staged/unstaged worktree.
 - Consumer-shell freshness warnings are advisory only: they may point at fresher runtime state or mixed local truth, but they must not become implicit permission for background tracked-file mutation.
 - If strict sync is blocked only by Mermaid freshness, repair that with `odylith atlas auto-update ...`, rerender Atlas, then rerun the strict sync gate.
 - Compass runtime snapshots under `odylith/compass/runtime/*` remain local high-churn artifacts and should stay uncommitted.
+
+## Shared Derivation Surface Contract
+- Shared projection/compiler/backend reuse is only acceptable when the active
+  provenance tuple matches exactly and, during an active sync, the derivation
+  generation still matches the current truth phase.
+- Compass, Radar, and Registry payloads should carry additive runtime
+  provenance so stale or surprising surface behavior is explainable from the
+  payload itself instead of guessed from file mtimes or git churn.
+- Fail closed on any reuse mismatch. A surface that cannot prove the active
+  generation, projection fingerprint, or required substrate state must rebuild
+  locally rather than trusting a warm artifact.
+- Keep single-writer discipline for compiler/backend/cache artifacts. Batch
+  locks if needed, but do not weaken advisory-lock plus atomic-write semantics
+  in order to chase lower latency.
 
 ## Registry, Atlas, And Component Specs
 - `odylith/registry/source/component_registry.v1.json` is the component inventory source of truth.

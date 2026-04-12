@@ -26,7 +26,7 @@
       ];
       const currentReleaseLabel = releaseHeroLabel(currentRelease);
       if (currentReleaseLabel) {
-        rows.push(["Current Release", currentReleaseLabel, "stat-release-only"]);
+        rows.push(["Target Release", currentReleaseLabel, "stat-release-only"]);
       }
       return rows;
     }

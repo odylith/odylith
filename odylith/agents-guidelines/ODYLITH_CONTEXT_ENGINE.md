@@ -61,6 +61,28 @@
   only when the owner pid is live, the TCP host stays loopback-only, and the
   request can carry the daemon auth token.
 
+## Reuse Invariants
+- Shared projection/compiler/backend reuse is allowed only when the runtime can
+  prove one exact provenance tuple for the candidate substrate:
+  - `repo_root`
+  - `projection_scope`
+  - `projection_fingerprint`
+  - `sync_generation` when an active sync session exists
+  - `code_version`
+  - output-affecting `flags`
+- Treat derivation generation as the active truth phase for one sync:
+  derivation-input mutations such as Registry truth, traceability truth,
+  delivery-intelligence truth, and Atlas catalog truth must invalidate the old
+  generation immediately.
+- Fail closed on reuse. If provenance, generation, or required-table
+  expectations do not match, rebuild locally instead of guessing.
+- Shared reuse stops at the low-level substrate. Compass, Radar, Registry, and
+  other surfaces may share compiler/backend artifacts, but each surface still
+  owns its final payload shaping and final rendered bytes.
+- Use `odylith sync --repo-root . --debug-cache` when you need an operator
+  explanation for reuse versus rebuild; the same run should also leave a debug
+  manifest under `.odylith/cache/odylith-context-engine/`.
+
 ## Daemon And Session Lifecycle
 - Default rich-context posture is `--client-mode auto`.
 - Use `warmup` when you expect repeated local packet reads; keep manual `serve` for intentionally warm long-lived loops.

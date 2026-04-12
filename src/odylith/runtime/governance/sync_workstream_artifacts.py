@@ -30,6 +30,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.command_surface import display_command, ensure_repo_root_args
 from odylith.runtime.common.consumer_profile import surface_root_path, truth_root_path
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
+from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
@@ -116,6 +117,7 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
 _HEARTBEAT_INTERVAL_SECONDS = 10.0
 _DASHBOARD_REFRESH_TIMEOUT_SECONDS = dashboard_refresh_contract.DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS
 _SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV = "ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD"
+_SYNC_DEBUG_CACHE_ENV = "ODYLITH_SYNC_DEBUG_CACHE"
 _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES: tuple[str, ...] = (
     "odylith/agents-guidelines/",
     "odylith/skills/",
@@ -183,6 +185,8 @@ class ExecutionStep:
     next_command_on_failure: str = ""
     timeout_seconds: float | None = None
     action: Callable[[], Any] | None = None
+    change_watch_paths: tuple[str, ...] = ()
+    followup_steps_on_change: tuple["ExecutionStep", ...] = ()
 
 
 @dataclass(frozen=True)
@@ -244,6 +248,8 @@ def _execution_step(
     next_command_on_failure: str = "",
     timeout_seconds: float | None = None,
     action: Callable[[], Any] | None = None,
+    change_watch_paths: Sequence[str] = (),
+    followup_steps_on_change: Sequence[ExecutionStep] = (),
 ) -> ExecutionStep:
     return ExecutionStep(
         label=str(label).strip(),
@@ -255,6 +261,8 @@ def _execution_step(
         next_command_on_failure=str(next_command_on_failure).strip(),
         timeout_seconds=float(timeout_seconds) if timeout_seconds is not None else None,
         action=action,
+        change_watch_paths=tuple(str(token).strip() for token in change_watch_paths if str(token).strip()),
+        followup_steps_on_change=tuple(followup_steps_on_change),
     )
 
 
@@ -493,14 +501,17 @@ def _step_touches_path_prefixes(step: ExecutionStep, prefixes: Sequence[str]) ->
 
 
 def _step_env_overrides(step: ExecutionStep) -> dict[str, str]:
+    overrides: dict[str, str] = {}
+    if str(os.environ.get(_SYNC_DEBUG_CACHE_ENV, "")).strip() == "1":
+        overrides[_SYNC_DEBUG_CACHE_ENV] = "1"
     if not step.command:
-        return {}
+        return overrides
     tokens = tuple(str(token).strip() for token in step.command if str(token).strip())
     if len(tokens) >= 3 and tokens[0] == "python" and tokens[1] == "-m" and tokens[2].startswith(
         "odylith.runtime.surfaces.render_"
     ):
-        return {_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV: "1"}
-    return {}
+        overrides[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = "1"
+    return overrides
 
 
 def _step_invalidates_projection_caches(step: ExecutionStep) -> bool:
@@ -515,12 +526,35 @@ def _invalidate_sync_runtime_caches(*, repo_root: Path, step: ExecutionStep) -> 
     if not step.mutation_classes:
         return
     session = governed_sync_session.active_sync_session()
+    invalidated_namespaces: list[str] = []
+    derivation_generation_changed = False
     if _step_invalidates_projection_caches(step):
         _context_engine_store().clear_runtime_process_caches(repo_root=repo_root)
         if session is not None and session.repo_root == repo_root:
-            session.clear_namespaces("projection_repo_state", "surface_projection_fingerprint", "runtime_warm")
+            projection_namespaces = ("projection_repo_state", "surface_projection_fingerprint", "runtime_warm")
+            session.clear_namespaces(*projection_namespaces)
+            invalidated_namespaces.extend(projection_namespaces)
+            derivation_generation_changed = True
     if session is not None and session.repo_root == repo_root and _step_invalidates_delivery_surface_cache(step):
         session.clear_namespaces("delivery_surface_payload")
+        invalidated_namespaces.append("delivery_surface_payload")
+        derivation_generation_changed = True
+    if session is not None and session.repo_root == repo_root and derivation_generation_changed:
+        session.bump_generation(
+            step_label=step.label,
+            mutation_classes=step.mutation_classes,
+            invalidated_namespaces=invalidated_namespaces,
+            paths=step.paths,
+        )
+
+
+def _step_change_fingerprint(*, repo_root: Path, step: ExecutionStep) -> str:
+    if not step.change_watch_paths:
+        return ""
+    return generated_refresh_guard.compute_input_fingerprint(
+        repo_root=repo_root,
+        watched_paths=step.change_watch_paths,
+    )
 
 
 def _terminate_process(process: subprocess.Popen[Any]) -> None:
@@ -1853,6 +1887,97 @@ def build_sync_execution_plan(
                 next_command_on_failure=sync_failure_command,
             )
         )
+    final_delivery_followups: list[ExecutionStep] = []
+    if bool(getattr(impact, "atlas", False)):
+        final_delivery_followups.append(
+            _execution_step(
+                "Re-render Atlas after final delivery intelligence stabilization.",
+                action=lambda: render_mermaid_catalog_refresh.main(
+                    [
+                        "--repo-root",
+                        str(repo_root),
+                        "--fail-on-stale",
+                        "--runtime-mode",
+                        runtime_mode,
+                    ]
+                ),
+                paths=_surface_render_outputs("atlas"),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
+    if bool(getattr(impact, "compass", False)):
+        final_delivery_followups.append(
+            _execution_step(
+                "Re-render Compass after final delivery intelligence stabilization.",
+                command=(
+                    "python",
+                    "-m",
+                    "odylith.runtime.surfaces.render_compass_dashboard",
+                    "--repo-root",
+                    str(repo_root),
+                    *_runtime_args(runtime_mode),
+                ),
+                paths=_surface_render_outputs("compass"),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
+    if bool(getattr(impact, "radar", False)):
+        final_delivery_followups.append(
+            _execution_step(
+                "Re-render Radar after final delivery intelligence stabilization.",
+                command=(
+                    "python",
+                    "-m",
+                    "odylith.runtime.surfaces.render_backlog_ui",
+                    "--repo-root",
+                    str(repo_root),
+                    *_runtime_args(runtime_mode),
+                ),
+                paths=_surface_render_outputs("radar"),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
+    if bool(getattr(impact, "registry", False)):
+        final_delivery_followups.append(
+            _execution_step(
+                "Re-render Registry after final delivery intelligence stabilization.",
+                command=(
+                    "python",
+                    "-m",
+                    "odylith.runtime.surfaces.render_registry_dashboard",
+                    "--repo-root",
+                    str(repo_root),
+                    *_runtime_args(runtime_mode),
+                ),
+                paths=_surface_render_outputs("registry"),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
+    if bool(impact_tooling_shell):
+        final_delivery_followups.append(
+            _execution_step(
+                "Re-render the top-level Odylith shell after final delivery intelligence stabilization.",
+                command=(
+                    "python",
+                    "-m",
+                    "odylith.runtime.surfaces.render_tooling_dashboard",
+                    "--repo-root",
+                    str(repo_root),
+                    *_runtime_args(runtime_mode),
+                ),
+                paths=_surface_render_outputs("tooling_shell"),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
+    final_delivery_stabilization_step = _execution_step(
+        "Refresh delivery intelligence after final Registry truth settles.",
+        command=_delivery_intelligence_command(repo_root=repo_root, check_only=False),
+        mutation_classes=("generated_surfaces",),
+        paths=("odylith/runtime/delivery_intelligence.v4.json",),
+        next_command_on_failure=sync_failure_command,
+        change_watch_paths=("odylith/runtime/delivery_intelligence.v4.json",),
+        followup_steps_on_change=tuple(final_delivery_followups),
+    )
     steps.extend(post_registry_truth_steps)
     steps.append(
         _execution_step(
@@ -1878,6 +2003,8 @@ def build_sync_execution_plan(
                 mutation_classes=("repo_owned_truth",),
                 paths=("odylith/registry/source/components/",),
                 next_command_on_failure=sync_failure_command,
+                change_watch_paths=("odylith/registry/source/components/",),
+                followup_steps_on_change=(final_delivery_stabilization_step,),
             )
         )
     notes = [
@@ -1900,8 +2027,9 @@ def _execute_plan(
     runtime_fallback_used: bool,
 ) -> int:
     started_at = time.perf_counter()
-    for index, step in enumerate(plan.steps, start=1):
-        print(f"- step {index}/{len(plan.steps)}: {step.label}")
+    def _execute_step(*, display_label: str, step: ExecutionStep) -> tuple[int, ExecutionStep | None]:
+        print(f"- {display_label}: {step.label}")
+        before_change_fingerprint = _step_change_fingerprint(repo_root=repo_root, step=step)
         with _temporary_environ(_step_env_overrides(step)):
             if step.action is not None:
                 rc = _run_callable_with_heartbeat(
@@ -1921,17 +2049,38 @@ def _execute_plan(
             else:
                 rc = 0
         if rc != 0:
+            return rc, step
+        _invalidate_sync_runtime_caches(repo_root=repo_root, step=step)
+        after_change_fingerprint = _step_change_fingerprint(repo_root=repo_root, step=step)
+        if (
+            step.followup_steps_on_change
+            and before_change_fingerprint
+            and after_change_fingerprint
+            and before_change_fingerprint != after_change_fingerprint
+        ):
+            for followup_index, followup in enumerate(step.followup_steps_on_change, start=1):
+                followup_rc, failed_step = _execute_step(
+                    display_label=f"followup {display_label}.{followup_index}",
+                    step=followup,
+                )
+                if followup_rc != 0:
+                    return followup_rc, failed_step
+        return 0, None
+
+    for index, step in enumerate(plan.steps, start=1):
+        rc, failed_step = _execute_step(display_label=f"step {index}/{len(plan.steps)}", step=step)
+        if rc != 0:
             elapsed = time.perf_counter() - started_at
+            failed = failed_step or step
             print(f"{plan_name} failed")
             print("- outcome: failed")
             print(f"- elapsed_seconds: {elapsed:.1f}")
             print(f"- runtime_fallback_used: {'yes' if runtime_fallback_used else 'no'}")
-            if step.next_command_on_failure:
-                print(f"- next: {step.next_command_on_failure}")
-            elif step.command:
-                print(f"- next: {_display_sync_step_command(repo_root=repo_root, command=step.command)}")
+            if failed.next_command_on_failure:
+                print(f"- next: {failed.next_command_on_failure}")
+            elif failed.command:
+                print(f"- next: {_display_sync_step_command(repo_root=repo_root, command=failed.command)}")
             return rc
-        _invalidate_sync_runtime_caches(repo_root=repo_root, step=step)
     elapsed = time.perf_counter() - started_at
     print(f"{plan_name} completed")
     print("- outcome: passed")
@@ -2130,12 +2279,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     session_context: contextlib.AbstractContextManager[object]
     if run_impl is _run_command_in_process:
         session_context = governed_sync_session.activate_sync_session(
-            governed_sync_session.GovernedSyncSession(repo_root=repo_root)
+            governed_sync_session.GovernedSyncSession(
+                repo_root=repo_root,
+                debug_cache=bool(getattr(args, "debug_cache", False)),
+            )
         )
     else:
         session_context = contextlib.nullcontext()
 
-    with session_context:
+    debug_env = {_SYNC_DEBUG_CACHE_ENV: "1"} if bool(getattr(args, "debug_cache", False)) else None
+    with _temporary_environ(debug_env), session_context:
         rc = _execute_plan(
             repo_root=repo_root,
             plan_name="workstream sync",

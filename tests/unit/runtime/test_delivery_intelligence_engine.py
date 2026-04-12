@@ -88,6 +88,20 @@ def test_delivery_intelligence_main_reports_current_for_semantic_noop(monkeypatc
     assert "delivery intelligence artifact is current" in output
 
 
+def test_delivery_registry_watch_paths_ignore_forensics_sidecars(tmp_path: Path) -> None:
+    specs_root = tmp_path / "odylith" / "registry" / "source" / "components" / "odylith"
+    specs_root.mkdir(parents=True, exist_ok=True)
+    (specs_root / "CURRENT_SPEC.md").write_text("# Spec\n", encoding="utf-8")
+    (specs_root / "FORENSICS.v1.json").write_text("{}\n", encoding="utf-8")
+
+    watched_paths = engine._registry_delivery_watched_paths(tmp_path)  # noqa: SLF001
+
+    assert "odylith/registry/source/component_registry.v1.json" in watched_paths
+    assert "odylith/registry/source/components/odylith/CURRENT_SPEC.md" in watched_paths
+    assert all("FORENSICS.v1.json" not in path for path in watched_paths)
+    assert refresh._registry_delivery_watched_paths(tmp_path) == watched_paths  # noqa: SLF001
+
+
 def test_delivery_intelligence_main_skips_rebuild_when_inputs_are_unchanged(
     monkeypatch,
     tmp_path: Path,

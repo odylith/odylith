@@ -58,6 +58,7 @@ def _runtime_workstream_ids(payload: Mapping[str, Any]) -> list[str]:
             str(row.get("idea_id", "")).strip().upper()
             for row in current
             if isinstance(row, Mapping)
+            and str(row.get("status", "")).strip().lower() in _ACTIVE_WORKSTREAM_STATUSES
             and backlog_contract._IDEA_ID_RE.fullmatch(str(row.get("idea_id", "")).strip().upper())  # noqa: SLF001
         }
     )

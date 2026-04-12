@@ -18,6 +18,7 @@ from typing import Any, Callable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine.surface_projection_fingerprint import default_surface_projection_input_fingerprint
 from odylith.runtime.surfaces import compass_refresh_contract
@@ -143,6 +144,47 @@ def _record_daemon_cached_runtime_payload(
         required=False,
         timeout_seconds=2.0,
     )
+
+
+def _stamp_surface_runtime_contract(
+    *,
+    payload: Mapping[str, Any],
+    repo_root: Path,
+    runtime_mode: str,
+    built_from: str,
+    cache_hit: bool,
+    extra: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    runtime_contract = (
+        dict(payload.get("runtime_contract", {}))
+        if isinstance(payload.get("runtime_contract"), Mapping)
+        else {}
+    )
+    runtime_contract.update(
+        derivation_provenance.build_surface_runtime_contract(
+            repo_root=repo_root,
+            surface="compass",
+            runtime_mode=runtime_mode,
+            built_from=built_from,
+            cache_hit=cache_hit,
+            extra=extra,
+        )
+    )
+    updated = {**dict(payload), "runtime_contract": runtime_contract}
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None and session.repo_root == Path(repo_root).resolve():
+        session.record_surface_decision(
+            surface="compass",
+            cache_hit=cache_hit,
+            built_from=built_from,
+            details={
+                "input_fingerprint": str(runtime_contract.get("input_fingerprint", "")).strip(),
+                "generation": int(runtime_contract.get("generation", 0) or 0),
+            },
+        )
+    return updated
 
 
 def _brief_contract_fields_present(*, brief: Mapping[str, Any]) -> bool:
@@ -473,16 +515,14 @@ def refresh_runtime_artifacts(
         payload=daemon_cached_payload,
         requested_profile=normalized_profile,
     ):
-        runtime_contract = (
-            dict(daemon_cached_payload.get("runtime_contract", {}))
-            if isinstance(daemon_cached_payload.get("runtime_contract"), Mapping)
-            else {}
+        daemon_cached_payload = _stamp_surface_runtime_contract(
+            payload=daemon_cached_payload,
+            repo_root=repo_root,
+            runtime_mode=runtime_mode,
+            built_from="daemon_cached_runtime_payload",
+            cache_hit=True,
+            extra={"refresh_profile": normalized_profile},
         )
-        runtime_contract["refresh_profile"] = normalized_profile
-        daemon_cached_payload = {
-            **dict(daemon_cached_payload),
-            "runtime_contract": runtime_contract,
-        }
         updated_daemon_payload = _apply_refresh_attempt_state(
             payload=daemon_cached_payload,
             requested_profile=normalized_profile,
@@ -514,6 +554,7 @@ def refresh_runtime_artifacts(
         )
         return updated_daemon_payload, daemon_runtime_paths
     existing_payload = _existing_runtime_payload_if_fresh(
+        repo_root=repo_root,
         current_json_path=current_json_path,
         input_fingerprint=input_fingerprint,
         runtime_paths=runtime_paths,
@@ -522,16 +563,14 @@ def refresh_runtime_artifacts(
         payload=existing_payload,
         requested_profile=normalized_profile,
     ):
-        runtime_contract = (
-            dict(existing_payload.get("runtime_contract", {}))
-            if isinstance(existing_payload.get("runtime_contract"), Mapping)
-            else {}
+        existing_payload = _stamp_surface_runtime_contract(
+            payload=existing_payload,
+            repo_root=repo_root,
+            runtime_mode=runtime_mode,
+            built_from="existing_runtime_payload",
+            cache_hit=True,
+            extra={"refresh_profile": normalized_profile},
         )
-        runtime_contract["refresh_profile"] = normalized_profile
-        existing_payload = {
-            **dict(existing_payload),
-            "runtime_contract": runtime_contract,
-        }
         updated_existing_payload = _apply_refresh_attempt_state(
             payload=existing_payload,
             requested_profile=normalized_profile,
@@ -617,6 +656,17 @@ def refresh_runtime_artifacts(
         }
     )
     payload["runtime_contract"] = runtime_contract
+    payload = _stamp_surface_runtime_contract(
+        payload=payload,
+        repo_root=repo_root,
+        runtime_mode=runtime_mode,
+        built_from="fresh_runtime_payload",
+        cache_hit=False,
+        extra={
+            "refresh_profile": normalized_profile,
+            "postbuild_input_changed": bool(postbuild_signatures != tracked_input_signatures),
+        },
+    )
     if normalized_profile == compass_refresh_contract.DEFAULT_REFRESH_PROFILE:
         compass_standup_brief_maintenance.stamp_request_runtime_input_fingerprint(
             repo_root=repo_root,
@@ -721,6 +771,7 @@ def _compass_runtime_tracked_input_signatures(
 
 def _existing_runtime_payload_if_fresh(
     *,
+    repo_root: Path,
     current_json_path: Path,
     input_fingerprint: str,
     runtime_paths: tuple[Path, Path, Path, Path, Path],
@@ -742,6 +793,9 @@ def _existing_runtime_payload_if_fresh(
         str(runtime_contract.get("standup_brief_schema_version", "")).strip()
         != compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION
     ):
+        return None
+    generation, require_generation, _last_step = derivation_provenance.active_sync_generation(repo_root=repo_root)
+    if require_generation and int(runtime_contract.get("generation", -1) or -1) != generation:
         return None
     if str(runtime_contract.get("input_fingerprint", "")).strip() != str(input_fingerprint).strip():
         return None

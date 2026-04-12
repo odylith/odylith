@@ -55,6 +55,9 @@ Related Bugs:
 - [x] Content-addressed no-op writes are part of correctness hygiene, not just
       performance, because unchanged outputs should not dirty git or trigger
       downstream invalidation.
+- [x] Shared reuse without an explicit derivation-generation and provenance
+      contract is too risky: it hides stale-state failures behind good wall
+      clock numbers and makes debugging much harder than the old redundant path.
 
 ## Must-Ship
 - [x] Add one explicit sync-session runtime that owns repo root, consumer profile,
@@ -67,6 +70,11 @@ Related Bugs:
 - [x] Keep the current sync plan and validation behavior externally compatible.
 - [x] Add focused proof that the shared session is reused across sync steps and
       that unchanged writes stay quiet.
+- [x] Make derivation generation, provenance, fail-closed reuse, and
+      cache-explain evidence first-class product invariants rather than
+      implementation folklore.
+- [x] Stamp Compass, Radar, and Registry payloads with additive runtime
+      provenance so operators can see what the surface was built from.
 
 ## Should-Ship
 - [x] Hoist repo-root inference out of backlog parsing and promotion-link checks.
@@ -111,6 +119,12 @@ Related Bugs:
 - [x] Memoize projection path-tree fingerprints per repo-state so compatible
       scope checks stop rescanning the same watched directories during one sync
       phase.
+- [x] Make compiler and backend manifests carry explicit provenance tuples and
+      reject reuse on generation or code-version mismatch instead of trusting
+      fingerprint-only matches.
+- [x] Persist a sync debug manifest under `.odylith/cache/odylith-context-engine/`
+      that records invalidation events plus surface/cache decisions for the
+      active run.
 
 ## Defer
 - [ ] Persistent sync daemon with warm resident session state across commands.
@@ -128,6 +142,8 @@ Related Bugs:
       sync path.
 - [x] `odylith sync --check-only --runtime-mode standalone` still proves the
       governed slice fail-closed.
+- [x] Reused and cold-built substrate decisions are explainable from a local
+      debug manifest instead of only from profiler receipts.
 
 ## Non-Goals
 - [ ] Claiming sub-second cold forced full sync from scratch in Python.
@@ -137,24 +153,29 @@ Related Bugs:
       one is needed.
 
 ## Impacted Areas
-- [ ] [2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md](/Users/freedom/code/odylith/odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md)
-- [ ] [2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md](/Users/freedom/code/odylith/odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md)
-- [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/odylith/CURRENT_SPEC.md)
-- [ ] [diagrams.v1.json](/Users/freedom/code/odylith/odylith/atlas/source/catalog/diagrams.v1.json)
-- [ ] [sync_workstream_artifacts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/sync_workstream_artifacts.py)
-- [ ] [generated_surface_refresh_guards.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/generated_surface_refresh_guards.py)
-- [ ] [workstream_inference.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/workstream_inference.py)
-- [ ] [validate_backlog_contract.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/validate_backlog_contract.py)
-- [ ] [component_registry_intelligence.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/component_registry_intelligence.py)
-- [ ] [consumer_profile.py](/Users/freedom/code/odylith/src/odylith/runtime/common/consumer_profile.py)
-- [ ] [render_compass_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_compass_dashboard.py)
-- [ ] [render_backlog_ui.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui.py)
-- [ ] [render_backlog_ui_payload_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py)
-- [ ] [odylith_context_engine_projection_backlog_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_projection_backlog_runtime.py)
-- [ ] [odylith_context_engine_projection_registry_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_projection_registry_runtime.py)
-- [ ] `src/odylith/runtime/common/*` shared sync-session helpers
-- [ ] focused sync/runtime tests covering session reuse, path-cache behavior, and
-      no-op write elision
+- [x] [2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md](/Users/freedom/code/odylith/odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md)
+- [x] [2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md](/Users/freedom/code/odylith/odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md)
+- [x] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/odylith/CURRENT_SPEC.md)
+- [x] [diagrams.v1.json](/Users/freedom/code/odylith/odylith/atlas/source/catalog/diagrams.v1.json)
+- [x] [sync_workstream_artifacts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/sync_workstream_artifacts.py)
+- [x] [generated_surface_refresh_guards.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/generated_surface_refresh_guards.py)
+- [x] [workstream_inference.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/workstream_inference.py)
+- [x] [validate_backlog_contract.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/validate_backlog_contract.py)
+- [x] [component_registry_intelligence.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/component_registry_intelligence.py)
+- [x] [consumer_profile.py](/Users/freedom/code/odylith/src/odylith/runtime/common/consumer_profile.py)
+- [x] [derivation_provenance.py](/Users/freedom/code/odylith/src/odylith/runtime/common/derivation_provenance.py)
+- [x] [sync_session.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/sync_session.py)
+- [x] [odylith_memory_backend.py](/Users/freedom/code/odylith/src/odylith/runtime/memory/odylith_memory_backend.py)
+- [x] [render_compass_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_compass_dashboard.py)
+- [x] [render_backlog_ui.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui.py)
+- [x] [render_backlog_ui_payload_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py)
+- [x] [render_registry_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_registry_dashboard.py)
+- [x] [odylith_context_engine_projection_backlog_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_projection_backlog_runtime.py)
+- [x] [odylith_context_engine_projection_registry_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_projection_registry_runtime.py)
+- [x] [odylith_context_engine_projection_compiler_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py)
+- [x] [CONTEXT_ENGINE_OPERATIONS.md](/Users/freedom/code/odylith/odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md)
+- [x] focused sync/runtime tests covering session reuse, path-cache behavior, no-op
+      write elision, generation gating, and cache-explain evidence
 
 ## Rollout
 1. Bind the workstream, plan, Registry dossier, and Atlas diagram so the
@@ -164,6 +185,8 @@ Related Bugs:
 3. Add content-addressed no-op writes on the first governed render targets.
 4. Re-profile, then decide whether the next justified wave is a broader DAG
    invalidation engine or a resident daemon.
+5. Keep latency work behind the new provenance/generation contract so later
+   daemon or DAG waves cannot trade correctness for speed.
 
 ## Validation
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_workstream_inference.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_component_registry_intelligence.py`
@@ -178,6 +201,7 @@ Related Bugs:
 - [x] `python3 -m cProfile -o /tmp/b091-sync-latest.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`_warm_runtime_uncached` down to `2` calls / `3.88s` cumulative, `render_backlog_ui.main` down to `0.63s` cumulative, `render_tooling_dashboard.main` down to `0.39s`, `should_skip_surface_rebuild()` down to `0.009s`, and the remaining top CPU sites now concentrated in Compass runtime payload build, Registry snapshot shaping, and projection fingerprint trees)
 - [x] `/usr/bin/time -p env PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`5.4s` sync-reported elapsed / `6.26s` wall clock on 2026-04-12 once the tree had settled after the render-phase reorder, repo-scoped projection-fingerprint invalidation hardening, and per-repo-state path-tree fingerprint memoization landed)
 - [x] `python3 -m cProfile -o /tmp/b091-latest-current.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`projection_input_fingerprint()` down to `1.33s` cumulative, `_compute_projected_input_fingerprints()` down to `1.21s`, `fingerprint_tree()` down to `0.98s`, and `warm_projections()` down to `2.26s`; the remaining dominant costs are now Compass runtime payload assembly at `3.94s` cumulative and Registry payload/snapshot shaping at `2.20s` / `1.87s`)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_derivation_provenance.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_odylith_memory_backend.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_sync_cli_compat.py` (`113 passed` on 2026-04-12 after derivation-generation, provenance, surface-contract, and cache-explain coverage landed)
 - [x] `git diff --check`
 
 ## Outcome Snapshot
@@ -230,3 +254,7 @@ Related Bugs:
       runtime payload assembly, Registry snapshot shaping, and projection
       fingerprint trees dominate after the path storm and redundant surface
       guard scans were cut out of the full sync lane.
+- [x] Shared sync/runtime reuse is now governed by hard invariants: derivation
+      generation, content-addressed provenance, fail-closed reuse, additive
+      surface provenance, and persisted cache-explain evidence all ship as part
+      of the product contract instead of as undocumented implementation detail.

@@ -33,8 +33,7 @@
     "D-031",
     "D-033",
     "D-034",
-    "D-035",
-    "D-047"
+    "D-035"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
@@ -54,18 +53,18 @@
   "timeline": [
     {
       "artifacts": [
-        "src/odylith/runtime/context_engine/projection_repo_state_runtime.py"
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 85,
+      "event_index": 91,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-context-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/context_engine/projection_repo_state_runtime.py",
-      "ts_iso": "2026-04-12T00:28:34-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py",
+      "ts_iso": "2026-04-12T09:02:03-07:00",
       "workstreams": []
     },
     {

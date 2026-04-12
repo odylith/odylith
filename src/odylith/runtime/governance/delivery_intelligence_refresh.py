@@ -50,6 +50,17 @@ def _current_local_head(repo_root: Path) -> str:
     return str(completed.stdout or "").strip()
 
 
+def _registry_delivery_watched_paths(repo_root: Path) -> tuple[str, ...]:
+    root = Path(repo_root).resolve()
+    specs_root = (root / "odylith" / "registry" / "source" / "components").resolve()
+    current_specs = sorted(
+        str(path.relative_to(root))
+        for path in specs_root.glob("*/CURRENT_SPEC.md")
+        if path.is_file()
+    )
+    return ("odylith/registry/source/component_registry.v1.json", *current_specs)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
@@ -63,7 +74,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "odylith/radar/source",
                 "odylith/technical-plans",
                 "odylith/casebook/bugs",
-                "odylith/registry/source",
+                *_registry_delivery_watched_paths(repo_root),
                 "odylith/atlas/source/catalog/diagrams.v1.json",
                 "odylith/radar/traceability-graph.v1.json",
                 *agent_runtime_contract.candidate_stream_tokens(),

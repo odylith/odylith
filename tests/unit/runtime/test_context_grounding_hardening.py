@@ -4,6 +4,7 @@ import contextlib
 from pathlib import Path
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as projection_compiler_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime as hot_path_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime as hot_path_scope
@@ -940,6 +941,36 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
     runtime_root = tmp_path / ".odylith" / "runtime"
     state_writes: list[dict[str, object]] = []
     timing_rows: list[dict[str, object]] = []
+    compiler_provenance = derivation_provenance.build_derivation_provenance(
+        repo_root=tmp_path,
+        projection_scope="full",
+        projection_fingerprint="fp-full",
+        sync_generation=0,
+        code_version=derivation_provenance.fingerprint_source_files(
+            [
+                Path(projection_compiler_runtime.__file__),
+                Path(store.odylith_projection_snapshot.__file__),
+                Path(store.odylith_projection_bundle.__file__),
+            ]
+        ),
+        flags={"projection_names": sorted(store._projection_names_for_scope("full"))},  # noqa: SLF001
+    )
+    backend_provenance = derivation_provenance.build_derivation_provenance(
+        repo_root=tmp_path,
+        projection_scope="full",
+        projection_fingerprint="fp-full",
+        sync_generation=0,
+        code_version=derivation_provenance.fingerprint_source_files(
+            [
+                Path(store.odylith_memory_backend.__file__),
+                Path(store.odylith_projection_bundle.__file__),
+            ]
+        ),
+        flags={
+            "backend_dependencies_available": True,
+            "storage": "lance_local_columnar",
+        },
+    )
 
     monkeypatch.setattr(store, "runtime_root", lambda **_kwargs: runtime_root)
     monkeypatch.setattr(
@@ -957,7 +988,12 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
     monkeypatch.setattr(
         store.odylith_projection_bundle,
         "load_bundle_manifest",
-        lambda **_kwargs: {"ready": True, "projection_fingerprint": "fp-full", "projection_scope": "full"},
+        lambda **_kwargs: {
+            "ready": True,
+            "projection_fingerprint": "fp-full",
+            "projection_scope": "full",
+            "provenance": compiler_provenance,
+        },
     )
     monkeypatch.setattr(
         store.odylith_projection_snapshot,
@@ -967,12 +1003,18 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
             "tables": {"components": 1},
             "projection_fingerprint": "fp-full",
             "projection_scope": "full",
+            "provenance": compiler_provenance,
         },
     )
     monkeypatch.setattr(
         store.odylith_memory_backend,
         "load_manifest",
-        lambda **_kwargs: {"projection_fingerprint": "fp-full", "projection_scope": "full", "ready": True},
+        lambda **_kwargs: {
+            "projection_fingerprint": "fp-full",
+            "projection_scope": "full",
+            "ready": True,
+            "provenance": backend_provenance,
+        },
     )
     monkeypatch.setattr(
         store.odylith_memory_backend,

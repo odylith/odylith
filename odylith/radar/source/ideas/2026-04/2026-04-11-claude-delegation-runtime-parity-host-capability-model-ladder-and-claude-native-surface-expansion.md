@@ -16,12 +16,12 @@ confidence: high
 founder_override: no
 promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md
 execution_model: standard
-workstream_type: standard
+workstream_type: child
 workstream_parent: B-083
 workstream_children: B-085
 workstream_depends_on: B-083
 workstream_blocks:
-related_diagram_ids: D-047
+related_diagram_ids: D-030
 workstream_reopens:
 workstream_reopened_by:
 workstream_split_from:

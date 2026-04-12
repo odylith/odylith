@@ -4369,7 +4369,7 @@
       "idea_id": "B-083",
       "title": "Claude Guidance Surface Parity and Install Contract Support",
       "status": "implementation",
-      "workstream_type": "standard",
+      "workstream_type": "umbrella",
       "workstream_parent": "",
       "workstream_children": [
         "B-084"
@@ -4474,7 +4474,7 @@
       "idea_id": "B-084",
       "title": "Claude Delegation Runtime Parity - Host Capability, Model Ladder, and Claude-Native Surface Expansion",
       "status": "implementation",
-      "workstream_type": "standard",
+      "workstream_type": "child",
       "workstream_parent": "B-083",
       "workstream_children": [
         "B-085"
@@ -4490,7 +4490,7 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [
-        "D-047"
+        "D-030"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
       "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
@@ -4574,7 +4574,7 @@
       "idea_id": "B-085",
       "title": "Claude Host Python Surface Bake - Statusline, PreCompact Snapshot, and CLI Subcommand",
       "status": "implementation",
-      "workstream_type": "standard",
+      "workstream_type": "child",
       "workstream_parent": "B-084",
       "workstream_children": [],
       "workstream_depends_on": [
@@ -4588,7 +4588,7 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [
-        "D-047"
+        "D-030"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
       "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
@@ -9187,6 +9187,11 @@
     },
     {
       "source": "B-084",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-084",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
       "edge_type": "promoted_to_plan"
     },
@@ -9199,6 +9204,11 @@
       "source": "B-085",
       "target": "B-087",
       "edge_type": "depends_on"
+    },
+    {
+      "source": "B-085",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
     },
     {
       "source": "B-085",
@@ -9960,101 +9970,13 @@
       "idea_id": "B-071",
       "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md: current='D-028,D-029' candidate='D-028,D-029,D-032'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
-    },
-    {
-      "severity": "info",
-      "audience": "maintainer",
-      "surface_visibility": "diagnostics",
-      "category": "topology_conflict",
-      "message": "B-083: autofix skipped `workstream_type` due to metadata conflict",
-      "idea_id": "B-083",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md: current='standard' candidate='umbrella'. Reason: derived from parent/children topology.",
-      "source": "odylith/radar/traceability-autofix-report.v1.json"
-    },
-    {
-      "severity": "info",
-      "audience": "maintainer",
-      "surface_visibility": "diagnostics",
-      "category": "topology_conflict",
-      "message": "B-084: autofix skipped `workstream_type` due to metadata conflict",
-      "idea_id": "B-084",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md: current='standard' candidate='umbrella'. Reason: derived from parent/children topology.",
-      "source": "odylith/radar/traceability-autofix-report.v1.json"
-    },
-    {
-      "severity": "info",
-      "audience": "maintainer",
-      "surface_visibility": "diagnostics",
-      "category": "topology_conflict",
-      "message": "B-085: autofix skipped `workstream_type` due to metadata conflict",
-      "idea_id": "B-085",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md: current='standard' candidate='child'. Reason: derived from parent/children topology.",
-      "source": "odylith/radar/traceability-autofix-report.v1.json"
-    },
-    {
-      "severity": "warning",
-      "audience": "operator",
-      "surface_visibility": "default",
-      "category": "topology_workstream_type",
-      "message": "B-083: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
-      "idea_id": "B-083",
-      "action": "Set `workstream_type` to umbrella, child, or standalone in the idea spec metadata.",
-      "source": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
-    },
-    {
-      "severity": "warning",
-      "audience": "operator",
-      "surface_visibility": "default",
-      "category": "topology_workstream_type",
-      "message": "B-084: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
-      "idea_id": "B-084",
-      "action": "Set `workstream_type` to umbrella, child, or standalone in the idea spec metadata.",
-      "source": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md"
-    },
-    {
-      "severity": "warning",
-      "audience": "operator",
-      "surface_visibility": "default",
-      "category": "diagram_link_missing",
-      "message": "B-084: related diagram `D-047` not found in catalog",
-      "idea_id": "B-084",
-      "action": "Add the diagram to odylith/atlas/source/catalog/diagrams.v1.json or remove stale diagram linkage.",
-      "source": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md"
-    },
-    {
-      "severity": "warning",
-      "audience": "operator",
-      "surface_visibility": "default",
-      "category": "topology_workstream_type",
-      "message": "B-085: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
-      "idea_id": "B-085",
-      "action": "Set `workstream_type` to umbrella, child, or standalone in the idea spec metadata.",
-      "source": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md"
-    },
-    {
-      "severity": "warning",
-      "audience": "operator",
-      "surface_visibility": "default",
-      "category": "diagram_link_missing",
-      "message": "B-085: related diagram `D-047` not found in catalog",
-      "idea_id": "B-085",
-      "action": "Add the diagram to odylith/atlas/source/catalog/diagrams.v1.json or remove stale diagram linkage.",
-      "source": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md"
     }
   ],
   "warnings": [
     "B-010: autofix skipped `related_diagram_ids` due to metadata conflict",
     "B-058: autofix skipped `related_diagram_ids` due to metadata conflict",
     "B-069: autofix skipped `related_diagram_ids` due to metadata conflict",
-    "B-071: autofix skipped `related_diagram_ids` due to metadata conflict",
-    "B-083: autofix skipped `workstream_type` due to metadata conflict",
-    "B-083: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
-    "B-084: autofix skipped `workstream_type` due to metadata conflict",
-    "B-084: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
-    "B-084: related diagram `D-047` not found in catalog",
-    "B-085: autofix skipped `workstream_type` due to metadata conflict",
-    "B-085: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
-    "B-085: related diagram `D-047` not found in catalog"
+    "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
     "workstream_count": 91,
@@ -10063,9 +9985,9 @@
     "execution_program_count": 1,
     "execution_wave_count": 6,
     "node_count": 218,
-    "edge_count": 489,
-    "warning_count": 12,
-    "warning_item_count": 12
+    "edge_count": 491,
+    "warning_count": 4,
+    "warning_item_count": 4
   },
-  "generated_utc": "2026-04-12 06:58:31Z"
+  "generated_utc": "2026-04-12 17:09:29Z"
 }

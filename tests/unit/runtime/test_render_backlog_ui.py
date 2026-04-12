@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from odylith.runtime.surfaces import dashboard_ui_primitives
@@ -7,6 +8,11 @@ from odylith.runtime.surfaces import render_backlog_ui
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _load_backlog_payload(root: Path) -> dict[str, object]:
+    payload_js = (root / "odylith" / "radar" / "backlog-payload.v1.js").read_text(encoding="utf-8")
+    return json.loads(payload_js.split(" = ", 1)[1].rsplit(";", 1)[0])
 
 
 def _seed_backlog_render_repo(root: Path) -> None:
@@ -483,11 +489,11 @@ def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_ch
     assert 'escapeHtml(workstreamActiveReleaseLabel(row))' in html
     assert "Release ${workstreamActiveReleaseLabel(row)}" not in html
     assert "function releaseCardLabel(row)" in html
-    assert 'statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));' in html
+    assert 'statRows.push(statBlock("Target Release", releaseCardLabel(currentRelease), { releaseOnly: true }));' in html
     assert 'statRows.push(statBlock("", releaseCardLabel(currentRelease), { releaseOnly: true }));' not in html
     assert 'statRows.push(statBlock("Wave Programs"' not in html
     assert 'statRows.push(statBlock("Active Waves", activeWaves));' in html
-    assert html.index('statRows.push(statBlock("Active Waves", activeWaves));') < html.index('statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));')
+    assert html.index('statRows.push(statBlock("Active Waves", activeWaves));') < html.index('statRows.push(statBlock("Target Release", releaseCardLabel(currentRelease), { releaseOnly: true }));')
     assert 'statRows.push(statBlock("Next Release", releaseCardLabel(nextRelease)));' not in html
     assert "versionLabel.startsWith(\"v\") ? versionLabel : `v${versionLabel}`" not in html
     assert ".stat.stat-release-only {" not in html
@@ -619,3 +625,24 @@ def test_render_backlog_ui_skips_cached_rebuild_before_snapshot_load(
         ]
     )
     assert rc == 0
+
+
+def test_render_backlog_ui_emits_runtime_contract(tmp_path: Path) -> None:
+    _seed_backlog_render_repo(tmp_path)
+
+    rc = render_backlog_ui.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "odylith/radar/radar.html",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+
+    assert rc == 0
+    payload = _load_backlog_payload(tmp_path)
+    assert payload["runtime_contract"]["surface"] == "radar"
+    assert payload["runtime_contract"]["cache_hit"] is False
+    assert payload["runtime_contract"]["built_from"] == "surface_render"

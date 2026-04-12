@@ -1,8 +1,8 @@
 # Odylith
-Last updated: 2026-04-11
+Last updated: 2026-04-12
 
 
-Last updated (UTC): 2026-04-08
+Last updated (UTC): 2026-04-12
 
 ## Purpose
 Odylith is the installable local governance and execution agent and platform
@@ -263,11 +263,32 @@ Public docs should describe these commands, not direct module entrypoints.
   - one canonical path-token space
   - one shared parsed backlog/spec read model
   - one shared Registry and delivery-intelligence evidence substrate
+- That shared derivation engine now owns one explicit derivation-generation
+  contract:
+  - projection/compiler/backend reuse is only legal when the runtime can prove
+    the active derivation generation still matches the substrate generation for
+    the current sync phase
+  - derivation generation advances on derivation-input mutations such as Atlas
+    catalog truth, Registry truth, traceability truth, and
+    delivery-intelligence truth, not on arbitrary generated HTML/JS churn
+- Shared projection substrates are immutable and content-addressed. The minimum
+  provenance tuple is:
+  - `repo_root`
+  - `projection_scope`
+  - `projection_fingerprint`
+  - `sync_generation`
+  - `code_version`
+  - output-affecting `flags`
 - Reuse must stay truthful:
   - cache keys derive from content truth, generator code, and execution flags
   - stat metadata may accelerate lookup, but it must not be the sole authority
   - standalone and check-only posture must stay fail-closed and source-truth
     equivalent
+  - if provenance, generation, or required-table expectations do not match,
+    the caller must rebuild locally instead of guessing
+- Shared reuse stops at the low-level substrate. Compass, Radar, Registry, and
+  other governed surfaces may share compiler/back-end substrates, but each
+  surface still owns its final payload shaping and final output bytes.
 - Generated outputs are content-addressed products of source truth. If a render
   step produces byte-identical output for byte-identical inputs, Odylith should
   not rewrite the file, should not dirty git, and should not invalidate
@@ -298,6 +319,14 @@ Public docs should describe these commands, not direct module entrypoints.
   not only warm verdicts, because generated derivation inputs such as the
   traceability graph and delivery-intelligence artifact do not necessarily move
   the workspace-activity token that guards projection fingerprint reuse.
+- Compass, Radar, and Registry payloads must carry additive runtime provenance
+  that explains:
+  - `projection_fingerprint`
+  - `projection_scope`
+  - `generation`
+  - `cache_hit`
+  - `built_from`
+  - `invalidated_by_step`
 - Projection-input tree signatures should be memoized per repo-state across
   compatible scopes so default/reasoning/full compatibility checks do not keep
   rescanning the same watched directories during one sync phase.
@@ -309,6 +338,13 @@ Public docs should describe these commands, not direct module entrypoints.
   index, and Registry snapshots must reuse one signature-scoped row payload
   within a stable projection fingerprint instead of reopening and reshaping the
   same tables for later Compass, Radar, and Registry surfaces in the same run.
+- Projection/compiler/backend writes remain single-writer and atomic. Lock
+  batching is allowed, but the product must not weaken advisory-lock plus
+  atomic-replace semantics in order to chase latency.
+- Sync and runtime reuse must leave an operator-readable cache-explain trail
+  under `.odylith/cache/odylith-context-engine/` so invalidation events,
+  generation shifts, and surface reuse/rebuild decisions can be inspected after
+  the fact.
 - Component-artifact matching on the sync hot path must use indexed canonical
   prefixes rather than repeated O(events x components x prefixes) normalization
   scans, and follow-on Registry requirement sync passes must account for later

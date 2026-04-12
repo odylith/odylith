@@ -3,8 +3,7 @@
   "diagrams": [
     "D-002",
     "D-030",
-    "D-031",
-    "D-047"
+    "D-031"
   ],
   "forensic_coverage": {
     "empty_reasons": [],

@@ -11,10 +11,10 @@
     "empty_reasons": [],
     "explicit_event_count": 2,
     "mapped_workstream_evidence_count": 2,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 2
+    "timeline_event_count": 3
   },
   "name": "Odylith Memory Backend",
   "path_prefixes": [
@@ -23,6 +23,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/memory/odylith_memory_backend.py"
+      ],
+      "confidence": "high",
+      "event_index": 92,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-memory-backend"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/memory/odylith_memory_backend.py",
+      "ts_iso": "2026-04-12T09:01:18-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "README.md",

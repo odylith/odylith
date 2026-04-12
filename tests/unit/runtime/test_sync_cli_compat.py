@@ -951,6 +951,87 @@ def test_build_sync_execution_plan_runs_final_registry_reconcile_after_bundle_mi
     assert mirror_index < final_registry_sync_index
 
 
+def test_build_sync_execution_plan_final_registry_reconcile_triggers_delivery_stabilization(tmp_path: Path) -> None:
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=False,
+            force=False,
+            impact_mode="focused",
+            registry_policy_mode="warn",
+            enforce_deep_skills=False,
+            no_traceability_autofix=True,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=("odylith/registry/source/components/odylith/CURRENT_SPEC.md",),
+        impact=SimpleNamespace(
+            atlas=True,
+            radar=True,
+            compass=True,
+            registry=True,
+            casebook=False,
+        ),
+        impact_tooling_shell=True,
+        runtime_mode="standalone",
+    )
+
+    final_registry_step = next(
+        step
+        for step in plan.steps
+        if step.label == "Re-sync Registry component spec requirements after later shell-facing and mirror refresh steps settle."
+    )
+
+    assert final_registry_step.change_watch_paths == ("odylith/registry/source/components/",)
+    assert final_registry_step.followup_steps_on_change
+    assert final_registry_step.followup_steps_on_change[0].label == "Refresh delivery intelligence after final Registry truth settles."
+    assert final_registry_step.followup_steps_on_change[0].followup_steps_on_change
+
+
+def test_execute_plan_runs_change_followups_only_when_watched_inputs_mutate(tmp_path: Path) -> None:
+    watched_path = tmp_path / "watched.txt"
+    watched_path.write_text("before", encoding="utf-8")
+    executed: list[str] = []
+
+    def _mutate_watched() -> int:
+        watched_path.write_text("after", encoding="utf-8")
+        executed.append("primary")
+        return 0
+
+    def _record_followup() -> int:
+        executed.append("followup")
+        return 0
+
+    plan = sync_workstream_artifacts.ExecutionPlan(
+        headline="test",
+        steps=(
+            sync_workstream_artifacts.ExecutionStep(
+                label="mutate watched input",
+                action=_mutate_watched,
+                change_watch_paths=("watched.txt",),
+                followup_steps_on_change=(
+                    sync_workstream_artifacts.ExecutionStep(
+                        label="followup",
+                        action=_record_followup,
+                    ),
+                ),
+            ),
+        ),
+        dirty_overlap=(),
+    )
+
+    rc = sync_workstream_artifacts._execute_plan(  # noqa: SLF001
+        repo_root=tmp_path,
+        plan_name="workstream sync",
+        plan=plan,
+        run_impl=lambda **_: 0,
+        runtime_fallback_used=False,
+    )
+
+    assert rc == 0
+    assert executed == ["primary", "followup"]
+
+
 def test_dashboard_refresh_retries_auto_surface_with_standalone_fallback(tmp_path: Path, monkeypatch, capsys) -> None:
     executed: list[tuple[str, ...]] = []
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.memory import odylith_memory_backend
 
@@ -279,6 +280,14 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
     monkeypatch,
     tmp_path: Path,
 ) -> None:
+    provenance = derivation_provenance.build_derivation_provenance(
+        repo_root=tmp_path,
+        projection_scope="reasoning",
+        projection_fingerprint="fp-1",
+        sync_generation=0,
+        code_version="backend-v1",
+        flags={"backend_dependencies_available": True, "storage": "lance_local_columnar"},
+    )
     manifest_path = odylith_memory_backend.local_manifest_path(repo_root=tmp_path)
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(
@@ -287,6 +296,7 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
                 "version": "v1",
                 "projection_fingerprint": "fp-1",
                 "projection_scope": "reasoning",
+                "provenance": provenance,
                 "ready": True,
                 "status": "ready",
             }
@@ -302,6 +312,7 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
             repo_root=tmp_path,
             projection_fingerprint="fp-1",
             projection_scope="reasoning",
+            provenance=provenance,
         )
         is True
     )
@@ -310,6 +321,7 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
             repo_root=tmp_path,
             projection_fingerprint="fp-2",
             projection_scope="reasoning",
+            provenance=provenance,
         )
         is False
     )
@@ -318,6 +330,16 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
             repo_root=tmp_path,
             projection_fingerprint="fp-1",
             projection_scope="full",
+            provenance=provenance,
+        )
+        is False
+    )
+    assert (
+        odylith_memory_backend.local_backend_ready_for_projection(
+            repo_root=tmp_path,
+            projection_fingerprint="fp-1",
+            projection_scope="reasoning",
+            provenance={**provenance, "code_version": "backend-v2"},
         )
         is False
     )

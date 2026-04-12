@@ -16,7 +16,7 @@ confidence: high
 founder_override: no
 promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md
 execution_model: standard
-workstream_type: standard
+workstream_type: umbrella
 workstream_parent:
 workstream_children: B-084
 workstream_depends_on: B-069

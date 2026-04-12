@@ -7,16 +7,12 @@
     "D-018"
   ],
   "forensic_coverage": {
-    "empty_reasons": [
-      "no_explicit_event",
-      "no_recent_path_match",
-      "no_mapped_workstream_evidence"
-    ],
+    "empty_reasons": [],
     "explicit_event_count": 0,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 1,
-    "status": "baseline_forensic_only",
+    "status": "forensic_coverage_present",
     "timeline_event_count": 1
   },
   "name": "Odylith Projection Snapshot",
@@ -24,7 +20,24 @@
     "src/odylith/runtime/memory/odylith_projection_snapshot.py"
   ],
   "spec_ref": "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
-  "timeline": [],
+  "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/memory/odylith_projection_snapshot.py"
+      ],
+      "confidence": "high",
+      "event_index": 94,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-projection-snapshot"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/memory/odylith_projection_snapshot.py",
+      "ts_iso": "2026-04-12T09:00:13-07:00",
+      "workstreams": []
+    }
+  ],
   "traceability": {
     "code_references": [],
     "developer_docs": [],

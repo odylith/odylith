@@ -278,7 +278,7 @@
             : "",
         ].filter(Boolean);
         const titleChips = [
-          group.is_current ? '<span class="label execution-wave-label wave-current-chip">Current Release</span>' : "",
+          group.is_current ? '<span class="label execution-wave-label wave-current-chip">Target Release</span>' : "",
         ].filter(Boolean);
         const sectionChips = [
           group.is_next ? '<span class="label execution-wave-label wave-status-planned">Next</span>' : "",

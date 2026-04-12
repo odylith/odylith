@@ -182,7 +182,7 @@ Related Bugs:
       `.claude/settings.json`.
 - [ ] Governance trail updated across Radar, technical plan, Casebook,
       Registry, Atlas, and Compass. Radar, plan, Casebook (`CB-103`),
-      Registry (`execution-governance` spec), and Atlas (`D-047`) all
+      Registry (`execution-governance` spec), and Atlas (`D-030`) all
       updated; Compass slice log still pending.
 
 ## Non-Goals

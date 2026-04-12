@@ -25,6 +25,12 @@ Use this skill when the task is about packet choice, daemon health, warmup postu
 - preserve retained routing data when handing off to orchestration
 - reserve explicit `serve` for intentionally warm repeated loops
 - Keep delivery-intelligence and shell refresh deterministic when the persisted Tribunal reasoning artifact is missing; explicit provider-backed reasoning belongs to dedicated reasoning and briefing flows, not the refresh hot path.
+- When shared projection/compiler/backend reuse is in play, verify the
+  provenance tuple and active derivation generation instead of trusting a warm
+  cache by default.
+- If reuse looks wrong, use `./.odylith/bin/odylith sync --repo-root . --debug-cache`
+  and inspect the local debug manifest under
+  `.odylith/cache/odylith-context-engine/` before widening further.
 
 ## Canonical Commands
 

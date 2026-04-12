@@ -304,6 +304,9 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     html = _bundle_registry_text(tmp_path)
     payload = _load_registry_payload(tmp_path)
     assert payload["data_source"]["available_backends"] == ["runtime", "staticSnapshot"]
+    assert payload["runtime_contract"]["surface"] == "registry"
+    assert payload["runtime_contract"]["cache_hit"] is False
+    assert payload["runtime_contract"]["built_from"] == "surface_render"
     assert "odylith_runtime" in payload
     assert "advisory_depth" in payload["odylith_runtime"]
     assert "evaluation_benchmark_satisfaction_rate" in payload["odylith_runtime"]

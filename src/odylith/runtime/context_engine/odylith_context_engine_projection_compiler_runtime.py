@@ -6,6 +6,8 @@ import time
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.common import derivation_provenance
+from odylith.runtime.governance import sync_session as governed_sync_session
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
 
 
@@ -72,21 +74,75 @@ def warm_projections(
     def _compatible_projection_scopes(requested_scope: str) -> tuple[str, ...]:
         return odylith_memory_backend.compatible_projection_scopes(requested_scope=requested_scope)
 
+    root = Path(repo_root).resolve()
+    session = governed_sync_session.active_sync_session()
+    generation, require_generation, last_invalidation_step = derivation_provenance.active_sync_generation(repo_root=root)
+    compiler_code_version = derivation_provenance.fingerprint_source_files(
+        [
+            Path(__file__),
+            Path(odylith_projection_snapshot.__file__),
+            Path(odylith_projection_bundle.__file__),
+        ]
+    )
+    backend_code_version = derivation_provenance.fingerprint_source_files(
+        [
+            Path(odylith_memory_backend.__file__),
+            Path(odylith_projection_bundle.__file__),
+        ]
+    )
+
+    def _compiler_provenance_for(candidate_scope: str, candidate_fingerprint: str) -> dict[str, Any]:
+        return derivation_provenance.build_derivation_provenance(
+            repo_root=root,
+            projection_scope=candidate_scope,
+            projection_fingerprint=candidate_fingerprint,
+            sync_generation=generation,
+            code_version=compiler_code_version,
+            flags={"projection_names": sorted(_projection_names_for_scope(candidate_scope))},
+        )
+
+    def _backend_provenance_for(candidate_scope: str, candidate_fingerprint: str) -> dict[str, Any]:
+        return derivation_provenance.build_derivation_provenance(
+            repo_root=root,
+            projection_scope=candidate_scope,
+            projection_fingerprint=candidate_fingerprint,
+            sync_generation=generation,
+            code_version=backend_code_version,
+            flags={
+                "backend_dependencies_available": bool(odylith_memory_backend.backend_dependencies_available()),
+                "storage": "lance_local_columnar"
+                if odylith_memory_backend.backend_dependencies_available()
+                else "compiler_projection_snapshot",
+            },
+        )
+
     def _reusable_projection_candidate() -> tuple[str, str]:
         if force:
             return ("", "")
         for candidate_scope in _compatible_projection_scopes(scope_token):
             candidate_fingerprint = projection_input_fingerprint(repo_root=root, scope=candidate_scope)
+            expected_compiler_provenance = _compiler_provenance_for(candidate_scope, candidate_fingerprint)
+            expected_backend_provenance = _backend_provenance_for(candidate_scope, candidate_fingerprint)
             snapshot_matches = (
                 bool(snapshot_manifest.get("ready"))
                 and bool(snapshot_manifest.get("tables"))
                 and str(snapshot_manifest.get("projection_fingerprint", "")).strip() == candidate_fingerprint
                 and str(snapshot_manifest.get("projection_scope", "")).strip() == candidate_scope
+                and derivation_provenance.provenance_matches(
+                    actual=derivation_provenance.extract_provenance(snapshot_manifest),
+                    expected=expected_compiler_provenance,
+                    require_generation=require_generation,
+                )
             )
             compiler_matches = (
                 bool(compiler_manifest.get("ready"))
                 and str(compiler_manifest.get("projection_fingerprint", "")).strip() == candidate_fingerprint
                 and str(compiler_manifest.get("projection_scope", "")).strip() == candidate_scope
+                and derivation_provenance.provenance_matches(
+                    actual=derivation_provenance.extract_provenance(compiler_manifest),
+                    expected=expected_compiler_provenance,
+                    require_generation=require_generation,
+                )
             )
             backend_matches = (
                 not odylith_memory_backend.backend_dependencies_available()
@@ -94,13 +150,13 @@ def warm_projections(
                     repo_root=root,
                     projection_fingerprint=candidate_fingerprint,
                     projection_scope=candidate_scope,
+                    provenance=expected_backend_provenance,
+                    require_generation=require_generation,
                 )
             )
             if snapshot_matches and compiler_matches and backend_matches:
                 return (candidate_scope, candidate_fingerprint)
         return ("", "")
-
-    root = Path(repo_root).resolve()
     started_at = time.perf_counter()
     root_runtime = runtime_root(repo_root=root)
     root_runtime.mkdir(parents=True, exist_ok=True)
@@ -114,6 +170,17 @@ def warm_projections(
     runtime_state = read_runtime_state(repo_root=root)
     reusable_scope, reusable_fingerprint = _reusable_projection_candidate()
     if reusable_scope:
+        if session is not None and session.repo_root == root:
+            session.record_cache_decision(
+                category="projection_substrate",
+                cache_hit=True,
+                built_from="compiled_projection_manifests",
+                details={
+                    "projection_scope": reusable_scope,
+                    "projection_fingerprint": reusable_fingerprint,
+                    "invalidated_by_step": last_invalidation_step,
+                },
+            )
         total_duration_ms = (time.perf_counter() - started_at) * 1000.0
         record_runtime_timing(
             repo_root=root,
@@ -145,7 +212,21 @@ def warm_projections(
         write_runtime_state(repo_root=root, payload=summary)
         return summary
 
-    with odylith_context_cache.advisory_lock(repo_root=root, key="odylith-context-engine-projections"):
+    if session is not None and session.repo_root == root:
+        session.record_cache_decision(
+            category="projection_substrate",
+            cache_hit=False,
+            built_from="projection_compile",
+            details={
+                "projection_scope": scope_token,
+                "projection_fingerprint": projection_fingerprint,
+                "invalidated_by_step": last_invalidation_step,
+            },
+        )
+    lock_key = (
+        f"odylith-context-engine-projections:{scope_token}:{projection_fingerprint}:{generation}"
+    )
+    with odylith_context_cache.advisory_lock(repo_root=root, key=lock_key):
         tables = _empty_projection_tables()
         updated_projections: list[str] = []
         timing_rows: list[dict[str, Any]] = []
@@ -780,6 +861,7 @@ def warm_projections(
             if str(row.get("name", "")).strip()
         }
         compiler_input_fingerprint = odylith_context_cache.fingerprint_payload(requested_fingerprints)
+        compiler_provenance = _compiler_provenance_for(scope_token, projection_fingerprint)
         compiler_started = time.perf_counter()
         snapshot_summary = odylith_projection_snapshot.write_snapshot(
             repo_root=root,
@@ -789,6 +871,7 @@ def warm_projections(
             tables=tables,
             projection_state=projection_state_summary,
             updated_projections=updated_projections,
+            provenance=compiler_provenance,
             source="projection_compile",
         )
         compiler_inputs = odylith_memory_backend.build_backend_materialization_inputs_from_projection_tables(tables=tables)
@@ -799,6 +882,7 @@ def warm_projections(
             projection_fingerprint=projection_fingerprint,
             projection_scope=scope_token,
             input_fingerprint=str(compiler_inputs.get("input_fingerprint", "")).strip(),
+            provenance=compiler_provenance,
             source="projection_snapshot_compile",
         )
         architecture_bundle_started = time.perf_counter()
@@ -844,11 +928,13 @@ def warm_projections(
         odylith_backend_summary: dict[str, Any] = {}
         backend_started = time.perf_counter()
         try:
+            backend_provenance = _backend_provenance_for(scope_token, projection_fingerprint)
             odylith_backend_summary = odylith_memory_backend.materialize_local_backend(
                 repo_root=root,
                 connection=_ProjectionConnection(repo_root=root, snapshot=snapshot_summary),
                 projection_fingerprint=projection_fingerprint,
                 projection_scope=scope_token,
+                provenance=backend_provenance,
             )
         except Exception as exc:
             odylith_backend_summary = {

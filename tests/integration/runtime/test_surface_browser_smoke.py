@@ -631,7 +631,7 @@ def test_compass_desktop_layout_keeps_main_and_right_rail_separated(browser_cont
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_compass_and_radar_current_release_cards_show_labeled_release_version(browser_context) -> None:  # noqa: ANN001
+def test_compass_and_radar_target_release_cards_show_labeled_release_version(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
     response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
@@ -649,12 +649,12 @@ def test_compass_and_radar_current_release_cards_show_labeled_release_version(br
     _assert_compass_live_state(compass, window_token="48h")
     compass_release_label = compass.locator(".stat.stat-release-only .kpi-label").first.inner_text().strip()
     compass_release = compass.locator(".stat.stat-release-only .kpi-value").first.inner_text().strip()
-    assert compass_release_label == "CURRENT RELEASE"
+    assert compass_release_label == "TARGET RELEASE"
     assert compass_release == "0.1.11"
     assert compass.locator(".stat .kpi-label", has_text="NEXT RELEASE").count() == 0
     assert compass.locator("#release-groups .execution-wave-section").count() >= 2
     release_targets_text = compass.locator("#release-groups").inner_text().strip()
-    assert "Current Release" in release_targets_text
+    assert "Target Release" in release_targets_text
     assert "0.1.12" in release_targets_text
     assert "Next release target across active workstreams." in release_targets_text
 
@@ -663,7 +663,7 @@ def test_compass_and_radar_current_release_cards_show_labeled_release_version(br
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
     radar_release_label = radar.locator(".stats .stat.stat-release-only .label").first.inner_text().strip()
     radar_release = radar.locator(".stats .stat.stat-release-only .value").first.inner_text().strip()
-    assert radar_release_label == "CURRENT RELEASE"
+    assert radar_release_label == "TARGET RELEASE"
     assert radar_release == "0.1.11"
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

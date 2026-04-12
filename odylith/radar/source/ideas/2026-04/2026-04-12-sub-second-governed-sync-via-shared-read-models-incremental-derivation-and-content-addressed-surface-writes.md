@@ -101,6 +101,12 @@ not present fake churn as meaningful work.
 - introduce one sync-scoped shared session that hoists repo root, consumer
   profile, truth-root resolution, canonical path tokens, parsed idea specs, and
   Registry report reuse
+- make shared projection/compiler/backend reuse prove one exact provenance
+  tuple, including derivation generation and generator code version, before any
+  warm substrate is treated as reusable
+- add a derivation-generation contract to the sync session so derivation-input
+  mutations immediately invalidate stale warm substrates without treating every
+  generated output write as a source-truth change
 - route the current sync hot path through session-aware helpers before jumping
   to a daemon or full dependency-graph rewrite
 - add content-addressed no-op writes on the first governed generated outputs so
@@ -122,6 +128,9 @@ not present fake churn as meaningful work.
   checks stop rescanning the same watched directories during one sync phase
 - keep the current sync step graph externally compatible while replacing
   repeated read-model reconstruction under the hood
+- record cache-explain/debug manifests plus surface runtime provenance so stale
+  or unexpected reuse can be diagnosed after the run instead of guessed from
+  wall-clock behavior
 - use the first wave to prove the architecture with real profiling deltas, then
   decide whether the next justified wave is a resident daemon, a finer-grained
   DAG invalidator, or both
@@ -164,6 +173,8 @@ not present fake churn as meaningful work.
 ## Success Metrics
 - focused profiling shows materially fewer path normalization, repo-root
   inference, and Registry report rebuild calls on the sync hot path
+- projection/compiler/backend reuse fails closed on provenance mismatch, and
+  Compass/Radar/Registry payloads explain what they were built from
 - unchanged generated outputs stop rewriting bytes on the first landed render
   targets
 - warm incremental sync latency drops materially without lowering validation
@@ -176,7 +187,9 @@ not present fake churn as meaningful work.
 ## Validation
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_workstream_inference.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_component_registry_intelligence.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_delivery_intelligence_engine.py`
+- `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_derivation_provenance.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_odylith_memory_backend.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_backlog_ui.py`
 - `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone`
+- `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --debug-cache --check-only --runtime-mode standalone`
 - profiling before and after the first session-hoisted implementation cut
 
 ## Rollout

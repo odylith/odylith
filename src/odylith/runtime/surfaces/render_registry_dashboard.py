@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
@@ -3290,6 +3291,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     )
     if skip_rebuild:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == repo_root:
+            session.record_surface_decision(
+                surface="registry",
+                cache_hit=True,
+                built_from="refresh_guard_cache",
+                details={"input_fingerprint": input_fingerprint},
+            )
         counts = dict(cached_metadata.get("counts", {})) if isinstance(cached_metadata, Mapping) else {}
         print("registry dashboard render passed")
         print(f"- output: {output_path}")
@@ -3331,6 +3342,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         "available_backends": ["runtime", "staticSnapshot"],
         "runtime_base_url": "",
     }
+    payload["runtime_contract"] = derivation_provenance.build_surface_runtime_contract(
+        repo_root=repo_root,
+        surface="registry",
+        runtime_mode=str(args.runtime_mode),
+        built_from="surface_render",
+        cache_hit=False,
+        output_path=output_path,
+        extra={"input_fingerprint": input_fingerprint},
+    )
     payload["generated_utc"] = stable_generated_utc.resolve_for_js_assignment_file(
         output_path=bundle_paths.payload_js_path,
         global_name="__ODYLITH_REGISTRY_DATA__",
@@ -3422,6 +3442,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "events": int(payload.get("counts", {}).get("events", 0) or 0),
                 }
             },
+        )
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None and session.repo_root == repo_root:
+        session.record_surface_decision(
+            surface="registry",
+            cache_hit=False,
+            built_from="surface_render",
+            details={"input_fingerprint": input_fingerprint},
         )
 
     print("registry dashboard render passed")

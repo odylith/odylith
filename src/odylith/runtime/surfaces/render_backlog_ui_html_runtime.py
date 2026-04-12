@@ -1524,7 +1524,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
         statRows.push(statBlock("Active Waves", activeWaves));
       }
       if (releaseCardLabel(currentRelease)) {
-        statRows.push(statBlock("Current Release", releaseCardLabel(currentRelease), { releaseOnly: true }));
+        statRows.push(statBlock("Target Release", releaseCardLabel(currentRelease), { releaseOnly: true }));
       }
       return statRows;
     }

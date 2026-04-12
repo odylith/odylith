@@ -33,17 +33,16 @@
     "D-027",
     "D-033",
     "D-034",
-    "D-035",
-    "D-047"
+    "D-035"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 58,
     "mapped_workstream_evidence_count": 15,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 11,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 58
+    "timeline_event_count": 59
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -57,6 +56,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 89,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-12T09:22:25-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "medium",

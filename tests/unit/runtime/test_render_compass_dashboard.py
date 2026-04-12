@@ -139,6 +139,49 @@ def test_refresh_runtime_artifacts_reuses_matching_runtime_payload(tmp_path: Pat
     assert paths == (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
 
 
+def test_existing_runtime_payload_rejects_generation_mismatch_during_active_sync(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    runtime_dir = repo_root / "odylith/compass/runtime"
+    runtime_dir.mkdir(parents=True)
+    current_json_path, current_js_path, daily_path, history_index_path, history_js_path = _seed_runtime_paths(runtime_dir)
+
+    current_json_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-12T00:00:00Z",
+                "runtime_contract": {
+                    "version": "v1",
+                    "standup_brief_schema_version": render_compass_dashboard.compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+                    "input_fingerprint": "matching-fingerprint",
+                    "generation": 0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    with governed_sync_session.activate_sync_session(governed_sync_session.GovernedSyncSession(repo_root=repo_root)):
+        active = governed_sync_session.active_sync_session()
+        assert active is not None
+        active.bump_generation(
+            step_label="refresh delivery truth",
+            mutation_classes=("repo_owned_truth",),
+            invalidated_namespaces=("runtime_warm",),
+            paths=("odylith/runtime/delivery_intelligence.v4.json",),
+        )
+        payload = render_compass_dashboard._existing_runtime_payload_if_fresh(  # noqa: SLF001
+            repo_root=repo_root,
+            current_json_path=current_json_path,
+            input_fingerprint="matching-fingerprint",
+            runtime_paths=(current_json_path, current_js_path, daily_path, history_index_path, history_js_path),
+        )
+
+    assert payload is None
+
+
 def test_refresh_runtime_artifacts_rebuilds_when_brief_contract_metadata_is_missing(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -388,7 +431,7 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     releases_js = (repo_root / "odylith" / "compass" / "compass-releases.v1.js").read_text(encoding="utf-8")
     waves_js = (repo_root / "odylith" / "compass" / "compass-waves.v1.js").read_text(encoding="utf-8")
     workstreams_js = (repo_root / "odylith" / "compass" / "compass-workstreams.v1.js").read_text(encoding="utf-8")
-    assert 'rows.push(["Current Release", currentReleaseLabel, "stat-release-only"])' in summary_js
+    assert 'rows.push(["Target Release", currentReleaseLabel, "stat-release-only"])' in summary_js
     assert 'rows.push(["Active Waves"' not in summary_js
     assert 'rows.push(["Next Release"' not in summary_js
     assert 'class="stat${cardClass ? ` ${cardClass}` : ""}"' in summary_js
@@ -407,7 +450,7 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'group.status === "draft"' in releases_js
     assert 'return groups;' in releases_js
     assert 'const currentOnlyGroups = currentReleaseId' not in releases_js
-    assert 'Current Release</span>' in releases_js
+    assert 'Target Release</span>' in releases_js
     assert "No targeted workstreams." in releases_js
     assert "execution-wave-focus-title" not in releases_js
     assert '<div class="execution-wave-section-title-row">' in releases_js

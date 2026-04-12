@@ -13,11 +13,19 @@ flowchart TB
 
     subgraph session["Shared SyncSession"]
         root["Resolved repo root and truth roots"]
+        generation["Derivation generation token"]
         profile["Consumer profile and lane posture"]
         paths["Interned canonical path tokens"]
         ideas["Parsed idea specs"]
         report["Component Registry report"]
         delivery["Delivery intelligence substrate"]
+    end
+
+    subgraph provenance["Reuse guardrails"]
+        tuple["Immutable provenance tuple"]
+        closed{"Provenance or generation mismatch?"}
+        rebuild["Fail closed and rebuild locally"]
+        manifest["Cache-explain debug manifest"]
     end
 
     subgraph derivation["Derived governed work"]
@@ -43,9 +51,11 @@ flowchart TB
     code --> renderers
     atlas --> renderers
     root --> profile
+    root --> generation
     root --> paths
     profile --> ideas
     profile --> report
+    generation --> tuple
     paths --> ideas
     paths --> report
     ideas --> validators
@@ -53,11 +63,18 @@ flowchart TB
     report --> validators
     report --> renderers
     delivery --> renderers
+    tuple --> closed
+    closed -- yes --> rebuild
+    rebuild --> manifest
+    closed -- no --> validators
+    closed -- no --> renderers
     validators --> fixpoint
     renderers --> fixpoint
     fixpoint -- yes --> root
+    fixpoint -- yes --> generation
     fixpoint -- no --> compare
     compare -- no --> stable
     compare -- yes --> write
+    write --> manifest
 
     future["Follow-on ceiling: resident daemon plus reverse-dependency DAG"] -.-> root

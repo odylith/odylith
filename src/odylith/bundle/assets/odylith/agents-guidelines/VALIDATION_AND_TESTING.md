@@ -42,6 +42,10 @@
 - Odylith/Tribunal changes need explicit truthfulness regressions: provider validation, deterministic fallback, no fake ownership or semantic claims, and separation of reasoning from execution mode.
 - Registry forensic-coverage changes need builder plus renderer regressions so evidence-channel states survive into generated payloads and UI.
 - Odylith Context Engine changes need projection plus operator-surface regressions: impact, query, context, session packets, daemon lifecycle, ambiguity handling, and `full_scan_recommended` fail-closed behavior.
+- Governed sync/projection reuse changes need provenance regressions too:
+  generation mismatch, code-version mismatch, compiler/backend-manifest
+  mismatch, surface runtime provenance, and cache-explain debug-manifest output
+  should all be checked deliberately instead of assumed from profiler wins.
 - Mermaid acceleration or Atlas refresh changes need both worker-path and fallback regressions.
 
 ## Useful Validation Bundles
@@ -53,6 +57,7 @@
   - `./.odylith/bin/odylith context-engine --repo-root . status`
   - `./.odylith/bin/odylith context-engine --repo-root . impact --working-tree`
   - `./.odylith/bin/odylith compass watch-transactions --repo-root . --once --runtime-mode standalone`
+  - `./.odylith/bin/odylith sync --repo-root . --debug-cache --check-only --runtime-mode standalone`
   - `./.odylith/bin/odylith sync --repo-root . --check-only --check-clean --runtime-mode standalone --registry-policy-mode enforce-critical --enforce-deep-skills`
   - `./.odylith/bin/odylith validate component-registry --repo-root .`
 - When the target repo's own application code changes, add the target repo's own test/build/lint command on its native toolchain after Odylith validation narrows the slice.

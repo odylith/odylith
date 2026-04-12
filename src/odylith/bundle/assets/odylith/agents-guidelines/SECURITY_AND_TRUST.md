@@ -55,6 +55,17 @@
 - After runtime or daemon changes, explicitly verify that Odylith-owned Python
   processes exit when the command or timeout path is complete.
 
+## Projection Reuse Trust Rules
+- Shared projection/compiler/backend substrates are trusted only when their
+  persisted provenance still matches the current repo root, scope, fingerprint,
+  code version, and active derivation generation when a sync session is live.
+- Fail closed on provenance mismatch. Do not widen the trust boundary by
+  accepting stale manifests, partial tables, or fingerprint-only matches when
+  generation or code-version evidence disagrees.
+- Keep compiler/backend writes single-writer and atomic. Latency work may batch
+  locking, but it must not weaken the advisory-lock plus atomic-replace
+  contract that prevents torn or interleaved local state.
+
 ## Canonical Commands
 ```bash
 ./.odylith/bin/odylith version --repo-root .
