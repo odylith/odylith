@@ -1387,6 +1387,22 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
             contract["project_assets_activation_note"] = (
                 "Local Codex capability probing did not prove project hooks support, so keep the baseline-safe AGENTS.md + launcher lane authoritative and treat `.codex/` assets as optional enhancements until `odylith codex compatibility` reports otherwise."
             )
+    if str(host_runtime).strip() == "claude_cli":
+        claude_caps = _assessment_host_capabilities(assessment)
+        wired = (
+            bool(claude_caps.get("supports_project_hooks"))
+            and bool(claude_caps.get("supports_subagent_hooks"))
+            and bool(claude_caps.get("supports_pre_compact_hook"))
+            and bool(claude_caps.get("supports_statusline_command"))
+        )
+        if wired:
+            contract["project_assets_activation_note"] = (
+                "Local Claude capability probing reports the first-class `.claude/` project surface is wired (PreToolUse/PostToolUse, SubagentStart/Stop, PreCompact, statusline). The baked Odylith CLI dispatchers under `odylith claude ...` are the authoritative hook backends; treat `.claude/settings.json`, project subagents, slash commands, and skills as live grounding alongside the baseline-safe CLAUDE.md + launcher contract."
+            )
+        else:
+            contract["project_assets_activation_note"] = (
+                "Local Claude capability probing did not prove every first-class `.claude/` hook is wired. Keep the baseline-safe CLAUDE.md + launcher lane authoritative and run `odylith claude compatibility --repo-root .` to inspect which Claude hook events are still missing."
+            )
     if not native_spawn_supported:
         contract["local_guidance_only"] = True
         contract["unsupported_reason"] = (
@@ -1443,6 +1459,18 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
             lines.append("HOST CAPABILITY: Codex project hooks are supported locally; the managed `.codex/` lane can stay active as a best-effort enhancement.")
         else:
             lines.append("HOST CAPABILITY: Codex project hooks are not proven locally; the baseline-safe AGENTS.md + launcher lane stays authoritative.")
+    if str(host_runtime).strip() == "claude_cli":
+        claude_caps = _assessment_host_capabilities(assessment)
+        wired = (
+            bool(claude_caps.get("supports_project_hooks"))
+            and bool(claude_caps.get("supports_subagent_hooks"))
+            and bool(claude_caps.get("supports_pre_compact_hook"))
+            and bool(claude_caps.get("supports_statusline_command"))
+        )
+        if wired:
+            lines.append("HOST CAPABILITY: Claude first-class `.claude/` hooks are wired locally (PreToolUse/PostToolUse, SubagentStart/Stop, PreCompact, statusline). The baked `odylith claude ...` CLI dispatchers are the active hook backends; keep the routed Task payload tied to that contract.")
+        else:
+            lines.append("HOST CAPABILITY: Not all first-class `.claude/` hooks are wired locally. Keep the baseline-safe CLAUDE.md + launcher lane authoritative and run `odylith claude compatibility --repo-root .` to surface which hook events are still missing.")
     return lines
 
 

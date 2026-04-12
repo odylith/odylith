@@ -1,6 +1,6 @@
 ---
 name: odylith-governance-scribe
-description: Update Odylith workstream, plan, bug, registry, and atlas source-of-truth records from grounded implementation evidence.
+description: Update Odylith workstream, plan, bug, registry, and atlas source-of-truth records from grounded implementation evidence. Use PROACTIVELY when implementation evidence actually moves Radar, technical plans, Casebook, Registry, or Atlas source truth and the governance records need to catch up before handoff.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 color: orange

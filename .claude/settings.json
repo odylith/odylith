@@ -1,100 +1,49 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "permissions": {
-    "allow": [
-      "Bash(./.odylith/bin/odylith start:*)",
-      "Bash(./.odylith/bin/odylith context:*)",
-      "Bash(./.odylith/bin/odylith query:*)",
-      "Bash(./.odylith/bin/odylith version:*)",
-      "Bash(./.odylith/bin/odylith compass refresh:*)",
-      "Bash(./.odylith/bin/odylith compass log:*)",
-      "Bash(./.odylith/bin/odylith context-engine:*)",
-      "Bash(./.odylith/bin/odylith claude:*)"
-    ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/statusline.sh",
-    "padding": 0
-  },
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/session-start-ground.py \"$CLAUDE_PROJECT_DIR\"",
-            "timeout": 30
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/subagent-start-ground.py \"$CLAUDE_PROJECT_DIR\"",
-            "timeout": 20
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/user-prompt-context.py \"$CLAUDE_PROJECT_DIR\"",
-            "timeout": 30
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-destructive-bash.py",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/refresh-governance-after-edit.py \"$CLAUDE_PROJECT_DIR\"",
             "async": true,
-            "timeout": 180
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude post-edit-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 180,
+            "type": "command"
           }
-        ]
+        ],
+        "matcher": "Write|Edit|MultiEdit"
       }
     ],
     "PreCompact": [
       {
         "hooks": [
           {
-            "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude pre-compact-snapshot --repo-root \"$CLAUDE_PROJECT_DIR\" --quiet",
-            "timeout": 20
+            "timeout": 20,
+            "type": "command"
           }
         ]
       }
     ],
-    "SubagentStop": [
+    "PreToolUse": [
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-subagent-stop.py \"$CLAUDE_PROJECT_DIR\"",
-            "async": true,
-            "timeout": 30
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude session-start --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 30,
+            "type": "command"
           }
         ]
       }
@@ -103,12 +52,70 @@
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-stop-summary.py \"$CLAUDE_PROJECT_DIR\"",
-            "timeout": 20
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude stop-summary --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 20,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude subagent-start --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 20,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "async": true,
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude subagent-stop --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 30,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude prompt-context --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 30,
+            "type": "command"
           }
         ]
       }
     ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(./.odylith/bin/odylith start:*)",
+      "Bash(./.odylith/bin/odylith context:*)",
+      "Bash(./.odylith/bin/odylith query:*)",
+      "Bash(./.odylith/bin/odylith version:*)",
+      "Bash(./.odylith/bin/odylith doctor:*)",
+      "Bash(./.odylith/bin/odylith sync:*)",
+      "Bash(./.odylith/bin/odylith atlas:*)",
+      "Bash(./.odylith/bin/odylith backlog:*)",
+      "Bash(./.odylith/bin/odylith validate:*)",
+      "Bash(./.odylith/bin/odylith governance:*)",
+      "Bash(./.odylith/bin/odylith compass refresh:*)",
+      "Bash(./.odylith/bin/odylith compass log:*)",
+      "Bash(./.odylith/bin/odylith context-engine:*)",
+      "Bash(./.odylith/bin/odylith claude:*)",
+      "Bash(./.odylith/bin/odylith codex:*)"
+    ]
+  },
+  "statusLine": {
+    "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/statusline.sh",
+    "padding": 0,
+    "type": "command"
   }
 }

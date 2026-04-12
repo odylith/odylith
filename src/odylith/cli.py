@@ -83,6 +83,14 @@ _ATLAS_COMMAND_MODULES = {
 _CLAUDE_HOST_COMMAND_MODULES = {
     "statusline": "odylith.runtime.surfaces.claude_host_statusline",
     "pre-compact-snapshot": "odylith.runtime.surfaces.claude_host_precompact_snapshot",
+    "compatibility": "odylith.runtime.surfaces.claude_host_compatibility",
+    "session-start": "odylith.runtime.surfaces.claude_host_session_brief",
+    "subagent-start": "odylith.runtime.surfaces.claude_host_subagent_start",
+    "prompt-context": "odylith.runtime.surfaces.claude_host_prompt_context",
+    "bash-guard": "odylith.runtime.surfaces.claude_host_bash_guard",
+    "post-edit-checkpoint": "odylith.runtime.surfaces.claude_host_post_edit_checkpoint",
+    "subagent-stop": "odylith.runtime.surfaces.claude_host_subagent_stop",
+    "stop-summary": "odylith.runtime.surfaces.claude_host_stop_summary",
 }
 _CODEX_HOST_COMMAND_MODULES = {
     "session-start-ground": "odylith.runtime.surfaces.codex_host_session_brief",
@@ -1503,6 +1511,18 @@ def _cmd_claude_precompact_snapshot(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_claude_host_command(args: argparse.Namespace) -> int:
+    claude_command = str(getattr(args, "claude_command", "") or "").strip()
+    if claude_command == "statusline":
+        return _cmd_claude_statusline(args)
+    if claude_command == "pre-compact-snapshot":
+        return _cmd_claude_precompact_snapshot(args)
+    return _run_module_main(
+        _CLAUDE_HOST_COMMAND_MODULES[claude_command],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=getattr(args, "forwarded", [])),
+    )
+
+
 def _cmd_codex_host_command(args: argparse.Namespace) -> int:
     codex_command = str(getattr(args, "codex_command", "") or "").strip()
     return _run_module_main(
@@ -1955,6 +1975,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Suppress the 'snapshot written at ...' confirmation line.",
     )
     claude_precompact.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    claude_compatibility = claude_host_subparsers.add_parser(
+        "compatibility",
+        help="Inspect the local Claude Code compatibility posture for Odylith.",
+    )
+    claude_compatibility.add_argument("--repo-root", default=".", help="Repository root for Claude inspection.")
+    claude_compatibility.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    for command, help_text in (
+        ("session-start", "Render the Odylith-grounded Claude SessionStart hook output."),
+        ("subagent-start", "Render the Odylith-grounded Claude SubagentStart hook output."),
+        ("prompt-context", "Render the Odylith-grounded Claude UserPromptSubmit hook output."),
+        ("bash-guard", "Evaluate the Odylith destructive-command guard for Claude Bash hooks."),
+        ("post-edit-checkpoint", "Refresh Odylith governance dashboards after a Claude Write/Edit/MultiEdit tool call."),
+        ("subagent-stop", "Append a Compass agent-stream event for a Claude SubagentStop hook payload."),
+        ("stop-summary", "Log meaningful Claude stop summaries to Compass."),
+    ):
+        baked = claude_host_subparsers.add_parser(command, help=help_text)
+        baked.add_argument("--repo-root", default=".", help="Repository root for Compass runtime resolution.")
+        baked.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
     codex_host = subparsers.add_parser(
         "codex",
         help="Render Odylith-grounded Codex host hook surfaces.",
@@ -2126,15 +2164,14 @@ def main(argv: list[str] | None = None) -> int:
             )
         if tokens[0] == "claude" and len(tokens) >= 2 and tokens[1] in _CLAUDE_HOST_COMMAND_MODULES:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
-            claude_command = tokens[1]
-            namespace = argparse.Namespace(
-                repo_root=repo_root,
-                forwarded=forwarded,
-                quiet="--quiet" in forwarded,
+            return _cmd_claude_host_command(
+                argparse.Namespace(
+                    repo_root=repo_root,
+                    forwarded=forwarded,
+                    claude_command=tokens[1],
+                    quiet="--quiet" in forwarded,
+                )
             )
-            if claude_command == "statusline":
-                return _cmd_claude_statusline(namespace)
-            return _cmd_claude_precompact_snapshot(namespace)
         if tokens[0] == "codex" and len(tokens) >= 2 and tokens[1] in _CODEX_HOST_COMMAND_MODULES:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             return _cmd_codex_host_command(
@@ -2249,10 +2286,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_atlas_scaffold(args)
     if args.command == "atlas" and args.atlas_command == "install-autosync-hook":
         return _cmd_atlas_install_autosync_hook(args)
-    if args.command == "claude" and args.claude_command == "statusline":
-        return _cmd_claude_statusline(args)
-    if args.command == "claude" and args.claude_command == "pre-compact-snapshot":
-        return _cmd_claude_precompact_snapshot(args)
+    if args.command == "claude" and args.claude_command in _CLAUDE_HOST_COMMAND_MODULES:
+        return _cmd_claude_host_command(args)
     if args.command == "codex" and args.codex_command in _CODEX_HOST_COMMAND_MODULES:
         return _cmd_codex_host_command(args)
     parser.error(f"unsupported command: {args.command}")

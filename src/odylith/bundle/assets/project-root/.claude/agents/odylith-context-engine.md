@@ -1,7 +1,7 @@
 ---
 name: odylith-context-engine
-description: Explore Odylith packets, routing data, and context-engine outputs without widening the main session.
-tools: Read, Grep, Glob, Bash
+description: Explore Odylith packets, routing data, and context-engine outputs without widening the main session. Use PROACTIVELY when the slice needs careful retrieval discrimination across many candidate packets, routes, or anchors and picking the wrong anchor would misdirect every downstream leaf.
+tools: Read, Grep, Glob
 model: sonnet
 color: purple
 ---

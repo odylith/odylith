@@ -1,6 +1,6 @@
 ---
 name: odylith-validator
-description: Run bounded validation for an Odylith slice and report concrete pass/fail evidence.
+description: Run bounded validation for an Odylith slice and report concrete pass/fail evidence. Use PROACTIVELY when the slice needs judgment over which tests actually prove the change, careful interpretation of failure signatures, and explicit flagging of coverage intentionally skipped.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 color: green

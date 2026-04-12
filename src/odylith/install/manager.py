@@ -62,6 +62,7 @@ from odylith.install.state import (
     write_version_pin,
 )
 from odylith.runtime.common.consumer_profile import consumer_profile_path, write_consumer_profile
+from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.common import codex_cli_capabilities
 from odylith.runtime.common.guidance_paths import (
     PROJECT_GUIDANCE_DISPLAY,
@@ -1519,6 +1520,7 @@ def _sync_managed_project_root_assets(*, repo_root: Path) -> None:
         target_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, target_path)
     _write_effective_codex_project_config(repo_root=target_root)
+    _write_effective_claude_project_settings(repo_root=target_root)
 
 
 def _write_effective_codex_project_config(*, repo_root: Path) -> None:
@@ -1527,6 +1529,14 @@ def _write_effective_codex_project_config(*, repo_root: Path) -> None:
     if not codex_root.is_dir():
         return
     codex_cli_capabilities.write_effective_codex_project_config(repo_root=target_root)
+
+
+def _write_effective_claude_project_settings(*, repo_root: Path) -> None:
+    target_root = Path(repo_root).resolve()
+    claude_root = target_root / ".claude"
+    if not claude_root.is_dir():
+        return
+    claude_cli_capabilities.write_effective_claude_project_settings(repo_root=target_root)
 
 
 def _sync_managed_skills(*, repo_root: Path) -> None:

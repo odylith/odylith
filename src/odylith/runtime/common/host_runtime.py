@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.common import codex_cli_capabilities
 
 
@@ -123,7 +124,7 @@ def host_capabilities(
         )
         return payload
     if normalized == _CLAUDE_HOST_RUNTIME:
-        return {
+        payload = {
             "host_runtime": normalized,
             "host_family": _CLAUDE_HOST_FAMILY,
             "model_family": _UNSPECIFIED_MODEL_FAMILY,
@@ -134,6 +135,27 @@ def host_capabilities(
             "supports_local_structured_reasoning": True,
             "supports_explicit_model_selection": True,
         }
+        snapshot = claude_cli_capabilities.inspect_claude_cli_capabilities(
+            repo_root=repo_root or ".",
+            probe_version=False,
+        )
+        payload.update(
+            {
+                "claude_cli_available": snapshot.claude_available,
+                "claude_cli_version": snapshot.claude_version,
+                "supports_project_hooks": snapshot.supports_project_hooks,
+                "supports_subagent_hooks": snapshot.supports_subagent_hooks,
+                "supports_pre_compact_hook": snapshot.supports_pre_compact_hook,
+                "supports_statusline_command": snapshot.supports_statusline_command,
+                "supports_post_tool_matchers": snapshot.supports_post_tool_matchers,
+                "supports_slash_commands": snapshot.supports_slash_commands,
+                "trusted_project_required": snapshot.trusted_project_required,
+                "project_assets_mode": snapshot.project_assets_mode,
+                "compatibility_posture": snapshot.overall_posture,
+                "baseline_contract": snapshot.baseline_contract,
+            }
+        )
+        return payload
     if normalized == _UNSUPPORTED_HOST_RUNTIME:
         return {
             "host_runtime": normalized,

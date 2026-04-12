@@ -1,6 +1,6 @@
 ---
 name: odylith-atlas-diagrammer
-description: Update Atlas source diagrams and related catalog truth for bounded Odylith changes.
+description: Update Atlas source diagrams and related catalog truth for bounded Odylith changes. Use PROACTIVELY when Odylith architecture, runtime topology, or catalog truth shifts and the Atlas `.mmd` diagrams plus `catalog/diagrams.v1.json` need a bounded edit with rendered-artifact discipline preserved.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 color: pink
