@@ -5,7 +5,7 @@ from odylith.runtime.orchestration import subagent_router as router
 
 
 def test_surface_prefixes_recognize_odylith_owned_guidance_paths() -> None:
-    assert router.surface_prefixes_for_path("odylith/skills/subagent-router/SKILL.md") == frozenset(
+    assert router.surface_prefixes_for_path("odylith/skills/odylith-subagent-router/SKILL.md") == frozenset(
         {"odylith", "skills", "docs"}
     )
     assert router.surface_prefixes_for_path("odylith/runtime/SUBAGENT_OPERATIONS.md") == frozenset(
@@ -21,10 +21,10 @@ def test_implied_write_surface_validation_accepts_odylith_owned_guidance_paths()
         prompt="Fix a validation-heavy router slice and refresh the matching skills guidance.",
         acceptance_criteria=[
             "Refresh the operator guidance.",
-            "Keep the slice bounded to odylith/skills/subagent-router/SKILL.md and odylith/runtime/SUBAGENT_OPERATIONS.md.",
+            "Keep the slice bounded to odylith/skills/odylith-subagent-router/SKILL.md and odylith/runtime/SUBAGENT_OPERATIONS.md.",
         ],
         candidate_paths=[
-            "odylith/skills/subagent-router/SKILL.md",
+            "odylith/skills/odylith-subagent-router/SKILL.md",
             "odylith/runtime/SUBAGENT_OPERATIONS.md",
         ],
         task_kind="implementation",

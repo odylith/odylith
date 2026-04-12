@@ -242,7 +242,7 @@
         "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
         "src/odylith/runtime/surfaces/compass_standup_brief_voice_validation.py",
         "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
-        "odylith/skills/compass-executive/SKILL.md"
+        "odylith/skills/odylith-compass-executive/SKILL.md"
       ],
       "workstreams": [
         "B-025",
@@ -393,7 +393,7 @@
         ".github/workflows/test.yml",
         "odylith/SECURITY_POSTURE.md",
         "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
-        "odylith/skills/security-hardening/SKILL.md"
+        "odylith/skills/odylith-security-hardening/SKILL.md"
       ],
       "workstreams": [
         "B-033",
@@ -687,11 +687,11 @@
         "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
         "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
         "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
-        "odylith/skills/delivery-governance-surface-ops/SKILL.md",
+        "odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md",
         "odylith/skills/odylith-context-engine-operations/SKILL.md",
-        "odylith/skills/session-context/SKILL.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
-        "odylith/skills/subagent-router/SKILL.md",
+        "odylith/skills/odylith-session-context/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md",
         "odylith/maintainer/AGENTS.md",
         "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
         "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
@@ -736,7 +736,7 @@
       ],
       "path_prefixes": [
         "src/odylith/runtime/orchestration/subagent_orchestrator.py",
-        "odylith/skills/subagent-orchestrator/SKILL.md"
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
       ],
       "workstreams": [
         "B-001",
@@ -772,7 +772,7 @@
       ],
       "path_prefixes": [
         "src/odylith/runtime/orchestration/subagent_router.py",
-        "odylith/skills/subagent-router/SKILL.md"
+        "odylith/skills/odylith-subagent-router/SKILL.md"
       ],
       "workstreams": [
         "B-001",

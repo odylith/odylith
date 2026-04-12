@@ -35,7 +35,7 @@ def _write_manifest(
                         "summary": "Bound the packet.",
                         "task_families": task_families,
                         "component_affinity": ["benchmark"],
-                        "path_refs": ["odylith/skills/subagent-router/SKILL.md"],
+                        "path_refs": ["odylith/skills/odylith-subagent-router/SKILL.md"],
                         "workstreams": ["B-038"],
                     }
                 ],

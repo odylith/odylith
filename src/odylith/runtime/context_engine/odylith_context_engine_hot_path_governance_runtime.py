@@ -329,7 +329,7 @@ def _governance_hot_path_docs(
                 "odylith/AGENTS.md",
                 "odylith/CLAUDE.md",
                 "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-                "odylith/skills/subagent-orchestrator/SKILL.md",
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
             ]
         )
 

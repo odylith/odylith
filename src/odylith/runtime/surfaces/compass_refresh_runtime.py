@@ -175,6 +175,12 @@ def _render_compass_dashboard():
     return render_compass_dashboard
 
 
+def _refresh_wait_settlement():
+    from odylith.runtime.surfaces import compass_refresh_wait_settlement
+
+    return compass_refresh_wait_settlement
+
+
 def _load_state(*, repo_root: Path) -> dict[str, Any]:
     payload = odylith_context_cache.read_json_object(refresh_state_path(repo_root=repo_root))
     return _normalize_state(payload)
@@ -537,6 +543,54 @@ def _render_request(
     )
 
 
+def _settle_standup_wait_contract(
+    *,
+    repo_root: Path,
+    request_id: str,
+    requested_runtime_mode: str,
+) -> dict[str, Any]:
+    settlement_runtime = _refresh_wait_settlement()
+    try:
+        settlement = settlement_runtime.settle_standup_maintenance(repo_root=repo_root)
+    except Exception as exc:
+        detail = f"{type(exc).__name__}: {exc}".strip().replace("\n", " ")
+        with _refresh_lock(repo_root=repo_root):
+            state = _load_state(repo_root=repo_root)
+            if str(state.get("request_id", "")).strip() == request_id:
+                failed_state = _finalize_state(
+                    state,
+                    status="failed",
+                    rc=1,
+                    terminal_reason="standup_brief_maintenance_failed",
+                    terminal_detail=detail,
+                    next_command=_wait_command(requested_runtime_mode=requested_runtime_mode),
+                )
+                _write_state(repo_root=repo_root, payload=failed_state)
+        return {"rc": 1, "detail": detail, "settlement": {"status": "failed"}}
+
+    deferred_windows = settlement_runtime.provider_deferred_global_windows(repo_root=repo_root)
+    if deferred_windows:
+        detail = (
+            "Compass refresh finished before the live global standup brief settled for "
+            + ", ".join(deferred_windows)
+            + "."
+        )
+        with _refresh_lock(repo_root=repo_root):
+            state = _load_state(repo_root=repo_root)
+            if str(state.get("request_id", "")).strip() == request_id:
+                failed_state = _finalize_state(
+                    state,
+                    status="failed",
+                    rc=1,
+                    terminal_reason="standup_brief_unsettled",
+                    terminal_detail=detail,
+                    next_command=_wait_command(requested_runtime_mode=requested_runtime_mode),
+                )
+                _write_state(repo_root=repo_root, payload=failed_state)
+        return {"rc": 1, "detail": detail, "settlement": settlement}
+    return {"rc": 0, "detail": "", "settlement": settlement}
+
+
 def _execute_request(*, repo_root: Path, request_id: str) -> int:
     with _refresh_lock(repo_root=repo_root):
         state = _load_state(repo_root=repo_root)
@@ -869,6 +923,7 @@ def _run_foreground_request(
     repo_root: Path,
     requested_profile: str,
     requested_runtime_mode: str,
+    settle_standup_maintenance: bool = False,
 ) -> dict[str, Any]:
     with _refresh_lock(repo_root=repo_root):
         current = _repair_stale_active_state(repo_root=repo_root, state=_load_state(repo_root=repo_root))
@@ -914,6 +969,15 @@ def _run_foreground_request(
         _write_state(repo_root=repo_root, payload=pending_state)
 
     rc = _execute_request(repo_root=repo_root, request_id=request_id)
+    settlement: dict[str, Any] = {}
+    if rc == 0 and settle_standup_maintenance:
+        settlement_result = _settle_standup_wait_contract(
+            repo_root=repo_root,
+            request_id=request_id,
+            requested_runtime_mode=requested_runtime_mode,
+        )
+        settlement = dict(settlement_result.get("settlement", {}))
+        rc = int(settlement_result.get("rc", rc) or rc)
     state = _load_state(repo_root=repo_root)
     return {
         "rc": rc,
@@ -922,6 +986,7 @@ def _run_foreground_request(
         "state": state,
         "coalesced": False,
         "message": "Compass refresh completed." if rc == 0 else "Compass refresh failed.",
+        "standup_maintenance": settlement,
     }
 
 
@@ -938,6 +1003,7 @@ def _wait_for_terminal(
     *,
     repo_root: Path,
     request_id: str,
+    settle_standup_maintenance: bool = False,
 ) -> dict[str, Any]:
     print("compass refresh waiting")
     print(f"- request_id: {request_id}")
@@ -965,6 +1031,17 @@ def _wait_for_terminal(
             last_stage_detail = current_stage_detail
         if status not in _ACTIVE_STATUSES:
             rc = int(state.get("rc", 0) or 0)
+            settlement: dict[str, Any] = {}
+            if rc == 0 and settle_standup_maintenance:
+                settlement_result = _settle_standup_wait_contract(
+                    repo_root=repo_root,
+                    request_id=request_id,
+                    requested_runtime_mode=str(state.get("requested_runtime_mode", "")).strip() or "auto",
+                )
+                settlement = dict(settlement_result.get("settlement", {}))
+                state = _load_state(repo_root=repo_root)
+                status = str(state.get("status", "")).strip().lower()
+                rc = int(state.get("rc", 0) or 0)
             print(f"- outcome: {status or ('passed' if rc == 0 else 'failed')}")
             elapsed_seconds = _format_elapsed_seconds(state)
             if elapsed_seconds:
@@ -972,6 +1049,9 @@ def _wait_for_terminal(
             resolved_runtime_mode = str(state.get("resolved_runtime_mode", "")).strip()
             if resolved_runtime_mode:
                 print(f"- resolved_runtime_mode: {resolved_runtime_mode}")
+            settlement_status = str(settlement.get("status", "")).strip()
+            if settlement_status:
+                print(f"- standup_brief_settlement: {settlement_status}")
             reason = str(state.get("terminal_reason", "")).strip()
             if reason:
                 print(f"- reason: {reason}")
@@ -987,6 +1067,7 @@ def _wait_for_terminal(
                 "state": state,
                 "coalesced": False,
                 "message": "",
+                "standup_maintenance": settlement,
             }
         time.sleep(_POLL_INTERVAL_SECONDS)
 
@@ -1075,6 +1156,11 @@ def _print_start_result(result: Mapping[str, Any]) -> None:
 
 def _print_terminal_result(result: Mapping[str, Any]) -> None:
     state = dict(result.get("state", {})) if isinstance(result.get("state"), Mapping) else {}
+    settlement = (
+        dict(result.get("standup_maintenance", {}))
+        if isinstance(result.get("standup_maintenance"), Mapping)
+        else {}
+    )
     rc = int(result.get("rc", 0) or 0)
     request_id = str(result.get("request_id", "")).strip()
     if rc == 0:
@@ -1085,6 +1171,9 @@ def _print_terminal_result(result: Mapping[str, Any]) -> None:
         if resolved_runtime_mode:
             print(f"- resolved_runtime_mode: {resolved_runtime_mode}")
         print(f"- elapsed_seconds: {_format_elapsed_seconds(state)}")
+        settlement_status = str(settlement.get("status", "")).strip()
+        if settlement_status:
+            print(f"- standup_brief_settlement: {settlement_status}")
         for line in _stage_timing_lines(state):
             print(line)
         return
@@ -1155,11 +1244,16 @@ def run_refresh(
                 repo_root=root,
                 requested_profile=normalized_profile,
                 requested_runtime_mode=normalized_runtime_mode,
+                settle_standup_maintenance=True,
             )
             if emit_output:
                 _print_terminal_result(result)
             return result
-        return _wait_for_terminal(repo_root=root, request_id=str(existing.get("request_id", "")).strip())
+        return _wait_for_terminal(
+            repo_root=root,
+            request_id=str(existing.get("request_id", "")).strip(),
+            settle_standup_maintenance=True,
+        )
 
     result = _enqueue_request(
         repo_root=root,

@@ -33,10 +33,10 @@
     "empty_reasons": [],
     "explicit_event_count": 25,
     "mapped_workstream_evidence_count": 5,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 26
+    "timeline_event_count": 25
   },
   "name": "Radar",
   "path_prefixes": [
@@ -46,27 +46,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
-        "src/odylith/runtime/surfaces/render_backlog_ui.py"
-      ],
-      "confidence": "high",
-      "event_index": 95,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "radar"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md, odylith/radar/source/ideas/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md +4 more",
-      "ts_iso": "2026-04-12T10:09:12-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/radar/source/INDEX.md",

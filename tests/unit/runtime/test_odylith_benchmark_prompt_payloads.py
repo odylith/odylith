@@ -20,7 +20,7 @@ def test_supplement_live_prompt_payload_adds_component_implementation_anchor(
             component_id="subagent-router",
             path_prefixes=[
                 "src/odylith/runtime/orchestration/subagent_router.py",
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
             ],
         ),
         "odylith-chatter": SimpleNamespace(
@@ -31,7 +31,7 @@ def test_supplement_live_prompt_payload_adds_component_implementation_anchor(
                 "docs/benchmarks/README.md",
                 "docs/benchmarks/REVIEWER_GUIDE.md",
                 "odylith/AGENTS.md",
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
                 "odylith/maintainer/AGENTS.md",
                 "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
             ],
@@ -49,7 +49,7 @@ def test_supplement_live_prompt_payload_adds_component_implementation_anchor(
         scenario={"family": "validation_heavy_fix", "intent": "implementation benchmark"},
         prompt_payload={"docs": ["odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"]},
         packet_source="impact",
-        changed_paths=["odylith/skills/subagent-router/SKILL.md"],
+        changed_paths=["odylith/skills/odylith-subagent-router/SKILL.md"],
         full_payload={"components": [{"entity_id": "odylith-chatter"}, {"entity_id": "subagent-router"}]},
     )
 
@@ -81,13 +81,13 @@ def test_supplement_live_prompt_payload_suppresses_support_reads_for_strict_boun
     payload = prompt_payloads.supplement_live_prompt_payload(
         repo_root=repo_root,
         scenario={
-            "changed_paths": ["odylith/skills/subagent-router/SKILL.md"],
-            "required_paths": ["odylith/skills/subagent-router/SKILL.md"],
-            "acceptance_criteria": ["Keep the slice bounded to odylith/skills/subagent-router/SKILL.md."],
+            "changed_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
+            "required_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
+            "acceptance_criteria": ["Keep the slice bounded to odylith/skills/odylith-subagent-router/SKILL.md."],
         },
         prompt_payload={},
         packet_source="impact",
-        changed_paths=["odylith/skills/subagent-router/SKILL.md"],
+        changed_paths=["odylith/skills/odylith-subagent-router/SKILL.md"],
         full_payload={"components": [{"entity_id": "subagent-router"}]},
     )
 
@@ -708,14 +708,14 @@ def test_merge_heavy_change_adds_bounded_noop_closeout_boundary_hint(tmp_path: P
             "family": "merge_heavy_change",
             "allow_noop_completion": True,
             "required_paths": [
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
                 "odylith/runtime/SUBAGENT_OPERATIONS.md",
             ],
         },
         prompt_payload={},
         packet_source="governance_slice",
         changed_paths=[
-            "odylith/skills/subagent-router/SKILL.md",
+            "odylith/skills/odylith-subagent-router/SKILL.md",
             "odylith/runtime/SUBAGENT_OPERATIONS.md",
         ],
         full_payload={},
@@ -732,25 +732,25 @@ def test_merge_heavy_change_keeps_changed_docs_in_focus_payload(tmp_path: Path) 
             "family": "merge_heavy_change",
             "allow_noop_completion": True,
             "required_paths": [
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
                 "odylith/runtime/SUBAGENT_OPERATIONS.md",
             ],
         },
         prompt_payload={},
         packet_source="governance_slice",
         changed_paths=[
-            "odylith/skills/subagent-router/SKILL.md",
+            "odylith/skills/odylith-subagent-router/SKILL.md",
             "odylith/runtime/SUBAGENT_OPERATIONS.md",
         ],
         full_payload={},
     )
 
     assert payload["docs"] == [
-        "odylith/skills/subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md",
         "odylith/runtime/SUBAGENT_OPERATIONS.md",
     ]
     assert payload["context_packet"]["anchors"]["explicit_paths"] == [
-        "odylith/skills/subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md",
         "odylith/runtime/SUBAGENT_OPERATIONS.md",
     ]
 

@@ -27,11 +27,11 @@
     "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
     "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
     "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
-    "odylith/skills/delivery-governance-surface-ops/SKILL.md",
+    "odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md",
     "odylith/skills/odylith-context-engine-operations/SKILL.md",
-    "odylith/skills/session-context/SKILL.md",
-    "odylith/skills/subagent-orchestrator/SKILL.md",
-    "odylith/skills/subagent-router/SKILL.md",
+    "odylith/skills/odylith-session-context/SKILL.md",
+    "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+    "odylith/skills/odylith-subagent-router/SKILL.md",
     "odylith/maintainer/AGENTS.md",
     "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
     "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
@@ -51,21 +51,23 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
-        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
-        "odylith/skills/delivery-governance-surface-ops/SKILL.md",
-        "odylith/skills/odylith-context-engine-operations/SKILL.md"
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/AGENTS.md",
+        "odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md",
+        "odylith/skills/odylith-session-context/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md"
       ],
       "confidence": "high",
-      "event_index": 90,
+      "event_index": 88,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-chatter"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md, odylith/agents-guidelines/VALIDATION_AND_TESTING.md +2 more",
-      "ts_iso": "2026-04-12T09:13:58-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md, odylith/AGENTS.md +4 more",
+      "ts_iso": "2026-04-12T10:41:52-07:00",
       "workstreams": []
     },
     {

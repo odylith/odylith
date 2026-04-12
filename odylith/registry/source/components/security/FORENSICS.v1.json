@@ -20,24 +20,25 @@
     "github/workflows/test.yml",
     "odylith/SECURITY_POSTURE.md",
     "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
-    "odylith/skills/security-hardening/SKILL.md"
+    "odylith/skills/odylith-security-hardening/SKILL.md"
   ],
   "spec_ref": "odylith/registry/source/components/security/CURRENT_SPEC.md",
   "timeline": [
     {
       "artifacts": [
-        "odylith/agents-guidelines/SECURITY_AND_TRUST.md"
+        "odylith/registry/source/components/security/CURRENT_SPEC.md",
+        "odylith/skills/odylith-security-hardening/SKILL.md"
       ],
       "confidence": "high",
-      "event_index": 97,
+      "event_index": 91,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "security"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/SECURITY_AND_TRUST.md",
-      "ts_iso": "2026-04-12T09:13:58-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/security/CURRENT_SPEC.md, odylith/skills/odylith-security-hardening/SKILL.md",
+      "ts_iso": "2026-04-12T10:40:12-07:00",
       "workstreams": []
     },
     {

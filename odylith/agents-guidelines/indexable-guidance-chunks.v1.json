@@ -69,8 +69,8 @@
       ],
       "path_refs": [
         "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
-        "odylith/skills/subagent-router/SKILL.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md"
+        "odylith/skills/odylith-subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
       ],
       "workstreams": [
         "B-021",
@@ -343,8 +343,8 @@
         "odylith/runtime/"
       ],
       "path_refs": [
-        "odylith/skills/subagent-router/SKILL.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
       ],
       "workstreams": [
@@ -385,7 +385,7 @@
         ".codex/config.toml",
         ".codex/hooks.json",
         ".codex/agents/odylith-workstream.toml",
-        ".agents/skills/subagent-router/SKILL.md"
+        ".agents/skills/odylith-subagent-router/SKILL.md"
       ],
       "workstreams": [
         "B-069",

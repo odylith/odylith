@@ -169,7 +169,7 @@ Related Bugs:
 - [ ] [src/odylith/bundle/assets/project-root/.agents/skills/](/Users/freedom/code/odylith/src/odylith/bundle/assets/project-root/.agents/skills)
 - [ ] [odylith/MAINTAINER_RELEASE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/MAINTAINER_RELEASE_RUNBOOK.md)
 - [ ] [odylith/registry/source/components/release/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/release/CURRENT_SPEC.md)
-- [ ] [odylith/skills/delivery-governance-surface-ops/SKILL.md](/Users/freedom/code/odylith/odylith/skills/delivery-governance-surface-ops/SKILL.md)
+- [ ] [odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
 - [ ] [odylith/skills/](/Users/freedom/code/odylith/odylith/skills)
 - [ ] [tests/unit/install/test_codex_project_assets.py](/Users/freedom/code/odylith/tests/unit/install/test_codex_project_assets.py)
 - [ ] [tests/unit/runtime/](/Users/freedom/code/odylith/tests/unit/runtime)

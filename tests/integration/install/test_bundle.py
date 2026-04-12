@@ -8,7 +8,7 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (root / "CLAUDE.md").is_file()
     assert (root / "agents-guidelines").is_dir()
     assert (root / "skills").is_dir()
-    assert (root / "skills" / "diagram-catalog" / "SKILL.md").is_file()
+    assert (root / "skills" / "odylith-diagram-catalog" / "SKILL.md").is_file()
 
     project_root = bundled_project_root_assets_root()
     assert (project_root / ".claude" / "CLAUDE.md").is_file()
@@ -31,15 +31,15 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (project_root / ".claude" / "hooks" / "log-stop-summary.py").is_file()
     assert (project_root / ".claude" / "hooks" / "guard-destructive-bash.py").is_file()
     assert (project_root / ".claude" / "output-styles" / "odylith-grounded.md").is_file()
-    assert (project_root / ".claude" / "skills" / "subagent-router" / "SKILL.md").is_file()
-    assert (project_root / ".claude" / "skills" / "delivery-governance-surface-ops" / "SKILL.md").is_file()
+    assert (project_root / ".claude" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (project_root / ".claude" / "skills" / "odylith-delivery-governance-surface-ops" / "SKILL.md").is_file()
     assert (project_root / ".claude" / "rules" / "odylith-governance.md").is_file()
     assert (project_root / ".codex" / "config.toml").is_file()
     assert (project_root / ".codex" / "hooks.json").is_file()
     assert (project_root / ".codex" / "agents" / "odylith-workstream.toml").is_file()
     codex_hooks = (project_root / ".codex" / "hooks.json").read_text(encoding="utf-8")
     assert "./.odylith/bin/odylith codex session-start-ground --repo-root ." in codex_hooks
-    assert (project_root / ".agents" / "skills" / "subagent-router" / "SKILL.md").is_file()
+    assert (project_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
 
 
 def test_bundle_root_contains_managed_governance_surface_assets() -> None:

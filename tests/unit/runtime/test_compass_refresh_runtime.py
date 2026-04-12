@@ -212,6 +212,7 @@ def test_shell_safe_wait_mode_runs_in_foreground_when_no_request_is_active(
         "repo_root": tmp_path.resolve(),
         "requested_profile": "shell-safe",
         "requested_runtime_mode": "auto",
+        "settle_standup_maintenance": True,
     }
 
 
@@ -376,6 +377,101 @@ def test_wait_mode_repairs_stale_worker_and_returns_terminal_state(
     assert result["status"] == "failed"
     assert result["state"]["terminal_reason"] == "worker_exited"
     assert "pid 4321" in result["state"]["terminal_detail"]
+
+
+def test_foreground_wait_contract_fails_when_global_brief_stays_provider_deferred(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    def _fake_execute_request(*, repo_root: Path, request_id: str) -> int:
+        state = runtime._load_state(repo_root=repo_root)  # noqa: SLF001
+        runtime._write_state(  # noqa: SLF001
+            repo_root=repo_root,
+            payload=runtime._finalize_state(  # noqa: SLF001
+                {
+                    **state,
+                    "resolved_runtime_mode": "standalone",
+                },
+                status="passed",
+                rc=0,
+                terminal_reason="",
+                terminal_detail="",
+            ),
+        )
+        return 0
+
+    class _FakeSettlement:
+        @staticmethod
+        def settle_standup_maintenance(**_kwargs):  # noqa: ANN003
+            return {"status": "backoff", "request_retained": True}
+
+        @staticmethod
+        def provider_deferred_global_windows(**_kwargs):  # noqa: ANN003
+            return ("24h",)
+
+    monkeypatch.setattr(runtime, "_execute_request", _fake_execute_request)
+    monkeypatch.setattr(runtime, "_refresh_wait_settlement", lambda: _FakeSettlement)
+
+    result = runtime._run_foreground_request(  # noqa: SLF001
+        repo_root=tmp_path,
+        requested_profile="shell-safe",
+        requested_runtime_mode="auto",
+        settle_standup_maintenance=True,
+    )
+
+    assert result["rc"] == 1
+    assert result["status"] == "failed"
+    assert result["state"]["terminal_reason"] == "standup_brief_unsettled"
+    assert "24h" in result["state"]["terminal_detail"]
+    assert result["standup_maintenance"]["status"] == "backoff"
+
+
+def test_wait_for_terminal_settles_standup_maintenance_before_returning(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    passed = runtime._base_state(  # noqa: SLF001
+        request_id="compass-ready",
+        requested_profile="shell-safe",
+        requested_runtime_mode="standalone",
+        status="running",
+    )
+    passed["resolved_runtime_mode"] = "standalone"
+    runtime._write_state(  # noqa: SLF001
+        repo_root=tmp_path,
+        payload=runtime._finalize_state(  # noqa: SLF001
+            passed,
+            status="passed",
+            rc=0,
+            terminal_reason="",
+            terminal_detail="",
+        ),
+    )
+
+    captured: dict[str, object] = {}
+
+    class _FakeSettlement:
+        @staticmethod
+        def settle_standup_maintenance(**kwargs):  # noqa: ANN003
+            captured["settle"] = kwargs
+            return {"status": "drained", "request_retained": False}
+
+        @staticmethod
+        def provider_deferred_global_windows(**_kwargs):  # noqa: ANN003
+            return ()
+
+    monkeypatch.setattr(runtime, "_refresh_wait_settlement", lambda: _FakeSettlement)
+
+    result = runtime._wait_for_terminal(  # noqa: SLF001
+        repo_root=tmp_path,
+        request_id="compass-ready",
+        settle_standup_maintenance=True,
+    )
+
+    assert result["rc"] == 0
+    assert result["status"] == "passed"
+    assert result["standup_maintenance"]["status"] == "drained"
+    assert captured["settle"] == {"repo_root": tmp_path.resolve()}
 
 
 def test_progress_callback_persists_stage_detail(

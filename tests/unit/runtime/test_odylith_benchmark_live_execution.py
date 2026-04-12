@@ -217,7 +217,7 @@ def test_odylith_focus_lines_include_component_implementation_anchors() -> None:
             "docs": ["odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"],
             "context_packet": {
                 "anchors": {
-                    "changed_paths": ["odylith/skills/subagent-router/SKILL.md"],
+                    "changed_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
                 },
                 "selection_state": "x:B-022",
                 "route": {"route_ready": True},
@@ -319,7 +319,7 @@ def test_odylith_focus_lines_render_strict_boundary_guidance() -> None:
             "strict_boundary": True,
             "context_packet": {
                 "anchors": {
-                    "changed_paths": ["odylith/skills/subagent-router/SKILL.md"],
+                    "changed_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
                 },
                 "selection_state": "x:B-022",
                 "route": {"route_ready": True},
@@ -432,8 +432,8 @@ def test_agent_prompt_uses_known_starting_anchors_when_compact_payload_has_no_ch
         scenario={
             "prompt": "Keep the explicit workstream slice bounded.",
             "needs_write": True,
-            "changed_paths": ["odylith/skills/subagent-orchestrator/SKILL.md"],
-            "acceptance_criteria": ["Keep the slice bounded to odylith/skills/subagent-orchestrator/SKILL.md."],
+            "changed_paths": ["odylith/skills/odylith-subagent-orchestrator/SKILL.md"],
+            "acceptance_criteria": ["Keep the slice bounded to odylith/skills/odylith-subagent-orchestrator/SKILL.md."],
         },
         mode="odylith_on",
         prompt_payload={
@@ -446,7 +446,7 @@ def test_agent_prompt_uses_known_starting_anchors_when_compact_payload_has_no_ch
     )
 
     assert "Odylith-selected starting files:" in prompt
-    assert "odylith/skills/subagent-orchestrator/SKILL.md" in prompt
+    assert "odylith/skills/odylith-subagent-orchestrator/SKILL.md" in prompt
     assert "hard working boundary" in prompt
 
 
@@ -1005,7 +1005,7 @@ def test_agent_prompt_merge_heavy_slice_allows_successful_bounded_noop_closeout(
             "allow_noop_completion": True,
             "needs_write": True,
             "changed_paths": [
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
                 "odylith/runtime/SUBAGENT_OPERATIONS.md",
             ],
         },
@@ -1535,7 +1535,7 @@ def test_workspace_strip_paths_keeps_truth_bearing_repo_docs(tmp_path: Path) -> 
     assert Path("odylith/maintainer/agents-guidelines") not in rows
     assert Path("odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md") not in rows
     assert Path("odylith/skills") not in rows
-    assert Path("odylith/skills/registry-spec-sync/SKILL.md") not in rows
+    assert Path("odylith/skills/odylith-registry-spec-sync/SKILL.md") not in rows
 
 
 def test_workspace_strip_paths_preserves_explicit_task_anchors(tmp_path: Path) -> None:
@@ -2199,7 +2199,7 @@ def test_observed_paths_from_events_include_prompt_selected_grounding_surfaces(t
                 "retrieval_plan": {
                     "selected_docs": [
                         "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-                        "odylith/skills/subagent-orchestrator/SKILL.md",
+                        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
                     ]
                 }
             },
@@ -2209,7 +2209,7 @@ def test_observed_paths_from_events_include_prompt_selected_grounding_surfaces(t
     assert observed == [
         "odylith/AGENTS.md",
         "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         "src/odylith/install/agents.py",
     ]
 

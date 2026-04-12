@@ -52,18 +52,18 @@
   "timeline": [
     {
       "artifacts": [
-        "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 87,
+      "event_index": 86,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "compass"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/surfaces/render_compass_dashboard.py",
-      "ts_iso": "2026-04-12T09:03:32-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-12T10:46:24-07:00",
       "workstreams": []
     },
     {

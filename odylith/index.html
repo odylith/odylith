@@ -915,6 +915,12 @@
 .welcome-state-compact {
   width: min(640px, calc(100% - (var(--brief-handle-width) + 48px)));
   max-height: none;
+  pointer-events: none;
+}
+
+.welcome-state-compact button,
+.welcome-state-compact a {
+  pointer-events: auto;
 }
 
 .welcome-state-launchpad {
@@ -4006,7 +4012,7 @@ html, body {
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
-  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=32f8044d613f"></script>
-  <script src="tooling-app.v1.js?v=32f8044d613f"></script>
+  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=34128b30f402"></script>
+  <script src="tooling-app.v1.js?v=34128b30f402"></script>
 </body>
 </html>

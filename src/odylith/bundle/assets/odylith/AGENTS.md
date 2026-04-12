@@ -107,21 +107,21 @@ Scope: applies to Odylith paths under `odylith/`.
 
 ## Skills
 Bundled consumer-safe and shared skills:
-- `skills/casebook-bug-capture/`
-- `skills/casebook-bug-investigation/`
-- `skills/casebook-bug-preflight/`
-- `skills/compass-executive/`
-- `skills/compass-timeline-stream/`
-- `skills/component-registry/`
+- `skills/odylith-casebook-bug-capture/`
+- `skills/odylith-casebook-bug-investigation/`
+- `skills/odylith-casebook-bug-preflight/`
+- `skills/odylith-compass-executive/`
+- `skills/odylith-compass-timeline-stream/`
+- `skills/odylith-component-registry/`
 - `skills/odylith-context-engine-operations/`
-- `skills/diagram-catalog/`
-- `skills/registry-spec-sync/`
-- `skills/schema-registry-governance/`
-- `skills/subagent-orchestrator/`
-- `skills/subagent-router/`
-- `skills/session-context/`
-- `skills/delivery-governance-surface-ops/`
-- `skills/security-hardening/`
+- `skills/odylith-diagram-catalog/`
+- `skills/odylith-registry-spec-sync/`
+- `skills/odylith-schema-registry-governance/`
+- `skills/odylith-subagent-orchestrator/`
+- `skills/odylith-subagent-router/`
+- `skills/odylith-session-context/`
+- `skills/odylith-delivery-governance-surface-ops/`
+- `skills/odylith-security-hardening/`
 
 ## Consumer Boundary
 - Bundled consumer `agents-guidelines/` and `skills/` intentionally exclude the

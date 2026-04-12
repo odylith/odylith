@@ -4829,7 +4829,7 @@ def test_install_agent_activation_governance_hot_path_keeps_spawn_contract_compa
     assert set(
         [
             "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-            "odylith/skills/subagent-orchestrator/SKILL.md",
+            "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         ]
     ).issubset(set(payload["docs"]))
     assert set(
@@ -4839,7 +4839,7 @@ def test_install_agent_activation_governance_hot_path_keeps_spawn_contract_compa
             "tests/unit/install/test_agents.py",
             "odylith/AGENTS.md",
             "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-            "odylith/skills/subagent-orchestrator/SKILL.md",
+            "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         ]
     ).issubset(set(observed_paths))
 

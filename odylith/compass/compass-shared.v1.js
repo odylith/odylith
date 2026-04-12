@@ -284,7 +284,26 @@ initQuickTooltips();
       return JSON.parse(JSON.stringify(brief && typeof brief === "object" ? brief : {}));
     }
 
-    function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason) {
+    function readyGlobalBriefSelection(payload, preferredWindow) {
+      const standupBrief = payload && payload.standup_brief && typeof payload.standup_brief === "object"
+        ? payload.standup_brief
+        : {};
+      const preferred = preferredWindow === "48h" ? "48h" : "24h";
+      const alternates = preferred === "24h" ? ["24h", "48h"] : ["48h", "24h"];
+      for (const windowKey of alternates) {
+        const brief = standupBrief[windowKey];
+        if (!brief || typeof brief !== "object") continue;
+        if (String(brief.status || "").trim() === "ready") {
+          return {
+            brief,
+            window: windowKey,
+          };
+        }
+      }
+      return { brief: null, window: "" };
+    }
+
+    function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason, globalWindow) {
       const cloned = cloneStructuredBrief(globalBrief);
       cloned.notice = {
         title: "Showing the global live brief",
@@ -294,33 +313,38 @@ initQuickTooltips();
       cloned.scope_fallback = {
         workstream: String(workstreamId || "").trim(),
         mode: "global_brief",
+        window: String(globalWindow || "").trim(),
       };
       return cloned;
     }
 
-    function scopedLiveBriefFallbackMessage(workstreamId, diagnostics) {
+    function scopedLiveBriefFallbackMessage(workstreamId, diagnostics, requestedWindow, fallbackWindow) {
       const scopedWorkstream = String(workstreamId || "This scope").trim() || "This scope";
       const safeDiagnostics = diagnostics && typeof diagnostics === "object" ? diagnostics : {};
       const reason = String(safeDiagnostics.reason || "").trim().toLowerCase();
+      const requested = requestedWindow === "48h" ? "48-hour" : "24-hour";
+      const fallback = fallbackWindow === "48h" ? "48-hour" : "24-hour";
+      const widerWindow = Boolean(fallbackWindow) && String(fallbackWindow).trim() !== String(requestedWindow || "").trim();
+      const borrowedLabel = widerWindow ? `${fallback} global live brief` : "global live brief";
       if (reason === "provider_deferred") {
-        return `${scopedWorkstream} still needs its own brief. Compass is showing the global live brief for now.`;
+        return `${scopedWorkstream} still needs its own ${requested} brief. Compass is showing the ${borrowedLabel} for now.`;
       }
       if (reason === "rate_limited") {
-        return `${scopedWorkstream} is waiting on narration provider capacity. Compass is showing the global live brief for now.`;
+        return `${scopedWorkstream} is waiting on narration provider capacity. Compass is showing the ${borrowedLabel} for now.`;
       }
       if (reason === "credits_exhausted") {
-        return `${scopedWorkstream} is waiting on narration provider budget. Compass is showing the global live brief for now.`;
+        return `${scopedWorkstream} is waiting on narration provider budget. Compass is showing the ${borrowedLabel} for now.`;
       }
       if (reason === "timeout") {
-        return `${scopedWorkstream} asked the narration provider for a scoped brief, but the reply took too long. Compass is showing the global live brief while it retries in the background.`;
+        return `${scopedWorkstream} asked the narration provider for a scoped brief, but the reply took too long. Compass is showing the ${borrowedLabel} while it retries in the background.`;
       }
       if (reason === "invalid_batch") {
-        return `${scopedWorkstream} got a scoped provider reply, but the brief was not usable yet. Compass is showing the global live brief while it retries in the background.`;
+        return `${scopedWorkstream} got a scoped provider reply, but the brief was not usable yet. Compass is showing the ${borrowedLabel} while it retries in the background.`;
       }
       if (reason === "provider_unavailable" || reason === "transport_error" || reason === "auth_error" || reason === "provider_error") {
-        return `${scopedWorkstream} ran into a narration provider problem. That may be capacity, budget, access, or provider health, so Compass is showing the global live brief for now.`;
+        return `${scopedWorkstream} ran into a narration provider problem. That may be capacity, budget, access, or provider health, so Compass is showing the ${borrowedLabel} for now.`;
       }
-      return `Compass could not load a scoped live brief for ${scopedWorkstream}, so it is showing the global live brief for now.`;
+      return `Compass could not load a scoped live brief for ${scopedWorkstream}, so it is showing the ${borrowedLabel} for now.`;
     }
 
     function standupBriefForState(payload, state) {
@@ -330,6 +354,7 @@ initQuickTooltips();
           ? String(state.workstream || "").trim()
           : "";
         const hasScopedSelection = Boolean(scopedWorkstream);
+        const globalBriefSelection = readyGlobalBriefSelection(payload, key);
         const globalBrief = payload.standup_brief && payload.standup_brief[key] && typeof payload.standup_brief[key] === "object"
           ? payload.standup_brief[key]
           : null;
@@ -340,7 +365,8 @@ initQuickTooltips();
           ? scopedMap[scopedWorkstream]
           : null;
         const scopedReady = scopedBrief && String(scopedBrief.status || "").trim() === "ready" ? scopedBrief : null;
-        const globalReady = globalBrief && String(globalBrief.status || "").trim() === "ready" ? globalBrief : null;
+        const globalReady = globalBriefSelection.brief;
+        const globalReadyWindow = String(globalBriefSelection.window || "").trim();
         const scopedReadySource = String(scopedReady && scopedReady.source ? scopedReady.source : "").trim();
         const globalReadySource = String(globalReady && globalReady.source ? globalReady.source : "").trim();
         if (hasScopedSelection && scopedReady) return scopedReady;
@@ -352,8 +378,17 @@ initQuickTooltips();
           }
           if (globalReady) {
             const fallbackReason = reason || "scoped_brief_unavailable";
-            const message = scopedLiveBriefFallbackMessage(scopedWorkstream, diagnostics);
-            return scopedFallbackToGlobalBrief(globalReady, scopedWorkstream, message, `scoped_${fallbackReason}_showing_global`);
+            const widerWindow = globalReadyWindow && globalReadyWindow !== key;
+            const message = scopedLiveBriefFallbackMessage(scopedWorkstream, diagnostics, key, globalReadyWindow || key);
+            return scopedFallbackToGlobalBrief(
+              globalReady,
+              scopedWorkstream,
+              message,
+              widerWindow
+                ? `scoped_${fallbackReason}_showing_wider_global`
+                : `scoped_${fallbackReason}_showing_global`,
+              globalReadyWindow || key,
+            );
           }
           return scopedBrief;
         }
@@ -365,18 +400,21 @@ initQuickTooltips();
               return scopedFallbackToGlobalBrief(
                 globalReady,
                 scopedWorkstream,
-                `${scopedWorkstream} was quiet in this window, so Compass is showing the global live brief instead.`,
+                `${scopedWorkstream} was quiet in this window, so Compass is showing the ${globalReadyWindow === key ? "global live brief" : `${globalReadyWindow === "48h" ? "48-hour" : "24-hour"} global live brief`} instead.`,
                 "scoped_window_quiet_showing_global",
+                globalReadyWindow || key,
               );
             }
             return quietWindowStandupBrief(scopedWorkstream, key);
           }
           if (globalReady) {
+            const widerWindow = globalReadyWindow && globalReadyWindow !== key;
             return scopedFallbackToGlobalBrief(
               globalReady,
               scopedWorkstream,
-              `Compass does not have a scoped live brief for ${scopedWorkstream} yet, so it is showing the global live brief for now.`,
-              "scoped_brief_missing_showing_global",
+              `Compass does not have a scoped ${key === "48h" ? "48-hour" : "24-hour"} live brief for ${scopedWorkstream} yet, so it is showing the ${widerWindow ? `${globalReadyWindow === "48h" ? "48-hour" : "24-hour"} global live brief` : "global live brief"} for now.`,
+              widerWindow ? "scoped_brief_missing_showing_wider_global" : "scoped_brief_missing_showing_global",
+              globalReadyWindow || key,
             );
           }
           return unavailableStandupBrief(

@@ -84,7 +84,7 @@ Related Bugs:
 - [ ] [2026-04-08-radar-workstream-title-prefix-normalization.md](/Users/freedom/code/odylith/odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md)
 - [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/radar/CURRENT_SPEC.md)
 - [ ] [DELIVERY_AND_GOVERNANCE_SURFACES.md](/Users/freedom/code/odylith/odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md)
-- [ ] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/delivery-governance-surface-ops/SKILL.md)
+- [ ] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
 - [ ] [backlog_authoring.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/backlog_authoring.py)
 - [ ] [backlog_title_contract.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/backlog_title_contract.py)
 - [ ] [validate_backlog_contract.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/validate_backlog_contract.py)

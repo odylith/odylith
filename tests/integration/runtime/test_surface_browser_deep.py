@@ -2750,6 +2750,119 @@ def test_compass_scoped_provider_deferred_shows_global_live_brief_with_notice(tm
                 context.close()
 
 
+def test_compass_scoped_provider_deferred_can_borrow_wider_global_live_brief(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    scoped_24h = (payload.get("standup_brief_scoped") or {}).get("24h")
+    assert isinstance(scoped_24h, dict) and scoped_24h
+    scope_value = next(iter(scoped_24h.keys()))
+    payload["standup_brief"]["24h"] = {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": "global-24h-credits",
+        "generated_utc": "2026-04-10T22:10:00Z",
+        "sections": [],
+        "diagnostics": {
+            "reason": "credits_exhausted",
+            "title": "Brief is waiting on provider budget",
+            "message": "Compass could not warm the 24-hour brief because the provider budget was exhausted.",
+        },
+        "evidence_lookup": {},
+    }
+    payload["standup_brief"]["48h"] = {
+        "status": "ready",
+        "source": "provider",
+        "fingerprint": "global-live-48h",
+        "generated_utc": "2026-04-10T22:15:00Z",
+        "sections": [
+            {
+                "key": "completed",
+                "label": "Completed in this window",
+                "bullets": [{"text": "A wider global brief is still available.", "fact_ids": []}],
+            },
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "bullets": [{"text": "The 48-hour summary is the safe fallback here.", "fact_ids": []}],
+            },
+            {
+                "key": "next_planned",
+                "label": "Next planned",
+                "bullets": [{"text": "Let the narrow scoped lane catch back up.", "fact_ids": []}],
+            },
+            {
+                "key": "risks_to_watch",
+                "label": "Risks to watch",
+                "bullets": [{"text": "The narrower 24-hour narration is still budget constrained.", "fact_ids": []}],
+            },
+        ],
+        "evidence_lookup": {},
+    }
+    scoped_24h[scope_value] = {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": "scoped-provider-deferred",
+        "generated_utc": "",
+        "sections": [],
+        "diagnostics": {
+            "reason": "provider_deferred",
+            "title": "Standup brief unavailable",
+            "message": "Compass is still warming this scoped brief.",
+        },
+        "evidence_lookup": {},
+    }
+    payload["standup_brief_scoped"]["24h"] = scoped_24h
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + f"/odylith/index.html?tab=compass&window=24h&date=live&scope={scope_value}",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _wait_for_shell_query_param(page, tab="compass", key="scope", value=scope_value)
+                page.wait_for_function(
+                    """({ windowToken, scopeLabel }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const target = doc && doc.querySelector("#digest-list");
+                        if (!target || !target.dataset) return false;
+                        return (target.dataset.briefStatus || "") === "ready"
+                          && (target.dataset.briefWindow || "") === windowToken
+                          && (target.dataset.briefScope || "") === scopeLabel
+                          && (target.dataset.briefHasNotice || "") === "true";
+                    }""",
+                    arg={"windowToken": "24h", "scopeLabel": scope_value},
+                    timeout=15000,
+                )
+                scoped_meta = _compass_brief_metadata(compass)
+                assert scoped_meta["status"] == "ready"
+                assert scoped_meta["source"] in {"provider", "cache"}
+                assert scoped_meta["hasNotice"] == "true"
+                assert scoped_meta["noticeReason"] == "scoped_provider_deferred_showing_wider_global"
+                assert "48-hour global live brief" in compass.locator("#digest-list").inner_text()
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
 def test_casebook_detail_stacks_cleanly_in_compact_viewport(compact_browser_context) -> None:  # noqa: ANN001
     base_url, context = compact_browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)

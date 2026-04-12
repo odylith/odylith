@@ -78,11 +78,11 @@ end-of-work outcomes instead of canned self-promotion.
 - `odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md`
 - `odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md`
 - `odylith/agents-guidelines/VALIDATION_AND_TESTING.md`
-- `odylith/skills/delivery-governance-surface-ops/SKILL.md`
+- `odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md`
 - `odylith/skills/odylith-context-engine-operations/SKILL.md`
-- `odylith/skills/session-context/SKILL.md`
-- `odylith/skills/subagent-orchestrator/SKILL.md`
-- `odylith/skills/subagent-router/SKILL.md`
+- `odylith/skills/odylith-session-context/SKILL.md`
+- `odylith/skills/odylith-subagent-orchestrator/SKILL.md`
+- `odylith/skills/odylith-subagent-router/SKILL.md`
 
 ### Maintainer and benchmark mirrors
 - `odylith/maintainer/AGENTS.md`

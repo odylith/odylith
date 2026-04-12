@@ -872,11 +872,11 @@ def test_coordination_heavy_write_requires_route_ready_runtime_before_decomposit
 
 
 def test_odylith_consumer_paths_do_not_collapse_into_governance_followups() -> None:
-    assert orchestrator._scope_role(["odylith/skills/subagent-router/SKILL.md"], needs_write=True) == "contract"  # noqa: SLF001
+    assert orchestrator._scope_role(["odylith/skills/odylith-subagent-router/SKILL.md"], needs_write=True) == "contract"  # noqa: SLF001
     assert orchestrator._scope_role(["odylith/runtime/SUBAGENT_OPERATIONS.md"], needs_write=True) == "contract"  # noqa: SLF001
     assert orchestrator._scope_role(["odylith/index.html"], needs_write=True) == "implementation"  # noqa: SLF001
 
-    assert orchestrator._is_host_local_governance_path("odylith/skills/subagent-router/SKILL.md") is False  # noqa: SLF001
+    assert orchestrator._is_host_local_governance_path("odylith/skills/odylith-subagent-router/SKILL.md") is False  # noqa: SLF001
     assert orchestrator._is_host_local_governance_path("odylith/runtime/SUBAGENT_OPERATIONS.md") is False  # noqa: SLF001
     assert orchestrator._is_host_local_governance_path("odylith/index.html") is False  # noqa: SLF001
     assert orchestrator._is_host_local_governance_path("odylith/radar/source/INDEX.md") is True  # noqa: SLF001

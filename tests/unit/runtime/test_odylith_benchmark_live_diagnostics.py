@@ -150,7 +150,7 @@ def test_prompt_payload_helpers_surface_selected_docs_and_observed_paths() -> No
                 "explicit_paths": ["tests/unit/install/test_agents.py"],
             },
             "retrieval_plan": {
-                "selected_docs": ["odylith/skills/subagent-orchestrator/SKILL.md"],
+                "selected_docs": ["odylith/skills/odylith-subagent-orchestrator/SKILL.md"],
             },
         },
         "architecture_audit": {
@@ -163,13 +163,13 @@ def test_prompt_payload_helpers_surface_selected_docs_and_observed_paths() -> No
     assert diagnostics.prompt_payload_selected_docs(prompt_payload=prompt_payload) == [
         "odylith/AGENTS.md",
         "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
     ]
     assert diagnostics.prompt_payload_observed_paths(prompt_payload=prompt_payload) == [
         "odylith/AGENTS.md",
         "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
         "src/odylith/install/agents.py",
         "src/odylith/install/manager.py",

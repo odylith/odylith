@@ -577,14 +577,14 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert (repo_root / ".codex" / "agents" / "odylith-workstream.toml").is_file()
     codex_hooks = json.loads((repo_root / ".codex" / "hooks.json").read_text(encoding="utf-8"))
     assert codex_hooks["SessionStart"][0]["hooks"][0]["command"] == "./.odylith/bin/odylith codex session-start-ground --repo-root ."
-    assert (repo_root / ".agents" / "skills" / "subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "tooling_shell.v1.json").is_file()
     assert (repo_root / "odylith" / "index.html").is_file()
     assert (repo_root / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md").is_file()
     assert (repo_root / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md").is_file()
-    assert (repo_root / "odylith" / "skills" / "subagent-router" / "SKILL.md").is_file()
-    assert (repo_root / "odylith" / "skills" / "subagent-orchestrator" / "SKILL.md").is_file()
+    assert (repo_root / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / "odylith" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md").is_file()
     assert (repo_root / "odylith" / "surfaces" / "brand" / "manifest.json").is_file()
     assert (repo_root / "odylith" / "radar" / "source").is_dir()
     assert (repo_root / "odylith" / "radar" / "source" / "ideas").is_dir()
@@ -1212,9 +1212,9 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
     (repo_root / "odylith" / "AGENTS.md").write_text("stale consumer guidance\n", encoding="utf-8")
     (repo_root / "odylith" / "radar" / "source" / "CLAUDE.md").unlink()
-    (repo_root / "odylith" / "skills" / "subagent-router" / "SKILL.md").unlink()
+    (repo_root / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md").unlink()
     (repo_root / ".codex" / "config.toml").unlink()
-    (repo_root / ".agents" / "skills" / "subagent-router" / "SKILL.md").unlink()
+    (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").unlink()
 
     upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
@@ -1239,9 +1239,9 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
     assert (repo_root / "odylith" / "radar" / "source" / "CLAUDE.md").is_file()
-    assert (repo_root / "odylith" / "skills" / "subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
     assert (repo_root / ".codex" / "config.toml").is_file()
-    assert (repo_root / ".agents" / "skills" / "subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
 
 
 def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and_activates_maintainer_overlay(tmp_path: Path) -> None:
