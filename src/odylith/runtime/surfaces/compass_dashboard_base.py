@@ -126,6 +126,21 @@ def _load_component_index_runtime(
     runtime_mode: str,
 ) -> Mapping[str, component_registry.ComponentEntry]:
     try:
+        from odylith.runtime.governance import component_registry_intelligence as registry_runtime
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except Exception:
+        registry_runtime = None
+        governed_sync_session = None
+    if registry_runtime is not None and governed_sync_session is not None:
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == Path(repo_root).resolve():
+            try:
+                report = registry_runtime.build_component_registry_report(repo_root=repo_root)
+                if report.components:
+                    return report.components
+            except Exception:
+                pass
+    try:
         components = odylith_context_engine_store.load_component_index(
             repo_root=repo_root,
             runtime_mode=runtime_mode,
