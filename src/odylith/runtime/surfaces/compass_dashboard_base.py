@@ -213,12 +213,57 @@ def _parse_backlog_rows(
     index_path: Path,
     runtime_mode: str,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    def _source_rows() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+        snapshot = backlog_contract.load_backlog_index_snapshot(index_path)
+        active_rows = backlog_contract.rows_as_mapping(
+            section=snapshot.get("active", {}),
+            expected_headers=_BACKLOG_ROW_HEADERS,
+        )
+        execution_rows = backlog_contract.rows_as_mapping(
+            section=snapshot.get("execution", {}),
+            expected_headers=_BACKLOG_ROW_HEADERS,
+        )
+        return active_rows, execution_rows
+
+    try:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except Exception:
+        governed_sync_session = None
+    if governed_sync_session is not None:
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == Path(repo_root).resolve() and index_path.is_file():
+            built = False
+
+            def _builder() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+                nonlocal built
+                built = True
+                return _source_rows()
+
+            active_rows, execution_rows = session.get_or_compute(
+                namespace="compass_backlog_rows",
+                key=(
+                    f"source:{str(runtime_mode).strip().lower()}\n"
+                    f"generation={session.generation}\n"
+                    f"index={index_path.resolve()}"
+                ),
+                builder=_builder,
+            )
+            session.record_cache_decision(
+                category="compass_backlog_rows",
+                cache_hit=not built,
+                built_from="sync_session_source_truth",
+                details={
+                    "generation": session.generation,
+                    "runtime_mode": str(runtime_mode).strip().lower(),
+                    "index_path": str(index_path),
+                },
+            )
+            return (
+                [dict(row) for row in active_rows if isinstance(row, Mapping)],
+                [dict(row) for row in execution_rows if isinstance(row, Mapping)],
+            )
     if str(runtime_mode).strip().lower() != "standalone":
         projection: Mapping[str, Any]
-        try:
-            from odylith.runtime.governance import sync_session as governed_sync_session
-        except Exception:
-            governed_sync_session = None
         if governed_sync_session is not None:
             session = governed_sync_session.active_sync_session()
             if session is not None and session.repo_root == Path(repo_root).resolve():
@@ -260,16 +305,7 @@ def _parse_backlog_rows(
             [dict(row) for row in projection.get("active", []) if isinstance(row, Mapping)],
             [dict(row) for row in projection.get("execution", []) if isinstance(row, Mapping)],
         )
-    snapshot = backlog_contract.load_backlog_index_snapshot(index_path)
-    active_rows = backlog_contract.rows_as_mapping(
-        section=snapshot.get("active", {}),
-        expected_headers=_BACKLOG_ROW_HEADERS,
-    )
-    execution_rows = backlog_contract.rows_as_mapping(
-        section=snapshot.get("execution", {}),
-        expected_headers=_BACKLOG_ROW_HEADERS,
-    )
-    return active_rows, execution_rows
+    return _source_rows()
 
 
 def _parse_plan_active_rows(*, repo_root: Path, index_path: Path, runtime_mode: str) -> list[dict[str, str]]:

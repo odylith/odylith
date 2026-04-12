@@ -118,6 +118,17 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
 }
 _HEARTBEAT_INTERVAL_SECONDS = 10.0
 _HEARTBEAT_START_DELAY_SECONDS = 2.0
+_IN_PROCESS_HEARTBEAT_MODULES = frozenset(
+    {
+        "odylith.runtime.governance.delivery_intelligence_refresh",
+        "odylith.runtime.surfaces.render_backlog_ui",
+        "odylith.runtime.surfaces.render_casebook_dashboard",
+        "odylith.runtime.surfaces.render_compass_dashboard",
+        "odylith.runtime.surfaces.render_mermaid_catalog",
+        "odylith.runtime.surfaces.render_registry_dashboard",
+        "odylith.runtime.surfaces.render_tooling_dashboard",
+    }
+)
 _DASHBOARD_REFRESH_TIMEOUT_SECONDS = dashboard_refresh_contract.DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS
 _SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV = "ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD"
 _SYNC_DEBUG_CACHE_ENV = "ODYLITH_SYNC_DEBUG_CACHE"
@@ -643,10 +654,12 @@ def _run_command_in_process(
         module = importlib.import_module(tokens[2])
         main = getattr(module, "main", None)
         if callable(main):
-            return _run_callable_with_heartbeat(
-                label=heartbeat_label or _display_sync_step_command(repo_root=repo_root, command=tokens),
-                callable_=lambda: int(main(list(tokens[3:])) or 0),
-            )
+            if tokens[2] in _IN_PROCESS_HEARTBEAT_MODULES:
+                return _run_callable_with_heartbeat(
+                    label=heartbeat_label or _display_sync_step_command(repo_root=repo_root, command=tokens),
+                    callable_=lambda: int(main(list(tokens[3:])) or 0),
+                )
+            return int(main(list(tokens[3:])) or 0)
     return _run_command(
         repo_root=repo_root,
         args=tokens,

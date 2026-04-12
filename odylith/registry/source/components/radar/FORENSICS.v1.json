@@ -48,18 +48,19 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md"
+        "odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py"
       ],
       "confidence": "high",
-      "event_index": 90,
+      "event_index": 89,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
-      "ts_iso": "2026-04-12T12:17:43-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md, src/odylith/runtime/governance/sync_workstream_artifacts.py",
+      "ts_iso": "2026-04-12T12:47:56-07:00",
       "workstreams": []
     },
     {

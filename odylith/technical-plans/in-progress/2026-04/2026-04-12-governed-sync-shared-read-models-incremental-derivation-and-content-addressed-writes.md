@@ -137,6 +137,12 @@ Related Bugs:
 - [x] Delay in-process sync heartbeats until a step actually stays slow, so
       fast steps do not pay a steady-state polling lane or emit misleading
       chatter just to report a sub-second call.
+- [x] During governed sync, let Compass reuse the already-settled Radar index
+      directly for backlog rows instead of reopening the default projection
+      warm just to recover active/execution backlog tables.
+- [x] Keep in-process heartbeat wrapping on the truly long render modules only,
+      so validators and lighter reconciliation steps run directly without
+      paying thread/queue wait overhead in the runtime fast path.
 
 ## Defer
 - [ ] Persistent sync daemon with warm resident session state across commands.
@@ -219,6 +225,10 @@ Related Bugs:
 - [x] `/usr/bin/time -p env PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`5.8s` sync-reported elapsed / `6.87s` wall clock on 2026-04-12 after the source-local write-mode lane refreshed delivery intelligence truth against the new code path; only Compass crossed the `2s` heartbeat threshold)
 - [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (`5.1s` on 2026-04-12 after the source-local full sync settled, with Atlas freshness, Registry truth, and delivery intelligence all green in strict non-mutating proof)
 - [x] `PYTHONPATH=src python3 -m cProfile -o /tmp/odylith_r8_final.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`9.7s` sync-reported elapsed / `11.56s` cProfile total on 2026-04-12; `render_compass_dashboard.main` is `3.69s`, `_build_runtime_payload()` is `3.18s`, `_warm_runtime_uncached` is `1.63s` across `1` call, `load_backlog_rows()` is `1.70s` across `2` total callers, and `select.poll` is `1.00s`)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_compass_dashboard_base.py tests/unit/runtime/test_sync_cli_compat.py -k "backlog_rows or run_command_in_process or heartbeat"` (`6 passed` on 2026-04-12 after source-backed Compass backlog-row reuse and selective in-process heartbeat wrapping landed)
+- [x] `/usr/bin/time -p env PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`5.9s` sync-reported elapsed / `6.96s` wall clock on 2026-04-12 after Compass started reusing the settled Radar index for backlog rows during sync and short in-process steps stopped paying the heartbeat thread wrapper)
+- [x] `PYTHONPATH=src python3 -m cProfile -o /tmp/odylith_latency_after.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`10.6s` sync-reported elapsed / `12.77s` cProfile total on 2026-04-12; `render_compass_dashboard.main` is `4.10s`, `_build_runtime_payload()` is `3.52s`, `load_backlog_rows()` collapsed to `0.034s`, `warm_projections()` is `1.048s`, `select.poll` is `1.066s`, and `normalize_repo_token()` is `0.968s`)
+- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (`5.1s` on 2026-04-12 after the same source-backed Compass backlog-row and selective-heartbeat cut, with delivery intelligence current and the strict standalone lane still fail-closed)
 - [x] `git diff --check`
 
 ## Outcome Snapshot
@@ -249,6 +259,10 @@ Related Bugs:
 - [x] Compass backlog rows now ride that same sync-scoped reuse contract, which
       removes repeated backlog row shaping from later Compass payload builds in
       the same settled generation.
+- [x] Compass backlog rows now short-circuit to the already-settled Radar
+      index inside governed sync, which removes the expensive default-scope
+      projection warm from the Compass render lane without weakening the
+      source-truth contract.
 - [x] Runtime-backed surfaces now render in one settled post-truth phase:
       Atlas review/catalog truth, Registry spec reconciliation, and delivery
       intelligence settle first, then Compass, Radar, Registry, Casebook, and
@@ -270,6 +284,10 @@ Related Bugs:
 - [x] Fast in-process sync steps now stay quiet until they cross a real
       heartbeat threshold, which trims the heartbeat polling tax and keeps
       sub-threshold steps from paying for operator progress noise.
+- [x] Fast in-process sync steps now run directly while only the truly slow
+      render modules keep heartbeat wrapping, which cuts the standing
+      thread/queue wait tax from the runtime fast path without hiding real
+      long-running progress.
 - [x] Strict standalone proof stays fail-closed after the optimization wave
       because late Registry forensics reconciliation now accounts for shell-facing
       steps that can still change evidence after the first spec sync.

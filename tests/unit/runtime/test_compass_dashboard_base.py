@@ -103,33 +103,44 @@ def test_parse_backlog_rows_reuses_sync_session_projection(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
 ) -> None:
-    calls = 0
-    projection = {
-        "active": [{"idea_id": "B-091", "title": "Shared sync"}],
-        "execution": [{"idea_id": "B-092", "title": "Next"}],
-    }
+    index_path = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.write_text(
+        (
+            "# Backlog Index\n\n"
+            "## Ranked Active Backlog\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| 1 | B-091 | Shared sync | P1 | 100 | 4 | 4 | 4 | M | Medium | implementation | [idea](odylith/radar/source/ideas/2026-04/example.md) |\n\n"
+            "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| - | B-092 | Next | P1 | 99 | 4 | 4 | 4 | M | Medium | implementation | [idea](odylith/radar/source/ideas/2026-04/next.md) |\n"
+        ),
+        encoding="utf-8",
+    )
 
-    def _load_backlog_rows(**_: object) -> dict[str, object]:
-        nonlocal calls
-        calls += 1
-        return projection
-
-    monkeypatch.setattr(renderer.odylith_context_engine_store, "load_backlog_rows", _load_backlog_rows)
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_backlog_rows",
+        lambda **_: (_ for _ in ()).throw(AssertionError("sync-session backlog rows should come from source truth")),
+    )
 
     session = sync_session.GovernedSyncSession(repo_root=tmp_path)
     with sync_session.activate_sync_session(session):
         first_active, first_execution = renderer._parse_backlog_rows(  # noqa: SLF001
             repo_root=tmp_path,
-            index_path=tmp_path / "odylith" / "radar" / "source" / "INDEX.md",
+            index_path=index_path,
             runtime_mode="auto",
         )
         second_active, second_execution = renderer._parse_backlog_rows(  # noqa: SLF001
             repo_root=tmp_path,
-            index_path=tmp_path / "odylith" / "radar" / "source" / "INDEX.md",
+            index_path=index_path,
             runtime_mode="auto",
         )
 
-    assert calls == 1
-    assert first_active == second_active == [{"idea_id": "B-091", "title": "Shared sync"}]
-    assert first_execution == second_execution == [{"idea_id": "B-092", "title": "Next"}]
+    assert [row["idea_id"] for row in first_active] == [row["idea_id"] for row in second_active] == ["B-091"]
+    assert [row["title"] for row in first_active] == [row["title"] for row in second_active] == ["Shared sync"]
+    assert [row["idea_id"] for row in first_execution] == [row["idea_id"] for row in second_execution] == ["B-092"]
+    assert [row["title"] for row in first_execution] == [row["title"] for row in second_execution] == ["Next"]
     assert first_active is not second_active

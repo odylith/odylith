@@ -1373,6 +1373,69 @@ def test_run_callable_with_heartbeat_stays_quiet_for_fast_steps(monkeypatch, cap
     assert "heartbeat: fast-step still running" not in output
 
 
+def test_run_command_in_process_skips_heartbeat_for_fast_in_process_modules(monkeypatch, tmp_path: Path) -> None:
+    calls: list[str] = []
+
+    class _Module:
+        @staticmethod
+        def main(argv: list[str]) -> int:
+            calls.append("main")
+            assert argv == ["--repo-root", str(tmp_path)]
+            return 0
+
+    monkeypatch.setattr(
+        sync_workstream_artifacts.importlib,
+        "import_module",
+        lambda name: _Module() if name == "odylith.runtime.governance.validate_backlog_contract" else None,
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_run_callable_with_heartbeat",
+        lambda **_: (_ for _ in ()).throw(AssertionError("fast in-process modules should not use heartbeat wrapping")),
+    )
+
+    rc = sync_workstream_artifacts._run_command_in_process(  # noqa: SLF001
+        repo_root=tmp_path,
+        args=("python", "-m", "odylith.runtime.governance.validate_backlog_contract", "--repo-root", str(tmp_path)),
+        heartbeat_label="validate backlog",
+    )
+
+    assert rc == 0
+    assert calls == ["main"]
+
+
+def test_run_command_in_process_keeps_heartbeat_for_long_render_modules(monkeypatch, tmp_path: Path) -> None:
+    observed: dict[str, object] = {}
+
+    class _Module:
+        @staticmethod
+        def main(argv: list[str]) -> int:
+            observed["argv"] = list(argv)
+            return 0
+
+    monkeypatch.setattr(
+        sync_workstream_artifacts.importlib,
+        "import_module",
+        lambda name: _Module() if name == "odylith.runtime.surfaces.render_compass_dashboard" else None,
+    )
+
+    def _fake_run_callable_with_heartbeat(*, label: str, callable_):  # noqa: ANN001
+        observed["label"] = label
+        return int(callable_() or 0)
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_callable_with_heartbeat", _fake_run_callable_with_heartbeat)
+
+    rc = sync_workstream_artifacts._run_command_in_process(  # noqa: SLF001
+        repo_root=tmp_path,
+        args=("python", "-m", "odylith.runtime.surfaces.render_compass_dashboard", "--repo-root", str(tmp_path)),
+        heartbeat_label="render compass",
+    )
+
+    assert rc == 0
+    assert observed["label"] == "render compass"
+    assert observed["argv"] == ["--repo-root", str(tmp_path)]
+
+
 def test_sync_blocks_large_dirty_overlap_without_explicit_ack(monkeypatch, tmp_path: Path, capsys) -> None:
     class _Meaningful:
         def as_dict(self) -> dict[str, int]:

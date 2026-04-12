@@ -124,6 +124,10 @@ not present fake churn as meaningful work.
 - treat Compass backlog projection rows as part of that same shared derivation
   substrate so later Compass payload builds reuse one settled row payload per
   generation and runtime mode instead of reopening backlog table shaping
+- let Compass reuse the already-settled Radar source truth for backlog rows
+  during governed sync, so the render lane does not pay the default-scope
+  projection warm just to recover active/execution backlog tables that sync
+  already proved
 - narrow projection and runtime cache invalidation to derivation inputs that can
   actually change the next read model, instead of clearing warm/runtime state on
   every generated HTML or JS write
@@ -139,6 +143,9 @@ not present fake churn as meaningful work.
 - delay in-process sync heartbeat emission until a step actually runs long
   enough to deserve operator progress output, so fast steps do not pay a
   standing polling tax just to say they are still alive
+- keep heartbeat wrapping on the genuinely long in-process render steps only,
+  so short validators and reconciliation steps stop paying thread/queue wait
+  overhead in the runtime fast path
 - keep the current sync step graph externally compatible while replacing
   repeated read-model reconstruction under the hood
 - record cache-explain/debug manifests plus surface runtime provenance so stale
@@ -261,6 +268,16 @@ and stays quiet when nothing changed.
 - track the steady-state full-sync target against the settled tree, not only the
   first churn-heavy run after source-truth edits, so the operator-facing number
   reflects the real post-change feedback loop
+
+## Outcome
+- implemented on 2026-04-12 for the source-backed Compass backlog and
+  selective-heartbeat follow-up:
+  full source-local sync now reads Compass backlog rows from the already-proved
+  Radar index during governed sync, leaves heartbeat wrapping on the truly slow
+  in-process render steps only, and cuts the full wall-clock lane back down to
+  `5.9s` sync-reported / `6.96s` wall with `load_backlog_rows()` reduced to
+  `0.034s`, `warm_projections()` reduced to `1.048s`, and `select.poll`
+  reduced to `1.066s` in the matching cProfile lane
 
 ## Open Questions
 - whether the second Registry-spec sync should collapse into the same fixpoint
