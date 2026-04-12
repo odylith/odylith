@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.governance import release_planning_contract
+from odylith.runtime.governance import sync_session
 from odylith.runtime.surfaces import compass_governance_source_runtime
 
 
@@ -280,3 +281,95 @@ def test_build_live_governance_context_prefers_live_release_and_program_source_t
     assert execution_programs[0]["umbrella_id"] == "B-072"
     assert execution_programs[0]["active_wave_count"] == 1
     assert execution_programs[0]["current_wave"]["wave_id"] == "W1"
+
+
+def test_build_live_governance_context_reuses_active_sync_session_snapshot(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001 - pytest fixture
+) -> None:
+    _seed_governance_repo(tmp_path)
+    build_calls = 0
+    original = compass_governance_source_runtime.release_planning_view_model.build_release_view_from_repo
+
+    def _counted_build_release_view_from_repo(*args, **kwargs):  # noqa: ANN202
+        nonlocal build_calls
+        build_calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(
+        compass_governance_source_runtime.release_planning_view_model,
+        "build_release_view_from_repo",
+        _counted_build_release_view_from_repo,
+    )
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    traceability_graph = {
+        "workstreams": [
+            {
+                "idea_id": "B-010",
+                "title": "Stale row",
+                "status": "implementation",
+            }
+        ],
+    }
+
+    with sync_session.activate_sync_session(session):
+        first = compass_governance_source_runtime.build_live_governance_context(
+            repo_root=tmp_path,
+            traceability_graph=traceability_graph,
+        )
+        second = compass_governance_source_runtime.build_live_governance_context(
+            repo_root=tmp_path,
+            traceability_graph=traceability_graph,
+        )
+
+    assert build_calls == 1
+    assert first == second
+    assert first is not second
+
+
+def test_build_live_governance_context_rebuilds_after_sync_generation_bump(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001 - pytest fixture
+) -> None:
+    _seed_governance_repo(tmp_path)
+    build_calls = 0
+    original = compass_governance_source_runtime.execution_wave_view_model.build_execution_wave_view_payload
+
+    def _counted_build_execution_wave_view_payload(*args, **kwargs):  # noqa: ANN202
+        nonlocal build_calls
+        build_calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(
+        compass_governance_source_runtime.execution_wave_view_model,
+        "build_execution_wave_view_payload",
+        _counted_build_execution_wave_view_payload,
+    )
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    traceability_graph = {
+        "workstreams": [
+            {
+                "idea_id": "B-010",
+                "title": "Stale row",
+                "status": "implementation",
+            }
+        ],
+    }
+
+    with sync_session.activate_sync_session(session):
+        compass_governance_source_runtime.build_live_governance_context(
+            repo_root=tmp_path,
+            traceability_graph=traceability_graph,
+        )
+        session.bump_generation(
+            step_label="mutating-step",
+            mutation_classes=("governance",),
+            invalidated_namespaces=("compass_governance_context",),
+            paths=("odylith/radar/traceability-graph.v1.json",),
+        )
+        compass_governance_source_runtime.build_live_governance_context(
+            repo_root=tmp_path,
+            traceability_graph=traceability_graph,
+        )
+
+    assert build_calls == 2

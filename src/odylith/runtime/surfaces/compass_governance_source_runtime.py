@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import copy
 import re
 from pathlib import Path
 from typing import Any
 from typing import Mapping
 
+from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import execution_wave_view_model
 from odylith.runtime.governance import release_planning_view_model
+from odylith.runtime.governance import sync_session as governed_sync_session
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 _WORKSTREAM_ID_RE = re.compile(r"^B-\d{3,}$")
@@ -64,19 +67,20 @@ def _normalized_id_list(value: Any, *, pattern: re.Pattern[str]) -> list[str]:
     return deduped
 
 
-def build_live_governance_context(
+def _build_live_governance_context_uncached(
     *,
     repo_root: Path,
     traceability_graph: Mapping[str, Any],
 ) -> dict[str, Any]:
-    ideas_root = (Path(repo_root).resolve() / "odylith" / "radar" / "source" / "ideas").resolve()
+    resolved_repo_root = Path(repo_root).resolve()
+    ideas_root = (resolved_repo_root / "odylith" / "radar" / "source" / "ideas").resolve()
     idea_specs, idea_errors = backlog_contract._validate_idea_specs(ideas_root)  # noqa: SLF001
     release_payload, release_errors, _state = release_planning_view_model.build_release_view_from_repo(
-        repo_root=Path(repo_root).resolve(),
+        repo_root=resolved_repo_root,
         idea_specs=idea_specs,
     )
     execution_programs, execution_program_errors = execution_wave_contract.collect_execution_programs(
-        repo_root=Path(repo_root).resolve(),
+        repo_root=resolved_repo_root,
         idea_specs=idea_specs,
     )
     execution_wave_refs = execution_wave_contract.derive_workstream_wave_refs(execution_programs)
@@ -131,7 +135,7 @@ def build_live_governance_context(
                 "workstream_merged_from": _csv_ids(metadata.get("workstream_merged_from"), pattern=_WORKSTREAM_ID_RE),
                 "related_diagram_ids": _csv_ids(metadata.get("related_diagram_ids"), pattern=_DIAGRAM_ID_RE)
                 or _normalized_id_list(source_row.get("related_diagram_ids"), pattern=_DIAGRAM_ID_RE),
-                "idea_file": _as_repo_path(repo_root=repo_root, path=spec.path),
+                "idea_file": _as_repo_path(repo_root=resolved_repo_root, path=spec.path),
                 "promoted_to_plan": _normalized_token(metadata.get("promoted_to_plan")),
                 "plan_traceability": (
                     dict(source_row.get("plan_traceability", {}))
@@ -197,6 +201,71 @@ def build_live_governance_context(
         "release_workstreams": release_workstreams,
         "governance_errors": [*idea_errors, *release_errors, *execution_program_errors],
     }
+
+
+def _traceability_fingerprint(
+    *,
+    traceability_graph: Mapping[str, Any],
+    traceability_signature: str,
+) -> str:
+    provided = str(traceability_signature or "").strip()
+    if provided:
+        return provided
+    return odylith_context_cache.fingerprint_payload(dict(traceability_graph))
+
+
+def build_live_governance_context(
+    *,
+    repo_root: Path,
+    traceability_graph: Mapping[str, Any],
+    traceability_signature: str = "",
+) -> dict[str, Any]:
+    resolved_repo_root = Path(repo_root).resolve()
+    session = governed_sync_session.active_sync_session()
+    fingerprint = _traceability_fingerprint(
+        traceability_graph=traceability_graph,
+        traceability_signature=traceability_signature,
+    )
+    if session is None or session.repo_root != resolved_repo_root:
+        return _build_live_governance_context_uncached(
+            repo_root=resolved_repo_root,
+            traceability_graph=traceability_graph,
+        )
+
+    cache_key = "\n".join(
+        (
+            "v2",
+            f"generation={session.generation}",
+            f"traceability={fingerprint}",
+        )
+    )
+    built = False
+
+    def _builder() -> dict[str, Any]:
+        nonlocal built
+        built = True
+        return _build_live_governance_context_uncached(
+            repo_root=resolved_repo_root,
+            traceability_graph=traceability_graph,
+        )
+
+    context = session.get_or_compute(
+        namespace="compass_governance_context",
+        key=cache_key,
+        builder=_builder,
+    )
+    session.record_cache_decision(
+        category="compass_governance_context",
+        cache_hit=not built,
+        built_from="sync_session",
+        details={
+            "generation": session.generation,
+            "traceability": fingerprint,
+        },
+    )
+    if built:
+        return context
+    return copy.deepcopy(context)
 
 
 __all__ = ["build_live_governance_context"]

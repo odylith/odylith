@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 54,
+    "explicit_event_count": 55,
     "mapped_workstream_evidence_count": 4,
     "recent_path_match_count": 0,
     "spec_history_event_count": 26,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 54
+    "timeline_event_count": 55
   },
   "name": "Compass",
   "path_prefixes": [
@@ -50,6 +50,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 85,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "Five-Round Comparison Wall-Clock Per-Step | Step | R1 Baseline | R2 | R3 | R4 | R5 Latest | R1\u2192R5 | |---|---|---|---|---|---|---| | Render Compass | 2.91s | 2.48s | 4.00s | 3.52...",
+      "ts_iso": "2026-04-12T11:17:04-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

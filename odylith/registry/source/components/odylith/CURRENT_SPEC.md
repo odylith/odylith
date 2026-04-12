@@ -263,6 +263,8 @@ Public docs should describe these commands, not direct module entrypoints.
   - one canonical path-token space
   - one shared parsed backlog/spec read model
   - one shared Registry and delivery-intelligence evidence substrate
+  - one shared live governance context for release, workstream, and
+    execution-wave truth consumed by Compass and other runtime-backed surfaces
 - That shared derivation engine now owns one explicit derivation-generation
   contract:
   - projection/compiler/backend reuse is only legal when the runtime can prove
@@ -315,6 +317,10 @@ Public docs should describe these commands, not direct module entrypoints.
   of recomputing the same projection fingerprint chain on every load. Sync
   must invalidate those session-scoped caches exactly when repo-owned truth or
   delivery-intelligence artifacts change the active derivation phase.
+- Compass live governance context reuse must be keyed by the active sync
+  generation plus the settled traceability signature. If either changes, the
+  runtime must treat the previous release/workstream/wave snapshot as stale and
+  rebuild it locally instead of reusing a warm result.
 - Repo-scoped invalidation must also clear projected-input fingerprint caches,
   not only warm verdicts, because generated derivation inputs such as the
   traceability graph and delivery-intelligence artifact do not necessarily move

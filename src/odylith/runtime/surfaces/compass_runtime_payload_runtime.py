@@ -544,6 +544,7 @@ def _build_runtime_payload(
     governance_context = compass_governance_source_runtime.build_live_governance_context(
         repo_root=repo_root,
         traceability_graph=traceability_graph,
+        traceability_signature=odylith_context_cache.fingerprint_paths([traceability_graph_path]),
     )
     live_traceability_graph = (
         dict(governance_context.get("traceability_graph", {}))

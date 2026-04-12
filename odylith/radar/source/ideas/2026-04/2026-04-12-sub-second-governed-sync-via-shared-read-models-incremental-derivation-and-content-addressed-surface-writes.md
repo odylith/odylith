@@ -117,6 +117,10 @@ not present fake churn as meaningful work.
 - settle Atlas review/catalog truth, Registry spec reconciliation, and
   delivery-intelligence refresh before the runtime-backed Compass, Radar,
   Registry, and shell renders so one final warm serves the full render phase
+- treat Compass live governance context as part of that shared derivation
+  substrate so release, workstream, and execution-wave truth is built once per
+  settled sync generation and traceability signature rather than once per
+  payload render
 - narrow projection and runtime cache invalidation to derivation inputs that can
   actually change the next read model, instead of clearing warm/runtime state on
   every generated HTML or JS write

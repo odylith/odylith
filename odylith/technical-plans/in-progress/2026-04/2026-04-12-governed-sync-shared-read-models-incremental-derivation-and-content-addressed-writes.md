@@ -125,6 +125,9 @@ Related Bugs:
 - [x] Persist a sync debug manifest under `.odylith/cache/odylith-context-engine/`
       that records invalidation events plus surface/cache decisions for the
       active run.
+- [x] Reuse Compass live governance context inside the active sync generation
+      so release/workstream/wave truth is built once per settled traceability
+      signature instead of being re-derived on every Compass payload build.
 
 ## Defer
 - [ ] Persistent sync daemon with warm resident session state across commands.
@@ -258,3 +261,7 @@ Related Bugs:
       generation, content-addressed provenance, fail-closed reuse, additive
       surface provenance, and persisted cache-explain evidence all ship as part
       of the product contract instead of as undocumented implementation detail.
+- [x] Compass no longer rebuilds the live release/workstream/wave governance
+      context for every payload inside one sync generation; it reuses one
+      generation-gated, traceability-scoped snapshot and falls back to a cold
+      rebuild immediately when the sync generation advances.
