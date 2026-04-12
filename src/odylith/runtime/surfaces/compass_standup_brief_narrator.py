@@ -93,7 +93,13 @@ _GENERIC_POSTURE_SLOGAN_RE = re.compile(
     re.IGNORECASE,
 )
 _GENERIC_NEXT_STEP_RE = re.compile(
-    r"^\s*(?:[A-Z][A-Za-z0-9`'’(),/\- ]{4,90}\s+comes\s+next\s+because|the\s+next\s+move\s+is\b|next\s+up\s+is\b|then\b)",
+    r"^\s*(?:[A-Z][A-Za-z0-9`'’(),/\- ]{4,90}\s+comes\s+next\s+because|"
+    r"(?:`?B-\d+`?|[A-Z][A-Za-z0-9`'’(),/\- ]{4,90})\s+is\s+next\s*:|"
+    r"the\s+next\s+move\s+is\b|next\s+up\s+is\b|then\b)",
+    re.IGNORECASE,
+)
+_GENERIC_RISK_WRAPPER_RE = re.compile(
+    r"^\s*(?:a\s+p\d+\s+blocker\s+is\s+still\s+open\s*:|primary\s+blocker\s+is\s+still\s+open\s*:)",
     re.IGNORECASE,
 )
 _GENERIC_PROGRESS_SLOGAN_RE = re.compile(
@@ -1454,6 +1460,8 @@ def _validate_brief_response(
                 errors.append(f"section {key} bullet {bullet_index} reuses a generic posture slogan")
             if _GENERIC_NEXT_STEP_RE.search(text):
                 errors.append(f"section {key} bullet {bullet_index} reuses a generic next-step wrapper")
+            if _GENERIC_RISK_WRAPPER_RE.search(text):
+                errors.append(f"section {key} bullet {bullet_index} reuses a generic risk wrapper")
             if _GENERIC_PROGRESS_SLOGAN_RE.search(text):
                 errors.append(f"section {key} bullet {bullet_index} reuses canned progress phrasing")
             if _GENERIC_LANE_WRAPPER_RE.search(text):

@@ -1807,12 +1807,16 @@ def _risk_facts(
         first = bugs[0]
         severity = str(first.get("severity", "")).strip() or "critical"
         title = _narrative_excerpt(str(first.get("title", "")).strip(), max_sentences=1, max_chars=220)
+        severity_label = severity.upper()
+        bug_text = _periodize(title)
+        if severity_label:
+            bug_text = bug_text.rstrip(".") + f". It is still open at {severity_label}."
         facts.append(
             _standup_fact(
                 section_key="risks_to_watch",
                 voice_hint="operator",
                 priority=100,
-                text=f"Primary blocker is an open {severity} bug: {title}.",
+                text=bug_text,
                 source="bugs",
                 kind="bug",
                 workstreams=workstreams,
@@ -1825,12 +1829,15 @@ def _risk_facts(
             max_sentences=1,
             max_chars=220,
         )
+        trace_text = _periodize(message)
+        if trace_text:
+            trace_text = trace_text.rstrip(".") + ". It still needs cleanup."
         facts.append(
             _standup_fact(
                 section_key="risks_to_watch",
                 voice_hint="operator",
                 priority=92,
-                text=f"Governance gap still needs cleanup: {message}.",
+                text=trace_text,
                 source="traceability",
                 kind="traceability",
                 workstreams=workstreams,

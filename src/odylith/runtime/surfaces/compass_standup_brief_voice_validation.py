@@ -24,7 +24,14 @@ _CACHED_STOCK_PHRASE_RE = re.compile(
     r"most\s+of\s+the\s+work\s+here\s+was\s+in|"
     r"are\s+still\s+moving\s+together|"
     r"next\s+stop\s+is\s+B-\d+|"
-    r"paper-only\s+signal)\b",
+    r"paper-only\s+signal|"
+    r"the\s+repo\s+saw\s+concrete\s+movement|"
+    r"the\s+team\s+is\s+implementing|"
+    r"the\s+updated\s+live\s+snapshot\s+is\s+still\s+the\s+same\s+proof\s+point|"
+    r"same\s+proof\s+point|"
+    r"active\s+execution\s+rather\s+than\s+a\s+stale\s+report|"
+    r"current,\s+immediate\s+track|"
+    r"a\s+p1\s+blocker\s+is\s+still\s+open)\b",
     re.IGNORECASE,
 )
 _PACKET_BOOKKEEPING_RE = re.compile(
@@ -47,6 +54,10 @@ _PACKET_BOOKKEEPING_RE = re.compile(
     r"core-path\s+alignment|"
     r"operator\s+onboarding|"
     r"maintainer-facing\s+coverage|"
+    r"governed\s+surfaces\s+were\s+refreshed|"
+    r"live\s+compass\s+runtime\s+snapshot|"
+    r"snapshot\s+update|"
+    r"primary\s+lane\s+timing|"
     r"plan\s+closeouts?\s+landed)\b",
     re.IGNORECASE,
 )

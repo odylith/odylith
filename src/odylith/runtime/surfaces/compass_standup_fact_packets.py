@@ -3,11 +3,62 @@
 from __future__ import annotations
 
 import datetime as dt
+import re
 from typing import Any
 from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
+
+
+_ACTION_LEAD_RE = re.compile(
+    r"^(?:add|align|audit|backfill|bind|build|capture|carry|clean(?:\s+up)?|close|codify|collapse|"
+    r"complete|convert|cut|define|deliver|document|enable|enforce|finish|harden|implement|introduce|"
+    r"keep|land|make|migrate|move|pull|publish|re-?add|reconcile|refresh|remove|replace|reuse|seed|"
+    r"ship|stabilize|stop|tighten|unify|update|validate|verify|wire)\b",
+    re.IGNORECASE,
+)
+
+
+def _sentence(text: str) -> str:
+    token = str(text or "").strip().rstrip(".")
+    if not token:
+        return ""
+    return token[0].upper() + token[1:] + "."
+
+
+def _movement_fact_text(summary: str) -> str:
+    return _sentence(summary)
+
+
+def _direction_fact_text(
+    *,
+    label: str,
+    status_phrase: str,
+    direction_text: str,
+) -> str:
+    action = str(direction_text or "").strip().rstrip(".")
+    if not action:
+        return _sentence(f"{label} is {status_phrase}")
+    if not _ACTION_LEAD_RE.match(action):
+        action = f"land {action}"
+    return _sentence(f"{action}; {label} is {status_phrase}")
+
+
+def _progress_fact_text(*, done_tasks: int, total_tasks: int, progress_story: str) -> str:
+    story = str(progress_story or "").strip().rstrip(".")
+    if total_tasks > 0:
+        return _sentence(f"Checklist is {done_tasks}/{total_tasks}; {story}")
+    return _sentence(story)
+
+
+def _timeline_fact_text(timeline_story: str) -> str:
+    story = str(timeline_story or "").strip().rstrip(".")
+    if not story:
+        return ""
+    if story.lower().startswith(("projected ", "provisional ")):
+        return _sentence(f"ETA is {story}")
+    return _sentence(story)
 
 
 def _host():
@@ -40,6 +91,7 @@ def _build_scoped_standup_fact_packet(
     _plan_deliverable_label = host._plan_deliverable_label
     _collect_window_execution_updates = host._collect_window_execution_updates
     _action_tokens_for_workstream = host._action_tokens_for_workstream
+    _action_clause_for_narrative = host._action_clause_for_narrative
     _execution_status_phrase = host._execution_status_phrase
     _progress_story = host._progress_story
     _narrative_excerpt = host._narrative_excerpt
@@ -99,6 +151,7 @@ def _build_scoped_standup_fact_packet(
     ).strip()
     if direction_source.lower().startswith(("this gives operators a clearer contract", "gives operators a clearer contract")):
         direction_source = _narrative_excerpt(purpose or benefit or use_story or label, max_sentences=1, max_chars=180)
+    direction_clause = _action_clause_for_narrative(direction_source) or direction_source
     status = str(row.get("status", "")).strip() or "unknown"
     plan = row.get("plan", {}) if isinstance(row.get("plan"), Mapping) else {}
     progress_ratio = float(plan.get("progress_ratio", 0.0) or 0.0)
@@ -206,7 +259,7 @@ def _build_scoped_standup_fact_packet(
                 section_key="completed",
                 voice_hint="executive",
                 priority=62,
-                text=f"No clean closeout landed for {label} in the last {window_hours} hours.",
+                text=_sentence(f"Nothing fully closed for {label} in the last {window_hours} hours"),
                 source="window",
                 kind="window_summary",
                 workstreams=[idea_id],
@@ -218,7 +271,7 @@ def _build_scoped_standup_fact_packet(
                 section_key="completed",
                 voice_hint="operator",
                 priority=94 - index,
-                text=f"Concrete movement in the repo: {summary.rstrip('. ')}.",
+                text=_movement_fact_text(summary),
                 source="transaction_or_event",
                 kind="execution_highlight",
                 workstreams=[idea_id],
@@ -226,7 +279,7 @@ def _build_scoped_standup_fact_packet(
         )
 
     direction_text = _decapitalize_clause(
-        direction_source or f"{label} remains the active execution lane for dependent platform delivery."
+        direction_clause or f"keep {label} moving through the dependent delivery work"
     )
     include_self_host_status = False
     scope_context = " ".join(part for part in [label, purpose, benefit, use_story] if part).lower()
@@ -247,7 +300,11 @@ def _build_scoped_standup_fact_packet(
             section_key="current_execution",
             voice_hint="executive",
             priority=100,
-            text=f"{label} is the live lane here and is {status_phrase}. The change now is to {direction_text}.",
+            text=_direction_fact_text(
+                label=label,
+                status_phrase=status_phrase,
+                direction_text=direction_text,
+            ),
             source="workstream_metadata",
             kind="direction",
             workstreams=[idea_id],
@@ -257,24 +314,16 @@ def _build_scoped_standup_fact_packet(
         self_host_status = _self_host_status_fact(self_host_snapshot)
         if self_host_status is not None:
             section_candidates["current_execution"].append(self_host_status)
-    if execution_highlights:
-        section_candidates["current_execution"].append(
-            _standup_fact(
-                section_key="current_execution",
-                voice_hint="operator",
-                priority=94,
-                text=f"Concrete proof in the repo: {(filtered_execution_highlights or execution_highlights)[0].rstrip('. ')}.",
-                source="execution_highlight",
-                kind="signal",
-                workstreams=[idea_id],
-            )
-        )
     section_candidates["current_execution"].append(
         _standup_fact(
             section_key="current_execution",
             voice_hint="operator",
             priority=90,
-            text=f"Plan posture: checklist progress is {done_tasks}/{total_tasks}; {progress_story}.",
+            text=_progress_fact_text(
+                done_tasks=done_tasks,
+                total_tasks=total_tasks,
+                progress_story=progress_story,
+            ),
             source="plan",
             kind="checklist",
             workstreams=[idea_id],
@@ -285,7 +334,7 @@ def _build_scoped_standup_fact_packet(
             section_key="current_execution",
             voice_hint="operator",
             priority=86,
-            text=f"Timeline signal: {timeline_story}.",
+            text=_timeline_fact_text(timeline_story),
             source="timeline",
             kind="timeline",
             workstreams=[idea_id],
@@ -479,6 +528,7 @@ def _build_global_standup_fact_packet(
     _ws_label = host._ws_label
     _ws_why_context = host._ws_why_context
     _estimate_remaining_days = host._estimate_remaining_days
+    _action_clause_for_narrative = host._action_clause_for_narrative
     _execution_status_phrase = host._execution_status_phrase
     _timeline_clause = host._timeline_clause
     _latest_evidence_marker = host._latest_evidence_marker
@@ -542,6 +592,7 @@ def _build_global_standup_fact_packet(
             max_sentences=1,
             max_chars=180,
         )
+    direction_clause = _action_clause_for_narrative(direction_source) or direction_source
     primary_plan = focused_primary.get("plan", {}) if isinstance(focused_primary.get("plan"), Mapping) else {}
     primary_progress_ratio = float(primary_plan.get("progress_ratio", 0.0) or 0.0)
     eta_days, eta_source = _estimate_remaining_days(focused_primary if focused_primary else {})
@@ -704,7 +755,7 @@ def _build_global_standup_fact_packet(
                 section_key="completed",
                 voice_hint="executive",
                 priority=64,
-                text=f"No verified milestone closeout landed across the portfolio in the last {window_hours} hours.",
+                text=_sentence(f"Nothing fully closed across the portfolio in the last {window_hours} hours"),
                 source="window",
                 kind="window_summary",
             )
@@ -717,21 +768,25 @@ def _build_global_standup_fact_packet(
                 section_key="completed",
                 voice_hint="operator",
                 priority=94 - index,
-                text=f"Concrete movement in the repo: {summary.rstrip('. ')}.",
+                text=_movement_fact_text(summary),
                 source="transaction_or_event",
                 kind="execution_highlight",
             )
         )
 
     executive_direction = _decapitalize_clause(
-        direction_source or "focused execution remains prerequisite for dependent follow-on workstreams"
+        direction_clause or "keep the dependent follow-on workstreams moving"
     )
     section_candidates["current_execution"].append(
         _standup_fact(
             section_key="current_execution",
             voice_hint="executive",
             priority=100,
-            text=f"{primary_label} is the lane carrying the live contract work and is {status_phrase}. The change now is to {executive_direction}.",
+            text=_direction_fact_text(
+                label=primary_label,
+                status_phrase=status_phrase,
+                direction_text=executive_direction,
+            ),
             source="workstream_metadata",
             kind="direction",
             workstreams=[
@@ -739,38 +794,29 @@ def _build_global_standup_fact_packet(
             ] if focused_primary else [],
         )
     )
-    if filtered_execution_highlights:
-        section_candidates["current_execution"].append(
-            _standup_fact(
-                section_key="current_execution",
-                voice_hint="operator",
-                priority=94,
-                text=f"Concrete proof in the repo: {filtered_execution_highlights[0].rstrip('. ')}.",
-                source="execution_highlight",
-                kind="signal",
-            )
-        )
     if include_self_host_status:
         self_host_status = _self_host_status_fact(self_host_snapshot)
         if self_host_status is not None:
             section_candidates["current_execution"].append(self_host_status)
     portfolio_posture = ""
     if active_count <= 0:
-        portfolio_posture = "No active implementation lane is currently open."
+        portfolio_posture = "No implementation lane is moving right now."
     elif progressed_count >= active_count and active_count > 0:
-        portfolio_posture = "Active lanes are converting plans into concrete implementation outcomes."
+        portfolio_posture = "Every active lane has moved beyond planning and into implementation."
     elif progressed_count > 0:
         if active_untracked_count > 0:
-            portfolio_posture = "Planning and implementation are running in parallel across active lanes, and some implementation lanes still lack captured checklist progress."
+            portfolio_posture = (
+                "Implementation is moving, but some active lanes still do not have checklist progress captured."
+            )
         else:
-            portfolio_posture = "Planning and implementation are running in parallel across active lanes."
+            portfolio_posture = "Implementation is moving while some active lanes are still clearing plan setup."
     else:
         if active_untracked_count > 0:
-            portfolio_posture = "Active lanes are in implementation, but checklist progress is not yet captured."
+            portfolio_posture = "Implementation has started, but checklist progress is not captured yet."
         else:
-            portfolio_posture = "Active lanes are still in planning setup and closure work is just starting."
+            portfolio_posture = "Most active lanes are still setting up the first implementation slice."
     if top_activity_labels:
-        portfolio_posture = portfolio_posture.rstrip(".") + f" Live focus lanes: {', '.join(top_activity_labels)}."
+        portfolio_posture = portfolio_posture.rstrip(".") + f" Heaviest movement is in {', '.join(top_activity_labels)}."
     section_candidates["current_execution"].append(
             _standup_fact(
                 section_key="current_execution",
@@ -798,7 +844,7 @@ def _build_global_standup_fact_packet(
                 section_key="current_execution",
                 voice_hint="operator",
                 priority=72,
-                text=f"Timeline signal on the primary lane: {timeline_story}.",
+                text=_timeline_fact_text(timeline_story),
                 source="timeline",
                 kind="timeline",
             )
