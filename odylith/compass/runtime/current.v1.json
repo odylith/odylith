@@ -4622,7 +4622,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T00:00:30Z"
+          "next_retry_utc": "2026-04-12T02:00:52Z"
         },
         "evidence_lookup": {}
       },
@@ -4644,7 +4644,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T05:00:30Z"
+          "next_retry_utc": "2026-04-12T06:00:52Z"
         },
         "evidence_lookup": {}
       },
@@ -4991,7 +4991,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T05:00:30Z"
+          "next_retry_utc": "2026-04-12T06:00:52Z"
         },
         "evidence_lookup": {}
       },
@@ -5735,7 +5735,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T05:00:30Z"
+          "next_retry_utc": "2026-04-12T06:00:52Z"
         },
         "evidence_lookup": {}
       },

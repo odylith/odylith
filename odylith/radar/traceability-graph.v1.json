@@ -4910,6 +4910,42 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-089",
+      "title": "Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -5853,6 +5889,13 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md"
     },
     {
+      "id": "B-089",
+      "type": "workstream",
+      "label": "Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+    },
+    {
       "id": "artifact:.github/workflows/release.yml",
       "type": "artifact",
       "label": ".github/workflows/release.yml",
@@ -6618,6 +6661,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md",
@@ -9072,6 +9121,11 @@
       "source": "B-088",
       "target": "release:release-0-1-11",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-089",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+      "edge_type": "promoted_to_plan"
     }
   ],
   "coverage": {
@@ -9690,6 +9744,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-089": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -9829,15 +9890,15 @@
     "B-085: related diagram `D-047` not found in catalog"
   ],
   "summary": {
-    "workstream_count": 88,
+    "workstream_count": 89,
     "release_count": 2,
     "active_release_assignment_count": 15,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 211,
-    "edge_count": 480,
+    "node_count": 213,
+    "edge_count": 481,
     "warning_count": 12,
     "warning_item_count": 12
   },
-  "generated_utc": "2026-04-11 21:44:50Z"
+  "generated_utc": "2026-04-11 23:42:36Z"
 }

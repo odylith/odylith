@@ -30,12 +30,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 22,
-    "mapped_workstream_evidence_count": 2,
+    "explicit_event_count": 23,
+    "mapped_workstream_evidence_count": 3,
     "recent_path_match_count": 1,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 23
+    "timeline_event_count": 24
   },
   "name": "Radar",
   "path_prefixes": [
@@ -47,25 +47,45 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
         "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
-        "src/odylith/bundle/assets/odylith/radar/source/releases/release-assignment-events.v1.jsonl",
-        "odylith/radar/source/ideas/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md"
+        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
       ],
       "confidence": "high",
-      "event_index": 80,
+      "event_index": 77,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/releases/release-assignment-events.v1.jsonl, src/odylith/bundle/assets/odylith/radar/source/INDEX.md +5 more",
-      "ts_iso": "2026-04-11T16:01:08-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/radar/source/INDEX.md, odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md +1 more",
+      "ts_iso": "2026-04-11T16:42:49-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+      ],
+      "confidence": "high",
+      "event_index": 75,
+      "explicit_components": [
+        "odylith",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Plan binding: advanced B-089 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+      "ts_iso": "2026-04-11T16:42:33-07:00",
+      "workstreams": [
+        "B-089"
+      ]
     },
     {
       "artifacts": [

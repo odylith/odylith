@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 52,
-    "mapped_workstream_evidence_count": 9,
+    "explicit_event_count": 53,
+    "mapped_workstream_evidence_count": 10,
     "recent_path_match_count": 1,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 53
+    "timeline_event_count": 54
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -58,22 +58,44 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/README.md",
-        "src/odylith/bundle/assets/odylith/README.md",
         "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
         "src/odylith/bundle/assets/odylith/technical-plans/INDEX.md"
       ],
       "confidence": "high",
-      "event_index": 78,
+      "event_index": 76,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/README.md, src/odylith/bundle/assets/odylith/README.md +2 more",
-      "ts_iso": "2026-04-11T16:16:34-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/radar/source/INDEX.md, src/odylith/bundle/assets/odylith/technical-plans/INDEX.md",
+      "ts_iso": "2026-04-11T16:42:49-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+      ],
+      "confidence": "high",
+      "event_index": 75,
+      "explicit_components": [
+        "odylith",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Plan binding: advanced B-089 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+      "ts_iso": "2026-04-11T16:42:33-07:00",
+      "workstreams": [
+        "B-089"
+      ]
     },
     {
       "artifacts": [],
@@ -1584,6 +1606,7 @@
     "B-069",
     "B-083",
     "B-084",
+    "B-089",
     "B-085",
     "B-088",
     "B-087",

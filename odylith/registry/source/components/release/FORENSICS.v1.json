@@ -15,10 +15,10 @@
     "empty_reasons": [],
     "explicit_event_count": 19,
     "mapped_workstream_evidence_count": 4,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 20
+    "timeline_event_count": 19
   },
   "name": "Release",
   "path_prefixes": [
@@ -44,26 +44,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-        "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/odylith/radar/source/releases/release-assignment-events.v1.jsonl",
-        "src/odylith/bundle/assets/odylith/registry/source/components/release/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 81,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "release"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/MAINTAINER_RELEASE_RUNBOOK.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl +3 more",
-      "ts_iso": "2026-04-11T14:45:02-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [],
       "confidence": "high",

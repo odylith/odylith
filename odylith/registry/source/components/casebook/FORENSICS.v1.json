@@ -29,10 +29,10 @@
     "empty_reasons": [],
     "explicit_event_count": 1,
     "mapped_workstream_evidence_count": 0,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 2
+    "timeline_event_count": 1
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -41,22 +41,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/bundle/assets/odylith/casebook/bugs/INDEX.md"
-      ],
-      "confidence": "high",
-      "event_index": 77,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "casebook"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/casebook/bugs/INDEX.md",
-      "ts_iso": "2026-04-11T14:45:02-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/radar/source/INDEX.md",
