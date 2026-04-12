@@ -80,6 +80,10 @@ Related Bugs:
 - [x] Re-harden the late Registry forensics reconciliation after shell-facing
       refresh steps so strict standalone proof does not drift red when later sync
       activity changes evidence consumed by component forensics.
+- [x] Make source-bundle mirror artifacts inherit canonical generated/global
+      policy where appropriate and collapse mirror/canonical aliases into one
+      stable workspace-activity token so the final mirror step cannot reopen
+      Registry forensics drift after a successful full sync.
 
 ## Defer
 - [ ] Persistent sync daemon with warm resident session state across commands.
@@ -131,8 +135,9 @@ Related Bugs:
 ## Validation
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_workstream_inference.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_component_registry_intelligence.py`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_context_grounding_hardening.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_render_backlog_ui.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_workstream_inference.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_sync_component_spec_requirements.py tests/unit/runtime/test_surface_projection_fingerprint.py`
 - [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`3.4s` on 2026-04-11 after runtime warm-cache priming, full-mode governance-packet bypass, and the late Registry forensics reconciliation; earlier in the same wave the pre-hardening full runs were `5.2s` then `4.5s`)
-- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone`
+- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (passes immediately after a full write-mode sync on 2026-04-11 once bundle-mirror workspace artifacts adopt canonical generated/global parity and stable alias dedupe)
 - [x] `git diff --check`
 
 ## Outcome Snapshot
@@ -150,3 +155,7 @@ Related Bugs:
 - [x] Strict standalone proof stays fail-closed after the optimization wave
       because late Registry forensics reconciliation now accounts for shell-facing
       steps that can still change evidence after the first spec sync.
+- [x] The final source-bundle mirror step no longer reopens strict Registry
+      forensics drift because bundle-source aliases now collapse to one stable
+      evidence token and inherit canonical generated/global policy where that
+      mirror is only echoing derived/global truth.

@@ -285,6 +285,13 @@ Public docs should describe these commands, not direct module entrypoints.
   scans, and follow-on Registry requirement sync passes must account for later
   shell-facing steps that can still shift evidence consumed by component
   forensics instead of running by superstition or skipping by false economy.
+- Source-bundle mirror artifacts under
+  `src/odylith/bundle/assets/odylith/...` must inherit canonical
+  generated/global policy when they are only echoing derived or coordination
+  truth, but mirror-only source docs must still map back to the owning
+  component. Registry workspace-activity collection must therefore dedupe
+  mirror/canonical aliases into one stable evidence token instead of treating
+  the final mirror step as fresh work every run.
 - The long-term ceiling is a reverse-dependency fixpoint engine or resident
   daemon, but the first non-negotiable contract is simpler: one sync run must
   reuse one shared read model instead of repeatedly reconstructing it.
