@@ -12,7 +12,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Iterator, TypeVar
+from typing import Any, Callable, Iterable, Iterator, TypeVar
 
 
 _T = TypeVar("_T")
@@ -47,6 +47,16 @@ class GovernedSyncSession:
         if cache_key not in self._cache:
             self._cache[cache_key] = builder()
         return self._cache[cache_key]
+
+    def clear_namespaces(self, *namespaces: str) -> None:
+        normalized = {str(namespace).strip() for namespace in namespaces if str(namespace).strip()}
+        if not normalized:
+            return
+        for cache_key in [key for key in tuple(self._cache) if key[0] in normalized]:
+            self._cache.pop(cache_key, None)
+
+    def clear_namespace_group(self, namespaces: Iterable[str]) -> None:
+        self.clear_namespaces(*(str(namespace).strip() for namespace in namespaces))
 
     def repo_root_for_path(self, path: Path) -> Path | None:
         candidate = Path(path).resolve()

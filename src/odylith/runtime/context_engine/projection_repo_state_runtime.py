@@ -47,6 +47,25 @@ def workspace_activity_fingerprint(*, repo_root: Path) -> str:
 
 def projection_repo_state_token(*, repo_root: Path) -> str:
     root = Path(repo_root).resolve()
+    try:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except ImportError:  # pragma: no cover - defensive bootstrap fallback
+        governed_sync_session = None
+    if governed_sync_session is not None:
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == root:
+            return str(
+                session.get_or_compute(
+                    namespace="projection_repo_state",
+                    key="token",
+                    builder=lambda: _projection_repo_state_token_uncached(repo_root=root),
+                )
+            ).strip()
+    return _projection_repo_state_token_uncached(repo_root=root)
+
+
+def _projection_repo_state_token_uncached(*, repo_root: Path) -> str:
+    root = Path(repo_root).resolve()
     cache_key = str(root)
     head_oid = _git_head_oid(repo_root=root)
     now = time.monotonic()

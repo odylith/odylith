@@ -1,4 +1,4 @@
-status: planning
+status: implementation
 
 idea_id: B-091
 
@@ -105,6 +105,21 @@ not present fake churn as meaningful work.
   to a daemon or full dependency-graph rewrite
 - add content-addressed no-op writes on the first governed generated outputs so
   unchanged bytes stay quiet
+- make sync-planned render steps authoritative for rebuild intent so generated
+  surfaces do not spend wall clock rescanning their watch trees when sync
+  already decided to execute the render
+- settle Atlas review/catalog truth, Registry spec reconciliation, and
+  delivery-intelligence refresh before the runtime-backed Compass, Radar,
+  Registry, and shell renders so one final warm serves the full render phase
+- narrow projection and runtime cache invalidation to derivation inputs that can
+  actually change the next read model, instead of clearing warm/runtime state on
+  every generated HTML or JS write
+- make repo-scoped runtime invalidation clear projected-input fingerprint caches
+  as well as warm verdicts, because generated derivation inputs like the
+  traceability graph and delivery-intelligence artifact do not move the
+  workspace-activity token by themselves
+- memoize projection path-tree fingerprints per repo-state so compatible scope
+  checks stop rescanning the same watched directories during one sync phase
 - keep the current sync step graph externally compatible while replacing
   repeated read-model reconstruction under the hood
 - use the first wave to prove the architecture with real profiling deltas, then
@@ -153,6 +168,9 @@ not present fake churn as meaningful work.
   targets
 - warm incremental sync latency drops materially without lowering validation
   strictness or reducing rendered output coverage
+- forced/full sync on the maintainer checkout falls into single-digit reported
+  elapsed time while strict standalone proof remains under five seconds once the
+  write-mode lane settles
 - standalone check-only sync remains fail-closed and source-truth equivalent
 
 ## Validation
@@ -208,6 +226,12 @@ and stays quiet when nothing changed.
 - focused sync compatibility tests to prove the external command surface did
   not change
 - before/after profiling receipts stored in the plan and closeout narrative
+- keep the remaining hotspots explicit so the next wave targets Compass runtime
+  payload assembly, Registry snapshot shaping, and projection fingerprint trees
+  instead of reopening the old path-normalization storm
+- track the steady-state full-sync target against the settled tree, not only the
+  first churn-heavy run after source-truth edits, so the operator-facing number
+  reflects the real post-change feedback loop
 
 ## Open Questions
 - whether the second Registry-spec sync should collapse into the same fixpoint

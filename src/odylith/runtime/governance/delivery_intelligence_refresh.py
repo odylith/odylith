@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import subprocess
 from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
@@ -36,6 +37,19 @@ def _resolve(repo_root: Path, token: str) -> Path:
     return (repo_root / path).resolve()
 
 
+def _current_local_head(repo_root: Path) -> str:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+    return str(completed.stdout or "").strip()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
@@ -60,7 +74,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "src/odylith/runtime/common",
             ),
             output_paths=(output_path,),
-            extra={"max_review_age_days": int(args.max_review_age_days)},
+            extra={
+                "max_review_age_days": int(args.max_review_age_days),
+                "local_head": _current_local_head(repo_root),
+            },
         )
         if skip_rebuild:
             print("delivery intelligence artifact is current")

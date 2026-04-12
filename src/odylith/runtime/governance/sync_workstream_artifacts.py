@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import contextvars
 from dataclasses import dataclass
 import importlib
 import json
@@ -116,6 +115,7 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
 }
 _HEARTBEAT_INTERVAL_SECONDS = 10.0
 _DASHBOARD_REFRESH_TIMEOUT_SECONDS = dashboard_refresh_contract.DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS
+_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV = "ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD"
 _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES: tuple[str, ...] = (
     "odylith/agents-guidelines/",
     "odylith/skills/",
@@ -124,6 +124,20 @@ _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES: tuple[str, ...] = (
     "odylith/technical-plans/",
     "odylith/casebook/bugs/",
     "odylith/atlas/source/",
+)
+_PROJECTION_INVALIDATION_PREFIXES: tuple[str, ...] = (
+    "odylith/radar/source/",
+    "odylith/technical-plans/",
+    "odylith/casebook/bugs/",
+    "odylith/registry/source/component_registry.v1.json",
+    "odylith/registry/source/components/",
+    "odylith/atlas/source/catalog/diagrams.v1.json",
+    "odylith/radar/traceability-graph.v1.json",
+    "odylith/runtime/delivery_intelligence.v4.json",
+)
+_DELIVERY_SURFACE_INVALIDATION_PREFIXES: tuple[str, ...] = (
+    *_PROJECTION_INVALIDATION_PREFIXES,
+    "odylith/runtime/delivery_intelligence.v4.json",
 )
 # Live Odylith product-repo governance records that must never be shipped into
 # consumer truth roots through the source-truth bundle mirror. The mirror is
@@ -428,31 +442,85 @@ def _run_callable_with_heartbeat(
     label: str,
     callable_: Callable[[], int],
 ) -> int:
-    result: dict[str, Any] = {"done": False, "rc": 1, "error": None}
-    worker_context = contextvars.copy_context()
-
-    def _target() -> None:
-        try:
-            result["rc"] = int(worker_context.run(callable_) or 0)
-        except BaseException as exc:  # pragma: no cover - re-raised in main thread
-            result["error"] = exc
-        finally:
-            result["done"] = True
-
     started_at = time.perf_counter()
-    last_heartbeat = started_at
-    worker = threading.Thread(target=_target, daemon=True)
-    worker.start()
-    while not bool(result["done"]):
-        now = time.perf_counter()
-        if now - last_heartbeat >= _HEARTBEAT_INTERVAL_SECONDS:
-            print(f"- heartbeat: {label} still running ({int(now - started_at)}s)")
-            last_heartbeat = now
-        worker.join(timeout=max(0.01, min(0.5, _HEARTBEAT_INTERVAL_SECONDS / 2.0)))
-    error = result.get("error")
-    if error is not None:
-        raise error
-    return int(result.get("rc", 1) or 0)
+    stop_heartbeat = threading.Event()
+
+    def _heartbeat() -> None:
+        while not stop_heartbeat.wait(_HEARTBEAT_INTERVAL_SECONDS):
+            elapsed = int(time.perf_counter() - started_at)
+            print(f"- heartbeat: {label} still running ({elapsed}s)")
+
+    heartbeat_thread = threading.Thread(target=_heartbeat, daemon=True)
+    heartbeat_thread.start()
+    try:
+        return int(callable_() or 0)
+    finally:
+        stop_heartbeat.set()
+        heartbeat_thread.join(timeout=max(0.01, _HEARTBEAT_INTERVAL_SECONDS))
+
+
+@contextlib.contextmanager
+def _temporary_environ(updates: Mapping[str, str] | None):
+    if not updates:
+        yield
+        return
+    previous: dict[str, str | None] = {}
+    try:
+        for key, value in updates.items():
+            token = str(key).strip()
+            if not token:
+                continue
+            previous[token] = os.environ.get(token)
+            os.environ[token] = str(value)
+        yield
+    finally:
+        for key, previous_value in previous.items():
+            if previous_value is None:
+                os.environ.pop(key, None)
+                continue
+            os.environ[key] = previous_value
+
+
+def _step_touches_path_prefixes(step: ExecutionStep, prefixes: Sequence[str]) -> bool:
+    normalized_prefixes = tuple(str(prefix).strip() for prefix in prefixes if str(prefix).strip())
+    if not normalized_prefixes:
+        return False
+    for token in step.paths:
+        normalized = str(token).strip()
+        if any(normalized == prefix or normalized.startswith(prefix) for prefix in normalized_prefixes):
+            return True
+    return False
+
+
+def _step_env_overrides(step: ExecutionStep) -> dict[str, str]:
+    if not step.command:
+        return {}
+    tokens = tuple(str(token).strip() for token in step.command if str(token).strip())
+    if len(tokens) >= 3 and tokens[0] == "python" and tokens[1] == "-m" and tokens[2].startswith(
+        "odylith.runtime.surfaces.render_"
+    ):
+        return {_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV: "1"}
+    return {}
+
+
+def _step_invalidates_projection_caches(step: ExecutionStep) -> bool:
+    return _step_touches_path_prefixes(step, _PROJECTION_INVALIDATION_PREFIXES)
+
+
+def _step_invalidates_delivery_surface_cache(step: ExecutionStep) -> bool:
+    return _step_touches_path_prefixes(step, _DELIVERY_SURFACE_INVALIDATION_PREFIXES)
+
+
+def _invalidate_sync_runtime_caches(*, repo_root: Path, step: ExecutionStep) -> None:
+    if not step.mutation_classes:
+        return
+    session = governed_sync_session.active_sync_session()
+    if _step_invalidates_projection_caches(step):
+        _context_engine_store().clear_runtime_process_caches(repo_root=repo_root)
+        if session is not None and session.repo_root == repo_root:
+            session.clear_namespaces("projection_repo_state", "surface_projection_fingerprint", "runtime_warm")
+    if session is not None and session.repo_root == repo_root and _step_invalidates_delivery_surface_cache(step):
+        session.clear_namespaces("delivery_surface_payload")
 
 
 def _terminate_process(process: subprocess.Popen[Any]) -> None:
@@ -1643,40 +1711,6 @@ def build_sync_execution_plan(
                 next_command_on_failure=sync_failure_command,
             )
         )
-    if bool(getattr(impact, "compass", False)):
-        steps.append(
-            _execution_step(
-                "Render Compass before Radar so execution overlays see the latest runtime snapshot.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_compass_dashboard",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("compass"),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
-    if bool(getattr(impact, "radar", False)):
-        steps.append(
-            _execution_step(
-                "Render Radar for the impacted backlog slice.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_backlog_ui",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("radar"),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
     if bool(getattr(impact, "atlas", False)):
         steps.extend(
             [
@@ -1734,6 +1768,40 @@ def build_sync_execution_plan(
             next_command_on_failure=sync_failure_command,
         )
     ]
+    if bool(getattr(impact, "compass", False)):
+        post_registry_truth_steps.append(
+            _execution_step(
+                "Render Compass before Radar after Atlas/Registry truth settles so runtime-backed surfaces warm once against final state.",
+                command=(
+                    "python",
+                    "-m",
+                    "odylith.runtime.surfaces.render_compass_dashboard",
+                    "--repo-root",
+                    str(repo_root),
+                    *_runtime_args(runtime_mode),
+                ),
+                mutation_classes=("generated_surfaces",),
+                paths=_surface_render_outputs("compass"),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
+    if bool(getattr(impact, "radar", False)):
+        post_registry_truth_steps.append(
+            _execution_step(
+                "Render Radar after Compass so execution overlays see the latest runtime snapshot.",
+                command=(
+                    "python",
+                    "-m",
+                    "odylith.runtime.surfaces.render_backlog_ui",
+                    "--repo-root",
+                    str(repo_root),
+                    *_runtime_args(runtime_mode),
+                ),
+                mutation_classes=("generated_surfaces",),
+                paths=_surface_render_outputs("radar"),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
     if bool(getattr(impact, "registry", False)):
         post_registry_truth_steps.append(
             _execution_step(
@@ -1786,10 +1854,19 @@ def build_sync_execution_plan(
             )
         )
     steps.extend(post_registry_truth_steps)
+    steps.append(
+        _execution_step(
+            "Mirror changed source-truth docs into the shipped bundle asset tree.",
+            action=lambda: _sync_changed_source_truth_bundle_mirrors(repo_root=repo_root),
+            mutation_classes=("generated_surfaces",),
+            paths=_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES,
+            next_command_on_failure=sync_failure_command,
+        )
+    )
     if post_registry_truth_steps:
         steps.append(
             _execution_step(
-                "Re-sync Registry component spec requirements after later shell-facing refresh steps settle.",
+                "Re-sync Registry component spec requirements after later shell-facing and mirror refresh steps settle.",
                 command=(
                     "python",
                     "-m",
@@ -1803,15 +1880,6 @@ def build_sync_execution_plan(
                 next_command_on_failure=sync_failure_command,
             )
         )
-    steps.append(
-        _execution_step(
-            "Mirror changed source-truth docs into the shipped bundle asset tree.",
-            action=lambda: _sync_changed_source_truth_bundle_mirrors(repo_root=repo_root),
-            mutation_classes=("generated_surfaces",),
-            paths=_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES,
-            next_command_on_failure=sync_failure_command,
-        )
-    )
     notes = [
         "Dry-run previews the same step graph used for real sync execution so mutation scope cannot drift from runtime behavior.",
     ]
@@ -1834,23 +1902,24 @@ def _execute_plan(
     started_at = time.perf_counter()
     for index, step in enumerate(plan.steps, start=1):
         print(f"- step {index}/{len(plan.steps)}: {step.label}")
-        if step.action is not None:
-            rc = _run_callable_with_heartbeat(
-                label=step.label,
-                callable_=lambda: int(step.action() or 0),
-            )
-        elif step.command:
-            heartbeat_label = _display_sync_step_command(repo_root=repo_root, command=step.command)
-            command_kwargs: dict[str, Any] = {
-                "repo_root": repo_root,
-                "args": step.command,
-                "heartbeat_label": heartbeat_label,
-            }
-            if step.timeout_seconds is not None:
-                command_kwargs["timeout_seconds"] = step.timeout_seconds
-            rc = run_impl(**command_kwargs)
-        else:
-            rc = 0
+        with _temporary_environ(_step_env_overrides(step)):
+            if step.action is not None:
+                rc = _run_callable_with_heartbeat(
+                    label=step.label,
+                    callable_=lambda: int(step.action() or 0),
+                )
+            elif step.command:
+                heartbeat_label = _display_sync_step_command(repo_root=repo_root, command=step.command)
+                command_kwargs: dict[str, Any] = {
+                    "repo_root": repo_root,
+                    "args": step.command,
+                    "heartbeat_label": heartbeat_label,
+                }
+                if step.timeout_seconds is not None:
+                    command_kwargs["timeout_seconds"] = step.timeout_seconds
+                rc = run_impl(**command_kwargs)
+            else:
+                rc = 0
         if rc != 0:
             elapsed = time.perf_counter() - started_at
             print(f"{plan_name} failed")
@@ -1862,6 +1931,7 @@ def _execute_plan(
             elif step.command:
                 print(f"- next: {_display_sync_step_command(repo_root=repo_root, command=step.command)}")
             return rc
+        _invalidate_sync_runtime_caches(repo_root=repo_root, step=step)
     elapsed = time.perf_counter() - started_at
     print(f"{plan_name} completed")
     print("- outcome: passed")
@@ -2052,19 +2122,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     run_impl = _run_command
     runtime_fallback_used = False
     if not args.check_only and _use_runtime_fast_path(effective_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
-        try:
-            _context_engine_store().warm_projections(
-                repo_root=repo_root,
-                reason="sync_workstream_artifacts",
-                scope="default",
-            )
-            run_impl = _run_command_in_process
-        except Exception as exc:
-            if effective_runtime_mode == "daemon":
-                print(f"workstream sync failed: runtime warmup failed: {exc}")
-                return 2
-            print(f"- runtime_fallback: standalone ({exc})")
-            runtime_fallback_used = True
+        run_impl = _run_command_in_process
     elif _use_runtime_fast_path(effective_runtime_mode):
         print("- runtime_fallback: standalone (runtime prerequisites missing)")
         runtime_fallback_used = True

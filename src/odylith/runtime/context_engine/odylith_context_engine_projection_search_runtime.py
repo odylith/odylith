@@ -9,6 +9,7 @@ from odylith.runtime.context_engine import projection_repo_state_runtime
 
 _PROCESS_PROJECTED_INPUTS_CACHE: dict[str, tuple[str, dict[str, str]]] = {}
 _PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE: dict[str, tuple[str, str]] = {}
+_PROCESS_PATH_FINGERPRINT_CACHE: dict[str, tuple[str, str]] = {}
 
 
 def bind(host: Any) -> None:
@@ -318,11 +319,23 @@ def _connect(repo_root: Path) -> _ProjectionConnection:
         f"Odylith projection snapshot is unavailable at {projection_snapshot_path(repo_root=root)}; run warmup first."
     )
 
-def _path_fingerprint(path: Path, *, glob: str = "*.md") -> str:
+def _path_fingerprint(path: Path, *, repo_root: Path | None = None, glob: str = "*.md") -> str:
     target = Path(path)
+    state_token = ""
+    if repo_root is not None:
+        root = Path(repo_root).resolve()
+        state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
+        cache_key = f"{target.resolve()}::{glob}"
+        cached = _PROCESS_PATH_FINGERPRINT_CACHE.get(cache_key)
+        if cached is not None and cached[0] == state_token:
+            return str(cached[1]).strip()
     if target.is_dir():
-        return odylith_context_cache.fingerprint_tree(target, glob=glob)
-    return odylith_context_cache.fingerprint_paths([target])
+        fingerprint = odylith_context_cache.fingerprint_tree(target, glob=glob)
+    else:
+        fingerprint = odylith_context_cache.fingerprint_paths([target])
+    if state_token:
+        _PROCESS_PATH_FINGERPRINT_CACHE[cache_key] = (state_token, fingerprint)
+    return fingerprint
 
 def _test_history_report_inputs(*, repo_root: Path) -> dict[str, Any]:
     payload: dict[str, Any] = {
@@ -332,10 +345,10 @@ def _test_history_report_inputs(*, repo_root: Path) -> dict[str, Any]:
         root = repo_root / rel_root
         key = f"{rel_root or 'repo'}:{glob}"
         if root.is_dir():
-            payload[key] = odylith_context_cache.fingerprint_tree(root, glob=glob)
+            payload[key] = _path_fingerprint(root, repo_root=repo_root, glob=glob)
             continue
         if root.is_file():
-            payload[key] = odylith_context_cache.fingerprint_paths([root])
+            payload[key] = _path_fingerprint(root, repo_root=repo_root, glob=glob)
             continue
         payload[key] = {"exists": False}
     return payload
@@ -383,68 +396,77 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
         "workstreams": odylith_context_cache.fingerprint_payload(
             {
                 "contract_version": projection_contract_version("workstreams"),
-                "backlog_index": _path_fingerprint(radar_source_root / "INDEX.md"),
-                "backlog_archive": _path_fingerprint(radar_source_root / "archive"),
-                "ideas": _path_fingerprint(radar_source_root / "ideas"),
+                "backlog_index": _path_fingerprint(radar_source_root / "INDEX.md", repo_root=repo_root),
+                "backlog_archive": _path_fingerprint(radar_source_root / "archive", repo_root=repo_root),
+                "ideas": _path_fingerprint(radar_source_root / "ideas", repo_root=repo_root),
             }
         ),
         "releases": odylith_context_cache.fingerprint_payload(
             {
                 "contract_version": projection_contract_version("releases"),
-                "traceability": _path_fingerprint(traceability_graph_path),
-                "release_registry": _path_fingerprint(radar_source_root / "releases" / "releases.v1.json"),
-                "release_events": _path_fingerprint(radar_source_root / "releases" / "release-assignment-events.v1.jsonl"),
+                "traceability": _path_fingerprint(traceability_graph_path, repo_root=repo_root),
+                "release_registry": _path_fingerprint(
+                    radar_source_root / "releases" / "releases.v1.json",
+                    repo_root=repo_root,
+                ),
+                "release_events": _path_fingerprint(
+                    radar_source_root / "releases" / "release-assignment-events.v1.jsonl",
+                    repo_root=repo_root,
+                ),
             }
         ),
         "plans": odylith_context_cache.fingerprint_payload(
             {
                 "contract_version": projection_contract_version("plans"),
-                "plan_index": _path_fingerprint(technical_plans_root / "INDEX.md"),
-                "plan_done": _path_fingerprint(technical_plans_root / "done"),
-                "plan_parked": _path_fingerprint(technical_plans_root / "parked"),
+                "plan_index": _path_fingerprint(technical_plans_root / "INDEX.md", repo_root=repo_root),
+                "plan_done": _path_fingerprint(technical_plans_root / "done", repo_root=repo_root),
+                "plan_parked": _path_fingerprint(technical_plans_root / "parked", repo_root=repo_root),
             }
         ),
         "bugs": odylith_context_cache.fingerprint_payload(
             {
                 "contract_version": projection_contract_version("bugs"),
-                "bugs_index": _path_fingerprint(casebook_bugs_root / "INDEX.md"),
-                "bugs_archive": _path_fingerprint(casebook_bugs_root / "archive"),
+                "bugs_index": _path_fingerprint(casebook_bugs_root / "INDEX.md", repo_root=repo_root),
+                "bugs_archive": _path_fingerprint(casebook_bugs_root / "archive", repo_root=repo_root),
             }
         ),
         "diagrams": odylith_context_cache.fingerprint_payload(
             {
                 "contract_version": projection_contract_version("diagrams"),
-                "catalog": _path_fingerprint(atlas_catalog_path),
+                "catalog": _path_fingerprint(atlas_catalog_path, repo_root=repo_root),
             }
         ),
         "components": odylith_context_cache.fingerprint_payload(
             {
                 "contract_version": projection_contract_version("components"),
-                "manifest": _path_fingerprint(component_registry_path),
-                "catalog": _path_fingerprint(atlas_catalog_path),
-                "ideas": _path_fingerprint(radar_source_root / "ideas"),
-                "stream": _path_fingerprint(compass_stream_path),
-                "component_specs": _path_fingerprint(component_specs_root),
-                "traceability": _path_fingerprint(traceability_graph_path),
+                "manifest": _path_fingerprint(component_registry_path, repo_root=repo_root),
+                "catalog": _path_fingerprint(atlas_catalog_path, repo_root=repo_root),
+                "ideas": _path_fingerprint(radar_source_root / "ideas", repo_root=repo_root),
+                "stream": _path_fingerprint(compass_stream_path, repo_root=repo_root),
+                "component_specs": _path_fingerprint(component_specs_root, repo_root=repo_root),
+                "traceability": _path_fingerprint(traceability_graph_path, repo_root=repo_root),
                 "workspace_activity": _workspace_activity_fingerprint(repo_root=repo_root),
             }
         ),
         "codex_events": odylith_context_cache.fingerprint_payload(
             {
                 "contract_version": projection_contract_version("codex_events"),
-                "stream": _path_fingerprint(compass_stream_path),
+                "stream": _path_fingerprint(compass_stream_path, repo_root=repo_root),
             }
         ),
         "traceability": odylith_context_cache.fingerprint_payload(
             {
                 "contract_version": projection_contract_version("traceability"),
-                "graph": _path_fingerprint(traceability_graph_path),
+                "graph": _path_fingerprint(traceability_graph_path, repo_root=repo_root),
             }
         ),
         "delivery": odylith_context_cache.fingerprint_payload(
             {
                 "contract_version": projection_contract_version("delivery"),
-                "output": _path_fingerprint(repo_root / delivery_intelligence_engine.DEFAULT_OUTPUT_PATH),
+                "output": _path_fingerprint(
+                    repo_root / delivery_intelligence_engine.DEFAULT_OUTPUT_PATH,
+                    repo_root=repo_root,
+                ),
             }
         ),
     }
@@ -453,7 +475,7 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
         fingerprints["engineering_graph"] = odylith_context_cache.fingerprint_payload(
             (
                 {
-                    key: _path_fingerprint(repo_root / rel_path)
+                    key: _path_fingerprint(repo_root / rel_path, repo_root=repo_root)
                     for key, rel_path in (
                         *_ENGINEERING_CORE_PATHS,
                         *_SECTION_NOTE_SOURCES,
@@ -466,18 +488,18 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
                 }
             )
             | {
-                "guidance_chunks": _path_fingerprint(repo_root / _GUIDANCE_CHUNK_ROOT, glob="*.md"),
-                "runbooks": _path_fingerprint(truth_root_path(repo_root=repo_root, key="runbooks")),
-                "bugs": _path_fingerprint(casebook_bugs_root),
-                "make": _path_fingerprint(repo_root / "mk", glob="*.mk"),
-                "contracts": _path_fingerprint(repo_root / "contracts", glob="*.json"),
+                "guidance_chunks": _path_fingerprint(repo_root / _GUIDANCE_CHUNK_ROOT, repo_root=repo_root, glob="*.md"),
+                "runbooks": _path_fingerprint(truth_root_path(repo_root=repo_root, key="runbooks"), repo_root=repo_root),
+                "bugs": _path_fingerprint(casebook_bugs_root, repo_root=repo_root),
+                "make": _path_fingerprint(repo_root / "mk", repo_root=repo_root, glob="*.mk"),
+                "contracts": _path_fingerprint(repo_root / "contracts", repo_root=repo_root, glob="*.json"),
             }
         )
     if "code_graph" in requested:
         fingerprints["code_graph"] = odylith_context_cache.fingerprint_payload(
             (
                 {
-                    rel_root: _path_fingerprint(repo_root / rel_root, glob="*.py")
+                    rel_root: _path_fingerprint(repo_root / rel_root, repo_root=repo_root, glob="*.py")
                     for rel_root, _module_root in _PYTHON_GRAPH_ROOTS
                 }
                 | {
@@ -485,20 +507,28 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
                 }
             )
             | {
-                "contracts": _path_fingerprint(repo_root / "contracts", glob="*.json"),
-                "makefile": _path_fingerprint(repo_root / "Makefile"),
-                "mk": _path_fingerprint(repo_root / "mk", glob="*.mk"),
-                "docs": _path_fingerprint(repo_root / "docs", glob="*.md"),
-                "agents_guidelines_md": _path_fingerprint(repo_root / "agents-guidelines", glob="*.md"),
-                "agents_guidelines_MD": _path_fingerprint(repo_root / "agents-guidelines", glob="*.MD"),
-                "traceability": _path_fingerprint(traceability_graph_path),
+                "contracts": _path_fingerprint(repo_root / "contracts", repo_root=repo_root, glob="*.json"),
+                "makefile": _path_fingerprint(repo_root / "Makefile", repo_root=repo_root),
+                "mk": _path_fingerprint(repo_root / "mk", repo_root=repo_root, glob="*.mk"),
+                "docs": _path_fingerprint(repo_root / "docs", repo_root=repo_root, glob="*.md"),
+                "agents_guidelines_md": _path_fingerprint(
+                    repo_root / "agents-guidelines",
+                    repo_root=repo_root,
+                    glob="*.md",
+                ),
+                "agents_guidelines_MD": _path_fingerprint(
+                    repo_root / "agents-guidelines",
+                    repo_root=repo_root,
+                    glob="*.MD",
+                ),
+                "traceability": _path_fingerprint(traceability_graph_path, repo_root=repo_root),
             }
         )
     if "test_graph" in requested:
         fingerprints["test_graph"] = odylith_context_cache.fingerprint_payload(
             {
-                "tests": _path_fingerprint(repo_root / "tests", glob="*.py"),
-                "testing": _path_fingerprint(repo_root / "agents-guidelines" / "TESTING.MD"),
+                "tests": _path_fingerprint(repo_root / "tests", repo_root=repo_root, glob="*.py"),
+                "testing": _path_fingerprint(repo_root / "agents-guidelines" / "TESTING.MD", repo_root=repo_root),
                 "history": _test_history_report_inputs(repo_root=repo_root),
             }
         )
@@ -1408,6 +1438,42 @@ def _warm_runtime(
     reason: str,
     scope: str = "default",
 ) -> bool:
+    root = Path(repo_root).resolve()
+    scope_token = str(scope or "default").strip().lower()
+    try:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except ImportError:  # pragma: no cover - defensive bootstrap fallback
+        governed_sync_session = None
+    if governed_sync_session is not None:
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == root:
+            return bool(
+                session.get_or_compute(
+                    namespace="runtime_warm",
+                    key=scope_token,
+                    builder=lambda: _warm_runtime_uncached(
+                        repo_root=root,
+                        runtime_mode=runtime_mode,
+                        reason=reason,
+                        scope=scope_token,
+                    ),
+                )
+            )
+    return _warm_runtime_uncached(
+        repo_root=root,
+        runtime_mode=runtime_mode,
+        reason=reason,
+        scope=scope_token,
+    )
+
+
+def _warm_runtime_uncached(
+    *,
+    repo_root: Path,
+    runtime_mode: str,
+    reason: str,
+    scope: str = "default",
+) -> bool:
     if not _runtime_enabled(runtime_mode):
         return False
     root = Path(repo_root).resolve()
@@ -1472,6 +1538,7 @@ def clear_runtime_process_caches(*, repo_root: Path | None = None) -> None:
     if repo_root is None:
         _PROCESS_PROJECTED_INPUTS_CACHE.clear()
         _PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE.clear()
+        _PROCESS_PATH_FINGERPRINT_CACHE.clear()
         _PROCESS_WARM_CACHE.clear()
         _PROCESS_WARM_CACHE_FINGERPRINTS.clear()
         _PROCESS_PROJECTION_ROWS_CACHE.clear()
@@ -1489,6 +1556,9 @@ def clear_runtime_process_caches(*, repo_root: Path | None = None) -> None:
         prefix = f"{root}:"
         projection_repo_state_runtime.clear_projection_repo_state_cache(repo_root=root)
         for cache in (
+            _PROCESS_PROJECTED_INPUTS_CACHE,
+            _PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE,
+            _PROCESS_PATH_FINGERPRINT_CACHE,
             _PROCESS_WARM_CACHE,
             _PROCESS_WARM_CACHE_FINGERPRINTS,
             _PROCESS_PROJECTION_ROWS_CACHE,

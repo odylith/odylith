@@ -276,18 +276,58 @@ Public docs should describe these commands, not direct module entrypoints.
   emitted bundle set before payload construction so no-op Radar, Registry,
   Casebook, and tooling-shell rerenders can exit before rebuilding the same
   HTML/JS payloads.
+- When `odylith sync` has already selected a generated-surface render step,
+  that sync plan becomes the rebuild authority for the step. Radar, Registry,
+  Casebook, and tooling-shell renderers must therefore be able to bypass their
+  own expensive refresh-guard tree scan in that lane instead of paying for a
+  second rebuild decision before doing the real render work.
+- Runtime-backed render steps must run against settled truth. Atlas review and
+  catalog mutations, Registry spec reconciliation, and delivery-intelligence
+  refresh must settle before Compass, Radar, Registry, and shell consume the
+  projection/runtime lane, so one final warm can serve that whole render phase.
 - Forced/full sync must not pay the governance-packet reasoning lane just to
   rediscover an all-surfaces impact set, and a direct sync projection warm must
   prime the same-process runtime warm cache so later surface readers do not
   rebuild the default projection again.
+- Within one sync phase, runtime-backed readers must reuse one already-warm
+  verdict per scope and one delivery-surface payload per argument set instead
+  of recomputing the same projection fingerprint chain on every load. Sync
+  must invalidate those session-scoped caches exactly when repo-owned truth or
+  delivery-intelligence artifacts change the active derivation phase.
+- Repo-scoped invalidation must also clear projected-input fingerprint caches,
+  not only warm verdicts, because generated derivation inputs such as the
+  traceability graph and delivery-intelligence artifact do not necessarily move
+  the workspace-activity token that guards projection fingerprint reuse.
+- Projection-input tree signatures should be memoized per repo-state across
+  compatible scopes so default/reasoning/full compatibility checks do not keep
+  rescanning the same watched directories during one sync phase.
+- Projection invalidation must follow derivation inputs, not output noise:
+  generated HTML or JS writes are not allowed to clear warmed runtime state
+  unless they changed a projection input such as traceability truth,
+  delivery-intelligence truth, or other projection-owned source records.
+- Runtime projection readers for backlog rows, plan rows, bug rows, component
+  index, and Registry snapshots must reuse one signature-scoped row payload
+  within a stable projection fingerprint instead of reopening and reshaping the
+  same tables for later Compass, Radar, and Registry surfaces in the same run.
 - Component-artifact matching on the sync hot path must use indexed canonical
   prefixes rather than repeated O(events x components x prefixes) normalization
   scans, and follow-on Registry requirement sync passes must account for later
   shell-facing steps that can still shift evidence consumed by component
   forensics instead of running by superstition or skipping by false economy.
+- Source-bundle mirror artifacts under
+  `src/odylith/bundle/assets/odylith/...` must inherit canonical
+  generated/global policy when they are only echoing derived or coordination
+  truth, but mirror-only source docs must still map back to the owning
+  component. Registry workspace-activity collection must therefore dedupe
+  mirror/canonical aliases into one stable evidence token instead of treating
+  the final mirror step as fresh work every run.
 - The long-term ceiling is a reverse-dependency fixpoint engine or resident
   daemon, but the first non-negotiable contract is simpler: one sync run must
   reuse one shared read model instead of repeatedly reconstructing it.
+- Atlas auto-update is part of that fail-closed contract: `--all-stale`
+  review-only selections must not short-circuit on cached guard hits while the
+  catalog still reports stale diagrams, or sync and standalone proof will
+  diverge on the same source truth.
 
 ### 3. Decide execution posture
 1. `odylith subagent-router` decides whether one bounded task stays local or is

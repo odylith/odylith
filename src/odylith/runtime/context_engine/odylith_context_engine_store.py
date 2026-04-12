@@ -15,6 +15,7 @@ Design constraints:
 from __future__ import annotations
 
 import ast
+import copy
 import contextlib
 import datetime as dt
 from functools import lru_cache
@@ -2504,13 +2505,58 @@ def load_delivery_surface_payload(
     buckets: Sequence[str] | None = None,
     include_shell_snapshots: bool = True,
 ) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
     requested_buckets = {
         str(token or "").strip().lower()
         for token in (buckets or [])
         if str(token or "").strip()
     }
-    root = Path(repo_root).resolve()
     surface_token = str(surface).strip().lower()
+    try:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except ImportError:  # pragma: no cover - defensive bootstrap fallback
+        governed_sync_session = None
+    if governed_sync_session is not None:
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == root:
+            cache_key = odylith_context_cache.fingerprint_payload(
+                {
+                    "surface": surface_token,
+                    "runtime_mode": str(runtime_mode).strip().lower() or "auto",
+                    "requested_buckets": sorted(requested_buckets),
+                    "include_shell_snapshots": bool(include_shell_snapshots),
+                }
+            )
+            cached = session.get_or_compute(
+                namespace="delivery_surface_payload",
+                key=cache_key,
+                builder=lambda: _load_delivery_surface_payload_uncached(
+                    repo_root=root,
+                    surface_token=surface_token,
+                    runtime_mode=runtime_mode,
+                    requested_buckets=requested_buckets,
+                    include_shell_snapshots=include_shell_snapshots,
+                ),
+            )
+            return copy.deepcopy(cached)
+    return _load_delivery_surface_payload_uncached(
+        repo_root=root,
+        surface_token=surface_token,
+        runtime_mode=runtime_mode,
+        requested_buckets=requested_buckets,
+        include_shell_snapshots=include_shell_snapshots,
+    )
+
+
+def _load_delivery_surface_payload_uncached(
+    *,
+    repo_root: Path,
+    surface_token: str,
+    runtime_mode: str,
+    requested_buckets: set[str],
+    include_shell_snapshots: bool,
+) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
     odylith_switch = _odylith_switch_snapshot(repo_root=root)
     payload: dict[str, Any] = {}
     if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="delivery_surface"):

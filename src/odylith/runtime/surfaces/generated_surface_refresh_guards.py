@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -10,6 +11,7 @@ from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import source_bundle_mirror
 
 _GENERATED_SURFACE_GUARD_NAMESPACE = "generated-refresh-guards"
+_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV = "ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD"
 
 
 def _resolved_live_path(*, repo_root: Path, value: str | Path) -> Path:
@@ -88,6 +90,8 @@ def should_skip_surface_rebuild(
         extra_live_paths=extra_live_paths,
         live_globs=live_globs,
     )
+    if str(os.environ.get(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV, "")).strip() == "1":
+        return False, "", {}, bundle_paths, output_paths
     skip_rebuild, input_fingerprint, cached_metadata = generated_refresh_guard.should_skip_rebuild(
         repo_root=repo_root,
         namespace=_GENERATED_SURFACE_GUARD_NAMESPACE,

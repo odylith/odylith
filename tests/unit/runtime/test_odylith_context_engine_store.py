@@ -9,6 +9,7 @@ from odylith.runtime.context_engine import odylith_context_engine_projection_sea
 from odylith.runtime.context_engine import projection_repo_state_runtime
 from odylith.runtime.common.consumer_profile import write_consumer_profile
 from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance import sync_session
 
 session_packet_runtime.bind(store.__dict__)
 surface_runtime.bind(store.__dict__)
@@ -89,6 +90,110 @@ def test_load_backlog_detail_uses_cached_runtime_projection_rows(monkeypatch, tm
         "search_body": idea_path.read_text(encoding="utf-8"),
         "promoted_to_plan": "odylith/technical-plans/b-999-plan.md",
     }
+    assert calls == {"execute": 1, "close": 1}
+
+
+def test_load_backlog_list_reuses_cached_runtime_rows(monkeypatch, tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+    calls = {"execute": 0, "close": 0}
+
+    class _FakeCursor:
+        def __init__(self, rows):  # noqa: ANN001
+            self._rows = rows
+
+        def fetchone(self):  # noqa: ANN001
+            return self._rows[0] if self._rows else None
+
+        def fetchall(self):  # noqa: ANN001
+            return list(self._rows)
+
+    class _FakeConnection:
+        def execute(self, query: str, params=()):  # noqa: ANN001
+            calls["execute"] += 1
+            if "FROM projection_state" in query:
+                return _FakeCursor([{"payload_json": json.dumps({"updated_utc": "2026-04-11T00:00:00Z"})}])
+            section = str(params[0]) if params else ""
+            return _FakeCursor(
+                [
+                    {
+                        "rank": "1" if section == "active" else "-",
+                        "idea_id": f"B-{section[:3].upper() or '000'}",
+                        "title": f"{section.title()} item",
+                        "priority": "P1",
+                        "ordering_score": "100",
+                        "metadata_json": json.dumps({"commercial_value": "4", "status": section}),
+                        "idea_file": f"odylith/radar/source/ideas/{section}.md",
+                    }
+                ]
+            )
+
+        def close(self) -> None:
+            calls["close"] += 1
+
+    store.clear_runtime_process_caches(repo_root=repo_root)
+    monkeypatch.setitem(store.load_backlog_list.__globals__, "_warm_runtime", lambda **_kwargs: True)
+    monkeypatch.setitem(store.load_backlog_list.__globals__, "projection_input_fingerprint", lambda **_kwargs: "projection-fingerprint")
+    monkeypatch.setitem(store.load_backlog_list.__globals__, "_connect", lambda repo_root: _FakeConnection())
+    monkeypatch.setitem(
+        store.load_backlog_list.__globals__,
+        "_load_backlog_projection",
+        lambda **_kwargs: {"rationale_map": {"B-ACT": ["cached rationale"]}},
+    )
+
+    first = store.load_backlog_list(repo_root=repo_root, runtime_mode="auto")
+    second = store.load_backlog_list(repo_root=repo_root, runtime_mode="auto")
+
+    assert first == second
+    assert first["updated_utc"] == "2026-04-11T00:00:00Z"
+    assert first["rationale_map"] == {"B-ACT": ["cached rationale"]}
+    assert calls == {"execute": 5, "close": 1}
+
+
+def test_load_component_index_reuses_cached_runtime_rows(monkeypatch, tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+    calls = {"execute": 0, "close": 0}
+
+    class _FakeCursor:
+        def fetchall(self):  # noqa: ANN001
+            return [
+                {
+                    "component_id": "odylith",
+                    "name": "Odylith",
+                    "aliases_json": "[]",
+                    "workstreams_json": "[\"B-091\"]",
+                    "diagrams_json": "[\"D-036\"]",
+                    "owner": "freedom-research",
+                    "status": "active",
+                    "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+                    "metadata_json": json.dumps({"component_id": "odylith", "name": "Odylith"}),
+                }
+            ]
+
+    class _FakeConnection:
+        def execute(self, query: str):  # noqa: ANN001
+            assert "FROM components" in query
+            calls["execute"] += 1
+            return _FakeCursor()
+
+        def close(self) -> None:
+            calls["close"] += 1
+
+    store.clear_runtime_process_caches(repo_root=repo_root)
+    monkeypatch.setitem(store.load_component_index.__globals__, "_warm_runtime", lambda **_kwargs: True)
+    monkeypatch.setitem(
+        store.load_component_index.__globals__,
+        "projection_input_fingerprint",
+        lambda **_kwargs: "projection-fingerprint",
+    )
+    monkeypatch.setitem(store.load_component_index.__globals__, "_connect", lambda repo_root: _FakeConnection())
+
+    first = store.load_component_index(repo_root=repo_root, runtime_mode="auto")
+    second = store.load_component_index(repo_root=repo_root, runtime_mode="auto")
+
+    assert first.keys() == {"odylith"}
+    assert first == second
     assert calls == {"execute": 1, "close": 1}
 
 
@@ -920,3 +1025,82 @@ def test_projection_input_fingerprint_recomputes_when_repo_state_changes(
 
     assert first != second
     assert calls["count"] == 2
+
+
+def test_load_delivery_surface_payload_reuses_sync_session_cache(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+    calls = {"artifact": 0, "slice": 0}
+
+    monkeypatch.setattr(store, "_warm_runtime", lambda **_: False)
+    monkeypatch.setattr(store, "_odylith_switch_snapshot", lambda **_: {"enabled": True})
+    monkeypatch.setattr(store, "load_orchestration_adoption_snapshot", lambda **_: {"status": "ready"})
+
+    def _fake_artifact(*, repo_root: Path) -> dict[str, object]:
+        assert repo_root == repo_root.resolve()
+        calls["artifact"] += 1
+        return {"shell": {"summary": {"count": 1}}, "workstreams": {"B-091": {"status": "active"}}}
+
+    def _fake_slice(*, payload, surface: str):  # noqa: ANN001
+        calls["slice"] += 1
+        return {
+            "surface": surface,
+            "summary": dict(payload.get("shell", {}).get("summary", {})),
+            "workstreams": dict(payload.get("workstreams", {})),
+        }
+
+    monkeypatch.setattr(store.delivery_intelligence_engine, "load_delivery_intelligence_artifact", _fake_artifact)
+    monkeypatch.setattr(store.delivery_intelligence_engine, "slice_delivery_intelligence_for_surface", _fake_slice)
+
+    with sync_session.activate_sync_session(sync_session.GovernedSyncSession(repo_root=repo_root)):
+        first = store.load_delivery_surface_payload(
+            repo_root=repo_root,
+            surface="shell",
+            runtime_mode="standalone",
+            include_shell_snapshots=False,
+        )
+        second = store.load_delivery_surface_payload(
+            repo_root=repo_root,
+            surface="shell",
+            runtime_mode="standalone",
+            include_shell_snapshots=False,
+        )
+
+    assert first == second
+    assert first is not second
+    assert calls == {"artifact": 1, "slice": 1}
+
+
+def test_warm_runtime_reuses_sync_session_cache(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+    calls = {"count": 0}
+
+    def _fake_warm_runtime_uncached(**kwargs):  # noqa: ANN003
+        assert kwargs["repo_root"] == repo_root.resolve()
+        calls["count"] += 1
+        return True
+
+    monkeypatch.setattr(projection_search_runtime, "_warm_runtime_uncached", _fake_warm_runtime_uncached)
+
+    with sync_session.activate_sync_session(sync_session.GovernedSyncSession(repo_root=repo_root)):
+        assert projection_search_runtime._warm_runtime(  # noqa: SLF001
+            repo_root=repo_root,
+            runtime_mode="auto",
+            reason="test",
+            scope="default",
+        )
+        assert projection_search_runtime._warm_runtime(  # noqa: SLF001
+            repo_root=repo_root,
+            runtime_mode="auto",
+            reason="test",
+            scope="default",
+        )
+
+    assert calls["count"] == 1

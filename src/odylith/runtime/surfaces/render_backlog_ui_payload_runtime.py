@@ -258,24 +258,16 @@ def _atlas_diagram_catalog_rows(*, repo_root: Path) -> list[dict[str, object]]:
 def _load_component_index(
     *,
     repo_root: Path,
+    runtime_mode: str = "auto",
 ) -> Mapping[str, component_registry.ComponentEntry]:
     host = _host()
-    manifest_path = host.component_registry.default_manifest_path(repo_root=repo_root)  # noqa: SLF001
-    catalog_path = host._resolve_path(repo_root=repo_root, value=host.component_registry.DEFAULT_CATALOG_PATH)  # noqa: SLF001
-    ideas_root = host._resolve_path(repo_root=repo_root, value=host.component_registry.DEFAULT_IDEAS_ROOT)  # noqa: SLF001
-
-    if not manifest_path.is_file():
-        return {}
     try:
-        components, _alias_to_component, _diagnostics = host.component_registry.build_component_index(  # noqa: SLF001
+        return host.odylith_context_engine_store.load_component_index(  # noqa: SLF001
             repo_root=repo_root,
-            manifest_path=manifest_path,
-            catalog_path=catalog_path,
-            ideas_root=ideas_root,
+            runtime_mode=runtime_mode,
         )
     except Exception:
         return {}
-    return components
 
 
 def _attach_component_registry_links(

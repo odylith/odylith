@@ -84,6 +84,33 @@ Related Bugs:
       policy where appropriate and collapse mirror/canonical aliases into one
       stable workspace-activity token so the final mirror step cannot reopen
       Registry forensics drift after a successful full sync.
+- [x] Cache runtime warm and delivery-surface reads for one stable sync phase,
+      then invalidate those sync-scoped caches exactly when repo-truth or
+      delivery-artifact mutation steps change the phase.
+- [x] Harden Atlas auto-update so `--all-stale` review-only refreshes never
+      short-circuit on a cached guard hit while diagrams are still stale.
+- [x] Let sync-planned generated-surface renders bypass their own refresh-guard
+      tree scans when the sync planner has already decided the render must run,
+      so full sync no longer pays a second watch-tree decision layer inside
+      Radar, Registry, Casebook, and tooling-shell.
+- [x] Narrow projection and runtime cache invalidation to the actual derivation
+      inputs that can change projection truth, instead of clearing warm/runtime
+      state after every generated HTML or JS write.
+- [x] Reuse signature-scoped runtime projection rows for backlog, plan, bug,
+      component-index, and Registry-snapshot readers so later surfaces do not
+      reopen the same projection tables within one settled fingerprint.
+- [x] Settle Atlas, Registry-truth, and delivery-intelligence mutations before
+      the runtime-backed Compass, Radar, Registry, and shell renders so that
+      one final warm serves the whole post-truth render phase instead of
+      warming against an intermediate state and reopening the projection lane.
+- [x] Make repo-scoped runtime invalidation clear projected-input fingerprint
+      caches as well as warm verdicts, because generated derivation inputs like
+      `odylith/radar/traceability-graph.v1.json` and
+      `odylith/runtime/delivery_intelligence.v4.json` do not perturb the
+      workspace-activity token on their own.
+- [x] Memoize projection path-tree fingerprints per repo-state so compatible
+      scope checks stop rescanning the same watched directories during one sync
+      phase.
 
 ## Defer
 - [ ] Persistent sync daemon with warm resident session state across commands.
@@ -115,10 +142,16 @@ Related Bugs:
 - [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/odylith/CURRENT_SPEC.md)
 - [ ] [diagrams.v1.json](/Users/freedom/code/odylith/odylith/atlas/source/catalog/diagrams.v1.json)
 - [ ] [sync_workstream_artifacts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/sync_workstream_artifacts.py)
+- [ ] [generated_surface_refresh_guards.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/generated_surface_refresh_guards.py)
 - [ ] [workstream_inference.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/workstream_inference.py)
 - [ ] [validate_backlog_contract.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/validate_backlog_contract.py)
 - [ ] [component_registry_intelligence.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/component_registry_intelligence.py)
 - [ ] [consumer_profile.py](/Users/freedom/code/odylith/src/odylith/runtime/common/consumer_profile.py)
+- [ ] [render_compass_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_compass_dashboard.py)
+- [ ] [render_backlog_ui.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui.py)
+- [ ] [render_backlog_ui_payload_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py)
+- [ ] [odylith_context_engine_projection_backlog_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_projection_backlog_runtime.py)
+- [ ] [odylith_context_engine_projection_registry_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_projection_registry_runtime.py)
 - [ ] `src/odylith/runtime/common/*` shared sync-session helpers
 - [ ] focused sync/runtime tests covering session reuse, path-cache behavior, and
       no-op write elision
@@ -136,8 +169,15 @@ Related Bugs:
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_workstream_inference.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_component_registry_intelligence.py`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_context_grounding_hardening.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_render_backlog_ui.py`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_workstream_inference.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_sync_component_spec_requirements.py tests/unit/runtime/test_surface_projection_fingerprint.py`
-- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`3.4s` on 2026-04-11 after runtime warm-cache priming, full-mode governance-packet bypass, and the late Registry forensics reconciliation; earlier in the same wave the pre-hardening full runs were `5.2s` then `4.5s`)
-- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (passes immediately after a full write-mode sync on 2026-04-11 once bundle-mirror workspace artifacts adopt canonical generated/global parity and stable alias dedupe)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_odylith_context_engine_store.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_generated_refresh_guard.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_odylith_context_engine_store.py` (`122 passed` on 2026-04-11 after the projection-invalidation tightening, sync-owned render-guard bypass, and signature-scoped projection-row reuse landed)
+- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`9.1s` elapsed / `10.44s` wall clock on 2026-04-11 after phase-scoped runtime warm reuse, delivery-surface session reuse, mutation-boundary cache invalidation, and the Atlas all-stale guard hardening; the same profile lane now shows `warm_projections()` down to `2` calls / `2.16s` cumulative and `load_delivery_surface_payload()` down to `0.48s` cumulative)
+- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (passes serially after a full write-mode sync on 2026-04-11 in `5.1s`, with Atlas freshness and delivery-intelligence both green once the write-mode lane settles)
+- [x] `/usr/bin/time -p env PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`6.3s` sync-reported elapsed / `7.46s` wall clock on 2026-04-11 after sync-owned render-guard bypass and projection invalidation tightening)
+- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (passes serially on 2026-04-11 in `4.6s` after the same write-mode lane, with the remaining proof warning isolated to Compass visible-runtime drift rather than a failing contract)
+- [x] `python3 -m cProfile -o /tmp/b091-sync-latest.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`_warm_runtime_uncached` down to `2` calls / `3.88s` cumulative, `render_backlog_ui.main` down to `0.63s` cumulative, `render_tooling_dashboard.main` down to `0.39s`, `should_skip_surface_rebuild()` down to `0.009s`, and the remaining top CPU sites now concentrated in Compass runtime payload build, Registry snapshot shaping, and projection fingerprint trees)
+- [x] `/usr/bin/time -p env PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`5.4s` sync-reported elapsed / `6.26s` wall clock on 2026-04-12 once the tree had settled after the render-phase reorder, repo-scoped projection-fingerprint invalidation hardening, and per-repo-state path-tree fingerprint memoization landed)
+- [x] `python3 -m cProfile -o /tmp/b091-latest-current.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`projection_input_fingerprint()` down to `1.33s` cumulative, `_compute_projected_input_fingerprints()` down to `1.21s`, `fingerprint_tree()` down to `0.98s`, and `warm_projections()` down to `2.26s`; the remaining dominant costs are now Compass runtime payload assembly at `3.94s` cumulative and Registry payload/snapshot shaping at `2.20s` / `1.87s`)
 - [x] `git diff --check`
 
 ## Outcome Snapshot
@@ -152,6 +192,30 @@ Related Bugs:
 - [x] Full-mode sync no longer spends a reasoning-scope runtime warmup on an
       impact planner it does not need, and a direct sync warm now prevents later
       surface readers from rebuilding the same default projection a second time.
+- [x] Runtime-backed readers now reuse one sync-phase warm verdict and one
+      delivery-surface load per stable mutation phase instead of re-deriving the
+      same projection fingerprint chain on every surface access.
+- [x] Sync-planned Radar, Registry, Casebook, and tooling-shell renders now
+      trust the sync planner and skip redundant watch-tree refresh-guard scans,
+      which removes that second rebuild-decision layer from the full sync lane.
+- [x] Projection/runtime invalidation now follows derivation-input boundaries,
+      so generated HTML and JS writes do not blow away warmed runtime state
+      unless they actually changed a projection input like traceability or
+      delivery-intelligence truth.
+- [x] Runtime projection row readers now reuse one signature-scoped row payload
+      for backlog, plans, bugs, component index, and Registry snapshot reads,
+      which cuts duplicate table shaping across Compass, Radar, and Registry.
+- [x] Runtime-backed surfaces now render in one settled post-truth phase:
+      Atlas review/catalog truth, Registry spec reconciliation, and delivery
+      intelligence settle first, then Compass, Radar, Registry, Casebook, and
+      shell reuse one final warm against that state.
+- [x] Repo-scoped runtime invalidation now clears projected-input fingerprint
+      caches as well as warm verdicts, which closes the stale-reuse hole for
+      generated derivation inputs that do not change the workspace-activity
+      token by themselves.
+- [x] Projection path-tree fingerprints are now memoized per repo-state, which
+      materially reduces repeated watched-tree scans across compatible scope
+      checks inside one sync phase.
 - [x] Strict standalone proof stays fail-closed after the optimization wave
       because late Registry forensics reconciliation now accounts for shell-facing
       steps that can still change evidence after the first spec sync.
@@ -159,3 +223,10 @@ Related Bugs:
       forensics drift because bundle-source aliases now collapse to one stable
       evidence token and inherit canonical generated/global policy where that
       mirror is only echoing derived/global truth.
+- [x] Atlas all-stale review refreshes now bypass stale cached auto-update
+      short-circuits, so full sync and strict standalone proof no longer diverge
+      on review-only diagram freshness.
+- [x] The remaining hot path is now much narrower and more honest: Compass
+      runtime payload assembly, Registry snapshot shaping, and projection
+      fingerprint trees dominate after the path storm and redundant surface
+      guard scans were cut out of the full sync lane.

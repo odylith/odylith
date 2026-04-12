@@ -15,63 +15,71 @@ def load_backlog_rows(
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="backlog_rows"):
-        connection = _connect(root)
-        try:
-            result: dict[str, Any] = {
-                "updated_utc": str(
-                    json.loads(
-                        (
-                            connection.execute(
-                                "SELECT payload_json FROM projection_state WHERE name = 'workstreams'"
-                            ).fetchone() or {"payload_json": "{}"}
-                        )["payload_json"]
-                    ).get("updated_utc", "")
-                ).strip(),
-                "rationale_map": _load_backlog_projection(repo_root=root).get("rationale_map", {}),
-            }
-            for section in ("active", "execution", "finished", "parked"):
-                rows = connection.execute(
-                    """
-                    SELECT rank, idea_id, title, priority, ordering_score, metadata_json, idea_file
-                    FROM workstreams
-                    WHERE section = ?
-                    ORDER BY
-                        CASE
-                            WHEN rank = '-' THEN 999999
-                            WHEN rank GLOB '[0-9]*' THEN CAST(rank AS INTEGER)
-                            ELSE 999999
-                        END,
-                        idea_id
-                    """,
-                    (section,),
-                ).fetchall()
-                values: list[dict[str, str]] = []
-                for row in rows:
-                    metadata = json.loads(str(row["metadata_json"] or "{}"))
-                    values.append(
-                        {
-                            "rank": str(row["rank"]),
-                            "idea_id": str(row["idea_id"]),
-                            "title": str(row["title"]),
-                            "priority": str(row["priority"]),
-                            "ordering_score": str(row["ordering_score"]),
-                            "commercial_value": str(metadata.get("commercial_value", "")).strip(),
-                            "product_impact": str(metadata.get("product_impact", "")).strip(),
-                            "market_value": str(metadata.get("market_value", "")).strip(),
-                            "sizing": str(metadata.get("sizing", "")).strip(),
-                            "complexity": str(metadata.get("complexity", "")).strip(),
-                            "status": str(metadata.get("status", "")).strip(),
-                            "link": (
-                                f"[{Path(str(row['idea_file'])).stem}]({str(row['idea_file'])})"
-                                if str(row["idea_file"]).strip()
-                                else ""
-                            ),
-                        }
-                    )
-                result[section] = values
-            return result
-        finally:
-            connection.close()
+        def _load_runtime_rows() -> dict[str, Any]:
+            connection = _connect(root)
+            try:
+                result: dict[str, Any] = {
+                    "updated_utc": str(
+                        json.loads(
+                            (
+                                connection.execute(
+                                    "SELECT payload_json FROM projection_state WHERE name = 'workstreams'"
+                                ).fetchone() or {"payload_json": "{}"}
+                            )["payload_json"]
+                        ).get("updated_utc", "")
+                    ).strip(),
+                    "rationale_map": _load_backlog_projection(repo_root=root).get("rationale_map", {}),
+                }
+                for section in ("active", "execution", "finished", "parked"):
+                    rows = connection.execute(
+                        """
+                        SELECT rank, idea_id, title, priority, ordering_score, metadata_json, idea_file
+                        FROM workstreams
+                        WHERE section = ?
+                        ORDER BY
+                            CASE
+                                WHEN rank = '-' THEN 999999
+                                WHEN rank GLOB '[0-9]*' THEN CAST(rank AS INTEGER)
+                                ELSE 999999
+                            END,
+                            idea_id
+                        """,
+                        (section,),
+                    ).fetchall()
+                    values: list[dict[str, str]] = []
+                    for row in rows:
+                        metadata = json.loads(str(row["metadata_json"] or "{}"))
+                        values.append(
+                            {
+                                "rank": str(row["rank"]),
+                                "idea_id": str(row["idea_id"]),
+                                "title": str(row["title"]),
+                                "priority": str(row["priority"]),
+                                "ordering_score": str(row["ordering_score"]),
+                                "commercial_value": str(metadata.get("commercial_value", "")).strip(),
+                                "product_impact": str(metadata.get("product_impact", "")).strip(),
+                                "market_value": str(metadata.get("market_value", "")).strip(),
+                                "sizing": str(metadata.get("sizing", "")).strip(),
+                                "complexity": str(metadata.get("complexity", "")).strip(),
+                                "status": str(metadata.get("status", "")).strip(),
+                                "link": (
+                                    f"[{Path(str(row['idea_file'])).stem}]({str(row['idea_file'])})"
+                                    if str(row["idea_file"]).strip()
+                                    else ""
+                                ),
+                            }
+                        )
+                    result[section] = values
+                return result
+            finally:
+                connection.close()
+
+        return _cached_projection_rows(
+            repo_root=root,
+            cache_name="backlog_rows",
+            loader=_load_runtime_rows,
+            scope="default",
+        )
     return _load_backlog_projection(repo_root=root)
 
 def _markdown_section_bodies(text: str) -> dict[str, str]:
@@ -253,32 +261,40 @@ def load_plan_rows(
 ) -> dict[str, list[dict[str, str]]]:
     root = Path(repo_root).resolve()
     if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="plan_rows"):
-        connection = _connect(root)
-        try:
-            result: dict[str, list[dict[str, str]]] = {}
-            for section in ("active", "parked", "done"):
-                rows = connection.execute(
-                    """
-                    SELECT plan_path, status, created, updated, backlog
-                    FROM plans
-                    WHERE section = ?
-                    ORDER BY updated DESC, plan_path
-                    """,
-                    (section,),
-                ).fetchall()
-                result[section] = [
-                    {
-                        "Plan": f"`{row['plan_path']}`",
-                        "Status": str(row["status"]),
-                        "Created": str(row["created"]),
-                        "Updated": str(row["updated"]),
-                        "Backlog": f"`{row['backlog']}`" if str(row["backlog"]) else "`-`",
-                    }
-                    for row in rows
-                ]
-            return result
-        finally:
-            connection.close()
+        def _load_runtime_rows() -> dict[str, list[dict[str, str]]]:
+            connection = _connect(root)
+            try:
+                result: dict[str, list[dict[str, str]]] = {}
+                for section in ("active", "parked", "done"):
+                    rows = connection.execute(
+                        """
+                        SELECT plan_path, status, created, updated, backlog
+                        FROM plans
+                        WHERE section = ?
+                        ORDER BY updated DESC, plan_path
+                        """,
+                        (section,),
+                    ).fetchall()
+                    result[section] = [
+                        {
+                            "Plan": f"`{row['plan_path']}`",
+                            "Status": str(row["status"]),
+                            "Created": str(row["created"]),
+                            "Updated": str(row["updated"]),
+                            "Backlog": f"`{row['backlog']}`" if str(row["backlog"]) else "`-`",
+                        }
+                        for row in rows
+                    ]
+                return result
+            finally:
+                connection.close()
+
+        return _cached_projection_rows(
+            repo_root=root,
+            cache_name="plan_rows",
+            loader=_load_runtime_rows,
+            scope="default",
+        )
     return _load_plan_projection(repo_root=root)
 
 def load_bug_rows(
@@ -288,46 +304,54 @@ def load_bug_rows(
 ) -> list[dict[str, str]]:
     root = Path(repo_root).resolve()
     if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="bug_rows"):
-        connection = _connect(root)
-        try:
-            rows = connection.execute(
-                """
-                SELECT bug_id, date, title, severity, components, status, link_target, source_path
-                FROM bugs
-                ORDER BY date DESC, title
-                """
-            ).fetchall()
-            payload_rows: list[dict[str, str]] = []
-            for row in rows:
-                source_path = str(row["source_path"] or "").strip()
-                index_path = (root / source_path).resolve() if source_path else root / "bugs" / "INDEX.md"
-                normalized_link = _normalize_bug_link_target(
-                    repo_root=root,
-                    index_path=index_path,
-                    link_target=str(row["link_target"] or "").strip(),
-                )
-                if normalized_link and not (root / normalized_link).is_file():
-                    continue
-                bug_id = resolve_casebook_bug_id(
-                    explicit_bug_id=str(row["bug_id"] or "").strip(),
-                    seed=normalized_link or f"{row['date']}::{row['title']}",
-                )
-                payload = {
-                    BUG_ID_FIELD: bug_id,
-                    "Date": str(row["date"]),
-                    "Title": str(row["title"]),
-                    "Severity": str(row["severity"]),
-                    "Components": str(row["components"]),
-                    "Status": canonicalize_bug_status(str(row["status"])),
-                    "Link": f"[bug]({normalized_link})" if normalized_link else "",
-                    "IndexPath": source_path or "odylith/casebook/bugs/INDEX.md",
-                }
-                if _is_bug_placeholder_row(payload):
-                    continue
-                payload_rows.append(payload)
-            return payload_rows
-        finally:
-            connection.close()
+        def _load_runtime_rows() -> list[dict[str, str]]:
+            connection = _connect(root)
+            try:
+                rows = connection.execute(
+                    """
+                    SELECT bug_id, date, title, severity, components, status, link_target, source_path
+                    FROM bugs
+                    ORDER BY date DESC, title
+                    """
+                ).fetchall()
+                payload_rows: list[dict[str, str]] = []
+                for row in rows:
+                    source_path = str(row["source_path"] or "").strip()
+                    index_path = (root / source_path).resolve() if source_path else root / "bugs" / "INDEX.md"
+                    normalized_link = _normalize_bug_link_target(
+                        repo_root=root,
+                        index_path=index_path,
+                        link_target=str(row["link_target"] or "").strip(),
+                    )
+                    if normalized_link and not (root / normalized_link).is_file():
+                        continue
+                    bug_id = resolve_casebook_bug_id(
+                        explicit_bug_id=str(row["bug_id"] or "").strip(),
+                        seed=normalized_link or f"{row['date']}::{row['title']}",
+                    )
+                    payload = {
+                        BUG_ID_FIELD: bug_id,
+                        "Date": str(row["date"]),
+                        "Title": str(row["title"]),
+                        "Severity": str(row["severity"]),
+                        "Components": str(row["components"]),
+                        "Status": canonicalize_bug_status(str(row["status"])),
+                        "Link": f"[bug]({normalized_link})" if normalized_link else "",
+                        "IndexPath": source_path or "odylith/casebook/bugs/INDEX.md",
+                    }
+                    if _is_bug_placeholder_row(payload):
+                        continue
+                    payload_rows.append(payload)
+                return payload_rows
+            finally:
+                connection.close()
+
+        return _cached_projection_rows(
+            repo_root=root,
+            cache_name="bug_rows",
+            loader=_load_runtime_rows,
+            scope="default",
+        )
     return _load_bug_projection(repo_root=root)
 
 def load_bug_snapshot(

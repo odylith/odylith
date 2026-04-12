@@ -243,6 +243,77 @@ def test_build_execution_plan_skips_render_step_for_review_only_selection(tmp_pa
     assert any("review-only" in note for note in plan.notes)
 
 
+def test_atlas_auto_update_bypasses_cached_skip_when_all_stale_diagrams_exist(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    source_mmd = tmp_path / "odylith" / "atlas" / "source" / "demo.mmd"
+    source_svg = tmp_path / "odylith" / "atlas" / "source" / "demo.svg"
+    source_png = tmp_path / "odylith" / "atlas" / "source" / "demo.png"
+    source_mmd.parent.mkdir(parents=True, exist_ok=True)
+    source_mmd.write_text("graph TD; A-->B;\n", encoding="utf-8")
+    source_svg.write_text("<svg />\n", encoding="utf-8")
+    source_png.write_bytes(b"png")
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "diagrams": [
+                    {
+                        "diagram_id": "D-001",
+                        "source_mmd": "odylith/atlas/source/demo.mmd",
+                        "source_svg": "odylith/atlas/source/demo.svg",
+                        "source_png": "odylith/atlas/source/demo.png",
+                        "change_watch_paths": ["src/odylith/runtime"],
+                        "last_reviewed_utc": "2026-01-01",
+                    }
+                ]
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    guard_calls = {"count": 0}
+
+    def _guard_should_not_run(**_kwargs):  # noqa: ANN003
+        guard_calls["count"] += 1
+        return (True, "cached", {})
+
+    def _classification(*, items, **_kwargs):  # noqa: ANN003
+        return mermaid.AtlasImpactClassification(
+            impacted_items=tuple(items),
+            render_jobs=(),
+            render_ids=(),
+            review_only_ids=("D-001",),
+        )
+
+    monkeypatch.setattr(mermaid, "_select_stale_diagram_indexes", lambda **_: [0])
+    monkeypatch.setattr(mermaid, "_classify_diagram_items", _classification)
+    monkeypatch.setattr(mermaid.generated_refresh_guard, "should_skip_rebuild", _guard_should_not_run)
+    monkeypatch.setattr(mermaid.generated_refresh_guard, "compute_input_fingerprint", lambda **_: "fp")
+    monkeypatch.setattr(mermaid.generated_refresh_guard, "record_rebuild", lambda **_: None)
+
+    rc = mermaid.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--catalog",
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "--all-stale",
+            "--skip-render-catalog",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+
+    payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+    assert rc == 0
+    assert guard_calls["count"] == 0
+    assert payload["diagrams"][0]["last_reviewed_utc"] == mermaid.dt.date.today().isoformat()
+
+
 def test_atlas_auto_update_dry_run_reports_review_only_sync_without_render_assets(
     tmp_path: Path,
     monkeypatch,

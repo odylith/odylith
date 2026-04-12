@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.runtime.governance import delivery_intelligence_engine as engine
+from odylith.runtime.governance import delivery_intelligence_refresh as refresh
 
 
 def test_change_vector_treats_registry_component_dossiers_as_specs() -> None:
@@ -113,6 +114,44 @@ def test_delivery_intelligence_main_skips_rebuild_when_inputs_are_unchanged(
 
     assert second_rc == 0
     assert "delivery intelligence artifact is current" in output
+
+
+def test_delivery_intelligence_main_guard_tracks_local_head(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def _capture_guard(**kwargs):  # noqa: ANN202
+        captured.update(kwargs)
+        return True, "fingerprint", {}
+
+    monkeypatch.setattr(engine.generated_refresh_guard, "should_skip_rebuild", _capture_guard)
+    monkeypatch.setattr(engine, "_current_local_head", lambda _repo_root: "abc123")
+
+    rc = engine.main(["--repo-root", str(tmp_path)])
+
+    assert rc == 0
+    assert captured["extra"] == {"max_review_age_days": 21, "local_head": "abc123"}
+
+
+def test_delivery_intelligence_refresh_guard_tracks_local_head(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def _capture_guard(**kwargs):  # noqa: ANN202
+        captured.update(kwargs)
+        return True, "fingerprint", {}
+
+    monkeypatch.setattr(refresh.generated_refresh_guard, "should_skip_rebuild", _capture_guard)
+    monkeypatch.setattr(refresh, "_current_local_head", lambda _repo_root: "abc123")
+
+    rc = refresh.main(["--repo-root", str(tmp_path)])
+
+    assert rc == 0
+    assert captured["extra"] == {"max_review_age_days": 21, "local_head": "abc123"}
 
 
 def test_slice_delivery_intelligence_for_surface_retains_proof_state_contract() -> None:

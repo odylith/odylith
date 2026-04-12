@@ -1199,7 +1199,7 @@ def test_search_entities_payload_keeps_local_results_when_remote_only_returns_no
     assert payload["results"][0]["source"] == "local"
 
 
-def test_clear_runtime_process_caches_keeps_projection_input_fingerprints_for_repo_scoped_clear(
+def test_clear_runtime_process_caches_clears_projection_input_fingerprints_for_repo_scoped_clear(
     tmp_path: Path,
 ) -> None:
     key = f"{tmp_path.resolve()}:reasoning"
@@ -1214,14 +1214,8 @@ def test_clear_runtime_process_caches_keeps_projection_input_fingerprints_for_re
 
     projection_search_runtime.clear_runtime_process_caches(repo_root=tmp_path)
 
-    assert projection_search_runtime._PROCESS_PROJECTED_INPUTS_CACHE[key] == (  # noqa: SLF001
-        "state-1",
-        {"components": "fp-components"},
-    )
-    assert projection_search_runtime._PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE[key] == (  # noqa: SLF001
-        "state-1",
-        "fp-runtime",
-    )
+    assert key not in projection_search_runtime._PROCESS_PROJECTED_INPUTS_CACHE  # noqa: SLF001
+    assert key not in projection_search_runtime._PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE  # noqa: SLF001
     assert key not in projection_search_runtime._PROCESS_WARM_CACHE  # noqa: SLF001
     assert key not in projection_search_runtime._PROCESS_WARM_CACHE_FINGERPRINTS  # noqa: SLF001
 

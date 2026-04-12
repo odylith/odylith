@@ -76,19 +76,27 @@ def load_component_index(
 ) -> dict[str, component_registry.ComponentEntry]:
     root = Path(repo_root).resolve()
     if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="component_index"):
-        connection = _connect(root)
-        try:
-            rows = connection.execute("SELECT * FROM components ORDER BY component_id").fetchall()
-            component_index = {
-                str(row["component_id"]).strip(): _component_entry_from_runtime_row(row)
-                for row in rows
-                if str(row["component_id"]).strip()
-            }
-            if _odylith_ablation_active(repo_root=root):
-                return _apply_odylith_component_index_ablation(component_index)
-            return component_index
-        finally:
-            connection.close()
+        def _load_runtime_rows() -> dict[str, component_registry.ComponentEntry]:
+            connection = _connect(root)
+            try:
+                rows = connection.execute("SELECT * FROM components ORDER BY component_id").fetchall()
+                component_index = {
+                    str(row["component_id"]).strip(): _component_entry_from_runtime_row(row)
+                    for row in rows
+                    if str(row["component_id"]).strip()
+                }
+                if _odylith_ablation_active(repo_root=root):
+                    return _apply_odylith_component_index_ablation(component_index)
+                return component_index
+            finally:
+                connection.close()
+
+        return _cached_projection_rows(
+            repo_root=root,
+            cache_name="component_index_runtime",
+            loader=_load_runtime_rows,
+            scope="default",
+        )
     manifest_path = component_registry.default_manifest_path(repo_root=root)
     catalog_path = root / component_registry.DEFAULT_CATALOG_PATH
     ideas_root = root / component_registry.DEFAULT_IDEAS_ROOT
@@ -137,138 +145,146 @@ def load_component_registry_snapshot(
     root = Path(repo_root).resolve()
     odylith_ablation_active = _odylith_ablation_active(repo_root=root)
     if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="component_registry_snapshot"):
-        connection = _connect(root)
-        try:
-            component_rows = connection.execute("SELECT * FROM components ORDER BY component_id").fetchall()
-            spec_rows = connection.execute("SELECT * FROM component_specs ORDER BY component_id").fetchall()
-            trace_rows = connection.execute(
-                "SELECT component_id, bucket, path FROM component_traceability ORDER BY component_id, bucket, path"
-            ).fetchall()
-            event_rows = connection.execute(
-                """
-                SELECT event_index, ts_iso, kind, summary, workstreams_json, artifacts_json,
-                       explicit_components_json, mapped_components_json, confidence, meaningful
-                FROM registry_events
-                ORDER BY ts_iso DESC, event_index DESC
-                """
-            ).fetchall()
-            state_row = connection.execute(
-                "SELECT payload_json FROM projection_state WHERE name = 'components'"
-            ).fetchone()
-        finally:
-            connection.close()
-        components = {
-            str(row["component_id"]).strip(): _component_entry_from_runtime_row(row)
-            for row in component_rows
-            if str(row["component_id"]).strip()
-        }
-        payload = json.loads(str(state_row["payload_json"] or "{}")) if state_row is not None else {}
-        diagnostics = [str(item) for item in payload.get("diagnostics", []) if str(item).strip()] if isinstance(payload, Mapping) else []
-        candidate_queue = [
-            dict(item)
-            for item in payload.get("candidate_queue", [])
-            if isinstance(payload, Mapping) and isinstance(payload.get("candidate_queue"), list) and isinstance(item, Mapping)
-        ] if isinstance(payload, Mapping) else []
-        unmapped_meaningful_events = [
-            component_registry.MappedEvent(
-                event_index=int(item.get("event_index", 0) or 0),
-                ts_iso=str(item.get("ts_iso", "")).strip(),
-                kind=str(item.get("kind", "")).strip(),
-                summary=str(item.get("summary", "")).strip(),
-                workstreams=[str(token).strip() for token in item.get("workstreams", []) if str(token).strip()]
-                if isinstance(item.get("workstreams"), list)
-                else [],
-                artifacts=[str(token).strip() for token in item.get("artifacts", []) if str(token).strip()]
-                if isinstance(item.get("artifacts"), list)
-                else [],
-                explicit_components=[str(token).strip() for token in item.get("explicit_components", []) if str(token).strip()]
-                if isinstance(item.get("explicit_components"), list)
-                else [],
-                mapped_components=[str(token).strip() for token in item.get("mapped_components", []) if str(token).strip()]
-                if isinstance(item.get("mapped_components"), list)
-                else [],
-                confidence=str(item.get("confidence", "")).strip(),
-                meaningful=bool(item.get("meaningful")),
-            )
-            for item in payload.get("unmapped_meaningful_events", [])
-            if isinstance(payload, Mapping) and isinstance(payload.get("unmapped_meaningful_events"), list) and isinstance(item, Mapping)
-        ] if isinstance(payload, Mapping) else []
-        mapped_events = [
-            component_registry.MappedEvent(
-                event_index=int(row["event_index"] or 0),
-                ts_iso=str(row["ts_iso"]).strip(),
-                kind=str(row["kind"]).strip(),
-                summary=str(row["summary"]).strip(),
-                workstreams=_json_list(str(row["workstreams_json"])),
-                artifacts=_json_list(str(row["artifacts_json"])),
-                explicit_components=_json_list(str(row["explicit_components_json"])),
-                mapped_components=_json_list(str(row["mapped_components_json"])),
-                confidence=str(row["confidence"]).strip(),
-                meaningful=bool(int(row["meaningful"] or 0)),
-            )
-            for row in event_rows
-        ]
-        report = component_registry.ComponentRegistryReport(
-            components=components,
-            mapped_events=mapped_events,
-            unmapped_meaningful_events=unmapped_meaningful_events,
-            candidate_queue=candidate_queue,
-            forensic_coverage=component_registry.build_component_forensic_coverage(
-                component_index=components,
+        def _load_runtime_snapshot() -> dict[str, Any]:
+            connection = _connect(root)
+            try:
+                component_rows = connection.execute("SELECT * FROM components ORDER BY component_id").fetchall()
+                spec_rows = connection.execute("SELECT * FROM component_specs ORDER BY component_id").fetchall()
+                trace_rows = connection.execute(
+                    "SELECT component_id, bucket, path FROM component_traceability ORDER BY component_id, bucket, path"
+                ).fetchall()
+                event_rows = connection.execute(
+                    """
+                    SELECT event_index, ts_iso, kind, summary, workstreams_json, artifacts_json,
+                           explicit_components_json, mapped_components_json, confidence, meaningful
+                    FROM registry_events
+                    ORDER BY ts_iso DESC, event_index DESC
+                    """
+                ).fetchall()
+                state_row = connection.execute(
+                    "SELECT payload_json FROM projection_state WHERE name = 'components'"
+                ).fetchone()
+            finally:
+                connection.close()
+            components = {
+                str(row["component_id"]).strip(): _component_entry_from_runtime_row(row)
+                for row in component_rows
+                if str(row["component_id"]).strip()
+            }
+            payload = json.loads(str(state_row["payload_json"] or "{}")) if state_row is not None else {}
+            diagnostics = [str(item) for item in payload.get("diagnostics", []) if str(item).strip()] if isinstance(payload, Mapping) else []
+            candidate_queue = [
+                dict(item)
+                for item in payload.get("candidate_queue", [])
+                if isinstance(payload, Mapping) and isinstance(payload.get("candidate_queue"), list) and isinstance(item, Mapping)
+            ] if isinstance(payload, Mapping) else []
+            unmapped_meaningful_events = [
+                component_registry.MappedEvent(
+                    event_index=int(item.get("event_index", 0) or 0),
+                    ts_iso=str(item.get("ts_iso", "")).strip(),
+                    kind=str(item.get("kind", "")).strip(),
+                    summary=str(item.get("summary", "")).strip(),
+                    workstreams=[str(token).strip() for token in item.get("workstreams", []) if str(token).strip()]
+                    if isinstance(item.get("workstreams"), list)
+                    else [],
+                    artifacts=[str(token).strip() for token in item.get("artifacts", []) if str(token).strip()]
+                    if isinstance(item.get("artifacts"), list)
+                    else [],
+                    explicit_components=[str(token).strip() for token in item.get("explicit_components", []) if str(token).strip()]
+                    if isinstance(item.get("explicit_components"), list)
+                    else [],
+                    mapped_components=[str(token).strip() for token in item.get("mapped_components", []) if str(token).strip()]
+                    if isinstance(item.get("mapped_components"), list)
+                    else [],
+                    confidence=str(item.get("confidence", "")).strip(),
+                    meaningful=bool(item.get("meaningful")),
+                )
+                for item in payload.get("unmapped_meaningful_events", [])
+                if isinstance(payload, Mapping) and isinstance(payload.get("unmapped_meaningful_events"), list) and isinstance(item, Mapping)
+            ] if isinstance(payload, Mapping) else []
+            mapped_events = [
+                component_registry.MappedEvent(
+                    event_index=int(row["event_index"] or 0),
+                    ts_iso=str(row["ts_iso"]).strip(),
+                    kind=str(row["kind"]).strip(),
+                    summary=str(row["summary"]).strip(),
+                    workstreams=_json_list(str(row["workstreams_json"])),
+                    artifacts=_json_list(str(row["artifacts_json"])),
+                    explicit_components=_json_list(str(row["explicit_components_json"])),
+                    mapped_components=_json_list(str(row["mapped_components_json"])),
+                    confidence=str(row["confidence"]).strip(),
+                    meaningful=bool(int(row["meaningful"] or 0)),
+                )
+                for row in event_rows
+            ]
+            report = component_registry.ComponentRegistryReport(
+                components=components,
                 mapped_events=mapped_events,
-                repo_root=repo_root,
-            ),
-            diagnostics=diagnostics,
+                unmapped_meaningful_events=unmapped_meaningful_events,
+                candidate_queue=candidate_queue,
+                forensic_coverage=component_registry.build_component_forensic_coverage(
+                    component_index=components,
+                    mapped_events=mapped_events,
+                    repo_root=repo_root,
+                ),
+                diagnostics=diagnostics,
+            )
+            spec_snapshots: dict[str, component_registry.ComponentSpecSnapshot] = {}
+            for row in spec_rows:
+                component_id = str(row["component_id"]).strip()
+                if not component_id:
+                    continue
+                feature_history_payload = json.loads(str(row["feature_history_json"] or "[]"))
+                skill_tiers_payload = json.loads(str(row["skill_trigger_tiers_json"] or "{}"))
+                playbook_payload = json.loads(str(row["validation_playbook_commands_json"] or "[]"))
+                spec_snapshots[component_id] = component_registry.ComponentSpecSnapshot(
+                    title=str(row["title"]).strip(),
+                    last_updated=str(row["last_updated"]).strip(),
+                    feature_history=[dict(item) for item in feature_history_payload if isinstance(item, Mapping)]
+                    if isinstance(feature_history_payload, list)
+                    else [],
+                    markdown=str(row["markdown"] or ""),
+                    skill_trigger_tiers=dict(skill_tiers_payload) if isinstance(skill_tiers_payload, Mapping) else {},
+                    skill_trigger_structure=str(row["skill_trigger_structure"]).strip(),
+                    validation_playbook_commands=[dict(item) for item in playbook_payload if isinstance(item, Mapping)]
+                    if isinstance(playbook_payload, list)
+                    else [],
+                )
+            traceability: dict[str, dict[str, list[str]]] = {}
+            for row in trace_rows:
+                component_id = str(row["component_id"]).strip()
+                bucket = str(row["bucket"]).strip()
+                path = str(row["path"]).strip()
+                if not component_id or not bucket or not path:
+                    continue
+                traceability.setdefault(
+                    component_id,
+                    {"runbooks": [], "developer_docs": [], "code_references": []},
+                ).setdefault(bucket, []).append(path)
+            for component_id, buckets in traceability.items():
+                for bucket, values in buckets.items():
+                    buckets[bucket] = _dedupe_strings(values)
+            snapshot = {
+                "report": report,
+                "traceability": traceability,
+                "spec_snapshots": spec_snapshots,
+                "odylith_switch": _odylith_switch_snapshot(repo_root=root),
+            }
+            if odylith_ablation_active:
+                return _apply_odylith_registry_snapshot_ablation(
+                    repo_root=root,
+                    report=report,
+                    traceability=traceability,
+                    spec_snapshots=spec_snapshots,
+                )
+            return snapshot
+
+        return _cached_projection_rows(
+            repo_root=root,
+            cache_name="component_registry_snapshot",
+            loader=_load_runtime_snapshot,
+            scope="default",
         )
-        spec_snapshots: dict[str, component_registry.ComponentSpecSnapshot] = {}
-        for row in spec_rows:
-            component_id = str(row["component_id"]).strip()
-            if not component_id:
-                continue
-            feature_history_payload = json.loads(str(row["feature_history_json"] or "[]"))
-            skill_tiers_payload = json.loads(str(row["skill_trigger_tiers_json"] or "{}"))
-            playbook_payload = json.loads(str(row["validation_playbook_commands_json"] or "[]"))
-            spec_snapshots[component_id] = component_registry.ComponentSpecSnapshot(
-                title=str(row["title"]).strip(),
-                last_updated=str(row["last_updated"]).strip(),
-                feature_history=[dict(item) for item in feature_history_payload if isinstance(item, Mapping)]
-                if isinstance(feature_history_payload, list)
-                else [],
-                markdown=str(row["markdown"] or ""),
-                skill_trigger_tiers=dict(skill_tiers_payload) if isinstance(skill_tiers_payload, Mapping) else {},
-                skill_trigger_structure=str(row["skill_trigger_structure"]).strip(),
-                validation_playbook_commands=[dict(item) for item in playbook_payload if isinstance(item, Mapping)]
-                if isinstance(playbook_payload, list)
-                else [],
-            )
-        traceability: dict[str, dict[str, list[str]]] = {}
-        for row in trace_rows:
-            component_id = str(row["component_id"]).strip()
-            bucket = str(row["bucket"]).strip()
-            path = str(row["path"]).strip()
-            if not component_id or not bucket or not path:
-                continue
-            traceability.setdefault(
-                component_id,
-                {"runbooks": [], "developer_docs": [], "code_references": []},
-            ).setdefault(bucket, []).append(path)
-        for component_id, buckets in traceability.items():
-            for bucket, values in buckets.items():
-                buckets[bucket] = _dedupe_strings(values)
-        snapshot = {
-            "report": report,
-            "traceability": traceability,
-            "spec_snapshots": spec_snapshots,
-            "odylith_switch": _odylith_switch_snapshot(repo_root=root),
-        }
-        if odylith_ablation_active:
-            return _apply_odylith_registry_snapshot_ablation(
-                repo_root=root,
-                report=report,
-                traceability=traceability,
-                spec_snapshots=spec_snapshots,
-            )
-        return snapshot
 
     manifest_path = component_registry.default_manifest_path(repo_root=root)
     catalog_path = root / component_registry.DEFAULT_CATALOG_PATH

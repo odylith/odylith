@@ -430,6 +430,14 @@ def refresh_runtime_artifacts(
     history_index_path = history_dir / "index.v1.json"
     history_js_path = history_dir / "embedded.v1.js"
     runtime_paths = (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
+    tracked_input_signatures = _compass_runtime_tracked_input_signatures(
+        backlog_index_path=backlog_index_path,
+        plan_index_path=plan_index_path,
+        bugs_index_path=bugs_index_path,
+        traceability_graph_path=traceability_graph_path,
+        mermaid_catalog_path=mermaid_catalog_path,
+        codex_stream_path=codex_stream_path,
+    )
 
     input_fingerprint = _compass_runtime_input_fingerprint(
         repo_root=repo_root,
@@ -571,20 +579,30 @@ def refresh_runtime_artifacts(
         refresh_profile=normalized_profile,
         progress_callback=progress_callback,
     )
-    final_input_fingerprint = _compass_runtime_input_fingerprint(
-        repo_root=repo_root,
+    final_input_fingerprint = input_fingerprint
+    postbuild_signatures = _compass_runtime_tracked_input_signatures(
         backlog_index_path=backlog_index_path,
         plan_index_path=plan_index_path,
         bugs_index_path=bugs_index_path,
         traceability_graph_path=traceability_graph_path,
         mermaid_catalog_path=mermaid_catalog_path,
         codex_stream_path=codex_stream_path,
-        max_review_age_days=max_review_age_days,
-        active_window_minutes=active_window_minutes,
-        runtime_mode=runtime_mode,
-        retention_days=retention_days,
-        refresh_profile=normalized_profile,
     )
+    if postbuild_signatures != tracked_input_signatures:
+        final_input_fingerprint = _compass_runtime_input_fingerprint(
+            repo_root=repo_root,
+            backlog_index_path=backlog_index_path,
+            plan_index_path=plan_index_path,
+            bugs_index_path=bugs_index_path,
+            traceability_graph_path=traceability_graph_path,
+            mermaid_catalog_path=mermaid_catalog_path,
+            codex_stream_path=codex_stream_path,
+            max_review_age_days=max_review_age_days,
+            active_window_minutes=active_window_minutes,
+            runtime_mode=runtime_mode,
+            retention_days=retention_days,
+            refresh_profile=normalized_profile,
+        )
     runtime_contract = payload.get("runtime_contract") if isinstance(payload.get("runtime_contract"), dict) else {}
     runtime_contract.update(
         {
@@ -679,6 +697,26 @@ def _compass_runtime_input_fingerprint(
             },
         }
     )
+
+
+def _compass_runtime_tracked_input_signatures(
+    *,
+    backlog_index_path: Path,
+    plan_index_path: Path,
+    bugs_index_path: Path,
+    traceability_graph_path: Path,
+    mermaid_catalog_path: Path,
+    codex_stream_path: Path,
+) -> dict[str, tuple[bool, int, int]]:
+    return {
+        "backlog_index": odylith_context_cache.path_signature(backlog_index_path),
+        "plan_index": odylith_context_cache.path_signature(plan_index_path),
+        "bugs_index": odylith_context_cache.path_signature(bugs_index_path),
+        "traceability_graph": odylith_context_cache.path_signature(traceability_graph_path),
+        "mermaid_catalog": odylith_context_cache.path_signature(mermaid_catalog_path),
+        "agent_stream": odylith_context_cache.path_signature(codex_stream_path),
+        "codex_stream": odylith_context_cache.path_signature(codex_stream_path),
+    }
 
 
 def _existing_runtime_payload_if_fresh(

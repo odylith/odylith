@@ -729,7 +729,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         items=provisional_items,
         fingerprint_cache=diagram_freshness.ContentFingerprintCache(),
     )
-    if provisional_impacted_indexes and not args.dry_run:
+    if provisional_impacted_indexes and not args.dry_run and not (bool(args.all_stale) and bool(stale_indexes)):
         watched_paths = [
             *changed,
             *(

@@ -20,6 +20,7 @@ import datetime as dt
 import json
 from pathlib import Path
 import re
+import subprocess
 from typing import Any, Iterable, Mapping, Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as registry
@@ -86,6 +87,19 @@ def _resolve(repo_root: Path, token: str) -> Path:
     if path.is_absolute():
         return path.resolve()
     return (repo_root / path).resolve()
+
+
+def _current_local_head(repo_root: Path) -> str:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+    return str(completed.stdout or "").strip()
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -2826,7 +2840,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "src/odylith/runtime/common",
             ),
             output_paths=(output_path,),
-            extra={"max_review_age_days": int(args.max_review_age_days)},
+            extra={
+                "max_review_age_days": int(args.max_review_age_days),
+                "local_head": _current_local_head(repo_root),
+            },
         )
         if skip_rebuild:
             print("delivery intelligence artifact is current")

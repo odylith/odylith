@@ -497,8 +497,12 @@ def _atlas_diagram_catalog_rows(*, repo_root: Path) -> list[dict[str, object]]:
 def _load_component_index(
     *,
     repo_root: Path,
+    runtime_mode: str = "auto",
 ) -> Mapping[str, component_registry.ComponentEntry]:
-    return render_backlog_ui_payload_runtime._load_component_index(repo_root=repo_root)
+    return render_backlog_ui_payload_runtime._load_component_index(
+        repo_root=repo_root,
+        runtime_mode=runtime_mode,
+    )
 
 
 def _attach_component_registry_links(
@@ -844,7 +848,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"- {message}")
         return 2
 
-    component_index = _load_component_index(repo_root=repo_root)
+    component_index = _load_component_index(
+        repo_root=repo_root,
+        runtime_mode=str(args.runtime_mode),
+    )
     _attach_component_registry_links(entries=entries, component_index=component_index)
     _attach_execution_overlay(entries=entries, repo_root=repo_root)
     render_backlog_ui_payload_runtime._attach_delivery_scope_signals(

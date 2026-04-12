@@ -105,6 +105,25 @@ def default_surface_projection_input_fingerprint(*, repo_root: Path) -> str:
     """
 
     root = Path(repo_root).resolve()
+    try:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except ImportError:  # pragma: no cover - defensive bootstrap fallback
+        governed_sync_session = None
+    if governed_sync_session is not None:
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == root:
+            return str(
+                session.get_or_compute(
+                    namespace="surface_projection_fingerprint",
+                    key="default",
+                    builder=lambda: _default_surface_projection_input_fingerprint_uncached(repo_root=root),
+                )
+            ).strip()
+    return _default_surface_projection_input_fingerprint_uncached(repo_root=root)
+
+
+def _default_surface_projection_input_fingerprint_uncached(*, repo_root: Path) -> str:
+    root = Path(repo_root).resolve()
     radar_source_root = truth_root_path(repo_root=root, key="radar_source")
     technical_plans_root = truth_root_path(repo_root=root, key="technical_plans")
     casebook_bugs_root = truth_root_path(repo_root=root, key="casebook_bugs")

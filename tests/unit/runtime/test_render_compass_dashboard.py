@@ -220,6 +220,58 @@ def test_refresh_runtime_artifacts_rebuilds_when_brief_contract_metadata_is_miss
     assert refreshed_payload["standup_brief"]["24h"]["schema_version"] == render_compass_dashboard.compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION
 
 
+def test_refresh_runtime_artifacts_reuses_initial_input_fingerprint_for_fresh_build(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo_root = tmp_path
+    runtime_dir = repo_root / "odylith/compass/runtime"
+    runtime_dir.mkdir(parents=True)
+    _seed_required_render_inputs(repo_root)
+
+    fingerprint_calls = {"count": 0}
+
+    def _fingerprint(**_kwargs):  # noqa: ANN001
+        fingerprint_calls["count"] += 1
+        return "fresh-build-fingerprint"
+
+    monkeypatch.setattr(render_compass_dashboard, "_compass_runtime_input_fingerprint", _fingerprint)
+    monkeypatch.setattr(render_compass_dashboard, "_runtime_daemon_available", lambda **_kwargs: False)
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "_load_runtime_impl",
+        lambda: type(
+            "_FakeRuntimeImpl",
+            (),
+            {
+                "_build_runtime_payload": staticmethod(
+                    lambda **_kwargs: {
+                        "generated_utc": "2026-04-11T00:00:00Z",
+                        "runtime_contract": {},
+                        "standup_brief": {"24h": _brief(source="cache")},
+                    }
+                ),
+                "_write_runtime_snapshots": staticmethod(lambda **_kwargs: _runtime_paths(runtime_dir)),
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        render_compass_dashboard.compass_standup_brief_maintenance,
+        "stamp_request_runtime_input_fingerprint",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        render_compass_dashboard.compass_standup_brief_maintenance,
+        "maybe_spawn_background",
+        lambda **_kwargs: None,
+    )
+
+    payload, _paths = render_compass_dashboard.refresh_runtime_artifacts(**_refresh_kwargs(repo_root, runtime_dir))
+
+    assert fingerprint_calls["count"] == 1
+    assert payload["runtime_contract"]["input_fingerprint"] == "fresh-build-fingerprint"
+
+
 def test_refresh_runtime_artifacts_prefers_matching_daemon_cached_payload(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     runtime_dir = repo_root / "odylith/compass/runtime"
@@ -642,6 +694,9 @@ def test_refresh_runtime_artifacts_persists_postbuild_input_fingerprint_when_bui
     repo_root = tmp_path
     runtime_dir = repo_root / "odylith/compass/runtime"
     runtime_dir.mkdir(parents=True)
+    backlog_index_path = repo_root / "odylith/radar/source/INDEX.md"
+    backlog_index_path.parent.mkdir(parents=True, exist_ok=True)
+    backlog_index_path.write_text("# Radar\n", encoding="utf-8")
     expected_paths = _runtime_paths(runtime_dir)
     calls: dict[str, object] = {}
     fingerprints = iter(("prebuild-fingerprint", "postbuild-fingerprint"))
@@ -655,6 +710,7 @@ def test_refresh_runtime_artifacts_persists_postbuild_input_fingerprint_when_bui
     class _FakeRuntimeImpl:
         def _build_runtime_payload(self, **kwargs):  # noqa: ANN003
             calls["build"] = dict(kwargs)
+            backlog_index_path.write_text("# Radar\n\nmutated during build\n", encoding="utf-8")
             return {"version": "v1", "history": {}}
 
         def _write_runtime_snapshots(self, **kwargs):  # noqa: ANN003

@@ -269,6 +269,72 @@ def test_run_callable_with_heartbeat_preserves_active_sync_session(tmp_path: Pat
     assert seen_repo_roots == [str(tmp_path.resolve())]
 
 
+def test_generated_surface_steps_export_sync_forced_rebuild_env() -> None:
+    step = sync_workstream_artifacts.ExecutionStep(
+        label="Render Radar",
+        command=("python", "-m", "odylith.runtime.surfaces.render_backlog_ui"),
+        mutation_classes=("generated_surfaces",),
+        paths=("odylith/radar/radar.html",),
+    )
+
+    env_updates = sync_workstream_artifacts._step_env_overrides(step)  # noqa: SLF001
+
+    assert env_updates == {"ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD": "1"}
+
+
+def test_generated_surface_only_step_does_not_invalidate_projection_caches(tmp_path: Path, monkeypatch) -> None:
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    session.get_or_compute(namespace="runtime_warm", key="default", builder=lambda: True)
+    cleared_repo_roots: list[str] = []
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_context_engine_store",
+        lambda: SimpleNamespace(
+            clear_runtime_process_caches=lambda *, repo_root: cleared_repo_roots.append(str(repo_root))
+        ),
+    )
+
+    step = sync_workstream_artifacts.ExecutionStep(
+        label="Render shell",
+        command=("python", "-m", "odylith.runtime.surfaces.render_tooling_dashboard"),
+        mutation_classes=("generated_surfaces",),
+        paths=("odylith/index.html", "odylith/tooling-payload.v1.js"),
+    )
+
+    with sync_session.activate_sync_session(session):
+        sync_workstream_artifacts._invalidate_sync_runtime_caches(repo_root=tmp_path, step=step)  # noqa: SLF001
+
+    assert cleared_repo_roots == []
+    assert sync_session.active_sync_session() is None
+    assert session.get_or_compute(namespace="runtime_warm", key="default", builder=lambda: False) is True
+
+
+def test_traceability_refresh_invalidates_projection_caches(tmp_path: Path, monkeypatch) -> None:
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    session.get_or_compute(namespace="runtime_warm", key="default", builder=lambda: True)
+    cleared_repo_roots: list[str] = []
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_context_engine_store",
+        lambda: SimpleNamespace(
+            clear_runtime_process_caches=lambda *, repo_root: cleared_repo_roots.append(str(repo_root))
+        ),
+    )
+
+    step = sync_workstream_artifacts.ExecutionStep(
+        label="Regenerate traceability graph",
+        command=("python", "-m", "odylith.runtime.governance.build_traceability_graph"),
+        mutation_classes=("generated_surfaces",),
+        paths=("odylith/radar/traceability-graph.v1.json",),
+    )
+
+    with sync_session.activate_sync_session(session):
+        sync_workstream_artifacts._invalidate_sync_runtime_caches(repo_root=tmp_path, step=step)  # noqa: SLF001
+
+    assert cleared_repo_roots == [str(tmp_path.resolve())]
+    assert session.get_or_compute(namespace="runtime_warm", key="default", builder=lambda: False) is False
+
+
 def test_sync_execution_plan_reruns_second_registry_spec_sync_after_shell_facing_steps(tmp_path: Path) -> None:
     impact = governance.DashboardImpact(
         radar=False,
@@ -419,6 +485,60 @@ def test_force_sync_reruns_final_component_spec_refresh_after_generated_surfaces
     assert tooling_render_index < sync_indexes[1]
 
 
+def test_build_sync_execution_plan_defers_runtime_backed_renders_until_after_delivery_truth_settles(
+    tmp_path: Path,
+) -> None:
+    impact = governance.DashboardImpact(
+        radar=True,
+        atlas=True,
+        compass=True,
+        registry=True,
+        casebook=True,
+        reasons={},
+    )
+    args = sync_workstream_artifacts._parse_args(  # noqa: SLF001
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--force",
+        ]
+    )
+
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=args,
+        changed_paths=("odylith/atlas/source/odylith-product-governance-loop.mmd",),
+        impact=impact,
+        impact_tooling_shell=True,
+        runtime_mode="auto",
+    )
+
+    modules = [
+        command[2]
+        for step in plan.steps
+        if step.command is not None and len(step.command) >= 3 and step.command[:2] == ("python", "-m")
+        for command in (step.command,)
+    ]
+    atlas_update_index = modules.index("odylith.runtime.surfaces.auto_update_mermaid_diagrams")
+    atlas_render_index = modules.index("odylith.runtime.surfaces.render_mermaid_catalog_refresh")
+    registry_sync_index = modules.index("odylith.runtime.governance.sync_component_spec_requirements")
+    delivery_index = modules.index("odylith.runtime.governance.delivery_intelligence_refresh")
+    compass_index = modules.index("odylith.runtime.surfaces.render_compass_dashboard")
+    radar_index = modules.index("odylith.runtime.surfaces.render_backlog_ui")
+    registry_render_index = modules.index("odylith.runtime.surfaces.render_registry_dashboard")
+    casebook_render_index = modules.index("odylith.runtime.surfaces.render_casebook_dashboard")
+    tooling_render_index = modules.index("odylith.runtime.surfaces.render_tooling_dashboard")
+
+    assert atlas_update_index < atlas_render_index
+    assert atlas_render_index < registry_sync_index
+    assert registry_sync_index < delivery_index
+    assert delivery_index < compass_index
+    assert compass_index < radar_index
+    assert radar_index < registry_render_index
+    assert registry_render_index < casebook_render_index
+    assert casebook_render_index < tooling_render_index
+
+
 def test_check_only_sync_skips_runtime_fast_path_and_warmup(tmp_path: Path, monkeypatch) -> None:
     executed: list[tuple[str, ...]] = []
 
@@ -480,12 +600,11 @@ def test_check_only_sync_skips_runtime_fast_path_and_warmup(tmp_path: Path, monk
     assert component_sync[-2:] == ("--runtime-mode", "standalone")
 
 
-def test_full_mode_sync_skips_governance_runtime_packet_and_primes_default_runtime_warmup(
+def test_full_mode_sync_skips_governance_runtime_packet_without_eager_default_runtime_warmup(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     executed: list[tuple[str, ...]] = []
-    warm_calls: list[dict[str, object]] = []
 
     class _Meaningful:
         def as_dict(self) -> dict[str, int]:
@@ -530,7 +649,10 @@ def test_full_mode_sync_skips_governance_runtime_packet_and_primes_default_runti
             record_runtime_timing=lambda **_kwargs: (_ for _ in ()).throw(
                 AssertionError("full-mode sync should not record governance packet timing")
             ),
-            warm_projections=lambda **kwargs: warm_calls.append(dict(kwargs)) or {"ok": True},
+            warm_projections=lambda **_kwargs: (_ for _ in ()).throw(
+                AssertionError("full-mode sync should not pay an eager runtime warmup before mutation steps settle")
+            ),
+            clear_runtime_process_caches=lambda **_kwargs: None,
         ),
     )
 
@@ -538,10 +660,6 @@ def test_full_mode_sync_skips_governance_runtime_packet_and_primes_default_runti
 
     assert rc == 0
     assert executed
-    assert len(warm_calls) == 1
-    assert warm_calls[0]["repo_root"] == tmp_path.resolve()
-    assert warm_calls[0]["reason"] == "sync_workstream_artifacts"
-    assert warm_calls[0]["scope"] == "default"
 
 
 def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tmp_path: Path, monkeypatch) -> None:
@@ -797,6 +915,40 @@ def test_build_sync_execution_plan_appends_source_bundle_mirror_step(tmp_path: P
     ]
     assert len(mirror_steps) == 1
     assert mirror_steps[0].action is not None
+
+
+def test_build_sync_execution_plan_runs_final_registry_reconcile_after_bundle_mirror(tmp_path: Path) -> None:
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=False,
+            force=False,
+            impact_mode="focused",
+            registry_policy_mode="warn",
+            enforce_deep_skills=False,
+            no_traceability_autofix=True,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=("odylith/registry/source/components/odylith/CURRENT_SPEC.md",),
+        impact=SimpleNamespace(
+            atlas=False,
+            radar=False,
+            compass=False,
+            registry=True,
+            casebook=False,
+        ),
+        impact_tooling_shell=True,
+        runtime_mode="standalone",
+    )
+
+    labels = [step.label for step in plan.steps]
+    mirror_index = labels.index("Mirror changed source-truth docs into the shipped bundle asset tree.")
+    final_registry_sync_index = labels.index(
+        "Re-sync Registry component spec requirements after later shell-facing and mirror refresh steps settle."
+    )
+
+    assert mirror_index < final_registry_sync_index
 
 
 def test_dashboard_refresh_retries_auto_surface_with_standalone_fallback(tmp_path: Path, monkeypatch, capsys) -> None:

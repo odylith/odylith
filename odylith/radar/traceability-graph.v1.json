@@ -4987,7 +4987,7 @@
     {
       "idea_id": "B-091",
       "title": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes",
-      "status": "planning",
+      "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-025",
       "workstream_children": [],
@@ -5986,7 +5986,7 @@
       "id": "B-091",
       "type": "workstream",
       "label": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes",
-      "status": "planning",
+      "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md"
     },
     {
@@ -10067,5 +10067,5 @@
     "warning_count": 12,
     "warning_item_count": 12
   },
-  "generated_utc": "2026-04-12 05:09:38Z"
+  "generated_utc": "2026-04-12 06:58:31Z"
 }
