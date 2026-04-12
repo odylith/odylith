@@ -134,6 +134,18 @@
       return normalizeHistoryIndexDates(historyMeta(payload));
     }
 
+    function loadableHistoryDateTokens(payload) {
+      const history = historyMeta(payload);
+      const snapshots = history && history.snapshots && typeof history.snapshots === "object"
+        ? Object.keys(history.snapshots)
+        : [];
+      return normalizeHistoryDateTokens([
+        ...(Array.isArray(history.dates) ? history.dates : []),
+        ...(Array.isArray(history.restored_dates) ? history.restored_dates : []),
+        ...snapshots,
+      ]);
+    }
+
     function knownHistoryDateSet(payload) {
       return new Set(knownHistoryDateTokens(payload));
     }
@@ -236,7 +248,7 @@
 
     function rollingThirtyDayBounds(payload) {
       const maxDate = calendarMaxDateToken(payload) || toLocalDateToken(new Date());
-      const historyDates = knownHistoryDateTokens(payload);
+      const historyDates = loadableHistoryDateTokens(payload);
       const minDate = historyDates.length
         ? historyDates[historyDates.length - 1]
         : (DATE_RE.test(maxDate) ? shiftDateToken(maxDate, -29) : "");

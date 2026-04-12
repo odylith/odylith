@@ -253,6 +253,42 @@ Public docs should describe these commands, not direct module entrypoints.
 3. Surfaces and coding-agent workflows read deterministic packets from the
    Context Engine rather than reparsing the repo every time.
 
+### Governed sync derivation contract
+- `odylith sync` is not allowed to behave like a bag of unrelated helpers that
+  all rediscover repo root, consumer profile, path canon, backlog specs,
+  Registry report state, and delivery inputs independently.
+- The correct execution shape is one sync-scoped derivation engine:
+  - one canonical repo root
+  - one consumer profile and truth-root resolution
+  - one canonical path-token space
+  - one shared parsed backlog/spec read model
+  - one shared Registry and delivery-intelligence evidence substrate
+- Reuse must stay truthful:
+  - cache keys derive from content truth, generator code, and execution flags
+  - stat metadata may accelerate lookup, but it must not be the sole authority
+  - standalone and check-only posture must stay fail-closed and source-truth
+    equivalent
+- Generated outputs are content-addressed products of source truth. If a render
+  step produces byte-identical output for byte-identical inputs, Odylith should
+  not rewrite the file, should not dirty git, and should not invalidate
+  downstream derived work.
+- Heavy governed surfaces must also fingerprint their watched input cone and
+  emitted bundle set before payload construction so no-op Radar, Registry,
+  Casebook, and tooling-shell rerenders can exit before rebuilding the same
+  HTML/JS payloads.
+- Forced/full sync must not pay the governance-packet reasoning lane just to
+  rediscover an all-surfaces impact set, and a direct sync projection warm must
+  prime the same-process runtime warm cache so later surface readers do not
+  rebuild the default projection again.
+- Component-artifact matching on the sync hot path must use indexed canonical
+  prefixes rather than repeated O(events x components x prefixes) normalization
+  scans, and follow-on Registry requirement sync passes must account for later
+  shell-facing steps that can still shift evidence consumed by component
+  forensics instead of running by superstition or skipping by false economy.
+- The long-term ceiling is a reverse-dependency fixpoint engine or resident
+  daemon, but the first non-negotiable contract is simpler: one sync run must
+  reuse one shared read model instead of repeatedly reconstructing it.
+
 ### 3. Decide execution posture
 1. `odylith subagent-router` decides whether one bounded task stays local or is
    delegated, and with what model/reasoning profile.
@@ -406,6 +442,8 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-11 · Implementation:** B-090 is closed.
+  - Scope: B-090
 - **2026-04-11 · Implementation:** B-089 has landed on 2026/freedom/v0.1.11 as the planned two-commit pair, working tree clean: 9402f5d — Mirror Codex host parity into Claude with baked CLI dispatchers (56 files:...
   - Scope: B-089
 - **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
@@ -417,8 +455,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
 - **2026-03-23 · Decision:** Successor created: B-276 reopens B-275 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
-- **2026-03-20 · Decision:** Successor created: B-266 reopens B-265 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/casebook/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -432,3 +468,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-05: Promoted the canonical benchmark guidance manifest into tracked product truth so benchmark and runtime guidance memory resolve from one family-tagged source instead of an implicit zero-guidance fallback. (Plan: [B-021](odylith/radar/radar.html?view=plan&workstream=B-021))
 - 2026-04-07: Split the hidden memory substrate into explicit governed subcomponents for projection bundle, projection snapshot, remote retrieval, and packet contracts so Registry can show the real memory topology instead of one coarse silhouette. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
 - 2026-04-08: Added `odylith release ...` and the repo-local release-planning contract so workstreams can target explicit ship lanes without smuggling release scope into prose, execution waves, or publication-only lore. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
+- 2026-04-12: Bound governed sync to a shared-read-model and content-addressed-write architecture so the product can cut warm sync latency by reusing one truthful derivation context instead of repeatedly rediscovering the same repo state. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))

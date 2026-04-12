@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import time
 
 from odylith.runtime.surfaces import render_casebook_dashboard as renderer
 
@@ -389,3 +390,134 @@ def test_render_casebook_dashboard_emits_proof_control_panel_contract(tmp_path: 
     assert '"current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke"' in payload_js
     assert '"allowed_next_work": ["primary fix", "validating test", "deploy instruction"]' in payload_js
     assert '"highest_truthful_claim": "fixed in code"' in payload_js
+
+
+def test_render_casebook_dashboard_skips_noop_writes_when_bundle_is_unchanged(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-01-example-bug.md"
+    bug_path.parent.mkdir(parents=True, exist_ok=True)
+    bug_path.write_text("# Example bug\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_bug_snapshot",
+        lambda **kwargs: [
+            {
+                "bug_id": "CB-999",
+                "bug_key": "odylith/casebook/bugs/2026-04-01-example-bug.md",
+                "title": "Casebook no-op writes stay quiet",
+                "date": "2026-04-01",
+                "severity": "P1",
+                "severity_token": "p1",
+                "status": "Open",
+                "status_token": "open",
+                "components": "`casebook`",
+                "component_tokens": ["casebook"],
+                "archive_bucket": "",
+                "source_path": "odylith/casebook/bugs/2026-04-01-example-bug.md",
+                "source_exists": True,
+                "is_open": True,
+                "is_open_critical": False,
+                "summary": "Repeated no-op renders should not touch the Casebook bundle.",
+                "workstreams": ["B-025"],
+                "workstream_links": [],
+                "fields": {},
+                "detail_sections": [],
+                "code_refs": [],
+                "doc_refs": [],
+                "test_refs": [],
+                "contract_refs": [],
+                "component_matches": [],
+                "diagram_refs": [],
+                "related_bug_refs": [],
+                "agent_guidance": {"lessons": [], "preflight_checks": [], "proof_paths": []},
+                "intelligence_coverage": {},
+                "proof_state": {},
+                "proof_state_resolution": {},
+                "claim_guard": {},
+                "search_text": "casebook no-op writes stay quiet",
+            }
+        ],
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/casebook/casebook.html"])
+    assert rc == 0
+
+    tracked_paths = [
+        tmp_path / "odylith" / "casebook" / "casebook.html",
+        tmp_path / "odylith" / "casebook" / "casebook-payload.v1.js",
+        tmp_path / "odylith" / "casebook" / "casebook-app.v1.js",
+        *sorted((tmp_path / "odylith" / "casebook").glob("casebook-detail-shard-*.v1.js")),
+    ]
+    first_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+
+    time.sleep(0.01)
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/casebook/casebook.html"])
+    assert rc == 0
+
+    second_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+    assert second_mtimes == first_mtimes
+
+
+def test_render_casebook_dashboard_skips_cached_rebuild_before_payload_builder(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-01-example-bug.md"
+    bug_path.parent.mkdir(parents=True, exist_ok=True)
+    bug_path.write_text("# Example bug\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_bug_snapshot",
+        lambda **kwargs: [
+            {
+                "bug_id": "CB-999",
+                "bug_key": "odylith/casebook/bugs/2026-04-01-example-bug.md",
+                "title": "Casebook cached rebuild",
+                "date": "2026-04-01",
+                "severity": "P1",
+                "severity_token": "p1",
+                "status": "Open",
+                "status_token": "open",
+                "components": "`casebook`",
+                "component_tokens": ["casebook"],
+                "archive_bucket": "",
+                "source_path": "odylith/casebook/bugs/2026-04-01-example-bug.md",
+                "source_exists": True,
+                "is_open": True,
+                "is_open_critical": False,
+                "summary": "Second render should skip the payload builder when nothing changed.",
+                "workstreams": ["B-025"],
+                "workstream_links": [],
+                "fields": {},
+                "detail_sections": [],
+                "code_refs": [],
+                "doc_refs": [],
+                "test_refs": [],
+                "contract_refs": [],
+                "component_matches": [],
+                "diagram_refs": [],
+                "related_bug_refs": [],
+                "agent_guidance": {"lessons": [], "preflight_checks": [], "proof_paths": []},
+                "intelligence_coverage": {},
+                "proof_state": {},
+                "proof_state_resolution": {},
+                "claim_guard": {},
+                "search_text": "casebook cached rebuild",
+            }
+        ],
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/casebook/casebook.html"])
+    assert rc == 0
+
+    def _boom(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("casebook payload should be skipped on a cache hit")
+
+    monkeypatch.setattr(renderer, "_build_payload", _boom)
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/casebook/casebook.html"])
+    assert rc == 0

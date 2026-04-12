@@ -13,6 +13,8 @@ Behavior:
 from __future__ import annotations
 
 import argparse
+import contextlib
+import contextvars
 from dataclasses import dataclass
 import importlib
 import json
@@ -32,6 +34,7 @@ from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
+from odylith.runtime.governance import sync_session as governed_sync_session
 from odylith.runtime.governance.legacy_backlog_normalization import backlog_next_action
 from odylith.runtime.governance.legacy_backlog_normalization import collect_backlog_contract_errors
 from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
@@ -426,10 +429,11 @@ def _run_callable_with_heartbeat(
     callable_: Callable[[], int],
 ) -> int:
     result: dict[str, Any] = {"done": False, "rc": 1, "error": None}
+    worker_context = contextvars.copy_context()
 
     def _target() -> None:
         try:
-            result["rc"] = int(callable_() or 0)
+            result["rc"] = int(worker_context.run(callable_) or 0)
         except BaseException as exc:  # pragma: no cover - re-raised in main thread
             result["error"] = exc
         finally:
@@ -1721,7 +1725,7 @@ def build_sync_execution_plan(
             next_command_on_failure=sync_failure_command,
         )
     )
-    steps.append(
+    post_registry_truth_steps: list[ExecutionStep] = [
         _execution_step(
             "Refresh delivery intelligence after Atlas and Registry inputs settle.",
             command=_delivery_intelligence_command(repo_root=repo_root, check_only=False),
@@ -1729,9 +1733,9 @@ def build_sync_execution_plan(
             paths=("odylith/runtime/delivery_intelligence.v4.json",),
             next_command_on_failure=sync_failure_command,
         )
-    )
+    ]
     if bool(getattr(impact, "registry", False)):
-        steps.append(
+        post_registry_truth_steps.append(
             _execution_step(
                 "Render Registry for the impacted component view.",
                 command=(
@@ -1748,7 +1752,7 @@ def build_sync_execution_plan(
             )
         )
     if bool(getattr(impact, "casebook", False)):
-        steps.append(
+        post_registry_truth_steps.append(
             _execution_step(
                 "Render Casebook for the refreshed bug index.",
                 command=(
@@ -1765,7 +1769,7 @@ def build_sync_execution_plan(
             )
         )
     if bool(impact_tooling_shell):
-        steps.append(
+        post_registry_truth_steps.append(
             _execution_step(
                 "Render the top-level Odylith shell after the selected surfaces settle.",
                 command=(
@@ -1781,22 +1785,24 @@ def build_sync_execution_plan(
                 next_command_on_failure=sync_failure_command,
             )
         )
-    steps.append(
-        _execution_step(
-            "Re-sync Registry component spec requirements after the final surface renders settle.",
-            command=(
-                "python",
-                "-m",
-                "odylith.runtime.governance.sync_component_spec_requirements",
-                "--repo-root",
-                str(repo_root),
-                *_runtime_args(runtime_mode),
-            ),
-            mutation_classes=("repo_owned_truth",),
-            paths=("odylith/registry/source/components/",),
-            next_command_on_failure=sync_failure_command,
+    steps.extend(post_registry_truth_steps)
+    if post_registry_truth_steps:
+        steps.append(
+            _execution_step(
+                "Re-sync Registry component spec requirements after later shell-facing refresh steps settle.",
+                command=(
+                    "python",
+                    "-m",
+                    "odylith.runtime.governance.sync_component_spec_requirements",
+                    "--repo-root",
+                    str(repo_root),
+                    *_runtime_args(runtime_mode),
+                ),
+                mutation_classes=("repo_owned_truth",),
+                paths=("odylith/registry/source/components/",),
+                next_command_on_failure=sync_failure_command,
+            )
         )
-    )
     steps.append(
         _execution_step(
             "Mirror changed source-truth docs into the shipped bundle asset tree.",
@@ -1872,6 +1878,23 @@ def _dirty_overlap_gate_required(*, args: argparse.Namespace, plan: ExecutionPla
     return len(plan.dirty_overlap) >= DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD
 
 
+def _should_use_governance_runtime_packet(
+    *,
+    args: argparse.Namespace,
+    changed_paths: Sequence[str],
+    runtime_mode: str,
+) -> bool:
+    if bool(getattr(args, "check_only", False)):
+        return False
+    if not _use_runtime_fast_path(runtime_mode):
+        return False
+    if not changed_paths:
+        return False
+    if bool(getattr(args, "force", False)):
+        return False
+    return str(getattr(args, "impact_mode", "")).strip().lower() == "selective"
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
@@ -1922,7 +1945,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     impact = None
     governance_fallback_reason = ""
-    if not args.check_only and _use_runtime_fast_path(effective_runtime_mode) and changed_paths:
+    if _should_use_governance_runtime_packet(
+        args=args,
+        changed_paths=changed_paths,
+        runtime_mode=effective_runtime_mode,
+    ):
         governance_started = time.perf_counter()
         impact, governance_fallback_reason = _dashboard_impact_from_governance_packet(
             repo_root=repo_root,
@@ -2029,6 +2056,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             _context_engine_store().warm_projections(
                 repo_root=repo_root,
                 reason="sync_workstream_artifacts",
+                scope="default",
             )
             run_impl = _run_command_in_process
         except Exception as exc:
@@ -2041,13 +2069,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("- runtime_fallback: standalone (runtime prerequisites missing)")
         runtime_fallback_used = True
 
-    rc = _execute_plan(
-        repo_root=repo_root,
-        plan_name="workstream sync",
-        plan=plan,
-        run_impl=run_impl,
-        runtime_fallback_used=runtime_fallback_used,
-    )
+    session_context: contextlib.AbstractContextManager[object]
+    if run_impl is _run_command_in_process:
+        session_context = governed_sync_session.activate_sync_session(
+            governed_sync_session.GovernedSyncSession(repo_root=repo_root)
+        )
+    else:
+        session_context = contextlib.nullcontext()
+
+    with session_context:
+        rc = _execute_plan(
+            repo_root=repo_root,
+            plan_name="workstream sync",
+            plan=plan,
+            run_impl=run_impl,
+            runtime_fallback_used=runtime_fallback_used,
+        )
     if rc != 0:
         return rc
 

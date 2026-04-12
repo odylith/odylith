@@ -1083,7 +1083,8 @@
       "workstream_children": [
         "B-071",
         "B-080",
-        "B-081"
+        "B-081",
+        "B-091"
       ],
       "workstream_depends_on": [
         "B-017",
@@ -4982,6 +4983,49 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-091",
+      "title": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes",
+      "status": "planning",
+      "workstream_type": "child",
+      "workstream_parent": "B-025",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-080",
+        "B-086"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-005",
+        "D-009",
+        "D-036"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 3,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -5939,6 +5983,13 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
     },
     {
+      "id": "B-091",
+      "type": "workstream",
+      "label": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes",
+      "status": "planning",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md"
+    },
+    {
       "id": "artifact:.github/workflows/release.yml",
       "type": "artifact",
       "label": ".github/workflows/release.yml",
@@ -6394,6 +6445,13 @@
       "file": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.mmd"
     },
     {
+      "id": "diagram:D-036",
+      "type": "diagram",
+      "label": "Governed Sync Shared Read Model and Incremental Derivation Loop",
+      "diagram_id": "D-036",
+      "file": "odylith/atlas/source/odylith-governed-sync-shared-read-model-and-incremental-derivation-loop.mmd"
+    },
+    {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -6740,6 +6798,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md"
     },
     {
       "id": "release:release-0-1-11",
@@ -7849,6 +7913,11 @@
     {
       "source": "B-025",
       "target": "B-081",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-025",
+      "target": "B-091",
       "edge_type": "parent_child"
     },
     {
@@ -8988,6 +9057,11 @@
     },
     {
       "source": "B-080",
+      "target": "B-091",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-080",
       "target": "diagram:D-002",
       "edge_type": "diagram_linkage"
     },
@@ -9143,6 +9217,11 @@
     },
     {
       "source": "B-086",
+      "target": "B-091",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-086",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md",
       "edge_type": "promoted_to_plan"
     },
@@ -9179,6 +9258,26 @@
     {
       "source": "B-090",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-091",
+      "target": "diagram:D-005",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-091",
+      "target": "diagram:D-009",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-091",
+      "target": "diagram:D-036",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-091",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md",
       "edge_type": "promoted_to_plan"
     }
   ],
@@ -9812,6 +9911,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-091": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 3,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -9951,15 +10057,15 @@
     "B-085: related diagram `D-047` not found in catalog"
   ],
   "summary": {
-    "workstream_count": 90,
+    "workstream_count": 91,
     "release_count": 2,
     "active_release_assignment_count": 15,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 215,
-    "edge_count": 482,
+    "node_count": 218,
+    "edge_count": 489,
     "warning_count": 12,
     "warning_item_count": 12
   },
-  "generated_utc": "2026-04-12 01:56:52Z"
+  "generated_utc": "2026-04-12 05:09:38Z"
 }

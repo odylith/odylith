@@ -470,7 +470,7 @@ def _normalize_truth_roots(
     return merged
 
 
-def load_consumer_profile(*, repo_root: Path) -> dict[str, Any]:
+def _load_consumer_profile_from_process_cache(*, repo_root: Path) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     cache_key = str(root)
     signature = _consumer_profile_cache_signature(repo_root=root)
@@ -510,6 +510,24 @@ def load_consumer_profile(*, repo_root: Path) -> dict[str, Any]:
     )
     _PROCESS_CONSUMER_PROFILE_CACHE[cache_key] = (signature, _copy_consumer_profile(profile))
     return _copy_consumer_profile(profile)
+
+
+def load_consumer_profile(*, repo_root: Path) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    try:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except ImportError:  # pragma: no cover - defensive bootstrap fallback
+        return _load_consumer_profile_from_process_cache(repo_root=root)
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None and session.repo_root == root:
+        cached = session.get_or_compute(
+            namespace="consumer_profile",
+            key=session.repo_root_token,
+            builder=lambda: _load_consumer_profile_from_process_cache(repo_root=root),
+        )
+        return _copy_consumer_profile(cached)
+    return _load_consumer_profile_from_process_cache(repo_root=root)
 
 
 def write_consumer_profile(*, repo_root: Path, payload: Mapping[str, Any] | None = None) -> Path:

@@ -41,6 +41,7 @@ from odylith.runtime.common.guidance_paths import has_project_guidance
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference
 from odylith.runtime.governance.component_registry_path_aliases import equivalent_component_artifact_tokens
+from odylith.runtime.governance.component_registry_path_aliases import canonical_component_artifact_token
 from odylith.runtime.governance.component_registry_review_policy import (
     catalog_component_requests_inventory_review,
 )
@@ -272,6 +273,12 @@ class ComponentRegistryReport:
             },
             "candidate_queue": list(self.candidate_queue),
         }
+
+
+@dataclass(slots=True)
+class _PathPrefixTrieNode:
+    children: dict[str, "_PathPrefixTrieNode"] = field(default_factory=dict)
+    component_ids: set[str] = field(default_factory=set)
 
 
 def _component_entry_from_payload(payload: Mapping[str, Any]) -> ComponentEntry:
@@ -508,6 +515,59 @@ def _path_matches_prefix(path_token: str, prefix_token: str) -> bool:
     if left == right:
         return True
     return left.startswith(f"{right}/")
+
+
+def _path_segments(token: str) -> tuple[str, ...]:
+    normalized = workstream_inference.normalize_repo_token(token).strip().strip("/")
+    if not normalized:
+        return ()
+    return tuple(part for part in normalized.split("/") if part)
+
+
+def _build_component_path_prefix_trie(
+    rows: Mapping[str, Mapping[str, Any]],
+    *,
+    include_spec_ref: bool,
+) -> _PathPrefixTrieNode:
+    root = _PathPrefixTrieNode()
+    for component_id, row in rows.items():
+        refs: list[str] = []
+        prefixes = row.get("path_prefixes", [])
+        if isinstance(prefixes, (list, tuple, set)):
+            refs.extend(str(prefix).strip() for prefix in prefixes if str(prefix).strip())
+        if include_spec_ref:
+            spec_ref = str(row.get("spec_ref", "")).strip()
+            if spec_ref:
+                refs.append(spec_ref)
+        for ref in refs:
+            segments = _path_segments(ref)
+            if not segments:
+                continue
+            node = root
+            for segment in segments:
+                node = node.children.setdefault(segment, _PathPrefixTrieNode())
+            node.component_ids.add(str(component_id))
+    return root
+
+
+def _lookup_component_ids_for_path_token(
+    token: str,
+    *,
+    trie: _PathPrefixTrieNode,
+) -> set[str]:
+    segments = _path_segments(token)
+    if not segments:
+        return set()
+    matched: set[str] = set()
+    node = trie
+    for segment in segments:
+        next_node = node.children.get(segment)
+        if next_node is None:
+            break
+        node = next_node
+        if node.component_ids:
+            matched.update(node.component_ids)
+    return matched
 
 
 def _is_manifest_component_object(raw: Any) -> bool:
@@ -1366,6 +1426,7 @@ def _resolve_component_token(
     token: str,
     alias_to_component: Mapping[str, str],
     mutable_components: Mapping[str, dict[str, Any]],
+    path_prefix_trie: _PathPrefixTrieNode | None = None,
 ) -> str:
     raw = str(token or "").strip()
     if not raw:
@@ -1377,13 +1438,11 @@ def _resolve_component_token(
 
     path_token = _normalize_path(repo_root, raw)
     if path_token:
-        matched: list[str] = []
-        for component_id, row in mutable_components.items():
-            prefixes = row.get("path_prefixes", [])
-            if not isinstance(prefixes, (list, tuple, set)):
-                continue
-            if any(_path_matches_prefix(path_token, str(prefix)) for prefix in prefixes):
-                matched.append(component_id)
+        trie = path_prefix_trie or _build_component_path_prefix_trie(
+            mutable_components,
+            include_spec_ref=False,
+        )
+        matched = sorted(_lookup_component_ids_for_path_token(path_token, trie=trie))
         if len(matched) == 1:
             return matched[0]
 
@@ -1445,6 +1504,10 @@ def build_component_index(
         key: _entry_to_mutable(value)
         for key, value in base_components.items()
     }
+    path_prefix_trie = _build_component_path_prefix_trie(
+        mutable_components,
+        include_spec_ref=False,
+    )
 
     if include_idea_candidates:
         diagnostics.append(
@@ -1491,6 +1554,7 @@ def build_component_index(
                         token=name,
                         alias_to_component=alias_to_component,
                         mutable_components=mutable_components,
+                        path_prefix_trie=path_prefix_trie,
                     )
                     if not resolved:
                         continue
@@ -1524,6 +1588,7 @@ def build_component_index(
                 token=token,
                 alias_to_component=alias_to_component,
                 mutable_components=mutable_components,
+                path_prefix_trie=path_prefix_trie,
             )
             if not resolved:
                 suppressed_idea_token_count += 1
@@ -1793,20 +1858,17 @@ def _match_by_artifact(
     artifacts: Sequence[str],
     components: Mapping[str, ComponentEntry],
 ) -> set[str]:
+    trie = _build_component_path_prefix_trie(
+        {component_id: _entry_to_mutable(entry) for component_id, entry in components.items()},
+        include_spec_ref=True,
+    )
     matched: set[str] = set()
     for artifact in artifacts:
         artifact_tokens = equivalent_component_artifact_tokens(str(artifact or ""))
         if not artifact_tokens:
             continue
-        for component_id, entry in components.items():
-            artifact_refs = [*entry.path_prefixes, str(entry.spec_ref or "").strip()]
-            if any(
-                _path_matches_prefix(token, prefix)
-                for token in artifact_tokens
-                for prefix in artifact_refs
-                if str(prefix or "").strip()
-            ):
-                matched.add(component_id)
+        for token in artifact_tokens:
+            matched.update(_lookup_component_ids_for_path_token(token, trie=trie))
     return matched
 
 
@@ -2032,12 +2094,15 @@ def _collect_recent_workspace_paths(
     from odylith.runtime.governance import agent_governance_intelligence as governance
 
     cutoff = now - dt.timedelta(hours=max(0, int(window_hours)))
-    rows: list[tuple[str, str]] = []
+    rows_by_token: dict[str, str] = {}
     for raw in governance.collect_git_changed_paths(repo_root=repo_root):
-        token = _normalize_workspace_activity_path(repo_root=repo_root, token=raw)
-        if not token or not is_meaningful_workspace_artifact(token, repo_root=repo_root):
+        raw_token = _normalize_workspace_activity_path(repo_root=repo_root, token=raw)
+        if not raw_token or not is_meaningful_workspace_artifact(raw_token, repo_root=repo_root):
             continue
-        path = (repo_root / token).resolve()
+        token = canonical_component_artifact_token(raw_token).lstrip("./")
+        if not token:
+            continue
+        path = (repo_root / raw_token).resolve()
         if path.exists():
             when = dt.datetime.fromtimestamp(path.stat().st_mtime, tz=dt.timezone.utc)
         else:
@@ -2049,8 +2114,11 @@ def _collect_recent_workspace_paths(
         when_local = when.astimezone()
         if when_local < cutoff:
             continue
-        rows.append((token, when_local.isoformat(timespec="seconds")))
-    return rows
+        when_iso = when_local.isoformat(timespec="seconds")
+        previous = rows_by_token.get(token, "")
+        if not previous or when_iso > previous:
+            rows_by_token[token] = when_iso
+    return [(token, rows_by_token[token]) for token in rows_by_token]
 
 
 def build_workspace_activity_events(
@@ -2225,29 +2293,17 @@ def build_component_forensic_coverage(
     return coverage
 
 
-def build_component_registry_report(
+def _build_component_registry_report_from_fingerprint(
     *,
     repo_root: Path,
-    manifest_path: Path | None = None,
-    catalog_path: Path | None = None,
-    ideas_root: Path | None = None,
-    stream_path: Path | None = None,
-    workspace_activity_window_hours: int = DEFAULT_WORKSPACE_ACTIVITY_WINDOW_HOURS,
+    manifest: Path,
+    catalog: Path,
+    ideas: Path,
+    stream: Path,
+    workspace_activity_window_hours: int,
+    cache_file: Path,
+    fingerprint: str,
 ) -> ComponentRegistryReport:
-    """Build end-to-end component-registry report for renderer/validator/gov payloads."""
-
-    manifest = manifest_path or default_manifest_path(repo_root=repo_root)
-    catalog = catalog_path or _resolve(repo_root, DEFAULT_CATALOG_PATH)
-    ideas = ideas_root or _resolve(repo_root, DEFAULT_IDEAS_ROOT)
-    stream = stream_path or _resolve(repo_root, DEFAULT_STREAM_PATH)
-    cache_file, fingerprint = _cached_component_registry_report_payload(
-        repo_root=repo_root,
-        manifest_path=manifest,
-        catalog_path=catalog,
-        ideas_root=ideas,
-        stream_path=stream,
-        workspace_activity_window_hours=workspace_activity_window_hours,
-    )
     cached = odylith_context_cache.read_json_object(cache_file)
     if (
         cached.get("version") == _COMPONENT_REPORT_CACHE_VERSION
@@ -2317,6 +2373,68 @@ def build_component_registry_report(
         lock_key=str(cache_file),
     )
     return report
+
+
+def build_component_registry_report(
+    *,
+    repo_root: Path,
+    manifest_path: Path | None = None,
+    catalog_path: Path | None = None,
+    ideas_root: Path | None = None,
+    stream_path: Path | None = None,
+    workspace_activity_window_hours: int = DEFAULT_WORKSPACE_ACTIVITY_WINDOW_HOURS,
+) -> ComponentRegistryReport:
+    """Build end-to-end component-registry report for renderer/validator/gov payloads."""
+
+    manifest = manifest_path or default_manifest_path(repo_root=repo_root)
+    catalog = catalog_path or _resolve(repo_root, DEFAULT_CATALOG_PATH)
+    ideas = ideas_root or _resolve(repo_root, DEFAULT_IDEAS_ROOT)
+    stream = stream_path or _resolve(repo_root, DEFAULT_STREAM_PATH)
+    cache_file, fingerprint = _cached_component_registry_report_payload(
+        repo_root=repo_root,
+        manifest_path=manifest,
+        catalog_path=catalog,
+        ideas_root=ideas,
+        stream_path=stream,
+        workspace_activity_window_hours=workspace_activity_window_hours,
+    )
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None and session.repo_root == Path(repo_root).resolve():
+        return session.get_or_compute(
+            namespace="component_registry_report",
+            key="\n".join(
+                (
+                    str(manifest.resolve()),
+                    str(catalog.resolve()),
+                    str(ideas.resolve()),
+                    str(stream.resolve()),
+                    str(int(workspace_activity_window_hours)),
+                    fingerprint,
+                )
+            ),
+            builder=lambda: _build_component_registry_report_from_fingerprint(
+                repo_root=repo_root,
+                manifest=manifest,
+                catalog=catalog,
+                ideas=ideas,
+                stream=stream,
+                workspace_activity_window_hours=workspace_activity_window_hours,
+                cache_file=cache_file,
+                fingerprint=fingerprint,
+            ),
+        )
+    return _build_component_registry_report_from_fingerprint(
+        repo_root=repo_root,
+        manifest=manifest,
+        catalog=catalog,
+        ideas=ideas,
+        stream=stream,
+        workspace_activity_window_hours=workspace_activity_window_hours,
+        cache_file=cache_file,
+        fingerprint=fingerprint,
+    )
 
 
 def _load_backlog_status_by_workstream(*, ideas_root: Path) -> dict[str, str]:

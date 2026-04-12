@@ -1,0 +1,63 @@
+flowchart TB
+    changed["Changed paths or forced full sync"]
+    plan["Sync execution plan"]
+
+    subgraph inputs["Canonical governed source truth"]
+        radar["Radar ideas and INDEX"]
+        plans["Technical plans and plan index"]
+        registry["Registry manifests and component specs"]
+        atlas["Atlas catalog and diagram sources"]
+        compass["Compass runtime and agent stream"]
+        code["Renderer and validator source"]
+    end
+
+    subgraph session["Shared SyncSession"]
+        root["Resolved repo root and truth roots"]
+        profile["Consumer profile and lane posture"]
+        paths["Interned canonical path tokens"]
+        ideas["Parsed idea specs"]
+        report["Component Registry report"]
+        delivery["Delivery intelligence substrate"]
+    end
+
+    subgraph derivation["Derived governed work"]
+        validators["Backlog, plan, and Registry validators"]
+        renderers["Radar, Registry, Compass, Atlas, Casebook, and shell renderers"]
+    end
+
+    subgraph writegate["Output discipline"]
+        fixpoint{"Source truth mutated?"}
+        compare{"Rendered bytes changed?"}
+        stable["Keep tracked outputs untouched"]
+        write["Write governed outputs once"]
+    end
+
+    changed --> plan
+    changed --> root
+    plan --> root
+    radar --> ideas
+    plans --> ideas
+    registry --> report
+    compass --> delivery
+    code --> validators
+    code --> renderers
+    atlas --> renderers
+    root --> profile
+    root --> paths
+    profile --> ideas
+    profile --> report
+    paths --> ideas
+    paths --> report
+    ideas --> validators
+    ideas --> renderers
+    report --> validators
+    report --> renderers
+    delivery --> renderers
+    validators --> fixpoint
+    renderers --> fixpoint
+    fixpoint -- yes --> root
+    fixpoint -- no --> compare
+    compare -- no --> stable
+    compare -- yes --> write
+
+    future["Follow-on ceiling: resident daemon plus reverse-dependency DAG"] -.-> root

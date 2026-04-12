@@ -393,11 +393,11 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         assert page.locator(".cheatsheet-card", has_text="Release planning: pick the ship target").first.is_hidden()
 
         wave_card = page.locator(".cheatsheet-card", has_text="Program/wave planning: sequence umbrella execution").first
-        _click_visible(wave_card.locator("button", has_text="Copy route"))
-        page.locator("#agentCheatsheetCopyStatus", has_text="Shell route copied.").wait_for(timeout=15000)
+        _click_visible(wave_card.locator("button", has_text="Copy CLI"))
+        page.locator("#agentCheatsheetCopyStatus", has_text="CLI copied.").wait_for(timeout=15000)
         writes = _clipboard_writes(page)
         assert writes
-        assert writes[-1] == "odylith/index.html?tab=radar&workstream=B-021"
+        assert writes[-1] == "odylith program next B-021 --repo-root ."
 
         search.fill("")
         _click_visible(page.locator('[data-cheatsheet-filter="validate"]'))

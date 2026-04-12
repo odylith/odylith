@@ -40,10 +40,10 @@
     "empty_reasons": [],
     "explicit_event_count": 37,
     "mapped_workstream_evidence_count": 7,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 7,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 37
+    "timeline_event_count": 38
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -52,6 +52,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 88,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+      "ts_iso": "2026-04-11T22:48:31-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

@@ -15,6 +15,7 @@
     "D-026",
     "D-030",
     "D-031",
+    "D-036",
     "D-006",
     "D-007",
     "D-008",
@@ -37,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 57,
-    "mapped_workstream_evidence_count": 14,
+    "explicit_event_count": 58,
+    "mapped_workstream_evidence_count": 15,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 10,
+    "spec_history_event_count": 11,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 58
+    "timeline_event_count": 59
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -74,20 +75,37 @@
     },
     {
       "artifacts": [
-        "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
-        "src/odylith/bundle/assets/odylith/technical-plans/INDEX.md"
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 82,
+      "event_index": 87,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/radar/source/INDEX.md, src/odylith/bundle/assets/odylith/technical-plans/INDEX.md",
-      "ts_iso": "2026-04-11T19:35:17-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-11T22:55:41-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 82,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "B-090 is closed.",
+      "ts_iso": "2026-04-11T19:44:39-07:00",
+      "workstreams": [
+        "B-090"
+      ]
     },
     {
       "artifacts": [
@@ -1697,6 +1715,7 @@
     "B-088",
     "B-087",
     "B-086",
-    "B-090"
+    "B-090",
+    "B-091"
   ]
 }

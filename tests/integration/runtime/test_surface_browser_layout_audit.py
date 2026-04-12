@@ -566,6 +566,14 @@ def _assert_shared_workstream_buttons_keep_compact_style_contract(  # noqa: ANN0
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
     compass.locator("a.ws-id-btn").first.wait_for(timeout=15000)
+    release_summary = compass.locator("#release-groups-host summary").first
+    if release_summary.count():
+        release_summary.evaluate(
+            """(node) => {
+                const details = node.closest("details");
+                if (details && !details.open) node.click();
+            }"""
+        )
     compass.locator("#release-groups-host a.execution-wave-chip-link").first.wait_for(timeout=15000)
 
     compass_current_style = _workstream_button_style(compass, "a.ws-id-btn")

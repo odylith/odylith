@@ -9,6 +9,100 @@ from odylith.runtime.surfaces import render_backlog_ui
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
+def _seed_backlog_render_repo(root: Path) -> None:
+    (root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+    (root / "pyproject.toml").write_text(
+        "[project]\nname = \"odylith\"\nversion = \"0.1.11\"\n",
+        encoding="utf-8",
+    )
+    (root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
+    (root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
+        "{\"version\": \"v1\", \"components\": []}\n",
+        encoding="utf-8",
+    )
+    (root / "odylith" / "technical-plans").mkdir(parents=True, exist_ok=True)
+    (root / "odylith" / "technical-plans" / "INDEX.md").write_text("# Plan Index\n", encoding="utf-8")
+    atlas_catalog = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    atlas_catalog.parent.mkdir(parents=True, exist_ok=True)
+    atlas_catalog.write_text("{\"version\":\"v1\",\"diagrams\":[]}\n", encoding="utf-8")
+
+    idea_path = root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-11-cached-render.md"
+    idea_path.parent.mkdir(parents=True, exist_ok=True)
+    idea_path.write_text(
+        (
+            "status: queued\n\n"
+            "idea_id: B-777\n\n"
+            "title: Cached Radar Render\n\n"
+            "date: 2026-04-11\n\n"
+            "priority: P1\n\n"
+            "commercial_value: 4\n\n"
+            "product_impact: 4\n\n"
+            "market_value: 4\n\n"
+            "impacted_parts: radar\n\n"
+            "sizing: M\n\n"
+            "complexity: Medium\n\n"
+            "ordering_score: 88\n\n"
+            "ordering_rationale: prove cached radar render reuse\n\n"
+            "confidence: high\n\n"
+            "founder_override: no\n\n"
+            "promoted_to_plan:\n\n"
+            "workstream_type: standalone\n\n"
+            "workstream_parent:\n\n"
+            "workstream_children:\n\n"
+            "workstream_depends_on:\n\n"
+            "workstream_blocks:\n\n"
+            "related_diagram_ids:\n\n"
+            "workstream_reopens:\n\n"
+            "workstream_reopened_by:\n\n"
+            "workstream_split_from:\n\n"
+            "workstream_split_into:\n\n"
+            "workstream_merged_into:\n\n"
+            "workstream_merged_from:\n\n"
+            "supersedes:\n\n"
+            "superseded_by:\n\n"
+            "## Problem\nKeep no-op Radar rerenders fast.\n\n"
+            "## Customer\nOperators running repeated syncs.\n\n"
+            "## Opportunity\nAvoid redoing unchanged projection work.\n\n"
+            "## Proposed Solution\nFingerprint the render input cone.\n\n"
+            "## Scope\nRadar surface only.\n\n"
+            "## Non-Goals\nChanging Radar truth.\n\n"
+            "## Risks\nUnsound cache keys.\n\n"
+            "## Dependencies\nNone.\n\n"
+            "## Success Metrics\nNo-op render skips the expensive path.\n\n"
+            "## Validation\nRender twice and compare outputs.\n\n"
+            "## Rollout\nShip with unit coverage.\n\n"
+            "## Why Now\nSync latency is dominated by redundant work.\n\n"
+            "## Product View\nRadar should keep exact output bytes while skipping unchanged rebuilds.\n"
+        ),
+        encoding="utf-8",
+    )
+    index_path = root / "odylith" / "radar" / "source" / "INDEX.md"
+    index_path.write_text(
+        (
+            "# Backlog Index\n\n"
+            "Last updated (UTC): 2026-04-11\n\n"
+            "## Ranked Active Backlog\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            f"| 1 | B-777 | Cached Radar Render | P1 | 88 | 4 | 4 | 4 | M | Medium | queued | [cached-render]({idea_path.resolve().as_posix()}) |\n\n"
+            "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "## Finished (Linked to `odylith/technical-plans/done`)\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "## Reorder Rationale Log\n\n"
+            "### B-777 (rank 1)\n"
+            "- why now: make repeated render validation fast.\n"
+            "- expected outcome: unchanged rebuilds become cheap.\n"
+            "- tradeoff: cache keys must stay conservative.\n"
+            "- deferred for now: daemonization.\n"
+            "- ranking basis: score-led queue ordering.\n"
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_rewrite_section_text_normalizes_removed_plain_paths() -> None:
     text = "See odylith/casebook/SPEC.md and scripts/compass_dashboard_runtime.py."
     rewritten = render_backlog_ui._rewrite_section_text(repo_root=REPO_ROOT, text=text)
@@ -489,3 +583,39 @@ def test_render_backlog_ui_keeps_unknown_execution_wave_progress_unknown() -> No
     assert "const numericProgressOrNull = (value) => {" in html
     assert 'if (value === null || value === undefined || value === "") return null;' in html
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in html
+
+
+def test_render_backlog_ui_skips_cached_rebuild_before_snapshot_load(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_backlog_render_repo(tmp_path)
+
+    rc = render_backlog_ui.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "odylith/radar/radar.html",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+    assert rc == 0
+
+    def _boom(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("backlog snapshot loading should be skipped on a cache hit")
+
+    monkeypatch.setattr(render_backlog_ui.contract, "load_backlog_index_snapshot", _boom)
+
+    rc = render_backlog_ui.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "odylith/radar/radar.html",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+    assert rc == 0

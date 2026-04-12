@@ -19,6 +19,7 @@ import re
 from typing import Any, Mapping, Sequence
 from urllib.parse import quote
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_time
@@ -27,6 +28,7 @@ from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import backlog_detail_pages
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
+from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import render_backlog_ui_payload_runtime
 from odylith.runtime.surfaces import render_backlog_ui_html_runtime
 from odylith.runtime.surfaces import source_bundle_mirror
@@ -127,6 +129,7 @@ _LEGACY_COMMAND_PREFIX_ALIASES: tuple[tuple[str, str], ...] = (
         "odylith sync --check-only --check-clean --runtime-mode standalone",
     ),
 )
+_BACKLOG_REFRESH_GUARD_KEY = "backlog-dashboard-render"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -154,6 +157,22 @@ def _resolve_path(*, repo_root: Path, value: str) -> Path:
     if path.is_absolute():
         return path.resolve()
     return (repo_root / path).resolve()
+
+
+def _refresh_guard_watched_paths(*, index_path: Path) -> tuple[Path | str, ...]:
+    return (
+        index_path,
+        "odylith/radar/source/ideas",
+        "odylith/technical-plans",
+        "odylith/registry/source",
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        _COMPASS_RUNTIME_PATH,
+        *agent_runtime_contract.candidate_stream_tokens(),
+        "src/odylith/runtime/common",
+        "src/odylith/runtime/context_engine",
+        "src/odylith/runtime/governance",
+        "src/odylith/runtime/surfaces",
+    )
 
 
 def _as_relative_href(*, output_path: Path, target: Path) -> str:
@@ -669,6 +688,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     index_path = _resolve_path(repo_root=repo_root, value=args.index)
     output_path = _resolve_path(repo_root=repo_root, value=args.output)
     standalone_pages_path = _resolve_path(repo_root=repo_root, value=args.standalone_pages)
+    skip_rebuild, input_fingerprint, cached_metadata, bundle_paths, _output_paths = (
+        generated_surface_refresh_guards.should_skip_surface_rebuild(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="backlog",
+            key=_BACKLOG_REFRESH_GUARD_KEY,
+            watched_paths=_refresh_guard_watched_paths(index_path=index_path),
+            extra_live_paths=(standalone_pages_path,),
+            live_globs=("backlog-detail-shard-*.v1.js", "backlog-document-shard-*.v1.js"),
+            extra={"runtime_mode": str(args.runtime_mode).strip().lower() or "auto"},
+        )
+    )
+    if skip_rebuild:
+        print("backlog ui render passed")
+        print(f"- output: {output_path}")
+        print(f"- standalone_pages: {standalone_pages_path}")
+        print(f"- ideas: {int(cached_metadata.get('idea_count', 0) or 0)}")
+        return 0
 
     errors: list[str] = []
     if not index_path.is_file():
@@ -893,7 +930,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
     }
     html = _render_html(payload=data)
-    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="backlog")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     bundled_html, payload_js, control_js = dashboard_surface_bundle.externalize_surface_bundle(
         html_text=html,
@@ -994,6 +1030,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         live_dir=output_path.parent,
         pattern="backlog-document-shard-*.v1.js",
     )
+    if input_fingerprint:
+        _bundle_paths, current_output_paths = generated_surface_refresh_guards.surface_output_paths(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="backlog",
+            extra_live_paths=(standalone_pages_path,),
+            live_globs=("backlog-detail-shard-*.v1.js", "backlog-document-shard-*.v1.js"),
+        )
+        generated_surface_refresh_guards.record_surface_rebuild(
+            repo_root=repo_root,
+            key=_BACKLOG_REFRESH_GUARD_KEY,
+            input_fingerprint=input_fingerprint,
+            output_paths=current_output_paths,
+            metadata={
+                "idea_count": len(entries),
+                "detail_shards": len(detail_shards),
+                "document_shards": len(document_shards),
+            },
+        )
 
     legacy_ui_root = (repo_root / "backlog" / "ui").resolve()
     generated_surface_cleanup.remove_legacy_generated_paths(

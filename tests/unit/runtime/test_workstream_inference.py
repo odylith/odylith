@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance import sync_session
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference
 
@@ -101,6 +102,27 @@ def test_is_generated_or_global_path_treats_dashboard_shards_as_generated() -> N
     assert workstream_inference.is_generated_or_global_path(
         "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
     ) is True
+
+
+def test_is_generated_or_global_path_applies_canonical_policy_to_bundle_source_mirrors() -> None:
+    assert (
+        workstream_inference.is_generated_or_global_path(
+            "src/odylith/bundle/assets/odylith/atlas/source/catalog/diagrams.v1.json"
+        )
+        is True
+    )
+    assert (
+        workstream_inference.is_generated_or_global_path(
+            "src/odylith/bundle/assets/odylith/radar/source/INDEX.md"
+        )
+        is True
+    )
+    assert (
+        workstream_inference.is_generated_or_global_path(
+            "src/odylith/bundle/assets/odylith/runtime/odylith-tribunal-and-remediation-design.md"
+        )
+        is False
+    )
 
 
 def test_normalize_changed_paths_expands_bundle_source_mirrors_to_canonical_paths(tmp_path: Path) -> None:
@@ -278,3 +300,21 @@ def test_default_repo_root_token_for_cwd_accepts_project_claude_guidance(tmp_pat
     (tmp_path / ".odylith").mkdir()
 
     assert workstream_inference._default_repo_root_token_for_cwd(str(tmp_path)) == str(tmp_path)  # noqa: SLF001
+
+
+def test_normalize_repo_token_uses_active_sync_session_repo_root_without_cwd_lookup(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+
+    def _unexpected_getcwd() -> str:
+        raise AssertionError("normalize_repo_token should reuse the active sync session repo root")
+
+    monkeypatch.setattr(workstream_inference.os, "getcwd", _unexpected_getcwd)
+
+    with sync_session.activate_sync_session(session):
+        assert (
+            workstream_inference.normalize_repo_token("src/odylith/runtime/governance/workstream_inference.py")
+            == "src/odylith/runtime/governance/workstream_inference.py"
+        )

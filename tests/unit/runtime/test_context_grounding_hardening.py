@@ -1291,6 +1291,61 @@ def test_warm_runtime_reuses_compatible_snapshot_when_runtime_state_lags(
     assert projection_search_runtime._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:default"] == "fp-default-fresh"  # noqa: SLF001
 
 
+def test_direct_warm_projections_primes_process_warm_cache_for_follow_on_runtime_reads(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    projection_search_runtime._PROCESS_WARM_CACHE.clear()  # noqa: SLF001
+    projection_search_runtime._PROCESS_WARM_CACHE_FINGERPRINTS.clear()  # noqa: SLF001
+    compiler_calls: list[dict[str, object]] = []
+
+    monkeypatch.setattr(
+        projection_search_runtime,
+        "projection_input_fingerprint",
+        lambda **kwargs: {
+            "default": "fp-default",
+            "reasoning": "fp-reasoning",
+            "full": "fp-full",
+        }[kwargs["scope"]],
+    )
+    monkeypatch.setattr(
+        projection_search_runtime.odylith_context_engine_projection_compiler_runtime,
+        "warm_projections",
+        lambda **kwargs: compiler_calls.append(dict(kwargs)) or {"projection_scope": kwargs["scope"]},
+    )
+
+    projection_search_runtime.warm_projections(
+        repo_root=tmp_path,
+        force=False,
+        reason="sync",
+        scope="default",
+    )
+
+    monkeypatch.setattr(
+        projection_search_runtime,
+        "warm_projections",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("cached runtime should not rewarm projections")),
+    )
+
+    reused = projection_search_runtime._warm_runtime(  # noqa: SLF001
+        repo_root=tmp_path,
+        runtime_mode="auto",
+        reason="bug_rows",
+        scope="default",
+    )
+
+    assert reused is True
+    assert compiler_calls == [
+        {
+            "repo_root": tmp_path,
+            "force": False,
+            "reason": "sync",
+            "scope": "default",
+        }
+    ]
+    assert projection_search_runtime._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:default"] == "fp-default"  # noqa: SLF001
+
+
 def test_compact_context_dossier_for_delivery_uses_tight_defaults() -> None:
     compact = store.compact_context_dossier_for_delivery(
         {

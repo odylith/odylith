@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from odylith.runtime.governance import sync_session
 from odylith.runtime.governance import validate_backlog_contract as gate
 
 
@@ -486,6 +487,33 @@ def test_validate_plan_index_treats_none_section_errors_as_empty(
     )
 
     assert errors == []
+
+
+def test_validate_idea_specs_reuses_active_sync_session_snapshot(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001 - pytest fixture
+) -> None:
+    _seed_minimal_repo(tmp_path)
+    idea_root = tmp_path / "odylith" / "radar" / "source" / "ideas"
+    parse_calls = 0
+    original = gate._parse_idea_spec  # noqa: SLF001
+
+    def _counted_parse(path: Path):  # noqa: ANN202
+        nonlocal parse_calls
+        parse_calls += 1
+        return original(path)
+
+    monkeypatch.setattr(gate, "_parse_idea_spec", _counted_parse)
+
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    with sync_session.activate_sync_session(session):
+        first_ideas, first_errors = gate._validate_idea_specs(idea_root)  # noqa: SLF001
+        second_ideas, second_errors = gate._validate_idea_specs(idea_root)  # noqa: SLF001
+
+    assert first_errors == []
+    assert second_errors == []
+    assert sorted(first_ideas) == sorted(second_ideas)
+    assert parse_calls == 2
 
 
 def test_backlog_contract_fails_when_promoted_to_plan_missing(

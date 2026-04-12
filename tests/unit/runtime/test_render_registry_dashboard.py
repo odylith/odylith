@@ -4,6 +4,7 @@ import json
 import re
 from pathlib import Path
 import subprocess
+import time
 
 from odylith.runtime.evaluation import odylith_ablation
 from odylith.runtime.surfaces import dashboard_time
@@ -808,6 +809,28 @@ def test_render_registry_dashboard_generated_utc_stable_when_payload_unchanged(t
     assert first_generated == second_generated
 
 
+def test_render_registry_dashboard_skips_noop_writes_when_bundle_is_unchanged(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+    assert rc == 0
+
+    tracked_paths = [
+        tmp_path / "odylith" / "registry" / "registry.html",
+        tmp_path / "odylith" / "registry" / "registry-payload.v1.js",
+        tmp_path / "odylith" / "registry" / "registry-app.v1.js",
+        *sorted((tmp_path / "odylith" / "registry").glob("registry-detail-shard-*.v1.js")),
+    ]
+    first_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+
+    time.sleep(0.01)
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+    assert rc == 0
+
+    second_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+    assert second_mtimes == first_mtimes
+
+
 def test_render_registry_dashboard_supports_odylith_chatter_component_contract(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
 
@@ -970,3 +993,21 @@ def test_render_registry_dashboard_maps_source_owned_bundle_mirror_activity_to_c
     assert tribunal_detail["forensic_coverage"]["explicit_event_count"] == 0
     assert tribunal_detail["forensic_coverage"]["recent_path_match_count"] == 1
     assert any(event["kind"] == "workspace_activity" for event in tribunal_detail["timeline"])
+
+
+def test_render_registry_dashboard_skips_cached_rebuild_before_payload_builder(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_repo(tmp_path)
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+    assert rc == 0
+
+    def _boom(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("registry payload should be skipped on a cache hit")
+
+    monkeypatch.setattr(renderer, "_build_payload", _boom)
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+    assert rc == 0

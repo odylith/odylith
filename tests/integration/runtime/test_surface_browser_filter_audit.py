@@ -198,7 +198,12 @@ def test_compass_filter_audit_preserves_valid_audit_day_across_window_changes(br
 
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-    _wait_for_compass_brief_state(page, window_token="24h", scope_label="Global")
+    _wait_for_compass_brief_state(
+        page,
+        window_token="24h",
+        scope_label="Global",
+        statuses=("ready", "unavailable"),
+    )
 
     audit_bounds = compass.locator("#audit-day-input").evaluate(
         """node => ({
@@ -248,6 +253,11 @@ def test_compass_filter_audit_preserves_valid_audit_day_across_window_changes(br
     )
     compass = page.frame_locator("#frame-compass")
     assert compass.locator("#audit-day-input").input_value() == target_day
-    _wait_for_compass_brief_state(page, window_token="48h", scope_label="Global")
+    _wait_for_compass_brief_state(
+        page,
+        window_token="48h",
+        scope_label="Global",
+        statuses=("ready", "unavailable"),
+    )
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

@@ -60,6 +60,15 @@ GLOBAL_COORDINATION_PREFIXES: tuple[str, ...] = (
     "odylith/runtime/",
     "odylith/atlas/source/catalog/",
 )
+_PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX = "src/odylith/bundle/assets/odylith/"
+_BUNDLE_SOURCE_GLOBAL_COORDINATION_PREFIXES: tuple[str, ...] = (
+    "odylith/radar/source/ui/",
+    "odylith/radar/backlog-detail-shard-",
+    "odylith/radar/backlog-document-shard-",
+    "odylith/compass/runtime/",
+    "odylith/registry/registry-detail-shard-",
+    "odylith/atlas/source/catalog/",
+)
 
 
 def normalize_repo_token(token: str, *, repo_root: Path | None = None) -> str:
@@ -71,14 +80,25 @@ def normalize_repo_token(token: str, *, repo_root: Path | None = None) -> str:
     """
 
     raw = str(token or "").strip()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
     resolved_repo_root: Path | None = None
     if repo_root is not None:
         resolved_repo_root = repo_root.resolve()
+    elif session is not None:
+        resolved_repo_root = session.repo_root
     else:
         default_root_token = _default_repo_root_token_for_cwd(os.getcwd())
         if default_root_token:
             resolved_repo_root = Path(default_root_token)
     root_token = str(resolved_repo_root) if resolved_repo_root is not None else ""
+    if session is not None and (resolved_repo_root is None or resolved_repo_root == session.repo_root):
+        return session.get_or_compute(
+            namespace="normalize_repo_token",
+            key=f"{root_token}\n{raw}",
+            builder=lambda: _normalize_repo_token_cached(raw, root_token),
+        )
     return _normalize_repo_token_cached(raw, root_token)
 
 
@@ -149,6 +169,27 @@ def _normalized_path_matches(normalized_changed_path: str, normalized_ref_path: 
     return normalized_changed_path.startswith(f"{normalized_ref_path}/")
 
 
+def _canonicalize_source_bundle_mirror_token(token: str) -> str:
+    normalized = str(token or "").strip().strip("/")
+    if not normalized.startswith(_PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX):
+        return normalized
+    suffix = normalized.removeprefix(_PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX).strip("/")
+    if not suffix:
+        return normalized
+    return f"odylith/{suffix}"
+
+
+def _is_generated_or_global_bundle_source_mirror(token: str) -> bool:
+    canonical = _canonicalize_source_bundle_mirror_token(token)
+    if canonical == token:
+        return False
+    if canonical in GLOBAL_COORDINATION_EXACT_PATHS:
+        return True
+    if any(canonical.startswith(prefix) for prefix in _BUNDLE_SOURCE_GLOBAL_COORDINATION_PREFIXES):
+        return True
+    return canonical.endswith(".svg") or canonical.endswith(".png")
+
+
 def path_matches(changed_path: str, ref_path: str) -> bool:
     """Return ``True`` when changed path equals or nests under ``ref_path``."""
 
@@ -173,6 +214,8 @@ def is_generated_or_global_path(path: str) -> bool:
 
     token = normalize_repo_token(path).lower()
     if not token:
+        return True
+    if _is_generated_or_global_bundle_source_mirror(token):
         return True
     if is_global_coordination_path(token):
         return True

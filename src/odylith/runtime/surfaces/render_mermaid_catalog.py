@@ -978,6 +978,7 @@ def _attach_diagram_workstream_relationships(
         diagram_id = _normalize_diagram_id(str(diagram.get("diagram_id", "")))
         if not diagram_id:
             continue
+        traceability_workstreams = set(traceability_refs.get(diagram_id, set()))
         owners = {
             workstream
             for token in diagram.get("related_workstreams", [])
@@ -985,8 +986,11 @@ def _attach_diagram_workstream_relationships(
             for workstream in [_normalize_workstream_id(str(token or ""))]
             if workstream
         }
-        active_touches = set(active_refs.get(diagram_id, set())) - owners
-        historical_refs = set(traceability_refs.get(diagram_id, set())) - owners - active_touches
+        # Fail closed on Atlas "active touch" noise: only promote active workstreams
+        # that already have authored traceability to the diagram instead of letting
+        # broad delivery-intelligence linkage invent new diagram associations.
+        active_touches = (set(active_refs.get(diagram_id, set())) & traceability_workstreams) - owners
+        historical_refs = traceability_workstreams - owners - active_touches
         diagram["owner_workstreams"] = sorted(owners)
         diagram["active_workstreams"] = sorted(active_touches)
         diagram["historical_workstreams"] = sorted(historical_refs)

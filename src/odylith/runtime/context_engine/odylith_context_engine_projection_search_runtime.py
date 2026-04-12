@@ -1276,12 +1276,14 @@ def warm_projections(
     reason: str = "manual",
     scope: str = "default",
 ) -> dict[str, Any]:
-    return odylith_context_engine_projection_compiler_runtime.warm_projections(
+    summary = odylith_context_engine_projection_compiler_runtime.warm_projections(
         repo_root=repo_root,
         force=force,
         reason=reason,
         scope=scope,
     )
+    _record_process_warm_cache(repo_root=repo_root, scope=scope)
+    return summary
 
 def _runtime_enabled(runtime_mode: str) -> bool:
     return str(runtime_mode or "auto").strip().lower() != "standalone"
@@ -1371,6 +1373,34 @@ def _warm_runtime_can_reuse_snapshot(
     )
 
 
+def _record_process_warm_cache(
+    *,
+    repo_root: Path,
+    scope: str,
+    warmed_at: float | None = None,
+) -> None:
+    root = Path(repo_root).resolve()
+    scope_token = str(scope or "default").strip().lower() or "default"
+    applied_at = time.monotonic() if warmed_at is None else float(warmed_at)
+    cache_updates: list[tuple[str, str]] = [
+        (f"{root}:{scope_token}", projection_input_fingerprint(repo_root=root, scope=scope_token))
+    ]
+    if scope_token == "full":
+        cache_updates.extend(
+            [
+                (f"{root}:default", projection_input_fingerprint(repo_root=root, scope="default")),
+                (f"{root}:reasoning", projection_input_fingerprint(repo_root=root, scope="reasoning")),
+            ]
+        )
+    elif scope_token == "reasoning":
+        cache_updates.append(
+            (f"{root}:default", projection_input_fingerprint(repo_root=root, scope="default"))
+        )
+    for target_key, fingerprint in cache_updates:
+        _PROCESS_WARM_CACHE[target_key] = applied_at + _PROCESS_WARM_CACHE_TTL_SECONDS
+        _PROCESS_WARM_CACHE_FINGERPRINTS[target_key] = str(fingerprint).strip()
+
+
 def _warm_runtime(
     *,
     repo_root: Path,
@@ -1400,22 +1430,7 @@ def _warm_runtime(
         scope=scope_token,
         requested_fingerprint=requested_fingerprint,
     ):
-        warmed_at = time.monotonic()
-        cache_updates: list[tuple[str, str]] = [(cache_key, requested_fingerprint)]
-        if scope_token == "full":
-            cache_updates.extend(
-                [
-                    (f"{root}:default", projection_input_fingerprint(repo_root=root, scope="default")),
-                    (f"{root}:reasoning", projection_input_fingerprint(repo_root=root, scope="reasoning")),
-                ]
-            )
-        elif scope_token == "reasoning":
-            cache_updates.append(
-                (f"{root}:default", projection_input_fingerprint(repo_root=root, scope="default"))
-            )
-        for target_key, fingerprint in cache_updates:
-            _PROCESS_WARM_CACHE[target_key] = warmed_at + _PROCESS_WARM_CACHE_TTL_SECONDS
-            _PROCESS_WARM_CACHE_FINGERPRINTS[target_key] = str(fingerprint).strip()
+        _record_process_warm_cache(repo_root=root, scope=scope_token)
         return True
     try:
         warm_projections(repo_root=root, reason=reason, scope=scope_token)
@@ -1423,22 +1438,6 @@ def _warm_runtime(
         if str(runtime_mode or "").strip().lower() == "daemon":
             raise
         return False
-    warmed_at = time.monotonic()
-    cache_updates: list[tuple[str, str]] = [(cache_key, requested_fingerprint)]
-    if scope_token == "full":
-        cache_updates.extend(
-            [
-                (f"{root}:default", projection_input_fingerprint(repo_root=root, scope="default")),
-                (f"{root}:reasoning", projection_input_fingerprint(repo_root=root, scope="reasoning")),
-            ]
-        )
-    elif scope_token == "reasoning":
-        cache_updates.append(
-            (f"{root}:default", projection_input_fingerprint(repo_root=root, scope="default"))
-        )
-    for target_key, fingerprint in cache_updates:
-        _PROCESS_WARM_CACHE[target_key] = warmed_at + _PROCESS_WARM_CACHE_TTL_SECONDS
-        _PROCESS_WARM_CACHE_FINGERPRINTS[target_key] = str(fingerprint).strip()
     return True
 
 def _projection_cache_signature(

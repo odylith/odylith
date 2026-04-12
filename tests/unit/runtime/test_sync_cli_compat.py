@@ -3,6 +3,8 @@ import time
 from types import SimpleNamespace
 
 from odylith.runtime.context_engine import odylith_context_engine
+from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance import sync_session
 from odylith.runtime.governance import sync_workstream_artifacts
 from odylith.runtime.surfaces import compass_dashboard_runtime
 from odylith.runtime.surfaces import render_backlog_ui
@@ -250,6 +252,57 @@ def test_run_command_absolutizes_pythonpath_for_cross_repo_sync(tmp_path: Path, 
     assert commands["env"]["PYTHONPATH"] == str((Path.cwd() / "src").resolve())
 
 
+def test_run_callable_with_heartbeat_preserves_active_sync_session(tmp_path: Path) -> None:
+    seen_repo_roots: list[str] = []
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+
+    with sync_session.activate_sync_session(session):
+        rc = sync_workstream_artifacts._run_callable_with_heartbeat(  # noqa: SLF001
+            label="sync-session-test",
+            callable_=lambda: seen_repo_roots.append(
+                str(sync_session.active_sync_session().repo_root)  # type: ignore[union-attr]
+            )
+            or 0,
+        )
+
+    assert rc == 0
+    assert seen_repo_roots == [str(tmp_path.resolve())]
+
+
+def test_sync_execution_plan_reruns_second_registry_spec_sync_after_shell_facing_steps(tmp_path: Path) -> None:
+    impact = governance.DashboardImpact(
+        radar=False,
+        atlas=False,
+        compass=False,
+        registry=True,
+        casebook=False,
+        reasons={},
+    )
+    args = sync_workstream_artifacts._parse_args(  # noqa: SLF001
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--force",
+        ]
+    )
+
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=args,
+        changed_paths=("src/odylith/runtime/surfaces/render_registry_dashboard.py",),
+        impact=impact,
+        impact_tooling_shell=True,
+        runtime_mode="auto",
+    )
+
+    sync_steps = [
+        step
+        for step in plan.steps
+        if "odylith.runtime.governance.sync_component_spec_requirements" in " ".join(step.command)
+    ]
+    assert len(sync_steps) == 2
+
+
 def test_governed_surface_closeout_path_truth_stays_normalized_across_runtime_readers() -> None:
     radar_index = Path("odylith/radar/source/INDEX.md").read_text(encoding="utf-8")
     governance_surfaces = Path("odylith/surfaces/GOVERNANCE_SURFACES.md").read_text(encoding="utf-8")
@@ -313,7 +366,10 @@ def test_force_sync_runs_component_spec_requirements_after_atlas_mutations(tmp_p
     assert sync_index < registry_render_index
 
 
-def test_force_sync_runs_final_component_spec_refresh_after_tooling_shell(tmp_path: Path, monkeypatch) -> None:
+def test_force_sync_reruns_final_component_spec_refresh_after_generated_surfaces_follow(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
     executed: list[tuple[str, ...]] = []
 
     class _Meaningful:
@@ -422,6 +478,70 @@ def test_check_only_sync_skips_runtime_fast_path_and_warmup(tmp_path: Path, monk
         if len(command) >= 3 and command[:3] == ("python", "-m", "odylith.runtime.governance.sync_component_spec_requirements")
     )
     assert component_sync[-2:] == ("--runtime-mode", "standalone")
+
+
+def test_full_mode_sync_skips_governance_runtime_packet_and_primes_default_runtime_warmup(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    executed: list[tuple[str, ...]] = []
+    warm_calls: list[dict[str, object]] = []
+
+    class _Meaningful:
+        def as_dict(self) -> dict[str, int]:
+            return {
+                "linked_meaningful_event_count": 0,
+                "unlinked_meaningful_event_count": 0,
+            }
+
+    def _fake_run_command_in_process(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "") -> int:  # noqa: ARG001
+        executed.append(tuple(args))
+        return 0
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_effective_changed_paths", lambda **_: ("odylith/radar/source/INDEX.md",))
+    monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_runtime_fast_path_prerequisites_met", lambda _repo_root: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_command_in_process", _fake_run_command_in_process)
+    monkeypatch.setattr(sync_workstream_artifacts, "_sync_changed_source_truth_bundle_mirrors", lambda **_: 0)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "build_dashboard_impact",
+        lambda **_: SimpleNamespace(
+            radar=False,
+            atlas=False,
+            compass=False,
+            registry=False,
+            casebook=False,
+            tooling_shell=False,
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_meaningful_activity_evidence",
+        lambda **_: _Meaningful(),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_context_engine_store",
+        lambda: SimpleNamespace(
+            build_governance_slice=lambda **_kwargs: (_ for _ in ()).throw(
+                AssertionError("full-mode sync should not build the governance runtime packet")
+            ),
+            record_runtime_timing=lambda **_kwargs: (_ for _ in ()).throw(
+                AssertionError("full-mode sync should not record governance packet timing")
+            ),
+            warm_projections=lambda **kwargs: warm_calls.append(dict(kwargs)) or {"ok": True},
+        ),
+    )
+
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--impact-mode", "full"])
+
+    assert rc == 0
+    assert executed
+    assert len(warm_calls) == 1
+    assert warm_calls[0]["repo_root"] == tmp_path.resolve()
+    assert warm_calls[0]["reason"] == "sync_workstream_artifacts"
+    assert warm_calls[0]["scope"] == "default"
 
 
 def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tmp_path: Path, monkeypatch) -> None:

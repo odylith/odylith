@@ -16,12 +16,14 @@ from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import brand_assets
+from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.governance import delivery_intelligence_engine
 from odylith.runtime.governance import component_registry_intelligence as registry
 from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.consumer_profile import load_consumer_profile
+from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.context_engine import odylith_runtime_surface_summary
 from odylith.runtime.governance import traceability_ui_lookup
@@ -57,6 +59,7 @@ _REGISTRY_INTELLIGENCE_COMPONENT_FIELDS = (
     "scope_signal",
     "trajectory",
 )
+_REGISTRY_REFRESH_GUARD_KEY = "registry-dashboard-render"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -84,6 +87,27 @@ def _resolve(repo_root: Path, token: str) -> Path:
     if path.is_absolute():
         return path.resolve()
     return (repo_root / path).resolve()
+
+
+def _refresh_guard_watched_paths(
+    *,
+    manifest_path: Path,
+    catalog_path: Path,
+    ideas_root: Path,
+    stream_path: Path,
+) -> tuple[Path | str, ...]:
+    return (
+        manifest_path,
+        catalog_path,
+        ideas_root,
+        stream_path,
+        "odylith/registry/source",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "src/odylith/runtime/common",
+        "src/odylith/runtime/context_engine",
+        "src/odylith/runtime/governance",
+        "src/odylith/runtime/surfaces",
+    )
 
 
 def _as_href(output_path: Path, target: Path) -> str:
@@ -3249,6 +3273,29 @@ def main(argv: Sequence[str] | None = None) -> int:
     catalog_path = _resolve(repo_root, str(args.catalog))
     ideas_root = _resolve(repo_root, str(args.ideas_root))
     stream_path = _resolve(repo_root, str(args.stream))
+    skip_rebuild, input_fingerprint, cached_metadata, bundle_paths, _output_paths = (
+        generated_surface_refresh_guards.should_skip_surface_rebuild(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="registry",
+            key=_REGISTRY_REFRESH_GUARD_KEY,
+            watched_paths=_refresh_guard_watched_paths(
+                manifest_path=manifest_path,
+                catalog_path=catalog_path,
+                ideas_root=ideas_root,
+                stream_path=stream_path,
+            ),
+            live_globs=("registry-detail-shard-*.v1.js",),
+            extra={"runtime_mode": str(args.runtime_mode).strip().lower() or "auto"},
+        )
+    )
+    if skip_rebuild:
+        counts = dict(cached_metadata.get("counts", {})) if isinstance(cached_metadata, Mapping) else {}
+        print("registry dashboard render passed")
+        print(f"- output: {output_path}")
+        print(f"- components: {int(counts.get('components', 0) or 0)}")
+        print(f"- events: {int(counts.get('events', 0) or 0)}")
+        return 0
 
     payload = _build_payload(
         repo_root=repo_root,
@@ -3259,7 +3306,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         stream_path=stream_path,
         runtime_mode=str(args.runtime_mode),
     )
-    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="registry")
     component_rows = [
         row
         for row in payload.get("components", [])
@@ -3313,18 +3359,35 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
         ),
     )
-    output_path.write_text(bundled_html, encoding="utf-8")
-    bundle_paths.payload_js_path.write_text(payload_js, encoding="utf-8")
-    bundle_paths.control_js_path.write_text(control_js, encoding="utf-8")
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=output_path,
+        content=bundled_html,
+        lock_key=str(output_path),
+    )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=bundle_paths.payload_js_path,
+        content=payload_js,
+        lock_key=str(bundle_paths.payload_js_path),
+    )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=bundle_paths.control_js_path,
+        content=control_js,
+        lock_key=str(bundle_paths.control_js_path),
+    )
     active_detail_paths: set[Path] = set()
     for filename, shard_payload in detail_shards:
         shard_path = output_path.parent / filename
-        shard_path.write_text(
-            dashboard_surface_bundle.render_payload_merge_js(
+        odylith_context_cache.write_text_if_changed(
+            repo_root=repo_root,
+            path=shard_path,
+            content=dashboard_surface_bundle.render_payload_merge_js(
                 global_name="__ODYLITH_REGISTRY_DETAIL_SHARDS__",
                 payload=shard_payload,
             ),
-            encoding="utf-8",
+            lock_key=str(shard_path),
         )
         active_detail_paths.add(shard_path.resolve())
     for stale_path in output_path.parent.glob("registry-detail-shard-*.v1.js"):
@@ -3341,6 +3404,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         live_dir=output_path.parent,
         pattern="registry-detail-shard-*.v1.js",
     )
+    if input_fingerprint:
+        _bundle_paths, current_output_paths = generated_surface_refresh_guards.surface_output_paths(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="registry",
+            live_globs=("registry-detail-shard-*.v1.js",),
+        )
+        generated_surface_refresh_guards.record_surface_rebuild(
+            repo_root=repo_root,
+            key=_REGISTRY_REFRESH_GUARD_KEY,
+            input_fingerprint=input_fingerprint,
+            output_paths=current_output_paths,
+            metadata={
+                "counts": {
+                    "components": int(payload.get("counts", {}).get("components", 0) or 0),
+                    "events": int(payload.get("counts", {}).get("events", 0) or 0),
+                }
+            },
+        )
 
     print("registry dashboard render passed")
     print(f"- output: {output_path}")

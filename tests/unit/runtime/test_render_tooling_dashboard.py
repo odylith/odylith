@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import time
 
 from odylith.install.state import write_install_state, write_upgrade_spotlight, write_version_pin
 from odylith.runtime.surfaces import render_tooling_dashboard as renderer
@@ -1274,3 +1275,57 @@ def test_render_tooling_dashboard_includes_memory_area_readout(tmp_path: Path, m
     assert "Decision memory" in payload_js
     assert "Onboarding memory" in payload_js
     assert "judgment_memory" in payload_js
+
+
+def test_render_tooling_dashboard_skips_noop_writes_when_bundle_is_unchanged(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+
+    tracked_paths = (
+        tmp_path / "odylith" / "index.html",
+        tmp_path / "odylith" / "tooling-payload.v1.js",
+        tmp_path / "odylith" / "tooling-app.v1.js",
+    )
+    first_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+
+    time.sleep(0.01)
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+
+    second_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+    assert second_mtimes == first_mtimes
+
+
+def test_render_tooling_dashboard_skips_cached_rebuild_before_surface_validation(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+
+    def _boom(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("surface validation should be skipped on a cache hit")
+
+    monkeypatch.setattr(renderer.tooling_dashboard_runtime_builder, "validate_surface_paths", _boom)
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0

@@ -7,6 +7,7 @@ workflow artifacts.
 from __future__ import annotations
 
 import argparse
+import copy
 import datetime as dt
 import re
 from dataclasses import dataclass
@@ -181,6 +182,13 @@ def _resolve_repo_path(*, repo_root: Path, token: str) -> Path:
 
 def _infer_repo_root_from_path(path: Path) -> Path | None:
     target = Path(path).resolve()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None:
+        session_root = session.repo_root_for_path(target)
+        if session_root is not None:
+            return session_root
     search_roots = [target, *target.parents]
     for candidate in search_roots:
         try:
@@ -270,15 +278,29 @@ def _idea_spec_from_payload(*, path: Path, payload: Mapping[str, Any]) -> IdeaSp
     return IdeaSpec(path=path, metadata=metadata, sections=sections)
 
 
-def _parse_idea_spec(path: Path) -> IdeaSpec:
-    repo_root = _infer_repo_root_from_path(path)
-    target = path.resolve()
-    signature = odylith_context_cache.path_signature(target)
-    if repo_root is not None:
+def _idea_spec_signature_token(signature: Mapping[str, Any]) -> str:
+    return ":".join(
+        (
+            "1" if bool(signature.get("exists")) else "0",
+            str(signature.get("kind", "")).strip(),
+            str(int(signature.get("size", 0) or 0)),
+            str(int(signature.get("mtime_ns", 0) or 0)),
+        )
+    )
+
+
+def _parse_idea_spec_uncached(
+    *,
+    target: Path,
+    repo_root: Path | None,
+    signature: Mapping[str, Any],
+) -> IdeaSpec:
+    resolved_repo_root = Path(repo_root).resolve() if repo_root is not None else None
+    if resolved_repo_root is not None:
         cache_file = odylith_context_cache.cache_path(
-            repo_root=repo_root,
+            repo_root=resolved_repo_root,
             namespace="backlog/idea-specs",
-            key=_repo_relative_cache_key(repo_root=repo_root, target=target),
+            key=_repo_relative_cache_key(repo_root=resolved_repo_root, target=target),
         )
         cached = odylith_context_cache.read_json_object(cache_file)
         if (
@@ -314,9 +336,9 @@ def _parse_idea_spec(path: Path) -> IdeaSpec:
         metadata[key.strip()] = value.strip()
 
     spec = IdeaSpec(path=target, metadata=metadata, sections=sections)
-    if repo_root is not None:
+    if resolved_repo_root is not None:
         odylith_context_cache.write_json_if_changed(
-            repo_root=repo_root,
+            repo_root=resolved_repo_root,
             path=cache_file,
             payload={
                 "version": "v1",
@@ -326,6 +348,28 @@ def _parse_idea_spec(path: Path) -> IdeaSpec:
             lock_key=str(cache_file),
         )
     return spec
+
+
+def _parse_idea_spec(path: Path) -> IdeaSpec:
+    target = path.resolve()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    repo_root = session.repo_root_for_path(target) if session is not None else None
+    if repo_root is None:
+        repo_root = _infer_repo_root_from_path(target)
+    signature = odylith_context_cache.path_signature(target)
+    if session is not None and repo_root is not None and session.repo_root == repo_root:
+        return session.get_or_compute(
+            namespace="idea_spec",
+            key=f"{target.as_posix()}\n{_idea_spec_signature_token(signature)}",
+            builder=lambda: _parse_idea_spec_uncached(
+                target=target,
+                repo_root=repo_root,
+                signature=signature,
+            ),
+        )
+    return _parse_idea_spec_uncached(target=target, repo_root=repo_root, signature=signature)
 
 
 def _parse_int_in_range(
@@ -670,6 +714,24 @@ def load_backlog_index_snapshot(backlog_index: Path) -> dict[str, Any]:
     """Return a cached parsed snapshot for `odylith/radar/source/INDEX.md`."""
 
     target = backlog_index.resolve()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None:
+        repo_root = session.repo_root_for_path(target)
+        if repo_root is not None:
+            signature = odylith_context_cache.path_signature(target)
+            snapshot = session.get_or_compute(
+                namespace="backlog_index_snapshot",
+                key=f"{target.as_posix()}\n{signature.get('mtime_ns', 0)}\n{signature.get('size', 0)}",
+                builder=lambda: load_backlog_index_snapshot_uncached(target),
+            )
+            return copy.deepcopy(snapshot)
+    return load_backlog_index_snapshot_uncached(target)
+
+
+def load_backlog_index_snapshot_uncached(backlog_index: Path) -> dict[str, Any]:
+    target = backlog_index.resolve()
     _cache_file, cached = _read_cached_snapshot(path=target, namespace="backlog/index")
     if cached is not None:
         return {
@@ -726,6 +788,24 @@ def _build_plan_index_snapshot(plan_index: Path) -> dict[str, Any]:
 def load_plan_index_snapshot(plan_index: Path) -> dict[str, Any]:
     """Return a cached parsed snapshot for `odylith/technical-plans/INDEX.md`."""
 
+    target = plan_index.resolve()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None:
+        repo_root = session.repo_root_for_path(target)
+        if repo_root is not None:
+            signature = odylith_context_cache.path_signature(target)
+            snapshot = session.get_or_compute(
+                namespace="plan_index_snapshot",
+                key=f"{target.as_posix()}\n{signature.get('mtime_ns', 0)}\n{signature.get('size', 0)}",
+                builder=lambda: load_plan_index_snapshot_uncached(target),
+            )
+            return copy.deepcopy(snapshot)
+    return load_plan_index_snapshot_uncached(target)
+
+
+def load_plan_index_snapshot_uncached(plan_index: Path) -> dict[str, Any]:
     target = plan_index.resolve()
     _cache_file, cached = _read_cached_snapshot(path=target, namespace="odylith/technical-plans/index")
     if cached is not None:
@@ -1022,7 +1102,7 @@ def _validate_lineage_contract(*, ideas: dict[str, IdeaSpec]) -> list[str]:
     return errors
 
 
-def _validate_idea_specs(
+def _validate_idea_specs_uncached(
     idea_root: Path,
     repo_root: Path | None = None,
 ) -> tuple[dict[str, IdeaSpec], list[str]]:
@@ -1141,6 +1221,33 @@ def _validate_idea_specs(
             )
 
     return ideas, errors
+
+
+def _validate_idea_specs(
+    idea_root: Path,
+    repo_root: Path | None = None,
+) -> tuple[dict[str, IdeaSpec], list[str]]:
+    resolved_idea_root = Path(idea_root).resolve()
+    resolved_repo_root = (
+        Path(repo_root).resolve()
+        if repo_root is not None
+        else backlog_title_contract.infer_repo_root_from_ideas_root(resolved_idea_root)
+    )
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None and resolved_repo_root is not None and session.repo_root == resolved_repo_root:
+        fingerprint = odylith_context_cache.fingerprint_tree(resolved_idea_root, glob="*.md")
+        cached_ideas, cached_errors = session.get_or_compute(
+            namespace="validate_idea_specs",
+            key=f"{resolved_idea_root.as_posix()}\n{fingerprint}",
+            builder=lambda: _validate_idea_specs_uncached(
+                resolved_idea_root,
+                repo_root=resolved_repo_root,
+            ),
+        )
+        return dict(cached_ideas), list(cached_errors)
+    return _validate_idea_specs_uncached(resolved_idea_root, repo_root=resolved_repo_root)
 
 
 def _validate_promotion_links(*, ideas: dict[str, IdeaSpec], repo_root: Path) -> list[str]:
