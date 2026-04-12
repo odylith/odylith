@@ -42,10 +42,13 @@
   },
   "digest": {
     "24h": [
-      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      "Completed in this window: Governed surfaces were refreshed after Claude host parity and CLI-first rollout, matching repo state to the active operator path. | CLI-first is now explicit in guidance as non-negotiable, which narrows where behavior changes should land next time.",
+      "Current execution: B-090 is the active lane now: bounded test-contract catch-up for orchestrator profile inference benchmark routing and governance refactors is running under one queued workstream. | Live proof still appears as governed-surface refresh after the host parity and CLI-first rollout, so execution is anchored in repo movement, not plan text. | Timing is still immediate with high confidence, so this lane needs tight day-to-day execution coupling instead of waiting for another handoff.",
+      "Next planned: B-021 is the next forced turn: bring Registry, Radar, Atlas, Compass, and benchmark docs back into the benchmark corpus. | More maintainer coding must flow through the CLI contract so the expansion translates into actual behavior change, not just structure updates.",
+      "Risks to watch: The live P1 seam stays active: hand-edited governed truth where CLI commands exist can reintroduce drift and quietly break the lane\u2019s contract."
     ],
     "48h": [
-      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      "Brief needs another provider pass: Compass received a narration reply for this brief, but the result was not usable yet. It will retry on backoff."
     ]
   },
   "digest_scoped": {
@@ -108,16 +111,22 @@
         "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-086": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Brief needs another provider pass: Compass received a narration reply for this brief, but the result was not usable yet. It will retry on backoff."
       ],
       "B-087": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Brief needs another provider pass: Compass received a narration reply for this brief, but the result was not usable yet. It will retry on backoff."
       ],
       "B-088": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Completed in this window: Host parity moved from docs into repo-visible behavior with capability-aware command surfaces added. That shift makes the work feel less hypothetical and more operational.",
+        "Current execution: Active implementation now targets first-class runtime support for Codex host behavior and a thin `odylith codex...` dispatcher, while preserving the checked-in `.codex/` tree as part of the target behavior.",
+        "Next planned: The next concrete checkpoint should come from the next open checklist item. It connects the landed asset parity slice to the release-bound architectural gap that still needs finishing.",
+        "Risks to watch: There are 26 open plan items remaining. Without faster closure, this lane can keep moving while the core release-bound work is still only partially stitched."
       ],
       "B-089": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Completed in this window: Mirror parity into Claude moved forward with baked CLI dispatchers. That gives a concrete host execution baseline and makes Claude behavior less hand-wavy.",
+        "Current execution: B-089 is active in implementation and now sits as a queued workstream. That keeps new changes on one source path instead of being split across notes.",
+        "Next planned: The next concrete move is naming the next open checklist item as a checkpoint for this lane. That is what makes the slice explicit enough for honest progress tracking.",
+        "Risks to watch: The seam to watch is closure. Thirty-five plan items are still open, so a lot of unresolved evidence still sits under this work until it lands cleanly."
       ],
       "B-090": [
         "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
@@ -377,7 +386,10 @@
         "Nothing moved in this window: B-064 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-071": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Completed in this window: Host support for Codex and Claude Code was hardened in the repo, which directly tightens cross-surface behavior under scope pressure.",
+        "Current execution: Work is now implementing a shared Scope Signal Ladder so Delivery Intelligence owns scope escalation, with active levels `R0 suppressed_noise` and `R1 background_trace`.",
+        "Next planned: Next, the team needs the next verified checkpoint captured for this scope lane to keep progression anchored in evidence.",
+        "Risks to watch: No critical blockers are surfaced right now, so the main watch is continuity: keep the lane\u2019s gating and checkpoints moving."
       ],
       "B-072": [
         "Nothing moved in this window: B-072 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -618,21 +630,168 @@
   "standup_brief": {
     "24h": {
       "schema_version": "v25",
-      "status": "unavailable",
-      "source": "unavailable",
+      "status": "ready",
+      "source": "provider",
       "fingerprint": "2a88f36343d22d2d2732b72ede051ee2a04f9a330d46c361c45b3dd35d1822ea",
-      "substrate_fingerprint": "2a88f36343d22d2d2732b72ede051ee2a04f9a330d46c361c45b3dd35d1822ea",
-      "bundle_fingerprint": "",
-      "provider_decision": "provider_deferred",
-      "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-04-12T02:39:24Z",
-      "sections": [],
-      "diagnostics": {
-        "reason": "provider_deferred",
-        "title": "Fresh brief still warming",
-        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      "sections": [
+        {
+          "key": "completed",
+          "label": "Completed in this window",
+          "bullets": [
+            {
+              "text": "Governed surfaces were refreshed after Claude host parity and CLI-first rollout, matching repo state to the active operator path.",
+              "fact_ids": [
+                "F-001"
+              ]
+            },
+            {
+              "text": "CLI-first is now explicit in guidance as non-negotiable, which narrows where behavior changes should land next time.",
+              "fact_ids": [
+                "F-002"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "current_execution",
+          "label": "Current execution",
+          "bullets": [
+            {
+              "text": "B-090 is the active lane now: bounded test-contract catch-up for orchestrator profile inference benchmark routing and governance refactors is running under one queued workstream.",
+              "fact_ids": [
+                "F-004"
+              ]
+            },
+            {
+              "text": "Live proof still appears as governed-surface refresh after the host parity and CLI-first rollout, so execution is anchored in repo movement, not plan text.",
+              "fact_ids": [
+                "F-005"
+              ]
+            },
+            {
+              "text": "Timing is still immediate with high confidence, so this lane needs tight day-to-day execution coupling instead of waiting for another handoff.",
+              "fact_ids": [
+                "F-006"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "next_planned",
+          "label": "Next planned",
+          "bullets": [
+            {
+              "text": "B-021 is the next forced turn: bring Registry, Radar, Atlas, Compass, and benchmark docs back into the benchmark corpus.",
+              "fact_ids": [
+                "F-009"
+              ]
+            },
+            {
+              "text": "More maintainer coding must flow through the CLI contract so the expansion translates into actual behavior change, not just structure updates.",
+              "fact_ids": [
+                "F-010"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "risks_to_watch",
+          "label": "Risks to watch",
+          "bullets": [
+            {
+              "text": "The live P1 seam stays active: hand-edited governed truth where CLI commands exist can reintroduce drift and quietly break the lane\u2019s contract.",
+              "fact_ids": [
+                "F-011"
+              ]
+            }
+          ]
+        }
+      ],
+      "evidence_lookup": {
+        "F-001": {
+          "text": "Concrete movement in the repo: Refresh governed surfaces after Claude host parity and CLI-first rollout.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-002": {
+          "text": "Concrete movement in the repo: Strengthen CLI-first non-negotiable across Odylith guidance.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-003": {
+          "text": "No verified milestone closeout landed across the portfolio in the last 24 hours.",
+          "section_key": "completed",
+          "kind": "window_summary"
+        },
+        "F-004": {
+          "text": "Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors (B-090) is the lane carrying the live contract work and is in active implementation. The change now is to bound Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors as a queued workstream so implementation can attach to one.",
+          "section_key": "current_execution",
+          "kind": "direction",
+          "workstreams": [
+            "B-090"
+          ]
+        },
+        "F-005": {
+          "text": "Concrete proof in the repo: Refresh governed surfaces after Claude host parity and CLI-first rollout.",
+          "section_key": "current_execution",
+          "kind": "signal"
+        },
+        "F-006": {
+          "text": "Timeline signal on the primary lane: projected at roughly 0 days (high confidence).",
+          "section_key": "current_execution",
+          "kind": "timeline"
+        },
+        "F-007": {
+          "text": "Planning and implementation are running in parallel across active lanes, and some implementation lanes still lack captured checklist progress Live focus lanes: Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors (B-090), Cross-Host Contract Hardening and Codex-Claude Separation (B-069).",
+          "section_key": "current_execution",
+          "kind": "portfolio_posture"
+        },
+        "F-008": {
+          "text": "Most of the movement this window sat in B-090, B-069, B-083, B-084, B-089, and B-025.",
+          "section_key": "current_execution",
+          "kind": "window_coverage",
+          "workstreams": [
+            "B-090",
+            "B-069",
+            "B-083",
+            "B-084",
+            "B-089",
+            "B-025",
+            "B-071",
+            "B-085",
+            "B-086",
+            "B-001",
+            "B-063",
+            "B-087",
+            "B-088"
+          ]
+        },
+        "F-009": {
+          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "section_key": "next_planned",
+          "kind": "forcing_function"
+        },
+        "F-010": {
+          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
+          "section_key": "next_planned",
+          "kind": "follow_on"
+        },
+        "F-011": {
+          "text": "Primary blocker is an open P1 bug: Agents hand edited governed truth when odylith cli commands existed.",
+          "section_key": "risks_to_watch",
+          "kind": "bug"
+        },
+        "F-012": {
+          "text": "Governance gap still needs cleanup: B-083: missing/invalid `workstream_type` in odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md.",
+          "section_key": "risks_to_watch",
+          "kind": "traceability"
+        }
       },
-      "evidence_lookup": {}
+      "substrate_fingerprint": "2a88f36343d22d2d2732b72ede051ee2a04f9a330d46c361c45b3dd35d1822ea",
+      "bundle_fingerprint": "367acea3726083bf1e732c33fd8a9e89a0ec0989d0997567c8c5dfbcb0d29f6f",
+      "provider_decision": "provider_called",
+      "last_successful_narration_fingerprint": "2a88f36343d22d2d2732b72ede051ee2a04f9a330d46c361c45b3dd35d1822ea"
     },
     "48h": {
       "schema_version": "v25",
@@ -641,14 +800,18 @@
       "fingerprint": "7c36081a539d3dd4596bc90d25201ab6965371b9c8f4770707a05fcf2e987030",
       "substrate_fingerprint": "7c36081a539d3dd4596bc90d25201ab6965371b9c8f4770707a05fcf2e987030",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_deferred",
+      "provider_decision": "invalid_batch",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-04-12T02:39:24Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_deferred",
-        "title": "Fresh brief still warming",
-        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "reason": "invalid_batch",
+        "title": "Brief needs another provider pass",
+        "message": "Compass received a narration reply for this brief, but the result was not usable yet. It will retry on backoff.",
+        "provider": "codex-cli",
+        "provider_model": "gpt-5.3-codex-spark",
+        "provider_reasoning_effort": "medium",
+        "next_retry_utc": "2026-04-12T03:10:10Z"
       },
       "evidence_lookup": {}
     }
@@ -1249,14 +1412,18 @@
         "fingerprint": "7dfe34d79043d09f2f35cae961cbdcc70cf67ef2d340c38ee1b3b15a55088c23",
         "substrate_fingerprint": "7dfe34d79043d09f2f35cae961cbdcc70cf67ef2d340c38ee1b3b15a55088c23",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
+        "provider_decision": "invalid_batch",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-12T02:39:24Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+          "reason": "invalid_batch",
+          "title": "Brief needs another provider pass",
+          "message": "Compass received a narration reply for this brief, but the result was not usable yet. It will retry on backoff.",
+          "provider": "codex-cli",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium",
+          "next_retry_utc": "2026-04-12T03:10:10Z"
         },
         "evidence_lookup": {}
       },
@@ -1267,52 +1434,290 @@
         "fingerprint": "384b940ed969992509926cdcb74497dbc5da7ad6b5fd31e65904087d03b35ba9",
         "substrate_fingerprint": "384b940ed969992509926cdcb74497dbc5da7ad6b5fd31e65904087d03b35ba9",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
+        "provider_decision": "invalid_batch",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-12T02:39:24Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+          "reason": "invalid_batch",
+          "title": "Brief needs another provider pass",
+          "message": "Compass received a narration reply for this brief, but the result was not usable yet. It will retry on backoff.",
+          "provider": "codex-cli",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium",
+          "next_retry_utc": "2026-04-12T03:10:10Z"
         },
         "evidence_lookup": {}
       },
       "B-088": {
         "schema_version": "v25",
-        "status": "unavailable",
-        "source": "unavailable",
+        "status": "ready",
+        "source": "provider",
         "fingerprint": "a577158aa2ccc070fbe24027ddd57d39e413a184849dff74d87dc1c28f2f2448",
-        "substrate_fingerprint": "a577158aa2ccc070fbe24027ddd57d39e413a184849dff74d87dc1c28f2f2448",
-        "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
-        "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-12T02:39:24Z",
-        "sections": [],
-        "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "sections": [
+          {
+            "key": "completed",
+            "label": "Completed in this window",
+            "bullets": [
+              {
+                "text": "Host parity moved from docs into repo-visible behavior with capability-aware command surfaces added. That shift makes the work feel less hypothetical and more operational.",
+                "fact_ids": [
+                  "F-001"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "current_execution",
+            "label": "Current execution",
+            "bullets": [
+              {
+                "text": "Active implementation now targets first-class runtime support for Codex host behavior and a thin `odylith codex...` dispatcher, while preserving the checked-in `.codex/` tree as part of the target behavior.",
+                "fact_ids": [
+                  "F-004"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "next_planned",
+            "label": "Next planned",
+            "bullets": [
+              {
+                "text": "The next concrete checkpoint should come from the next open checklist item. It connects the landed asset parity slice to the release-bound architectural gap that still needs finishing.",
+                "fact_ids": [
+                  "F-008"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "risks_to_watch",
+            "label": "Risks to watch",
+            "bullets": [
+              {
+                "text": "There are 26 open plan items remaining. Without faster closure, this lane can keep moving while the core release-bound work is still only partially stitched.",
+                "fact_ids": [
+                  "F-009"
+                ]
+              }
+            ]
+          }
+        ],
+        "evidence_lookup": {
+          "F-001": {
+            "text": "Concrete movement in the repo: added Codex host parity and capability-aware command surfaces.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-088"
+            ]
+          },
+          "F-002": {
+            "text": "Concrete movement in the repo: Plan status updated for B-088.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-088"
+            ]
+          },
+          "F-003": {
+            "text": "No clean closeout landed for Codex Host Runtime Parity, CLI Dispatch, and Target-Release Wording Hardening (B-088) in the last 24 hours.",
+            "section_key": "completed",
+            "kind": "window_summary",
+            "workstreams": [
+              "B-088"
+            ]
+          },
+          "F-004": {
+            "text": "Codex Host Runtime Parity, CLI Dispatch, and Target-Release Wording Hardening (B-088) is the live lane here and is in active implementation. The change now is to bake the supported Codex host behavior into first-class Odylith runtime modules, expose it through a thin `odylith codex ...` CLI dispatcher, keep the checked-in `.codex/` tree.",
+            "section_key": "current_execution",
+            "kind": "direction",
+            "workstreams": [
+              "B-088"
+            ]
+          },
+          "F-005": {
+            "text": "Concrete proof in the repo: added Codex host parity and capability-aware command surfaces.",
+            "section_key": "current_execution",
+            "kind": "signal",
+            "workstreams": [
+              "B-088"
+            ]
+          },
+          "F-006": {
+            "text": "Plan posture: checklist progress is 0/26; execution checklist is defined, but closure work has not started yet.",
+            "section_key": "current_execution",
+            "kind": "checklist",
+            "workstreams": [
+              "B-088"
+            ]
+          },
+          "F-007": {
+            "text": "Timeline signal: projected at roughly 5 days and expected to tighten as execution closes checklist items.",
+            "section_key": "current_execution",
+            "kind": "timeline",
+            "workstreams": [
+              "B-088"
+            ]
+          },
+          "F-008": {
+            "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Codex Host Runtime Parity, CLI Dispatch, and Target-Release Wording Hardening (B-088) so the asset/install parity slice already landed, the user explicitly wants Codex parity inside the active `v0.1.11` target release, and the remaining gap is now architectural rather than speculative.",
+            "section_key": "next_planned",
+            "kind": "fallback_next",
+            "workstreams": [
+              "B-088"
+            ]
+          },
+          "F-009": {
+            "text": "Primary watch item is closure discipline: 26 plan items remain open for Codex Host Runtime Parity, CLI Dispatch, and Target-Release Wording Hardening (B-088).",
+            "section_key": "risks_to_watch",
+            "kind": "risk_posture",
+            "workstreams": [
+              "B-088"
+            ]
+          }
         },
-        "evidence_lookup": {}
+        "substrate_fingerprint": "a577158aa2ccc070fbe24027ddd57d39e413a184849dff74d87dc1c28f2f2448",
+        "bundle_fingerprint": "8009cd31a664a3964e4e455a321efd0ae07bf831739288473ab7e22215ec0480",
+        "provider_decision": "provider_called",
+        "last_successful_narration_fingerprint": "a577158aa2ccc070fbe24027ddd57d39e413a184849dff74d87dc1c28f2f2448"
       },
       "B-089": {
         "schema_version": "v25",
-        "status": "unavailable",
-        "source": "unavailable",
+        "status": "ready",
+        "source": "provider",
         "fingerprint": "e6852c301a29fdcbf314c73d7d502933f9bd348a0f7053eb450aeb6a7d6fe2e1",
-        "substrate_fingerprint": "e6852c301a29fdcbf314c73d7d502933f9bd348a0f7053eb450aeb6a7d6fe2e1",
-        "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
-        "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-12T02:39:24Z",
-        "sections": [],
-        "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "sections": [
+          {
+            "key": "completed",
+            "label": "Completed in this window",
+            "bullets": [
+              {
+                "text": "Mirror parity into Claude moved forward with baked CLI dispatchers. That gives a concrete host execution baseline and makes Claude behavior less hand-wavy.",
+                "fact_ids": [
+                  "F-001"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "current_execution",
+            "label": "Current execution",
+            "bullets": [
+              {
+                "text": "B-089 is active in implementation and now sits as a queued workstream. That keeps new changes on one source path instead of being split across notes.",
+                "fact_ids": [
+                  "F-004"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "next_planned",
+            "label": "Next planned",
+            "bullets": [
+              {
+                "text": "The next concrete move is naming the next open checklist item as a checkpoint for this lane. That is what makes the slice explicit enough for honest progress tracking.",
+                "fact_ids": [
+                  "F-008"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "risks_to_watch",
+            "label": "Risks to watch",
+            "bullets": [
+              {
+                "text": "The seam to watch is closure. Thirty-five plan items are still open, so a lot of unresolved evidence still sits under this work until it lands cleanly.",
+                "fact_ids": [
+                  "F-009"
+                ]
+              }
+            ]
+          }
+        ],
+        "evidence_lookup": {
+          "F-001": {
+            "text": "Concrete movement in the repo: Mirror Codex host parity into Claude with baked CLI dispatchers.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-089"
+            ]
+          },
+          "F-002": {
+            "text": "Concrete movement in the repo: B-089 has landed on 2026/freedom/v0.1.11 as the planned two-commit pair, working tree clean: 9402f5d \u2014 Mirror Codex host parity into Claude with baked CLI dispatchers (56 files:.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-089"
+            ]
+          },
+          "F-003": {
+            "text": "No clean closeout landed for Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface (B-089) in the last 24 hours.",
+            "section_key": "completed",
+            "kind": "window_summary",
+            "workstreams": [
+              "B-089"
+            ]
+          },
+          "F-004": {
+            "text": "Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface (B-089) is the live lane here and is in active implementation. The change now is to bound Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface as a queued workstream so implementation can attach to one clear source record.",
+            "section_key": "current_execution",
+            "kind": "direction",
+            "workstreams": [
+              "B-089"
+            ]
+          },
+          "F-005": {
+            "text": "Concrete proof in the repo: Mirror Codex host parity into Claude with baked CLI dispatchers.",
+            "section_key": "current_execution",
+            "kind": "signal",
+            "workstreams": [
+              "B-089"
+            ]
+          },
+          "F-006": {
+            "text": "Plan posture: checklist progress is 0/35; execution checklist is defined, but closure work has not started yet.",
+            "section_key": "current_execution",
+            "kind": "checklist",
+            "workstreams": [
+              "B-089"
+            ]
+          },
+          "F-007": {
+            "text": "Timeline signal: projected at roughly 7 days and expected to tighten as execution closes checklist items.",
+            "section_key": "current_execution",
+            "kind": "timeline",
+            "workstreams": [
+              "B-089"
+            ]
+          },
+          "F-008": {
+            "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface (B-089) so this slice is active enough that it should exist as explicit backlog truth now.",
+            "section_key": "next_planned",
+            "kind": "fallback_next",
+            "workstreams": [
+              "B-089"
+            ]
+          },
+          "F-009": {
+            "text": "Primary watch item is closure discipline: 35 plan items remain open for Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface (B-089).",
+            "section_key": "risks_to_watch",
+            "kind": "risk_posture",
+            "workstreams": [
+              "B-089"
+            ]
+          }
         },
-        "evidence_lookup": {}
+        "substrate_fingerprint": "e6852c301a29fdcbf314c73d7d502933f9bd348a0f7053eb450aeb6a7d6fe2e1",
+        "bundle_fingerprint": "544dcea026feada75f5f8a877c8eb71d69b12649cd902e714ee783ac5da0f103",
+        "provider_decision": "provider_called",
+        "last_successful_narration_fingerprint": "e6852c301a29fdcbf314c73d7d502933f9bd348a0f7053eb450aeb6a7d6fe2e1"
       },
       "B-090": {
         "schema_version": "v25",
@@ -2861,7 +3266,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T06:01:11Z"
+          "next_retry_utc": "2026-04-12T08:40:10Z"
         },
         "evidence_lookup": {}
       },
@@ -2893,21 +3298,138 @@
       },
       "B-071": {
         "schema_version": "v25",
-        "status": "unavailable",
-        "source": "unavailable",
+        "status": "ready",
+        "source": "provider",
         "fingerprint": "1ba374d6019b5827f49c87ee63e3844bb7edd5fb283a6b75978aec60eb4f5c6c",
-        "substrate_fingerprint": "1ba374d6019b5827f49c87ee63e3844bb7edd5fb283a6b75978aec60eb4f5c6c",
-        "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
-        "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-12T02:39:24Z",
-        "sections": [],
-        "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "sections": [
+          {
+            "key": "completed",
+            "label": "Completed in this window",
+            "bullets": [
+              {
+                "text": "Host support for Codex and Claude Code was hardened in the repo, which directly tightens cross-surface behavior under scope pressure.",
+                "fact_ids": [
+                  "F-001"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "current_execution",
+            "label": "Current execution",
+            "bullets": [
+              {
+                "text": "Work is now implementing a shared Scope Signal Ladder so Delivery Intelligence owns scope escalation, with active levels `R0 suppressed_noise` and `R1 background_trace`.",
+                "fact_ids": [
+                  "F-004"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "next_planned",
+            "label": "Next planned",
+            "bullets": [
+              {
+                "text": "Next, the team needs the next verified checkpoint captured for this scope lane to keep progression anchored in evidence.",
+                "fact_ids": [
+                  "F-008"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "risks_to_watch",
+            "label": "Risks to watch",
+            "bullets": [
+              {
+                "text": "No critical blockers are surfaced right now, so the main watch is continuity: keep the lane\u2019s gating and checkpoints moving.",
+                "fact_ids": [
+                  "F-009"
+                ]
+              }
+            ]
+          }
+        ],
+        "evidence_lookup": {
+          "F-001": {
+            "text": "Concrete movement in the repo: Harden Codex and Claude Code host support.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-071"
+            ]
+          },
+          "F-002": {
+            "text": "Concrete movement in the repo: added Codex host parity and capability-aware command surfaces.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-071"
+            ]
+          },
+          "F-003": {
+            "text": "No clean closeout landed for Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression (B-071) in the last 48 hours.",
+            "section_key": "completed",
+            "kind": "window_summary",
+            "workstreams": [
+              "B-071"
+            ]
+          },
+          "F-004": {
+            "text": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression (B-071) is the live lane here and is in active implementation. The change now is to make Delivery Intelligence the sole owner of scope escalation through one shared Scope Signal Ladder: - `R0 suppressed_noise` - `R1 background_trace`.",
+            "section_key": "current_execution",
+            "kind": "direction",
+            "workstreams": [
+              "B-071"
+            ]
+          },
+          "F-005": {
+            "text": "Concrete proof in the repo: Harden Codex and Claude Code host support.",
+            "section_key": "current_execution",
+            "kind": "signal",
+            "workstreams": [
+              "B-071"
+            ]
+          },
+          "F-006": {
+            "text": "Plan posture: checklist progress is 28/28; execution checklist closure is complete for the scoped plan.",
+            "section_key": "current_execution",
+            "kind": "checklist",
+            "workstreams": [
+              "B-071"
+            ]
+          },
+          "F-007": {
+            "text": "Timeline signal: projected at roughly 0 days (high confidence).",
+            "section_key": "current_execution",
+            "kind": "timeline",
+            "workstreams": [
+              "B-071"
+            ]
+          },
+          "F-008": {
+            "text": "Immediate forcing function is to capture the next verified checkpoint for Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression (B-071).",
+            "section_key": "next_planned",
+            "kind": "fallback_next",
+            "workstreams": [
+              "B-071"
+            ]
+          },
+          "F-009": {
+            "text": "No critical blockers are currently surfaced.",
+            "section_key": "risks_to_watch",
+            "kind": "risk_posture",
+            "workstreams": [
+              "B-071"
+            ]
+          }
         },
-        "evidence_lookup": {}
+        "substrate_fingerprint": "1ba374d6019b5827f49c87ee63e3844bb7edd5fb283a6b75978aec60eb4f5c6c",
+        "bundle_fingerprint": "c0ffc6b3c30711056666e73c946fcdc0385ad1c110e54d4a30038e9a136bfa11",
+        "provider_decision": "provider_called",
+        "last_successful_narration_fingerprint": "1ba374d6019b5827f49c87ee63e3844bb7edd5fb283a6b75978aec60eb4f5c6c"
       },
       "B-072": {
         "status": "unavailable",
@@ -3232,7 +3754,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T08:01:11Z"
+          "next_retry_utc": "2026-04-12T08:40:10Z"
         },
         "evidence_lookup": {}
       },
@@ -3966,7 +4488,7 @@
           "provider": "codex-cli",
           "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium",
-          "next_retry_utc": "2026-04-12T08:01:11Z"
+          "next_retry_utc": "2026-04-12T08:40:10Z"
         },
         "evidence_lookup": {}
       },
