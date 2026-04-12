@@ -335,6 +335,40 @@ def test_traceability_refresh_invalidates_projection_caches(tmp_path: Path, monk
     assert session.get_or_compute(namespace="runtime_warm", key="default", builder=lambda: False) is False
 
 
+def test_traceability_refresh_skips_projection_cache_invalidation_when_output_is_unchanged(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    session.get_or_compute(namespace="runtime_warm", key="default", builder=lambda: True)
+    cleared_repo_roots: list[str] = []
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_context_engine_store",
+        lambda: SimpleNamespace(
+            clear_runtime_process_caches=lambda *, repo_root: cleared_repo_roots.append(str(repo_root))
+        ),
+    )
+
+    step = sync_workstream_artifacts.ExecutionStep(
+        label="Render Radar",
+        command=("python", "-m", "odylith.runtime.surfaces.render_backlog_ui"),
+        mutation_classes=("generated_surfaces",),
+        paths=("odylith/radar/traceability-graph.v1.json",),
+        change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
+    )
+
+    with sync_session.activate_sync_session(session):
+        sync_workstream_artifacts._invalidate_sync_runtime_caches(  # noqa: SLF001
+            repo_root=tmp_path,
+            step=step,
+            step_changed=False,
+        )
+
+    assert cleared_repo_roots == []
+    assert session.get_or_compute(namespace="runtime_warm", key="default", builder=lambda: False) is True
+
+
 def test_sync_execution_plan_reruns_second_registry_spec_sync_after_shell_facing_steps(tmp_path: Path) -> None:
     impact = governance.DashboardImpact(
         radar=False,
@@ -1312,6 +1346,7 @@ def test_sync_dry_run_prints_plan_without_running_commands(tmp_path: Path, monke
 
 
 def test_run_callable_with_heartbeat_reports_progress(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sync_workstream_artifacts, "_HEARTBEAT_START_DELAY_SECONDS", 0.01)
     monkeypatch.setattr(sync_workstream_artifacts, "_HEARTBEAT_INTERVAL_SECONDS", 0.01)
 
     rc = sync_workstream_artifacts._run_callable_with_heartbeat(  # noqa: SLF001
@@ -1322,6 +1357,20 @@ def test_run_callable_with_heartbeat_reports_progress(monkeypatch, capsys) -> No
 
     assert rc == 0
     assert "heartbeat: slow-step still running" in output
+
+
+def test_run_callable_with_heartbeat_stays_quiet_for_fast_steps(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sync_workstream_artifacts, "_HEARTBEAT_START_DELAY_SECONDS", 0.05)
+    monkeypatch.setattr(sync_workstream_artifacts, "_HEARTBEAT_INTERVAL_SECONDS", 0.01)
+
+    rc = sync_workstream_artifacts._run_callable_with_heartbeat(  # noqa: SLF001
+        label="fast-step",
+        callable_=lambda: (time.sleep(0.01), 0)[1],
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "heartbeat: fast-step still running" not in output
 
 
 def test_sync_blocks_large_dirty_overlap_without_explicit_ack(monkeypatch, tmp_path: Path, capsys) -> None:

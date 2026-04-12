@@ -14,7 +14,7 @@ product_impact: 5
 
 market_value: 4
 
-impacted_parts: odylith sync execution engine, delivery intelligence refresh, registry report reuse, dashboard surface writes, and path-normalization hot paths
+impacted_parts: odylith sync execution engine, delivery intelligence refresh, registry report reuse, Compass backlog-row reuse, dashboard surface writes, heartbeat pacing, and path-normalization hot paths
 
 sizing: L
 
@@ -121,15 +121,24 @@ not present fake churn as meaningful work.
   substrate so release, workstream, and execution-wave truth is built once per
   settled sync generation and traceability signature rather than once per
   payload render
+- treat Compass backlog projection rows as part of that same shared derivation
+  substrate so later Compass payload builds reuse one settled row payload per
+  generation and runtime mode instead of reopening backlog table shaping
 - narrow projection and runtime cache invalidation to derivation inputs that can
   actually change the next read model, instead of clearing warm/runtime state on
   every generated HTML or JS write
+- make sync-side invalidation and follow-up reruns depend on watched-output
+  changes, so byte-identical traceability or delivery writes do not blow away
+  compatible warm state or pay a second rerender lane
 - make repo-scoped runtime invalidation clear projected-input fingerprint caches
   as well as warm verdicts, because generated derivation inputs like the
   traceability graph and delivery-intelligence artifact do not move the
   workspace-activity token by themselves
 - memoize projection path-tree fingerprints per repo-state so compatible scope
   checks stop rescanning the same watched directories during one sync phase
+- delay in-process sync heartbeat emission until a step actually runs long
+  enough to deserve operator progress output, so fast steps do not pay a
+  standing polling tax just to say they are still alive
 - keep the current sync step graph externally compatible while replacing
   repeated read-model reconstruction under the hood
 - record cache-explain/debug manifests plus surface runtime provenance so stale
@@ -177,6 +186,8 @@ not present fake churn as meaningful work.
 ## Success Metrics
 - focused profiling shows materially fewer path normalization, repo-root
   inference, and Registry report rebuild calls on the sync hot path
+- Compass backlog row loading, projection warms, and heartbeat overhead all
+  fall materially in full-sync profiling without weakening the render contract
 - projection/compiler/backend reuse fails closed on provenance mismatch, and
   Compass/Radar/Registry payloads explain what they were built from
 - unchanged generated outputs stop rewriting bytes on the first landed render
@@ -192,6 +203,7 @@ not present fake churn as meaningful work.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_workstream_inference.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_component_registry_intelligence.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_delivery_intelligence_engine.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_derivation_provenance.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_odylith_memory_backend.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_backlog_ui.py`
+- `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_compass_dashboard_base.py tests/unit/runtime/test_sync_cli_compat.py`
 - `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone`
 - `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --debug-cache --check-only --runtime-mode standalone`
 - profiling before and after the first session-hoisted implementation cut

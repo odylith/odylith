@@ -214,13 +214,51 @@ def _parse_backlog_rows(
     runtime_mode: str,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     if str(runtime_mode).strip().lower() != "standalone":
-        projection = odylith_context_engine_store.load_backlog_rows(
-            repo_root=repo_root,
-            runtime_mode=runtime_mode,
-        )
+        projection: Mapping[str, Any]
+        try:
+            from odylith.runtime.governance import sync_session as governed_sync_session
+        except Exception:
+            governed_sync_session = None
+        if governed_sync_session is not None:
+            session = governed_sync_session.active_sync_session()
+            if session is not None and session.repo_root == Path(repo_root).resolve():
+                built = False
+
+                def _builder() -> Mapping[str, Any]:
+                    nonlocal built
+                    built = True
+                    return odylith_context_engine_store.load_backlog_rows(
+                        repo_root=repo_root,
+                        runtime_mode=runtime_mode,
+                    )
+
+                projection = session.get_or_compute(
+                    namespace="compass_backlog_rows",
+                    key=f"{str(runtime_mode).strip().lower()}\ngeneration={session.generation}",
+                    builder=_builder,
+                )
+                session.record_cache_decision(
+                    category="compass_backlog_rows",
+                    cache_hit=not built,
+                    built_from="sync_session",
+                    details={
+                        "generation": session.generation,
+                        "runtime_mode": str(runtime_mode).strip().lower(),
+                    },
+                )
+            else:
+                projection = odylith_context_engine_store.load_backlog_rows(
+                    repo_root=repo_root,
+                    runtime_mode=runtime_mode,
+                )
+        else:
+            projection = odylith_context_engine_store.load_backlog_rows(
+                repo_root=repo_root,
+                runtime_mode=runtime_mode,
+            )
         return (
-            list(projection.get("active", [])),
-            list(projection.get("execution", [])),
+            [dict(row) for row in projection.get("active", []) if isinstance(row, Mapping)],
+            [dict(row) for row in projection.get("execution", []) if isinstance(row, Mapping)],
         )
     snapshot = backlog_contract.load_backlog_index_snapshot(index_path)
     active_rows = backlog_contract.rows_as_mapping(

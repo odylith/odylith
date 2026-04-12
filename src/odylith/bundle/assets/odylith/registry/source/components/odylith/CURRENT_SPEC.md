@@ -321,6 +321,10 @@ Public docs should describe these commands, not direct module entrypoints.
   generation plus the settled traceability signature. If either changes, the
   runtime must treat the previous release/workstream/wave snapshot as stale and
   rebuild it locally instead of reusing a warm result.
+- Compass backlog-row reuse must also be keyed by the active sync generation
+  plus runtime mode. If either changes, or if the active sync session is
+  absent, Compass must rebuild the backlog rows locally instead of trusting a
+  stale warm payload.
 - Repo-scoped invalidation must also clear projected-input fingerprint caches,
   not only warm verdicts, because generated derivation inputs such as the
   traceability graph and delivery-intelligence artifact do not necessarily move
@@ -340,10 +344,18 @@ Public docs should describe these commands, not direct module entrypoints.
   generated HTML or JS writes are not allowed to clear warmed runtime state
   unless they changed a projection input such as traceability truth,
   delivery-intelligence truth, or other projection-owned source records.
+- Sync-side invalidation and any follow-up rerun lane must check the watched
+  derivation outputs before clearing warm state. Byte-identical traceability or
+  delivery outputs are not allowed to trigger a second compatible warm or a
+  second rerender just because the step executed.
 - Runtime projection readers for backlog rows, plan rows, bug rows, component
   index, and Registry snapshots must reuse one signature-scoped row payload
   within a stable projection fingerprint instead of reopening and reshaping the
   same tables for later Compass, Radar, and Registry surfaces in the same run.
+- In-process heartbeat output is an operator hint, not a fixed per-step tax.
+  Sync must delay heartbeat emission until a step crosses a real slow-step
+  threshold, and fast steps must complete without paying a steady polling lane
+  or emitting misleading heartbeat chatter.
 - Projection/compiler/backend writes remain single-writer and atomic. Lock
   batching is allowed, but the product must not weaken advisory-lock plus
   atomic-replace semantics in order to chase latency.

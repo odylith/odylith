@@ -128,6 +128,15 @@ Related Bugs:
 - [x] Reuse Compass live governance context inside the active sync generation
       so release/workstream/wave truth is built once per settled traceability
       signature instead of being re-derived on every Compass payload build.
+- [x] Reuse Compass backlog-row projection results inside the active sync
+      generation so Compass payload assembly does not reopen backlog table
+      shaping after the first runtime-backed surface already built the rows.
+- [x] Make sync-side runtime invalidation change-aware from watched derivation
+      outputs so byte-identical traceability or delivery artifacts do not clear
+      compatible warm state or trigger superstitious follow-up reruns.
+- [x] Delay in-process sync heartbeats until a step actually stays slow, so
+      fast steps do not pay a steady-state polling lane or emit misleading
+      chatter just to report a sub-second call.
 
 ## Defer
 - [ ] Persistent sync daemon with warm resident session state across commands.
@@ -205,6 +214,11 @@ Related Bugs:
 - [x] `/usr/bin/time -p env PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`5.4s` sync-reported elapsed / `6.26s` wall clock on 2026-04-12 once the tree had settled after the render-phase reorder, repo-scoped projection-fingerprint invalidation hardening, and per-repo-state path-tree fingerprint memoization landed)
 - [x] `python3 -m cProfile -o /tmp/b091-latest-current.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`projection_input_fingerprint()` down to `1.33s` cumulative, `_compute_projected_input_fingerprints()` down to `1.21s`, `fingerprint_tree()` down to `0.98s`, and `warm_projections()` down to `2.26s`; the remaining dominant costs are now Compass runtime payload assembly at `3.94s` cumulative and Registry payload/snapshot shaping at `2.20s` / `1.87s`)
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_derivation_provenance.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_odylith_memory_backend.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_sync_cli_compat.py` (`113 passed` on 2026-04-12 after derivation-generation, provenance, surface-contract, and cache-explain coverage landed)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_compass_dashboard_base.py tests/unit/runtime/test_sync_cli_compat.py` (`45 passed` on 2026-04-12 after Compass backlog-row session reuse, change-aware sync invalidation, and thresholded heartbeat coverage landed)
+- [x] `PYTHONPATH=src python3 -m cProfile -o /tmp/odylith_r8_full.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`7.7s` sync-reported elapsed / `9.96s` cProfile total on 2026-04-12 after Compass backlog-row reuse and watched-output invalidation gating landed; `load_backlog_rows()` fell to `0.19s`, `_build_runtime_payload()` fell to `1.69s`, `_warm_runtime_uncached` collapsed to `1` call, and `select.poll` dropped to `0.94s`)
+- [x] `/usr/bin/time -p env PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`5.8s` sync-reported elapsed / `6.87s` wall clock on 2026-04-12 after the source-local write-mode lane refreshed delivery intelligence truth against the new code path; only Compass crossed the `2s` heartbeat threshold)
+- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (`5.1s` on 2026-04-12 after the source-local full sync settled, with Atlas freshness, Registry truth, and delivery intelligence all green in strict non-mutating proof)
+- [x] `PYTHONPATH=src python3 -m cProfile -o /tmp/odylith_r8_final.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`9.7s` sync-reported elapsed / `11.56s` cProfile total on 2026-04-12; `render_compass_dashboard.main` is `3.69s`, `_build_runtime_payload()` is `3.18s`, `_warm_runtime_uncached` is `1.63s` across `1` call, `load_backlog_rows()` is `1.70s` across `2` total callers, and `select.poll` is `1.00s`)
 - [x] `git diff --check`
 
 ## Outcome Snapshot
@@ -232,6 +246,9 @@ Related Bugs:
 - [x] Runtime projection row readers now reuse one signature-scoped row payload
       for backlog, plans, bugs, component index, and Registry snapshot reads,
       which cuts duplicate table shaping across Compass, Radar, and Registry.
+- [x] Compass backlog rows now ride that same sync-scoped reuse contract, which
+      removes repeated backlog row shaping from later Compass payload builds in
+      the same settled generation.
 - [x] Runtime-backed surfaces now render in one settled post-truth phase:
       Atlas review/catalog truth, Registry spec reconciliation, and delivery
       intelligence settle first, then Compass, Radar, Registry, Casebook, and
@@ -243,6 +260,16 @@ Related Bugs:
 - [x] Projection path-tree fingerprints are now memoized per repo-state, which
       materially reduces repeated watched-tree scans across compatible scope
       checks inside one sync phase.
+- [x] Sync-side runtime invalidation now checks the watched derivation outputs
+      before clearing warm state, so byte-identical traceability and delivery
+      writes no longer reopen the same projection warm or follow-up rerender
+      lane by reflex.
+- [x] The current full source-local sync lane now reaches one compatible
+      runtime warm in profile, rather than the earlier double-warm pattern that
+      reopened the same projection substrate during Compass and later surfaces.
+- [x] Fast in-process sync steps now stay quiet until they cross a real
+      heartbeat threshold, which trims the heartbeat polling tax and keeps
+      sub-threshold steps from paying for operator progress noise.
 - [x] Strict standalone proof stays fail-closed after the optimization wave
       because late Registry forensics reconciliation now accounts for shell-facing
       steps that can still change evidence after the first spec sync.

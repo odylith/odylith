@@ -14,11 +14,13 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+from contextvars import copy_context
 from dataclasses import dataclass
 import importlib
 import json
 import os
 from pathlib import Path
+import queue
 import signal
 import subprocess
 import sys
@@ -115,6 +117,7 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
     "casebook": "casebook",
 }
 _HEARTBEAT_INTERVAL_SECONDS = 10.0
+_HEARTBEAT_START_DELAY_SECONDS = 2.0
 _DASHBOARD_REFRESH_TIMEOUT_SECONDS = dashboard_refresh_contract.DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS
 _SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV = "ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD"
 _SYNC_DEBUG_CACHE_ENV = "ODYLITH_SYNC_DEBUG_CACHE"
@@ -451,20 +454,32 @@ def _run_callable_with_heartbeat(
     callable_: Callable[[], int],
 ) -> int:
     started_at = time.perf_counter()
-    stop_heartbeat = threading.Event()
+    context = copy_context()
+    result_queue: queue.Queue[tuple[BaseException | None, int | None]] = queue.Queue(maxsize=1)
 
-    def _heartbeat() -> None:
-        while not stop_heartbeat.wait(_HEARTBEAT_INTERVAL_SECONDS):
+    def _runner() -> None:
+        try:
+            result = int(context.run(callable_) or 0)
+        except BaseException as exc:  # pragma: no cover - re-raised on caller thread
+            result_queue.put((exc, None))
+        else:
+            result_queue.put((None, result))
+
+    worker = threading.Thread(target=_runner, daemon=True)
+    worker.start()
+    timeout = max(0.0, float(_HEARTBEAT_START_DELAY_SECONDS))
+    while True:
+        try:
+            error, result = result_queue.get(timeout=timeout)
+        except queue.Empty:
             elapsed = int(time.perf_counter() - started_at)
             print(f"- heartbeat: {label} still running ({elapsed}s)")
-
-    heartbeat_thread = threading.Thread(target=_heartbeat, daemon=True)
-    heartbeat_thread.start()
-    try:
-        return int(callable_() or 0)
-    finally:
-        stop_heartbeat.set()
-        heartbeat_thread.join(timeout=max(0.01, _HEARTBEAT_INTERVAL_SECONDS))
+            timeout = max(0.01, float(_HEARTBEAT_INTERVAL_SECONDS))
+            continue
+        worker.join(timeout=0.01)
+        if error is not None:
+            raise error
+        return int(result or 0)
 
 
 @contextlib.contextmanager
@@ -522,8 +537,15 @@ def _step_invalidates_delivery_surface_cache(step: ExecutionStep) -> bool:
     return _step_touches_path_prefixes(step, _DELIVERY_SURFACE_INVALIDATION_PREFIXES)
 
 
-def _invalidate_sync_runtime_caches(*, repo_root: Path, step: ExecutionStep) -> None:
+def _invalidate_sync_runtime_caches(
+    *,
+    repo_root: Path,
+    step: ExecutionStep,
+    step_changed: bool = True,
+) -> None:
     if not step.mutation_classes:
+        return
+    if not step_changed:
         return
     session = governed_sync_session.active_sync_session()
     invalidated_namespaces: list[str] = []
@@ -555,6 +577,19 @@ def _step_change_fingerprint(*, repo_root: Path, step: ExecutionStep) -> str:
         repo_root=repo_root,
         watched_paths=step.change_watch_paths,
     )
+
+
+def _step_materially_changed(
+    *,
+    step: ExecutionStep,
+    before_change_fingerprint: str,
+    after_change_fingerprint: str,
+) -> bool:
+    if not step.change_watch_paths:
+        return True
+    if not before_change_fingerprint or not after_change_fingerprint:
+        return True
+    return before_change_fingerprint != after_change_fingerprint
 
 
 def _terminate_process(process: subprocess.Popen[Any]) -> None:
@@ -1725,6 +1760,7 @@ def build_sync_execution_plan(
                 command=("python", "-m", "odylith.runtime.governance.build_traceability_graph", "--repo-root", str(repo_root)),
                 mutation_classes=("generated_surfaces",),
                 paths=("odylith/radar/traceability-graph.v1.json",),
+                change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
                 next_command_on_failure=sync_failure_command,
             ),
         ]
@@ -1799,6 +1835,7 @@ def build_sync_execution_plan(
             command=_delivery_intelligence_command(repo_root=repo_root, check_only=False),
             mutation_classes=("generated_surfaces",),
             paths=("odylith/runtime/delivery_intelligence.v4.json",),
+            change_watch_paths=("odylith/runtime/delivery_intelligence.v4.json",),
             next_command_on_failure=sync_failure_command,
         )
     ]
@@ -1833,6 +1870,7 @@ def build_sync_execution_plan(
                 ),
                 mutation_classes=("generated_surfaces",),
                 paths=_surface_render_outputs("radar"),
+                change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2050,13 +2088,20 @@ def _execute_plan(
                 rc = 0
         if rc != 0:
             return rc, step
-        _invalidate_sync_runtime_caches(repo_root=repo_root, step=step)
         after_change_fingerprint = _step_change_fingerprint(repo_root=repo_root, step=step)
+        step_changed = _step_materially_changed(
+            step=step,
+            before_change_fingerprint=before_change_fingerprint,
+            after_change_fingerprint=after_change_fingerprint,
+        )
+        _invalidate_sync_runtime_caches(
+            repo_root=repo_root,
+            step=step,
+            step_changed=step_changed,
+        )
         if (
             step.followup_steps_on_change
-            and before_change_fingerprint
-            and after_change_fingerprint
-            and before_change_fingerprint != after_change_fingerprint
+            and step_changed
         ):
             for followup_index, followup in enumerate(step.followup_steps_on_change, start=1):
                 followup_rc, failed_step = _execute_step(

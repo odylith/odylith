@@ -97,3 +97,39 @@ def test_load_component_index_runtime_reuses_sync_session_registry_report(
         components = renderer._load_component_index_runtime(repo_root=tmp_path, runtime_mode="standalone")  # noqa: SLF001
 
     assert components is sentinel
+
+
+def test_parse_backlog_rows_reuses_sync_session_projection(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    calls = 0
+    projection = {
+        "active": [{"idea_id": "B-091", "title": "Shared sync"}],
+        "execution": [{"idea_id": "B-092", "title": "Next"}],
+    }
+
+    def _load_backlog_rows(**_: object) -> dict[str, object]:
+        nonlocal calls
+        calls += 1
+        return projection
+
+    monkeypatch.setattr(renderer.odylith_context_engine_store, "load_backlog_rows", _load_backlog_rows)
+
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    with sync_session.activate_sync_session(session):
+        first_active, first_execution = renderer._parse_backlog_rows(  # noqa: SLF001
+            repo_root=tmp_path,
+            index_path=tmp_path / "odylith" / "radar" / "source" / "INDEX.md",
+            runtime_mode="auto",
+        )
+        second_active, second_execution = renderer._parse_backlog_rows(  # noqa: SLF001
+            repo_root=tmp_path,
+            index_path=tmp_path / "odylith" / "radar" / "source" / "INDEX.md",
+            runtime_mode="auto",
+        )
+
+    assert calls == 1
+    assert first_active == second_active == [{"idea_id": "B-091", "title": "Shared sync"}]
+    assert first_execution == second_execution == [{"idea_id": "B-092", "title": "Next"}]
+    assert first_active is not second_active
