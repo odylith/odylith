@@ -87,6 +87,8 @@
             <button id="odylithClose" type="button" class="brief-close" aria-label="Collapse Odylith agent cheatsheet">Close</button>
           </div>
           <div class="brief-drawer-body">
+{% if system_status_html %}            {{ system_status_html | safe }}
+{% endif %}
             {{ cheatsheet_html | safe }}
           </div>
         </div>

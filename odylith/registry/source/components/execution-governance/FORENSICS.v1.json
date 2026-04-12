@@ -9,10 +9,10 @@
     "empty_reasons": [],
     "explicit_event_count": 2,
     "mapped_workstream_evidence_count": 2,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 3
+    "timeline_event_count": 2
   },
   "name": "Execution Governance",
   "path_prefixes": [
@@ -20,22 +20,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
-      ],
-      "confidence": "high",
-      "event_index": 89,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "execution-governance"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/execution_engine/runtime_lane_policy.py",
-      "ts_iso": "2026-04-12T13:49:06-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [],
       "confidence": "high",

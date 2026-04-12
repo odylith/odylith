@@ -12,6 +12,7 @@ from typing import Any
 from odylith.runtime.governance import proof_state
 from odylith.runtime.surfaces import dashboard_template_runtime
 from odylith.runtime.surfaces import tooling_dashboard_cheatsheet_presenter
+from odylith.runtime.surfaces import tooling_dashboard_execution_governance_presenter
 from odylith.runtime.surfaces import tooling_dashboard_release_presenter
 from odylith.runtime.surfaces import tooling_dashboard_system_status_presenter
 from odylith.runtime.surfaces import tooling_dashboard_template_context
@@ -2063,57 +2064,15 @@ def build_odylith_drawer_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
             "freshness": freshness_posture,
             "signal": signal_posture,
         },
-        "latest_packet": {
-            "workstream": str(latest_packet.get("workstream", "")).strip() or str(latest_packet.get("session_id", "")).strip() or "unknown",
-            "state": _humanize_display(str(latest_packet.get("packet_state", "")).strip() or "unknown", title_case=True),
-            "execution": _humanize_display(str(latest_packet.get("odylith_execution_profile", "")).strip() or "unknown", title_case=True),
-            "mode": _humanize_display(str(latest_packet.get("odylith_execution_selection_mode", "")).strip() or str(latest_packet.get("intent_mode", "")).strip() or "unknown", title_case=True),
-            "governance": _humanize_display(
-                str(latest_packet.get("execution_governance_outcome", "")).strip() or "unknown",
-                title_case=True,
-            ),
-            "governance_mode": _humanize_display(
-                str(latest_packet.get("execution_governance_mode", "")).strip() or "unknown",
-                title_case=True,
-            ),
-            "governance_host": _humanize_display(
-                str(latest_packet.get("execution_governance_host_family", "")).strip() or "unknown",
-                title_case=True,
-            ),
-            "tokens": _safe_int(latest_packet.get("estimated_tokens", 0), minimum=0, maximum=250000),
-            "packet_strategy": _humanize_display(str(latest_packet.get("packet_strategy", "")).strip(), title_case=True) or "Balanced",
-            "budget_mode": _humanize_display(str(latest_packet.get("budget_mode", "")).strip(), title_case=True) or "Balanced",
-            "retrieval_focus": _humanize_display(str(latest_packet.get("retrieval_focus", "")).strip(), title_case=True) or "Balanced",
-            "speed_mode": _humanize_display(str(latest_packet.get("speed_mode", "")).strip(), title_case=True) or "Balanced",
-            "reliability": _humanize_display(str(latest_packet.get("reliability", "")).strip(), title_case=True) or "Unknown",
-            "next_move": str(latest_packet.get("execution_governance_next_move", "")).strip() or "unknown",
-            "closure": _humanize_display(
-                str(latest_packet.get("execution_governance_closure", "")).strip() or "unknown",
-                title_case=True,
-            ),
-            "wait_status": _humanize_display(
-                str(latest_packet.get("execution_governance_wait_status", "")).strip() or "none",
-                title_case=True,
-            ),
-            "resume_token": str(latest_packet.get("execution_governance_resume_token", "")).strip(),
-            "validation": _humanize_display(
-                str(latest_packet.get("execution_governance_validation_archetype", "")).strip() or "unknown",
-                title_case=True,
-            ),
-            "requires_reanchor": bool(latest_packet.get("execution_governance_requires_reanchor")),
-            "yield_state": _humanize_display(
-                str(latest_packet.get("advised_yield_state", "")).strip()
+        "latest_packet": tooling_dashboard_execution_governance_presenter.build_latest_packet_summary(
+            {
+                **latest_packet,
+                "advised_yield_state": str(latest_packet.get("advised_yield_state", "")).strip()
                 or str(control_advisories.get("yield_state", "")).strip(),
-                title_case=True,
-            )
-            or "Unknown",
-            "alignment_state": _humanize_display(
-                str(latest_packet.get("packet_alignment_state", "")).strip()
+                "packet_alignment_state": str(latest_packet.get("packet_alignment_state", "")).strip()
                 or str(control_advisories.get("packet_alignment_state", "")).strip(),
-                title_case=True,
-            )
-            or "Unknown",
-        },
+            }
+        ),
         "recommendations": recommendation_rows,
         "learning_recommendations": learning_recommendation_rows,
         "regressions": regressions,
@@ -2717,6 +2676,9 @@ def _render_curated_system_status_html(drawer_payload: Mapping[str, Any]) -> str
         + '</ul></div>'
         + '</article>'
     )
+    latest_packet_card_html = tooling_dashboard_execution_governance_presenter.render_latest_packet_html(
+        dict(drawer_payload.get("latest_packet", {})) if isinstance(drawer_payload.get("latest_packet"), Mapping) else {}
+    )
 
     recorder_note = (
         "Only one recent slice is available. Use it to decide whether to keep the current posture or intervene before more spend."
@@ -2799,6 +2761,7 @@ def _render_curated_system_status_html(drawer_payload: Mapping[str, Any]) -> str
             ),
             '</article>',
             summary_card_html,
+            latest_packet_card_html,
             '</section>',
             '<section class="odylith-backend-card" aria-label="Telemetry backend footprint">',
             '<div class="odylith-backend-card-head">',

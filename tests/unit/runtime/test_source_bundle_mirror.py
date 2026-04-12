@@ -65,18 +65,18 @@ def test_repo_governance_docs_preserve_watcher_and_brief_contract_in_bundle_mirr
             "`odylith compass watch-transactions --repo-root .` is the supported change-driven local watcher",
         ),
         (
-            repo_root / "odylith" / "skills" / "delivery-governance-surface-ops" / "SKILL.md",
-            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "delivery-governance-surface-ops" / "SKILL.md",
+            repo_root / "odylith" / "skills" / "odylith-delivery-governance-surface-ops" / "SKILL.md",
+            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-delivery-governance-surface-ops" / "SKILL.md",
             "./.odylith/bin/odylith compass watch-transactions --repo-root .",
         ),
         (
-            repo_root / "odylith" / "skills" / "compass-executive" / "SKILL.md",
-            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "compass-executive" / "SKILL.md",
+            repo_root / "odylith" / "skills" / "odylith-compass-executive" / "SKILL.md",
+            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-compass-executive" / "SKILL.md",
             "Scoped selection does not buy a foreground provider exception.",
         ),
         (
-            repo_root / "odylith" / "skills" / "session-context" / "SKILL.md",
-            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "session-context" / "SKILL.md",
+            repo_root / "odylith" / "skills" / "odylith-session-context" / "SKILL.md",
+            repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-session-context" / "SKILL.md",
             "never turn an ordinary restart into a foreground provider refresh",
         ),
     )

@@ -118,6 +118,17 @@ def _render_shell(repo_root: Path, monkeypatch) -> None:  # noqa: ANN001
     assert rc == 0
 
 
+def _render_shell_with_payload(repo_root: Path, monkeypatch, shell_payload: dict[str, object]) -> None:  # noqa: ANN001
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_delivery_surface_payload",
+        lambda **kwargs: dict(shell_payload),
+    )
+    monkeypatch.setattr(renderer, "_build_self_host_payload", lambda **kwargs: {})
+    rc = renderer.main(["--repo-root", str(repo_root), "--output", "odylith/index.html"])
+    assert rc == 0
+
+
 def _render_shell_without_monkeypatch(repo_root: Path) -> None:
     original_loader = renderer.odylith_context_engine_store.load_delivery_surface_payload
     original_self_host = renderer._build_self_host_payload
@@ -549,6 +560,67 @@ def test_incremental_upgrade_suppresses_starter_guide_until_the_user_reopens_it(
         _click_visible(page.locator("#welcomeReopen"))
         page.locator("#shellWelcomeState").wait_for(timeout=15000)
         assert page.locator(".welcome-title").inner_text().strip() == "Start Odylith from one real code path"
+
+        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_shell_latest_governed_packet_card_surfaces_execution_pressure(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "consumer-governance-card"
+    repo_root.mkdir()
+    _seed_consumer_repo(repo_root, existing_truth=True)
+    _render_shell_with_payload(
+        repo_root,
+        monkeypatch,
+        {
+            "memory_snapshot": {},
+            "evaluation_snapshot": {},
+            "optimization_snapshot": {
+                "latest_packet": {
+                    "workstream": "B-072",
+                    "packet_state": "gated_ambiguous",
+                    "execution_governance_present": True,
+                    "execution_governance_outcome": "deny",
+                    "execution_governance_mode": "recover",
+                    "execution_governance_next_move": "recover.current_blocker",
+                    "execution_governance_current_phase": "recover",
+                    "execution_governance_last_successful_phase": "submit",
+                    "execution_governance_blocker": "waiting approval",
+                    "execution_governance_closure": "safe",
+                    "execution_governance_wait_status": "awaiting_callback",
+                    "execution_governance_wait_detail": "github actions run 991",
+                    "execution_governance_resume_token": "resume:B-072",
+                    "execution_governance_validation_archetype": "recover",
+                    "execution_governance_validation_derived_from": ["mode:recover"],
+                    "execution_governance_authoritative_lane": "context_engine.governance_slice.authoritative",
+                    "execution_governance_history_rule_hits": ["lane_drift_preflight"],
+                    "execution_governance_pressure_signals": ["wait:awaiting_callback", "denials:2"],
+                    "execution_governance_nearby_denial_actions": ["explore.broad_reset"],
+                    "execution_governance_runtime_invalidated_by_step": "render_compass_dashboard",
+                    "execution_governance_host_family": "claude",
+                    "execution_governance_host_supports_native_spawn": False,
+                    "execution_governance_target_lane": "dev_maintainer",
+                    "execution_governance_requires_more_consumer_context": True,
+                    "execution_governance_consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+                    "execution_governance_requires_reanchor": True,
+                }
+            },
+        },
+    )
+
+    with _repo_browser_context(repo_root) as (base_url, context):
+        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+
+        _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
+        page.locator(".odylith-summary-card", has_text="Latest Governed Packet").wait_for(timeout=15000)
+        packet_card = page.locator(".odylith-summary-card", has_text="Latest Governed Packet").first
+        assert packet_card.locator("text=Serial host execution").count() == 1
+        assert packet_card.locator("text=recover.current_blocker").count() == 1
+        assert packet_card.locator("text=waiting approval").count() == 1
+        assert packet_card.locator("text=explore.broad_reset").count() == 1
+        assert packet_card.locator("text=render_compass_dashboard").count() == 1
+        assert packet_card.locator("text=resume:B-072").count() == 1
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

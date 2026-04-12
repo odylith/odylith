@@ -68,16 +68,18 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "const scopedWorkstream = WORKSTREAM_RE.test(" in shared_js
     assert "const hasScopedSelection = Boolean(scopedWorkstream);" in shared_js
     assert 'if (hasScopedSelection && scopedReady) return scopedReady;' in shared_js
-    assert "function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason)" in shared_js
-    assert "function scopedLiveBriefFallbackMessage(workstreamId, diagnostics)" in shared_js
+    assert "function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason, globalWindow)" in shared_js
+    assert "function scopedLiveBriefFallbackMessage(workstreamId, diagnostics, requestedWindow, fallbackWindow)" in shared_js
     assert 'if (reason === "scoped_window_inactive") {' in shared_js
     assert "return scopedBrief;" in shared_js
     assert 'const fallbackReason = reason || "scoped_brief_unavailable";' in shared_js
-    assert 'return scopedFallbackToGlobalBrief(globalReady, scopedWorkstream, message, `scoped_${fallbackReason}_showing_global`);' in shared_js
+    assert "const widerWindow = globalReadyWindow && globalReadyWindow !== key;" in shared_js
+    assert "`scoped_${fallbackReason}_showing_wider_global`" in shared_js
+    assert "`scoped_${fallbackReason}_showing_global`" in shared_js
     assert 'is waiting on narration provider capacity' in shared_js
     assert 'is waiting on narration provider budget' in shared_js
     assert 'got a scoped provider reply, but the brief was not usable yet' in shared_js
-    assert 'still needs its own brief' in shared_js
+    assert 'still needs its own ${requested} brief' in shared_js
     assert 'if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;' in shared_js
     assert 'if (globalReady) return globalReady;' in shared_js
     assert 'if (hasScopedSelection && scopedBrief) {' in shared_js

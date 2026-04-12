@@ -20,6 +20,9 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _LOCAL_SURFACE_HTML_RE = re.compile(
     r"^http://127\.0\.0\.1:\d+/odylith/(radar|registry|casebook|atlas|compass)/[^?#]+\.html(?:[?#].*)?$"
 )
+_LOCAL_COMPASS_RUNTIME_CURRENT_RE = re.compile(
+    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/current\.v1\.(?:json|js)(?:[?#].*)?$"
+)
 
 
 @contextlib.contextmanager
@@ -172,6 +175,10 @@ def _new_page(context) -> tuple[object, list[str], list[str]]:  # noqa: ANN001
             resource_type == "document"
             and _LOCAL_SURFACE_HTML_RE.match(url)
             and (not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error)
+        ):
+            return
+        if _LOCAL_COMPASS_RUNTIME_CURRENT_RE.match(url) and (
+            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
         ):
             return
         failed_requests.append(f"{request.method} {url} {error_text}".strip())

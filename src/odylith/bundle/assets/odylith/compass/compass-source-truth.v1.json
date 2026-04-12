@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-12T20:51:07Z",
+  "generated_utc": "2026-04-12T21:28:05Z",
   "release_summary": {
     "catalog": [
       {
@@ -346,14 +346,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 34,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -578,14 +578,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -818,14 +818,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 34,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -970,18 +970,18 @@
       "activity": {
         "24h": {
           "commit_count": 16,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 599
         },
         "48h": {
           "commit_count": 21,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 927
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-04-12T12:55:02-07:00",
+        "last_activity_iso": "2026-04-12T14:20:23-07:00",
         "age_days": 2,
         "eta_days": null,
         "eta_confidence": "low"
@@ -1769,19 +1769,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 1,
-          "file_touch_count": 597
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 599
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 899
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 900
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T13:52:34-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -1829,14 +1829,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -2040,7 +2040,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8a5b3eccec4ad0cb893a9dc670483c211f87af0d",
+          "local_head": "a6fd080d97547bb9cf61fccc0761e6973542e9c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -2088,14 +2088,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 43,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "diagnosed",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -2298,14 +2298,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 36,
+          "meaningful_change_count": 35,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -2712,14 +2712,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 43,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -2944,14 +2944,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -3182,14 +3182,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -3412,14 +3412,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -3646,14 +3646,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 36,
+          "meaningful_change_count": 35,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -3888,14 +3888,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 39,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -4023,19 +4023,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 16,
+          "commit_count": 17,
           "local_change_count": 1,
-          "file_touch_count": 621
+          "file_touch_count": 624
         },
         "48h": {
-          "commit_count": 20,
+          "commit_count": 21,
           "local_change_count": 1,
-          "file_touch_count": 883
+          "file_touch_count": 885
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 17,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4191,19 +4191,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 15,
+          "commit_count": 16,
           "local_change_count": 1,
-          "file_touch_count": 604
+          "file_touch_count": 607
         },
         "48h": {
-          "commit_count": 19,
+          "commit_count": 20,
           "local_change_count": 1,
-          "file_touch_count": 878
+          "file_touch_count": 880
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 13,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4258,7 +4258,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -4375,19 +4375,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 15,
+          "commit_count": 16,
           "local_change_count": 1,
-          "file_touch_count": 604
+          "file_touch_count": 607
         },
         "48h": {
-          "commit_count": 19,
+          "commit_count": 20,
           "local_change_count": 1,
-          "file_touch_count": 875
+          "file_touch_count": 877
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4567,19 +4567,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 15,
+          "commit_count": 16,
           "local_change_count": 1,
-          "file_touch_count": 604
+          "file_touch_count": 607
         },
         "48h": {
-          "commit_count": 19,
+          "commit_count": 20,
           "local_change_count": 1,
-          "file_touch_count": 875
+          "file_touch_count": 877
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4740,18 +4740,18 @@
       "activity": {
         "24h": {
           "commit_count": 16,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 599
         },
         "48h": {
           "commit_count": 21,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 927
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T12:55:02-07:00",
+        "last_activity_iso": "2026-04-12T14:20:23-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4902,18 +4902,18 @@
       "activity": {
         "24h": {
           "commit_count": 13,
-          "local_change_count": 0,
-          "file_touch_count": 582
+          "local_change_count": 1,
+          "file_touch_count": 583
         },
         "48h": {
           "commit_count": 17,
-          "local_change_count": 0,
-          "file_touch_count": 865
+          "local_change_count": 1,
+          "file_touch_count": 866
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T12:55:02-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 13,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -6630,7 +6630,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "8a5b3eccec4ad0cb893a9dc670483c211f87af0d",
+          "local_head": "a6fd080d97547bb9cf61fccc0761e6973542e9c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -6679,7 +6679,7 @@
           "proof_blocker": false,
           "proof_status": "live_verified",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -19598,19 +19598,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 1,
-          "file_touch_count": 597
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 599
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 899
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 900
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T13:52:34-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -19658,14 +19658,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -19810,18 +19810,18 @@
       "activity": {
         "24h": {
           "commit_count": 16,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 599
         },
         "48h": {
           "commit_count": 21,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 927
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-04-12T12:55:02-07:00",
+        "last_activity_iso": "2026-04-12T14:20:23-07:00",
         "age_days": 2,
         "eta_days": null,
         "eta_confidence": "low"
@@ -20080,7 +20080,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8a5b3eccec4ad0cb893a9dc670483c211f87af0d",
+          "local_head": "a6fd080d97547bb9cf61fccc0761e6973542e9c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -20128,14 +20128,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 43,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "diagnosed",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -20338,14 +20338,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 36,
+          "meaningful_change_count": 35,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -20700,14 +20700,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 43,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -21518,19 +21518,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 16,
+          "commit_count": 17,
           "local_change_count": 1,
-          "file_touch_count": 621
+          "file_touch_count": 624
         },
         "48h": {
-          "commit_count": 20,
+          "commit_count": 21,
           "local_change_count": 1,
-          "file_touch_count": 883
+          "file_touch_count": 885
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 17,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -25335,18 +25335,18 @@
       "activity": {
         "24h": {
           "commit_count": 13,
-          "local_change_count": 0,
-          "file_touch_count": 582
+          "local_change_count": 1,
+          "file_touch_count": 583
         },
         "48h": {
           "commit_count": 17,
-          "local_change_count": 0,
-          "file_touch_count": 865
+          "local_change_count": 1,
+          "file_touch_count": 866
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T12:55:02-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 13,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -25810,19 +25810,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 15,
+          "commit_count": 16,
           "local_change_count": 1,
-          "file_touch_count": 604
+          "file_touch_count": 607
         },
         "48h": {
-          "commit_count": 19,
+          "commit_count": 20,
           "local_change_count": 1,
-          "file_touch_count": 878
+          "file_touch_count": 880
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 13,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -25877,7 +25877,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -29367,19 +29367,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 15,
+          "commit_count": 16,
           "local_change_count": 1,
-          "file_touch_count": 604
+          "file_touch_count": 607
         },
         "48h": {
-          "commit_count": 19,
+          "commit_count": 20,
           "local_change_count": 1,
-          "file_touch_count": 875
+          "file_touch_count": 877
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -29559,19 +29559,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 15,
+          "commit_count": 16,
           "local_change_count": 1,
-          "file_touch_count": 604
+          "file_touch_count": 607
         },
         "48h": {
-          "commit_count": 19,
+          "commit_count": 20,
           "local_change_count": 1,
-          "file_touch_count": 875
+          "file_touch_count": 877
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T13:49:06-07:00",
+        "last_activity_iso": "2026-04-12T14:00:06-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -29963,7 +29963,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "8a5b3eccec4ad0cb893a9dc670483c211f87af0d",
+          "local_head": "a6fd080d97547bb9cf61fccc0761e6973542e9c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -30012,7 +30012,7 @@
           "proof_blocker": false,
           "proof_status": "live_verified",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -30948,18 +30948,18 @@
       "activity": {
         "24h": {
           "commit_count": 16,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 599
         },
         "48h": {
           "commit_count": 21,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 927
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T12:55:02-07:00",
+        "last_activity_iso": "2026-04-12T14:20:23-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -31423,14 +31423,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -31655,14 +31655,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -31893,14 +31893,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -32123,14 +32123,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -32357,14 +32357,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 36,
+          "meaningful_change_count": 35,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -32599,14 +32599,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 39,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -32835,14 +32835,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 34,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -33406,14 +33406,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 34,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
