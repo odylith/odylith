@@ -93,7 +93,7 @@ def test_packet_summary_from_compact_payload_exposes_proof_state_fields() -> Non
     assert summary["execution_governance_mode"] == "recover"
     assert summary["execution_governance_next_move"] == "recover.current_blocker"
     assert summary["execution_governance_blocker"] == "Lambda permission lifecycle on ecs-drift-monitor invoke"
-    assert summary["execution_governance_validation_archetype"] == "generic"
+    assert summary["execution_governance_validation_archetype"] == "recover"
 
 
 def test_packet_expectations_support_proof_state_contract_fields() -> None:

@@ -1614,11 +1614,20 @@ def test_assessment_extracts_execution_governance_fields_from_context_packet() -
                         "resume_token": "resume:B-072",
                         "validation_archetype": "deploy",
                         "validation_minimum_pass_count": 6,
+                        "validation_derived_from": ["mode:verify", "closure:incomplete"],
                         "contradiction_count": 1,
                         "history_rule_count": 2,
+                        "history_rule_hits": [
+                            "partial_scope_requires_closure",
+                            "user_correction_requires_promotion",
+                        ],
+                        "pressure_signals": ["wait:building", "history:user_correction_requires_promotion"],
+                        "nearby_denial_actions": ["explore.broad_reset", "delegate.parallel_workers"],
                         "authoritative_lane": "context_engine.governance_slice.authoritative",
                         "host_family": "codex",
                         "model_family": "codex",
+                        "host_supports_native_spawn": True,
+                        "runtime_invalidated_by_step": "render_compass_dashboard",
                     },
                 }
             },
@@ -1636,9 +1645,79 @@ def test_assessment_extracts_execution_governance_fields_from_context_packet() -
     assert summary["execution_governance_closure"] == "incomplete"
     assert summary["execution_governance_wait_status"] == "building"
     assert summary["execution_governance_validation_archetype"] == "deploy"
+    assert summary["execution_governance_validation_derived_from"] == ["mode:verify", "closure:incomplete"]
     assert summary["execution_governance_contradiction_count"] == 1
     assert summary["execution_governance_history_rule_count"] == 2
+    assert summary["execution_governance_history_rule_hits"] == [
+        "partial_scope_requires_closure",
+        "user_correction_requires_promotion",
+    ]
+    assert summary["execution_governance_pressure_signals"] == [
+        "wait:building",
+        "history:user_correction_requires_promotion",
+    ]
+    assert summary["execution_governance_nearby_denial_actions"] == [
+        "explore.broad_reset",
+        "delegate.parallel_workers",
+    ]
     assert summary["execution_governance_host_family"] == "codex"
+    assert summary["execution_governance_host_supports_native_spawn"] is True
+    assert summary["execution_governance_runtime_invalidated_by_step"] == "render_compass_dashboard"
+
+
+def test_assessment_prefers_explicit_execution_governance_snapshot_over_stale_flat_fallbacks() -> None:
+    request = router.route_request_from_mapping(
+        {
+            "prompt": "Keep this slice local until the fresh governance packet says otherwise.",
+            "task_kind": "analysis",
+            "needs_write": False,
+            "evidence_cone_grounded": True,
+            "context_signals": {
+                "context_packet": {
+                    "execution_governance": {
+                        "present": True,
+                        "outcome": "admit",
+                        "requires_reanchor": False,
+                        "mode": "implement",
+                        "wait_status": "",
+                        "wait_detail": "",
+                        "validation_minimum_pass_count": 0,
+                        "history_rule_count": 0,
+                        "history_rule_hits": [],
+                        "pressure_signals": [],
+                        "host_family": "claude",
+                        "host_supports_native_spawn": False,
+                        "has_writable_targets": False,
+                        "requires_more_consumer_context": False,
+                        "runtime_invalidated_by_step": "",
+                    }
+                },
+                "latest_execution_governance_requires_reanchor": True,
+                "latest_execution_governance_wait_status": "building",
+                "latest_execution_governance_validation_minimum_pass_count": 6,
+                "latest_execution_governance_history_rule_count": 2,
+                "latest_execution_governance_history_rule_hits": ["lane_drift_preflight"],
+                "latest_execution_governance_pressure_signals": ["wait:building", "denials:2"],
+                "latest_execution_governance_host_supports_native_spawn": True,
+                "latest_execution_governance_requires_more_consumer_context": True,
+                "latest_execution_governance_runtime_invalidated_by_step": "render_compass_dashboard",
+            },
+        }
+    )
+
+    assessment = router.assess_request(request)
+    summary = assessment.context_signal_summary
+
+    assert summary["execution_governance_requires_reanchor"] is False
+    assert summary["execution_governance_wait_status"] == ""
+    assert summary["execution_governance_validation_minimum_pass_count"] == 0
+    assert summary["execution_governance_history_rule_count"] == 0
+    assert summary["execution_governance_history_rule_hits"] == []
+    assert summary["execution_governance_pressure_signals"] == []
+    assert summary["execution_governance_host_family"] == "claude"
+    assert summary["execution_governance_host_supports_native_spawn"] is False
+    assert summary["execution_governance_requires_more_consumer_context"] is False
+    assert summary["execution_governance_runtime_invalidated_by_step"] == ""
 
 
 def test_router_execution_governance_reanchor_blocks_delegation() -> None:
@@ -1660,6 +1739,36 @@ def test_router_execution_governance_reanchor_blocks_delegation() -> None:
     assert "re-anchor" in reason
     assert "Odylith" not in reason
     assert "runtime handoff" not in reason
+
+
+def test_router_execution_governance_host_serial_reason_uses_packet_derived_host_capability() -> None:
+    request = router.route_request_from_mapping(
+        {
+            "prompt": "Implement the bounded runtime fix without widening execution.",
+            "task_kind": "implementation",
+            "needs_write": True,
+            "evidence_cone_grounded": True,
+            "context_signals": {
+                "context_packet": {
+                    "route": {"route_ready": True},
+                    "packet_quality": {"i": "implementation", "native_spawn_ready": False},
+                    "execution_governance": {
+                        "present": True,
+                        "outcome": "admit",
+                        "mode": "implement",
+                        "host_family": "claude",
+                        "host_supports_native_spawn": False,
+                    },
+                }
+            },
+        }
+    )
+
+    assessment = router.assess_request(request)
+    reason = router._odylith_execution_guard_reason(assessment)  # noqa: SLF001
+
+    assert "Claude Code" in reason
+    assert "does not expose native delegated execution" in reason
 
 
 def test_orchestrator_parallel_fanout_stays_serial_while_waiting_on_verify_frontier() -> None:

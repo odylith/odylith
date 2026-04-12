@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 from typing import Mapping
+from typing import Sequence
 
 _ACTIVE_WAIT_STATUSES: frozenset[str] = frozenset(
     {
@@ -49,6 +50,33 @@ def _bool(value: Any) -> bool:
     return _token(value) in {"1", "true", "yes", "on"}
 
 
+def _strings(value: Any) -> tuple[str, ...]:
+    if not isinstance(value, (list, tuple, set)):
+        return ()
+    rows: list[str] = []
+    seen: set[str] = set()
+    for item in value:
+        token = _text(item)
+        if not token or token in seen:
+            continue
+        seen.add(token)
+        rows.append(token)
+    return tuple(rows)
+
+
+def _pressure_count(signals: Sequence[str], prefix: str) -> int:
+    prefix_token = f"{_token(prefix)}:"
+    for signal in signals:
+        token = _token(signal)
+        if not token.startswith(prefix_token):
+            continue
+        try:
+            return int(token.split(":", 1)[1] or 0)
+        except ValueError:
+            return 0
+    return 0
+
+
 def _guard_fields(summary: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "present": bool(summary.get("execution_governance_present")),
@@ -62,6 +90,11 @@ def _guard_fields(summary: Mapping[str, Any]) -> dict[str, Any]:
         "wait_detail": _text(summary.get("execution_governance_wait_detail")),
         "contradiction_count": _int(summary.get("execution_governance_contradiction_count")),
         "history_rule_count": _int(summary.get("execution_governance_history_rule_count")),
+        "validation_derived_from": _strings(summary.get("execution_governance_validation_derived_from")),
+        "history_rule_hits": _strings(summary.get("execution_governance_history_rule_hits")),
+        "pressure_signals": _strings(summary.get("execution_governance_pressure_signals")),
+        "nearby_denial_actions": _strings(summary.get("execution_governance_nearby_denial_actions")),
+        "event_count": _int(summary.get("execution_governance_event_count")),
         "host_family": _token(summary.get("execution_governance_host_family")),
         "model_family": _token(summary.get("execution_governance_model_family")),
         "host_supports_native_spawn_present": "execution_governance_host_supports_native_spawn" in summary,
@@ -72,6 +105,7 @@ def _guard_fields(summary: Mapping[str, Any]) -> dict[str, Any]:
             summary.get("execution_governance_requires_more_consumer_context")
         ),
         "consumer_failover": _text(summary.get("execution_governance_consumer_failover")),
+        "runtime_invalidated_by_step": _text(summary.get("execution_governance_runtime_invalidated_by_step")),
         "native_spawn_ready": _bool(summary.get("native_spawn_ready")),
     }
 
@@ -90,14 +124,20 @@ def _host_serial_reason(*, action_label: str, fields: Mapping[str, Any]) -> str:
         host_label = host_family.replace("_", " ").title()
     else:
         host_label = "the detected host"
+    action_surface = "delegated execution"
+    if _token(action_label) == "parallel_fan_out":
+        action_surface = "parallel fan-out"
     return (
         f"the detected host keeps this slice on local or serial follow-through because "
-        f"{host_label} does not expose native delegated {action_label}"
+        f"{host_label} does not expose native {action_surface}"
     )
 
 
 def _action_guard(summary: Mapping[str, Any], *, action_label: str) -> LaneGovernanceGuard:
     fields = _guard_fields(summary)
+    history_rule_hits = {_token(token) for token in fields["history_rule_hits"]}
+    pressure_signals = tuple(_text(token) for token in fields["pressure_signals"])
+    nearby_denial_actions = tuple(_text(token) for token in fields["nearby_denial_actions"])
     if not any(
         (
             fields["present"],
@@ -108,10 +148,22 @@ def _action_guard(summary: Mapping[str, Any], *, action_label: str) -> LaneGover
             fields["wait_status"],
             fields["contradiction_count"] > 0,
             fields["history_rule_count"] > 0,
+            bool(history_rule_hits),
+            bool(pressure_signals),
             fields["host_family"],
         )
     ):
         return LaneGovernanceGuard(blocked=False)
+
+    if fields["runtime_invalidated_by_step"]:
+        return LaneGovernanceGuard(
+            blocked=True,
+            code="execution-governance-runtime-invalidated",
+            reason=(
+                "the governed execution snapshot was invalidated by "
+                f"`{fields['runtime_invalidated_by_step']}`, so re-anchor locally before any new {action_label}"
+            ),
+        )
 
     if fields["requires_reanchor"]:
         return LaneGovernanceGuard(
@@ -127,6 +179,36 @@ def _action_guard(summary: Mapping[str, Any], *, action_label: str) -> LaneGover
             reason=f"the slice has live contradictions that need local resolution before any new {action_label}",
         )
 
+    if "user_correction_requires_promotion" in history_rule_hits:
+        return LaneGovernanceGuard(
+            blocked=True,
+            code="execution-governance-user-correction",
+            reason=f"the slice still needs promoted hard user constraints before any new {action_label}",
+        )
+
+    if "contradiction_blocked_preflight" in history_rule_hits:
+        return LaneGovernanceGuard(
+            blocked=True,
+            code="execution-governance-history-contradiction",
+            reason=f"the slice already matches a contradiction-blocked failure class, so re-anchor before any new {action_label}",
+        )
+
+    if "repeated_rediscovery_detected" in history_rule_hits:
+        return LaneGovernanceGuard(
+            blocked=True,
+            code="execution-governance-history-rediscovery",
+            reason=f"the slice is drifting into repeated rediscovery, so keep {action_label} local until the frontier is re-anchored",
+        )
+
+    if "reanchor_triggered" in history_rule_hits or _pressure_count(pressure_signals, "denials") >= 2 or _pressure_count(
+        pressure_signals, "off_contract"
+    ) >= 2:
+        return LaneGovernanceGuard(
+            blocked=True,
+            code="execution-governance-reanchor-pressure",
+            reason=f"recent denials or off-contract pressure require a fresh re-anchor before any new {action_label}",
+        )
+
     if fields["wait_status"] in _ACTIVE_WAIT_STATUSES:
         detail = fields["wait_detail"]
         detail_suffix = f" ({detail})" if detail else ""
@@ -138,6 +220,20 @@ def _action_guard(summary: Mapping[str, Any], *, action_label: str) -> LaneGover
                 f"before any new {action_label}"
             ),
         )
+
+    for signal in pressure_signals:
+        token = _token(signal)
+        if token.startswith("wait:"):
+            detail = fields["wait_detail"]
+            detail_suffix = f" ({detail})" if detail else ""
+            return LaneGovernanceGuard(
+                blocked=True,
+                code="execution-governance-wait-pressure",
+                reason=(
+                    f"the truthful next move is to resume the active external dependency{detail_suffix} "
+                    f"before any new {action_label}"
+                ),
+            )
 
     if fields["target_lane"] == "consumer" and not fields["has_writable_targets"]:
         failover = fields["consumer_failover"]
@@ -158,6 +254,13 @@ def _action_guard(summary: Mapping[str, Any], *, action_label: str) -> LaneGover
             blocked=True,
             code="execution-governance-critical-path",
             reason=f"the slice is on a {fields['mode']}-first critical path, so {action_label} should wait{blocker_suffix}",
+        )
+
+    if "destructive_subset_blocked" in history_rule_hits:
+        return LaneGovernanceGuard(
+            blocked=True,
+            code="execution-governance-history-destructive-closure",
+            reason=f"the slice already matches a known destructive-subset failure class, so keep {action_label} local until scope is closure-safe",
         )
 
     if fields["closure"] == "destructive":
@@ -184,16 +287,24 @@ def _action_guard(summary: Mapping[str, Any], *, action_label: str) -> LaneGover
 
     if fields["outcome"] == "deny":
         next_move = fields["next_move"]
+        denial_suffix = (
+            f"; nearby denied actions include `{nearby_denial_actions[0]}`"
+            if nearby_denial_actions
+            else ""
+        )
         if next_move:
             return LaneGovernanceGuard(
                 blocked=True,
                 code="execution-governance-deny",
-                reason=f"the current contract does not admit new {action_label}; the truthful next move is `{next_move}`",
+                reason=(
+                    f"the current contract does not admit new {action_label}; "
+                    f"the truthful next move is `{next_move}`{denial_suffix}"
+                ),
             )
         return LaneGovernanceGuard(
             blocked=True,
             code="execution-governance-deny",
-            reason=f"the current contract does not admit new {action_label}",
+            reason=f"the current contract does not admit new {action_label}{denial_suffix}",
         )
 
     if fields["outcome"] == "defer":

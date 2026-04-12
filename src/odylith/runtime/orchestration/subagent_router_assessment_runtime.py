@@ -30,6 +30,15 @@ def _bool_value(value: Any) -> bool:
     return bool(value)
 
 
+def _preferred_value(summary: Mapping[str, Any], key: str, *fallbacks: Any) -> Any:
+    if key in summary:
+        return summary.get(key)
+    for fallback in fallbacks:
+        if fallback not in ("", [], {}, None):
+            return fallback
+    return None
+
+
 def request_with_consumer_write_policy(
     request: RouteRequest,
     *,
@@ -561,161 +570,302 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
         else 0,
         _context_signal_score(_context_lookup(provenance, "projection_fingerprint")),
     )
-    execution_governance_present = bool(
-        execution_governance_summary.get("execution_governance_present")
-        or _context_signal_bool(_context_lookup(root, "execution_governance_present"))
-        or _context_signal_bool(_context_lookup(context_signals, "execution_governance_present"))
-        or _context_signal_bool(_context_lookup(context_signals, "latest_execution_governance_present"))
+    execution_governance_present = _bool_value(
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_present",
+            _context_lookup(root, "execution_governance_present"),
+            _context_lookup(context_signals, "execution_governance_present"),
+            _context_lookup(context_signals, "latest_execution_governance_present"),
+        )
     )
     execution_governance_outcome = _normalize_token(
-        execution_governance_summary.get("execution_governance_outcome")
-        or _context_lookup(root, "execution_governance_outcome")
-        or _context_lookup(context_signals, "execution_governance_outcome")
-        or _context_lookup(context_signals, "latest_execution_governance_outcome")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_outcome",
+            _context_lookup(root, "execution_governance_outcome"),
+            _context_lookup(context_signals, "execution_governance_outcome"),
+            _context_lookup(context_signals, "latest_execution_governance_outcome"),
+        )
     )
-    execution_governance_requires_reanchor = bool(
-        execution_governance_summary.get("execution_governance_requires_reanchor")
-        or _context_signal_bool(_context_lookup(root, "execution_governance_requires_reanchor"))
-        or _context_signal_bool(_context_lookup(context_signals, "execution_governance_requires_reanchor"))
-        or _context_signal_bool(_context_lookup(context_signals, "latest_execution_governance_requires_reanchor"))
+    execution_governance_requires_reanchor = _bool_value(
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_requires_reanchor",
+            _context_lookup(root, "execution_governance_requires_reanchor"),
+            _context_lookup(context_signals, "execution_governance_requires_reanchor"),
+            _context_lookup(context_signals, "latest_execution_governance_requires_reanchor"),
+        )
     )
     execution_governance_mode = _normalize_token(
-        execution_governance_summary.get("execution_governance_mode")
-        or _context_lookup(root, "execution_governance_mode")
-        or _context_lookup(context_signals, "execution_governance_mode")
-        or _context_lookup(context_signals, "latest_execution_governance_mode")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_mode",
+            _context_lookup(root, "execution_governance_mode"),
+            _context_lookup(context_signals, "execution_governance_mode"),
+            _context_lookup(context_signals, "latest_execution_governance_mode"),
+        )
     )
     execution_governance_next_move = _normalize_string(
-        execution_governance_summary.get("execution_governance_next_move")
-        or _context_lookup(root, "execution_governance_next_move")
-        or _context_lookup(context_signals, "execution_governance_next_move")
-        or _context_lookup(context_signals, "latest_execution_governance_next_move")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_next_move",
+            _context_lookup(root, "execution_governance_next_move"),
+            _context_lookup(context_signals, "execution_governance_next_move"),
+            _context_lookup(context_signals, "latest_execution_governance_next_move"),
+        )
     )
     execution_governance_current_phase = _normalize_string(
-        execution_governance_summary.get("execution_governance_current_phase")
-        or _context_lookup(root, "execution_governance_current_phase")
-        or _context_lookup(context_signals, "execution_governance_current_phase")
-        or _context_lookup(context_signals, "latest_execution_governance_current_phase")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_current_phase",
+            _context_lookup(root, "execution_governance_current_phase"),
+            _context_lookup(context_signals, "execution_governance_current_phase"),
+            _context_lookup(context_signals, "latest_execution_governance_current_phase"),
+        )
     )
     execution_governance_last_successful_phase = _normalize_string(
-        execution_governance_summary.get("execution_governance_last_successful_phase")
-        or _context_lookup(root, "execution_governance_last_successful_phase")
-        or _context_lookup(context_signals, "execution_governance_last_successful_phase")
-        or _context_lookup(context_signals, "latest_execution_governance_last_successful_phase")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_last_successful_phase",
+            _context_lookup(root, "execution_governance_last_successful_phase"),
+            _context_lookup(context_signals, "execution_governance_last_successful_phase"),
+            _context_lookup(context_signals, "latest_execution_governance_last_successful_phase"),
+        )
     )
     execution_governance_blocker = _normalize_string(
-        execution_governance_summary.get("execution_governance_blocker")
-        or _context_lookup(root, "execution_governance_blocker")
-        or _context_lookup(context_signals, "execution_governance_blocker")
-        or _context_lookup(context_signals, "latest_execution_governance_blocker")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_blocker",
+            _context_lookup(root, "execution_governance_blocker"),
+            _context_lookup(context_signals, "execution_governance_blocker"),
+            _context_lookup(context_signals, "latest_execution_governance_blocker"),
+        )
     )
     execution_governance_closure = _normalize_token(
-        execution_governance_summary.get("execution_governance_closure")
-        or _context_lookup(root, "execution_governance_closure")
-        or _context_lookup(context_signals, "execution_governance_closure")
-        or _context_lookup(context_signals, "latest_execution_governance_closure")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_closure",
+            _context_lookup(root, "execution_governance_closure"),
+            _context_lookup(context_signals, "execution_governance_closure"),
+            _context_lookup(context_signals, "latest_execution_governance_closure"),
+        )
     )
     execution_governance_wait_status = _normalize_token(
-        execution_governance_summary.get("execution_governance_wait_status")
-        or _context_lookup(root, "execution_governance_wait_status")
-        or _context_lookup(context_signals, "execution_governance_wait_status")
-        or _context_lookup(context_signals, "latest_execution_governance_wait_status")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_wait_status",
+            _context_lookup(root, "execution_governance_wait_status"),
+            _context_lookup(context_signals, "execution_governance_wait_status"),
+            _context_lookup(context_signals, "latest_execution_governance_wait_status"),
+        )
     )
     execution_governance_wait_detail = _normalize_string(
-        execution_governance_summary.get("execution_governance_wait_detail")
-        or _context_lookup(root, "execution_governance_wait_detail")
-        or _context_lookup(context_signals, "execution_governance_wait_detail")
-        or _context_lookup(context_signals, "latest_execution_governance_wait_detail")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_wait_detail",
+            _context_lookup(root, "execution_governance_wait_detail"),
+            _context_lookup(context_signals, "execution_governance_wait_detail"),
+            _context_lookup(context_signals, "latest_execution_governance_wait_detail"),
+        )
     )
     execution_governance_resume_token = _normalize_string(
-        execution_governance_summary.get("execution_governance_resume_token")
-        or _context_lookup(root, "execution_governance_resume_token")
-        or _context_lookup(context_signals, "execution_governance_resume_token")
-        or _context_lookup(context_signals, "latest_execution_governance_resume_token")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_resume_token",
+            _context_lookup(root, "execution_governance_resume_token"),
+            _context_lookup(context_signals, "execution_governance_resume_token"),
+            _context_lookup(context_signals, "latest_execution_governance_resume_token"),
+        )
     )
     execution_governance_validation_archetype = _normalize_token(
-        execution_governance_summary.get("execution_governance_validation_archetype")
-        or _context_lookup(root, "execution_governance_validation_archetype")
-        or _context_lookup(context_signals, "execution_governance_validation_archetype")
-        or _context_lookup(context_signals, "latest_execution_governance_validation_archetype")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_validation_archetype",
+            _context_lookup(root, "execution_governance_validation_archetype"),
+            _context_lookup(context_signals, "execution_governance_validation_archetype"),
+            _context_lookup(context_signals, "latest_execution_governance_validation_archetype"),
+        )
     )
     execution_governance_validation_minimum_pass_count = _int_value(
-        execution_governance_summary.get("execution_governance_validation_minimum_pass_count")
-        or _context_lookup(root, "execution_governance_validation_minimum_pass_count")
-        or _context_lookup(context_signals, "execution_governance_validation_minimum_pass_count")
-        or _context_lookup(context_signals, "latest_execution_governance_validation_minimum_pass_count")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_validation_minimum_pass_count",
+            _context_lookup(root, "execution_governance_validation_minimum_pass_count"),
+            _context_lookup(context_signals, "execution_governance_validation_minimum_pass_count"),
+            _context_lookup(context_signals, "latest_execution_governance_validation_minimum_pass_count"),
+        )
     )
     execution_governance_contradiction_count = _int_value(
-        execution_governance_summary.get("execution_governance_contradiction_count")
-        or _context_lookup(root, "execution_governance_contradiction_count")
-        or _context_lookup(context_signals, "execution_governance_contradiction_count")
-        or _context_lookup(context_signals, "latest_execution_governance_contradiction_count")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_contradiction_count",
+            _context_lookup(root, "execution_governance_contradiction_count"),
+            _context_lookup(context_signals, "execution_governance_contradiction_count"),
+            _context_lookup(context_signals, "latest_execution_governance_contradiction_count"),
+        )
     )
     execution_governance_history_rule_count = _int_value(
-        execution_governance_summary.get("execution_governance_history_rule_count")
-        or _context_lookup(root, "execution_governance_history_rule_count")
-        or _context_lookup(context_signals, "execution_governance_history_rule_count")
-        or _context_lookup(context_signals, "latest_execution_governance_history_rule_count")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_history_rule_count",
+            _context_lookup(root, "execution_governance_history_rule_count"),
+            _context_lookup(context_signals, "execution_governance_history_rule_count"),
+            _context_lookup(context_signals, "latest_execution_governance_history_rule_count"),
+        )
+    )
+    execution_governance_event_count = _int_value(
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_event_count",
+            _context_lookup(root, "execution_governance_event_count"),
+            _context_lookup(context_signals, "execution_governance_event_count"),
+            _context_lookup(context_signals, "latest_execution_governance_event_count"),
+        )
     )
     execution_governance_authoritative_lane = _normalize_string(
-        execution_governance_summary.get("execution_governance_authoritative_lane")
-        or _context_lookup(root, "execution_governance_authoritative_lane")
-        or _context_lookup(context_signals, "execution_governance_authoritative_lane")
-        or _context_lookup(context_signals, "latest_execution_governance_authoritative_lane")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_authoritative_lane",
+            _context_lookup(root, "execution_governance_authoritative_lane"),
+            _context_lookup(context_signals, "execution_governance_authoritative_lane"),
+            _context_lookup(context_signals, "latest_execution_governance_authoritative_lane"),
+        )
     )
     execution_governance_host_family = _normalize_token(
-        execution_governance_summary.get("execution_governance_host_family")
-        or _context_lookup(root, "execution_governance_host_family")
-        or _context_lookup(context_signals, "execution_governance_host_family")
-        or _context_lookup(context_signals, "latest_execution_governance_host_family")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_host_family",
+            _context_lookup(root, "execution_governance_host_family"),
+            _context_lookup(context_signals, "execution_governance_host_family"),
+            _context_lookup(context_signals, "latest_execution_governance_host_family"),
+        )
     )
     execution_governance_model_family = _normalize_token(
-        execution_governance_summary.get("execution_governance_model_family")
-        or _context_lookup(root, "execution_governance_model_family")
-        or _context_lookup(context_signals, "execution_governance_model_family")
-        or _context_lookup(context_signals, "latest_execution_governance_model_family")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_model_family",
+            _context_lookup(root, "execution_governance_model_family"),
+            _context_lookup(context_signals, "execution_governance_model_family"),
+            _context_lookup(context_signals, "latest_execution_governance_model_family"),
+        )
+    )
+    execution_governance_host_supports_native_spawn = _bool_value(
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_host_supports_native_spawn",
+            _context_lookup(root, "execution_governance_host_supports_native_spawn"),
+            _context_lookup(context_signals, "execution_governance_host_supports_native_spawn"),
+            _context_lookup(context_signals, "latest_execution_governance_host_supports_native_spawn"),
+        )
     )
     execution_governance_target_lane = _normalize_token(
-        execution_governance_summary.get("execution_governance_target_lane")
-        or _context_lookup(root, "execution_governance_target_lane")
-        or _context_lookup(context_signals, "execution_governance_target_lane")
-        or _context_lookup(context_signals, "latest_execution_governance_target_lane")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_target_lane",
+            _context_lookup(root, "execution_governance_target_lane"),
+            _context_lookup(context_signals, "execution_governance_target_lane"),
+            _context_lookup(context_signals, "latest_execution_governance_target_lane"),
+        )
     )
     execution_governance_has_writable_targets = _bool_value(
-        execution_governance_summary.get("execution_governance_has_writable_targets")
-        or _context_lookup(root, "execution_governance_has_writable_targets")
-        or _context_lookup(context_signals, "execution_governance_has_writable_targets")
-        or _context_lookup(context_signals, "latest_execution_governance_has_writable_targets")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_has_writable_targets",
+            _context_lookup(root, "execution_governance_has_writable_targets"),
+            _context_lookup(context_signals, "execution_governance_has_writable_targets"),
+            _context_lookup(context_signals, "latest_execution_governance_has_writable_targets"),
+        )
     )
     execution_governance_requires_more_consumer_context = _bool_value(
-        execution_governance_summary.get("execution_governance_requires_more_consumer_context")
-        or _context_lookup(root, "execution_governance_requires_more_consumer_context")
-        or _context_lookup(context_signals, "execution_governance_requires_more_consumer_context")
-        or _context_lookup(context_signals, "latest_execution_governance_requires_more_consumer_context")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_requires_more_consumer_context",
+            _context_lookup(root, "execution_governance_requires_more_consumer_context"),
+            _context_lookup(context_signals, "execution_governance_requires_more_consumer_context"),
+            _context_lookup(context_signals, "latest_execution_governance_requires_more_consumer_context"),
+        )
     )
     execution_governance_consumer_failover = _normalize_string(
-        execution_governance_summary.get("execution_governance_consumer_failover")
-        or _context_lookup(root, "execution_governance_consumer_failover")
-        or _context_lookup(context_signals, "execution_governance_consumer_failover")
-        or _context_lookup(context_signals, "latest_execution_governance_consumer_failover")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_consumer_failover",
+            _context_lookup(root, "execution_governance_consumer_failover"),
+            _context_lookup(context_signals, "execution_governance_consumer_failover"),
+            _context_lookup(context_signals, "latest_execution_governance_consumer_failover"),
+        )
     )
     execution_governance_commentary_mode = _normalize_token(
-        execution_governance_summary.get("execution_governance_commentary_mode")
-        or _context_lookup(root, "execution_governance_commentary_mode")
-        or _context_lookup(context_signals, "execution_governance_commentary_mode")
-        or _context_lookup(context_signals, "latest_execution_governance_commentary_mode")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_commentary_mode",
+            _context_lookup(root, "execution_governance_commentary_mode"),
+            _context_lookup(context_signals, "execution_governance_commentary_mode"),
+            _context_lookup(context_signals, "latest_execution_governance_commentary_mode"),
+        )
     )
     execution_governance_suppress_routing_receipts = _bool_value(
-        execution_governance_summary.get("execution_governance_suppress_routing_receipts")
-        or _context_lookup(root, "execution_governance_suppress_routing_receipts")
-        or _context_lookup(context_signals, "execution_governance_suppress_routing_receipts")
-        or _context_lookup(context_signals, "latest_execution_governance_suppress_routing_receipts")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_suppress_routing_receipts",
+            _context_lookup(root, "execution_governance_suppress_routing_receipts"),
+            _context_lookup(context_signals, "execution_governance_suppress_routing_receipts"),
+            _context_lookup(context_signals, "latest_execution_governance_suppress_routing_receipts"),
+        )
     )
     execution_governance_surface_fast_lane = _bool_value(
-        execution_governance_summary.get("execution_governance_surface_fast_lane")
-        or _context_lookup(root, "execution_governance_surface_fast_lane")
-        or _context_lookup(context_signals, "execution_governance_surface_fast_lane")
-        or _context_lookup(context_signals, "latest_execution_governance_surface_fast_lane")
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_surface_fast_lane",
+            _context_lookup(root, "execution_governance_surface_fast_lane"),
+            _context_lookup(context_signals, "execution_governance_surface_fast_lane"),
+            _context_lookup(context_signals, "latest_execution_governance_surface_fast_lane"),
+        )
+    )
+    execution_governance_validation_derived_from = _normalize_list(
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_validation_derived_from",
+            _context_lookup(root, "execution_governance_validation_derived_from"),
+            _context_lookup(context_signals, "execution_governance_validation_derived_from"),
+            _context_lookup(context_signals, "latest_execution_governance_validation_derived_from"),
+        )
+    )[:4]
+    execution_governance_history_rule_hits = _normalize_list(
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_history_rule_hits",
+            _context_lookup(root, "execution_governance_history_rule_hits"),
+            _context_lookup(context_signals, "execution_governance_history_rule_hits"),
+            _context_lookup(context_signals, "latest_execution_governance_history_rule_hits"),
+        )
+    )[:4]
+    execution_governance_pressure_signals = _normalize_list(
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_pressure_signals",
+            _context_lookup(root, "execution_governance_pressure_signals"),
+            _context_lookup(context_signals, "execution_governance_pressure_signals"),
+            _context_lookup(context_signals, "latest_execution_governance_pressure_signals"),
+        )
+    )[:4]
+    execution_governance_nearby_denial_actions = _normalize_list(
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_nearby_denial_actions",
+            _context_lookup(root, "execution_governance_nearby_denial_actions"),
+            _context_lookup(context_signals, "execution_governance_nearby_denial_actions"),
+            _context_lookup(context_signals, "latest_execution_governance_nearby_denial_actions"),
+        )
+    )[:4]
+    execution_governance_runtime_invalidated_by_step = _normalize_string(
+        _preferred_value(
+            execution_governance_summary,
+            "execution_governance_runtime_invalidated_by_step",
+            _context_lookup(root, "execution_governance_runtime_invalidated_by_step"),
+            _context_lookup(context_signals, "execution_governance_runtime_invalidated_by_step"),
+            _context_lookup(context_signals, "latest_execution_governance_runtime_invalidated_by_step"),
+        )
     )
     return {
         "grounding_score": max(
@@ -1106,11 +1256,17 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
         "execution_governance_resume_token": execution_governance_resume_token,
         "execution_governance_validation_archetype": execution_governance_validation_archetype,
         "execution_governance_validation_minimum_pass_count": execution_governance_validation_minimum_pass_count,
+        "execution_governance_validation_derived_from": execution_governance_validation_derived_from,
         "execution_governance_contradiction_count": execution_governance_contradiction_count,
         "execution_governance_history_rule_count": execution_governance_history_rule_count,
+        "execution_governance_history_rule_hits": execution_governance_history_rule_hits,
+        "execution_governance_pressure_signals": execution_governance_pressure_signals,
+        "execution_governance_nearby_denial_actions": execution_governance_nearby_denial_actions,
+        "execution_governance_event_count": execution_governance_event_count,
         "execution_governance_authoritative_lane": execution_governance_authoritative_lane,
         "execution_governance_host_family": execution_governance_host_family,
         "execution_governance_model_family": execution_governance_model_family,
+        "execution_governance_host_supports_native_spawn": execution_governance_host_supports_native_spawn,
         "execution_governance_target_lane": execution_governance_target_lane,
         "execution_governance_has_writable_targets": execution_governance_has_writable_targets,
         "execution_governance_requires_more_consumer_context": execution_governance_requires_more_consumer_context,
@@ -1118,6 +1274,7 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
         "execution_governance_commentary_mode": execution_governance_commentary_mode,
         "execution_governance_suppress_routing_receipts": execution_governance_suppress_routing_receipts,
         "execution_governance_surface_fast_lane": execution_governance_surface_fast_lane,
+        "execution_governance_runtime_invalidated_by_step": execution_governance_runtime_invalidated_by_step,
         "odylith_fix_mode": odylith_fix_mode,
         "allow_odylith_mutations": allow_odylith_mutations,
         "odylith_write_protected_roots": odylith_write_protected_roots,

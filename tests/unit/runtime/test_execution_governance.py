@@ -196,6 +196,41 @@ def test_runtime_lane_policy_blocks_wait_state_and_unknown_host_parallelism() ->
     assert claude_guard.blocked is False
 
 
+def test_runtime_lane_policy_blocks_invalidated_or_history_pressured_slices() -> None:
+    invalidated_guard = runtime_lane_policy.delegation_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_runtime_invalidated_by_step": "render_compass_dashboard",
+        }
+    )
+    history_guard = runtime_lane_policy.parallelism_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_history_rule_hits": [
+                "user_correction_requires_promotion",
+            ],
+            "execution_governance_pressure_signals": ["denials:2"],
+        }
+    )
+    deny_guard = runtime_lane_policy.delegation_guard(
+        {
+            "execution_governance_present": True,
+            "execution_governance_outcome": "deny",
+            "execution_governance_next_move": "verify.selected_matrix",
+            "execution_governance_nearby_denial_actions": [
+                "explore.broad_reset",
+            ],
+        }
+    )
+
+    assert invalidated_guard.blocked is True
+    assert "render_compass_dashboard" in invalidated_guard.reason
+    assert history_guard.blocked is True
+    assert "hard user constraints" in history_guard.reason
+    assert deny_guard.blocked is True
+    assert "explore.broad_reset" in deny_guard.reason
+
+
 def test_execution_governance_snapshot_carries_turn_target_and_presentation_policy() -> None:
     snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
         {

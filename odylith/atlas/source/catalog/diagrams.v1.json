@@ -80,7 +80,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "120bd8a915f7d1d55a9ebd335c9395ecb072b72ecadd5d404b7dde65604adb48",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "d48218fced4fc62fe34602e025419adb9a43955a669a753feaf9392e995f33ee",
-        "odylith/radar/source/INDEX.md": "bd57a024ce53182857e21e50f6bebaa137c07973516edaa445f2ace716b88f3d",
+        "odylith/radar/source/INDEX.md": "ce06e21596157387a26dcd13571237e4ff0145db683d8ba7d8a6d4b714d93c6f",
         "odylith/technical-plans/INDEX.md": "4d4f6a083ca07a15589f3078e8a339d30bb16d9760a127d0f1de061aa94907bb"
       }
     },
@@ -217,7 +217,7 @@
         "src/odylith/runtime/memory/odylith_remote_retrieval.py": "13146732679f783425cb0e85f0ae7c21a11538f29a5de15e8d7813e0df2b8638",
         "src/odylith/runtime/memory/tooling_memory_contracts.py": "036a5dd04346bf34ee675dda7a255a06e31987c3794cde416771c15cbe7b43be",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "e72c75b6b33cc62228b585bf5cd20e1d9b821b4a92a8a58b0b75e363af072d63",
-        "src/odylith/runtime/execution_engine": "caac1d51f43817a50fd293ad9af9aae7428179f521c5e855c408830cbc0fcef7",
+        "src/odylith/runtime/execution_engine": "c71ee3550bcec804250abe67c2fc48e8c4c01d01300658327dfa336fe7da6ae5",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "ae4cca2563f657b1fe49854c2b83b49d06226c417fed4af380e20346c717b970",
         "src/odylith/runtime/orchestration/subagent_router.py": "40076ddd54c414b88f7255a22061cc1ddeb8ad8bc702b93a8804f6558b672321",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py": "8a72429103f4cebfffcd92694b532353832cc5d718b44d8725225d5b2407f062",

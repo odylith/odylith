@@ -22,10 +22,7 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-        "src/odylith/runtime/execution_engine/event_stream.py",
-        "src/odylith/runtime/execution_engine/policy.py",
-        "src/odylith/runtime/execution_engine/runtime_surface_governance.py"
+        "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
       ],
       "confidence": "high",
       "event_index": 89,
@@ -35,8 +32,8 @@
         "execution-governance"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/execution-governance/CURRENT_SPEC.md, src/odylith/runtime/execution_engine/event_stream.py +2 more",
-      "ts_iso": "2026-04-12T13:39:30-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+      "ts_iso": "2026-04-12T13:49:06-07:00",
       "workstreams": []
     },
     {
