@@ -91,6 +91,11 @@ def evaluate_governed_authoring_action(
         ),
         execution_mode=execution_mode,
     )
+    if user_instructions:
+        contract = execution_policy.promote_instruction_constraints(
+            contract,
+            instructions=list(user_instructions),
+        )
     contradictions = (
         *contradictions_engine.detect_contradictions(
             contract,

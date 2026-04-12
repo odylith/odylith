@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from odylith.runtime.execution_engine import contradictions
 from odylith.runtime.execution_engine import frontier
 from odylith.runtime.execution_engine import policy
@@ -11,6 +13,7 @@ from odylith.runtime.execution_engine import validation
 from odylith.runtime.execution_engine.contract import ExecutionContract
 from odylith.runtime.execution_engine.contract import ExecutionEvent
 from odylith.runtime.execution_engine.contract import detect_execution_host_profile
+from odylith.runtime.governance import sync_session
 
 
 def _contract(
@@ -281,3 +284,163 @@ def test_runtime_lane_policy_blocks_consumer_lane_without_writable_targets() -> 
     assert guard.blocked is True
     assert guard.code == "execution-governance-consumer-fence"
     assert "does not yet have writable consumer targets" in guard.reason
+
+
+def test_promote_instruction_constraints_hardens_inline_user_corrections() -> None:
+    contract = policy.promote_instruction_constraints(
+        _contract(),
+        instructions=[
+            "do not use fixture",
+            "only use authoritative lane",
+        ],
+    )
+
+    decision = policy.evaluate_admissibility(
+        contract,
+        "deploy_fixture",
+        requested_scope=["fixture"],
+    )
+
+    assert len(contract.hard_constraints) == 2
+    assert decision.outcome == "deny"
+    assert any(item.startswith("hard_constraint:") for item in decision.violated_preconditions)
+
+
+def test_evaluate_admissibility_defers_for_active_external_wait_and_denies_resume_without_receipt() -> None:
+    contract = _contract(execution_mode="recover")
+    external_state = receipts.normalize_external_dependency_state(
+        source="github_actions",
+        raw_status="building",
+        external_id="gha-999",
+        detail="deploying cell-01",
+    )
+
+    deferred = policy.evaluate_admissibility(
+        contract,
+        "implement.target_scope",
+        external_state=external_state,
+    )
+    denied_resume = policy.evaluate_admissibility(
+        contract,
+        "resume.external_dependency",
+        external_state=None,
+        receipt=None,
+    )
+
+    assert deferred.outcome == "defer"
+    assert "wait_status:building" in deferred.violated_preconditions
+    assert deferred.nearest_admissible_alternative == "resume.external_dependency"
+    assert denied_resume.outcome == "deny"
+    assert "resume_handle:missing" in denied_resume.violated_preconditions
+
+
+def test_evaluate_admissibility_blocks_carried_history_failure_classes() -> None:
+    contract = _contract()
+
+    lane_drift = policy.evaluate_admissibility(
+        contract,
+        "implement.local_fixture",
+        history_rule_hits=["lane drift", "CB-104"],
+    )
+    correction = policy.evaluate_admissibility(
+        contract,
+        "delegate.parallel_workers",
+        history_rule_hits=["user correction decay"],
+    )
+
+    assert lane_drift.outcome == "deny"
+    assert "history_rule:lane_drift_preflight" in lane_drift.violated_preconditions
+    assert correction.outcome == "defer"
+    assert "history_rule:user_correction_requires_promotion" in correction.violated_preconditions
+
+
+def test_resource_closure_infers_generated_surface_domains_and_missing_truth_roots() -> None:
+    closure = resource_closure.classify_resource_closure(["odylith/compass/compass.html"])
+
+    assert closure.classification == "incomplete"
+    assert "generated_surface_cone" in closure.domains
+    assert "odylith/radar/source/" in closure.missing_dependencies
+    assert "odylith/registry/source/" in closure.missing_dependencies
+
+
+def test_validation_matrix_tracks_recover_mode_and_external_resume_requirement() -> None:
+    contract = _contract(execution_mode="recover")
+    external_state = receipts.normalize_external_dependency_state(
+        source="agent_stream",
+        raw_status="awaiting_callback",
+        external_id="agent-42",
+    )
+    closure = resource_closure.classify_resource_closure(["cell-01"], dependency_graph={"cell-01": ["deploy-group-a"]})
+
+    matrix = validation.synthesize_validation_matrix(
+        contract,
+        resource_closure=closure,
+        external_state=external_state,
+    )
+
+    assert matrix.archetype == "recover"
+    assert "resume" in matrix.checks
+    assert "derived_from" in matrix.to_dict()
+    assert "mode:recover" in matrix.derived_from
+
+
+def test_execution_governance_snapshot_carries_sync_runtime_contract(tmp_path: Path) -> None:
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    payload = {
+        "repo_root": str(tmp_path),
+        "packet_kind": "bootstrap_session",
+        "context_packet_state": "compact",
+        "changed_paths": ["odylith/compass/compass.html"],
+        "context_packet": {
+            "packet_kind": "bootstrap_session",
+            "packet_state": "compact",
+            "route": {"route_ready": True, "native_spawn_ready": True},
+        },
+        "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+    }
+
+    with sync_session.activate_sync_session(session):
+        snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(payload)
+
+    runtime_contract = snapshot["runtime_contract"]
+    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+
+    assert runtime_contract["reuse_scope"] == "sync_scoped"
+    assert runtime_contract["settled_sync_session"] is True
+    assert runtime_contract["repo_root"] == str(tmp_path.resolve())
+    assert summary["execution_governance_runtime_reuse_scope"] == "sync_scoped"
+    assert summary["execution_governance_runtime_settled_sync_session"] is True
+
+
+def test_execution_governance_snapshot_carries_history_and_summary_reason_fields() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_packet_state": "compact",
+            "changed_paths": ["odylith/compass/compass.html"],
+            "known_failure_classes": [
+                "partial scope requires closure",
+                {"failure_class": "lane drift"},
+            ],
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "packet_state": "compact",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+            "proof_state": {"current_blocker": "awaiting callback", "history_rule_hits": ["user correction decay"]},
+        }
+    )
+
+    compact = runtime_surface_governance.compact_execution_governance_snapshot(snapshot)
+    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+
+    assert "partial_scope_requires_closure" in snapshot["history_rule_hits"]
+    assert "lane_drift_preflight" in snapshot["history_rule_hits"]
+    assert "user_correction_requires_promotion" in snapshot["history_rule_hits"]
+    assert "execution_governance_pressure_signals" in summary
+    assert "wait:awaiting_callback" in summary["execution_governance_pressure_signals"]
+    assert "execution_governance_history_rule_hits" in summary
+    assert "execution_governance_nearby_denial_actions" in summary
+    assert "execution_governance_runtime_invalidated_by_step" in summary
+    assert compact["nearby_denial_actions"]

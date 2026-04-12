@@ -1,8 +1,8 @@
 # Execution Governance
-Last updated: 2026-04-11
+Last updated: 2026-04-12
 
 
-Last updated (UTC): 2026-04-11
+Last updated (UTC): 2026-04-12
 
 ## Purpose
 Execution Governance is Odylith's constraint-aware execution runtime. It
@@ -61,10 +61,22 @@ runtime profile; it must not redefine the shared execution policy surface.
   Admissibility decisions, constraint promotion, and re-anchor helpers.
 - `src/odylith/runtime/execution_engine/frontier.py`
   Frontier derivation and execution-mode shaping.
+- `src/odylith/runtime/execution_engine/event_stream.py`
+  Shared execution-event shaping so contradictions, unsafe closure, active
+  waits, and admissibility pressure travel through one append-only stream
+  instead of per-surface heuristics.
+- `src/odylith/runtime/execution_engine/history_rules.py`
+  Canonical history-rule normalization so carried Casebook or packet failure
+  classes become executable preflight blockers instead of stringly-typed
+  surface-local hints.
 - `src/odylith/runtime/execution_engine/resource_closure.py`
   Safe/incomplete/destructive scope classification helpers.
 - `src/odylith/runtime/execution_engine/receipts.py`
   Semantic receipt, external dependency, and resumability helpers.
+- `src/odylith/runtime/execution_engine/sync_runtime_contract.py`
+  Sync-aware execution-governance provenance and reuse metadata so shared
+  runtime surfaces can explain whether they were derived inside an active
+  governed sync session or a standalone packet path.
 - `src/odylith/runtime/execution_engine/validation.py`
   Validation-matrix synthesis.
 - `src/odylith/runtime/execution_engine/contradictions.py`
@@ -160,6 +172,8 @@ The decision may also carry:
 - nearest admissible alternative
 - re-anchor requirement
 - host-aware hints that stay additive to the shared decision
+- pressure signals that capture contradiction pressure, unsafe closure, active
+  waits, repeated rediscovery, and repeated off-contract or denial state
 
 ### `ExecutionFrontier`
 The current truth record for governed execution. Important fields include:
@@ -177,12 +191,37 @@ Subset classification for destructive-risk analysis:
 - `incomplete`
 - `destructive`
 
+The closure record also carries detected closure domains and the resolved
+closure members so path scopes, workstream sets, wave members, release members,
+test matrices, and generated-surface cones can be explained consistently.
+
 ### `SemanticReceipt`
 Typed mutation or handoff receipt carrying:
 - scope fingerprint
 - causal parent
 - resume token
+- resume strategy
 - expected next states
+
+Receipts default to `resume_by_default` whenever an external dependency is
+still live, so follow-up commands reattach unless the operator explicitly
+chooses to restart from scratch.
+
+## Sync And Surface Contract
+- Execution-governance payloads invoked during governed sync must reuse the
+  active sync session and report their reuse scope plus sync generation through
+  the compact runtime contract instead of reopening repo discovery or surface-
+  local provenance scans.
+- Compact packet, shell, Compass, and router summaries must all read the same
+  execution-governance snapshot and runtime contract rather than rebuilding
+  local policy state independently.
+- New snapshot fields must stay content-addressed and no-op quiet so sync does
+  not reintroduce generated-surface rewrite churn or heartbeat tax.
+- The compact summary adapter must preserve the real governing reasons, not
+  just counts. Pressure signals, carried history-rule hits, nearby denied
+  actions, validation derivation, and sync invalidation provenance must travel
+  through the shared summary layer so Router, shell, Compass, and other
+  surfaces do not fork their own explanations.
 
 ## Program/Wave Authoring Sidecar
 Execution Governance does not replace the existing umbrella-wave source
@@ -243,3 +282,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Added shared runtime-lane policy and compact surface summaries so packet reads, router or orchestrator guards, shell or Compass posture, and deterministic remediation all consume the same execution-governance snapshot instead of re-deriving local policy. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-10: Expanded the runtime contract so packet summaries can carry structured `turn_context`, lane-fenced `target_resolution`, and `presentation_policy` through the shared execution-governance snapshot. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
 - 2026-04-11: Grew the execution profile ladder to a `(host_family, profile) -> (model, reasoning_effort)` map so Claude delegation resolves to haiku, sonnet, or opus while Codex tuples stay byte-identical, and flipped the host-capability contract to declare `supports_explicit_model_selection=True` for both validated host families. (Plan: [B-084](odylith/radar/radar.html?view=plan&workstream=B-084), Bug: [CB-103](odylith/casebook/casebook.html?view=bug&bug=CB-103))
+- 2026-04-12: Hardened the core engine with inline user-correction promotion, richer closure domains, typed pressure signals, sync-aware runtime provenance, and shared execution-event shaping so packet summaries, shell or Compass posture, and sync-backed surfaces all explain the same admissibility state. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072), Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))

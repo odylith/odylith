@@ -189,6 +189,7 @@ class ExecutionEvent:
     blocker: str = ""
     next_move: str = ""
     execution_mode: str = ""
+    pressure_signals: tuple[str, ...] = field(default_factory=tuple)
     external_state: "ExternalDependencyState | None" = None
     receipt: "SemanticReceipt | None" = None
 
@@ -201,6 +202,7 @@ class ExecutionEvent:
             "blocker": self.blocker,
             "next_move": self.next_move,
             "execution_mode": self.execution_mode,
+            "pressure_signals": list(self.pressure_signals),
         }
         if self.external_state is not None:
             payload["external_state"] = self.external_state.to_dict()
@@ -422,6 +424,7 @@ class AdmissibilityDecision:
     nearest_admissible_alternative: str = ""
     requires_reanchor: bool = False
     host_hints: tuple[str, ...] = field(default_factory=tuple)
+    pressure_signals: tuple[str, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         if self.outcome not in VALID_DECISION_OUTCOMES:
@@ -436,6 +439,7 @@ class AdmissibilityDecision:
             "nearest_admissible_alternative": self.nearest_admissible_alternative,
             "requires_reanchor": self.requires_reanchor,
             "host_hints": list(self.host_hints),
+            "pressure_signals": list(self.pressure_signals),
         }
 
 
@@ -481,6 +485,8 @@ class ResourceClosure:
     requested: tuple[str, ...]
     missing_dependencies: tuple[str, ...] = field(default_factory=tuple)
     destructive_overlap: tuple[str, ...] = field(default_factory=tuple)
+    domains: tuple[str, ...] = field(default_factory=tuple)
+    closure_members: tuple[str, ...] = field(default_factory=tuple)
     rationale: str = ""
 
     def __post_init__(self) -> None:
@@ -493,6 +499,8 @@ class ResourceClosure:
             "requested": list(self.requested),
             "missing_dependencies": list(self.missing_dependencies),
             "destructive_overlap": list(self.destructive_overlap),
+            "domains": list(self.domains),
+            "closure_members": list(self.closure_members),
             "rationale": self.rationale,
         }
 
@@ -503,6 +511,7 @@ class ExternalDependencyState:
     external_id: str
     semantic_status: str
     detail: str = ""
+    adapter: str = ""
 
     def to_dict(self) -> dict[str, str]:
         return {
@@ -510,6 +519,7 @@ class ExternalDependencyState:
             "external_id": self.external_id,
             "semantic_status": self.semantic_status,
             "detail": self.detail,
+            "adapter": self.adapter,
         }
 
 
@@ -519,6 +529,7 @@ class SemanticReceipt:
     scope_fingerprint: str
     causal_parent: str = ""
     resume_token: str = ""
+    resume_strategy: str = "resume_by_default"
     expected_next_states: tuple[str, ...] = field(default_factory=tuple)
     external_state: ExternalDependencyState | None = None
 
@@ -528,6 +539,7 @@ class SemanticReceipt:
             "scope_fingerprint": self.scope_fingerprint,
             "causal_parent": self.causal_parent,
             "resume_token": self.resume_token,
+            "resume_strategy": self.resume_strategy,
             "expected_next_states": list(self.expected_next_states),
         }
         if self.external_state is not None:
@@ -540,12 +552,14 @@ class ValidationMatrix:
     archetype: str
     checks: tuple[str, ...]
     minimum_pass_count: int
+    derived_from: tuple[str, ...] = field(default_factory=tuple)
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "archetype": self.archetype,
             "checks": list(self.checks),
             "minimum_pass_count": self.minimum_pass_count,
+            "derived_from": list(self.derived_from),
         }
 
 
@@ -556,6 +570,7 @@ class ContradictionRecord:
     conflicting_evidence: str
     severity: str
     blocks_execution: bool = False
+    category: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -564,6 +579,7 @@ class ContradictionRecord:
             "conflicting_evidence": self.conflicting_evidence,
             "severity": self.severity,
             "blocks_execution": self.blocks_execution,
+            "category": self.category,
         }
 
 

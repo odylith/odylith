@@ -5,16 +5,18 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.execution_engine import contradictions as contradictions_engine
+from odylith.runtime.execution_engine import event_stream as event_stream_engine
 from odylith.runtime.execution_engine import frontier as frontier_engine
+from odylith.runtime.execution_engine import history_rules as history_rule_engine
 from odylith.runtime.execution_engine import policy as policy_engine
 from odylith.runtime.execution_engine import receipts as receipts_engine
 from odylith.runtime.execution_engine import resource_closure as resource_closure_engine
+from odylith.runtime.execution_engine import sync_runtime_contract
 from odylith.runtime.execution_engine import validation as validation_engine
 from odylith.runtime.execution_engine.contract import AdmissibilityDecision
 from odylith.runtime.execution_engine.contract import ContradictionRecord
 from odylith.runtime.execution_engine.contract import DiagnosticAnchor
 from odylith.runtime.execution_engine.contract import ExecutionContract
-from odylith.runtime.execution_engine.contract import ExecutionEvent
 from odylith.runtime.execution_engine.contract import ExecutionMode
 from odylith.runtime.execution_engine.contract import ExternalDependencyState
 from odylith.runtime.execution_engine.contract import ResourceClosure
@@ -40,7 +42,7 @@ def _strings(*values: Any) -> tuple[str, ...]:
     seen: set[str] = set()
     ordered: list[str] = []
     for value in values:
-        if not isinstance(value, list):
+        if not isinstance(value, (list, tuple)):
             continue
         for item in value:
             token = _string(item)
@@ -49,6 +51,23 @@ def _strings(*values: Any) -> tuple[str, ...]:
             seen.add(token)
             ordered.append(token)
     return tuple(ordered)
+
+
+def _instruction_candidates(*values: Any) -> tuple[str, ...]:
+    rows: list[str] = []
+    for value in values:
+        if isinstance(value, str):
+            token = _string(value)
+            if token:
+                rows.append(token)
+            continue
+        if not isinstance(value, list):
+            continue
+        for item in value:
+            token = _string(item)
+            if token:
+                rows.append(token)
+    return tuple(dict.fromkeys(rows))
 
 
 def _turn_context(value: Any) -> TurnContext | None:
@@ -111,10 +130,6 @@ def _target_resolution(value: Any) -> TargetResolution | None:
         requires_more_consumer_context=bool(payload.get("requires_more_consumer_context")),
         consumer_failover=_string(payload.get("consumer_failover")),
     )
-
-
-def _event_id(index: int, suffix: str) -> str:
-    return f"eg-{index:02d}-{suffix}"
 
 
 def _infer_execution_mode(
@@ -297,20 +312,89 @@ def _infer_dependency_graph(
     companion_rows: list[str] = []
     companion_rows.extend(_strings(list(recommended_tests)))
     companion_rows.extend(token for token in _strings(list(relevant_docs)) if token not in companion_rows)
-    if not companion_rows:
-        return graph
     for token in requested:
+        dependencies: list[str] = []
+        dependencies.extend(companion_rows[:2])
         if token.startswith("src/"):
-            graph[token] = tuple(companion_rows[:2])
+            graph[token] = tuple(dict.fromkeys(dependencies))
+            continue
+        if token.startswith(
+            (
+                "odylith/compass/",
+                "odylith/radar/",
+                "odylith/registry/",
+                "odylith/casebook/",
+                "odylith/atlas/",
+            )
+        ):
+            dependencies.extend(
+                (
+                    "odylith/radar/source/",
+                    "odylith/technical-plans/",
+                    "odylith/registry/source/",
+                    "odylith/casebook/bugs/",
+                    "odylith/atlas/source/",
+                )
+            )
+            graph[token] = tuple(dict.fromkeys(dependencies))
+            continue
+        if token.startswith("odylith/radar/source/programs/"):
+            dependencies.extend(("odylith/radar/source/ideas/", "odylith/technical-plans/"))
+            graph[token] = tuple(dict.fromkeys(dependencies))
+            continue
+        if token.startswith("tests/"):
+            dependencies.append("src/")
+            graph[token] = tuple(dict.fromkeys(dependencies))
+            continue
+        if token.startswith("B-"):
+            dependencies.extend(
+                item for item in companion_rows if item.startswith(("odylith/technical-plans/", "tests/", "src/"))
+            )
+            graph[token] = tuple(dict.fromkeys(dependencies))
     return graph
+
+
+def _external_state_from_mapping(value: Any, *, default_source: str = "") -> ExternalDependencyState | None:
+    payload = _mapping(value)
+    if not payload:
+        return None
+    raw_status = (
+        _string(payload.get("semantic_status"))
+        or _string(payload.get("status"))
+        or _string(payload.get("state"))
+    )
+    external_id = _string(payload.get("external_id")) or _string(payload.get("id"))
+    if not raw_status or not external_id:
+        return None
+    return receipts_engine.normalize_external_dependency_state(
+        source=_string(payload.get("source")) or default_source or "external_dependency",
+        raw_status=raw_status,
+        external_id=external_id,
+        detail=_string(payload.get("detail")) or _string(payload.get("summary")),
+        adapter=_string(payload.get("adapter")) or default_source,
+    )
 
 
 def _infer_external_dependency_state(
     *,
+    payload: Mapping[str, Any],
+    context: Mapping[str, Any],
+    handoff: Mapping[str, Any],
     proof_state: Mapping[str, Any],
     workstream: str,
     session_id: str,
 ) -> ExternalDependencyState | None:
+    for candidate, source in (
+        (payload.get("external_dependency"), "payload"),
+        (payload.get("execution_stream_state"), "execution_stream"),
+        (payload.get("github_actions"), "github_actions"),
+        (payload.get("agent_stream_state"), "agent_stream"),
+        (context.get("external_dependency"), "context_packet"),
+        (handoff.get("external_dependency"), "routing_handoff"),
+    ):
+        normalized = _external_state_from_mapping(candidate, default_source=source)
+        if normalized is not None:
+            return normalized
     blocker = _string(proof_state.get("current_blocker"))
     token = blocker.lower()
     if "token refresh" in token:
@@ -333,6 +417,7 @@ def _infer_external_dependency_state(
         raw_status=raw_status,
         external_id=external_id,
         detail=blocker,
+        adapter="proof_state",
     )
 
 
@@ -342,19 +427,15 @@ def _history_rule_hits(
     admissibility: AdmissibilityDecision,
     contradictions: Sequence[ContradictionRecord],
     proof_same_fingerprint_reopened: bool,
+    carried_history: Sequence[Any] = (),
 ) -> tuple[str, ...]:
-    hits: list[str] = []
-    if closure.classification == "incomplete":
-        hits.append("partial_scope_requires_closure")
-    if closure.classification == "destructive":
-        hits.append("destructive_subset_blocked")
-    if proof_same_fingerprint_reopened:
-        hits.append("repeated_rediscovery_detected")
-    if any(row.blocks_execution for row in contradictions):
-        hits.append("contradiction_blocked_preflight")
-    if admissibility.requires_reanchor:
-        hits.append("reanchor_triggered")
-    return tuple(dict.fromkeys(hits))
+    return history_rule_engine.collect_history_rule_hits(
+        closure=closure,
+        admissibility=admissibility,
+        contradictions=contradictions,
+        proof_same_fingerprint_reopened=proof_same_fingerprint_reopened,
+        carried_history=carried_history,
+    )
 
 
 def build_packet_execution_governance_snapshot(
@@ -373,9 +454,12 @@ def build_packet_execution_governance_snapshot(
     turn_context = _turn_context(payload.get("turn_context") or session.get("turn_context"))
     presentation_policy = _presentation_policy(payload.get("presentation_policy"))
     target_resolution = _target_resolution(payload.get("target_resolution"))
+    raw_payload_proof_state = _mapping(payload.get("proof_state"))
+    raw_context_proof_state = _mapping(context.get("proof_state"))
     proof_state = proof_state_runtime.normalize_proof_state(
-        payload.get("proof_state")
-    ) or proof_state_runtime.normalize_proof_state(context.get("proof_state"))
+        raw_payload_proof_state
+    ) or proof_state_runtime.normalize_proof_state(raw_context_proof_state)
+    proof_state_signals = proof_state or raw_payload_proof_state or raw_context_proof_state
     proof_reopen = proof_state_runtime.proof_reopen_signal(proof_state) if proof_state else {}
     packet_kind = _string(payload.get("packet_kind")) or _string(context.get("packet_kind")) or "packet"
     packet_state = _string(payload.get("context_packet_state")) or _string(context.get("packet_state"))
@@ -399,6 +483,36 @@ def build_packet_execution_governance_snapshot(
     )
     recommended_commands = _strings(payload.get("recommended_commands"))
     relevant_docs = _strings(payload.get("relevant_docs"), payload.get("docs"))
+    user_instructions = _instruction_candidates(
+        payload.get("user_instructions"),
+        payload.get("instructions"),
+        session.get("constraints"),
+        turn_context.visible_text if turn_context is not None else (),
+    )
+    carried_history = [
+        *[
+            item
+            for item in (
+                payload.get("history_rule_hits"),
+                payload.get("known_failure_classes"),
+                payload.get("casebook_failure_classes"),
+                payload.get("failure_patterns"),
+                payload.get("history_signals"),
+                context.get("history_rule_hits"),
+                context.get("known_failure_classes"),
+                context.get("casebook_failure_classes"),
+                handoff.get("history_rule_hits"),
+                handoff.get("known_failure_classes"),
+                raw_payload_proof_state.get("history_rule_hits"),
+                raw_payload_proof_state.get("known_failure_classes"),
+                raw_context_proof_state.get("history_rule_hits"),
+                raw_context_proof_state.get("known_failure_classes"),
+                proof_state.get("history_rule_hits"),
+                proof_state.get("known_failure_classes"),
+            )
+            if item not in (None, "", [], {})
+        ],
+    ]
     strict_gate_command_count = int(validation_bundle.get("strict_gate_command_count", 0) or 0)
     if strict_gate_command_count <= 0:
         strict_gate_command_count = len(_strings(validation_bundle.get("strict_gate_commands")))
@@ -417,9 +531,12 @@ def build_packet_execution_governance_snapshot(
         model_name=_string(_mapping(context.get("execution_profile")).get("model")),
         environ=environ,
     )
-    active_blocker = _string(proof_state.get("current_blocker")) or full_scan_reason
+    active_blocker = _string(proof_state_signals.get("current_blocker")) or full_scan_reason
     external_state = _infer_external_dependency_state(
-        proof_state=proof_state,
+        payload=payload,
+        context=context,
+        handoff=handoff,
+        proof_state=proof_state_signals,
         workstream=workstream,
         session_id=session_id,
     )
@@ -460,7 +577,7 @@ def build_packet_execution_governance_snapshot(
             _success_criteria(
                 route_ready=route_ready,
                 full_scan_recommended=full_scan_recommended,
-                proof_state=proof_state,
+                proof_state=proof_state_signals,
                 validation_signal=validation_signal,
             )
         ),
@@ -490,11 +607,24 @@ def build_packet_execution_governance_snapshot(
         presentation_policy=presentation_policy,
         execution_mode=execution_mode,
     )
+    if user_instructions:
+        contract = policy_engine.promote_instruction_constraints(
+            contract,
+            instructions=user_instructions,
+        )
     contradictions = contradictions_engine.detect_contradictions(
         contract,
         intended_action=primary_action,
+        user_instructions=user_instructions,
         docs=[f"forbidden:{full_scan_reason}"] if full_scan_reason in {"local_fixture", "fixture"} else [],
-        live_state=[external_state.detail] if external_state is not None else [],
+        live_state=[
+            token
+            for token in (
+                external_state.detail if external_state is not None else "",
+                external_state.semantic_status if external_state is not None else "",
+            )
+            if token
+        ],
     )
     dependency_graph = _infer_dependency_graph(
         requested=path_tokens or tuple([workstream] if workstream else []),
@@ -505,60 +635,72 @@ def build_packet_execution_governance_snapshot(
         path_tokens or tuple([workstream] if workstream else [packet_kind]),
         dependency_graph=dependency_graph,
     )
-    validation_matrix = validation_engine.synthesize_validation_matrix(contract)
+    validation_matrix = validation_engine.synthesize_validation_matrix(
+        contract,
+        resource_closure=closure,
+        external_state=external_state,
+    )
     receipt = receipts_engine.emit_semantic_receipt(
         action=primary_action,
         scope_fingerprint="|".join(path_tokens[:4] or ([workstream] if workstream else [packet_kind])),
-        causal_parent=_string(proof_state.get("failure_fingerprint")) or session_id,
+        causal_parent=_string(proof_state_signals.get("failure_fingerprint")) or session_id,
         external_state=external_state,
         resume_token=f"resume:{session_id or workstream or packet_kind}",
         expected_next_states=(
             [external_state.semantic_status] if external_state is not None else [validation_matrix.archetype]
         ),
     )
-    events = [
-        ExecutionEvent(
-            event_id=_event_id(1, "phase"),
-            event_type="packet_summary",
-            phase=_string(proof_state.get("frontier_phase")) or execution_mode,
-            successful=bool(route_ready and not active_blocker),
-            blocker=active_blocker,
-            next_move=primary_action,
-            execution_mode=execution_mode,
-            external_state=external_state,
-            receipt=receipt,
-        )
-    ]
-    if turn_context is not None and turn_context.supersedes_turn_id:
-        events.insert(
-            0,
-            ExecutionEvent(
-                event_id=_event_id(0, "superseded"),
-                event_type="turn_superseded",
-                phase="supersession",
-                successful=True,
-                next_move=primary_action,
-                execution_mode=execution_mode,
+    admissibility = policy_engine.evaluate_admissibility(
+        contract,
+        primary_action,
+        requested_scope=list(path_tokens),
+        contradictions=contradictions,
+        closure=closure,
+        external_state=external_state,
+        receipt=receipt,
+        history_rule_hits=_history_rule_hits(
+            closure=closure,
+            admissibility=policy_engine.evaluate_admissibility(
+                contract,
+                primary_action,
+                requested_scope=list(path_tokens),
+                contradictions=contradictions,
             ),
-        )
-    if _string(proof_state.get("first_failing_phase")):
-        events.insert(
-            0,
-            ExecutionEvent(
-                event_id=_event_id(0, "proof"),
-                event_type="proof_state",
-                phase=_string(proof_state.get("first_failing_phase")),
-                successful=not bool(active_blocker),
-                next_move=primary_action,
-                execution_mode=execution_mode,
-            ),
-        )
+            contradictions=contradictions,
+            proof_same_fingerprint_reopened=bool(proof_reopen.get("same_fingerprint_reopened")),
+            carried_history=carried_history,
+        ),
+    )
+    history_rule_hits = _history_rule_hits(
+        closure=closure,
+        admissibility=admissibility,
+        contradictions=contradictions,
+        proof_same_fingerprint_reopened=bool(proof_reopen.get("same_fingerprint_reopened")),
+        carried_history=carried_history,
+    )
+    events = event_stream_engine.build_execution_event_stream(
+        current_phase=_string(proof_state.get("frontier_phase")) or execution_mode,
+        last_successful_phase=_string(proof_state.get("last_successful_phase")),
+        blocker=active_blocker,
+        next_move=primary_action,
+        execution_mode=execution_mode,
+        admissibility=admissibility,
+        contradictions=contradictions,
+        closure=closure,
+        external_state=external_state,
+        receipt=receipt,
+    )
     frontier = frontier_engine.derive_execution_frontier(events, default_mode=execution_mode)
     admissibility = policy_engine.evaluate_admissibility(
         contract,
         primary_action,
         requested_scope=list(path_tokens),
         contradictions=contradictions,
+        frontier=frontier,
+        closure=closure,
+        external_state=external_state,
+        receipt=receipt,
+        history_rule_hits=history_rule_hits,
     )
     nearby_denials = [
         decision.to_dict()
@@ -568,6 +710,11 @@ def build_packet_execution_governance_snapshot(
                 candidate,
                 requested_scope=list(path_tokens),
                 contradictions=contradictions,
+                frontier=frontier,
+                closure=closure,
+                external_state=external_state,
+                receipt=receipt,
+                history_rule_hits=history_rule_hits,
             )
             for candidate in _nearby_actions(
                 primary_action=primary_action,
@@ -577,15 +724,25 @@ def build_packet_execution_governance_snapshot(
         )
         if decision.outcome != "admit"
     ][:3]
-    history_rule_hits = _history_rule_hits(
-        closure=closure,
-        admissibility=admissibility,
-        contradictions=contradictions,
-        proof_same_fingerprint_reopened=bool(proof_reopen.get("same_fingerprint_reopened")),
+    runtime_contract = sync_runtime_contract.build_execution_governance_runtime_contract(
+        payload=payload,
+        snapshot={
+            "contract": contract.to_dict(),
+            "admissibility": admissibility.to_dict(),
+            "frontier": frontier.to_dict(),
+            "resource_closure": closure.to_dict(),
+            "validation_matrix": validation_matrix.to_dict(),
+            "contradictions": [row.to_dict() for row in contradictions],
+            "external_dependency": external_state.to_dict() if external_state is not None else {},
+            "receipt": receipt.to_dict(),
+            "history_rule_hits": list(history_rule_hits),
+        },
+        built_from="runtime_packet",
     )
     return {
         "contract": contract.to_dict(),
         "admissibility": admissibility.to_dict(),
+        "event_stream": [row.to_dict() for row in events],
         "frontier": frontier.to_dict(),
         "resource_closure": closure.to_dict(),
         "validation_matrix": validation_matrix.to_dict(),
@@ -595,6 +752,7 @@ def build_packet_execution_governance_snapshot(
         "resume_handle": receipts_engine.reattach_receipt(receipt).to_dict(),
         "history_rule_hits": list(history_rule_hits),
         "nearby_denials": nearby_denials,
+        "runtime_contract": runtime_contract,
     }
 
 
@@ -606,6 +764,7 @@ def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[s
     validation = _mapping(snapshot.get("validation_matrix"))
     external_dependency = _mapping(snapshot.get("external_dependency"))
     receipt = _mapping(snapshot.get("receipt"))
+    runtime_contract = _mapping(snapshot.get("runtime_contract"))
     host_profile = _mapping(contract.get("host_profile"))
     turn_context = _mapping(contract.get("turn_context"))
     target_resolution = _mapping(contract.get("target_resolution"))
@@ -648,14 +807,22 @@ def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[s
             "resume_token": _string(receipt.get("resume_token")),
             "validation_archetype": _string(validation.get("archetype")),
             "validation_minimum_pass_count": int(validation.get("minimum_pass_count", 0) or 0),
+            "validation_derived_from": _strings(validation.get("derived_from")),
             "contradiction_count": len(
                 [row for row in snapshot.get("contradictions", []) if isinstance(row, Mapping)]
             ),
             "history_rule_count": len(
                 [row for row in snapshot.get("history_rule_hits", []) if _string(row)]
             ),
+            "event_count": len([row for row in snapshot.get("event_stream", []) if isinstance(row, Mapping)]),
+            "pressure_signals": _strings(admissibility.get("pressure_signals")),
             "history_rule_hits": [
                 token for token in snapshot.get("history_rule_hits", []) if _string(token)
+            ][:3],
+            "nearby_denial_actions": [
+                _string(row.get("action"))
+                for row in nearby_denials
+                if _string(row.get("action"))
             ][:3],
             "nearby_denials": nearby_denials[:2],
             "turn_intent": _string(turn_context.get("intent")),
@@ -677,6 +844,11 @@ def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[s
             "commentary_mode": _string(presentation_policy.get("commentary_mode")),
             "suppress_routing_receipts": bool(presentation_policy.get("suppress_routing_receipts")),
             "surface_fast_lane": bool(presentation_policy.get("surface_fast_lane")),
+            "runtime_built_from": _string(runtime_contract.get("built_from")),
+            "runtime_reuse_scope": _string(runtime_contract.get("reuse_scope")),
+            "runtime_sync_generation": int(runtime_contract.get("sync_generation", 0) or 0),
+            "runtime_settled_sync_session": bool(runtime_contract.get("settled_sync_session")),
+            "runtime_invalidated_by_step": _string(runtime_contract.get("invalidated_by_step")),
         }.items()
         if value not in ("", [], {}, None, 0)
     }
@@ -708,8 +880,17 @@ def summary_fields_from_execution_governance(snapshot: Mapping[str, Any]) -> dic
         "execution_governance_validation_minimum_pass_count": int(
             compact.get("validation_minimum_pass_count", 0) or 0
         ),
+        "execution_governance_validation_derived_from": _strings(
+            compact.get("validation_derived_from")
+        ),
+        "execution_governance_event_count": int(compact.get("event_count", 0) or 0),
         "execution_governance_contradiction_count": int(compact.get("contradiction_count", 0) or 0),
         "execution_governance_history_rule_count": int(compact.get("history_rule_count", 0) or 0),
+        "execution_governance_history_rule_hits": _strings(compact.get("history_rule_hits")),
+        "execution_governance_pressure_signals": _strings(compact.get("pressure_signals")),
+        "execution_governance_nearby_denial_actions": _strings(
+            compact.get("nearby_denial_actions")
+        ),
         "execution_governance_host_family": _string(compact.get("host_family")),
         "execution_governance_model_family": _string(compact.get("model_family")),
         "execution_governance_host_delegation_style": _string(compact.get("host_delegation_style")),
@@ -741,6 +922,17 @@ def summary_fields_from_execution_governance(snapshot: Mapping[str, Any]) -> dic
             compact.get("suppress_routing_receipts")
         ),
         "execution_governance_surface_fast_lane": bool(compact.get("surface_fast_lane")),
+        "execution_governance_runtime_built_from": _string(compact.get("runtime_built_from")),
+        "execution_governance_runtime_reuse_scope": _string(compact.get("runtime_reuse_scope")),
+        "execution_governance_runtime_sync_generation": int(
+            compact.get("runtime_sync_generation", 0) or 0
+        ),
+        "execution_governance_runtime_settled_sync_session": bool(
+            compact.get("runtime_settled_sync_session")
+        ),
+        "execution_governance_runtime_invalidated_by_step": _string(
+            compact.get("runtime_invalidated_by_step")
+        ),
     }
 
 

@@ -245,6 +245,24 @@ def test_wave_assign_and_gate_add_round_trip_program_file(tmp_path: Path) -> Non
     ]
 
 
+def test_program_status_reports_active_missing_gate_workstreams(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001
+) -> None:
+    _seed_program_repo(tmp_path)
+    assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"]) == 0
+    capsys.readouterr()
+
+    assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "status", "B-201", "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["active_wave_id"] == "W1"
+    assert payload["active_primary_workstreams"] == ["B-202"]
+    assert payload["active_missing_gate_workstreams"] == ["B-202"]
+    assert "missing_gate:B-202" in payload["missing_structure"]
+    assert payload["next_command"] == 'odylith wave gate-add B-201 W1 B-202 --label "Contract engine gate"'
+
+
 def test_wave_assign_rejects_non_child_workstream(tmp_path: Path, capsys) -> None:  # noqa: ANN001
     _seed_program_repo(tmp_path)
     assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"]) == 0

@@ -381,17 +381,35 @@ def _program_status_payload(
             token = str(item or "").strip()
             if token and token not in carried:
                 carried.append(token)
+    active_primary = [
+        str(item).strip()
+        for item in (active_wave or {}).get("primary_workstreams", [])
+        if str(item).strip()
+    ] if isinstance(active_wave, Mapping) else []
+    active_gate_workstreams = {
+        str(row.get("workstream_id", "")).strip()
+        for row in (active_wave or {}).get("gate_refs", [])
+        if isinstance(row, Mapping) and str(row.get("workstream_id", "")).strip()
+    } if isinstance(active_wave, Mapping) else set()
+    missing_active_gates = [workstream_id for workstream_id in active_primary if workstream_id not in active_gate_workstreams]
     return {
         "umbrella_id": umbrella_id,
         "title": str(umbrella_spec.metadata.get("title", "")).strip() or umbrella_id,
         "program_path": execution_wave_contract.program_relative_path(umbrella_id),
         "wave_count": len(waves),
         "active_wave": active_wave,
+        "active_wave_id": str(active_wave.get("wave_id", "")).strip() if isinstance(active_wave, Mapping) else "",
         "next_wave": next_wave,
+        "next_wave_id": str(next_wave.get("wave_id", "")).strip() if isinstance(next_wave, Mapping) else "",
         "blocked_waves": blocked,
         "carried_workstreams": carried,
+        "active_primary_workstreams": active_primary,
+        "active_missing_gate_workstreams": missing_active_gates,
         "unassigned_children": unassigned_children,
-        "missing_structure": [f"unassigned:{child}" for child in unassigned_children],
+        "missing_structure": [
+            *[f"unassigned:{child}" for child in unassigned_children],
+            *[f"missing_gate:{workstream_id}" for workstream_id in missing_active_gates],
+        ],
         "host_general_contract": True,
         "execution_host_note": "host/model-specific nuance should stay behind detected execution profiles",
         "child_titles": {
@@ -467,6 +485,8 @@ def _print_program_payload(*, payload: Mapping[str, Any], as_json: bool) -> None
         print(f"- blocked waves: {', '.join(blocked) if blocked else '-'}")
         unassigned = [str(item).strip() for item in payload.get("unassigned_children", []) if str(item).strip()]
         print(f"- unassigned children: {', '.join(unassigned) if unassigned else '-'}")
+        missing_gates = [str(item).strip() for item in payload.get("active_missing_gate_workstreams", []) if str(item).strip()]
+        print(f"- active missing gates: {', '.join(missing_gates) if missing_gates else '-'}")
         print(f"- next command: {str(payload.get('next_command', '')).strip() or '-'}")
         return
     print(json.dumps(payload, indent=2) + "\n", end="")

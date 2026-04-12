@@ -28,6 +28,7 @@ def normalize_external_dependency_state(
     raw_status: str,
     external_id: str,
     detail: str = "",
+    adapter: str = "",
 ) -> ExternalDependencyState:
     token = str(raw_status or "").strip().lower().replace(" ", "_")
     semantic_status = _SEMANTIC_STATUS_MAP.get(token, token or "unknown")
@@ -36,6 +37,7 @@ def normalize_external_dependency_state(
         external_id=str(external_id or "").strip(),
         semantic_status=semantic_status,
         detail=str(detail or "").strip(),
+        adapter=str(adapter or "").strip(),
     )
 
 
@@ -49,11 +51,17 @@ def emit_semantic_receipt(
     expected_next_states: tuple[str, ...] | list[str] = (),
 ) -> SemanticReceipt:
     normalized_resume_token = str(resume_token or "").strip() or f"resume:{scope_fingerprint}"
+    resume_strategy = (
+        "resume_by_default"
+        if external_state is not None and external_state.semantic_status not in {"succeeded", "failed", "cancelled", "complete"}
+        else "restart_if_requested"
+    )
     return SemanticReceipt(
         action=str(action or "").strip(),
         scope_fingerprint=str(scope_fingerprint or "").strip(),
         causal_parent=str(causal_parent or "").strip(),
         resume_token=normalized_resume_token,
+        resume_strategy=resume_strategy,
         expected_next_states=tuple(str(item).strip() for item in expected_next_states if str(item).strip()),
         external_state=external_state,
     )

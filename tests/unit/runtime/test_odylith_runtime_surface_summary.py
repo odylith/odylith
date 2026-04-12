@@ -76,8 +76,21 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
                 "execution_governance_resume_token": "resume:B-072",
                 "execution_governance_validation_archetype": "deploy",
                 "execution_governance_validation_minimum_pass_count": 6,
+                "execution_governance_validation_derived_from": ["mode:verify", "closure:incomplete"],
                 "execution_governance_contradiction_count": 0,
                 "execution_governance_history_rule_count": 2,
+                "execution_governance_history_rule_hits": [
+                    "partial_scope_requires_closure",
+                    "reanchor_triggered",
+                ],
+                "execution_governance_pressure_signals": [
+                    "closure:incomplete",
+                    "wait:building",
+                ],
+                "execution_governance_nearby_denial_actions": [
+                    "explore.broad_reset",
+                    "delegate.parallel_workers",
+                ],
                 "execution_governance_authoritative_lane": "context_engine.governance_slice.authoritative",
                 "execution_governance_host_family": "codex",
                 "execution_governance_model_family": "",
@@ -91,6 +104,7 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
                 "execution_governance_commentary_mode": "task_first_minimal",
                 "execution_governance_suppress_routing_receipts": True,
                 "execution_governance_surface_fast_lane": True,
+                "execution_governance_runtime_invalidated_by_step": "render_compass_dashboard",
                 "turn_intent": 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
                 "turn_surface_count": 1,
                 "turn_visible_text_count": 1,
@@ -251,7 +265,20 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["latest_execution_governance_wait_status"] == "building"
     assert summary["latest_execution_governance_resume_token"] == "resume:B-072"
     assert summary["latest_execution_governance_validation_archetype"] == "deploy"
+    assert summary["latest_execution_governance_validation_derived_from"] == ["mode:verify", "closure:incomplete"]
     assert summary["latest_execution_governance_history_rule_count"] == 2
+    assert summary["latest_execution_governance_history_rule_hits"] == [
+        "partial_scope_requires_closure",
+        "reanchor_triggered",
+    ]
+    assert summary["latest_execution_governance_pressure_signals"] == [
+        "closure:incomplete",
+        "wait:building",
+    ]
+    assert summary["latest_execution_governance_nearby_denial_actions"] == [
+        "explore.broad_reset",
+        "delegate.parallel_workers",
+    ]
     assert summary["latest_execution_governance_host_family"] == "codex"
     assert summary["latest_execution_governance_model_family"] == ""
     assert summary["latest_execution_governance_host_supports_native_spawn"] is True
@@ -267,6 +294,7 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["latest_execution_governance_commentary_mode"] == "task_first_minimal"
     assert summary["latest_execution_governance_suppress_routing_receipts"] is True
     assert summary["latest_execution_governance_surface_fast_lane"] is True
+    assert summary["latest_execution_governance_runtime_invalidated_by_step"] == "render_compass_dashboard"
     assert (
         summary["latest_turn_intent"]
         == 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"'

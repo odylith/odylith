@@ -6,6 +6,25 @@ Last updated (UTC): 2026-04-12
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-105 | 2026-04-12 | Sync performance engineering from 30s to sub 6s with session hoisting and incremental derivation | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py` (22-step
+  pipeline executor, `_execute_plan`, `_run_callable_with_heartbeat`,
+  `build_sync_execution_plan`),
+  `src/odylith/runtime/governance/sync_session.py` (new: `GovernedSyncSession`,
+  `get_or_compute`, generation-scoped invalidation),
+  `src/odylith/runtime/governance/workstream_inference.py`
+  (`normalize_repo_token`, `_normalize_repo_token_cached`),
+  `src/odylith/runtime/common/consumer_profile.py`
+  (`_consumer_profile_cache_signature`, `load_consumer_profile`,
+  `truth_root_path`),
+  `src/odylith/runtime/governance/validate_backlog_contract.py`
+  (`_validate_idea_specs`, `_parse_idea_spec`),
+  `src/odylith/runtime/governance/component_registry_intelligence.py`
+  (`_path_matches_prefix`, `build_component_registry_report`,
+  `_build_component_registry_report_from_fingerprint`),
+  `src/odylith/runtime/governance/delivery_intelligence_engine.py`
+  (`build_delivery_intelligence_artifact`),
+  `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`
+  (`warm_projections`, `projection_input_fingerprint`). | Resolved | [2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md](2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md) |
 | CB-102 | 2026-04-11 | Odylith start returns no candidates when dirty path set is dominated by bundle asset mirrors | P1 | `src/odylith/runtime/governance/agent_governance_intelligence.py`
   (`_changed_path_aliases`, `normalize_changed_paths`,
   `collect_git_changed_paths`),

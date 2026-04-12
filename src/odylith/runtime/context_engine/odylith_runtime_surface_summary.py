@@ -150,8 +150,12 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
             "latest_execution_governance_resume_token": "",
             "latest_execution_governance_validation_archetype": "",
             "latest_execution_governance_validation_minimum_pass_count": 0,
+            "latest_execution_governance_validation_derived_from": [],
             "latest_execution_governance_contradiction_count": 0,
             "latest_execution_governance_history_rule_count": 0,
+            "latest_execution_governance_history_rule_hits": [],
+            "latest_execution_governance_pressure_signals": [],
+            "latest_execution_governance_nearby_denial_actions": [],
             "latest_execution_governance_authoritative_lane": "",
             "latest_execution_governance_host_family": "",
             "latest_execution_governance_model_family": "",
@@ -165,6 +169,7 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
             "latest_execution_governance_commentary_mode": "",
             "latest_execution_governance_suppress_routing_receipts": False,
             "latest_execution_governance_surface_fast_lane": False,
+            "latest_execution_governance_runtime_invalidated_by_step": "",
             "latest_turn_intent": "",
             "latest_turn_surface_count": 0,
             "latest_turn_visible_text_count": 0,
@@ -441,11 +446,23 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
         "latest_execution_governance_validation_minimum_pass_count": _int(
             latest_packet.get("execution_governance_validation_minimum_pass_count")
         ),
+        "latest_execution_governance_validation_derived_from": _strings(
+            latest_packet.get("execution_governance_validation_derived_from")
+        ),
         "latest_execution_governance_contradiction_count": _int(
             latest_packet.get("execution_governance_contradiction_count")
         ),
         "latest_execution_governance_history_rule_count": _int(
             latest_packet.get("execution_governance_history_rule_count")
+        ),
+        "latest_execution_governance_history_rule_hits": _strings(
+            latest_packet.get("execution_governance_history_rule_hits")
+        ),
+        "latest_execution_governance_pressure_signals": _strings(
+            latest_packet.get("execution_governance_pressure_signals")
+        ),
+        "latest_execution_governance_nearby_denial_actions": _strings(
+            latest_packet.get("execution_governance_nearby_denial_actions")
         ),
         "latest_execution_governance_authoritative_lane": _string(
             latest_packet.get("execution_governance_authoritative_lane")
@@ -485,6 +502,9 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
         ),
         "latest_execution_governance_surface_fast_lane": bool(
             latest_packet.get("execution_governance_surface_fast_lane")
+        ),
+        "latest_execution_governance_runtime_invalidated_by_step": _string(
+            latest_packet.get("execution_governance_runtime_invalidated_by_step")
         ),
         "latest_turn_intent": _string(latest_packet.get("turn_intent")),
         "latest_turn_surface_count": _int(latest_packet.get("turn_surface_count")),

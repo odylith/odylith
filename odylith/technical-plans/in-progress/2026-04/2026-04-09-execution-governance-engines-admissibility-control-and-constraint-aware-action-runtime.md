@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-04-09
 
-Updated: 2026-04-10
+Updated: 2026-04-12
 
 Backlog: B-072
 
@@ -102,6 +102,16 @@ Related Bugs:
 - [x] Surface execution-governance outcome, frontier, closure, validation, wait
       state, resume posture, and detected host-family posture in packet
       summaries plus the shared shell/Compass runtime summary.
+- [x] Keep execution-governance summaries sync-safe by reusing the active sync
+      session, carrying sync provenance/runtime contract metadata, and staying
+      content-addressed and no-op quiet inside governed sync.
+- [x] Add richer core event shaping so contradictions, unsafe closure, waits,
+      and admissibility pressure travel through one execution-event stream
+      instead of separate per-surface heuristics.
+- [x] Carry forward normalized history-rule evidence and shared summary reasons
+      so repeated failure classes, pressure signals, nearby denied actions, and
+      sync invalidation provenance survive from the core contract into Router,
+      shell, Compass, and other read models.
 
 ## Defer
 - [ ] Full-fidelity Shell, Compass, and packet UX for every
@@ -129,6 +139,9 @@ Related Bugs:
 - [x] Packet summaries and shell/Compass runtime surfaces show one governed next
       move, closure posture, wait or resume state, validation archetype, and
       re-anchor pressure from the same execution-governance snapshot.
+- [x] Governed sync can carry execution-governance runtime provenance and
+      reuse-scope truth without reopening shared-nothing derivation or breaking
+      standalone `--check-only --runtime-mode standalone`.
 
 ## Non-Goals
 - [ ] Replacing release planning with execution waves.
@@ -163,14 +176,28 @@ Related Bugs:
    execution-wave contract.
 5. Expose the base execution-governance snapshot through packet summaries and
    shared shell/Compass runtime surfaces.
-6. Run focused backlog, Registry, CLI, and execution-governance validation.
+6. Harden the core engine with typed pressure signals, richer closure domains,
+   sync-aware runtime provenance, and shared execution-event shaping.
+7. Carry normalized history-rule blockers and shared summary reasons through
+   the common adapter path instead of rebuilding explanations per surface.
+8. Run focused backlog, Registry, CLI, execution-governance, sync, and browser
+   validation.
 
 ## Validation
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_program_wave_authoring.py`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_context_engine_proof_packet_runtime.py tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_render_tooling_dashboard.py`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_remediator.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_compass_dashboard_base.py tests/unit/runtime/test_render_backlog_ui_payload_runtime.py tests/unit/runtime/test_dashboard_shell_links.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/test_cli.py` (`254 passed` on 2026-04-12 after the hardening slice landed)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_remediator.py tests/unit/runtime/test_release_planning.py tests/unit/runtime/test_program_wave_authoring.py` (`133 passed` on 2026-04-12)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_dashboard_shell_links.py tests/unit/runtime/test_render_backlog_ui_payload_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_odylith_runtime_surface_summary.py` (`58 passed` on 2026-04-12)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_compass_governance_source_runtime.py tests/unit/runtime/test_compass_dashboard_runtime.py` (`83 passed` on 2026-04-12)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py -k 'program or wave or release'` (`11 passed, 82 deselected` on 2026-04-12)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/integration/runtime/test_compass_browser_regression_matrix.py tests/integration/runtime/test_surface_browser_smoke.py` (`25 passed` on 2026-04-12)
+- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (passed on 2026-04-12 in `4.8s`)
+- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (passed on 2026-04-12 in `4.6s`)
 - [x] `PYTHONPATH=src python3 -m odylith.cli validate backlog-contract --repo-root .`
 - [x] `PYTHONPATH=src python3 -m odylith.cli validate component-registry --repo-root .`
+- [x] `PYTHONPATH=src python3 -m odylith.cli atlas render --repo-root . --diagram-id D-002 --diagram-id D-030 --diagram-id D-031`
 - [x] `git diff --check`
 
 ## Outcome Snapshot
