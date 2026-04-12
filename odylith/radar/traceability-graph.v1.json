@@ -4950,7 +4950,7 @@
     {
       "idea_id": "B-090",
       "title": "Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -4964,7 +4964,7 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -4975,7 +4975,7 @@
       "release_history": [],
       "release_history_summary": "",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 0,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -5935,7 +5935,7 @@
       "id": "B-090",
       "type": "workstream",
       "label": "Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors",
-      "status": "queued",
+      "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
     },
     {
@@ -6734,6 +6734,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
     },
     {
       "id": "release:release-0-1-11",
@@ -9169,6 +9175,11 @@
       "source": "B-089",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-090",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+      "edge_type": "promoted_to_plan"
     }
   ],
   "coverage": {
@@ -9796,7 +9807,7 @@
       "code_reference_count": 0
     },
     "B-090": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 0,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -9945,10 +9956,10 @@
     "active_release_assignment_count": 15,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 214,
-    "edge_count": 481,
+    "node_count": 215,
+    "edge_count": 482,
     "warning_count": 12,
     "warning_item_count": 12
   },
-  "generated_utc": "2026-04-12 01:04:26Z"
+  "generated_utc": "2026-04-12 01:56:52Z"
 }
