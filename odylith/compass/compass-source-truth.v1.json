@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-12T07:14:44Z",
+  "generated_utc": "2026-04-12T07:16:38Z",
   "release_summary": {
     "catalog": [
       {
@@ -346,14 +346,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 34,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -586,14 +586,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 39,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -969,19 +969,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 1,
-          "file_touch_count": 727
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 740
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 866
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 874
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 2,
         "eta_days": null,
         "eta_confidence": "low"
@@ -1029,14 +1029,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -1769,19 +1769,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 5,
-          "file_touch_count": 690
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 701
         },
         "48h": {
-          "commit_count": 11,
-          "local_change_count": 5,
-          "file_touch_count": 822
+          "commit_count": 12,
+          "local_change_count": 0,
+          "file_touch_count": 828
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -1829,14 +1829,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 53,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -2040,7 +2040,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "dc2e4c47b9c7697a3dfcc2892a0a9e8bd1cbf7de",
+          "local_head": "289cae38b72ccf421063a85419b7c4e84ff320a9",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -2088,14 +2088,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "diagnosed",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -2305,7 +2305,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -2516,7 +2516,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -2719,7 +2719,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -3182,14 +3182,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -3653,7 +3653,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -3895,7 +3895,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -3927,6 +3927,180 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-078"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-069",
+      "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "VeryHigh",
+      "ordering_score": "95",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
+        "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
+        "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
+        "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
+        "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
+        "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "benchmark",
+          "name": "Benchmark"
+        },
+        {
+          "component_id": "compass",
+          "name": "Compass"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        },
+        {
+          "component_id": "subagent-orchestrator",
+          "name": "Subagent Orchestrator"
+        },
+        {
+          "component_id": "subagent-router",
+          "name": "Subagent Router"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "Removed from 0.1.11",
+      "plan": {
+        "created": "2026-04-09",
+        "updated": "2026-04-09",
+        "all_total_tasks": 61,
+        "all_done_tasks": 61,
+        "total_tasks": 24,
+        "done_tasks": 24,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 24/24",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 740
+        },
+        "48h": {
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 874
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-09",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
+        "age_days": 3,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [
+          "B-070"
+        ],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 71,
+        "24h": {
+          "index": 91,
+          "band": "High"
+        },
+        "48h": {
+          "index": 91,
+          "band": "High"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "contract-level",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 19,
+          "decision_evidence": true,
+          "explicit_count": 72,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 19,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 45,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-069"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-069"
         }
       ],
       "proof_summary_lines": []
@@ -4023,19 +4197,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
-          "local_change_count": 8,
-          "file_touch_count": 667
+          "commit_count": 10,
+          "local_change_count": 0,
+          "file_touch_count": 678
         },
         "48h": {
-          "commit_count": 13,
-          "local_change_count": 8,
-          "file_touch_count": 812
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 818
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-04-12T00:14:12-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 17,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4083,14 +4257,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 59,
+          "meaningful_change_count": 51,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -4123,6 +4297,185 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-001"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-071",
+      "title": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression",
+      "status": "implementation",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "VeryHigh",
+      "ordering_score": "95",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith still has too many surface-local answers to the same question: \"does this scope deserve attention right now?\" Compass had one set of rolling- window heuristics, Radar had another default ordering posture, Atlas promoted active pills from its own evidence mix, Registry could still float low-signal component snapshots near the top, and downstream budget decisions had no shared contract for when a scope was allowed to spend fresh provider or reasoning work. The result was predictable drift: lone governance-file churn, broad fanout transactions, or generated noise could make a quiet workstream look important, while the expensive paths still had no one place to say \"this scope is too low-signal to buy fresh narration.\"",
+        "customer": "- Primary: operators who need the governance surfaces to point at the work that is actually urgent instead of the work that merely changed. - Secondary: maintainers who need one auditable escalation contract instead of fixing visibility, ranking, and budget bugs surface by surface.",
+        "proposed_solution": "Make Delivery Intelligence the sole owner of scope escalation through one shared Scope Signal Ladder: - `R0 suppressed_noise` - `R1 background_trace` - `R2 verified_local` - `R3 active_scope` - `R4 actionable_priority` - `R5 blocking_frontier` The ladder must be deterministic, cheap, and explainable. Every snapshot must carry the rung, reasons, budget class, promotion bit, and feature vectors that produced the rung. Compass, Radar, Registry, Atlas, and shell consumers should read that contract instead of rebuilding local urgency heuristics. Low-signal scopes stay hidden by default, deep links remain preserved but quiet, and fresh provider or reasoning work is reserved for the top rungs only.",
+        "opportunity": "If Odylith promotes one deterministic scope-signal ladder into shared product truth, then Compass, Radar, Registry, Atlas, and the shell can all focus on the same few scopes first, keep low-signal noise available only when asked for, and spend fresh provider budget on the rare scopes that have actually earned it.",
+        "why_now": "Compass already proved the cost of local heuristics. The more surfaces Odylith adds, the more expensive it becomes to keep rediscovering the same \"this looked active but wasn't\" bug in four different places.",
+        "founder_pov": "The product should not merely show everything that changed. It should help an operator start with what matters, keep the quieter trace available when needed, and refuse to spend expensive thinking budget on noise."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
+        "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "atlas",
+          "name": "Atlas"
+        },
+        {
+          "component_id": "briefs-voice-contract",
+          "name": "Briefs Voice Contract"
+        },
+        {
+          "component_id": "compass",
+          "name": "Compass"
+        },
+        {
+          "component_id": "dashboard",
+          "name": "Dashboard"
+        },
+        {
+          "component_id": "delivery-intelligence",
+          "name": "Delivery Intelligence"
+        },
+        {
+          "component_id": "proof-state",
+          "name": "Proof State"
+        },
+        {
+          "component_id": "radar",
+          "name": "Radar"
+        },
+        {
+          "component_id": "registry",
+          "name": "Registry"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "2026-04-09",
+        "updated": "2026-04-09",
+        "all_total_tasks": 48,
+        "all_done_tasks": 43,
+        "total_tasks": 28,
+        "done_tasks": 28,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "tracked",
+        "checklist_label": "Checklist 28/28",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 701
+        },
+        "48h": {
+          "commit_count": 11,
+          "local_change_count": 0,
+          "file_touch_count": 836
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-09",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
+        "age_days": 3,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 71,
+        "24h": {
+          "index": 91,
+          "band": "High"
+        },
+        "48h": {
+          "index": 91,
+          "band": "High"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "contract-level",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 19,
+          "decision_evidence": true,
+          "explicit_count": 70,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 19,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 40,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": false
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-071"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-071"
         }
       ],
       "proof_summary_lines": []
@@ -4191,19 +4544,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 7,
-          "file_touch_count": 657
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 7,
-          "file_touch_count": 805
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 811
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 13,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4251,14 +4604,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -4375,19 +4728,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 7,
-          "file_touch_count": 657
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 7,
-          "file_touch_count": 803
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 809
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4435,14 +4788,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 50,
+          "meaningful_change_count": 44,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -4567,19 +4920,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 7,
-          "file_touch_count": 657
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 7,
-          "file_touch_count": 803
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 809
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4627,14 +4980,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -4667,690 +5020,6 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-059"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
-      "idea_id": "B-069",
-      "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "VeryHigh",
-      "ordering_score": "95",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
-        "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
-        "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
-        "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
-        "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
-        "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
-        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "benchmark",
-          "name": "Benchmark"
-        },
-        {
-          "component_id": "compass",
-          "name": "Compass"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        },
-        {
-          "component_id": "subagent-orchestrator",
-          "name": "Subagent Orchestrator"
-        },
-        {
-          "component_id": "subagent-router",
-          "name": "Subagent Router"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "Removed from 0.1.11",
-      "plan": {
-        "created": "2026-04-09",
-        "updated": "2026-04-09",
-        "all_total_tasks": 61,
-        "all_done_tasks": 61,
-        "total_tasks": 24,
-        "done_tasks": 24,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 24/24",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 13,
-          "local_change_count": 1,
-          "file_touch_count": 727
-        },
-        "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 866
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
-        "age_days": 3,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [
-          "B-070"
-        ],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 71,
-        "24h": {
-          "index": 91,
-          "band": "High"
-        },
-        "48h": {
-          "index": 91,
-          "band": "High"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "contract-level",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 19,
-          "decision_evidence": true,
-          "explicit_count": 72,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 19,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 51,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 3,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-069"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-069"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
-      "idea_id": "B-027",
-      "title": "Lane Boundary, Runtime, and Toolchain Clarity",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith's runtime isolation contract is correct, but the language around it is still spread across docs and easy to collapse into one false question. Agents and maintainers can still confuse: - which Python runs the Odylith CLI - which files the agent may edit - which toolchain validates the target repo's own code That ambiguity is especially risky in the Odylith product repo, where pinned dogfood, detached `source-local`, maintainer-only overlays, and consumer-safe guidance all coexist. Some subagent-routing and orchestration surfaces also still read as if the reasoning ladder were maintainer-only, even though the supported Codex lanes already cover consumer work plus pinned dogfood and detached `source-local` maintainer dev. Consumer feedback also showed one adjacent operator gap: Atlas search could miss diagrams when the operator entered a short numeric id token such as `45`, `045`, or `-045` instead of the full `D-045` form.",
-        "customer": "- Primary: Odylith maintainers working in the product repo and needing a crisp distinction between pinned dogfood proof and detached `source-local` source work. - Secondary: consumer repos using Odylith inside Python, `uv`, Poetry, or Conda environments and needing confidence that Odylith runtime ownership does not replace project-toolchain ownership.",
-        "proposed_solution": "Publish one explicit lane matrix across constitutional docs, AGENTS guidance, shared guidelines, shared and maintainer skills, component specs, backlog truth, and Atlas diagrams: - consumer lane - product-repo maintainer mode - pinned dogfood posture - detached `source-local` dev posture Make the three boundaries explicit everywhere: - runtime boundary: which interpreter runs Odylith itself - write boundary: which files the agent may edit - validation boundary: which toolchain proves the target repo still works Make consumer authority explicit too: - grounding narrows diagnosis but does not authorize local Odylith mutation - consumer write policy should be machine-readable as well as documented - subagent routing should keep consumer Odylith fixes in diagnosis-and-handoff mode instead of local writes Keep Atlas search discoverability aligned with that operator contract: - Atlas search should match diagram ids even when the operator enters a short numeric suffix instead of the full canonical token Keep dashboard and shell refresh honest too: - missing Tribunal cache must fall back to deterministic reasoning instead of spawning opportunistic provider waits - explicit Tribunal provider failures must degrade the rest of that run back to deterministic reasoning instead of repeating the same timeout across cases",
-        "opportunity": "If the lane contract becomes one explicit execution model instead of scattered phrases, then maintainers and consumers can stop second-guessing whether Odylith's managed Python prevents editing or validation. That should reduce execution-time confusion and keep maintainers from falling back to ad hoc lane selection or wrong validation habits.",
-        "why_now": "The current ambiguity shows up exactly where Odylith should be strongest: maintainer execution in the product repo and consumer execution inside repos with their own Python toolchains. If the product cannot explain that split crisply, execution discipline erodes at the moment it matters.",
-        "founder_pov": "Odylith should make the execution lane obvious before work starts. Runtime ownership, file-edit authority, and target-repo validation should read as one explicit contract, not a puzzle assembled from scattered notes."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
-        "plan_file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "dashboard",
-          "name": "Dashboard"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "release",
-          "name": "Release"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "2026-03-30",
-        "updated": "2026-04-07",
-        "all_total_tasks": 93,
-        "all_done_tasks": 91,
-        "total_tasks": 42,
-        "done_tasks": 42,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 42/42",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 8,
-          "local_change_count": 5,
-          "file_touch_count": 655
-        },
-        "48h": {
-          "commit_count": 12,
-          "local_change_count": 5,
-          "file_touch_count": 804
-        }
-      },
-      "timeline": {
-        "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
-        "age_days": 13,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 55,
-          "band": "Medium"
-        },
-        "48h": {
-          "index": 55,
-          "band": "Medium"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "contract-level",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 14,
-          "decision_evidence": true,
-          "explicit_count": 60,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 16,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 36,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 1,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-027"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-027"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
-      "idea_id": "B-071",
-      "title": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression",
-      "status": "implementation",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "VeryHigh",
-      "ordering_score": "95",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith still has too many surface-local answers to the same question: \"does this scope deserve attention right now?\" Compass had one set of rolling- window heuristics, Radar had another default ordering posture, Atlas promoted active pills from its own evidence mix, Registry could still float low-signal component snapshots near the top, and downstream budget decisions had no shared contract for when a scope was allowed to spend fresh provider or reasoning work. The result was predictable drift: lone governance-file churn, broad fanout transactions, or generated noise could make a quiet workstream look important, while the expensive paths still had no one place to say \"this scope is too low-signal to buy fresh narration.\"",
-        "customer": "- Primary: operators who need the governance surfaces to point at the work that is actually urgent instead of the work that merely changed. - Secondary: maintainers who need one auditable escalation contract instead of fixing visibility, ranking, and budget bugs surface by surface.",
-        "proposed_solution": "Make Delivery Intelligence the sole owner of scope escalation through one shared Scope Signal Ladder: - `R0 suppressed_noise` - `R1 background_trace` - `R2 verified_local` - `R3 active_scope` - `R4 actionable_priority` - `R5 blocking_frontier` The ladder must be deterministic, cheap, and explainable. Every snapshot must carry the rung, reasons, budget class, promotion bit, and feature vectors that produced the rung. Compass, Radar, Registry, Atlas, and shell consumers should read that contract instead of rebuilding local urgency heuristics. Low-signal scopes stay hidden by default, deep links remain preserved but quiet, and fresh provider or reasoning work is reserved for the top rungs only.",
-        "opportunity": "If Odylith promotes one deterministic scope-signal ladder into shared product truth, then Compass, Radar, Registry, Atlas, and the shell can all focus on the same few scopes first, keep low-signal noise available only when asked for, and spend fresh provider budget on the rare scopes that have actually earned it.",
-        "why_now": "Compass already proved the cost of local heuristics. The more surfaces Odylith adds, the more expensive it becomes to keep rediscovering the same \"this looked active but wasn't\" bug in four different places.",
-        "founder_pov": "The product should not merely show everything that changed. It should help an operator start with what matters, keep the quieter trace available when needed, and refuse to spend expensive thinking budget on noise."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md",
-        "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "atlas",
-          "name": "Atlas"
-        },
-        {
-          "component_id": "briefs-voice-contract",
-          "name": "Briefs Voice Contract"
-        },
-        {
-          "component_id": "compass",
-          "name": "Compass"
-        },
-        {
-          "component_id": "dashboard",
-          "name": "Dashboard"
-        },
-        {
-          "component_id": "delivery-intelligence",
-          "name": "Delivery Intelligence"
-        },
-        {
-          "component_id": "proof-state",
-          "name": "Proof State"
-        },
-        {
-          "component_id": "radar",
-          "name": "Radar"
-        },
-        {
-          "component_id": "registry",
-          "name": "Registry"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "2026-04-09",
-        "updated": "2026-04-09",
-        "all_total_tasks": 48,
-        "all_done_tasks": 43,
-        "total_tasks": 28,
-        "done_tasks": 28,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "tracked",
-        "checklist_label": "Checklist 28/28",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 6,
-          "local_change_count": 2,
-          "file_touch_count": 689
-        },
-        "48h": {
-          "commit_count": 10,
-          "local_change_count": 2,
-          "file_touch_count": 829
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-11T23:48:40-07:00",
-        "age_days": 3,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 71,
-        "24h": {
-          "index": 91,
-          "band": "High"
-        },
-        "48h": {
-          "index": 91,
-          "band": "High"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "contract-level",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 19,
-          "decision_evidence": true,
-          "explicit_count": 70,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 19,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 43,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 4,
-          "unsafe_closeout": false,
-          "verified_completion": false
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-071"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-071"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
-      "idea_id": "B-091",
-      "title": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes",
-      "status": "implementation",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "VeryHigh",
-      "ordering_score": "87",
-      "implemented_summary": "",
-      "why": {
-        "problem": "`odylith sync` is still paying for a shared-nothing execution posture even when the runtime fast path already has one Python process and one known repo root. Validators and renderers keep re-discovering the same consumer profile, repo root, path canonicalization, idea-spec corpus, Registry report, and delivery inputs instead of reusing one read model for the duration of the run. That wasted work now dominates the honest sync cost. Profiling shows the core governed outputs are not intrinsically a thirty-second job; the majority of the latency is repeated `Path.resolve()` chains, repo-root inference walks, duplicate idea parsing, repeated component-Registry report construction, and unchanged surface writes that still dirty the tree. As long as sync keeps behaving like twenty adjacent tools that all boot from zero, Odylith cannot make warm incremental sync genuinely cheap without either weakening truthfulness or relying on hand-wavy benchmark claims.",
-        "customer": "- Primary: Odylith maintainers iterating on governed product code who need warm sync to stay in the same feedback loop as code/test/edit. - Secondary: operators and reviewers who need no-op or narrowly-scoped sync to stop rewriting unchanged generated surfaces and polluting git status. - Tertiary: future daemon and evaluation work that needs one clean derivation model instead of ad hoc per-step caches.",
-        "proposed_solution": "- introduce one sync-scoped shared session that hoists repo root, consumer profile, truth-root resolution, canonical path tokens, parsed idea specs, and Registry report reuse - route the current sync hot path through session-aware helpers before jumping to a daemon or full dependency-graph rewrite - add content-addressed no-op writes on the first governed generated outputs so unchanged bytes stay quiet - make sync-planned render steps authoritative for rebuild intent so generated surfaces do not spend wall clock rescanning their watch trees when sync already decided to execute the render - settle Atlas review/catalog truth, Registry spec reconciliation, and delivery-intelligence refresh before the runtime-backed Compass, Radar, Registry, and shell renders so one final warm serves the full render phase - narrow projection and runtime cache invalidation to derivation inputs that can actually change the next read model, instead of clearing warm/runtime state on every generated HTML or JS write - make repo-scoped runtime invalidation clear projected-input fingerprint caches as well as warm verdicts, because generated derivation inputs like the traceability graph and delivery-intelligence artifact do not move the workspace-activity token by themselves - memoize projection path-tree fingerprints per repo-state so compatible scope checks stop rescanning the same watched directories during one sync phase - keep the current sync step graph externally compatible while replacing repeated read-model reconstruction under the hood - use the first wave to prove the architecture with real profiling deltas, then decide whether the next justified wave is a resident daemon, a finer-grained DAG invalidator, or both",
-        "opportunity": "If sync owns one shared read model per run, then the product can preserve the same Radar, Registry, Atlas, Compass, Casebook, and shell outcomes while turning repeated discovery into reusable state. That changes the optimization story from \"micro-cache one more helper\" to \"compute each governed fact once, then derive from it.\" The same architecture also unlocks clean no-op behavior. When a render or sync step produces the same bytes for the same content fingerprints, Odylith should not rewrite the file, should not trigger downstream invalidation, and should not present fake churn as meaningful work.",
-        "why_now": "The current performance diagnosis is already clear enough that more profiling without architectural movement will just repeat the same call stacks. The next useful step is to make the derivation model explicit in product truth and then land the first code cut against that model.",
-        "founder_pov": "Odylith does not need a cleverer excuse for why sync is slow. It needs one truthful engine that computes governed facts once, derives surfaces from them, and stays quiet when nothing changed."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md",
-        "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "atlas",
-          "name": "Atlas"
-        },
-        {
-          "component_id": "dashboard",
-          "name": "Dashboard"
-        },
-        {
-          "component_id": "delivery-intelligence",
-          "name": "Delivery Intelligence"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "radar",
-          "name": "Radar"
-        },
-        {
-          "component_id": "registry",
-          "name": "Registry"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "2026-04-12",
-        "updated": "2026-04-12",
-        "all_total_tasks": 79,
-        "all_done_tasks": 56,
-        "total_tasks": 52,
-        "done_tasks": 52,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "tracked",
-        "checklist_label": "Checklist 52/52",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 5,
-          "local_change_count": 5,
-          "file_touch_count": 450
-        },
-        "48h": {
-          "commit_count": 8,
-          "local_change_count": 5,
-          "file_touch_count": 585
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-12",
-        "last_activity_iso": "2026-04-12T00:14:12-07:00",
-        "age_days": 0,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 71,
-        "24h": {
-          "index": 91,
-          "band": "High"
-        },
-        "48h": {
-          "index": 91,
-          "band": "High"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "contract-level",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 16,
-          "decision_evidence": true,
-          "explicit_count": 67,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 19,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 41,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 4,
-          "unsafe_closeout": false,
-          "verified_completion": false
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-091"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-091"
         }
       ],
       "proof_summary_lines": []
@@ -5482,14 +5151,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -5593,19 +5262,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 655
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 1,
-          "file_touch_count": 803
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 811
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 15,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -5653,14 +5322,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 74,
+          "meaningful_change_count": 68,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -5693,6 +5362,166 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-005"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-027",
+      "title": "Lane Boundary, Runtime, and Toolchain Clarity",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith's runtime isolation contract is correct, but the language around it is still spread across docs and easy to collapse into one false question. Agents and maintainers can still confuse: - which Python runs the Odylith CLI - which files the agent may edit - which toolchain validates the target repo's own code That ambiguity is especially risky in the Odylith product repo, where pinned dogfood, detached `source-local`, maintainer-only overlays, and consumer-safe guidance all coexist. Some subagent-routing and orchestration surfaces also still read as if the reasoning ladder were maintainer-only, even though the supported Codex lanes already cover consumer work plus pinned dogfood and detached `source-local` maintainer dev. Consumer feedback also showed one adjacent operator gap: Atlas search could miss diagrams when the operator entered a short numeric id token such as `45`, `045`, or `-045` instead of the full `D-045` form.",
+        "customer": "- Primary: Odylith maintainers working in the product repo and needing a crisp distinction between pinned dogfood proof and detached `source-local` source work. - Secondary: consumer repos using Odylith inside Python, `uv`, Poetry, or Conda environments and needing confidence that Odylith runtime ownership does not replace project-toolchain ownership.",
+        "proposed_solution": "Publish one explicit lane matrix across constitutional docs, AGENTS guidance, shared guidelines, shared and maintainer skills, component specs, backlog truth, and Atlas diagrams: - consumer lane - product-repo maintainer mode - pinned dogfood posture - detached `source-local` dev posture Make the three boundaries explicit everywhere: - runtime boundary: which interpreter runs Odylith itself - write boundary: which files the agent may edit - validation boundary: which toolchain proves the target repo still works Make consumer authority explicit too: - grounding narrows diagnosis but does not authorize local Odylith mutation - consumer write policy should be machine-readable as well as documented - subagent routing should keep consumer Odylith fixes in diagnosis-and-handoff mode instead of local writes Keep Atlas search discoverability aligned with that operator contract: - Atlas search should match diagram ids even when the operator enters a short numeric suffix instead of the full canonical token Keep dashboard and shell refresh honest too: - missing Tribunal cache must fall back to deterministic reasoning instead of spawning opportunistic provider waits - explicit Tribunal provider failures must degrade the rest of that run back to deterministic reasoning instead of repeating the same timeout across cases",
+        "opportunity": "If the lane contract becomes one explicit execution model instead of scattered phrases, then maintainers and consumers can stop second-guessing whether Odylith's managed Python prevents editing or validation. That should reduce execution-time confusion and keep maintainers from falling back to ad hoc lane selection or wrong validation habits.",
+        "why_now": "The current ambiguity shows up exactly where Odylith should be strongest: maintainer execution in the product repo and consumer execution inside repos with their own Python toolchains. If the product cannot explain that split crisply, execution discipline erodes at the moment it matters.",
+        "founder_pov": "Odylith should make the execution lane obvious before work starts. Runtime ownership, file-edit authority, and target-repo validation should read as one explicit contract, not a puzzle assembled from scattered notes."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
+        "plan_file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "dashboard",
+          "name": "Dashboard"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "release",
+          "name": "Release"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "2026-03-30",
+        "updated": "2026-04-07",
+        "all_total_tasks": 93,
+        "all_done_tasks": 91,
+        "total_tasks": 42,
+        "done_tasks": 42,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 42/42",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
+        },
+        "48h": {
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 812
+        }
+      },
+      "timeline": {
+        "start_date": "2026-03-30",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
+        "age_days": 13,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 55,
+          "band": "Medium"
+        },
+        "48h": {
+          "index": 55,
+          "band": "Medium"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "contract-level",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 14,
+          "decision_evidence": true,
+          "explicit_count": 60,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 16,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 36,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-027"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-027"
         }
       ],
       "proof_summary_lines": []
@@ -5753,19 +5582,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 652
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 665
         },
         "48h": {
-          "commit_count": 11,
-          "local_change_count": 1,
-          "file_touch_count": 800
+          "commit_count": 12,
+          "local_change_count": 0,
+          "file_touch_count": 808
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 16,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -5820,7 +5649,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -5853,6 +5682,177 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-004"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-091",
+      "title": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes",
+      "status": "implementation",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "VeryHigh",
+      "ordering_score": "87",
+      "implemented_summary": "",
+      "why": {
+        "problem": "`odylith sync` is still paying for a shared-nothing execution posture even when the runtime fast path already has one Python process and one known repo root. Validators and renderers keep re-discovering the same consumer profile, repo root, path canonicalization, idea-spec corpus, Registry report, and delivery inputs instead of reusing one read model for the duration of the run. That wasted work now dominates the honest sync cost. Profiling shows the core governed outputs are not intrinsically a thirty-second job; the majority of the latency is repeated `Path.resolve()` chains, repo-root inference walks, duplicate idea parsing, repeated component-Registry report construction, and unchanged surface writes that still dirty the tree. As long as sync keeps behaving like twenty adjacent tools that all boot from zero, Odylith cannot make warm incremental sync genuinely cheap without either weakening truthfulness or relying on hand-wavy benchmark claims.",
+        "customer": "- Primary: Odylith maintainers iterating on governed product code who need warm sync to stay in the same feedback loop as code/test/edit. - Secondary: operators and reviewers who need no-op or narrowly-scoped sync to stop rewriting unchanged generated surfaces and polluting git status. - Tertiary: future daemon and evaluation work that needs one clean derivation model instead of ad hoc per-step caches.",
+        "proposed_solution": "- introduce one sync-scoped shared session that hoists repo root, consumer profile, truth-root resolution, canonical path tokens, parsed idea specs, and Registry report reuse - route the current sync hot path through session-aware helpers before jumping to a daemon or full dependency-graph rewrite - add content-addressed no-op writes on the first governed generated outputs so unchanged bytes stay quiet - make sync-planned render steps authoritative for rebuild intent so generated surfaces do not spend wall clock rescanning their watch trees when sync already decided to execute the render - settle Atlas review/catalog truth, Registry spec reconciliation, and delivery-intelligence refresh before the runtime-backed Compass, Radar, Registry, and shell renders so one final warm serves the full render phase - narrow projection and runtime cache invalidation to derivation inputs that can actually change the next read model, instead of clearing warm/runtime state on every generated HTML or JS write - make repo-scoped runtime invalidation clear projected-input fingerprint caches as well as warm verdicts, because generated derivation inputs like the traceability graph and delivery-intelligence artifact do not move the workspace-activity token by themselves - memoize projection path-tree fingerprints per repo-state so compatible scope checks stop rescanning the same watched directories during one sync phase - keep the current sync step graph externally compatible while replacing repeated read-model reconstruction under the hood - use the first wave to prove the architecture with real profiling deltas, then decide whether the next justified wave is a resident daemon, a finer-grained DAG invalidator, or both",
+        "opportunity": "If sync owns one shared read model per run, then the product can preserve the same Radar, Registry, Atlas, Compass, Casebook, and shell outcomes while turning repeated discovery into reusable state. That changes the optimization story from \"micro-cache one more helper\" to \"compute each governed fact once, then derive from it.\" The same architecture also unlocks clean no-op behavior. When a render or sync step produces the same bytes for the same content fingerprints, Odylith should not rewrite the file, should not trigger downstream invalidation, and should not present fake churn as meaningful work.",
+        "why_now": "The current performance diagnosis is already clear enough that more profiling without architectural movement will just repeat the same call stacks. The next useful step is to make the derivation model explicit in product truth and then land the first code cut against that model.",
+        "founder_pov": "Odylith does not need a cleverer excuse for why sync is slow. It needs one truthful engine that computes governed facts once, derives surfaces from them, and stays quiet when nothing changed."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md",
+        "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "atlas",
+          "name": "Atlas"
+        },
+        {
+          "component_id": "dashboard",
+          "name": "Dashboard"
+        },
+        {
+          "component_id": "delivery-intelligence",
+          "name": "Delivery Intelligence"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "radar",
+          "name": "Radar"
+        },
+        {
+          "component_id": "registry",
+          "name": "Registry"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "2026-04-12",
+        "updated": "2026-04-12",
+        "all_total_tasks": 79,
+        "all_done_tasks": 56,
+        "total_tasks": 52,
+        "done_tasks": 52,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "tracked",
+        "checklist_label": "Checklist 52/52",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 463
+        },
+        "48h": {
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 593
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-12",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
+        "age_days": 0,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 71,
+        "24h": {
+          "index": 91,
+          "band": "High"
+        },
+        "48h": {
+          "index": 91,
+          "band": "High"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "contract-level",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 16,
+          "decision_evidence": true,
+          "explicit_count": 67,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 19,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 38,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": false
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-091"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-091"
         }
       ],
       "proof_summary_lines": []
@@ -5925,19 +5925,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 700
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 713
         },
         "48h": {
-          "commit_count": 10,
-          "local_change_count": 1,
-          "file_touch_count": 845
+          "commit_count": 11,
+          "local_change_count": 0,
+          "file_touch_count": 853
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-04-11T23:48:46-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 4,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -5987,14 +5987,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 53,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -6083,19 +6083,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 615
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 639
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 777
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 791
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-04-11T23:52:57-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 16,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -6111,7 +6111,7 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 42,
+          "index": 44,
           "band": "Medium"
         },
         "48h": {
@@ -6150,7 +6150,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -6243,19 +6243,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 626
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 639
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 635
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 648
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 15,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -6310,7 +6310,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -6462,7 +6462,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -6578,19 +6578,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 2,
-          "file_touch_count": 392
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 417
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 2,
-          "file_touch_count": 565
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 579
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-04-11T23:25:58-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 4,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -6630,7 +6630,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "dc2e4c47b9c7697a3dfcc2892a0a9e8bd1cbf7de",
+          "local_head": "289cae38b72ccf421063a85419b7c4e84ff320a9",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -6672,14 +6672,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 52,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "live_verified",
           "stale_authority": false,
-          "synthetic_count": 4,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -6877,14 +6877,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -7057,14 +7057,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 50,
+          "meaningful_change_count": 44,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -7220,14 +7220,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -7386,7 +7386,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -7482,19 +7482,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 392
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 417
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 483
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 503
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-11T23:25:58-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 15,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -7510,11 +7510,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 67,
+          "index": 68,
           "band": "Medium"
         }
       },
@@ -7542,14 +7542,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -7713,14 +7713,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 36,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -7871,7 +7871,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -8030,7 +8030,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -8193,14 +8193,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 50,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -8356,7 +8356,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -8510,14 +8510,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 47,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -8700,14 +8700,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 51,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -8870,14 +8870,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 38,
+          "meaningful_change_count": 37,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -9052,14 +9052,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 40,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -9229,7 +9229,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -9573,7 +9573,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -9728,14 +9728,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 40,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -9915,14 +9915,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -10090,14 +10090,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 42,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 4,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -10249,14 +10249,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -10417,14 +10417,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -10581,14 +10581,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -10765,14 +10765,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 4,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -10921,14 +10921,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -11087,14 +11087,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -11251,14 +11251,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -11423,14 +11423,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 42,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -11595,14 +11595,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 42,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -11759,14 +11759,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -11915,14 +11915,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 35,
+          "meaningful_change_count": 34,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -12095,14 +12095,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -12410,7 +12410,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -12562,7 +12562,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -12723,14 +12723,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 50,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -12894,7 +12894,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -13050,14 +13050,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 39,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -13220,7 +13220,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -13383,7 +13383,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -13523,7 +13523,7 @@
         "budget_class": "fast_simple",
         "caps": [],
         "feature_vector": {
-          "blast_radius_class": "cross-surface",
+          "blast_radius_class": "contract-level",
           "broad_fanout": false,
           "cross_surface_conflict": false,
           "decision_count": 9,
@@ -13537,14 +13537,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 44,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -13688,7 +13688,7 @@
         "budget_class": "fast_simple",
         "caps": [],
         "feature_vector": {
-          "blast_radius_class": "cross-surface",
+          "blast_radius_class": "contract-level",
           "broad_fanout": false,
           "cross_surface_conflict": false,
           "decision_count": 9,
@@ -13702,14 +13702,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 44,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -13867,14 +13867,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 39,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -14036,14 +14036,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 52,
+          "meaningful_change_count": 44,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -14208,7 +14208,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -14529,14 +14529,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 41,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -14691,7 +14691,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -14846,7 +14846,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -15001,7 +15001,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -15150,14 +15150,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 36,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -15305,14 +15305,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 36,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -15460,14 +15460,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 36,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -15622,7 +15622,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -15781,7 +15781,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -15941,14 +15941,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 36,
+          "meaningful_change_count": 35,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -16108,7 +16108,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -16263,14 +16263,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 40,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -16419,14 +16419,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 31,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -16575,14 +16575,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 31,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -16764,7 +16764,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -16949,14 +16949,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 51,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -17131,14 +17131,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -17301,14 +17301,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -17471,14 +17471,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 38,
+          "meaningful_change_count": 37,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -17653,14 +17653,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 40,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -17833,14 +17833,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 50,
+          "meaningful_change_count": 44,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -18010,7 +18010,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -18343,14 +18343,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 36,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -18524,7 +18524,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -18679,14 +18679,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 40,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -18798,19 +18798,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 2,
-          "file_touch_count": 689
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 701
         },
         "48h": {
-          "commit_count": 10,
-          "local_change_count": 2,
-          "file_touch_count": 829
+          "commit_count": 11,
+          "local_change_count": 0,
+          "file_touch_count": 836
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-11T23:48:40-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -18858,14 +18858,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 43,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 4,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -19598,19 +19598,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 5,
-          "file_touch_count": 690
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 701
         },
         "48h": {
-          "commit_count": 11,
-          "local_change_count": 5,
-          "file_touch_count": 822
+          "commit_count": 12,
+          "local_change_count": 0,
+          "file_touch_count": 828
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -19658,14 +19658,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 53,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -19809,19 +19809,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 1,
-          "file_touch_count": 727
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 740
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 866
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 874
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 2,
         "eta_days": null,
         "eta_confidence": "low"
@@ -19869,14 +19869,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -20080,7 +20080,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "dc2e4c47b9c7697a3dfcc2892a0a9e8bd1cbf7de",
+          "local_head": "289cae38b72ccf421063a85419b7c4e84ff320a9",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -20128,14 +20128,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "diagnosed",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -20345,7 +20345,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -20496,7 +20496,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -20707,7 +20707,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -20910,7 +20910,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -21068,7 +21068,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -21219,7 +21219,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -21323,19 +21323,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 5,
-          "file_touch_count": 450
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 463
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 5,
-          "file_touch_count": 585
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 593
         }
       },
       "timeline": {
         "start_date": "2026-04-12",
-        "last_activity_iso": "2026-04-12T00:14:12-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 0,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -21383,14 +21383,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 41,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 4,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -21518,19 +21518,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
-          "local_change_count": 8,
-          "file_touch_count": 667
+          "commit_count": 10,
+          "local_change_count": 0,
+          "file_touch_count": 678
         },
         "48h": {
-          "commit_count": 13,
-          "local_change_count": 8,
-          "file_touch_count": 812
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 818
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-04-12T00:14:12-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 17,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -21578,14 +21578,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 59,
+          "meaningful_change_count": 51,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -21766,14 +21766,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -21861,19 +21861,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 615
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 639
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 777
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 791
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-04-11T23:52:57-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 16,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -21889,7 +21889,7 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 42,
+          "index": 44,
           "band": "Medium"
         },
         "48h": {
@@ -21928,7 +21928,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -22021,19 +22021,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 652
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 665
         },
         "48h": {
-          "commit_count": 11,
-          "local_change_count": 1,
-          "file_touch_count": 800
+          "commit_count": 12,
+          "local_change_count": 0,
+          "file_touch_count": 808
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 16,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -22088,7 +22088,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -22193,19 +22193,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 655
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 1,
-          "file_touch_count": 803
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 811
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 15,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -22253,14 +22253,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 74,
+          "meaningful_change_count": 68,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -22429,14 +22429,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 42,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 4,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -22528,19 +22528,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 626
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 639
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 635
+          "commit_count": 8,
+          "local_change_count": 0,
+          "file_touch_count": 648
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 15,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -22595,7 +22595,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -22748,14 +22748,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -22916,14 +22916,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -23020,19 +23020,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 392
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 417
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 483
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 503
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-11T23:25:58-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 15,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -23048,11 +23048,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 67,
+          "index": 68,
           "band": "Medium"
         }
       },
@@ -23080,14 +23080,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -23244,14 +23244,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -23411,7 +23411,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -23588,14 +23588,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 4,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -23744,14 +23744,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -23910,14 +23910,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -24074,14 +24074,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -24246,14 +24246,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 42,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -24418,14 +24418,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 42,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -24582,14 +24582,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -24746,14 +24746,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -24902,14 +24902,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 35,
+          "meaningful_change_count": 34,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -25082,14 +25082,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -25334,19 +25334,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 5,
-          "file_touch_count": 655
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 5,
-          "file_touch_count": 804
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 812
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 13,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -25401,7 +25401,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -25557,7 +25557,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -25709,7 +25709,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -25810,19 +25810,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 7,
-          "file_touch_count": 657
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 7,
-          "file_touch_count": 805
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 811
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 13,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -25870,14 +25870,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 48,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -26038,14 +26038,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 50,
+          "meaningful_change_count": 43,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -26209,7 +26209,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -26365,14 +26365,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 39,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -26535,7 +26535,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -26698,7 +26698,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -26838,7 +26838,7 @@
         "budget_class": "fast_simple",
         "caps": [],
         "feature_vector": {
-          "blast_radius_class": "cross-surface",
+          "blast_radius_class": "contract-level",
           "broad_fanout": false,
           "cross_surface_conflict": false,
           "decision_count": 9,
@@ -26852,14 +26852,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 44,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -27003,7 +27003,7 @@
         "budget_class": "fast_simple",
         "caps": [],
         "feature_vector": {
-          "blast_radius_class": "cross-surface",
+          "blast_radius_class": "contract-level",
           "broad_fanout": false,
           "cross_surface_conflict": false,
           "decision_count": 9,
@@ -27017,14 +27017,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 44,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -27182,14 +27182,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 39,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -27351,14 +27351,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 52,
+          "meaningful_change_count": 44,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -27523,7 +27523,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -27844,14 +27844,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 41,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -28006,7 +28006,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -28161,7 +28161,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -28316,7 +28316,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -28465,14 +28465,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 36,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -28620,14 +28620,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 36,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -28775,14 +28775,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 36,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -28937,7 +28937,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -29092,7 +29092,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -29251,7 +29251,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -29367,19 +29367,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 7,
-          "file_touch_count": 657
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 7,
-          "file_touch_count": 803
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 809
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -29427,14 +29427,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 50,
+          "meaningful_change_count": 44,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -29559,19 +29559,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 7,
-          "file_touch_count": 657
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 668
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 7,
-          "file_touch_count": 803
+          "commit_count": 13,
+          "local_change_count": 0,
+          "file_touch_count": 809
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -29619,14 +29619,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -29787,14 +29787,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 36,
+          "meaningful_change_count": 35,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -29911,19 +29911,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 2,
-          "file_touch_count": 392
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 417
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 2,
-          "file_touch_count": 565
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 579
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-04-11T23:25:58-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 4,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -29963,7 +29963,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "dc2e4c47b9c7697a3dfcc2892a0a9e8bd1cbf7de",
+          "local_head": "289cae38b72ccf421063a85419b7c4e84ff320a9",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -30005,14 +30005,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 52,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "live_verified",
           "stale_authority": false,
-          "synthetic_count": 4,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -30139,19 +30139,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 700
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 713
         },
         "48h": {
-          "commit_count": 10,
-          "local_change_count": 1,
-          "file_touch_count": 845
+          "commit_count": 11,
+          "local_change_count": 0,
+          "file_touch_count": 853
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-04-11T23:48:46-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 4,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -30201,14 +30201,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 53,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 5,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -30368,7 +30368,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -30523,14 +30523,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 40,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -30679,14 +30679,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 31,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -30835,14 +30835,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 37,
+          "meaningful_change_count": 31,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -30947,19 +30947,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 1,
-          "file_touch_count": 727
+          "commit_count": 14,
+          "local_change_count": 0,
+          "file_touch_count": 740
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 866
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 874
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T00:12:23-07:00",
+        "last_activity_iso": "2026-04-12T00:16:34-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -31009,14 +31009,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 51,
+          "meaningful_change_count": 45,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -31198,7 +31198,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -31893,14 +31893,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 18,
+          "meaningful_change_count": 17,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -32364,7 +32364,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -32606,7 +32606,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -32835,14 +32835,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 34,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -33004,14 +33004,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 50,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -33166,14 +33166,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 47,
+          "meaningful_change_count": 40,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -33406,14 +33406,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 39,
+          "meaningful_change_count": 33,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -33452,10 +33452,8 @@
   ],
   "verified_scoped_workstreams": {
     "24h": [
-      "B-001",
       "B-063",
       "B-069",
-      "B-071",
       "B-083",
       "B-084",
       "B-085",
@@ -33467,7 +33465,6 @@
       "B-091"
     ],
     "48h": [
-      "B-001",
       "B-012",
       "B-025",
       "B-048",
@@ -33488,10 +33485,8 @@
   },
   "promoted_scoped_workstreams": {
     "24h": [
-      "B-001",
       "B-063",
       "B-069",
-      "B-071",
       "B-083",
       "B-084",
       "B-085",
@@ -33503,7 +33498,6 @@
       "B-091"
     ],
     "48h": [
-      "B-001",
       "B-012",
       "B-025",
       "B-048",
@@ -33748,30 +33742,24 @@
         }
       },
       "B-071": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": true,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-072": {
@@ -34039,29 +34027,24 @@
         }
       },
       "B-001": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-002": {
@@ -35978,29 +35961,24 @@
         }
       },
       "B-001": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-002": {
