@@ -112,6 +112,11 @@ Related Bugs:
       so repeated failure classes, pressure signals, nearby denied actions, and
       sync invalidation provenance survive from the core contract into Router,
       shell, Compass, and other read models.
+- [x] Harden sparse wait-state and correction-language edges so partial proof
+      snapshots still yield resumable external handles, tuple-backed execution
+      summary fields survive shared runtime export, and inline user corrections
+      promote into hard constraints even when phrased in natural operator
+      language.
 
 ## Defer
 - [ ] Full-fidelity Shell, Compass, and packet UX for every
@@ -180,7 +185,10 @@ Related Bugs:
    sync-aware runtime provenance, and shared execution-event shaping.
 7. Carry normalized history-rule blockers and shared summary reasons through
    the common adapter path instead of rebuilding explanations per surface.
-8. Run focused backlog, Registry, CLI, execution-governance, sync, and browser
+8. Harden sparse wait-state inference and correction-language promotion at the
+   shared runtime boundary instead of letting surfaces paper over missing
+   handles or dropped tuple-backed fields.
+9. Run focused backlog, Registry, CLI, execution-governance, sync, and browser
    validation.
 
 ## Validation
@@ -192,6 +200,7 @@ Related Bugs:
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_dashboard_shell_links.py tests/unit/runtime/test_render_backlog_ui_payload_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_odylith_runtime_surface_summary.py` (`58 passed` on 2026-04-12)
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_compass_governance_source_runtime.py tests/unit/runtime/test_compass_dashboard_runtime.py` (`83 passed` on 2026-04-12)
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py -k 'program or wave or release'` (`11 passed, 82 deselected` on 2026-04-12)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_odylith_runtime_surface_summary.py` (`23 passed` on 2026-04-12 after the sparse-wait, tuple-summary, and natural-language correction hardening slice)
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/integration/runtime/test_compass_browser_regression_matrix.py tests/integration/runtime/test_surface_browser_smoke.py` (`25 passed` on 2026-04-12)
 - [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (passed on 2026-04-12 in `4.8s`)
 - [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (passed on 2026-04-12 in `4.6s`)

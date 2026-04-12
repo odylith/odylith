@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-12T20:32:16Z",
+  "generated_utc": "2026-04-12T20:40:00Z",
   "release_summary": {
     "catalog": [
       {
@@ -286,19 +286,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 3,
-          "file_touch_count": 393
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 411
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 3,
-          "file_touch_count": 741
+          "commit_count": 8,
+          "local_change_count": 2,
+          "file_touch_count": 752
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 3,
         "eta_days": null,
         "eta_confidence": "low"
@@ -314,7 +314,7 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 42,
+          "index": 44,
           "band": "Medium"
         },
         "48h": {
@@ -346,7 +346,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 44,
+          "meaningful_change_count": 37,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -578,7 +578,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -818,7 +818,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 45,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -1543,34 +1543,34 @@
       "plan": {
         "created": "2026-04-09",
         "updated": "2026-04-12",
-        "all_total_tasks": 63,
-        "all_done_tasks": 40,
-        "total_tasks": 40,
-        "done_tasks": 40,
+        "all_total_tasks": 65,
+        "all_done_tasks": 42,
+        "total_tasks": 42,
+        "done_tasks": 42,
         "progress_ratio": 1.0,
         "progress_basis": "execution_checklist",
         "display_progress_ratio": 1.0,
         "display_progress_label": "100% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 40/40",
+        "checklist_label": "Checklist 42/42",
         "next_tasks": []
       },
       "activity": {
         "24h": {
-          "commit_count": 11,
-          "local_change_count": 13,
-          "file_touch_count": 588
+          "commit_count": 12,
+          "local_change_count": 5,
+          "file_touch_count": 596
         },
         "48h": {
-          "commit_count": 15,
-          "local_change_count": 13,
-          "file_touch_count": 895
+          "commit_count": 16,
+          "local_change_count": 5,
+          "file_touch_count": 899
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -1618,7 +1618,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 57,
+          "meaningful_change_count": 50,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -2040,7 +2040,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -2088,7 +2088,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 47,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -2298,7 +2298,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -2712,7 +2712,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 53,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -2944,7 +2944,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -3182,7 +3182,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -3412,7 +3412,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -3646,7 +3646,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -3888,7 +3888,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -4023,19 +4023,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 14,
-          "local_change_count": 12,
-          "file_touch_count": 611
+          "commit_count": 15,
+          "local_change_count": 5,
+          "file_touch_count": 620
         },
         "48h": {
-          "commit_count": 18,
-          "local_change_count": 12,
-          "file_touch_count": 878
+          "commit_count": 19,
+          "local_change_count": 5,
+          "file_touch_count": 883
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 17,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4191,19 +4191,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 12,
-          "file_touch_count": 594
+          "commit_count": 14,
+          "local_change_count": 5,
+          "file_touch_count": 603
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 12,
-          "file_touch_count": 873
+          "commit_count": 18,
+          "local_change_count": 5,
+          "file_touch_count": 878
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 13,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4375,19 +4375,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 12,
-          "file_touch_count": 594
+          "commit_count": 14,
+          "local_change_count": 5,
+          "file_touch_count": 603
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 12,
-          "file_touch_count": 870
+          "commit_count": 18,
+          "local_change_count": 5,
+          "file_touch_count": 875
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -4567,19 +4567,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 12,
-          "file_touch_count": 594
+          "commit_count": 14,
+          "local_change_count": 5,
+          "file_touch_count": 603
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 12,
-          "file_touch_count": 870
+          "commit_count": 18,
+          "local_change_count": 5,
+          "file_touch_count": 875
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -6630,7 +6630,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -19583,34 +19583,34 @@
       "plan": {
         "created": "2026-04-09",
         "updated": "2026-04-12",
-        "all_total_tasks": 63,
-        "all_done_tasks": 40,
-        "total_tasks": 40,
-        "done_tasks": 40,
+        "all_total_tasks": 65,
+        "all_done_tasks": 42,
+        "total_tasks": 42,
+        "done_tasks": 42,
         "progress_ratio": 1.0,
         "progress_basis": "execution_checklist",
         "display_progress_ratio": 1.0,
         "display_progress_label": "100% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 40/40",
+        "checklist_label": "Checklist 42/42",
         "next_tasks": []
       },
       "activity": {
         "24h": {
-          "commit_count": 11,
-          "local_change_count": 13,
-          "file_touch_count": 588
+          "commit_count": 12,
+          "local_change_count": 5,
+          "file_touch_count": 596
         },
         "48h": {
-          "commit_count": 15,
-          "local_change_count": 13,
-          "file_touch_count": 895
+          "commit_count": 16,
+          "local_change_count": 5,
+          "file_touch_count": 899
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -19658,7 +19658,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 57,
+          "meaningful_change_count": 50,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -20080,7 +20080,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -20128,7 +20128,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 47,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -20338,7 +20338,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -20700,7 +20700,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 53,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -21518,19 +21518,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 14,
-          "local_change_count": 12,
-          "file_touch_count": 611
+          "commit_count": 15,
+          "local_change_count": 5,
+          "file_touch_count": 620
         },
         "48h": {
-          "commit_count": 18,
-          "local_change_count": 12,
-          "file_touch_count": 878
+          "commit_count": 19,
+          "local_change_count": 5,
+          "file_touch_count": 883
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 17,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -25810,19 +25810,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 12,
-          "file_touch_count": 594
+          "commit_count": 14,
+          "local_change_count": 5,
+          "file_touch_count": 603
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 12,
-          "file_touch_count": 873
+          "commit_count": 18,
+          "local_change_count": 5,
+          "file_touch_count": 878
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 13,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -29367,19 +29367,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 12,
-          "file_touch_count": 594
+          "commit_count": 14,
+          "local_change_count": 5,
+          "file_touch_count": 603
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 12,
-          "file_touch_count": 870
+          "commit_count": 18,
+          "local_change_count": 5,
+          "file_touch_count": 875
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -29559,19 +29559,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 13,
-          "local_change_count": 12,
-          "file_touch_count": 594
+          "commit_count": 14,
+          "local_change_count": 5,
+          "file_touch_count": 603
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 12,
-          "file_touch_count": 870
+          "commit_count": 18,
+          "local_change_count": 5,
+          "file_touch_count": 875
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -29963,7 +29963,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -31423,7 +31423,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -31655,7 +31655,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -31893,7 +31893,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -32123,7 +32123,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -32357,7 +32357,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -32599,7 +32599,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -32775,19 +32775,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 3,
-          "file_touch_count": 393
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 411
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 3,
-          "file_touch_count": 741
+          "commit_count": 8,
+          "local_change_count": 2,
+          "file_touch_count": 752
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-12T13:30:56-07:00",
+        "last_activity_iso": "2026-04-12T13:38:22-07:00",
         "age_days": 3,
         "eta_days": null,
         "eta_confidence": "low"
@@ -32803,7 +32803,7 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 42,
+          "index": 44,
           "band": "Medium"
         },
         "48h": {
@@ -32835,7 +32835,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 44,
+          "meaningful_change_count": 37,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -33406,7 +33406,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 45,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -33466,8 +33466,6 @@
       "B-066",
       "B-069",
       "B-071",
-      "B-072",
-      "B-079",
       "B-083",
       "B-087",
       "B-088",
@@ -33492,8 +33490,6 @@
       "B-066",
       "B-069",
       "B-071",
-      "B-072",
-      "B-079",
       "B-083",
       "B-084",
       "B-085",
@@ -33521,8 +33517,6 @@
       "B-066",
       "B-069",
       "B-071",
-      "B-072",
-      "B-079",
       "B-083",
       "B-087",
       "B-088",
@@ -33547,8 +33541,6 @@
       "B-066",
       "B-069",
       "B-071",
-      "B-072",
-      "B-079",
       "B-083",
       "B-084",
       "B-085",
@@ -33840,30 +33832,24 @@
         }
       },
       "B-072": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": true,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-083": {
@@ -35461,29 +35447,24 @@
         }
       },
       "B-079": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-080": {
@@ -35826,30 +35807,24 @@
         }
       },
       "B-072": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": true,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-083": {
@@ -37481,29 +37456,24 @@
         }
       },
       "B-079": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-080": {

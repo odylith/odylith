@@ -24,6 +24,7 @@ def build_execution_event_stream(
     execution_mode: ExecutionMode,
     admissibility: AdmissibilityDecision,
     contradictions: Sequence[ContradictionRecord] = (),
+    history_rule_hits: Sequence[str] = (),
     closure: ResourceClosure | None = None,
     external_state: ExternalDependencyState | None = None,
     receipt: SemanticReceipt | None = None,
@@ -54,6 +55,20 @@ def build_execution_event_stream(
                         row.category or row.source or "contradiction"
                         for row in contradictions
                     )
+                ),
+            )
+        )
+    if history_rule_hits:
+        events.append(
+            ExecutionEvent(
+                event_id=_event_id(len(events), "history-rules"),
+                event_type="history_rule_pressure",
+                phase=current_phase,
+                blocker=blocker,
+                next_move=next_move,
+                execution_mode=execution_mode,
+                pressure_signals=tuple(
+                    dict.fromkeys(str(hit).strip() for hit in history_rule_hits if str(hit).strip())
                 ),
             )
         )

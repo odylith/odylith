@@ -363,9 +363,20 @@ def _external_state_from_mapping(value: Any, *, default_source: str = "") -> Ext
         or _string(payload.get("status"))
         or _string(payload.get("state"))
     )
-    external_id = _string(payload.get("external_id")) or _string(payload.get("id"))
-    if not raw_status or not external_id:
+    external_id = (
+        _string(payload.get("external_id"))
+        or _string(payload.get("id"))
+        or _string(payload.get("run_id"))
+        or _string(payload.get("workflow_run_id"))
+        or _string(payload.get("job_id"))
+        or _string(payload.get("handle_id"))
+        or _string(payload.get("resume_token"))
+    )
+    if not raw_status:
         return None
+    if not external_id:
+        detail = _string(payload.get("detail")) or _string(payload.get("summary"))
+        external_id = detail or f"inferred:{default_source or 'external_dependency'}:{raw_status}"
     return receipts_engine.normalize_external_dependency_state(
         source=_string(payload.get("source")) or default_source or "external_dependency",
         raw_status=raw_status,
@@ -383,6 +394,7 @@ def _infer_external_dependency_state(
     proof_state: Mapping[str, Any],
     workstream: str,
     session_id: str,
+    packet_kind: str,
 ) -> ExternalDependencyState | None:
     for candidate, source in (
         (payload.get("external_dependency"), "payload"),
@@ -411,7 +423,15 @@ def _infer_external_dependency_state(
         raw_status = ""
     if not raw_status:
         return None
-    external_id = _string(proof_state.get("lane_id")) or session_id or workstream
+    external_id = (
+        _string(proof_state.get("lane_id"))
+        or _string(proof_state.get("external_id"))
+        or _string(proof_state.get("resume_token"))
+        or session_id
+        or workstream
+        or packet_kind
+        or f"proof_state:{raw_status}"
+    )
     return receipts_engine.normalize_external_dependency_state(
         source="proof_state",
         raw_status=raw_status,
@@ -539,6 +559,7 @@ def build_packet_execution_governance_snapshot(
         proof_state=proof_state_signals,
         workstream=workstream,
         session_id=session_id,
+        packet_kind=packet_kind,
     )
     execution_mode = _infer_execution_mode(
         packet_kind=packet_kind,
@@ -686,6 +707,7 @@ def build_packet_execution_governance_snapshot(
         execution_mode=execution_mode,
         admissibility=admissibility,
         contradictions=contradictions,
+        history_rule_hits=history_rule_hits,
         closure=closure,
         external_state=external_state,
         receipt=receipt,

@@ -32,7 +32,7 @@ def _int(value: Any) -> int:
 
 
 def _strings(value: Any, *, limit: int = 4) -> list[str]:
-    if not isinstance(value, list):
+    if not isinstance(value, (list, tuple, set)):
         return []
     rows: list[str] = []
     seen: set[str] = set()

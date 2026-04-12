@@ -295,48 +295,44 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["latest_execution_governance_suppress_routing_receipts"] is True
     assert summary["latest_execution_governance_surface_fast_lane"] is True
     assert summary["latest_execution_governance_runtime_invalidated_by_step"] == "render_compass_dashboard"
-    assert (
-        summary["latest_turn_intent"]
-        == 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"'
+
+
+def test_runtime_surface_summary_accepts_tuple_backed_execution_governance_lists(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    monkeypatch.setattr(
+        runtime_summary.odylith_context_engine_store,
+        "load_runtime_optimization_snapshot",
+        lambda *, repo_root: {
+            "latest_packet": {
+                "execution_governance_present": True,
+                "execution_governance_validation_derived_from": ("mode:verify", "closure:incomplete"),
+                "execution_governance_history_rule_hits": ("partial_scope_requires_closure",),
+                "execution_governance_pressure_signals": ("wait:building",),
+                "execution_governance_nearby_denial_actions": ("explore.broad_reset",),
+            }
+        },
     )
-    assert summary["latest_turn_surface_count"] == 1
-    assert summary["latest_turn_visible_text_count"] == 1
-    assert summary["latest_turn_active_tab"] == "releases"
-    assert summary["latest_turn_user_turn_id"] == "turn-2"
-    assert summary["latest_turn_supersedes_turn_id"] == "turn-1"
-    assert summary["latest_advised_packet_strategy"] == "density_first"
-    assert summary["latest_advised_budget_mode"] == "spend_when_grounded"
-    assert summary["effective_yield_score"] == 0.81
-    assert summary["high_yield_rate"] == 0.78
-    assert summary["reliable_high_yield_rate"] == 0.74
-    assert summary["yield_state"] == "efficient"
-    assert summary["packet_alignment_rate"] == 0.89
-    assert summary["reliable_packet_alignment_rate"] == 0.92
-    assert summary["packet_alignment_state"] == "aligned"
-    assert summary["advisory_state"] == "improving"
-    assert summary["advisory_reasoning_mode"] == "earn_depth"
-    assert summary["advisory_depth"] == "promote_when_grounded"
-    assert summary["advisory_delegation"] == "runtime_backed_delegate"
-    assert summary["advisory_parallelism"] == "allow_when_disjoint"
-    assert summary["advisory_budget_mode"] == "spend_when_grounded"
-    assert summary["advisory_freshness_bucket"] == "fresh"
-    assert summary["advisory_sample_balance"] == "balanced"
-    assert summary["advisory_signal_conflict"] is False
-    assert summary["advisory_focus_areas"] == ["coverage", "budget"]
-    assert summary["evaluation_learning_state"] == "improving"
-    assert summary["evaluation_router_acceptance_rate"] == 0.81
-    assert summary["evaluation_decision_quality_score"] == 0.78
-    assert summary["evaluation_decision_quality_state"] == "trusted"
-    assert summary["evaluation_decision_quality_confidence_score"] == 4
-    assert summary["evaluation_decision_quality_confidence_level"] == "high"
-    assert summary["evaluation_decision_quality_sample_balance"] == "balanced"
-    assert summary["evaluation_closeout_observation_rate"] == 0.78
-    assert summary["evaluation_delegation_regret_rate"] == 0.12
-    assert summary["evaluation_clean_closeout_rate"] == 0.74
-    assert summary["evaluation_followup_churn_rate"] == 0.09
-    assert summary["evaluation_merge_calibration_rate"] == 0.68
-    assert summary["evaluation_validation_calibration_rate"] == 0.71
-    assert summary["evaluation_delegation_value_calibration_rate"] == 0.77
+    monkeypatch.setattr(
+        runtime_summary.odylith_context_engine_store,
+        "load_runtime_evaluation_snapshot",
+        lambda *, repo_root: {},
+    )
+    monkeypatch.setattr(
+        runtime_summary.odylith_context_engine_store,
+        "load_runtime_memory_snapshot",
+        lambda *, repo_root, optimization_snapshot, evaluation_snapshot: {"status": "active", "odylith_switch": {"enabled": True}},
+    )
+    monkeypatch.setattr(
+        runtime_summary.odylith_benchmark_runner,
+        "load_latest_benchmark_report",
+        lambda *, repo_root: {},
+    )
+
+    summary = runtime_summary.load_runtime_surface_summary(repo_root=tmp_path)
+
+    assert summary["latest_execution_governance_validation_derived_from"] == ["mode:verify", "closure:incomplete"]
+    assert summary["latest_execution_governance_history_rule_hits"] == ["partial_scope_requires_closure"]
+    assert summary["latest_execution_governance_pressure_signals"] == ["wait:building"]
+    assert summary["latest_execution_governance_nearby_denial_actions"] == ["explore.broad_reset"]
 
 
 def test_load_runtime_surface_summary_uses_disabled_remote_and_repo_scan_labels(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001

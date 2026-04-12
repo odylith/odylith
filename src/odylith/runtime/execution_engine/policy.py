@@ -46,8 +46,16 @@ def promote_instruction_constraints(
         normalized = instruction.lower()
         if not instruction:
             continue
-        if "do not use" in normalized:
-            forbidden = normalized.split("do not use", 1)[1].strip().strip("`'\"")
+        if any(phrase in normalized for phrase in ("do not use", "don't use", "never use", "do not touch")):
+            if "do not use" in normalized:
+                forbidden = normalized.split("do not use", 1)[1].strip()
+            elif "don't use" in normalized:
+                forbidden = normalized.split("don't use", 1)[1].strip()
+            elif "never use" in normalized:
+                forbidden = normalized.split("never use", 1)[1].strip()
+            else:
+                forbidden = normalized.split("do not touch", 1)[1].strip()
+            forbidden = forbidden.strip("`'\"")
             if not forbidden:
                 continue
             updated = promote_user_correction(
@@ -58,8 +66,16 @@ def promote_instruction_constraints(
                 notes="Promoted from inline user instruction.",
             )
             continue
-        if "only use" in normalized:
-            required = normalized.split("only use", 1)[1].strip().strip("`'\"")
+        if any(phrase in normalized for phrase in ("only use", "use only", "only touch", "stay on")):
+            if "only use" in normalized:
+                required = normalized.split("only use", 1)[1].strip()
+            elif "use only" in normalized:
+                required = normalized.split("use only", 1)[1].strip()
+            elif "only touch" in normalized:
+                required = normalized.split("only touch", 1)[1].strip()
+            else:
+                required = normalized.split("stay on", 1)[1].strip()
+            required = required.strip("`'\"")
             required_lane = updated.authoritative_lane if "lane" in required else ""
             required_scope = [required] if required and required_lane == "" else []
             updated = promote_user_correction(

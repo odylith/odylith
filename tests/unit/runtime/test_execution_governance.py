@@ -306,6 +306,25 @@ def test_promote_instruction_constraints_hardens_inline_user_corrections() -> No
     assert any(item.startswith("hard_constraint:") for item in decision.violated_preconditions)
 
 
+def test_promote_instruction_constraints_understands_natural_language_variants() -> None:
+    contract = policy.promote_instruction_constraints(
+        _contract(),
+        instructions=[
+            "don't use fixture lane",
+            "stay on authoritative lane",
+            "only touch cell-01",
+        ],
+    )
+
+    forbidden = policy.evaluate_admissibility(contract, "deploy_fixture")
+    wrong_scope = policy.evaluate_admissibility(contract, "deploy_cell", requested_scope=["cell-02"])
+
+    assert len(contract.hard_constraints) == 3
+    assert forbidden.outcome == "deny"
+    assert wrong_scope.outcome == "deny"
+    assert any(item.startswith("required_scope:") for item in wrong_scope.violated_preconditions)
+
+
 def test_evaluate_admissibility_defers_for_active_external_wait_and_denies_resume_without_receipt() -> None:
     contract = _contract(execution_mode="recover")
     external_state = receipts.normalize_external_dependency_state(
@@ -444,3 +463,44 @@ def test_execution_governance_snapshot_carries_history_and_summary_reason_fields
     assert "execution_governance_nearby_denial_actions" in summary
     assert "execution_governance_runtime_invalidated_by_step" in summary
     assert compact["nearby_denial_actions"]
+
+
+def test_execution_governance_snapshot_infers_external_dependency_id_from_partial_proof_state() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "bootstrap_session",
+            "context_packet_state": "compact",
+            "proof_state": {"current_blocker": "awaiting callback"},
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "packet_state": "compact",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        }
+    )
+
+    assert snapshot["external_dependency"]["semantic_status"] == "awaiting_callback"
+    assert snapshot["external_dependency"]["external_id"] == "bootstrap_session"
+
+
+def test_execution_governance_snapshot_accepts_external_mapping_without_explicit_id() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "governance_slice",
+            "context_packet_state": "compact",
+            "external_dependency": {
+                "status": "queued",
+                "detail": "gha workflow pending",
+            },
+            "context_packet": {
+                "packet_kind": "governance_slice",
+                "packet_state": "compact",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        }
+    )
+
+    assert snapshot["external_dependency"]["semantic_status"] == "queued"
+    assert snapshot["external_dependency"]["external_id"] == "gha workflow pending"

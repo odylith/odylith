@@ -63,8 +63,8 @@ runtime profile; it must not redefine the shared execution policy surface.
   Frontier derivation and execution-mode shaping.
 - `src/odylith/runtime/execution_engine/event_stream.py`
   Shared execution-event shaping so contradictions, unsafe closure, active
-  waits, and admissibility pressure travel through one append-only stream
-  instead of per-surface heuristics.
+  waits, history-rule pressure, and admissibility pressure travel through one
+  append-only stream instead of per-surface heuristics.
 - `src/odylith/runtime/execution_engine/history_rules.py`
   Canonical history-rule normalization so carried Casebook or packet failure
   classes become executable preflight blockers instead of stringly-typed
@@ -222,6 +222,10 @@ chooses to restart from scratch.
   actions, validation derivation, and sync invalidation provenance must travel
   through the shared summary layer so Router, shell, Compass, and other
   surfaces do not fork their own explanations.
+- External wait-state normalization must stay truthful even on partial proof
+  snapshots or sparse external payloads. When an upstream source omits a
+  concrete external id, Execution Governance must infer a stable bounded handle
+  rather than dropping the wait posture entirely.
 
 ## Program/Wave Authoring Sidecar
 Execution Governance does not replace the existing umbrella-wave source

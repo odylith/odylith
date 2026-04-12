@@ -596,7 +596,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2022,7 +2022,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2228,7 +2228,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2522,7 +2522,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2732,7 +2732,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2852,7 +2852,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3060,7 +3060,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3186,7 +3186,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3396,7 +3396,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3516,7 +3516,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3980,7 +3980,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -5413,7 +5413,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-04-12 20:32:14Z",
+  "generated_utc": "2026-04-12 20:39:59Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -5655,7 +5655,7 @@
         "policy": 0,
         "renderer": 2356,
         "runbook": 0,
-        "runtime": 8910,
+        "runtime": 8735,
         "spec": 16633
       },
       "claim_guard": {
@@ -6073,7 +6073,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -6553,7 +6553,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -6666,7 +6666,7 @@
         "policy": 0,
         "renderer": 1111,
         "runbook": 0,
-        "runtime": 4121,
+        "runtime": 4037,
         "spec": 7974
       },
       "claim_guard": {
@@ -7170,7 +7170,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -7283,7 +7283,7 @@
         "policy": 0,
         "renderer": 1111,
         "runbook": 0,
-        "runtime": 4121,
+        "runtime": 4037,
         "spec": 7974
       },
       "claim_guard": {
@@ -7787,7 +7787,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -7900,7 +7900,7 @@
         "policy": 0,
         "renderer": 28,
         "runbook": 0,
-        "runtime": 171,
+        "runtime": 164,
         "spec": 188
       },
       "claim_guard": {
@@ -8340,7 +8340,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8910,7 +8910,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -9340,7 +9340,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -10572,7 +10572,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -11784,7 +11784,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -12182,7 +12182,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -12543,7 +12543,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-03-28T21:05:40-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -12910,7 +12910,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -13712,7 +13712,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -14126,7 +14126,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -14480,7 +14480,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -14882,7 +14882,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -16099,7 +16099,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -16448,7 +16448,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -16807,7 +16807,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-05T19:43:45-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -17175,7 +17175,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-05T19:43:45-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -17923,7 +17923,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -18339,7 +18339,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -20531,7 +20531,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-07T09:59:30-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -20904,7 +20904,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -23319,7 +23319,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -23670,7 +23670,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -24406,7 +24406,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -24745,7 +24745,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -25100,7 +25100,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -30179,7 +30179,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -30570,7 +30570,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -31749,7 +31749,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -31897,7 +31897,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -32172,7 +32172,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -33668,7 +33668,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -33991,7 +33991,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -34344,7 +34344,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -35270,7 +35270,7 @@
         "policy": 0,
         "renderer": 16,
         "runbook": 0,
-        "runtime": 69,
+        "runtime": 62,
         "spec": 100
       },
       "confidence": "Medium",
@@ -35301,21 +35301,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -35384,16 +35384,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -35445,7 +35438,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -35607,7 +35600,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 57,
+          "meaningful_change_count": 50,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -35673,7 +35666,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 16,
+        "runtime": 9,
         "spec": 23
       },
       "confidence": "Medium",
@@ -35704,21 +35697,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+          "README.md",
+          "docs/benchmarks/README.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -35767,16 +35760,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -35799,7 +35785,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -35907,7 +35893,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -35973,7 +35959,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 16,
+        "runtime": 9,
         "spec": 23
       },
       "confidence": "Medium",
@@ -36004,21 +35990,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+          "README.md",
+          "docs/benchmarks/README.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -36067,16 +36053,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -36099,7 +36078,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -36207,7 +36186,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -36273,7 +36252,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 16,
+        "runtime": 9,
         "spec": 23
       },
       "confidence": "Medium",
@@ -36304,21 +36283,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+          "README.md",
+          "docs/benchmarks/README.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -36377,16 +36356,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -36409,7 +36381,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -36529,7 +36501,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -36595,7 +36567,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 16,
+        "runtime": 9,
         "spec": 23
       },
       "confidence": "Medium",
@@ -36626,21 +36598,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+          "README.md",
+          "docs/benchmarks/README.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -36689,16 +36661,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -36721,7 +36686,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -36829,7 +36794,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 28,
+          "meaningful_change_count": 21,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -36895,7 +36860,7 @@
         "policy": 0,
         "renderer": 16,
         "runbook": 0,
-        "runtime": 54,
+        "runtime": 47,
         "spec": 82
       },
       "confidence": "Medium",
@@ -36926,21 +36891,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -36994,16 +36959,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -37044,7 +37002,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -37158,7 +37116,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -37224,7 +37182,7 @@
         "policy": 0,
         "renderer": 16,
         "runbook": 0,
-        "runtime": 54,
+        "runtime": 47,
         "spec": 90
       },
       "confidence": "Medium",
@@ -37255,21 +37213,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -37338,16 +37296,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -37391,7 +37342,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-12T11:35:18-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -37523,7 +37474,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 49,
+          "meaningful_change_count": 42,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -37589,7 +37540,7 @@
         "policy": 0,
         "renderer": 16,
         "runbook": 0,
-        "runtime": 22,
+        "runtime": 15,
         "spec": 68
       },
       "confidence": "Medium",
@@ -37620,21 +37571,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+          "README.md",
+          "docs/benchmarks/README.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -37688,16 +37639,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -37736,7 +37680,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -37850,7 +37794,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 44,
+          "meaningful_change_count": 37,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -38077,7 +38021,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -38445,7 +38389,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -38637,7 +38581,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 62,
+        "runtime": 55,
         "spec": 65
       },
       "confidence": "Medium",
@@ -38668,21 +38612,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -38746,16 +38690,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -38795,7 +38732,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -38921,7 +38858,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 45,
+          "meaningful_change_count": 38,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -39150,7 +39087,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -39358,7 +39295,7 @@
         "policy": 0,
         "renderer": 7,
         "runbook": 0,
-        "runtime": 65,
+        "runtime": 58,
         "spec": 99
       },
       "claim_guard": {
@@ -39401,21 +39338,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
-          "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -39484,16 +39421,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -39542,7 +39472,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-11T11:04:10-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -39658,7 +39588,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -39705,7 +39635,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 54,
+          "meaningful_change_count": 47,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -39773,7 +39703,7 @@
         "policy": 0,
         "renderer": 7,
         "runbook": 0,
-        "runtime": 44,
+        "runtime": 37,
         "spec": 93
       },
       "confidence": "Medium",
@@ -39804,21 +39734,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -39872,16 +39802,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -39922,7 +39845,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -40036,7 +39959,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 46,
+          "meaningful_change_count": 39,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -40473,7 +40396,7 @@
         "policy": 0,
         "renderer": 7,
         "runbook": 0,
-        "runtime": 64,
+        "runtime": 57,
         "spec": 99
       },
       "confidence": "Medium",
@@ -40504,21 +40427,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -40587,16 +40510,9 @@
         "blast_radius_class": "contract-level",
         "changed_artifacts": [
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
-          "src/odylith/runtime/execution_engine/contract.py",
-          "src/odylith/runtime/execution_engine/contradictions.py",
-          "src/odylith/runtime/execution_engine/policy.py",
-          "src/odylith/runtime/execution_engine/receipts.py",
-          "src/odylith/runtime/execution_engine/resource_closure.py",
-          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-          "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/execution_engine/event_stream.py",
-          "src/odylith/runtime/execution_engine/history_rules.py",
-          "src/odylith/runtime/execution_engine/sync_runtime_contract.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_surface_governance.py",
           "odylith/radar/source/INDEX.md",
           "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
           "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -40644,7 +40560,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -40809,7 +40725,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 53,
+          "meaningful_change_count": 46,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -43603,7 +43519,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -44050,7 +43966,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -44509,7 +44425,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -44890,7 +44806,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -45002,7 +44918,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 10,
+        "runtime": 3,
         "spec": 3
       },
       "claim_guard": {
@@ -45101,7 +45017,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-04-12T13:31:10-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:39:30-07:00",
         "latest_explicit_ts_iso": "2026-04-11T11:04:10-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -45228,7 +45144,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -45706,7 +45622,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -46070,7 +45986,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -46294,7 +46210,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-04-11T11:04:10-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -46524,7 +46440,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -48318,7 +48234,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -50336,7 +50252,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -50724,7 +50640,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -51142,7 +51058,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -51656,7 +51572,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-03-18T13:39:19-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -57784,7 +57700,7 @@
         "basis": "mixed",
         "blast_radius_class": "contract-level",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-04-12T13:26:24-07:00",
+        "latest_event_ts_iso": "2026-04-12T13:36:10-07:00",
         "latest_explicit_ts_iso": "2026-03-18T13:39:19-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -58524,7 +58440,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker,\n  frontier, and falsification memory pinned across delivery, Tribunal,\n  grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "32fd24534a690826e20904b685c983ff7337db9e",
+          "local_head": "b254b7b5b3471af9df29974b247f225842296f8d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
