@@ -80,7 +80,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "5754c7b756bef9875d9d2a7de8fcab10136a11d2ecdb008d3227ba6bd64143dc",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "4a9a07193ecd038bc96bb6f8502a20db70b501b5a850d9e891754c7afde9a401",
-        "odylith/radar/source/INDEX.md": "bb72066ec8c197451cb9730d26cff57dec3138864c373f88fd5d33814b290e76",
+        "odylith/radar/source/INDEX.md": "39ad157b259306bf57f1cc8ef36ea0f27b21b35894a859dcb7161b7e7d9f7d04",
         "odylith/technical-plans/INDEX.md": "4d4f6a083ca07a15589f3078e8a339d30bb16d9760a127d0f1de061aa94907bb"
       }
     },
@@ -3056,7 +3056,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-11",
+      "last_reviewed_utc": "2026-04-12",
       "source_mmd": "odylith/atlas/source/odylith-claude-guidance-companion-surface-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-claude-guidance-companion-surface-topology.svg",
       "source_png": "odylith/atlas/source/odylith-claude-guidance-companion-surface-topology.png",
@@ -3134,7 +3134,7 @@
         "src/odylith/install/manager.py": "c18e841cd8a3a1e96a03f7f737f0b18ab7296e82034d7ba49513d64a0e7f0231",
         "src/odylith/runtime/common/consumer_profile.py": "910c27ad2a952ce46fdf50d358c301a851691e42f03ef511f54de4016c893719",
         "src/odylith/runtime/common/dirty_overlap.py": "9d51158b8bc969c5d9071068ad7b95ede0d70b5b55ce931ba5a59206c28f839f",
-        "src/odylith/runtime/governance/workstream_inference.py": "2c9e0d5f48d9a5313e1b4ba9beea1835241d62739ea9ff15fb9c1da192d9bd15",
+        "src/odylith/runtime/governance/workstream_inference.py": "a120ede9f3d2e76484fb78e9a38627dc8d5a2364fc489a7f60c552bf6551aa45",
         "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "f83dd79429f6fd115a5d167a8c044a061f937c4871f54504f91d07bc021b2abd"
       },
       "render_source_fingerprint": "143dfdcd44727563d2920beef80ad00e4934cbde53e8bd45de9aedef4227de40"
@@ -3231,7 +3231,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-04-11",
+      "last_reviewed_utc": "2026-04-12",
       "source_mmd": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.mmd",
       "source_svg": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.svg",
       "source_png": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.png",
@@ -3302,11 +3302,11 @@
         "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md": "c125ea93a09f17c0a42688120fb6aa906a6e00ccfe952b34ea75452b78f8ef8b",
         "src/odylith/runtime/common/consumer_profile.py": "910c27ad2a952ce46fdf50d358c301a851691e42f03ef511f54de4016c893719",
         "src/odylith/runtime/common/dirty_overlap.py": "9d51158b8bc969c5d9071068ad7b95ede0d70b5b55ce931ba5a59206c28f839f",
-        "src/odylith/runtime/governance/workstream_inference.py": "2c9e0d5f48d9a5313e1b4ba9beea1835241d62739ea9ff15fb9c1da192d9bd15",
+        "src/odylith/runtime/governance/workstream_inference.py": "a120ede9f3d2e76484fb78e9a38627dc8d5a2364fc489a7f60c552bf6551aa45",
         "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "f83dd79429f6fd115a5d167a8c044a061f937c4871f54504f91d07bc021b2abd",
         "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py": "662c32dc53bd8556a33891908a894d471e3e88ccaff01a9da32080576a05a040",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8ce5d10e1e16ff2768093b72714e381684a3559bf5f24aa9bcfbe6e94119700b",
-        "tests/unit/runtime/test_workstream_inference.py": "05ff139bedc2ebf3690852d2a660c98ca91af9d21cafd53b1ef114e5cffe9c12",
+        "tests/unit/runtime/test_workstream_inference.py": "83426ae92a27cc68dd5b6be2de9ff05823498a21ce782ae27c216f11fe100ace",
         "tests/unit/runtime/test_tooling_context_routing.py": "5753136544bfdc94ebe6cbe97b87a2f004c387e7abf894a7b9f445504615d260",
         "tests/unit/runtime/test_odylith_benchmark_runner.py": "951bd2c4fb7a0530041e81fa74f74ca5c305c028179c48b3517c733381008bae",
         "tests/unit/runtime/test_hygiene.py": "705a7de483ef496c5611d46e12722a15fd2108e899b3de33c1f77e28052b4d60",
@@ -3373,7 +3373,7 @@
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "4a9a07193ecd038bc96bb6f8502a20db70b501b5a850d9e891754c7afde9a401",
         "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md": "6099b6cbd4e0f8f23927708a594b52cc2211e16e991f895823b9035bbd16fdc3",
         "src/odylith/runtime/governance/sync_workstream_artifacts.py": "1d0a251e6f843695420a6e9417e7db3492b680df8ad53b07f9ccf4fcaa45305f",
-        "src/odylith/runtime/governance/workstream_inference.py": "2c9e0d5f48d9a5313e1b4ba9beea1835241d62739ea9ff15fb9c1da192d9bd15",
+        "src/odylith/runtime/governance/workstream_inference.py": "a120ede9f3d2e76484fb78e9a38627dc8d5a2364fc489a7f60c552bf6551aa45",
         "src/odylith/runtime/governance/validate_backlog_contract.py": "e926e2eb40b77d8a25681b10c8feed54202ae79255a9d520ffa76e55c3663d43",
         "src/odylith/runtime/governance/component_registry_intelligence.py": "dac4989e391a6dffe605552f2a434d5f3e269fe064ac4fb3707c148d73c8455d",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "7627a1659ef72552c1b3a2144de9ddf20dbb81d98c3cef932da2f1e4cd93abfb"

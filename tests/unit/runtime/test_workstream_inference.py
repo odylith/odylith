@@ -154,6 +154,24 @@ def test_map_paths_to_workstreams_accepts_bundle_source_mirror_aliases(tmp_path:
     assert rows == ["B-083"]
 
 
+def test_compiled_workstream_path_index_matches_nested_prefixes_without_rescanning() -> None:
+    compiled = workstream_inference.compile_workstream_path_index(
+        {
+            "B-001": {"src/odylith/runtime"},
+            "B-002": {"src/odylith/runtime/surfaces"},
+            "B-003": {"docs/runbooks"},
+        }
+    )
+
+    rows = workstream_inference.map_paths_to_workstreams(
+        ["src/odylith/runtime/surfaces/render_compass_dashboard.py"],
+        compiled,
+        skip_generated_or_global=False,
+    )
+
+    assert rows == ["B-001", "B-002"]
+
+
 def test_collect_workstream_path_index_from_specs(tmp_path: Path) -> None:
     idea_path = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-03" / "2026-03-03-sample.md"
     idea_path.parent.mkdir(parents=True, exist_ok=True)

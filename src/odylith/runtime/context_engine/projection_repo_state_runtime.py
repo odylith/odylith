@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import lru_cache
 import subprocess
 import time
 from pathlib import Path
@@ -14,7 +15,56 @@ _PROCESS_REPO_STATE_CACHE_TTL_SECONDS = 5.0
 _PROCESS_REPO_STATE_TOKEN_CACHE: dict[str, tuple[float, str, str]] = {}
 
 
-def _git_head_oid(*, repo_root: Path) -> str:
+@lru_cache(maxsize=64)
+def _git_dir(repo_root_token: str) -> Path | None:
+    root = Path(repo_root_token).resolve()
+    dot_git = root / ".git"
+    if dot_git.is_dir():
+        return dot_git.resolve()
+    if not dot_git.is_file():
+        return None
+    try:
+        first_line = dot_git.read_text(encoding="utf-8").splitlines()[0].strip()
+    except (OSError, IndexError):
+        return None
+    prefix = "gitdir:"
+    if not first_line.lower().startswith(prefix):
+        return None
+    raw_target = first_line[len(prefix) :].strip()
+    if not raw_target:
+        return None
+    target = Path(raw_target)
+    if not target.is_absolute():
+        target = (root / target).resolve()
+    return target.resolve()
+
+
+def _read_first_line(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8").splitlines()[0].strip()
+    except (OSError, IndexError):
+        return ""
+
+
+def _packed_ref_oid(*, git_dir: Path, ref_token: str) -> str:
+    packed_refs_path = git_dir / "packed-refs"
+    if not packed_refs_path.is_file():
+        return ""
+    try:
+        lines = packed_refs_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return ""
+    suffix = f" {str(ref_token).strip()}"
+    for line in lines:
+        stripped = str(line or "").strip()
+        if not stripped or stripped.startswith("#") or stripped.startswith("^"):
+            continue
+        if stripped.endswith(suffix):
+            return stripped.partition(" ")[0].strip()
+    return ""
+
+
+def _git_head_oid_subprocess(*, repo_root: Path) -> str:
     root = Path(repo_root).resolve()
     try:
         completed = subprocess.run(
@@ -26,6 +76,25 @@ def _git_head_oid(*, repo_root: Path) -> str:
     except OSError:
         return ""
     return str(completed.stdout or "").strip()
+
+
+def _git_head_oid(*, repo_root: Path) -> str:
+    root = Path(repo_root).resolve()
+    git_dir = _git_dir(str(root))
+    if git_dir is not None:
+        head_token = _read_first_line(git_dir / "HEAD")
+        if head_token.startswith("ref:"):
+            ref_token = head_token.partition(":")[2].strip()
+            if ref_token:
+                direct_ref = _read_first_line(git_dir / ref_token)
+                if direct_ref:
+                    return direct_ref
+                packed_ref = _packed_ref_oid(git_dir=git_dir, ref_token=ref_token)
+                if packed_ref:
+                    return packed_ref
+        elif head_token:
+            return head_token
+    return _git_head_oid_subprocess(repo_root=root)
 
 
 def workspace_activity_fingerprint(*, repo_root: Path) -> str:
