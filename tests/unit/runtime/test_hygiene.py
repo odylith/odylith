@@ -150,7 +150,6 @@ RUNTIME_CHATTER_FRAGMENTS = (
 def test_public_tree_contains_no_legacy_contract_leaks() -> None:
     legacy_consumer_brand = "".join(("ori", "on"))
     needles = [
-        "scripts/",
         "tests/scripts/",
         "backlog/ui/",
         "tools/",

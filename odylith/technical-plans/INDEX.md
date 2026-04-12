@@ -26,6 +26,7 @@ Last updated (UTC): 2026-04-11
 | `odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md` | In progress | 2026-04-11 | 2026-04-11 | `B-087` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md` | In progress | 2026-04-11 | 2026-04-11 | `B-088` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md` | In progress | 2026-04-11 | 2026-04-11 | `B-089` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md` | In progress | 2026-04-12 | 2026-04-12 | `B-090` |
 
 ## Parked Plans
 

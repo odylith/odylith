@@ -7,6 +7,7 @@ import pytest
 
 from odylith import cli
 from odylith.runtime.common import command_surface
+from odylith.runtime.evaluation import benchmark_compare as _real_benchmark_compare
 
 
 def _parser_nodes(parser: argparse.ArgumentParser, prefix: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
@@ -561,11 +562,11 @@ def test_cli_benchmark_compare_dispatch_and_json(monkeypatch, tmp_path: Path, ca
             return {"status": "pass", "baseline": "golden"}
 
     monkeypatch.setattr(
-        cli.benchmark_compare,
+        _real_benchmark_compare,
         "compare_latest_to_baseline",
         lambda *, repo_root, baseline: captured.update({"repo_root": repo_root, "baseline": baseline}) or _FakeResult(),
     )
-    monkeypatch.setattr(cli.benchmark_compare, "render_compare_text", lambda result: "compare text")
+    monkeypatch.setattr(_real_benchmark_compare, "render_compare_text", lambda result: "compare text")
 
     rc = cli.main(["benchmark", f"--repo-root={tmp_path}", "compare", "--baseline", "golden", "--json"])
     output = capsys.readouterr().out

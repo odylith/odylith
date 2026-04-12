@@ -636,7 +636,7 @@ def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_sta
     )
     assert "Snapshot: 2026-04-07T17:06:12Z" in compass_status["meta"]
     assert "Attempted: 2026-04-07T17:17:57Z" in compass_status["meta"]
-    assert "Next: odylith compass refresh --repo-root . --wait" in compass_status["meta"]
+    assert "Next: odylith dashboard refresh --repo-root . --surfaces compass" in compass_status["meta"]
 
 
 def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001

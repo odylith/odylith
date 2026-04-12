@@ -1,4 +1,4 @@
-status: queued
+status: implementation
 
 idea_id: B-090
 
@@ -28,9 +28,7 @@ confidence: medium
 
 founder_override: no
 
-promoted_to_plan: 
-
-execution_model: standard
+promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md
 
 workstream_type: standalone
 

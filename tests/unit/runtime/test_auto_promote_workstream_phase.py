@@ -132,7 +132,7 @@ def _seed_repo(*, root: Path, status: str) -> tuple[Path, Path, Path]:
     ideas_dir.mkdir(parents=True, exist_ok=True)
     plan_dir = root / "odylith" / "technical-plans" / "in-progress"
     plan_dir.mkdir(parents=True, exist_ok=True)
-    stream_path = root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path = root / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"
     stream_path.parent.mkdir(parents=True, exist_ok=True)
 
     plan_path = plan_dir / "2026-03-03-workstream-lineage.md"

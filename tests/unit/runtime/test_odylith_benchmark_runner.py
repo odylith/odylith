@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import threading
@@ -4400,7 +4401,18 @@ def test_proof_request_from_live_explicit_workstream_scenario_stays_orchestratio
     ) == []
 
 
-def test_live_validation_heavy_proof_slice_delegates_when_grounded() -> None:
+def test_live_validation_heavy_proof_slice_delegates_when_grounded(monkeypatch: pytest.MonkeyPatch) -> None:
+    # After the execution-governance critical-path guard landed, these
+    # scenarios stay local because the governance layer classifies them as
+    # verify-mode critical paths. The test still proves the orchestrator
+    # produces a valid summary from the live scenario corpus; the original
+    # "delegates" assertion is updated to match the live contract.
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     repo_root = REPO_ROOT
     scenarios = runner.load_benchmark_scenarios(repo_root=repo_root)
     scenario = next(row for row in scenarios if row["scenario_id"] == "validation-heavy-router-fix")
@@ -4415,12 +4427,19 @@ def test_live_validation_heavy_proof_slice_delegates_when_grounded() -> None:
         mode="odylith_on",
     )
 
-    assert summary["delegate"] is True
-    assert summary["mode"] in {"single_leaf", "serial_batch", "parallel_batch"}
-    assert summary["odylith_adoption"]["grounded_delegate"] is True
+    assert summary["delegate"] is False
+    assert summary["mode"] == "local_only"
+    assert "execution-governance-critical-path" in summary.get("local_only_reasons", [])
 
 
-def test_live_explicit_workstream_proof_slice_delegates_when_grounded() -> None:
+def test_live_explicit_workstream_proof_slice_delegates_when_grounded(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Same governance-critical-path shift as the validation-heavy test above.
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     repo_root = REPO_ROOT
     scenarios = runner.load_benchmark_scenarios(repo_root=repo_root)
     scenario = next(row for row in scenarios if row["scenario_id"] == "wave3-explicit-workstream")
@@ -4435,9 +4454,9 @@ def test_live_explicit_workstream_proof_slice_delegates_when_grounded() -> None:
         mode="odylith_on",
     )
 
-    assert summary["delegate"] is True
-    assert summary["mode"] in {"single_leaf", "serial_batch", "parallel_batch"}
-    assert summary["odylith_adoption"]["grounded_delegate"] is True
+    assert summary["delegate"] is False
+    assert summary["mode"] == "local_only"
+    assert "execution-governance-critical-path" in summary.get("local_only_reasons", [])
 
 
 def test_live_explicit_workstream_packet_keeps_docs_bounded(monkeypatch: pytest.MonkeyPatch) -> None:

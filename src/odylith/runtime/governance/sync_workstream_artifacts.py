@@ -122,6 +122,22 @@ _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES: tuple[str, ...] = (
     "odylith/casebook/bugs/",
     "odylith/atlas/source/",
 )
+# Live Odylith product-repo governance records that must never be shipped into
+# consumer truth roots through the source-truth bundle mirror. The mirror is
+# meant to carry shared guidance and shipped-contract surfaces into installed
+# consumer repos, but the in-progress plan stream and the raw radar idea
+# stream are Odylith's own development backlog. Mirroring those into the
+# bundle would seed a consumer install with Odylith product chatter inside
+# their own `odylith/radar/source/ideas/` and
+# `odylith/technical-plans/in-progress/` trees, which is exactly what
+# `tests/unit/runtime/test_hygiene.py::test_bundle_does_not_ship_public_live_governance_records_into_consumer_truth_roots`
+# guards against. The exclusion stays minimal to the leak the hygiene test
+# actually forbids; broader workstream-artifact triage (e.g. `done/`,
+# `parked/`, `radar/source/releases/`) belongs in a separate slice.
+_SOURCE_TRUTH_BUNDLE_MIRROR_EXCLUDE_PREFIXES: tuple[str, ...] = (
+    "odylith/radar/source/ideas/",
+    "odylith/technical-plans/in-progress/",
+)
 
 
 def _context_engine_store():
@@ -252,6 +268,8 @@ def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[
 def _should_bundle_mirror_source_truth_path(path_token: str) -> bool:
     token = str(path_token).strip()
     if not token:
+        return False
+    if any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_EXCLUDE_PREFIXES):
         return False
     return any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES)
 

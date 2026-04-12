@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith import cli
+from odylith.runtime.evaluation import benchmark_compare as _real_benchmark_compare
 
 
 class _FakeBenchmarkResult:
@@ -72,12 +73,12 @@ def test_lane_status_dispatches_to_maintainer_lane_status(monkeypatch, tmp_path:
 
 def test_benchmark_compare_renders_text_and_returns_fail_status(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
-        cli.benchmark_compare,
+        _real_benchmark_compare,
         "compare_latest_to_baseline",
         lambda **kwargs: _FakeBenchmarkResult(status="fail"),
     )
     monkeypatch.setattr(
-        cli.benchmark_compare,
+        _real_benchmark_compare,
         "render_compare_text",
         lambda result: "odylith benchmark compare\n- status: fail\n- note: compare note",
     )
@@ -90,12 +91,12 @@ def test_benchmark_compare_renders_text_and_returns_fail_status(monkeypatch, tmp
 
 def test_benchmark_compare_warns_without_blocking(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
-        cli.benchmark_compare,
+        _real_benchmark_compare,
         "compare_latest_to_baseline",
         lambda **kwargs: _FakeBenchmarkResult(status="warn"),
     )
     monkeypatch.setattr(
-        cli.benchmark_compare,
+        _real_benchmark_compare,
         "render_compare_text",
         lambda result: "odylith benchmark compare\n- status: warn\n- note: first-release warning",
     )
@@ -108,7 +109,7 @@ def test_benchmark_compare_warns_without_blocking(monkeypatch, tmp_path: Path, c
 
 def test_benchmark_compare_renders_json(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
-        cli.benchmark_compare,
+        _real_benchmark_compare,
         "compare_latest_to_baseline",
         lambda **kwargs: _FakeBenchmarkResult(status="pass"),
     )

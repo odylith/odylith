@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -302,7 +303,14 @@ def test_execution_profile_mapping_canonicalizes_explicit_profile_runtime_fields
 )
 def test_orchestrator_execution_profile_mapping_infers_profile_from_runtime_fields(
     profile: router.RouterProfile,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     execution_profile = orchestrator._execution_profile_mapping(  # noqa: SLF001
         {
             "model": profile.model,
@@ -346,7 +354,16 @@ def test_orchestrator_execution_profile_mapping_canonicalizes_conflicting_runtim
     assert execution_profile["reasoning_effort"] == profile.reasoning_effort
 
 
-def test_route_request_keeps_recommended_runtime_fields_consistent_with_explicit_profile(tmp_path: Path) -> None:
+def test_route_request_keeps_recommended_runtime_fields_consistent_with_explicit_profile(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     request = _route_request(
         prompt="Update the bounded implementation in src/odylith/runtime/orchestration/subagent_router.py.",
         task_kind="implementation",
@@ -436,7 +453,16 @@ def test_synthesized_execution_profile_candidate_uses_host_specific_model_on_cla
     assert profile["reasoning_effort"] == router.RouterProfile.CODEX_HIGH.reasoning_effort
 
 
-def test_route_request_infers_profile_from_model_and_reasoning_only(tmp_path: Path) -> None:
+def test_route_request_infers_profile_from_model_and_reasoning_only(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     request = _route_request(
         prompt="Review the bounded analysis slice.",
         task_kind="analysis",
@@ -456,7 +482,15 @@ def test_route_request_infers_profile_from_model_and_reasoning_only(tmp_path: Pa
     assert summary["odylith_execution_reasoning_effort"] == router.RouterProfile.CODEX_HIGH.reasoning_effort
 
 
-def test_execution_profile_mapping_infers_profile_from_optimization_latest_packet_runtime_fields() -> None:
+def test_execution_profile_mapping_infers_profile_from_optimization_latest_packet_runtime_fields(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     execution_profile = router._execution_profile_mapping(  # noqa: SLF001
         root={},
         context_packet={},
@@ -629,7 +663,9 @@ def test_route_request_omits_native_spawn_payloads_for_unknown_host(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.delenv("CLAUDE_CODE", raising=False)
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
     monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
     monkeypatch.delenv("CODEX_SHELL", raising=False)
     monkeypatch.delenv("__CFBundleIdentifier", raising=False)
@@ -643,8 +679,8 @@ def test_route_request_omits_native_spawn_payloads_for_unknown_host(
         validation_commands=["pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py"],
         routing_handoff=_routing_handoff(
             profile=router.RouterProfile.CODEX_HIGH.value,
-            model=router.RouterProfile.CODEX_HIGH.model,
-            reasoning_effort=router.RouterProfile.CODEX_HIGH.reasoning_effort,
+            model="gpt-5.3-codex",
+            reasoning_effort="high",
             host_runtime="",
             selection_mode="bounded_write",
         ),
@@ -666,7 +702,9 @@ def test_route_request_provider_only_codex_hint_does_not_enable_native_spawn(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.delenv("CLAUDE_CODE", raising=False)
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
     monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
     monkeypatch.delenv("CODEX_SHELL", raising=False)
     monkeypatch.delenv("__CFBundleIdentifier", raising=False)
@@ -680,8 +718,8 @@ def test_route_request_provider_only_codex_hint_does_not_enable_native_spawn(
         validation_commands=["pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py"],
         routing_handoff=_routing_handoff(
             profile=router.RouterProfile.CODEX_HIGH.value,
-            model=router.RouterProfile.CODEX_HIGH.model,
-            reasoning_effort=router.RouterProfile.CODEX_HIGH.reasoning_effort,
+            model="gpt-5.3-codex",
+            reasoning_effort="high",
             host_runtime="",
             selection_mode="bounded_write",
         ),
@@ -1079,7 +1117,14 @@ def test_subtask_execution_profile_routes_support_docs_to_spark_fast_lane() -> N
 )
 def test_subtask_execution_profile_inherits_parent_profile_floor_for_primary_leaves(
     profile: router.RouterProfile,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     routed = _subtask_execution_profile(
         request_needs_write=False,
         subtask_scope_role="analysis",
@@ -1356,8 +1401,15 @@ def test_orchestrator_leaf_payload_emits_task_tool_payload_for_claude_host(
 
 
 def test_orchestrator_leaf_payload_infers_parent_runtime_from_model_and_reasoning_only(
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     request = orchestrator.orchestration_request_from_mapping(
         {
             "prompt": "Review the bounded analysis in src/odylith/runtime/orchestration/subagent_router.py.",
@@ -1412,8 +1464,15 @@ def test_orchestrator_leaf_payload_infers_parent_runtime_from_model_and_reasonin
 
 
 def test_orchestrator_leaf_payload_canonicalizes_conflicting_parent_runtime_fields_before_routing(
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     request = orchestrator.orchestration_request_from_mapping(
         {
             "prompt": "Review the bounded analysis in src/odylith/runtime/orchestration/subagent_router.py.",
