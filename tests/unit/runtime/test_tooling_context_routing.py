@@ -129,10 +129,30 @@ def test_build_narrowing_guidance_keeps_broad_shared_paths_task_first() -> None:
     assert guidance["next_fallback_followup"] == ""
 
 
-def test_native_spawn_execution_ready_fails_closed_for_claude_host(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setenv("CLAUDE_CODE", "1")
-    monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
-    monkeypatch.delenv("CODEX_SHELL", raising=False)
+def test_native_spawn_execution_ready_succeeds_for_claude_host_when_all_gates_pass() -> None:
+    assert routing.native_spawn_execution_ready(
+        route_ready=True,
+        full_scan_recommended=False,
+        narrowing_required=False,
+        within_budget=True,
+        delegate_preference="delegate",
+        model="claude-opus-4-6",
+        reasoning_effort="high",
+        agent_role="worker",
+        selection_mode="bounded_write",
+        selected_test_count=1,
+        host_runtime="claude_cli",
+    ) is True
+
+
+def test_native_spawn_execution_ready_fails_closed_for_unknown_host(monkeypatch) -> None:
+    from odylith.runtime.common import host_runtime as host_runtime_contract
+
+    monkeypatch.setattr(
+        host_runtime_contract,
+        "detect_host_runtime",
+        lambda *, environ=None: "",
+    )
 
     assert routing.native_spawn_execution_ready(
         route_ready=True,
@@ -145,24 +165,5 @@ def test_native_spawn_execution_ready_fails_closed_for_claude_host(monkeypatch) 
         agent_role="worker",
         selection_mode="bounded_write",
         selected_test_count=1,
-    ) is False
-
-
-def test_native_spawn_execution_ready_fails_closed_for_unknown_host(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.delenv("CLAUDE_CODE", raising=False)
-    monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
-    monkeypatch.delenv("CODEX_SHELL", raising=False)
-    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
-
-    assert routing.native_spawn_execution_ready(
-        route_ready=True,
-        full_scan_recommended=False,
-        narrowing_required=False,
-        within_budget=True,
-        delegate_preference="delegate",
-        model="gpt-5.3-codex",
-        reasoning_effort="high",
-        agent_role="worker",
-        selection_mode="bounded_write",
-        selected_test_count=1,
+        host_runtime="",
     ) is False

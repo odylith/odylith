@@ -27,7 +27,7 @@ class _FakeBenchmarkResult:
 
 def test_sync_refuses_product_repo_authoring_on_main(monkeypatch, tmp_path: Path, capsys) -> None:
     (tmp_path / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
-    monkeypatch.setattr(cli, "product_repo_role", lambda **kwargs: "product_repo")
+    monkeypatch.setattr(cli, "_main_branch_guard_repo_role", lambda **kwargs: cli.PRODUCT_REPO_ROLE)
     monkeypatch.setattr(cli, "_current_git_branch", lambda **kwargs: "main")
 
     rc = cli.main(["sync", "--repo-root", str(tmp_path)])

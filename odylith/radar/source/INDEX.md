@@ -29,13 +29,14 @@ Last updated (UTC): 2026-04-12
 | 22 | B-079 | Program/Wave Authoring CLI and Agent Ergonomics | P2 | 100 | 3 | 4 | 2 | M | Medium | queued | [program-wave-authoring-cli-and-agent-ergonomics](odylith/radar/source/ideas/2026-04/2026-04-09-program-wave-authoring-cli-and-agent-ergonomics.md) |
 | 23 | B-081 | Atlas Cold Real-Render Daemon Reuse and Sub-Second First-Render Budget | P0 | 100 | 4 | 5 | 3 | M | High | queued | [atlas-cold-real-render-daemon-reuse-and-sub-second-first-render-budget](odylith/radar/source/ideas/2026-04/2026-04-10-atlas-cold-real-render-daemon-reuse-and-sub-second-first-render-budget.md) |
 | 24 | B-082 | Shared Turn Intake With Hard Consumer Fencing and Dev-Maintainer Odylith Targeting | P1 | 100 | 4 | 5 | 3 | M | High | queued | [shared-turn-intake-with-hard-consumer-fencing-and-dev-maintainer-odylith-targeting](odylith/radar/source/ideas/2026-04/2026-04-10-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md) |
-| 25 | B-036 | Product Canon Tab for Feature Narrative | P1 | 99 | 5 | 4 | 3 | L | High | queued | [odylith-product-canon-tab-for-feature-narrative](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md) |
-| 26 | B-034 | Constitution Tab for Non-Negotiable Product Truth | P0 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-constitution-tab-for-non-negotiable-product-truth](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md) |
-| 27 | B-037 | Live Benchmarks Drawer and Dynamic Metric Readout | P1 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-live-benchmarks-drawer-and-dynamic-metric-readout](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md) |
-| 28 | B-043 | Bootstrapped Consumer Governance Lane for SWE-bench Verified | P1 | 92 | 4 | 5 | 5 | L | VeryHigh | queued | [odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified](odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md) |
-| 29 | B-035 | Decisions Tab and Architecture Decision Ledger | P1 | 89 | 4 | 4 | 3 | L | High | queued | [odylith-decisions-tab-and-architecture-decision-ledger](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md) |
-| 30 | B-002 | Multi-Developer Repo Collaboration Architecture | P0 | 70 | 5 | 5 | 4 | XL | VeryHigh | queued | [odylith-multi-developer-repo-collaboration-architecture](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md) |
-| 31 | B-006 | Dark Theme and Adaptive Surface Tokens | P1 | 67 | 4 | 4 | 4 | XL | High | queued | [odylith-dark-theme-and-adaptive-surface-tokens](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md) |
+| 25 | B-090 | Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors | P1 | 100 | 4 | 4 | 3 | M | Medium | queued | [bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors](odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md) |
+| 26 | B-036 | Product Canon Tab for Feature Narrative | P1 | 99 | 5 | 4 | 3 | L | High | queued | [odylith-product-canon-tab-for-feature-narrative](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md) |
+| 27 | B-034 | Constitution Tab for Non-Negotiable Product Truth | P0 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-constitution-tab-for-non-negotiable-product-truth](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md) |
+| 28 | B-037 | Live Benchmarks Drawer and Dynamic Metric Readout | P1 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-live-benchmarks-drawer-and-dynamic-metric-readout](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md) |
+| 29 | B-043 | Bootstrapped Consumer Governance Lane for SWE-bench Verified | P1 | 92 | 4 | 5 | 5 | L | VeryHigh | queued | [odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified](odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md) |
+| 30 | B-035 | Decisions Tab and Architecture Decision Ledger | P1 | 89 | 4 | 4 | 3 | L | High | queued | [odylith-decisions-tab-and-architecture-decision-ledger](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md) |
+| 31 | B-002 | Multi-Developer Repo Collaboration Architecture | P0 | 70 | 5 | 5 | 4 | XL | VeryHigh | queued | [odylith-multi-developer-repo-collaboration-architecture](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md) |
+| 32 | B-006 | Dark Theme and Adaptive Surface Tokens | P1 | 67 | 4 | 4 | 4 | XL | High | queued | [odylith-dark-theme-and-adaptive-surface-tokens](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md) |
 
 ## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress` or an active parent wave)
 
@@ -118,6 +119,7 @@ Last updated (UTC): 2026-04-12
 - tradeoff: This is a large benchmark-integration slice because it touches dataset materialization, repo snapshotting, patch capture, prediction serialization, Docker and architecture constraints, and publication metadata together, but splitting those concerns would produce a half-trustworthy harness.
 - deferred for now: Chasing leaderboard positioning, multimodal benchmark work, and broader hosted evaluation infrastructure stay deferred because the immediate need is one deterministic external-eval adapter that can prove Odylith is running the official contract honestly.
 - ranking basis: no manual priority override; this belongs at the top of the queued lane because external benchmark comparability is now part of the argument advanced evaluators will ask for.
+
 
 
 
@@ -502,12 +504,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-044 (rank 3)
 - why now: External benchmark numbers become misleading quickly without per-instance failure taxonomy, slice-level analytics, and strict publication rules around dev versus test, zero-prep versus bootstrapped, and local harness versus official submission.
 - expected outcome: Turns external evals into actionable engineering signals instead of vanity numbers, keeps Odylith's public story honest, and makes it much easier to tell whether losses come from environment setup, localization, validation, or real reasoning failure.
 - tradeoff: This is a medium-sized analytics-and-governance slice because it adds reporting, taxonomy, run-manifest rules, and publication gates rather than raw runtime improvement, but external proof will drift into noise without it.
 - deferred for now: Rich benchmark dashboards and cross-model comparison products stay deferred because the immediate need is disciplined engineering telemetry and publication hygiene for Odylith's own external runs first.
 - ranking basis: no manual priority override; this belongs in the top benchmark cluster because external scores without trustworthy taxonomy and publication rules are not decision-quality evidence.
+
 
 
 
@@ -892,12 +896,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-047 (rank 5)
 - why now: Tribunal is already one of Odylith's strongest diagnosis engines, but the product still treats it mostly as a sync-side consequence instead of the default layer when work stops being clear-path.
 - expected outcome: Makes failure handling, closeout risk, ownership conflict, and bounded recovery feel materially smarter while preserving a fast deterministic lane for routine work.
 - tradeoff: This is a medium-sized runtime-and-product slice because it touches trigger policy, cache reuse, Remediator handoff, and delivery-intelligence boundaries together, but broadening Tribunal without one explicit contract would either slow the happy path or keep the engine underused.
 - deferred for now: broader benchmark proof and more ambitious shell explanation stay deferred because the immediate need is to make Tribunal product-real in the runtime before widening the claim surface further.
 - ranking basis: no manual priority override; this belongs in the active queue because Tribunal should become a default response to unclear-path work, not just a nice downstream artifact.
+
 
 
 
@@ -1282,6 +1288,7 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-049 (rank 7)
 - why now: created as a new queued workstream for Odylith macOS Runtime Trust Ignores OS Metadata Noise.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
@@ -1474,12 +1481,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-050 (rank 8)
 - why now: created as a new queued workstream for Odylith Repair and Reinstall Converge After Partial Runtime Failure.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
+
 
 
 
@@ -1862,12 +1871,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-052 (rank 10)
 - why now: created as a new queued workstream for Odylith Legacy Migration Stale Reference Audit.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
+
 
 
 
@@ -2250,6 +2261,7 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-056 (rank 12)
 - why now: created as a new queued workstream for Odylith Trust Bootstrap Warning Suppression and Success Clarity.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
@@ -2444,12 +2456,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-055 (rank 13)
 - why now: created as a new queued workstream for Odylith Lifecycle Plan Dirty Overlap Summary Defaults.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
+
 
 
 
@@ -2833,12 +2847,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-070 (rank 15)
 - why now: created as a new queued workstream for Benchmark Host-Family Proof Canon and Live Runner Schema Normalization.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
+
 
 
 
@@ -3066,12 +3082,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-074 (rank 17)
 - why now: Admissibility is the founder-identified highest-leverage product improvement once the task contract exists.
 - expected outcome: Blocks non-admissible next moves before execution and gives the nearest truthful alternative.
 - tradeoff: Policy without the later frontier and closure waves will still be incomplete, but landing it early forces the right product seam.
 - deferred for now: full middleware insertion across every existing execution surface.
 - ranking basis: no manual priority override; held in the queued lane behind the active umbrella and its immediate contract foundation.
+
 
 
 
@@ -3288,12 +3306,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-076 (rank 19)
 - why now: Destructive subset mistakes are one of the main execution failure classes the product needs to block instead of relearn.
 - expected outcome: Computes safe versus incomplete versus destructive scope for the first resource domains.
 - tradeoff: Closure coverage starts with a limited resource graph instead of pretending every topology is solved in v1.
 - deferred for now: broad external platform graph expansion.
 - ranking basis: no manual priority override; queued behind the frontier wave because closure needs the prior execution state model.
+
 
 
 
@@ -3510,12 +3530,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-078 (rank 21)
 - why now: Known failure classes and contradictions should become executable preflight rules instead of searchable memory after the base engine exists.
 - expected outcome: Synthesizes validation matrices and contradiction records from the active execution contract and evidence.
 - tradeoff: This closes the loop later in the sequence because it depends on the earlier contract, closure, and receipt layers being real first.
 - deferred for now: richer operator-facing UX beyond the first contract-driven readouts.
 - ranking basis: no manual priority override; queued as the capstone wave for the execution-governance umbrella.
+
 
 
 
@@ -3731,12 +3753,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-081 (rank 23)
 - why now: created as a new queued workstream for Atlas Cold Real-Render Daemon Reuse and Sub-Second First-Render Budget.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
+
 
 
 
@@ -3943,7 +3967,15 @@ Last updated (UTC): 2026-04-12
 
 
 
-### B-036 (rank 25)
+
+### B-090 (rank 25)
+- why now: created as a new queued workstream for Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-036 (rank 26)
 - why now: Odylith's capability surface is now ahead of its own self-explanation, which means users still have to infer too much of the product story from onboarding fragments and technical artifacts.
 - expected outcome: Makes the feature story legible in product language, gives onboarding and release explanation one durable narrative source, and improves first-contact comprehension without dumbing the product down.
 - tradeoff: This is a large explanation slice because it has to establish a reusable Canon contract, shell presentation, and grounded proof hooks together or the narrative will drift into fluff.
@@ -4138,7 +4170,8 @@ Last updated (UTC): 2026-04-12
 
 
 
-### B-034 (rank 26)
+
+### B-034 (rank 27)
 - why now: Odylith's non-negotiable product rules are real, but they are still scattered across AGENTS, specs, and workstreams instead of surfacing as one visible contract inside the product.
 - expected outcome: Makes the core truth harder to miss, reduces accidental boundary breaches, and gives operators plus agents one first-class place to understand what Odylith will not trade away.
 - tradeoff: This is a large governance-surface slice because it has to define a durable constitution source model, shell presentation, and traceability to canonical truth without creating another duplicate ledger.
@@ -4333,7 +4366,8 @@ Last updated (UTC): 2026-04-12
 
 
 
-### B-037 (rank 27)
+
+### B-037 (rank 28)
 - why now: Benchmark proof now shapes product credibility, but the current metrics are still too buried in reports and release workflow to feel like a living part of the product.
 - expected outcome: Makes current benchmark posture visible at a glance, keeps proof movement easier to inspect, and turns benchmark truth into a first-class shell readout instead of a hidden artifact.
 - tradeoff: This is a large proof-visibility slice because it has to normalize benchmark truth, support dynamic freshness, and present enough context to stay trustworthy without replacing the full report.
@@ -4528,7 +4562,8 @@ Last updated (UTC): 2026-04-12
 
 
 
-### B-043 (rank 28)
+
+### B-043 (rank 29)
 - why now: Once Odylith can run the official external contract, the next missing causal proof is whether generated local governance truth compounds with the same model on the same repo without smuggling hidden-answer information.
 - expected outcome: Creates a clean same-truth external lane where both `odylith_on` and `odylith_off` can read the same generated repo-local truth, making it possible to separate governance value from orchestration value on external benchmarks.
 - tradeoff: This is a large product-and-benchmark slice because it needs a mechanically auditable bootstrap pipeline, generated-truth provenance, snapshot freezing, and fairness controls strong enough to survive skeptical review.
@@ -4723,7 +4758,8 @@ Last updated (UTC): 2026-04-12
 
 
 
-### B-035 (rank 29)
+
+### B-035 (rank 30)
 - why now: Odylith records plans, specs, and diagrams well, but it still lacks one durable surface for the architectural decisions that explain why those artifacts look the way they do.
 - expected outcome: Makes ADR-quality reasoning easier to find, reduces repetitive re-debate, and gives contributors a stable path from a design choice to the artifacts it shaped.
 - tradeoff: This is a large governance-and-IA slice because it needs a real decision-record contract, search-friendly rendering, and traceability to Atlas, Registry, and backlog truth together.
@@ -4918,7 +4954,8 @@ Last updated (UTC): 2026-04-12
 
 
 
-### B-002 (rank 30)
+
+### B-002 (rank 31)
 - why now: Odylith now has product-owned governance roots and needs a coherent multi-developer collaboration architecture before comments, authorship, and repo/workspace identity spread through the product as ad hoc fields.
 - expected outcome: Makes shared human/agent development auditable, keeps local-first repo truth authoritative, and gives Dashboard, Compass, Registry, Radar, Atlas, Casebook, and Context Engine one collaboration model.
 - tradeoff: This is a large systems slice because it touches scope identity, actor identity, comment durability, workspace runtime isolation, and optional hosted augmentation all at once.
@@ -5113,7 +5150,8 @@ Last updated (UTC): 2026-04-12
 
 
 
-### B-006 (rank 31)
+
+### B-006 (rank 32)
 - why now: Odylith now has a real shell and multiple governed surfaces, but they still skew light-only and rely on spread-out light palette literals that make long sessions and after-hours use noticeably worse.
 - expected outcome: Improves operator comfort, raises public product polish, and creates a reusable appearance contract so future surfaces inherit theme support instead of reintroducing styling debt.
 - tradeoff: This is a medium-large UX systems slice because theme state has to propagate across the shell and iframe surfaces while charts, badges, tables, diagrams, and other contrast-sensitive regions stay legible.
@@ -5309,17 +5347,6 @@ Last updated (UTC): 2026-04-12
 
 
 
-### B-089 (rank 25)
-- why now: created as a new queued workstream for Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface.
-- expected outcome: clearer product truth and faster follow-on implementation planning.
-- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
-- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
-- ranking basis: score-based rank; no manual priority override.
-
-
-
-
-
 
 ### B-001 (rank -)
 - why now: Odylith now has enough extracted runtime, governance, and surface code that the public repo must govern and validate itself instead of treating self-hosted governance as a future task.
@@ -5327,6 +5354,7 @@ Last updated (UTC): 2026-04-12
 - tradeoff: This is a medium-sized governance/bootstrap slice because it has to stand up real backlog, component, and diagram truth without accidentally copying host-repo records into the public product.
 - deferred for now: Downstream-repo distro polish and later cross-repo portability waves remain deferred because the immediate requirement is a clean self-governing Odylith product boundary first.
 - ranking basis: Manual priority override used because the public product boundary is not credible until Odylith governs itself directly instead of inheriting product authorship from another repo; review checkpoint 2026-04-26.
+
 
 
 
@@ -5711,6 +5739,7 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-004 (rank -)
 - why now: Odylith now has real install/versioning mechanics, but the public product repo still needs a loud and fail-closed self-host posture contract so maintainers can see when the repo is detached from the pinned dogfood lane before cutting releases.
 - expected outcome: Proves Odylith can consume its own released contract, makes detached or diverged product-repo posture explicit in CLI and Compass, and adds a narrow release gate that validates source, pin, and tag alignment.
@@ -5905,12 +5934,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-005 (rank 1)
 - why now: Odylith should relaunch from a clean `0.1.0` source truth, not from abandoned `0.1.x` rehearsal history plus oversized runtime payloads that still make install and incremental upgrade heavier than they need to be.
 - expected outcome: Restarts the preview line cleanly, keeps install and upgrade full-stack by default, makes uploads/downloads smaller and more reusable, and blocks dispatch on a real local hosted-asset proof.
 - tradeoff: This is broader than the original managed-runtime slice because it touches packaging, runtime retention, release preflight, and source-truth rewrite together, but the relaunch would be sloppy without handling those concerns as one lane.
 - deferred for now: GA policy, Windows support, and broader multi-repo expansion stay deferred because the immediate requirement is a clean preview relaunch with a fast, trustworthy full-stack install/update contract.
 - ranking basis: no manual priority override; this stays ahead of B-002 because Odylith should not expand the product surface while the release/reset/install contract is still noisy.
+
 
 
 
@@ -6295,12 +6326,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-008 (rank -)
 - why now: Odylith already had meaningful local memory posture, but operators still had to infer it from backend details and raw snapshots instead of seeing one explicit contract for what memory exists now and what is still missing.
 - expected outcome: Makes Odylith’s memory story legible on first install and during active shell use, while creating a cleaner contract for future memory work.
 - tradeoff: This is a focused product-readout slice because it changes runtime contracts, status output, and shell telemetry, but it avoids the much larger cost of implementing the full collaboration-memory architecture in one pass.
 - deferred for now: Durable decision memory, collaboration identity memory, and contradiction persistence remain deferred because the immediate need is to explain today’s memory posture honestly before expanding it.
 - ranking basis: no manual priority override; this is a bounded clarity slice that improves product trust without preempting the larger collaboration-memory backlog.
+
 
 
 
@@ -6685,12 +6718,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-010 (rank 1)
 - why now: Odylith can already retrieve and route well, but it still forgets high-signal judgment between sessions. Decisions, contradictions, onboarding picks, and workspace identity should survive as compact governed memory, not raw chat exhaust.
 - expected outcome: Makes Odylith visibly different from Codex-alone by remembering what mattered across repo truth, runtime evidence, and prior proof while keeping the benchmark contract honest about recall, accuracy, speed, and token discipline.
 - tradeoff: This is a larger runtime-contract slice because it touches memory persistence, shell/CLI readouts, component governance, and benchmark proof together, but shipping only one of those would leave the product memory story half-true.
 - deferred for now: hosted collaboration, raw conversation retention, and broader memory-surface redesign stay deferred because the immediate need is compact durable judgment memory grounded in local repo truth.
 - ranking basis: no manual priority override; this should move now because the product’s memory claim is still weaker than the benchmark and onboarding story around it.
+
 
 
 
@@ -7075,12 +7110,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-012 (rank -)
 - why now: Compass was still sounding weaker than it should because the shared reasoning boundary never auto-selected the active local coding agent, leaving the standup brief deterministic even inside Codex and fully incompatible with Claude Code.
 - expected outcome: Restores a strong product-power moment in Compass, removes unnecessary API-key friction from the default local path, and makes local AI narration compatible with both Codex and Claude Code.
 - tradeoff: This is a medium-sized runtime-adapter slice because it touches shared provider selection, local CLI adapters, Compass runtime refresh, and proof-lane safety together, but splitting those changes would leave the product half-fixed.
 - deferred for now: Claude Code subagent spawning and broader host-specific orchestration remain deferred because the immediate need is local structured reasoning compatibility and Compass brief recovery.
 - ranking basis: no manual priority override; this should close immediately because the product should not look deterministic-only when it is already running inside a local provider.
+
 
 
 
@@ -7465,12 +7502,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-014 (rank -)
 - why now: Odylith had already fixed one daemon leak class, but the local daemon trust contract still drifted across two client paths and one repair path, which meant the product could still reconnect to stale daemon artifacts or orphan a live daemon during cleanup.
 - expected outcome: hardens Odylith’s local acceleration path, keeps repair trustworthy, and reduces the chance that maintainers or consumers mistake unrelated Python processes for an Odylith leak because the product fails closed on real daemon residue.
 - tradeoff: This is a medium-sized runtime hardening slice because it touches daemon transport, repair cleanup, watcher shutdown, tests, and product guidance together, but splitting those would have left the trust boundary half-fixed.
 - deferred for now: broader daemon observability and any multi-repo daemon audit tooling stay deferred because the immediate need is to close the real leak/security gap first.
 - ranking basis: no manual priority override; this should finish immediately because Odylith cannot claim disciplined local runtime behavior while the daemon trust model is inconsistent.
+
 
 
 
@@ -7855,12 +7894,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-016 (rank -)
 - why now: Odylith now has the right consumer guidance and skills, but install still leaves too much of that power inactive by default in consumer repos and still needs a clean dogfood/maintainer split.
 - expected outcome: Makes the very first installed agent session substantially stronger by activating Odylith-first repo guidance, consumer-safe skills, and validated native-spawn posture where allowed while keeping maintainer-only process inside the product repo.
 - tradeoff: This is a medium-sized install-contract slice because it touches bootstrap sync, repo-root guidance injection, consumer-versus-product role handling, and integration proof together, but shipping only one of those would leave the install activation story half-true.
 - deferred for now: broader onboarding copy redesign and additional-host native spawn work stay deferred because the immediate requirement is activating the product capabilities Odylith already built.
 - ranking basis: no manual priority override; this moved immediately because install should deliver the product’s actual leverage immediately instead of leaving it latent.
+
 
 
 
@@ -8245,12 +8286,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-018 (rank -)
 - why now: Odylith now proves core multi-surface navigation, but it still under-tests the real operator contract of direct query-state entry, reload persistence, and standalone child-surface redirects into the shell.
 - expected outcome: Catches route-loss and selection-restoration bugs that only appear when users open copied links, refresh, or enter through a specific local surface URL.
 - tradeoff: This is a medium-sized browser-proof slice because it adds deeper route coverage and may surface real shell/state-sync defects, but those are exactly the defects that feel worst in consumer use.
 - deferred for now: snapshot testing and broader UI redesign stay deferred because the immediate need is stronger functional route proof, not visual approval infrastructure.
 - ranking basis: no manual priority override; this follows B-017 because the next most valuable browser gap is route persistence, not more happy-path navigation.
+
 
 
 
@@ -8635,12 +8678,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-022 (rank 1)
 - why now: Odylith’s benchmark now shapes product credibility directly, so anti-gaming can no longer live as an implicit norm. The repo needs a first-class workstream that makes flattering eval behavior itself a tracked product risk.
 - expected outcome: Makes the public benchmark story harder to manipulate, keeps README proof auditable, and turns regressions into real product signals instead of pressure to soften the corpus.
 - tradeoff: This is a large benchmark-integrity slice because it touches corpus design, runner rules, release publication, and stale-truth detection together, but splitting those concerns would leave obvious loopholes open.
 - deferred for now: Hosted eval infrastructure and broader multi-model harness expansion remain deferred because the immediate requirement is to harden the existing Codex proof lane against gaming first.
 - ranking basis: no manual priority override; this should sit at the top of the queued lane because benchmark trust is now part of the product, not just part of internal process.
+
 
 
 
@@ -9025,12 +9070,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-024 (rank -)
 - why now: Odylith already has the governance surfaces and memory substrate, but the product still leaves too much of the magical bookkeeping loop implicit, which means agents can still treat backlog, Registry, Atlas, Casebook, and Compass upkeep as optional aftercare.
 - expected outcome: Makes the installed product feel materially stronger from the first turn by pre-baking the search, extend, suggest, create, capture, and sync loop into the guidance and skills consumers actually receive.
 - tradeoff: This is a medium-sized contract slice because it touches shared guidance, shared skills, install-managed text, and bundled consumer assets together, but splitting those would keep the shipped behavior inconsistent.
 - deferred for now: runtime-native governance-autopilot commands and broader memory-schema changes stay deferred because the immediate need is to make the existing product contract explicit and installed by default.
 - ranking basis: no manual priority override; this should move now because Odylith’s biggest delight is cumulative repo bookkeeping, and the product should not leave that magic to operator memory.
+
 
 
 
@@ -9415,12 +9462,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-027 (rank -)
 - why now: Odylith's runtime isolation is correct, but the execution model is still too easy to misread because the repo describes runtime ownership, file-edit authority, and target-repo validation in different places instead of as one explicit lane contract.
 - expected outcome: Makes maintainer and consumer execution discipline clearer, reduces fallback to ad hoc Python entrypoints, and keeps new installs aligned with the actual product boundary instead of operator folklore.
 - tradeoff: This is a medium-sized contract-clarity slice because it touches constitutional docs, shared guidance, maintainer overlays, bundled consumer assets, component specs, and Atlas together, but splitting those would preserve contradictory lane language.
 - deferred for now: launcher/runtime implementation changes stay deferred because the immediate need is to make the current supported lane model explicit and durable before changing mechanics.
 - ranking basis: no manual priority override; this should move now because the ambiguity shows up at the exact moment agents and maintainers choose how to execute work.
+
 
 
 
@@ -9805,12 +9854,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-030 (rank -)
 - why now: Odylith consumer upgrades now work, but the recovery and post-upgrade shell contract still determines whether the product feels trustworthy or brittle right after a release lands.
 - expected outcome: Makes upgrade and reinstall feel deliberate, gives the operator an immediate plain-English readout of what changed, and keeps shell refresh plus launcher recovery from reading like random maintenance chores.
 - tradeoff: This is a large release-UX slice because it spans CLI recovery, shell refresh behavior, upgrade spotlight state, Mermaid failure handling, and browser proof together, but splitting those concerns would have left the operator path half-polished.
 - deferred for now: deeper dashboard IA redesign and broader release storytelling stay deferred because the immediate need is a safe, polished consumer upgrade path, not a larger shell rewrite.
 - ranking basis: Manual priority override used because the default score underweights the product trust gain from a polished upgrade moment and clean recovery path; review checkpoint 2026-04-30.
+
 
 
 
@@ -10191,12 +10242,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-051 (rank -)
 - why now: `doctor` and `version` were still disagreeing exactly where operators needed the product to settle truth: a runnable but trust-degraded wrapped runtime in the product repo.
 - expected outcome: the runtime posture story becomes coherent again, so `doctor` no longer sounds generically broken while `version` quietly reports `wrapped_runtime` with the real trust detail.
 - tradeoff: this stayed intentionally small and surgical because the problem was not lane design; it was one missed trust-only branch in the doctor summary path.
 - deferred for now: broader wrapped-runtime subtype design stays deferred because the immediate requirement was one truthful shared posture contract.
 - ranking basis: executed as a bound child under `B-048`; finished on 2026-04-07 after focused install-manager and CLI regression proof.
+
 
 
 
@@ -10579,12 +10632,14 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-059 (rank -)
 - why now: Atlas was lagging behind the runtime and Registry just where memory substrate and conversation/runtime topology had become more real and more important.
 - expected outcome: broad runtime maps become honest again, Atlas gains a dedicated memory-substrate diagram, and Registry-to-Atlas links point at the real topology instead of one generic memory box.
 - tradeoff: this adds one new diagram and refreshes a few broad maps, but it avoids a repo-wide diagram sweep and stays focused on the surfaces that materially drifted this session.
 - deferred for now: renderer feature work and deeper visual redesign stay deferred because the immediate need is truthful architecture coverage.
 - ranking basis: implementation-bound Atlas refresh launched and finished on 2026-04-07 so the architecture surface stopped lagging the product on the same day the memory componentization landed.
+
 
 
 
@@ -10882,6 +10937,7 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-080 (rank -)
 - why now: Atlas had become slow enough that a review-marker sync or dashboard refresh could cost more time than the diagram read itself, and most of that latency was unrelated command and read-model fan-in rather than real Atlas work.
 - expected outcome: Atlas sync and refresh stay sub-second on the honest command paths without weakening freshness gates or dropping delivery inputs.
@@ -10918,9 +10974,23 @@ Last updated (UTC): 2026-04-12
 
 
 
+
 ### B-088 (rank 25)
 - why now: created as a new queued workstream for Codex Host Runtime Parity, CLI Dispatch, and Target-Release Wording Hardening.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
+
+### B-089 (rank 25)
+- why now: created as a new queued workstream for Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+
+
+
+
+

@@ -123,7 +123,7 @@ _HANDLER_CASES = [
         "path": ("dashboard", "refresh"),
         "argv": lambda root: ["dashboard", "refresh", f"--repo-root={root}"],
         "handler": "_cmd_dashboard_refresh",
-        "check": lambda args, root: getattr(args, "repo_root", "") == str(root) and getattr(args, "dashboard_command", "") == "refresh",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
     },
     {
         "path": ("backlog", "create"),
@@ -258,6 +258,87 @@ for governance_command in (
             "handler": "_cmd_governance",
             "check": lambda args, root, command=governance_command: getattr(args, "repo_root", "") == str(root)
             and getattr(args, "governance_command", "") == command,
+        }
+    )
+
+
+for program_command in (
+    "create",
+    "update",
+    "list",
+    "show",
+    "status",
+    "next",
+):
+    _HANDLER_CASES.append(
+        {
+            "path": ("program", program_command),
+            "argv": lambda root, command=program_command: ["program", command, f"--repo-root={root}"],
+            "handler": "_cmd_program",
+            "check": lambda args, root, command=program_command: getattr(args, "repo_root", "") == str(root)
+            and getattr(args, "program_command", "") == command,
+        }
+    )
+
+
+for wave_command in (
+    "create",
+    "update",
+    "assign",
+    "unassign",
+    "gate-add",
+    "gate-remove",
+    "status",
+):
+    _HANDLER_CASES.append(
+        {
+            "path": ("wave", wave_command),
+            "argv": lambda root, command=wave_command: ["wave", command, f"--repo-root={root}"],
+            "handler": "_cmd_wave",
+            "check": lambda args, root, command=wave_command: getattr(args, "repo_root", "") == str(root)
+            and getattr(args, "wave_command", "") == command,
+        }
+    )
+
+
+for codex_command in (
+    "bash-guard",
+    "compatibility",
+    "post-bash-checkpoint",
+    "prompt-context",
+    "session-start-ground",
+    "stop-summary",
+):
+    _HANDLER_CASES.append(
+        {
+            "path": ("codex", codex_command),
+            "argv": lambda root, command=codex_command: ["codex", command, f"--repo-root={root}"],
+            "handler": "_cmd_codex_host_command",
+            "check": lambda args, root, command=codex_command: getattr(args, "repo_root", "") == str(root)
+            and getattr(args, "codex_command", "") == command,
+        }
+    )
+
+
+for claude_command in (
+    "bash-guard",
+    "compatibility",
+    "post-edit-checkpoint",
+    "pre-compact-snapshot",
+    "prompt-context",
+    "session-start",
+    "statusline",
+    "stop-summary",
+    "subagent-start",
+    "subagent-stop",
+):
+    _HANDLER_CASES.append(
+        {
+            "path": ("claude", claude_command),
+            "argv": lambda root, command=claude_command: ["claude", command, f"--repo-root={root}"],
+            "handler": "_cmd_claude_host_command",
+            "check": lambda args, root, command=claude_command: getattr(args, "repo_root", "") == str(root)
+            and getattr(args, "claude_command", "") == command,
         }
     )
 
