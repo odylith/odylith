@@ -4946,6 +4946,42 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-090",
+      "title": "Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -5894,6 +5930,13 @@
       "label": "Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+    },
+    {
+      "id": "B-090",
+      "type": "workstream",
+      "label": "Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
     },
     {
       "id": "artifact:.github/workflows/release.yml",
@@ -9751,6 +9794,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-090": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -9890,15 +9940,15 @@
     "B-085: related diagram `D-047` not found in catalog"
   ],
   "summary": {
-    "workstream_count": 89,
+    "workstream_count": 90,
     "release_count": 2,
     "active_release_assignment_count": 15,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 213,
+    "node_count": 214,
     "edge_count": 481,
     "warning_count": 12,
     "warning_item_count": 12
   },
-  "generated_utc": "2026-04-11 23:42:36Z"
+  "generated_utc": "2026-04-12 01:04:26Z"
 }

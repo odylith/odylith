@@ -32,10 +32,10 @@
     "empty_reasons": [],
     "explicit_event_count": 23,
     "mapped_workstream_evidence_count": 3,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 24
+    "timeline_event_count": 23
   },
   "name": "Radar",
   "path_prefixes": [
@@ -45,24 +45,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/bundle/assets/odylith/radar/source/INDEX.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-        "src/odylith/bundle/assets/odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
-      ],
-      "confidence": "high",
-      "event_index": 77,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "radar"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/bundle/assets/odylith/radar/source/INDEX.md, odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md +1 more",
-      "ts_iso": "2026-04-11T16:42:49-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/radar/source/INDEX.md",

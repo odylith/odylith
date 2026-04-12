@@ -1,5 +1,5 @@
 # Odylith
-Last updated: 2026-04-09
+Last updated: 2026-04-11
 
 
 Last updated (UTC): 2026-04-08
@@ -406,6 +406,8 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-11 · Implementation:** B-089 has landed on 2026/freedom/v0.1.11 as the planned two-commit pair, working tree clean: 9402f5d — Mirror Codex host parity into Claude with baked CLI dispatchers (56 files:...
+  - Scope: B-089
 - **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
   - Scope: B-021, B-022
   - Evidence: README.md, docs/benchmarks/README.md +3 more
@@ -417,8 +419,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
 - **2026-03-20 · Decision:** Successor created: B-266 reopens B-265 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/casebook/CURRENT_SPEC.md +1 more
-- **2026-03-20 · Decision:** Successor created: B-258 reopens B-256 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
