@@ -866,6 +866,96 @@ def test_compass_program_and_release_cards_keep_distinct_surface_tints_in_compac
     _assert_compass_program_and_release_cards_keep_distinct_surface_tints(*compact_browser_context)
 
 
+def _assert_compass_programs_do_not_render_nested_inner_card_chrome(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    section = compass.locator("#execution-waves-host .execution-wave-section").first
+    section.wait_for(timeout=15000)
+
+    style = section.evaluate(
+        """(node) => {
+            const sectionStyle = window.getComputedStyle(node);
+            const summary = node.querySelector("summary");
+            const summaryStyle = summary ? window.getComputedStyle(summary) : null;
+            return {
+              borderTopWidth: sectionStyle.borderTopWidth,
+              backgroundImage: sectionStyle.backgroundImage,
+              summaryPaddingLeft: summaryStyle ? summaryStyle.paddingLeft : "",
+              summaryPaddingRight: summaryStyle ? summaryStyle.paddingRight : "",
+            };
+        }"""
+    )
+
+    assert style["borderTopWidth"] == "0px"
+    assert style["summaryPaddingLeft"] == "0px"
+    assert style["summaryPaddingRight"] == "0px"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_programs_do_not_render_nested_inner_card_chrome_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_programs_do_not_render_nested_inner_card_chrome(*browser_context)
+
+
+def test_compass_programs_do_not_render_nested_inner_card_chrome_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_programs_do_not_render_nested_inner_card_chrome(*compact_browser_context)
+
+
+def _assert_compass_program_box_highlights_active_inner_wave(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    section = compass.locator("#execution-waves-host .execution-wave-section").first
+    section.wait_for(timeout=15000)
+
+    if section.get_attribute("open") is None:
+        section.locator("> summary").first.click()
+
+    first_wave_card = section.locator(".execution-wave-card").first
+    first_wave_card.wait_for(timeout=15000)
+    if first_wave_card.get_attribute("open") is None:
+        first_wave_card.locator("> summary").first.click()
+
+    style = section.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            const openWaveCount = node.querySelectorAll(".execution-wave-card[open]").length;
+            return {
+              backgroundImage: style.backgroundImage,
+              boxShadow: style.boxShadow,
+              openWaveCount,
+            };
+        }"""
+    )
+
+    assert style["openWaveCount"] >= 1
+    assert style["boxShadow"] != "none"
+    assert style["backgroundImage"] != "none"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_program_box_highlights_active_inner_wave_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_program_box_highlights_active_inner_wave(*browser_context)
+
+
+def test_compass_program_box_highlights_active_inner_wave_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_program_box_highlights_active_inner_wave(*compact_browser_context)
+
+
 def _assert_compass_program_focus_does_not_repeat_outer_program_chip(  # noqa: ANN001
     base_url: str,
     context,
@@ -903,6 +993,57 @@ def test_compass_program_focus_does_not_repeat_outer_program_chip_in_browser(bro
 
 def test_compass_program_focus_does_not_repeat_outer_program_chip_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
     _assert_compass_program_focus_does_not_repeat_outer_program_chip(*compact_browser_context)
+
+
+def _assert_compass_governance_disclosures_survive_runtime_rerender(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+
+    program_section = compass.locator("#execution-waves-host .execution-wave-section").first
+    release_section = compass.locator("#release-groups-host .execution-wave-section").first
+    program_section.wait_for(timeout=15000)
+    release_section.wait_for(timeout=15000)
+
+    if program_section.get_attribute("open") is None:
+        program_section.locator("> summary").first.click()
+    if release_section.get_attribute("open") is None:
+        release_section.locator("> summary").first.click()
+
+    assert program_section.evaluate("(node) => node.hasAttribute('open')") is True
+    assert release_section.evaluate("(node) => node.hasAttribute('open')") is True
+
+    compass.locator("body").evaluate(
+        """async () => {
+            const rawState = params();
+            const runtime = await loadRuntime(rawState);
+            await renderCompassRuntime(rawState, runtime);
+        }"""
+    )
+
+    program_section = compass.locator("#execution-waves-host .execution-wave-section").first
+    release_section = compass.locator("#release-groups-host .execution-wave-section").first
+    program_section.wait_for(timeout=15000)
+    release_section.wait_for(timeout=15000)
+
+    assert program_section.evaluate("(node) => node.hasAttribute('open')") is True
+    assert release_section.evaluate("(node) => node.hasAttribute('open')") is True
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_governance_disclosures_survive_runtime_rerender_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_governance_disclosures_survive_runtime_rerender(*browser_context)
+
+
+def test_compass_governance_disclosures_survive_runtime_rerender_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_governance_disclosures_survive_runtime_rerender(*compact_browser_context)
 
 
 def _assert_compass_outer_governance_section_titles(  # noqa: ANN001

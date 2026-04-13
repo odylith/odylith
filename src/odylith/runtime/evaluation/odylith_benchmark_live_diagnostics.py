@@ -24,6 +24,24 @@ _MAX_TRACKED_PATHS = 80
 _MAX_DIFFERENCES = 20
 _MAX_DIFF_EXCERPT_CHARS = 2000
 _BACKTICK_LITERAL_PATTERN = re.compile(r"`([^`]+)`")
+_PROMPT_VISIBLE_PATH_PATTERN = re.compile(
+    r"`([^`\n]+)`|(?<![A-Za-z0-9_])([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)+|[A-Za-z0-9_.-]+\.(?:css|html|js|json|md|mmd|png|py|svg|toml|txt))(?=$|[\s`'\"),.:;\]])"
+)
+_PROMPT_VISIBLE_FILE_SUFFIXES = frozenset(
+    {
+        ".css",
+        ".html",
+        ".js",
+        ".json",
+        ".md",
+        ".mmd",
+        ".png",
+        ".py",
+        ".svg",
+        ".toml",
+        ".txt",
+    }
+)
 
 
 def _dedupe_strings(rows: Sequence[str]) -> list[str]:
@@ -65,6 +83,34 @@ def _safe_read_text_preview(path: Path, *, max_chars: int = 12000) -> str:
     except (OSError, UnicodeDecodeError):
         return ""
     return payload[:max_chars]
+
+
+def _looks_like_prompt_visible_repo_path(token: str) -> bool:
+    normalized = str(token or "").strip().strip("`'\"()[]{}<>.,:;")
+    if not normalized or "://" in normalized or normalized.startswith("--"):
+        return False
+    if "/" in normalized:
+        return True
+    if normalized in {"AGENTS.md", "CLAUDE.md", "README.md", "Makefile", "Dockerfile"}:
+        return True
+    return Path(normalized).suffix.lower() in _PROMPT_VISIBLE_FILE_SUFFIXES
+
+
+def _existing_repo_paths(*, repo_root: Path, paths: Sequence[str]) -> list[str]:
+    resolved_root = Path(repo_root).resolve()
+    rows: list[str] = []
+    for raw in paths:
+        token = str(raw or "").strip().replace("\\", "/").lstrip("./")
+        if not token:
+            continue
+        candidate = (resolved_root / token).resolve()
+        try:
+            candidate.relative_to(resolved_root)
+        except ValueError:
+            continue
+        if candidate.exists():
+            rows.append(token)
+    return _dedupe_strings(rows)
 
 
 def _git_status_path_from_line(line: str) -> str:
@@ -216,6 +262,25 @@ def prompt_payload_observed_paths(*, prompt_payload: Mapping[str, Any] | None) -
     )
 
 
+def raw_prompt_visible_paths(*, repo_root: Path, raw_prompt: Mapping[str, Any] | None) -> list[str]:
+    payload = dict(raw_prompt or {})
+    texts: list[str] = []
+    prompt = str(payload.get("prompt", "")).strip()
+    if prompt:
+        texts.append(prompt)
+    acceptance = payload.get("acceptance_criteria", [])
+    if isinstance(acceptance, list):
+        texts.extend(str(token).strip() for token in acceptance if str(token).strip())
+    candidates: list[str] = []
+    for text in texts:
+        for match in _PROMPT_VISIBLE_PATH_PATTERN.finditer(text):
+            token = str(match.group(1) or match.group(2) or "").strip().strip("`'\"()[]{}<>.,:;")
+            if not _looks_like_prompt_visible_repo_path(token):
+                continue
+            candidates.append(token.replace("\\", "/").lstrip("./"))
+    return _existing_repo_paths(repo_root=repo_root, paths=_dedupe_strings(candidates))
+
+
 def workspace_state_diff(
     *,
     repo_root: Path,
@@ -319,5 +384,6 @@ __all__ = [
     "focused_local_check_result_lines",
     "prompt_payload_observed_paths",
     "prompt_payload_selected_docs",
+    "raw_prompt_visible_paths",
     "workspace_state_diff",
 ]

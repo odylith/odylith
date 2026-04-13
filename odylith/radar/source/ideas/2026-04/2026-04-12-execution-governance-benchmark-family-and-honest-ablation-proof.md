@@ -36,7 +36,7 @@ workstream_parent: B-021
 
 workstream_children: 
 
-workstream_depends_on: B-021,B-072,B-091
+workstream_depends_on: B-021,B-072,B-091,B-093
 
 workstream_blocks: 
 
@@ -82,19 +82,21 @@ Add a dedicated `execution_governance` benchmark family with representative
 packet scenarios, family metrics for outcome, mode, next move, closure,
 validation, re-anchor, host carry-through, and resumability, plus runner
 acceptance gates that treat execution-governance regressions as real benchmark
-quality failures. Keep the family honest by benchmarking real current-repo
-packet truth and by preserving the existing `odylith_on` versus
-`raw_agent_baseline` matched-pair contract.
+quality failures. Keep the family honest by grounding it in real current-repo
+packet truth and by binding it to the benchmark's updated
+`full_product_assistance_vs_raw_agent` primary comparison contract from
+`B-093` instead of the older grounding-only story.
 
 ## Scope
 - add an `execution_governance` family to the tracked benchmark corpus
 - add benchmark-family metrics and comparison deltas for the execution engine
+  under the honest full-product benchmark contract
 - extend packet expectation matching only where the current benchmark contract
   cannot yet score real execution-governance fields
 - add current-repo packet probe tests so the family is grounded in live packet
   truth instead of synthetic expectations alone
 - update benchmark docs, taxonomy, and benchmark component truth to describe the
-  family and its gates
+  family, its gates, and its role inside the full-product benchmark contract
 - keep the family additive to the benchmark contract and aligned with the
   governed-sync hot-path guarantees from `B-091`
 
@@ -116,6 +118,8 @@ packet truth and by preserving the existing `odylith_on` versus
 - `B-072` delivered the execution-governance runtime being measured
 - `B-091` hardened governed-sync reuse and content-addressed surface writes that
   this benchmark slice must preserve
+- `B-093` hardens the benchmark contract, fairness rules, and corpus
+  seriousness floor that this family now depends on
 
 ## Success Metrics
 - the tracked benchmark corpus includes a first-class `execution_governance`

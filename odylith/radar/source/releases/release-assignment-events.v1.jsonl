@@ -42,3 +42,5 @@
 {"action": "remove", "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.", "recorded_at": "2026-04-12T21:59:19Z", "release_id": "release-0-1-11", "workstream_id": "B-078"}
 {"action": "remove", "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.", "recorded_at": "2026-04-12T21:59:19Z", "release_id": "release-0-1-11", "workstream_id": "B-079"}
 {"action": "remove", "note": "Closed after B-072 execution-governance program completion; no longer targets the active release lane.", "recorded_at": "2026-04-12T21:59:19Z", "release_id": "release-0-1-11", "workstream_id": "B-082"}
+{"action": "add", "recorded_at": "2026-04-12T23:19:04Z", "release_id": "release-0-1-11", "workstream_id": "B-093"}
+{"action": "add", "recorded_at": "2026-04-12T23:19:04Z", "release_id": "release-0-1-11", "workstream_id": "B-092"}

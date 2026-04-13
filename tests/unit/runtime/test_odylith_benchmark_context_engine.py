@@ -54,6 +54,7 @@ def test_mode_summary_aggregates_context_engine_metrics() -> None:
                 },
                 "orchestration": {
                     "odylith_adoption": {
+                        "session_namespace": "benchmark-session-a",
                         "session_namespaced": True,
                     }
                 },
@@ -78,7 +79,12 @@ def test_mode_summary_aggregates_context_engine_metrics() -> None:
                     "expected_packet_source": ["impact"],
                     "expected_selection_state": ["none"],
                 },
-                "orchestration": {"odylith_adoption": {"session_namespaced": False}},
+                "orchestration": {
+                    "odylith_adoption": {
+                        "session_namespace": "benchmark-session-b",
+                        "session_namespaced": False,
+                    }
+                },
             },
         ],
     )
@@ -94,6 +100,34 @@ def test_mode_summary_aggregates_context_engine_metrics() -> None:
     assert summary["context_engine_workstream_accuracy_rate"] == 1.0
     assert summary["context_engine_fail_closed_ambiguity_rate"] == 1.0
     assert summary["context_engine_session_namespace_rate"] == 0.5
+
+
+def test_context_engine_session_namespace_only_counts_runtime_backed_rows() -> None:
+    summary = odylith_benchmark_context_engine.summary_from_rows(
+        [
+            {
+                "scenario_family": "context_engine_grounding",
+                "packet": {
+                    "selection_state": "explicit",
+                    "route_ready": True,
+                    "native_spawn_ready": True,
+                },
+                "expectation_details": {
+                    "expected_selection_state": ["explicit"],
+                },
+                "orchestration": {
+                    "odylith_adoption": {
+                        "runtime_source": "none",
+                        "runtime_transport": "none",
+                        "session_namespaced": False,
+                    }
+                },
+            }
+        ]
+    )
+
+    assert summary["context_engine_runtime_backed_scenario_count"] == 0
+    assert summary["context_engine_session_namespace_rate"] == 0.0
 
 
 def test_summary_comparison_includes_context_engine_deltas() -> None:

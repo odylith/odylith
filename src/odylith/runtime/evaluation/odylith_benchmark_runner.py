@@ -39,6 +39,7 @@ from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import odylith_benchmark_context_engine
 from odylith.runtime.evaluation import odylith_benchmark_execution_governance
 from odylith.runtime.evaluation import odylith_benchmark_guardrails
+from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_live_execution
 from odylith.runtime.evaluation import odylith_benchmark_proof_discipline
 from odylith.runtime.evaluation import odylith_benchmark_prompt_payloads
@@ -54,6 +55,9 @@ REPORT_CONTRACT = "odylith_benchmark_report.v1"
 REPORT_VERSION = "v1"
 PROGRESS_CONTRACT = "odylith_benchmark_progress.v1"
 PROGRESS_VERSION = "v1"
+LIVE_COMPARISON_CONTRACT = "full_product_assistance_vs_raw_agent"
+LEGACY_LIVE_COMPARISON_CONTRACT = "live_end_to_end"
+DIAGNOSTIC_COMPARISON_CONTRACT = "internal_packet_prompt_diagnostic"
 BENCHMARK_PROFILE_QUICK = "quick"
 BENCHMARK_PROFILE_PROOF = "proof"
 BENCHMARK_PROFILE_DIAGNOSTIC = "diagnostic"
@@ -99,13 +103,17 @@ _VALID_PACKET_SOURCES = frozenset({"adaptive", "impact", "governance_slice", "se
 _ANALYSIS_FAMILIES = frozenset({"analysis", "architecture", "broad_shared_scope"})
 _WRITE_FAMILIES = frozenset(
     {
+        "api_contract_evolution",
         "cross_file_feature",
+        "destructive_scope_control",
         "docs_code_closeout",
         "exact_anchor_recall",
+        "external_dependency_recovery",
         "explicit_workstream",
         "merge_heavy_change",
         "orchestration_feedback",
         "orchestration_intelligence",
+        "stateful_bug_recovery",
         "validation_heavy_fix",
     }
 )
@@ -124,7 +132,40 @@ _GOVERNANCE_SLICE_FAMILIES = frozenset(
         "live_proof_discipline",
     }
 )
-_CORRECTNESS_CRITICAL_FAMILIES = frozenset({"validation_heavy_fix", "merge_heavy_change"})
+_CORRECTNESS_CRITICAL_FAMILIES = frozenset(
+    {
+        "destructive_scope_control",
+        "external_dependency_recovery",
+        "merge_heavy_change",
+        "stateful_bug_recovery",
+        "validation_heavy_fix",
+    }
+)
+_MECHANISM_HEAVY_IMPLEMENTATION_FAMILIES = frozenset(
+    {
+        "broad_shared_scope",
+        "context_engine_grounding",
+        "execution_governance",
+        "exact_anchor_recall",
+        "exact_path_ambiguity",
+        "explicit_workstream",
+        "orchestration_feedback",
+        "orchestration_intelligence",
+        "retrieval_miss_recovery",
+    }
+)
+_SERIOUS_IMPLEMENTATION_SCENARIO_MIN = 60
+_SERIOUS_WRITE_PLUS_VALIDATOR_SCENARIO_MIN = 35
+_SERIOUS_CORRECTNESS_CRITICAL_SCENARIO_MIN = 12
+_SERIOUS_MECHANISM_HEAVY_IMPLEMENTATION_MAX_RATIO = 0.40
+_SERIOUS_REQUIRED_FAMILIES = frozenset(
+    {
+        "api_contract_evolution",
+        "stateful_bug_recovery",
+        "external_dependency_recovery",
+        "destructive_scope_control",
+    }
+)
 _REPORT_FILENAME = "latest.v1.json"
 _PROGRESS_FILENAME = "in-progress.v1.json"
 _BENCHMARK_WARM_CACHE_SECONDS = 30.0
@@ -385,7 +426,7 @@ _PUBLISHED_TABLE_WHY_IT_MATTERS = {
 
 
 def _comparison_contract_label_bundle(comparison_contract: str) -> dict[str, str]:
-    live = str(comparison_contract or "").strip() == "live_end_to_end"
+    live = _is_live_comparison_contract(comparison_contract)
     if live:
         return {
             "lane_role_why": _PUBLISHED_TABLE_WHY_IT_MATTERS["lane_role"],
@@ -412,7 +453,7 @@ def _comparison_contract_label_bundle(comparison_contract: str) -> dict[str, str
             "expectation_why": _PUBLISHED_TABLE_WHY_IT_MATTERS["expectation_success_rate"],
         }
     return {
-        "lane_role_why": "Keeps the Grounding Benchmark honest: full Odylith packet and prompt construction versus the raw Codex CLI prompt bundle on the same task.",
+        "lane_role_why": "Keeps the internal diagnostic benchmark honest: full Odylith packet and prompt construction versus the raw Codex CLI prompt bundle on the same task.",
         "scenario_count_why": _PUBLISHED_TABLE_WHY_IT_MATTERS["scenario_count"],
         "latency_median": "Median packet time",
         "latency_avg": "Mean packet time",
@@ -424,16 +465,16 @@ def _comparison_contract_label_bundle(comparison_contract: str) -> dict[str, str
         "validation_label": "Validation-success proxy rate",
         "critical_validation_label": "Critical validation-success proxy rate",
         "expectation_label": "Expectation-success proxy rate",
-        "latency_why": "Shows the packet construction time on the Grounding Benchmark before any live Codex session begins.",
+        "latency_why": "Shows the packet construction time on the internal diagnostic benchmark before any live Codex session begins.",
         "latency_avg_why": "Shows the mean packet time so slow prompt-build cases stay visible.",
         "latency_p95_why": "Shows the long-tail packet time instead of hiding it behind the median.",
-        "instrumented_why": "Shows time spent inside Odylith packet construction and prompt shaping on the Grounding Benchmark.",
+        "instrumented_why": "Shows time spent inside Odylith packet construction and prompt shaping on the internal diagnostic benchmark.",
         "overhead_why": "Shows post-build grounding harness overhead such as validation and accounting.",
-        "effective_tokens_why": "Shows the model-facing prompt-bundle input size on the Grounding Benchmark.",
+        "effective_tokens_why": "Shows the model-facing prompt-bundle input size on the internal diagnostic benchmark.",
         "total_payload_tokens_why": "Shows the full grounding payload size across prompt, runtime contract, and operator diagnostics.",
-        "validation_why": "Higher means the Grounding Benchmark more often satisfies the benchmark validator proxy before any live Codex session begins.",
+        "validation_why": "Higher means the internal diagnostic benchmark more often satisfies the benchmark validator proxy before any live Codex session begins.",
         "critical_validation_why": "Protects critical grounding cases from missing packet-level validator proxy truth.",
-        "expectation_why": "Higher means more scenarios satisfy the stated task contract on the Grounding Benchmark before model execution begins.",
+        "expectation_why": "Higher means more scenarios satisfy the stated task contract on the internal diagnostic benchmark before model execution begins.",
     }
 
 
@@ -544,33 +585,50 @@ _PROMPT_VISIBLE_PATH_PATTERN = re.compile(
 )
 
 
-def _looks_like_prompt_visible_repo_path(token: str) -> bool:
-    normalized = str(token or "").strip().strip("`'\"()[]{}<>.,:;")
-    if not normalized or "://" in normalized or normalized.startswith("--"):
-        return False
-    if "/" in normalized:
-        return True
-    if normalized in {"AGENTS.md", "CLAUDE.md", "README.md", "Makefile", "Dockerfile"}:
-        return True
-    return Path(normalized).suffix.lower() in _VALIDATION_COMPANION_FILE_SUFFIXES
-
-
 def _raw_prompt_visible_paths(*, repo_root: Path, raw_prompt: Mapping[str, Any]) -> list[str]:
-    texts: list[str] = []
-    prompt = str(raw_prompt.get("prompt", "")).strip()
-    if prompt:
-        texts.append(prompt)
-    acceptance = raw_prompt.get("acceptance_criteria", [])
-    if isinstance(acceptance, list):
-        texts.extend(str(token).strip() for token in acceptance if str(token).strip())
-    candidates: list[str] = []
-    for text in texts:
-        for match in _PROMPT_VISIBLE_PATH_PATTERN.finditer(text):
-            token = str(match.group(1) or match.group(2) or "").strip().strip("`'\"()[]{}<>.,:;")
-            if not _looks_like_prompt_visible_repo_path(token):
-                continue
-            candidates.append(token.replace("\\", "/").lstrip("./"))
-    return _existing_repo_paths(repo_root=repo_root, paths=_dedupe_strings(candidates))
+    return odylith_benchmark_live_diagnostics.raw_prompt_visible_paths(
+        repo_root=repo_root,
+        raw_prompt=raw_prompt,
+    )
+
+
+def _is_live_comparison_contract(comparison_contract: str) -> bool:
+    token = str(comparison_contract or "").strip()
+    return token in {LIVE_COMPARISON_CONTRACT, LEGACY_LIVE_COMPARISON_CONTRACT}
+
+
+def _comparison_contract_details(comparison_contract: str) -> dict[str, Any]:
+    if _is_live_comparison_contract(comparison_contract):
+        return {
+            "primary_claim": LIVE_COMPARISON_CONTRACT,
+            "odylith_on_affordances": [
+                "grounding_packet",
+                "selected_docs_and_repo_anchors",
+                "execution_governance_posture_and_truthful_next_move",
+                "scenario_declared_focused_local_checks",
+                "preflight_focused_check_results_when_executed_in_disposable_workspace",
+                "bounded_orchestration_and_recovery_policy",
+            ],
+            "raw_agent_affordances": [
+                "same_host_cli_model",
+                "same_reasoning_effort",
+                "same_sandbox_and_approval_contract",
+                "same_disposable_workspace_shape",
+                "same_validation_commands",
+                "raw_prompt_visible_repo_anchors_only",
+            ],
+        }
+    return {
+        "primary_claim": DIAGNOSTIC_COMPARISON_CONTRACT,
+        "odylith_on_affordances": [
+            "packet_and_prompt_construction",
+            "selected_docs_and_repo_anchors",
+            "bounded_packet_scaffold",
+        ],
+        "raw_agent_affordances": [
+            "raw_prompt_bundle",
+        ],
+    }
 
 
 def _raw_agent_orchestration_summary() -> dict[str, Any]:
@@ -879,6 +937,14 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         return {}
     stored_summary = dict(report.get("published_summary", {})) if isinstance(report.get("published_summary"), Mapping) else {}
     acceptance = dict(report.get("acceptance", {})) if isinstance(report.get("acceptance"), Mapping) else {}
+    comparison_contract = str(report.get("comparison_contract", "")).strip()
+    comparison_contract_details = (
+        dict(report.get("comparison_contract_details", {}))
+        if isinstance(report.get("comparison_contract_details"), Mapping)
+        else _comparison_contract_details(comparison_contract)
+        if comparison_contract
+        else {}
+    )
     comparison = (
         dict(report.get("published_comparison", {}))
         if isinstance(report.get("published_comparison"), Mapping)
@@ -905,7 +971,27 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
     adoption_proof = dict(report.get("adoption_proof", {})) if isinstance(report.get("adoption_proof"), Mapping) else {}
     robustness = dict(report.get("robustness_summary", {})) if isinstance(report.get("robustness_summary"), Mapping) else {}
     corpus_contract = dict(report.get("corpus_contract", {})) if isinstance(report.get("corpus_contract"), Mapping) else {}
+    corpus_composition = (
+        dict(report.get("corpus_composition", {}))
+        if isinstance(report.get("corpus_composition"), Mapping)
+        else {}
+    )
     selection = dict(report.get("selection", {})) if isinstance(report.get("selection"), Mapping) else {}
+    fairness_findings = [
+        str(token).strip()
+        for token in report.get("fairness_findings", [])
+        if isinstance(report.get("fairness_findings"), list) and str(token).strip()
+    ]
+    observed_path_sources = [
+        str(token).strip()
+        for token in report.get("observed_path_sources", [])
+        if isinstance(report.get("observed_path_sources"), list) and str(token).strip()
+    ]
+    preflight_evidence_modes = [
+        str(token).strip()
+        for token in report.get("preflight_evidence_modes", [])
+        if isinstance(report.get("preflight_evidence_modes"), list) and str(token).strip()
+    ]
     adoption_proof_sample_size = int(adoption_proof.get("sample_size", 0) or 0)
     adoption_proof_auto_grounded_rate = float(adoption_proof.get("auto_grounded_rate", 0.0) or 0.0)
     adoption_proof_requires_widening_rate = float(adoption_proof.get("requires_widening_rate", 0.0) or 0.0)
@@ -968,6 +1054,8 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         ]
         if isinstance(report.get("published_cache_profiles"), list)
         else [],
+        "comparison_contract": comparison_contract,
+        "comparison_primary_claim": str(comparison_contract_details.get("primary_claim", "")).strip(),
         "candidate_mode": _public_mode_name(str(comparison.get("candidate_mode", "")).strip()),
         "baseline_mode": _public_mode_name(str(comparison.get("baseline_mode", "")).strip()),
         "latency_delta_ms": float(comparison.get("median_latency_delta_ms", 0.0) or 0.0),
@@ -1133,6 +1221,25 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         "corpus_contract_status": str(corpus_contract.get("status", "")).strip(),
         "corpus_packet_scenario_key": str(corpus_contract.get("packet_scenario_key", "")).strip(),
         "corpus_architecture_scenario_key": str(corpus_contract.get("architecture_scenario_key", "")).strip(),
+        "fairness_contract_passed": bool(report.get("fairness_contract_passed")),
+        "fairness_finding_count": len(fairness_findings),
+        "fairness_findings": fairness_findings[:4],
+        "observed_path_sources": observed_path_sources,
+        "preflight_evidence_mode": str(report.get("preflight_evidence_mode", "")).strip(),
+        "preflight_evidence_modes": preflight_evidence_modes,
+        "corpus_seriousness_floor_passed": bool(corpus_composition.get("seriousness_floor_passed")),
+        "corpus_full_coverage_rate": float(corpus_composition.get("full_corpus_coverage_rate", 0.0) or 0.0),
+        "corpus_full_selected": bool(corpus_composition.get("full_corpus_selected")),
+        "corpus_implementation_scenario_count": int(corpus_composition.get("implementation_scenario_count", 0) or 0),
+        "corpus_write_plus_validator_scenario_count": int(
+            corpus_composition.get("write_plus_validator_scenario_count", 0) or 0
+        ),
+        "corpus_correctness_critical_scenario_count": int(
+            corpus_composition.get("correctness_critical_scenario_count", 0) or 0
+        ),
+        "corpus_mechanism_heavy_implementation_ratio": float(
+            corpus_composition.get("mechanism_heavy_implementation_ratio", 0.0) or 0.0
+        ),
         "weak_families": [
             str(token).strip()
             for token in acceptance.get("weak_families", [])
@@ -1276,6 +1383,76 @@ def _dedupe_strings(values: Sequence[Any]) -> list[str]:
         seen.add(token)
         rows.append(token)
     return rows
+
+
+def _mapping(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
+
+
+def _deep_merge_mapping(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for raw_key, overlay_value in overlay.items():
+        key = str(raw_key).strip()
+        if not key:
+            continue
+        base_value = merged.get(key)
+        if isinstance(base_value, Mapping) and isinstance(overlay_value, Mapping):
+            merged[key] = _deep_merge_mapping(base_value, overlay_value)
+            continue
+        merged[key] = overlay_value
+    return merged
+
+
+_PACKET_FIXTURE_ALLOWED_KEYS = frozenset(
+    {
+        "agent_stream_state",
+        "context_packet",
+        "docs",
+        "execution_stream_state",
+        "external_dependency",
+        "github_actions",
+        "presentation_policy",
+        "proof_state",
+        "relevant_docs",
+        "routing_handoff",
+        "session",
+        "target_resolution",
+        "turn_context",
+    }
+)
+
+
+def _scenario_packet_fixture(scenario: Mapping[str, Any]) -> dict[str, Any]:
+    fixture = _mapping(scenario.get("packet_fixture"))
+    if not fixture:
+        return {}
+    return {
+        key: value
+        for key, value in fixture.items()
+        if str(key).strip() in _PACKET_FIXTURE_ALLOWED_KEYS and value not in ("", [], {}, None)
+    }
+
+
+def _apply_packet_fixture(
+    *,
+    payload: Mapping[str, Any],
+    scenario: Mapping[str, Any],
+    packet_source: str,
+) -> dict[str, Any]:
+    fixture = _scenario_packet_fixture(scenario)
+    merged = dict(payload)
+    if packet_source in {"impact", "governance_slice"} and not str(merged.get("packet_kind", "")).strip():
+        merged["packet_kind"] = packet_source
+    if fixture:
+        merged = _deep_merge_mapping(merged, fixture)
+    if not fixture and "packet_kind" not in merged:
+        return merged
+    merged.pop("execution_governance", None)
+    context_packet = _mapping(merged.get("context_packet"))
+    if context_packet:
+        context_packet.pop("execution_governance", None)
+        merged["context_packet"] = context_packet
+    return merged
 
 
 def _scenario_priority_rank(priority: str) -> int:
@@ -1422,6 +1599,7 @@ def _scenario_from_case(*, case: Mapping[str, Any], architecture: bool) -> dict[
         with contextlib.suppress(TypeError, ValueError):
             live_timeout_seconds = max(0.0, float(benchmark_spec.get("live_timeout_seconds") or 0.0))
     allow_noop_completion = bool(benchmark_spec.get("allow_noop_completion"))
+    packet_fixture = _mapping(benchmark_spec.get("packet_fixture"))
     return {
         "scenario_id": str(case.get("case_id", "")).strip() or hashlib.sha256(
             json.dumps(case, sort_keys=True, ensure_ascii=False).encode("utf-8")
@@ -1455,6 +1633,7 @@ def _scenario_from_case(*, case: Mapping[str, Any], architecture: bool) -> dict[
         "correctness_critical": correctness_critical,
         "live_timeout_seconds": live_timeout_seconds,
         "packet_source": str(benchmark_spec.get("packet_source", "")).strip(),
+        "packet_fixture": packet_fixture,
         "expect": dict(case.get("expect", {})) if isinstance(case.get("expect"), Mapping) else {},
         "match": match_spec,
     }
@@ -1916,6 +2095,7 @@ def _orchestration_request_payload(
     packet_payload: Mapping[str, Any],
 ) -> dict[str, Any]:
     context_packet = dict(packet_payload.get("context_packet", {})) if isinstance(packet_payload.get("context_packet"), Mapping) else {}
+    session_payload = dict(packet_payload.get("session", {})) if isinstance(packet_payload.get("session"), Mapping) else {}
     impact_summary = dict(packet_payload.get("impact_summary", {})) if isinstance(packet_payload.get("impact_summary"), Mapping) else {}
     top_level_components = [
         str(row.get("component_id", "")).strip()
@@ -1982,10 +2162,12 @@ def _orchestration_request_payload(
             or context_packet.get("full_scan_recommended")
         ),
     }
-    for key in ("routing_handoff", "context_packet", "evidence_pack", "optimization_snapshot", "architecture_audit"):
+    for key in ("routing_handoff", "context_packet", "evidence_pack", "optimization_snapshot", "architecture_audit", "session"):
         value = packet_payload.get(key)
         if isinstance(value, Mapping) and value:
             request_payload[key] = dict(value)
+    if session_payload and "session" not in request_payload:
+        request_payload["session"] = session_payload
     return request_payload
 
 
@@ -2029,6 +2211,11 @@ def _request_payload_odylith_adoption(request_payload: Mapping[str, Any]) -> dic
         if isinstance(request_payload.get("context_packet"), Mapping)
         else {}
     )
+    session_payload = (
+        dict(request_payload.get("session", {}))
+        if isinstance(request_payload.get("session"), Mapping)
+        else {}
+    )
     architecture_audit = (
         dict(request_payload.get("architecture_audit", {}))
         if isinstance(request_payload.get("architecture_audit"), Mapping)
@@ -2063,6 +2250,11 @@ def _request_payload_odylith_adoption(request_payload: Mapping[str, Any]) -> dic
     routing_confidence = (
         str(routing_handoff.get("routing_confidence", "")).strip()
         or str(packet_quality.get("routing_confidence", "")).strip()
+    )
+    session_namespace = (
+        str(session_payload.get("session_namespace", "")).strip()
+        or str(session_payload.get("session_id", "")).strip()
+        or str(context_packet.get("session_id", "")).strip()
     )
     route_ready = bool(routing_handoff.get("route_ready") or route.get("route_ready"))
     native_spawn_ready = bool(routing_handoff.get("native_spawn_ready") or route.get("native_spawn_ready"))
@@ -2106,7 +2298,8 @@ def _request_payload_odylith_adoption(request_payload: Mapping[str, Any]) -> dic
         "runtime_source": "none",
         "runtime_transport": "none",
         "workspace_daemon_reused": False,
-        "session_namespaced": False,
+        "session_namespace": session_namespace,
+        "session_namespaced": bool(session_namespace),
         "mixed_local_fallback": False,
     }
 
@@ -2420,6 +2613,7 @@ def _packet_result(
         mode=mode,
         existing_paths=existing_paths,
     )
+    payload = _apply_packet_fixture(payload=payload, scenario=scenario, packet_source=packet_source)
     duration_ms = round((time.perf_counter() - started_at) * 1000.0, 3)
     timing_trace = _timing_trace(
         repo_root=repo_root,
@@ -4170,26 +4364,166 @@ def _pair_timing_summary(
 
 
 def _corpus_summary(*, scenarios: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    packet_count = sum(1 for row in scenarios if str(row.get("kind", "")).strip() == "packet")
-    architecture_count = sum(1 for row in scenarios if str(row.get("kind", "")).strip() == "architecture")
+    packet_rows = [row for row in scenarios if str(row.get("kind", "")).strip() == "packet"]
+    architecture_rows = [row for row in scenarios if str(row.get("kind", "")).strip() == "architecture"]
     required_path_backed = [row for row in scenarios if row.get("required_paths")]
     validation_backed = [row for row in scenarios if row.get("validation_commands")]
     write_surface_backed = [row for row in scenarios if bool(row.get("needs_write")) and row.get("changed_paths")]
     correctness_critical = [row for row in scenarios if bool(row.get("correctness_critical"))]
     critical_required_path_backed = [row for row in correctness_critical if row.get("required_paths")]
     critical_validation_backed = [row for row in correctness_critical if row.get("validation_commands")]
+    write_plus_validator_rows = [
+        row for row in packet_rows if bool(row.get("needs_write")) and row.get("validation_commands")
+    ]
+    implementation_family_counts: dict[str, int] = {}
+    for row in packet_rows:
+        family = str(row.get("family", "")).strip()
+        if not family:
+            continue
+        implementation_family_counts[family] = implementation_family_counts.get(family, 0) + 1
+    mechanism_heavy_rows = [
+        row
+        for row in packet_rows
+        if str(row.get("family", "")).strip() in _MECHANISM_HEAVY_IMPLEMENTATION_FAMILIES
+    ]
+    required_family_counts = {
+        family: int(implementation_family_counts.get(family, 0) or 0)
+        for family in sorted(_SERIOUS_REQUIRED_FAMILIES)
+    }
     return {
         "scenario_count": len(scenarios),
-        "packet_scenario_count": packet_count,
-        "architecture_scenario_count": architecture_count,
+        "packet_scenario_count": len(packet_rows),
+        "architecture_scenario_count": len(architecture_rows),
+        "implementation_scenario_count": len(packet_rows),
         "family_count": len({str(row.get("family", "")).strip() for row in scenarios if str(row.get("family", "")).strip()}),
         "required_path_backed_scenario_count": len(required_path_backed),
         "validation_backed_scenario_count": len(validation_backed),
         "write_surface_backed_scenario_count": len(write_surface_backed),
+        "write_plus_validator_scenario_count": len(write_plus_validator_rows),
         "correctness_critical_scenario_count": len(correctness_critical),
         "critical_required_path_backed_scenario_count": len(critical_required_path_backed),
         "critical_validation_backed_scenario_count": len(critical_validation_backed),
+        "implementation_family_counts": implementation_family_counts,
+        "mechanism_heavy_implementation_scenario_count": len(mechanism_heavy_rows),
+        "mechanism_heavy_implementation_ratio": round(
+            len(mechanism_heavy_rows) / max(1, len(packet_rows)),
+            3,
+        ),
+        "required_family_counts": required_family_counts,
     }
+
+
+def _corpus_composition(*, scenarios: Sequence[Mapping[str, Any]], available_scenarios: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    summary = _corpus_summary(scenarios=scenarios)
+    implementation_count = int(summary.get("implementation_scenario_count", 0) or 0)
+    mechanism_ratio = float(summary.get("mechanism_heavy_implementation_ratio", 0.0) or 0.0)
+    required_family_counts = (
+        dict(summary.get("required_family_counts", {}))
+        if isinstance(summary.get("required_family_counts"), Mapping)
+        else {}
+    )
+    findings: list[str] = []
+    if implementation_count < _SERIOUS_IMPLEMENTATION_SCENARIO_MIN:
+        findings.append(
+            f"implementation_scenario_count={implementation_count} is below the seriousness floor {_SERIOUS_IMPLEMENTATION_SCENARIO_MIN}"
+        )
+    write_plus_validator = int(summary.get("write_plus_validator_scenario_count", 0) or 0)
+    if write_plus_validator < _SERIOUS_WRITE_PLUS_VALIDATOR_SCENARIO_MIN:
+        findings.append(
+            f"write_plus_validator_scenario_count={write_plus_validator} is below the seriousness floor {_SERIOUS_WRITE_PLUS_VALIDATOR_SCENARIO_MIN}"
+        )
+    correctness_critical = int(summary.get("correctness_critical_scenario_count", 0) or 0)
+    if correctness_critical < _SERIOUS_CORRECTNESS_CRITICAL_SCENARIO_MIN:
+        findings.append(
+            f"correctness_critical_scenario_count={correctness_critical} is below the seriousness floor {_SERIOUS_CORRECTNESS_CRITICAL_SCENARIO_MIN}"
+        )
+    if mechanism_ratio > _SERIOUS_MECHANISM_HEAVY_IMPLEMENTATION_MAX_RATIO:
+        findings.append(
+            "mechanism_heavy_implementation_ratio="
+            f"{mechanism_ratio:.3f} exceeds the seriousness ceiling {_SERIOUS_MECHANISM_HEAVY_IMPLEMENTATION_MAX_RATIO:.2f}"
+        )
+    missing_required_families = [
+        family for family in sorted(_SERIOUS_REQUIRED_FAMILIES) if int(required_family_counts.get(family, 0) or 0) <= 0
+    ]
+    if missing_required_families:
+        findings.append("required serious families missing: " + ", ".join(missing_required_families))
+    available_count = len(list(available_scenarios))
+    selected_count = len(list(scenarios))
+    full_corpus_coverage = round(selected_count / max(1, available_count), 3)
+    if available_count and selected_count != available_count:
+        findings.append(
+            f"published selection covers {selected_count}/{available_count} tracked scenarios instead of the full current corpus"
+        )
+    return {
+        "implementation_scenario_count": implementation_count,
+        "write_plus_validator_scenario_count": write_plus_validator,
+        "correctness_critical_scenario_count": correctness_critical,
+        "mechanism_heavy_implementation_scenario_count": int(
+            summary.get("mechanism_heavy_implementation_scenario_count", 0) or 0
+        ),
+        "mechanism_heavy_implementation_ratio": mechanism_ratio,
+        "required_family_counts": required_family_counts,
+        "required_serious_families": sorted(_SERIOUS_REQUIRED_FAMILIES),
+        "full_corpus_selected": selected_count == available_count if available_count else False,
+        "selected_scenario_count": selected_count,
+        "available_scenario_count": available_count,
+        "full_corpus_coverage_rate": full_corpus_coverage,
+        "seriousness_floor_passed": not findings,
+        "findings": findings,
+    }
+
+
+def _fairness_findings(
+    *,
+    repo_root: Path,
+    comparison_contract: str,
+    published_scenarios: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    if not _is_live_comparison_contract(comparison_contract):
+        return []
+    findings: list[str] = []
+    for scenario in published_scenarios:
+        scenario_id = str(scenario.get("scenario_id", "")).strip() or str(scenario.get("label", "")).strip() or "scenario"
+        raw_prompt_visible_expected = bool(
+            odylith_benchmark_live_diagnostics.raw_prompt_visible_paths(
+                repo_root=repo_root,
+                raw_prompt={
+                    "prompt": str(scenario.get("prompt", "")).strip(),
+                    "acceptance_criteria": [
+                        str(token).strip()
+                        for token in scenario.get("acceptance_criteria", [])
+                        if str(token).strip()
+                    ],
+                },
+            )
+        )
+        for result in scenario.get("results", []):
+            if not isinstance(result, Mapping):
+                continue
+            mode = _normalize_mode(str(result.get("mode", "")).strip())
+            sources = {
+                str(token).strip()
+                for token in result.get("observed_path_sources", [])
+                if isinstance(result.get("observed_path_sources"), list) and str(token).strip()
+            }
+            preflight_mode = str(result.get("preflight_evidence_mode", "")).strip()
+            if mode == _RAW_AGENT_BASELINE_MODE and preflight_mode not in {"", "none"}:
+                findings.append(
+                    f"{scenario_id}/{mode} exposes unexpected preflight evidence mode `{preflight_mode}`"
+                )
+            if mode == _RAW_AGENT_BASELINE_MODE and raw_prompt_visible_expected and "raw_prompt_visible_paths" not in sources:
+                findings.append(
+                    f"{scenario_id}/{mode} is missing raw prompt-visible path attribution"
+                )
+            if mode == _ODYLITH_ON_MODE and preflight_mode not in {
+                "",
+                "none",
+                "scenario_declared_focused_local_checks",
+            }:
+                findings.append(
+                    f"{scenario_id}/{mode} uses undeclared preflight evidence mode `{preflight_mode}`"
+                )
+    return _dedupe_strings(findings)
 
 
 def _proof_request_from_scenario(
@@ -4878,7 +5212,7 @@ def _human_number_label(value: float) -> str:
 
 
 def _humanized_proof_table_enabled(comparison_contract: str) -> bool:
-    return str(comparison_contract or "").strip() == "live_end_to_end"
+    return _is_live_comparison_contract(comparison_contract)
 
 
 def _format_mode_table_value(*, field: str, value: Any, comparison_contract: str = "") -> str:
@@ -5736,6 +6070,7 @@ def _acceptance(
     primary_comparison: Mapping[str, Any],
     family_summaries: Mapping[str, Mapping[str, Mapping[str, Any]]],
     corpus_summary: Mapping[str, Any],
+    fairness_findings: Sequence[str] = (),
     runtime_posture: Mapping[str, Any] | None = None,
     packet_source_summaries: Mapping[str, Mapping[str, Mapping[str, Any]]] | None = None,
     cache_profile_summaries: Mapping[str, Mapping[str, Any]] | None = None,
@@ -5822,7 +6157,7 @@ def _acceptance(
     if runtime_memory_backed_retrieval_ready is None:
         runtime_memory_backed_retrieval_ready = True
     comparative_efficiency_applicable = bool(comparative_efficiency_guardrails.get("applicable"))
-    live_end_to_end_comparison = str(comparison_contract or "").strip() == "live_end_to_end"
+    live_end_to_end_comparison = _is_live_comparison_contract(comparison_contract)
     comparative_latency_and_token_status_blocking = comparative_efficiency_applicable and not live_end_to_end_comparison
 
     hard_quality_checks = {
@@ -5996,6 +6331,7 @@ def _acceptance(
             == int(corpus_summary.get("critical_required_path_backed_scenario_count", 0) or 0)
             == int(corpus_summary.get("critical_validation_backed_scenario_count", 0) or 0)
         ),
+        "fairness_contract_passed": not any(str(token).strip() for token in fairness_findings),
         "selected_cache_profiles_clear_gate": (
             True
             if not dict(cache_profile_summaries or {})
@@ -6050,6 +6386,8 @@ def _acceptance(
     advisory_families: list[str] = []
     if not baseline:
         notes.append("`odylith_off` summary is unavailable; rerun with the raw Codex CLI lane enabled.")
+    if fairness_findings:
+        notes.append("Benchmark fairness contract findings are present; the published pair is not release-safe until they are resolved.")
     for family, family_modes in family_summaries.items():
         candidate_family_payload = _lookup_mode_mapping(family_modes, _ODYLITH_ON_MODE)
         baseline_family_payload = _lookup_mode_mapping(family_modes, _BASELINE_MODE)
@@ -6538,7 +6876,13 @@ def _render_report_summary(report: Mapping[str, Any]) -> str:
         f"- primary_cache_profile: {summary.get('primary_cache_profile', '')}\n"
         f"- published_view_strategy: {summary.get('published_view_strategy', '') or 'primary_profile'}\n"
         f"- published_cache_profiles: {', '.join(summary.get('published_cache_profiles', [])) or '-'}\n"
+        f"- comparison_contract: {summary.get('comparison_contract', '') or '-'}\n"
+        f"- comparison_primary_claim: {summary.get('comparison_primary_claim', '') or '-'}\n"
         f"- comparison: {summary.get('candidate_mode', '')} vs {summary.get('baseline_mode', '')}\n"
+        f"- fairness_contract_passed: {bool(summary.get('fairness_contract_passed'))}\n"
+        f"- fairness_findings: {', '.join(summary.get('fairness_findings', [])) or '-'}\n"
+        f"- observed_path_sources: {', '.join(summary.get('observed_path_sources', [])) or '-'}\n"
+        f"- preflight_evidence_modes: {', '.join(summary.get('preflight_evidence_modes', [])) or '-'}\n"
         f"- hard_quality_gate_cleared: {bool(summary.get('hard_quality_gate_cleared'))}\n"
         f"- hard_gate_failures: {', '.join(summary.get('hard_gate_failure_labels', [])) or '-'}\n"
         f"- secondary_guardrails_cleared: {bool(summary.get('secondary_guardrails_cleared'))}\n"
@@ -6573,7 +6917,12 @@ def _render_report_summary(report: Mapping[str, Any]) -> str:
         f"- runtime_remote_retrieval: "
         f"{summary.get('runtime_remote_retrieval_status', '') or 'disabled'}"
         f"/{summary.get('runtime_remote_retrieval_mode', '') or 'disabled'}\n"
-        f"- corpus_contract_status: {summary.get('corpus_contract_status', '')}"
+        f"- corpus_contract_status: {summary.get('corpus_contract_status', '')}\n"
+        f"- corpus_seriousness_floor_passed: {bool(summary.get('corpus_seriousness_floor_passed'))}\n"
+        f"- corpus_full_coverage_rate: {float(summary.get('corpus_full_coverage_rate', 0.0) or 0.0):.3f}\n"
+        f"- corpus_implementation_scenario_count: {int(summary.get('corpus_implementation_scenario_count', 0) or 0)}\n"
+        f"- corpus_write_plus_validator_scenario_count: {int(summary.get('corpus_write_plus_validator_scenario_count', 0) or 0)}\n"
+        f"- corpus_correctness_critical_scenario_count: {int(summary.get('corpus_correctness_critical_scenario_count', 0) or 0)}"
     )
 
 
@@ -6671,9 +7020,9 @@ def run_benchmarks(
         and normalized_modes == list(DEFAULT_MODES)
     )
     comparison_contract = (
-        "live_end_to_end"
+        LIVE_COMPARISON_CONTRACT
         if _benchmark_profile_uses_live_public_modes(normalized_profile)
-        else "internal_packet_prompt_diagnostic"
+        else DIAGNOSTIC_COMPARISON_CONTRACT
     )
     total_results = len(scenarios) * len(normalized_modes) * len(normalized_cache_profiles)
     with odylith_context_cache.advisory_lock(repo_root=root, key=_BENCHMARK_LOCK_KEY):
@@ -6742,6 +7091,11 @@ def run_benchmarks(
                         "summary": scenario["summary"],
                         "family": scenario["family"],
                         "priority": scenario["priority"],
+                        "prompt": str(scenario.get("prompt", "")).strip(),
+                        "acceptance_criteria": list(scenario.get("acceptance_criteria", [])),
+                        "required_paths": list(scenario.get("required_paths", [])),
+                        "validation_commands": list(scenario.get("validation_commands", [])),
+                        "needs_write": bool(scenario.get("needs_write")),
                         "changed_paths": list(scenario["changed_paths"]),
                         "workstream": scenario["workstream"],
                         "results": [],
@@ -6846,6 +7200,10 @@ def run_benchmarks(
                 else _benchmark_runtime_hygiene_snapshot(repo_root=root)
             )
             corpus_summary = _corpus_summary(scenarios=scenarios)
+            corpus_composition = _corpus_composition(
+                scenarios=scenarios,
+                available_scenarios=all_scenarios,
+            )
             primary_scenario_reports = cache_profile_reports.get(primary_cache_profile, [])
             primary_mode_rows = cache_profile_mode_rows.get(primary_cache_profile, {})
             mode_summaries = {
@@ -6875,6 +7233,11 @@ def run_benchmarks(
                     baseline_mode=_BASELINE_MODE,
                     mode_summaries=profile_mode_summaries,
                 )
+                profile_fairness_findings = _fairness_findings(
+                    repo_root=root,
+                    comparison_contract=comparison_contract,
+                    published_scenarios=cache_profile_reports.get(cache_profile, []),
+                )
                 profile_packet_source_summaries = benchmark_group_summaries.grouped_summaries(
                     modes=normalized_modes,
                     mode_rows=profile_mode_rows,
@@ -6895,11 +7258,14 @@ def run_benchmarks(
                         family_summaries=profile_family_summaries,
                     ),
                     "primary_comparison": profile_primary_comparison,
+                    "fairness_contract_passed": not profile_fairness_findings,
+                    "fairness_findings": profile_fairness_findings,
                     "acceptance": _acceptance(
                         mode_summaries=profile_mode_summaries,
                         primary_comparison=profile_primary_comparison,
                         family_summaries=profile_family_summaries,
                         corpus_summary=corpus_summary,
+                        fairness_findings=profile_fairness_findings,
                         packet_source_summaries=profile_packet_source_summaries,
                         execution_contracts=profile_execution_contracts,
                         comparison_contract=comparison_contract,
@@ -6919,6 +7285,11 @@ def run_benchmarks(
             published_scenarios = _apply_singleton_latency_probes_to_published_scenarios(
                 published_scenarios=published_scenarios,
                 latency_probes=latency_probes,
+            )
+            fairness_findings = _fairness_findings(
+                repo_root=root,
+                comparison_contract=comparison_contract,
+                published_scenarios=published_scenarios,
             )
             published_mode_rows: dict[str, list[dict[str, Any]]] = {mode: [] for mode in normalized_modes}
             for scenario_report in published_scenarios:
@@ -6991,11 +7362,48 @@ def run_benchmarks(
                 primary_comparison=published_comparison,
                 family_summaries=published_family_summaries,
                 corpus_summary=corpus_summary,
+                fairness_findings=fairness_findings,
                 runtime_posture=runtime_posture,
                 packet_source_summaries=published_packet_source_summaries,
                 cache_profile_summaries=cache_profile_summaries,
                 execution_contracts=published_execution_contracts,
                 comparison_contract=comparison_contract,
+            )
+            observed_path_sources = sorted(
+                {
+                    str(token).strip()
+                    for scenario_report in published_scenarios
+                    for result in scenario_report.get("results", [])
+                    if isinstance(result, Mapping)
+                    for token in result.get("observed_path_sources", [])
+                    if isinstance(result.get("observed_path_sources"), list) and str(token).strip()
+                }
+            )
+            preflight_evidence_modes = sorted(
+                {
+                    str(result.get("preflight_evidence_mode", "")).strip()
+                    for scenario_report in published_scenarios
+                    for result in scenario_report.get("results", [])
+                    if isinstance(result, Mapping) and str(result.get("preflight_evidence_mode", "")).strip()
+                }
+            )
+            preflight_evidence_commands = sorted(
+                {
+                    str(token).strip()
+                    for scenario_report in published_scenarios
+                    for result in scenario_report.get("results", [])
+                    if isinstance(result, Mapping)
+                    for token in result.get("preflight_evidence_commands", [])
+                    if isinstance(result.get("preflight_evidence_commands"), list) and str(token).strip()
+                }
+            )
+            preflight_evidence_result_statuses = sorted(
+                {
+                    str(result.get("preflight_evidence_result_status", "")).strip()
+                    for scenario_report in published_scenarios
+                    for result in scenario_report.get("results", [])
+                    if isinstance(result, Mapping) and str(result.get("preflight_evidence_result_status", "")).strip()
+                }
             )
             robustness_summary = _robustness_summary(
                 cache_profile_summaries=cache_profile_summaries,
@@ -7038,12 +7446,29 @@ def run_benchmarks(
                 "benchmark_profile_label": _benchmark_profile_label(normalized_profile),
                 "benchmark_profile_description": _benchmark_profile_description(normalized_profile),
                 "comparison_contract": comparison_contract,
+                "comparison_contract_details": _comparison_contract_details(comparison_contract),
                 "selection_strategy": selection_strategy,
                 "product_version": _product_version_from_pyproject(repo_root=root),
                 "corpus_path": str(store.optimization_evaluation_corpus_path(repo_root=root)),
                 "scenario_count": len(primary_scenario_reports),
                 "corpus_summary": corpus_summary,
+                "corpus_composition": corpus_composition,
                 "corpus_contract": corpus_contract,
+                "fairness_contract_passed": not fairness_findings,
+                "fairness_findings": fairness_findings,
+                "observed_path_sources": observed_path_sources,
+                "preflight_evidence_mode": preflight_evidence_modes[0]
+                if len(preflight_evidence_modes) == 1
+                else "mixed"
+                if preflight_evidence_modes
+                else "none",
+                "preflight_evidence_commands": preflight_evidence_commands,
+                "preflight_evidence_result_status": preflight_evidence_result_statuses[0]
+                if len(preflight_evidence_result_statuses) == 1
+                else "mixed"
+                if preflight_evidence_result_statuses
+                else "not_applicable",
+                "preflight_evidence_modes": preflight_evidence_modes,
                 "modes": normalized_modes,
                 "cache_profiles": list(normalized_cache_profiles),
                 "primary_cache_profile": primary_cache_profile,

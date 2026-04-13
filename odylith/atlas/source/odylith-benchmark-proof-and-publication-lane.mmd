@@ -1,12 +1,13 @@
-%% Reviewed 2026-04-06 after README benchmark-baseline updates for guidance-memory recovery, fail-closed weak-family packet ceilings, deterministic warm/cold parity, bounded adoption-proof finalization, and local-memory-first proof posture.
+%% Reviewed 2026-04-12 for B-092/B-093 after the full-product benchmark contract, live-lane fairness hardening, and serious-corpus floor landed.
 flowchart LR
     subgraph Truth["1. Benchmark source truth"]
         Corpus["Benchmark corpus<br/>canonical scenarios + architecture_scenarios<br/>odylith/runtime/source/optimization-evaluation-corpus.v1.json"]
         BenchmarkSpec["Benchmark component spec<br/>odylith/registry/source/components/benchmark/CURRENT_SPEC.md"]
         GuidanceManifest["Canonical guidance manifest<br/>odylith/agents-guidelines/indexable-guidance-chunks.v1.json<br/>family-tagged benchmark guidance"]
-        Workstreams["Radar benchmark workstreams<br/>B-009 + B-019 + B-020 + B-021 + B-022"]
+        Workstreams["Radar benchmark workstreams<br/>B-009 + B-019 + B-020 + B-021 + B-022 + B-092 + B-093"]
         Validators["Public validator contract<br/>documented `odylith ...` entrypoints<br/>stay trustworthy for proof"]
         Taxonomy["Developer-first family taxonomy<br/>README + proof/diagnostic heatmaps<br/>ordered for developer legibility"]
+        Seriousness["Seriousness floor<br/>60 implementation scenarios<br/>35 write+validator + 12 correctness-critical<br/>mechanism-heavy share <= 40%"]
     end
 
     subgraph Runtime["2. Benchmark execution lanes"]
@@ -15,19 +16,20 @@ flowchart LR
         Snapshot["Scoped shared snapshot<br/>same task-relevant repo truth for both lanes<br/>same-package dirty Python siblings included when needed"]
         Boundaries["Family-aware packet ceilings<br/>required_paths authoritative on grounded proof slices"]
         Determinism["Deterministic doc/test/command tie-breaks<br/>warm and cold choose the same truthful slice"]
-        Proof["Proof lane<br/>live end-to-end matched pair<br/>slice-relevant docs + strict bounded no-widen"]
+        Proof["Proof lane<br/>full-product assistance vs raw-agent matched pair<br/>slice-relevant docs + strict bounded no-widen"]
         Diagnostic["Diagnostic lane<br/>packet/prompt-only internal tuning"]
         LocalMemory["Local memory first<br/>LanceDB + Tantivy active<br/>Vespa optional and disabled for published proof"]
         Warm["Warm cache profile"]
         Cold["Cold cache profile"]
-        OdylithOn["odylith_on<br/>grounded Context Engine + Orchestrator"]
-        RawAgent["odylith_off / raw_agent_baseline<br/>primary honest no-scaffold baseline"]
+        OdylithOn["odylith_on<br/>full Odylith assistance stack<br/>grounding + execution posture + bounded orchestration"]
+        RawAgent["odylith_off / raw_agent_baseline<br/>same host CLI with Odylith assistance disabled"]
     end
 
     subgraph Publication["3. Conservative publication view"]
         Probe["Sensitive singleton rerun probes<br/>same-profile median-of-N only when stability clears"]
         Breakdown["Time-to-valid-outcome breakdown<br/>live runtime + validator overhead + pair-wall totals"]
         Restore["Scoped validator truth restore<br/>restore stripped guidance from snapshot stash only<br/>never ambient repo root"]
+        Fairness["Fairness contract<br/>declared lane affordances + raw prompt-visible anchors<br/>preflight evidence logged or fail closed"]
         PromptAudit["Prompt and corpus anomaly audit<br/>browser + install + release weak-family repair loop"]
         WeakFamilies["Pass-recovery weak-family loop<br/>component_governance + compass_brief_freshness<br/>consumer_profile + daemon_security + cross_file_feature"]
         ProofPublished["Published proof view<br/>same-profile same-scenario worst-case across warm + cold<br/>published_summary + family_deltas + robustness_summary"]
@@ -41,7 +43,7 @@ flowchart LR
         README["README benchmark snapshot"]
         ReleaseGuidance["Maintainer benchmark release guidance"]
         FirstReleaseBaseline["First shipped release baseline<br/>docs/benchmarks/release-baselines.v1.json<br/>benchmark_compare warns until recorded"]
-        ReleaseGate["Release-ready benchmark proof<br/>raw honest baseline comparison"]
+        ReleaseGate["Release-ready benchmark proof<br/>full-product assistance vs raw-agent comparison"]
     end
 
     Corpus --> Runner
@@ -51,6 +53,7 @@ flowchart LR
     Validators --> Runner
     Taxonomy --> Graphs
     Taxonomy --> README
+    Seriousness --> Runner
 
     Runner --> Snapshot
     Runner --> GuidanceCatalog
@@ -71,11 +74,13 @@ flowchart LR
 
     Runner --> Probe
     Runner --> Breakdown
+    Runner --> Fairness
     Runner --> PromptAudit
     PromptAudit --> WeakFamilies
     OdylithOn --> Restore
     RawAgent --> Restore
     Restore --> ProofPublished
+    Fairness --> ProofPublished
     PromptAudit --> Corpus
     WeakFamilies --> Corpus
     Diagnostic --> DiagnosticPublished

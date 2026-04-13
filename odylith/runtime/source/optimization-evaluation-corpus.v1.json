@@ -680,6 +680,12 @@
         "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_execution_governance.py"
         ],
+        "packet_fixture": {
+          "proof_state": {
+            "frontier_phase": "verify",
+            "proof_status": "diagnosed"
+          }
+        },
         "intent": "implementation validation",
         "allow_noop_completion": true,
         "workstream": "B-078",
@@ -720,9 +726,6 @@
           "verify.selected_matrix"
         ],
         "execution_governance_current_phase": [
-          "verify"
-        ],
-        "execution_governance_last_successful_phase": [
           "verify"
         ],
         "execution_governance_closure": [
@@ -769,6 +772,22 @@
         "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_execution_governance.py"
         ],
+        "packet_fixture": {
+          "docs": [
+            "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+            "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
+          ],
+          "proof_state": {
+            "frontier_phase": "status synthesis",
+            "current_blocker": "router recovery contract unresolved",
+            "proof_status": "diagnosed"
+          },
+          "routing_handoff": {
+            "route_ready": false,
+            "native_spawn_ready": false,
+            "narrowing_required": true
+          }
+        },
         "intent": "implementation validation",
         "allow_noop_completion": true,
         "workstream": "B-074",
@@ -929,7 +948,7 @@
         "route_ready": false,
         "native_spawn_ready": false,
         "selection_state": [
-          "ambiguous"
+          "none"
         ],
         "execution_governance_present": true,
         "execution_governance_outcome": [
@@ -952,7 +971,7 @@
           "recover"
         ],
         "execution_governance_authoritative_lane": [
-          "context_engine.governance_slice.authoritative"
+          "context_engine.governance_slice.narrowing"
         ],
         "execution_governance_host_family": [
           "codex"
@@ -2141,6 +2160,762 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/repair.py",
           "tests/integration/install/test_manager.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "benchmark-taxonomy-and-heatmap-family-order-evolution",
+      "label": "Benchmark taxonomy and heatmap ordering stay synchronized",
+      "family": "cross_file_feature",
+      "priority": "high",
+      "summary": "Family-ordering work should stay grounded across the taxonomy module, graph renderer, and reader-facing family catalog instead of drifting into one-surface tweaks.",
+      "benchmark": {
+        "prompt": "Evolve the benchmark family ordering so taxonomy, graph ordering, and the public family catalog stay synchronized under validator-backed proof; if the grounded surfaces already satisfy the contract, stop with no file changes.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+          "docs/benchmarks/FAMILIES_AND_EVALS.md"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+          "docs/benchmarks/FAMILIES_AND_EVALS.md",
+          "tests/unit/runtime/test_odylith_benchmark_graphs.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-093",
+        "component": "benchmark"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py"
+        ],
+        "domains_any": [
+          "benchmark"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "compass-wave-and-release-posture-surface-sync",
+      "label": "Compass wave and release posture stay surface-synchronized",
+      "family": "merge_heavy_change",
+      "priority": "high",
+      "summary": "Compass posture work should stay grounded across runtime payload shaping, rendered dashboard output, and the current-workstreams filter contract instead of fixing one list in isolation.",
+      "benchmark": {
+        "prompt": "Repair a Compass program, wave, or release posture regression without letting current-workstream filtering, release cards, or rendered payload truth drift apart.",
+        "paths": [
+          "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+          "src/odylith/runtime/surfaces/compass_current_workstreams_runtime.py",
+          "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+          "src/odylith/runtime/surfaces/compass_current_workstreams_runtime.py",
+          "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+          "tests/unit/runtime/test_compass_current_workstreams_runtime.py",
+          "tests/unit/runtime/test_render_compass_dashboard.py",
+          "tests/integration/runtime/test_surface_browser_smoke.py"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+          "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+          "tests/unit/runtime/test_render_compass_dashboard.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_compass_current_workstreams_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/integration/runtime/test_surface_browser_smoke.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "component": "compass"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+          "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+        ],
+        "domains_any": [
+          "compass"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "tooling-dashboard-governance-shell-render-contract",
+      "label": "Tooling dashboard governance shell render stays end-to-end",
+      "family": "cross_file_feature",
+      "priority": "high",
+      "summary": "Shell governance work should stay grounded across presenter logic, rendered HTML, and shell integration proof instead of fixing one formatting seam in isolation.",
+      "benchmark": {
+        "prompt": "Repair the tooling-dashboard execution-governance shell path end to end so presenter data, rendered HTML, and shell integration proof stay aligned.",
+        "paths": [
+          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+          "src/odylith/runtime/surfaces/templates/tooling_dashboard/page.html.j2"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+          "src/odylith/runtime/surfaces/templates/tooling_dashboard/page.html.j2",
+          "tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py",
+          "tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py",
+          "tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "component": "dashboard"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py"
+        ],
+        "domains_any": [
+          "dashboard"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "subagent-routing-and-remediator-guardrail-carry-through",
+      "label": "Subagent routing and remediator guardrails stay carried through",
+      "family": "merge_heavy_change",
+      "priority": "critical",
+      "summary": "Execution-guardrail changes should stay grounded across lane policy, router policy, and remediator behavior instead of fixing one executor and leaving the rest stale.",
+      "benchmark": {
+        "prompt": "Tighten execution guardrails across the router and remediator so the same authoritative execution posture carries through end to end.",
+        "paths": [
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
+          "src/odylith/runtime/reasoning/remediator.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
+          "src/odylith/runtime/reasoning/remediator.py",
+          "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+          "tests/unit/runtime/test_remediator.py"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
+          "src/odylith/runtime/reasoning/remediator.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_remediator.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-072",
+        "component": "execution-governance"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
+          "src/odylith/runtime/reasoning/remediator.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "benchmark-live-comparison-contract-and-report-schema",
+      "label": "Benchmark live comparison contract and report schema stay explicit",
+      "family": "api_contract_evolution",
+      "priority": "critical",
+      "summary": "Benchmark publication work should keep the live comparison contract and report fields explicit across runner output, component truth, and public docs instead of hiding the real Odylith affordances.",
+      "benchmark": {
+        "prompt": "Evolve the benchmark live comparison contract so the runner, component spec, and public docs agree that the primary claim is full-product Odylith assistance versus the raw host CLI.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "docs/benchmarks/README.md",
+          "README.md"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "docs/benchmarks/README.md",
+          "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+          "README.md",
+          "tests/unit/runtime/test_odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_graphs.py"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "README.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_graphs.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_graphs.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-093",
+        "component": "benchmark"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
+        ],
+        "domains_any": [
+          "benchmark"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "governance"
+        ]
+      }
+    },
+    {
+      "case_id": "live-observed-path-attribution-contract-parity",
+      "label": "Live observed-path attribution stays lane-symmetric",
+      "family": "api_contract_evolution",
+      "priority": "high",
+      "summary": "Live benchmark attribution work should stay grounded across the prompt builder, live execution harness, and diagnostics helper instead of quietly giving the Odylith lane easier path credit.",
+      "benchmark": {
+        "prompt": "Repair the live observed-path attribution contract so prompt-visible repo anchors are credited symmetrically across the Odylith-on and raw-agent lanes.",
+        "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_diagnostics.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_diagnostics.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py",
+          "tests/unit/runtime/test_odylith_benchmark_live_execution.py",
+          "tests/unit/runtime/test_odylith_benchmark_live_diagnostics.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_live_diagnostics.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-093",
+        "component": "benchmark"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_diagnostics.py"
+        ],
+        "domains_any": [
+          "benchmark"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "program-wave-and-release-authoring-status-schema",
+      "label": "Program, wave, and release authoring status schema stay aligned",
+      "family": "api_contract_evolution",
+      "priority": "high",
+      "summary": "Authoring-surface contract work should stay grounded across program or wave authoring, release planning, and their test-backed JSON payloads instead of changing one status surface at a time.",
+      "benchmark": {
+        "prompt": "Evolve the program, wave, and release authoring contract so their status surfaces and JSON payloads stay aligned under execution governance.",
+        "paths": [
+          "src/odylith/runtime/governance/program_wave_authoring.py",
+          "src/odylith/runtime/governance/authoring_execution_policy.py",
+          "src/odylith/runtime/governance/release_planning_authoring.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/governance/program_wave_authoring.py",
+          "src/odylith/runtime/governance/authoring_execution_policy.py",
+          "src/odylith/runtime/governance/release_planning_authoring.py",
+          "tests/unit/runtime/test_program_wave_authoring.py",
+          "tests/unit/runtime/test_release_planning.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_release_planning.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-072"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/governance/program_wave_authoring.py",
+          "src/odylith/runtime/governance/release_planning_authoring.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "benchmark-progress-checkpoint-and-resume-recovery",
+      "label": "Benchmark progress checkpoint and resume stay recoverable",
+      "family": "stateful_bug_recovery",
+      "priority": "high",
+      "summary": "Stateful benchmark recovery should stay grounded across progress checkpoints, resumed runs, and report persistence instead of dropping partial proof or claiming a clean closeout too early.",
+      "benchmark": {
+        "prompt": "Repair the benchmark progress checkpoint and resume path so interrupted proof runs recover cleanly and do not lose or falsify state.",
+        "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_runner.py"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_runner.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py -k 'progress_checkpoint or latest_eligible or cache_profile'"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-093",
+        "component": "benchmark"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
+        ],
+        "domains_any": [
+          "benchmark"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "compass-refresh-queued-state-recovery",
+      "label": "Compass refresh queued-state recovery stays trustworthy",
+      "family": "stateful_bug_recovery",
+      "priority": "high",
+      "summary": "Compass refresh recovery should stay grounded across queued-state handling, runtime payload updates, and surface contract proof instead of leaving operators on stale state.",
+      "benchmark": {
+        "prompt": "Repair Compass refresh queued-state recovery so queued, running, and failed refresh states stay consistent across runtime state and surface output.",
+        "paths": [
+          "src/odylith/runtime/surfaces/compass_refresh_runtime.py",
+          "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+          "tests/unit/runtime/test_compass_refresh_runtime.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/surfaces/compass_refresh_runtime.py",
+          "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+          "tests/unit/runtime/test_compass_refresh_runtime.py",
+          "tests/unit/runtime/test_render_compass_dashboard.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_render_compass_dashboard.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "component": "compass"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/surfaces/compass_refresh_runtime.py",
+          "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py"
+        ],
+        "domains_any": [
+          "compass"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "execution-governance-contradiction-reanchor-recovery",
+      "label": "Execution-governance contradiction recovery stays fail-closed",
+      "family": "stateful_bug_recovery",
+      "priority": "critical",
+      "summary": "Stateful contradiction recovery should stay grounded across contradiction detection, history rules, and re-anchor policy instead of turning repeated failure pressure into generic route hints.",
+      "benchmark": {
+        "prompt": "Repair execution-governance contradiction recovery so repeated contradictory evidence forces the right re-anchor and history-rule posture instead of drifting into permissive retries.",
+        "paths": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/history_rules.py",
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/history_rules.py",
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_governance.py",
+          "tests/unit/runtime/test_subagent_reasoning_ladder.py"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/history_rules.py",
+          "tests/unit/runtime/test_execution_governance.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_subagent_reasoning_ladder.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-092",
+        "component": "execution-governance"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/history_rules.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "github-actions-semantic-wait-and-resume-token-contract",
+      "label": "GitHub Actions semantic wait and resume tokens stay explicit",
+      "family": "external_dependency_recovery",
+      "priority": "critical",
+      "summary": "External dependency recovery should stay grounded across semantic wait normalization, resume-token carry-through, and public execution-governance surfaces instead of flattening waits into generic running state.",
+      "benchmark": {
+        "prompt": "Repair the GitHub Actions semantic wait and resume-token path so execution governance preserves the right wait posture and resumability end to end.",
+        "paths": [
+          "src/odylith/runtime/execution_engine/receipts.py",
+          "src/odylith/runtime/execution_engine/validation.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/execution_engine/receipts.py",
+          "src/odylith/runtime/execution_engine/validation.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
+          "tests/unit/runtime/test_execution_governance.py",
+          "tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/execution_engine/receipts.py",
+          "src/odylith/runtime/execution_engine/validation.py",
+          "tests/unit/runtime/test_execution_governance.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-092",
+        "component": "execution-governance"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/execution_engine/receipts.py",
+          "src/odylith/runtime/execution_engine/validation.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "live-preflight-evidence-disposable-workspace-contract",
+      "label": "Live preflight evidence stays disposable-workspace scoped",
+      "family": "external_dependency_recovery",
+      "priority": "critical",
+      "summary": "Preflight evidence should stay grounded in the disposable benchmark workspace and declared comparison contract instead of leaking ambient repo truth or hidden focused-check results into the Odylith lane.",
+      "benchmark": {
+        "prompt": "Tighten the live benchmark preflight evidence path so focused local checks run only inside the disposable workspace, stay logged, and do not silently widen the benchmark contract.",
+        "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "tests/unit/runtime/test_odylith_benchmark_live_execution.py",
+          "tests/unit/runtime/test_odylith_benchmark_runner.py"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_runner.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-093",
+        "component": "benchmark"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py"
+        ],
+        "domains_any": [
+          "benchmark"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "runtime-surface-wait-status-carry-through",
+      "label": "Runtime surface wait status stays carried through",
+      "family": "external_dependency_recovery",
+      "priority": "high",
+      "summary": "External wait-state work should stay grounded across runtime surface summaries and shell presenters instead of dropping semantic wait posture in one layer.",
+      "benchmark": {
+        "prompt": "Repair the execution wait-status carry-through so runtime summaries and shell surfaces preserve semantic waiting and resume posture end to end.",
+        "paths": [
+          "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
+          "tests/unit/runtime/test_odylith_runtime_surface_summary.py",
+          "tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py",
+          "tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py"
+        ],
+        "allow_noop_completion": true,
+        "needs_write": true,
+        "workstream": "B-092",
+        "component": "execution-governance"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
+          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "resource-closure-destructive-subset-blocking",
+      "label": "Resource closure destructive subset blocking stays fail-closed",
+      "family": "destructive_scope_control",
+      "priority": "critical",
+      "summary": "Destructive-scope control should stay grounded across resource-closure reasoning, policy gates, and validation synthesis instead of treating partial-scope mutations as safe by default.",
+      "benchmark": {
+        "prompt": "Repair destructive-subset scope control so incomplete or destructive resource closures are blocked before execution instead of being diagnosed afterward.",
+        "paths": [
+          "src/odylith/runtime/execution_engine/resource_closure.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/validation.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/execution_engine/resource_closure.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/validation.py",
+          "tests/unit/runtime/test_execution_governance.py"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/execution_engine/resource_closure.py",
+          "src/odylith/runtime/execution_engine/policy.py",
+          "tests/unit/runtime/test_execution_governance.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_governance.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true,
+        "workstream": "B-092",
+        "component": "execution-governance"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/execution_engine/resource_closure.py",
+          "src/odylith/runtime/execution_engine/policy.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "codex-bash-guard-destructive-command-blocking",
+      "label": "Codex bash guard destructive-command blocking stays explicit",
+      "family": "destructive_scope_control",
+      "priority": "critical",
+      "summary": "Codex-host destructive-command protection should stay grounded in the real bash guard and its tests instead of becoming a documentation-only safety claim.",
+      "benchmark": {
+        "prompt": "Repair the Codex-host destructive-command guard so destructive shell forms are blocked explicitly without over-blocking routine commands.",
+        "paths": [
+          "src/odylith/runtime/surfaces/codex_host_bash_guard.py",
+          "tests/unit/runtime/test_codex_host_bash_guard.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/surfaces/codex_host_bash_guard.py",
+          "tests/unit/runtime/test_codex_host_bash_guard.py",
+          "odylith/AGENTS.md"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/surfaces/codex_host_bash_guard.py",
+          "tests/unit/runtime/test_codex_host_bash_guard.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_codex_host_bash_guard.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/surfaces/codex_host_bash_guard.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": true,
+        "intent_family": [
+          "implementation",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "claude-bash-guard-destructive-command-blocking",
+      "label": "Claude bash guard destructive-command blocking stays explicit",
+      "family": "destructive_scope_control",
+      "priority": "critical",
+      "summary": "Claude-host destructive-command protection should stay grounded in the real bash guard and its tests instead of turning into a vague hook-policy story.",
+      "benchmark": {
+        "prompt": "Repair the Claude-host destructive-command guard so destructive shell forms are blocked explicitly without inventing broad false positives.",
+        "paths": [
+          "src/odylith/runtime/surfaces/claude_host_bash_guard.py",
+          "tests/unit/runtime/test_claude_host_bash_guard.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/surfaces/claude_host_bash_guard.py",
+          "tests/unit/runtime/test_claude_host_bash_guard.py",
+          "odylith/AGENTS.md"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/surfaces/claude_host_bash_guard.py",
+          "tests/unit/runtime/test_claude_host_bash_guard.py"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_claude_host_bash_guard.py"
+        ],
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "needs_write": true
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/surfaces/claude_host_bash_guard.py"
         ]
       },
       "expect": {

@@ -3,6 +3,9 @@
       const exactReleaseSummary = payload.release_summary && typeof payload.release_summary === "object"
         ? payload.release_summary
         : null;
+      const rawCurrentWorkstreamsByWindow = payload.current_workstreams_by_window && typeof payload.current_workstreams_by_window === "object"
+        ? payload.current_workstreams_by_window
+        : {};
       const exactCurrentWorkstreams = Array.isArray(payload.current_workstreams)
         ? payload.current_workstreams.filter((row) => row && typeof row === "object")
         : null;
@@ -27,6 +30,14 @@
               ? exactReleaseSummary.summary
               : {},
           },
+          current_workstreams_by_window: {
+            "24h": Array.isArray(rawCurrentWorkstreamsByWindow["24h"])
+              ? rawCurrentWorkstreamsByWindow["24h"].filter((row) => row && typeof row === "object")
+              : [],
+            "48h": Array.isArray(rawCurrentWorkstreamsByWindow["48h"])
+              ? rawCurrentWorkstreamsByWindow["48h"].filter((row) => row && typeof row === "object")
+              : [],
+          },
           current_workstreams: exactCurrentWorkstreams || [],
           workstream_catalog: exactWorkstreamCatalog || [],
           verified_scoped_workstreams: payload.verified_scoped_workstreams && typeof payload.verified_scoped_workstreams === "object"
@@ -50,6 +61,7 @@
           next_release: payload.next_release && typeof payload.next_release === "object" ? payload.next_release : {},
           summary: payload.release_summary && typeof payload.release_summary === "object" ? payload.release_summary : {},
         },
+        current_workstreams_by_window: { "24h": [], "48h": [] },
         current_workstreams: [],
         workstream_catalog: [],
         verified_scoped_workstreams: {},
@@ -354,6 +366,18 @@
       return {
         ...payload,
         release_summary: sourceReleaseSummary,
+        current_workstreams_by_window: normalizedSourceTruth.kind === "source_truth"
+          ? (normalizedSourceTruth.current_workstreams_by_window && typeof normalizedSourceTruth.current_workstreams_by_window === "object"
+            ? {
+                "24h": Array.isArray(normalizedSourceTruth.current_workstreams_by_window["24h"])
+                  ? normalizedSourceTruth.current_workstreams_by_window["24h"].slice()
+                  : [],
+                "48h": Array.isArray(normalizedSourceTruth.current_workstreams_by_window["48h"])
+                  ? normalizedSourceTruth.current_workstreams_by_window["48h"].slice()
+                  : [],
+              }
+            : { "24h": [], "48h": [] })
+          : { "24h": [], "48h": [] },
         current_workstreams: currentWorkstreamRows,
         workstream_catalog: workstreamCatalog,
         verified_scoped_workstreams: normalizedSourceTruth.kind === "source_truth"

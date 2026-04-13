@@ -68,11 +68,11 @@ def _lookup_mode_mapping(mapping: Mapping[str, Any], mode: str) -> Any:
 
 
 def _comparison_contract(report: Mapping[str, Any]) -> str:
-    return str(report.get("comparison_contract", "")).strip() or "live_end_to_end"
+    return str(report.get("comparison_contract", "")).strip() or odylith_benchmark_runner.LIVE_COMPARISON_CONTRACT
 
 
 def _is_live_end_to_end(report: Mapping[str, Any]) -> bool:
-    return _comparison_contract(report) == "live_end_to_end"
+    return odylith_benchmark_runner._is_live_comparison_contract(_comparison_contract(report))  # noqa: SLF001
 
 
 def _token_axis_noun(report: Mapping[str, Any]) -> str:
@@ -96,25 +96,25 @@ def _time_axis_label(report: Mapping[str, Any]) -> str:
 
 
 def _public_benchmark_name(report: Mapping[str, Any]) -> str:
-    return "Live Benchmark" if _is_live_end_to_end(report) else "Grounding Benchmark"
+    return "Live Benchmark" if _is_live_end_to_end(report) else "Internal Diagnostic Benchmark"
 
 
 def _frontier_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return FRONTIER_HEADING
-    return "Grounding Benchmark: packet/prompt time vs prompt-bundle input"
+    return "Internal Diagnostic Benchmark: packet/prompt time vs prompt-bundle input"
 
 
 def _heatmap_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return HEATMAP_HEADING
-    return "Grounding Benchmark Family Heatmap: where Odylith wins"
+    return "Internal Diagnostic Family Heatmap: where Odylith wins"
 
 
 def _posture_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return POSTURE_HEADING
-    return "Grounding Benchmark operating posture on the current proof-host corpus"
+    return "Internal Diagnostic operating posture on the current proof-host corpus"
 
 
 def _report_source_label(report: Mapping[str, Any]) -> str:

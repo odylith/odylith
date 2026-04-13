@@ -453,8 +453,8 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'Target Release</span>' in releases_js
     assert "No targeted workstreams." in releases_js
     assert "execution-wave-focus-title" not in releases_js
-    assert '<div class="execution-wave-section-title-row">' in releases_js
-    assert '<div class="execution-wave-section-title-meta">' in releases_js
+    assert '<span class="execution-wave-section-title-row">' in releases_js
+    assert '<span class="execution-wave-section-title-meta">' in releases_js
     assert '<div class="execution-wave-member-head">' in releases_js
     assert '<div class="execution-wave-member-title-chips">' in releases_js
     assert '<div class="execution-wave-title-row">' not in releases_js
@@ -462,7 +462,11 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert "Release-owned targeted workstreams for this selection." not in releases_js
     assert "function compassReleaseDisplayName(release)" in releases_js
     assert "row.name || row.version || row.tag || row.display_label || row.effective_name" in releases_js
-    assert 'const openAttr = scopedWorkstream ? " open" : "";' in releases_js
+    assert "resolveCompassDisclosureOpen(" in releases_js
+    assert 'data-compass-disclosure-key="${escapeHtml(disclosureKey)}"' in releases_js
+    assert 'bindCompassDisclosurePersistence(target, disclosureGroup, state);' in releases_js
+    assert "resolveCompassDisclosureOpen(" in waves_js
+    assert 'bindCompassDisclosurePersistence(target, disclosureGroup, state);' in waves_js
     assert 'group.is_current || groups.length === 1' not in releases_js
     assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js
     assert "function compassGovernanceRepresentedWorkstreamIds(payload)" in workstreams_js
@@ -517,6 +521,16 @@ def test_render_compass_dashboard_writes_source_truth_snapshot_and_shell_href(tm
                     {"idea_id": "B-073", "title": "Task Contract", "status": "queued"},
                     {"idea_id": "B-079", "title": "Program/Wave Authoring CLI and Agent Ergonomics", "status": "queued"},
                 ],
+                "current_workstreams_by_window": {
+                    "24h": [
+                        {"idea_id": "B-072", "title": "Execution Governance Engine Program", "status": "implementation"},
+                    ],
+                    "48h": [
+                        {"idea_id": "B-072", "title": "Execution Governance Engine Program", "status": "implementation"},
+                        {"idea_id": "B-073", "title": "Task Contract", "status": "queued"},
+                        {"idea_id": "B-079", "title": "Program/Wave Authoring CLI and Agent Ergonomics", "status": "queued"},
+                    ],
+                },
                 "workstream_catalog": [
                     {"idea_id": "B-072", "title": "Execution Governance Engine Program", "status": "implementation"},
                     {"idea_id": "B-073", "title": "Task Contract", "status": "queued"},
@@ -534,6 +548,8 @@ def test_render_compass_dashboard_writes_source_truth_snapshot_and_shell_href(tm
     source_truth_path = repo_root / "odylith" / "compass" / "compass-source-truth.v1.json"
     source_truth = json.loads(source_truth_path.read_text(encoding="utf-8"))
     assert source_truth["release_summary"]["current_release"]["active_workstreams"] == ["B-072", "B-073", "B-079"]
+    assert [row["idea_id"] for row in source_truth["current_workstreams_by_window"]["24h"]] == ["B-072"]
+    assert [row["idea_id"] for row in source_truth["current_workstreams_by_window"]["48h"]] == ["B-072", "B-073", "B-079"]
     assert [row["idea_id"] for row in source_truth["current_workstreams"]] == ["B-072", "B-073", "B-079"]
     payload_js = (repo_root / "odylith" / "compass" / "compass-payload.v1.js").read_text(encoding="utf-8")
     assert "source_truth_href" in payload_js

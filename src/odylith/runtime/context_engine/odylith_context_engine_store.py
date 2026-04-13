@@ -33,6 +33,7 @@ import tempfile
 import time
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
+from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import delivery_intelligence_engine
@@ -3524,7 +3525,7 @@ def _compact_context_dossier(
         compact_scopes = [_condense_delivery_scope(scope) for scope in scopes[: max(1, int(delivery_limit))] if isinstance(scope, Mapping)]
     relations = dossier.get("relations", [])
     relation_count = len(relations) if isinstance(relations, list) else 0
-    return {
+    result = {
         "resolved": True,
         "entity": compact_entity,
         "lookup": dict(dossier.get("lookup", {})) if isinstance(dossier.get("lookup"), Mapping) else {},
@@ -3536,6 +3537,18 @@ def _compact_context_dossier(
         "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
         "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
     }
+    _eg = runtime_surface_governance.compact_execution_governance_snapshot(
+        runtime_surface_governance.build_packet_execution_governance_snapshot(
+            {
+                "packet_kind": "context_dossier",
+                "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
+                "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
+            }
+        )
+    )
+    if _eg:
+        result["execution_governance"] = _eg
+    return result
 
 
 def compact_context_dossier_for_delivery(

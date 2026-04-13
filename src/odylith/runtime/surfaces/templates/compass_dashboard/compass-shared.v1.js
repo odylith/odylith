@@ -1115,6 +1115,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   const contextLine = String(section.contextLine || "").trim();
   const summaryLine = String(section.summaryLine || "").trim();
   const selectedWorkstreamId = String(section.selectedWorkstreamId || "").trim();
+  const disclosureKey = String(section.persistenceKey || "").trim();
+  const disclosureAttr = disclosureKey ? ` data-compass-disclosure-key="${escapeHtml(disclosureKey)}"` : "";
   const sectionChips = Array.isArray(section.sectionChips)
     ? section.sectionChips.filter((row) => String(row || "").trim())
     : [];
@@ -1139,7 +1141,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   if (sectionHeaderVariant === "compass") {
     return `
       <section class="block">
-        <details class="execution-wave-section"${openAttr}>
+        <details class="execution-wave-section"${openAttr}${disclosureAttr}>
           <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
             <span class="execution-wave-section-copy">
               <span class="execution-wave-section-title">${escapeHtml(sectionTitle)}</span>
@@ -1157,7 +1159,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   }
   return `
     <section class="block">
-      <details class="execution-wave-section"${openAttr}>
+      <details class="execution-wave-section"${openAttr}${disclosureAttr}>
         <summary class="execution-wave-section-summary">
           <span class="execution-wave-section-copy">
             <span class="execution-wave-section-title">${escapeHtml(sectionTitle)}</span>

@@ -19,6 +19,7 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
         description="Validator-backed repair work where the agent has to localize and fix a concrete defect.",
         families=(
             "validation_heavy_fix",
+            "stateful_bug_recovery",
             "browser_surface_reliability",
             "cli_contract_regression",
         ),
@@ -27,7 +28,7 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
         key="multi_file_features",
         label="Multi-File Features",
         description="Implementation-heavy feature work spanning multiple files or owners.",
-        families=("cross_file_feature", "merge_heavy_change"),
+        families=("cross_file_feature", "merge_heavy_change", "api_contract_evolution"),
     ),
     BenchmarkFamilyGroup(
         key="runtime_install_security",
@@ -38,6 +39,7 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
             "agent_activation",
             "daemon_security",
             "consumer_profile_compatibility",
+            "external_dependency_recovery",
             "runtime_state_integrity",
         ),
     ),
@@ -57,7 +59,12 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
         key="governance_release_integrity",
         label="Governance / Release Integrity",
         description="Benchmark, Registry, Atlas, release-proof, and live-proof integrity work.",
-        families=("component_governance", "live_proof_discipline", "release_publication"),
+        families=(
+            "component_governance",
+            "destructive_scope_control",
+            "live_proof_discipline",
+            "release_publication",
+        ),
     ),
     BenchmarkFamilyGroup(
         key="architecture_review",

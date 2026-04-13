@@ -19,7 +19,7 @@ This folder explains the benchmark graphs published in the root
 
 Related docs:
 
-- [Current Grounding Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
+- [Current Internal Diagnostic Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
 - [Benchmark Tables](BENCHMARK_TABLES.md)
 - [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
 - [Benchmark Families And Eval Catalog](FAMILIES_AND_EVALS.md)
@@ -31,8 +31,10 @@ Related docs:
 The canonical public proof compares two host-matched lanes on the same task:
 
 - `odylith_on`
-  the proof host runs with Odylith grounding, narrowed evidence, repo-local memory,
-  governance surfaces, and runtime guidance.
+  the proof host runs with the full Odylith assistance stack: grounding,
+  narrowed evidence, repo-local memory, governance surfaces,
+  execution-governance posture, truthful next-move guidance, and bounded
+  orchestration or recovery policy.
 - `odylith_off`
   is the public name for the raw host CLI lane. Internally the report may
   still store this as `raw_agent_baseline`, but the lane itself is the same
@@ -55,10 +57,12 @@ Those secondary lanes are not the public headline claim.
 The profiles answer different questions:
 
 - `proof`
-  Does Odylith beat the raw host CLI on the same live end-to-end task contract?
+  Does the full Odylith assistance stack beat the raw host CLI on the same
+  live end-to-end task contract?
 - `diagnostic`
   Does Odylith build a better grounded packet or prompt than `odylith_off`
-  before the live run starts?
+  before the live run starts? This is an internal diagnostic lane, not the
+  product claim.
 
 `proof` governs the product claim. `diagnostic` only matters when it preserves
 or improves `proof`.
@@ -66,6 +70,12 @@ or improves `proof`.
 The current published measured proof is Codex-host-scoped. Claude Code may
 still benefit from the same grounding and governance surfaces, but that is not
 yet Claude-host benchmark proof.
+
+Tracked source truth now carries a more serious benchmark corpus than the last
+published reports: `60` implementation scenarios plus `5` architecture
+scenarios, including explicit API-evolution, stateful-recovery,
+external-dependency, and destructive-scope families. Publication claims must
+be refreshed from a rerun before they can speak for that expanded corpus.
 
 ## Closeout Framing
 
@@ -110,7 +120,7 @@ The main machine-readable artifacts are:
 
 Current local published artifacts:
 
-- Grounding Benchmark (`diagnostic`):
+- Internal Diagnostic Benchmark (`diagnostic`):
   report `74cbe36427f2c375`, status `hold`, `37` scenarios
 - Live Benchmark (`proof`):
   report `52aa3f76538cf12f`, status `provisional_pass`, `37` scenarios
@@ -199,6 +209,17 @@ holds these constant explicitly:
 - no auto-consumed `AGENTS.md`, `CLAUDE.md`, `.cursor/`, `.windsurf/`, or
   `.codex/` surfaces in the disposable benchmark workspace
 - truth-bearing repo docs remain available for explicit reads
+
+The declared lane difference is explicit, not hidden:
+
+- `odylith_on` may use declared Odylith affordances such as selected docs,
+  execution-governance posture, and scenario-declared focused checks
+- any preflight evidence injected into the Odylith lane must come from checks
+  executed inside the disposable benchmark workspace and be surfaced in the
+  report
+- the report must expose those affordances explicitly through the comparison
+  contract, observed-path sources, preflight-evidence fields, and fairness
+  findings
 
 Important reading rule:
 

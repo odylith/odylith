@@ -285,7 +285,7 @@ def build_agent_prompt(
     focused_local_check_results = _string_rows(prompt_payload.get("focused_local_check_results"))
     if focused_local_check_results:
         task_lines.append("")
-        task_lines.append("Current workspace focused-check results:")
+        task_lines.append("Declared Odylith preflight evidence from the current workspace:")
         task_lines.extend(f"- {token}" for token in focused_local_check_results[:8])
         task_lines.append(
             "Treat these focused-check results as current workspace evidence. If they already prove the contract holds, prefer a no-file-change completion unless a grounded contradiction remains."

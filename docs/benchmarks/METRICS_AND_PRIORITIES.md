@@ -6,9 +6,14 @@ The live `proof` lane is the product comparison and the primary optimization
 target. The `diagnostic` lane is the packet-and-prompt tuning surface. A
 diagnostic win that harms `proof` is a regression.
 
-The real question is not whether Odylith is faster or cheaper in isolation.
-The real question is whether it produces the best valid coding outcome across
-small, medium, and large or complex repo work.
+The primary public question is:
+
+- Does the full Odylith assistance stack make the same host agent perform
+  better on real coding work than the raw host CLI?
+
+The benchmark is not trying to prove that Odylith beats the base model's
+weights. It is trying to prove that Odylith supplies a better operating policy
+around the same model.
 
 ## Outcome Priority Order
 
@@ -27,19 +32,19 @@ Odylith evaluates benchmark outcomes in this order:
 The benchmark uses three layers:
 
 - `Hard quality gate`
-  Tiers `1-4` are status blockers. If Odylith gets less correct, less
+  tiers `1-4` are status blockers. If Odylith gets less correct, less
   grounded, less valid, or less consistent, the status stays `hold`.
 - `Secondary guardrails`
-  Packet-backed live-proof tighter-budget behavior remains status-blocking.
+  packet-backed live-proof tighter-budget behavior remains status-blocking.
   Architecture-only or other non-packet sampled slices do not fail this
   guardrail just because no packet rows are present. Time to valid outcome and
   full-session token spend stay published, but they are not primary status
   gates because they are not measured on the same basis as solo-user latency
   or initial prompt size.
 - `Advisory mechanism checks`
-  Packet coverage, widening frequency, route posture, and similar signals stay
-  visible for diagnosis, but they are explanatory signals unless they show up
-  as real outcome regressions.
+  packet coverage, widening frequency, route posture, fairness findings, and
+  similar mechanism signals stay visible for diagnosis, but they are
+  explanatory unless they show up as real outcome regressions.
 
 Current live-proof secondary guardrail:
 
@@ -50,22 +55,48 @@ Current diagnostic-lane efficiency guardrails:
 - median prompt-bundle delta `<= +64` tokens
 - median total-payload delta `<= +96` tokens
 
-Current live-proof discipline metrics when proof-backed benchmark scenarios are present:
+## Full-Product Comparison Contract
 
-- `false_clearance_rate = 0.0`
-- `proof_frontier_gate_accuracy_rate = 1.0`
-- `proof_claim_guard_accuracy_rate = 1.0`
-- `proof_same_fingerprint_reuse_rate = 1.0` whenever the sampled corpus actually includes same-fingerprint proof rows
+For the public live pair:
 
-Current Context Engine grounding metrics when Context Engine benchmark scenarios are present:
+- `odylith_on` means the full Odylith assistance stack:
+  grounding packet, selected docs and repo anchors, execution-governance
+  posture, truthful next-move hints, scenario-declared focused-check shaping,
+  preflight focused-check results only when they were executed in the
+  disposable benchmark workspace and logged in the report, and bounded
+  orchestration or recovery policy.
+- `odylith_off` means the same raw host CLI with those Odylith assistance
+  affordances disabled.
 
-- `context_engine_packet_source_accuracy_rate = 1.0`
-- `context_engine_selection_state_accuracy_rate = 1.0`
-- `context_engine_workstream_accuracy_rate = 1.0`
-- `context_engine_fail_closed_ambiguity_rate = 1.0`
-- `context_engine_session_namespace_rate = 1.0` whenever the sampled corpus actually includes runtime-backed Context Engine rows
+This is not a hidden-information benchmark. If an Odylith affordance is
+intentional product behavior, it must be:
 
-Current execution-governance metrics when execution-governance benchmark scenarios are present:
+- declared in the comparison contract
+- surfaced in the machine-readable report
+- held to the same same-host, same-validator, same-workspace fairness bar
+
+## Fairness Contract
+
+The benchmark fails closed if the live pair drifts from the declared contract.
+
+Examples of release-blocking fairness findings:
+
+- `odylith_on` receives undeclared preflight evidence
+- `odylith_off` loses prompt-visible path attribution for anchors the prompt
+  actually showed
+- the report cannot surface `comparison_contract`, `preflight_evidence_*`,
+  `observed_path_sources`, `validator_status_basis`,
+  `fairness_contract_passed`, or `fairness_findings` explicitly
+
+Focused preflight evidence is allowed only when the scenario declares it and
+the runner executes it inside the disposable benchmark workspace. If that
+preflight evidence is what carries a no-op lane to completion, the report must
+say so explicitly with `validator_status_basis=focused_noop_proxy`.
+
+## Execution-Governance Metrics
+
+Execution-governance benchmark slices are hard-gated when present. Current
+required rates on sampled execution-governance rows:
 
 - `execution_governance_present_rate = 1.0`
 - `execution_governance_resume_token_present_rate = 1.0`
@@ -73,16 +104,43 @@ Current execution-governance metrics when execution-governance benchmark scenari
 - `execution_governance_mode_accuracy_rate = 1.0`
 - `execution_governance_next_move_accuracy_rate = 1.0`
 - `execution_governance_closure_accuracy_rate = 1.0`
-- `execution_governance_wait_status_accuracy_rate = 1.0` whenever the sampled corpus actually includes wait-backed rows
+- `execution_governance_wait_status_accuracy_rate = 1.0` whenever the sampled
+  corpus includes wait-backed rows
 - `execution_governance_validation_archetype_accuracy_rate = 1.0`
-- `execution_governance_current_phase_accuracy_rate = 1.0` whenever the sampled corpus actually includes stable phase rows
-- `execution_governance_last_successful_phase_accuracy_rate = 1.0` whenever the sampled corpus actually includes stable phase-history rows
+- `execution_governance_current_phase_accuracy_rate = 1.0` whenever the
+  sampled corpus includes stable phase rows
+- `execution_governance_last_successful_phase_accuracy_rate = 1.0` whenever
+  the sampled corpus includes stable phase-history rows
 - `execution_governance_authoritative_lane_accuracy_rate = 1.0`
-- `execution_governance_target_lane_accuracy_rate = 1.0` whenever the sampled corpus actually includes target-lane rows
+- `execution_governance_target_lane_accuracy_rate = 1.0` whenever the sampled
+  corpus includes target-lane rows
 - `execution_governance_resume_token_accuracy_rate = 1.0`
 - `execution_governance_host_family_accuracy_rate = 1.0`
-- `execution_governance_model_family_accuracy_rate = 1.0` whenever the sampled corpus actually includes model-family rows
+- `execution_governance_model_family_accuracy_rate = 1.0` whenever the sampled
+  corpus includes model-family rows
 - `execution_governance_reanchor_accuracy_rate = 1.0`
+
+## Corpus Seriousness Floor
+
+The benchmark only earns a serious publication claim if the tracked corpus and
+the published proof both clear these bars:
+
+- at least `60` implementation scenarios
+- at least `35` write-plus-validator scenarios
+- at least `12` correctness-critical scenarios
+- mechanism-heavy implementation families at or below `40%` of implementation
+  scenarios
+- required real-world families present in the tracked corpus:
+  `api_contract_evolution`, `stateful_bug_recovery`,
+  `external_dependency_recovery`, and `destructive_scope_control`
+- the latest published proof covers the full current tracked corpus, not a
+  stale subset
+
+Packet-only diagnostic scenarios may use bounded `benchmark.packet_fixture`
+data to restore declared proof-state or external-state fields into the packet
+seam, but that mechanism is scaffolding for packet-truth evaluation only. It
+does not waive the live fairness contract and it does not add hidden credit to
+the published proof pair.
 
 ## What Each Tier Means
 
@@ -96,7 +154,8 @@ Current execution-governance metrics when execution-governance benchmark scenari
 | Prompt and payload efficiency | How much prompt or session budget did Odylith require to get there? |
 | Bounded behavior under tighter token budgets | Does Odylith degrade gracefully when the token budget tightens? |
 
-For live blocker lanes, those tiers are supplemented by proof-discipline checks:
+For live blocker lanes, those tiers are supplemented by proof-discipline
+checks:
 
 - Does the packet expose a real proof lane when one resolves?
 - Does it avoid claiming `fixed live` before the hosted frontier advances?
@@ -108,16 +167,21 @@ grounding-control checks:
 
 - Did the adaptive or explicit packet choose the right lane for the slice?
 - Did the packet resolve the right workstream or say `none` explicitly?
-- Did ambiguous scope stay fail-closed instead of becoming route-ready by accident?
+- Did ambiguous scope stay fail-closed instead of becoming route-ready by
+  accident?
 - Did runtime-backed slices keep session scope namespaced?
 
 For execution-engine work, those tiers are also supplemented by
 execution-governance checks:
 
-- Did the packet and runtime summary preserve the real `admit|deny|defer` posture?
-- Did the engine keep one truthful next move instead of collapsing into generic route hints?
-- Did broad or ambiguous scope fail closed into `recover` with the right closure posture?
-- Did resume tokens and authoritative lanes survive carry-through into the public surfaces?
+- Did the packet and runtime summary preserve the real `admit|deny|defer`
+  posture?
+- Did the engine keep one truthful next move instead of collapsing into
+  generic route hints?
+- Did broad or ambiguous scope fail closed into `recover` with the right
+  closure posture?
+- Did resume tokens and authoritative lanes survive carry-through into the
+  public surfaces?
 
 ## Release Rule
 
@@ -139,9 +203,14 @@ The inverse is also true:
 ## Closeout Framing
 
 Benchmark writeups should state measured results first. If Odylith is named
-directly beyond lane labels, keep it brief and secondary to the evidence.
-Keep that to one final-only `Odylith Assist:` line backed by measured proof or
-a measured report, and follow
+directly beyond lane labels, keep that to one final-only `Odylith Assist:`
+line backed by measured proof or a measured report, prefer
+`**Odylith Assist:**` when Markdown is available, lead with the user win, link
+updated governance ids inline when they changed, and only frame the edge
+against `odylith_off` or the broader unguided path when the evidence supports
+it. Keep the voice crisp, authentic, clear, simple, insightful, soulful,
+friendly, free-flowing, human, and factual. Use only concrete observed counts,
+measured deltas, or validation outcomes; silence is better than filler. Follow
 [Odylith Chatter](../../odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md)
 for the detailed closeout wording contract.
 
@@ -151,7 +220,8 @@ The benchmark is only trustworthy if the corpus measures the right work:
 
 - small, medium, and large or complex repo work
 - single-file, cross-file, and cross-surface scenarios
-- correctness-sensitive and recovery-sensitive tasks
+- correctness-sensitive, recovery-sensitive, external-wait, and
+  destructive-scope tasks
 - both warm and cold cache posture where applicable
 - harder, more realistic, or more reproducible cases over time, never easier
 

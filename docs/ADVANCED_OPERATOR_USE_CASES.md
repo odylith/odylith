@@ -21,5 +21,5 @@ odylith sync --repo-root . --force
 - `sync --force`: force a full local surface refresh when you are debugging
   generated state or renderer output.
 
-For deeper Context Engine detail, see
-[Context Engine Operations](../odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md).
+For deeper engine detail, see
+[Context Engine](CONTEXT_ENGINE.md).

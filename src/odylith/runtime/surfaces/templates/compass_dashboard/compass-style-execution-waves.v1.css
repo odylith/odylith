@@ -1,6 +1,44 @@
-.execution-wave-program-stack:not(.execution-wave-program-stack-release) .execution-wave-section {
-  border-color: #dbeafe;
-  background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
+.card.execution-waves-card .execution-wave-program-stack {
+  gap: 12px;
+}
+
+.card.execution-waves-card .execution-wave-section {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  overflow: visible;
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+
+.card.execution-waves-card .execution-wave-section-summary {
+  padding: 0;
+}
+
+.card.execution-waves-card .execution-wave-section-summary:hover {
+  background: transparent;
+}
+
+.card.execution-waves-card .execution-wave-section[open] .execution-wave-section-summary {
+  border-bottom: 1px solid #dbeafe;
+  background: transparent;
+  padding-bottom: 14px;
+}
+
+.card.execution-waves-card .execution-wave-section-body {
+  padding: 14px 0 0;
+}
+
+.card.execution-waves-card .execution-wave-section:has(.execution-wave-card[open]),
+.card.execution-waves-card .execution-wave-section:has(.execution-wave-card.is-member) {
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  box-shadow: inset 0 0 0 1px #93c5fd, 0 10px 24px -22px rgba(37, 99, 235, 0.7);
+}
+
+.card.execution-waves-card .execution-wave-section:has(.execution-wave-card[open]) .execution-wave-focus,
+.card.execution-waves-card .execution-wave-section:has(.execution-wave-card.is-member) .execution-wave-focus {
+  border-color: #93c5fd;
+  background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 58%, #eef8f5 100%);
 }
 
 .execution-wave-program-stack-release .execution-wave-section {

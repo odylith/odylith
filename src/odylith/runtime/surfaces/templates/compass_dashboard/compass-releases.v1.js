@@ -189,6 +189,7 @@
       const scopedWorkstream = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim())
         ? String(state.workstream || "").trim()
         : "";
+      const disclosureGroup = "releases";
       const workstreamTitles = workstreamTitleLookup(payload);
       const groups = compassReleaseGroups(payload, state);
       if (!groups.length) {
@@ -249,7 +250,14 @@
           </article>
         `;
       };
+      const disclosureKeyForRelease = (group) => {
+        const releaseId = String(group && group.release_id ? group.release_id : "").trim();
+        if (releaseId) return `release:${releaseId}`;
+        const label = String(group && group.display_label ? group.display_label : "").trim();
+        return label ? `release:${label}` : "release:unknown";
+      };
       const renderReleaseSection = (group) => {
+        const disclosureKey = disclosureKeyForRelease(group);
         const memberCount = Number(group.members.length || 0);
         const completedCount = Number(group.completed_members.length || 0);
         const visibleMembers = [...group.members, ...group.completed_members];
@@ -289,7 +297,12 @@
           completedCount ? `<span class="label execution-wave-label wave-status-complete">${escapeHtml(completedLabel)}</span>` : "",
           releaseProgress.percent ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(`Overall ${releaseProgress.percent} progress`)}</span>` : "",
         ].filter(Boolean);
-        const openAttr = scopedWorkstream ? " open" : "";
+        const openAttr = resolveCompassDisclosureOpen(
+          disclosureGroup,
+          state,
+          disclosureKey,
+          Boolean(scopedWorkstream),
+        ) ? " open" : "";
         const panels = [];
         if (group.members.length || !group.completed_members.length) {
           panels.push(`
@@ -314,7 +327,7 @@
           `);
         }
         return `
-          <details class="execution-wave-section"${openAttr}>
+          <details class="execution-wave-section"${openAttr} data-compass-disclosure-key="${escapeHtml(disclosureKey)}">
             <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
               <span class="execution-wave-section-copy">
                 <span class="execution-wave-section-title-row">
@@ -337,4 +350,5 @@
       };
 
       target.innerHTML = `<div class="execution-wave-program-stack execution-wave-program-stack-release">${groups.map(renderReleaseSection).join("")}</div>`;
+      bindCompassDisclosurePersistence(target, disclosureGroup, state);
     }

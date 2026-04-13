@@ -13,26 +13,26 @@ Methodology and reviewer protocol:
 Family-by-family corpus map:
 [Benchmark Families And Eval Catalog](FAMILIES_AND_EVALS.md)
 
-## Grounding Signal Table
+## Internal Diagnostic Signal Table
 
 | Signal | odylith_on | odylith_off | Delta | Why It Matters |
 | --- | --- | --- | --- | --- |
-| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | full Odylith vs raw agent | Keeps the Grounding Benchmark honest: full Odylith packet and prompt construction versus the raw host CLI prompt bundle on the same task. |
+| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | full Odylith vs raw agent | Keeps the internal diagnostic benchmark honest: full Odylith packet and prompt construction versus the raw host CLI prompt bundle on the same task. |
 | Scenario count | 37 | 37 | +0 | Both lanes run the exact same corpus, so the comparison stays apples-to-apples. |
-| Median packet time | 7.048 ms | 0.003 ms | <span style="color:#c5221f;">+7.045 ms</span> | Shows the packet construction time on the Grounding Benchmark before any live host session begins. |
+| Median packet time | 7.048 ms | 0.003 ms | <span style="color:#c5221f;">+7.045 ms</span> | Shows the packet construction time on the internal diagnostic benchmark before any live host session begins. |
 | Mean packet time | 6.871 ms | 0.003 ms | <span style="color:#c5221f;">+6.868 ms</span> | Shows the mean packet time so slow prompt-build cases stay visible. |
 | P95 packet time | 9.881 ms | 0.008 ms | <span style="color:#c5221f;">+9.873 ms</span> | Shows the long-tail packet time instead of hiding it behind the median. |
-| Median prompt-bundle build time | 6.702 ms | 0.000 ms | <span style="color:#c5221f;">+6.702 ms</span> | Shows time spent inside Odylith packet construction and prompt shaping on the Grounding Benchmark. |
+| Median prompt-bundle build time | 6.702 ms | 0.000 ms | <span style="color:#c5221f;">+6.702 ms</span> | Shows time spent inside Odylith packet construction and prompt shaping on the internal diagnostic benchmark. |
 | Median grounding validation overhead | 0.515 ms | 0.003 ms | <span style="color:#c5221f;">+0.512 ms</span> | Shows post-build grounding harness overhead such as validation and accounting. |
-| Median prompt-bundle input tokens | 139.0 | 92.0 | <span style="color:#c5221f;">+47.0</span> | Shows the model-facing prompt-bundle input size on the Grounding Benchmark. |
+| Median prompt-bundle input tokens | 139.0 | 92.0 | <span style="color:#c5221f;">+47.0</span> | Shows the model-facing prompt-bundle input size on the internal diagnostic benchmark. |
 | Median total prompt-bundle payload tokens | 149.0 | 92.0 | <span style="color:#c5221f;">+57.0</span> | Shows the full grounding payload size across prompt, runtime contract, and operator diagnostics. |
 | Required-path recall rate | 0.916 | 0.596 | <strong style="color:#137333;">+0.320</strong> | Higher means Odylith finds more of the repo surfaces the task truly depends on. |
 | Required-path precision rate | 0.976 | 0.892 | <strong style="color:#137333;">+0.084</strong> | Higher means Odylith keeps the evidence cone tighter and more relevant. |
 | Hallucinated-surface rate | 0.024 | 0.000 | <span style="color:#c5221f;">+0.024</span> | Lower means less made-up or unnecessary surface spread. |
-| Validation-success proxy rate | 0.690 | 0.000 | <strong style="color:#137333;">+0.690</strong> | Higher means the Grounding Benchmark more often satisfies the benchmark validator proxy before any live host session begins. |
+| Validation-success proxy rate | 0.690 | 0.000 | <strong style="color:#137333;">+0.690</strong> | Higher means the internal diagnostic benchmark more often satisfies the benchmark validator proxy before any live host session begins. |
 | Critical required-path recall rate | 0.930 | 0.646 | <strong style="color:#137333;">+0.284</strong> | Protects high-stakes cases from missing critical repo truth. |
 | Critical validation-success proxy rate | 0.667 | 0.000 | <strong style="color:#137333;">+0.667</strong> | Protects critical grounding cases from missing packet-level validator proxy truth. |
-| Expectation-success proxy rate | 1.000 | 0.000 | <strong style="color:#137333;">+1.000</strong> | Higher means more scenarios satisfy the stated task contract on the Grounding Benchmark before model execution begins. |
+| Expectation-success proxy rate | 1.000 | 0.000 | <strong style="color:#137333;">+1.000</strong> | Higher means more scenarios satisfy the stated task contract on the internal diagnostic benchmark before model execution begins. |
 
 ## Grounding Family Order
 

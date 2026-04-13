@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+
 
 ROOT = Path(__file__).resolve().parents[3]
 PUBLIC_CORPUS = ROOT / "odylith" / "runtime" / "source" / "optimization-evaluation-corpus.v1.json"
@@ -13,6 +15,10 @@ BUNDLE_CORPUS = (
 
 def _load(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _load_normalized() -> list[dict[str, object]]:
+    return runner.load_benchmark_scenarios(repo_root=ROOT)
 
 
 def test_public_and_bundle_benchmark_corpus_stay_aligned() -> None:
@@ -36,7 +42,7 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         if isinstance(case, dict)
     }
 
-    assert len(scenarios) >= 44
+    assert len(scenarios) >= 60
     assert len(architecture_scenarios) >= 5
     assert {
         "install_upgrade_runtime",
@@ -53,6 +59,10 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "cli_contract_regression",
         "consumer_profile_compatibility",
         "runtime_state_integrity",
+        "api_contract_evolution",
+        "stateful_bug_recovery",
+        "external_dependency_recovery",
+        "destructive_scope_control",
     }.issubset(families)
     assert {
         "consumer-install-upgrade-runtime-contract",
@@ -83,6 +93,22 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "benchmark-raw-baseline-runner-gate",
         "benchmark-docs-and-readme-closeout",
         "benchmark-corpus-expansion-mirror-integrity",
+        "benchmark-taxonomy-and-heatmap-family-order-evolution",
+        "compass-wave-and-release-posture-surface-sync",
+        "tooling-dashboard-governance-shell-render-contract",
+        "subagent-routing-and-remediator-guardrail-carry-through",
+        "benchmark-live-comparison-contract-and-report-schema",
+        "live-observed-path-attribution-contract-parity",
+        "program-wave-and-release-authoring-status-schema",
+        "benchmark-progress-checkpoint-and-resume-recovery",
+        "compass-refresh-queued-state-recovery",
+        "execution-governance-contradiction-reanchor-recovery",
+        "github-actions-semantic-wait-and-resume-token-contract",
+        "live-preflight-evidence-disposable-workspace-contract",
+        "runtime-surface-wait-status-carry-through",
+        "resource-closure-destructive-subset-blocking",
+        "codex-bash-guard-destructive-command-blocking",
+        "claude-bash-guard-destructive-command-blocking",
     }.issubset(scenario_ids)
     assert {
         "architecture-release-install-runtime-boundary",
@@ -97,6 +123,31 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
     ]
     assert "odylith/registry/source/components/odylith/CURRENT_SPEC.md" in release_boundary_required_paths
     assert "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md" not in release_boundary_required_paths
+
+
+def test_benchmark_corpus_meets_seriousness_floor() -> None:
+    scenarios = _load_normalized()
+    implementation = [row for row in scenarios if str(row.get("kind", "")).strip() != "architecture"]
+    architecture = [row for row in scenarios if str(row.get("kind", "")).strip() == "architecture"]
+    write_plus_validator = [row for row in implementation if bool(row.get("needs_write")) and row.get("validation_commands")]
+    correctness_critical = [row for row in implementation if bool(row.get("correctness_critical"))]
+    mechanism_heavy = [row for row in implementation if str(row.get("family", "")).strip() in runner._MECHANISM_HEAVY_IMPLEMENTATION_FAMILIES]
+
+    family_counts: dict[str, int] = {}
+    for row in implementation:
+        family = str(row.get("family", "")).strip()
+        family_counts[family] = family_counts.get(family, 0) + 1
+
+    assert len(implementation) >= 60
+    assert len(architecture) >= 5
+    assert len(write_plus_validator) >= 35
+    assert len(correctness_critical) >= 12
+    assert len(mechanism_heavy) / len(implementation) <= 0.40
+    assert family_counts.get("api_contract_evolution", 0) >= 3
+    assert family_counts.get("stateful_bug_recovery", 0) >= 3
+    assert family_counts.get("external_dependency_recovery", 0) >= 3
+    assert family_counts.get("destructive_scope_control", 0) >= 3
+    assert family_counts.get("cross_file_feature", 0) + family_counts.get("merge_heavy_change", 0) >= 6
 
 
 def test_benchmark_corpus_keeps_final_only_odylith_assist_closeout_contract() -> None:

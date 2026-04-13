@@ -1016,6 +1016,27 @@ def test_execution_governance_snapshot_payload_context_pressure_fallback() -> No
     assert summary["execution_governance_context_pressure"] == "critical"
 
 
+def test_execution_governance_snapshot_governance_slice_gated_scope_prefers_recover() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+        {
+            "packet_kind": "governance_slice",
+            "context_packet_state": "gated_broad_scope",
+            "routing_handoff": {"route_ready": False, "native_spawn_ready": False},
+            "context_packet": {
+                "packet_kind": "governance_slice",
+                "packet_state": "gated_broad_scope",
+                "route": {"route_ready": False, "native_spawn_ready": False},
+            },
+        },
+        host_candidates=["codex_cli"],
+    )
+
+    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+    assert summary["execution_governance_mode"] == "recover"
+    assert summary["execution_governance_next_move"] == "recover.current_blocker"
+    assert summary["execution_governance_validation_archetype"] == "recover"
+
+
 def test_execution_governance_compact_new_host_fields_are_additive() -> None:
     """New compact fields do not break the existing compact shape contract."""
     snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
@@ -1097,3 +1118,68 @@ def test_history_rule_collect_includes_new_failure_classes() -> None:
 
     assert "context_exhaustion_detected" in hits
     assert "subagent_timeout_detected" in hits
+
+
+# ---------------------------------------------------------------------------
+# Integration: governance flows through bootstrap and context dossier delivery
+# ---------------------------------------------------------------------------
+
+
+def test_bootstrap_delivery_includes_execution_governance() -> None:
+    """Verify the bootstrap delivery path builds governance via the live CLI.
+
+    The bootstrap module uses a late-binding pattern that requires full context
+    engine initialization, so we test through the CLI entry point instead of
+    calling the function directly.
+    """
+    import subprocess
+
+    result = subprocess.run(
+        ["./.odylith/bin/odylith", "start", "--repo-root", "."],
+        capture_output=True, text=True, timeout=30,
+    )
+    combined = result.stdout + result.stderr
+    start = combined.find("{")
+    if start < 0:
+        assert False, f"odylith start produced no JSON: {combined[:200]}"
+    depth = 0
+    end = start
+    for i, ch in enumerate(combined[start:], start):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+        if depth == 0:
+            end = i + 1
+            break
+    import json
+    payload = json.loads(combined[start:end])
+    context_packet = payload.get("context_packet", {})
+    eg = context_packet.get("execution_governance", {})
+    assert eg, f"execution_governance should be present in bootstrap; got keys: {sorted(payload.keys())}"
+    assert "outcome" in eg
+    assert "mode" in eg
+
+
+def test_context_dossier_delivery_includes_execution_governance() -> None:
+    from odylith.runtime.context_engine.odylith_context_engine_store import compact_context_dossier_for_delivery
+
+    dossier = {
+        "resolved": True,
+        "entity": {"id": "execution-governance", "type": "component", "title": "Execution Governance"},
+        "lookup": {"query": "execution-governance", "kind": "component"},
+        "matches": [],
+        "relations": [],
+        "related_entities": {},
+        "recent_agent_events": [],
+        "delivery_scopes": [],
+        "full_scan_recommended": False,
+        "full_scan_reason": "",
+    }
+
+    result = compact_context_dossier_for_delivery(dossier)
+    assert result["resolved"] is True
+    eg = result.get("execution_governance", {})
+    assert eg, "execution_governance should be present in context dossier delivery"
+    assert "outcome" in eg
+    assert "mode" in eg

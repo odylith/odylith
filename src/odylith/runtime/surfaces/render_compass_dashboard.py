@@ -245,6 +245,10 @@ def _compact_source_truth_payload(*, runtime_payload: Mapping[str, Any]) -> dict
             "next_release": _mapping(_mapping(runtime_payload.get("release_summary")).get("next_release")),
             "summary": _mapping(_mapping(runtime_payload.get("release_summary")).get("summary")),
         },
+        "current_workstreams_by_window": {
+            "24h": _mapping_list(_mapping(runtime_payload.get("current_workstreams_by_window")).get("24h")),
+            "48h": _mapping_list(_mapping(runtime_payload.get("current_workstreams_by_window")).get("48h")),
+        },
         "current_workstreams": _mapping_list(runtime_payload.get("current_workstreams")),
         "workstream_catalog": _mapping_list(runtime_payload.get("workstream_catalog")),
         "verified_scoped_workstreams": _mapping(runtime_payload.get("verified_scoped_workstreams")),

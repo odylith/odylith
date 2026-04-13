@@ -15,8 +15,9 @@ The runner neutralizes repo-local guidance in two places:
   model/reasoning contract while dropping user-authored guidance config,
   plugins, MCP config, and project-doc fallback.
 
-The only intended difference between the public lanes is whether Odylith
-supplies a grounding scaffold to the live Codex CLI task.
+The public comparison is the full Odylith assistance stack versus the raw host
+CLI lane on the same task. The lane contract must make any Odylith-only
+affordance explicit instead of silently widening the benchmark story.
 """
 
 from __future__ import annotations
@@ -667,35 +668,85 @@ def _observed_paths_from_events(
     workspace_root: Path,
     structured_output: Mapping[str, Any],
     prompt_payload: Mapping[str, Any] | None = None,
+    raw_prompt_visible_paths: Sequence[str] = (),
     excluded_commands: Sequence[str] = (),
     neutral_paths: Sequence[str] = (),
 ) -> list[str]:
-    rows: list[str] = odylith_benchmark_live_diagnostics.prompt_payload_observed_paths(
+    return _observed_path_details_from_events(
+        events=events,
+        workspace_root=workspace_root,
+        structured_output=structured_output,
+        prompt_payload=prompt_payload,
+        raw_prompt_visible_paths=raw_prompt_visible_paths,
+        excluded_commands=excluded_commands,
+        neutral_paths=neutral_paths,
+    )["paths"]
+
+
+def _observed_path_details_from_events(
+    *,
+    events: Sequence[Mapping[str, Any]],
+    workspace_root: Path,
+    structured_output: Mapping[str, Any],
+    prompt_payload: Mapping[str, Any] | None = None,
+    raw_prompt_visible_paths: Sequence[str] = (),
+    excluded_commands: Sequence[str] = (),
+    neutral_paths: Sequence[str] = (),
+) -> dict[str, Any]:
+    rows: list[str] = []
+    sources: list[str] = []
+    prompt_payload_paths = odylith_benchmark_live_diagnostics.prompt_payload_observed_paths(
         prompt_payload=prompt_payload
     )
+    if prompt_payload_paths:
+        rows.extend(prompt_payload_paths)
+        sources.append("odylith_prompt_payload")
+    raw_prompt_paths = _dedupe_strings([str(token).strip() for token in raw_prompt_visible_paths if str(token).strip()])
+    if raw_prompt_paths:
+        rows.extend(raw_prompt_paths)
+        sources.append("raw_prompt_visible_paths")
     excluded = {" ".join(str(token).split()).strip() for token in excluded_commands if str(token).strip()}
     neutral = {str(token).strip() for token in neutral_paths if str(token).strip()}
+    command_text_paths: list[str] = []
+    listing_output_paths: list[str] = []
     for item in _command_events(events):
         command = str(item.get("command", "")).strip()
         normalized_command = " ".join(command.split()).strip()
         if normalized_command in excluded:
             continue
-        rows.extend(_extract_workspace_paths_from_text(command, workspace_root=workspace_root))
+        command_text_paths.extend(_extract_workspace_paths_from_text(command, workspace_root=workspace_root))
         if _command_output_is_path_listing(command):
-            rows.extend(
+            listing_output_paths.extend(
                 _extract_workspace_paths_from_listing_output(
                     command=command,
                     output=str(item.get("aggregated_output", "")).strip(),
                     workspace_root=workspace_root,
                 )
             )
-    rows.extend(_file_change_paths(events, workspace_root=workspace_root))
-    rows.extend(
+    if command_text_paths:
+        rows.extend(command_text_paths)
+        sources.append("command_text")
+    if listing_output_paths:
+        rows.extend(listing_output_paths)
+        sources.append("listing_output")
+    file_change_paths = _file_change_paths(events, workspace_root=workspace_root)
+    if file_change_paths:
+        rows.extend(file_change_paths)
+        sources.append("file_change_events")
+    changed_files = [
         _resolve_workspace_file(str(token).strip(), workspace_root=workspace_root)
         for token in structured_output.get("changed_files", [])
         if isinstance(structured_output.get("changed_files"), list)
-    )
-    return _dedupe_strings([token for token in rows if token and token not in neutral])
+    ]
+    changed_files = [token for token in changed_files if token]
+    if changed_files:
+        rows.extend(changed_files)
+        sources.append("structured_output_changed_files")
+    paths = _dedupe_strings([token for token in rows if token and token not in neutral])
+    return {
+        "paths": paths,
+        "sources": _dedupe_strings(sources),
+    }
 
 
 def _prompt_supplied_paths_from_commands(
@@ -1366,8 +1417,12 @@ def run_live_scenario(
             "skipped_count": 0,
             "timeout_count": 0,
         }
+        preflight_evidence_mode = "none"
+        preflight_evidence_commands: list[str] = []
         prompt_payload_rows = dict(prompt_payload or {})
         if normalized_mode == "odylith_on" and focused_check_commands:
+            preflight_evidence_mode = "scenario_declared_focused_local_checks"
+            preflight_evidence_commands = list(focused_check_commands)
             _restore_workspace_validator_truth(
                 truth_root=validator_truth_root,
                 workspace_root=workspace_root,
@@ -1429,14 +1484,36 @@ def run_live_scenario(
             )
             if token not in set(required_paths)
         ]
-        observed_paths = _observed_paths_from_events(
+        raw_prompt_visible_paths = (
+            odylith_benchmark_live_diagnostics.raw_prompt_visible_paths(
+                repo_root=workspace_root,
+                raw_prompt={
+                    "prompt": str(scenario.get("prompt", "")).strip(),
+                    "acceptance_criteria": [
+                        str(token).strip()
+                        for token in scenario.get("acceptance_criteria", [])
+                        if str(token).strip()
+                    ],
+                },
+            )
+            if normalized_mode != "odylith_on"
+            else []
+        )
+        observed_path_details = _observed_path_details_from_events(
             events=events,
             workspace_root=workspace_root,
             structured_output=structured_output,
             prompt_payload=prompt_payload_rows,
+            raw_prompt_visible_paths=raw_prompt_visible_paths,
             excluded_commands=[*sandbox_validation_commands, *focused_check_commands],
             neutral_paths=prompt_supplied_paths,
         )
+        observed_paths = list(observed_path_details.get("paths", []))
+        observed_path_sources = [
+            str(token).strip()
+            for token in observed_path_details.get("sources", [])
+            if str(token).strip()
+        ]
         required_path_recall, required_path_misses = _path_recall(
             required_paths=required_paths,
             observed_paths=observed_paths,
@@ -1599,6 +1676,11 @@ def run_live_scenario(
             "multi_agent_disabled": True,
             "repo_guidance_removed": ["AGENTS.md", "CLAUDE.md", ".cursor/", ".windsurf/", ".codex/"],
             "focused_local_checks": focused_check_result,
+            "preflight_evidence_mode": preflight_evidence_mode,
+            "preflight_evidence_commands": preflight_evidence_commands,
+            "preflight_evidence_result_status": str(focused_check_result.get("status", "")).strip()
+            or "not_applicable",
+            "observed_path_sources": observed_path_sources,
         }
         if status != "completed" or not validators_passed:
             live_execution_payload["failure_artifacts"] = {
@@ -1624,6 +1706,8 @@ def run_live_scenario(
                 "live_runner": True,
                 "codex_status": status,
                 "validator_status": str(effective_validator_result.get("status", "")).strip() or "not_applicable",
+                "validator_status_basis": str(effective_validator_result.get("status_basis", "")).strip()
+                or "validator_result",
                 "structured_summary": str(structured_output.get("summary", "")).strip(),
                 "validator_backed_noop_completion": bool(
                     validator_backed_completion and not any(str(token).strip() for token in candidate_write_paths)
@@ -1634,6 +1718,7 @@ def run_live_scenario(
             "required_path_misses": required_path_misses,
             "critical_path_misses": critical_path_misses,
             "observed_paths": observed_paths[:12],
+            "observed_path_sources": observed_path_sources,
             "observed_path_count": int(precision_metrics.get("observed_path_count", 0) or 0),
             "required_path_precision": float(precision_metrics.get("required_path_precision", 0.0) or 0.0),
             "hallucinated_surface_count": int(precision_metrics.get("hallucinated_surface_count", 0) or 0),
@@ -1677,6 +1762,10 @@ def run_live_scenario(
             },
             "validation_success_proxy": 1.0 if validator_status in {"passed", "not_applicable"} else 0.0,
             "validation_results": effective_validator_result,
+            "preflight_evidence_mode": preflight_evidence_mode,
+            "preflight_evidence_commands": preflight_evidence_commands,
+            "preflight_evidence_result_status": str(focused_check_result.get("status", "")).strip()
+            or "not_applicable",
             "full_scan": {},
             "orchestration": _live_orchestration_summary(
                 mode=normalized_mode,

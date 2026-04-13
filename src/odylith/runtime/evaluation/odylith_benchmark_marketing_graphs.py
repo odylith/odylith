@@ -32,11 +32,11 @@ QUALITY_FRONTIER_HEADING = "Live Benchmark Quality Frontier: grounding recall vs
 
 
 def _comparison_contract(report: Mapping[str, Any]) -> str:
-    return str(report.get("comparison_contract", "")).strip() or "live_end_to_end"
+    return str(report.get("comparison_contract", "")).strip() or odylith_benchmark_runner.LIVE_COMPARISON_CONTRACT
 
 
 def _is_live_end_to_end(report: Mapping[str, Any]) -> bool:
-    return _comparison_contract(report) == "live_end_to_end"
+    return odylith_benchmark_runner._is_live_comparison_contract(_comparison_contract(report))  # noqa: SLF001
 
 
 def _time_axis_noun(report: Mapping[str, Any]) -> str:
@@ -44,13 +44,13 @@ def _time_axis_noun(report: Mapping[str, Any]) -> str:
 
 
 def _public_benchmark_name(report: Mapping[str, Any]) -> str:
-    return "Live Benchmark" if _is_live_end_to_end(report) else "Grounding Benchmark"
+    return "Live Benchmark" if _is_live_end_to_end(report) else "Internal Diagnostic Benchmark"
 
 
 def _quality_frontier_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return QUALITY_FRONTIER_HEADING
-    return "Grounding Benchmark Quality Frontier: grounding recall vs packet time"
+    return "Internal Diagnostic Quality Frontier: grounding recall vs packet time"
 
 
 def _report_source_label(report: Mapping[str, Any]) -> str:

@@ -8,8 +8,9 @@ Backlog: B-092
 
 Goal: Add a first-class execution-governance benchmark family that proves
 whether Odylith's execution engine improves truthful next-move quality,
-closure discipline, resumability, and host-aware focus over the raw baseline
-without regressing governed sync or benchmark integrity.
+closure discipline, resumability, and host-aware focus under the benchmark's
+honest `full_product_assistance_vs_raw_agent` contract without regressing
+governed sync or benchmark integrity.
 
 Assumptions:
 - The benchmark harness already has the right additive extension points for a
@@ -17,10 +18,12 @@ Assumptions:
 - The current packet benchmark contract already carries enough execution-
   governance fields to seed an honest first family, with only small contract
   extensions needed for missing scalar fields.
-- The benchmark's honest primary comparison stays `odylith_on` versus
-  `raw_agent_baseline`; the new family measures execution governance through
-  that existing matched-pair contract rather than creating a second ablation
-  system.
+- The benchmark's honest primary comparison remains `odylith_on` versus
+  `odylith_off`, but that pair now explicitly means full-product assistance
+  versus raw agent rather than grounding-only scaffold.
+- `B-093` will carry the broader contract, fairness, and corpus-hardening
+  work; this plan must stay aligned to that contract instead of closing under
+  the older grounding-only story.
 - `B-091` sync invariants are non-negotiable. Any benchmark-family addition
   that reopens shared-nothing sync behavior or noisy no-op writes is a failed
   implementation.
@@ -46,7 +49,8 @@ Boundary Conditions:
   existing engine benchmarkable.
 
 Related Bugs:
-- no related bug found
+- [CB-106](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-benchmark-live-preflight-evidence-is-only-injected-for-odylith-on-without-a-declared-comparison-contract.md)
+- [CB-107](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md)
 
 ## Learnings
 - [ ] Benchmark value claims for execution governance are still anecdotal until
@@ -59,13 +63,15 @@ Related Bugs:
       with representative current-repo packet scenarios.
 - [ ] Add family metrics for admissibility outcome, execution mode, truthful
       next move, closure posture, validation archetype, re-anchor accuracy,
-      host carry-through, and resume-token presence.
+      host carry-through, resume-token presence, and benchmark-facing contract
+      labeling aligned to `B-093`.
 - [ ] Extend packet expectation matching only where current scalar execution-
       governance fields are not yet benchmarkable.
 - [ ] Wire the family metrics into runner summaries, comparisons, and hard
       acceptance checks.
 - [ ] Update benchmark docs, taxonomy, and benchmark component truth to
-      describe the family and its benchmark role.
+      describe the family, its benchmark role, and its place inside the
+      full-product benchmark contract.
 
 ## Should-Ship
 - [ ] Add current-repo packet probe tests that assert the new family is backed
@@ -80,7 +86,7 @@ Related Bugs:
 
 ## Success Criteria
 - [ ] Benchmark reports publish a first-class execution-governance family
-      summary.
+      summary under the honest full-product comparison contract.
 - [ ] Execution-governance regressions can fail benchmark acceptance directly.
 - [ ] Focused, broader benchmark, and governed-sync proof stay green with the
       new family in place.

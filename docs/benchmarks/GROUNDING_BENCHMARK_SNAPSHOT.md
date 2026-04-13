@@ -1,11 +1,11 @@
-# Grounding Benchmark Snapshot
+# Internal Diagnostic Benchmark Snapshot
 
 This note carries the fuller interpretation behind the short Grounding
 Benchmark summary published in the root [README](../../README.md).
 
 ## Current Result
 
-Current Grounding Benchmark report: `74cbe36427f2c375` from
+Current Internal Diagnostic Benchmark report: `74cbe36427f2c375` from
 `2026-04-05T02:47:27Z` with status `hold`.
 
 The latest grounding benchmark ran `37` seeded scenarios on the `warm` cache

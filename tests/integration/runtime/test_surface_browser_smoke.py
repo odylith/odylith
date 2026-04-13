@@ -115,6 +115,25 @@ def _ready_compass_fixture_root(tmp_path: Path) -> Path:
     return fixture_root
 
 
+def _write_compass_fixture_runtime_payloads(
+    fixture_root: Path,
+    *,
+    runtime_payload: dict[str, object],
+    source_truth_payload: dict[str, object] | None = None,
+) -> None:
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    runtime_json_path.write_text(json.dumps(runtime_payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(runtime_payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    if source_truth_payload is not None:
+        source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
+        source_truth_path.write_text(json.dumps(source_truth_payload, indent=2) + "\n", encoding="utf-8")
+
+
 @pytest.fixture(scope="module")
 def browser_context() -> Iterator[tuple[str, object]]:
     with _static_server(root=_REPO_ROOT) as base_url:
@@ -835,6 +854,111 @@ def test_compass_current_workstreams_excludes_rows_already_represented_in_progra
     )
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_current_workstreams_membership_follows_selected_window(tmp_path: Path) -> None:
+    fixture_root = _ready_compass_fixture_root(tmp_path)
+    runtime_payload_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
+    runtime_payload = json.loads(runtime_payload_path.read_text(encoding="utf-8"))
+    source_truth_payload = json.loads(source_truth_path.read_text(encoding="utf-8"))
+    base_row = {
+        "priority": "P1",
+        "activity": {"24h": {"event_count": 1}, "48h": {"event_count": 1}},
+        "plan": {"display_progress_ratio": 0.5, "display_progress_label": "50%"},
+        "links": {},
+        "timeline": {},
+        "why": {},
+        "registry_components": [],
+        "execution_wave_programs": [],
+    }
+    current_rows = [
+        {
+            **base_row,
+            "idea_id": "B-201",
+            "title": "Window Scoped Membership Primary",
+            "status": "implementation",
+        },
+        {
+            **base_row,
+            "idea_id": "B-202",
+            "title": "Window Scoped Membership Secondary",
+            "status": "implementation",
+        },
+    ]
+    runtime_payload["workstream_catalog"] = current_rows
+    runtime_payload["current_workstreams"] = current_rows
+    runtime_payload["current_workstreams_by_window"] = {
+        "24h": current_rows[:1],
+        "48h": current_rows,
+    }
+    source_truth_payload["workstream_catalog"] = current_rows
+    source_truth_payload["current_workstreams"] = current_rows
+    source_truth_payload["current_workstreams_by_window"] = {
+        "24h": current_rows[:1],
+        "48h": current_rows,
+    }
+    _write_compass_fixture_runtime_payloads(
+        fixture_root,
+        runtime_payload=runtime_payload,
+        source_truth_payload=source_truth_payload,
+    )
+
+    def _exercise() -> None:
+        with _static_server(root=fixture_root) as base_url:
+            for _pw, browser in _browser():
+                context = browser.new_context(viewport={"width": 1440, "height": 1100})
+                try:
+                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                    response = page.goto(
+                        base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                        wait_until="domcontentloaded",
+                    )
+                    assert response is not None and response.ok
+                    page.wait_for_function(
+                        """() => {
+                            const node = document.querySelector("#shellRuntimeStatus");
+                            return Boolean(node && node.hidden && node.getAttribute("aria-hidden") === "true");
+                        }""",
+                        timeout=15000,
+                    )
+
+                    compass = page.frame_locator("#frame-compass")
+                    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                    _assert_compass_live_state(compass, window_token="24h")
+                    compass.locator("#current-workstreams a.ws-id-btn", has_text="B-201").wait_for(timeout=15000)
+
+                    current_ids_24h = compass.locator("#current-workstreams a.ws-id-btn").evaluate_all(
+                        """(nodes) => Array.from(new Set(
+                            nodes
+                              .map((node) => String(node.textContent || "").trim())
+                              .filter((token) => /^B-\\d{3,}$/.test(token))
+                        )).sort()"""
+                    )
+                    assert current_ids_24h == ["B-201"]
+
+                    compass.get_by_role("button", name="48h Window").click()
+                    page.wait_for_url(
+                        re.compile(r".*/odylith/index\.html\?tab=compass(&.*)?window=48h(&.*|$)"),
+                        timeout=15000,
+                    )
+                    _assert_compass_live_state(compass, window_token="48h")
+                    compass.locator("#current-workstreams a.ws-id-btn", has_text="B-202").wait_for(timeout=15000)
+
+                    current_ids_48h = compass.locator("#current-workstreams a.ws-id-btn").evaluate_all(
+                        """(nodes) => Array.from(new Set(
+                            nodes
+                              .map((node) => String(node.textContent || "").trim())
+                              .filter((token) => /^B-\\d{3,}$/.test(token))
+                        )).sort()"""
+                    )
+                    assert current_ids_48h == ["B-201", "B-202"]
+
+                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                finally:
+                    context.close()
+
+    _run_in_browser_thread(_exercise)
 
 
 def test_shell_cross_tab_hops_keep_compass_global_runtime_fresh(browser_context) -> None:  # noqa: ANN001

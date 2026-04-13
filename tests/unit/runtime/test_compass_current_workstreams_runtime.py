@@ -37,8 +37,8 @@ def test_select_current_workstream_rows_keeps_active_release_and_wave_members_vi
 
     selected = compass_current_workstreams_runtime.select_current_workstream_rows(
         all_rows=[*implementation_only, *active_rows],
-        window_events_48h=[],
-        recent_completed_rows_48h=[],
+        window_events=[],
+        recent_completed_rows=[],
     )
 
     selected_ids = [str(row.get("idea_id", "")).strip() for row in selected]
@@ -48,3 +48,27 @@ def test_select_current_workstream_rows_keeps_active_release_and_wave_members_vi
     assert "B-079" in selected_ids
     assert len(selected_ids) == 14
     assert selected_ids[:3] == ["B-072", "B-073", "B-079"]
+
+
+def test_select_current_workstream_rows_honors_window_specific_recent_completion_membership() -> None:
+    all_rows = [
+        _row(idea_id="B-111", status="implementation"),
+        _row(idea_id="B-112", status="finished"),
+    ]
+
+    selected_24h = compass_current_workstreams_runtime.select_current_workstream_rows(
+        all_rows=all_rows,
+        window_events=[],
+        recent_completed_rows=[],
+    )
+    selected_48h = compass_current_workstreams_runtime.select_current_workstream_rows(
+        all_rows=all_rows,
+        window_events=[],
+        recent_completed_rows=[{"backlog": "B-112"}],
+    )
+
+    selected_24h_ids = [str(row.get("idea_id", "")).strip() for row in selected_24h]
+    selected_48h_ids = [str(row.get("idea_id", "")).strip() for row in selected_48h]
+
+    assert selected_24h_ids == ["B-111"]
+    assert selected_48h_ids == ["B-112", "B-111"]

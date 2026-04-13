@@ -74,7 +74,10 @@ Do not use this skill in consumer repos.
    packet or prompt measurements, run `--profile diagnostic` separately and do
    not publish that as the product comparison. If the proof run needs to be
    split operationally, use deterministic `--family` or shard flags and
-   publish only from the completed full proof report. If maintainers activate a
+   publish only from the completed full proof report. For full-corpus shard
+   splits, merge the shard history reports with
+   `PYTHONPATH=src python3 -m odylith.runtime.evaluation.odylith_benchmark_shard_merge --repo-root . <report-id>...`
+   before regenerating graphs or README copy. If maintainers activate a
    version-scoped benchmark override instead, stop the in-flight proof run,
    record the override in `odylith/runtime/source/release-maintainer-overrides.v1.json`,
    and update Casebook plus the bound release workstream and plan before

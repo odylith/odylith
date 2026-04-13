@@ -105,6 +105,17 @@ def summary_from_rows(scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, A
 
         adoption = _runtime_adoption(row)
         if adoption:
+            runtime_source = _token(adoption.get("runtime_source"))
+            runtime_transport = _token(adoption.get("runtime_transport"))
+            session_namespace = _token(adoption.get("session_namespace"))
+            runtime_backed = bool(
+                session_namespace
+                or runtime_source not in {"", "none"}
+                or runtime_transport not in {"", "none"}
+            )
+        else:
+            runtime_backed = False
+        if runtime_backed:
             runtime_backed_count += 1
             session_namespaced.append(bool(adoption.get("session_namespaced")))
 

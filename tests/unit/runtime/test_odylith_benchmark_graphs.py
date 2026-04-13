@@ -1072,14 +1072,14 @@ def test_render_graph_assets_uses_diagnostic_labels_for_diagnostic_reports(tmp_p
     frontier = (tmp_path / graphs.FRONTIER_FILENAME).read_text(encoding="utf-8")
     heatmap = (tmp_path / graphs.HEATMAP_FILENAME).read_text(encoding="utf-8")
     quality = (tmp_path / graphs.QUALITY_FRONTIER_FILENAME).read_text(encoding="utf-8")
-    assert "Grounding Benchmark: packet/prompt time vs prompt-bundle input" in frontier
+    assert "Internal Diagnostic Benchmark: packet/prompt time vs prompt-bundle input" in frontier
     assert "Prompt-bundle input tokens" in frontier
     assert "Packet time (ms)" in frontier
     assert "Source: latest-diagnostic.v1.json" in frontier
-    assert "Grounding Benchmark Family Heatmap" in heatmap
+    assert "Internal Diagnostic Family Heatmap" in heatmap
     assert "Prompt-bundle input" in heatmap
     assert "Packet time (ms)" in heatmap
-    assert "Grounding Benchmark Quality Frontier" in quality
+    assert "Internal Diagnostic Quality Frontier" in quality
     assert "packet time" in quality
     assert "prompt-only raw host control" in quality
     assert "0.00 rail by contract" in quality

@@ -39,15 +39,16 @@ reviewer framing that explains how Odylith should be compared.
 - The runner executes those scenarios across multiple cache profiles and modes,
   then publishes a conservative same-scenario comparison instead of the easiest
   green snapshot.
-- `odylith_on` measures the real grounded Odylith stack.
+- `odylith_on` measures the real full-product Odylith assistance stack.
 - `odylith_on_no_fanout` isolates how much bounded multi-leaf orchestration is
-  contributing on top of the same Odylith grounding packet.
+  contributing on top of the same full-product Odylith assistance lane.
 - `raw_agent_baseline` is `odylith_off`, or plain-English `Odylith off`: the
   raw host CLI control with Odylith grounding disabled.
 - `odylith_repo_scan_baseline` is the current repo-scan scaffold control lane.
 - The honest primary benchmark comparison is `odylith_on` versus
-  `raw_agent_baseline`; the repo-scan lane is secondary context that shows how
-  much scaffolding helps.
+  `raw_agent_baseline`, and the public comparison contract for that pair is
+  `full_product_assistance_vs_raw_agent`; the repo-scan lane is secondary
+  context that shows how much scaffolding helps.
 - The benchmark now also owns a developer-first family taxonomy in
   `src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py`. That
   taxonomy orders the public README table and both proof and diagnostic family
@@ -98,10 +99,41 @@ reviewer framing that explains how Odylith should be compared.
 - A live `odylith_on` versus `odylith_off` comparison only counts as benchmark
   proof when both lanes run the same host CLI model, reasoning effort,
   sandbox policy, approval posture, validator contract, and stripped workspace
-  shape for the proof host under test. The only intended lane difference is
-  whether Odylith contributes the grounding scaffold.
+  shape for the proof host under test. The intended lane difference is the
+  declared Odylith product assistance stack, not a hidden side channel:
+  grounding packet, selected docs and repo anchors, execution-governance
+  posture and truthful next-move guidance, scenario-declared focused-check
+  shaping, preflight focused-check results only when those checks run in the
+  disposable benchmark workspace and are logged in the report, and bounded
+  orchestration or recovery policy.
 - The report under `.odylith/runtime/odylith-benchmarks/latest.v1.json` is the
   machine-readable source of truth for publication.
+- That report must expose the comparison contract and fairness state
+  explicitly, including `comparison_contract.primary_claim`,
+  `comparison_contract.odylith_on_affordances`,
+  `comparison_contract.raw_agent_affordances`,
+  `preflight_evidence_mode`, `preflight_evidence_commands`,
+  `preflight_evidence_result_status`, `observed_path_sources`,
+  `validator_status_basis`, `fairness_contract_passed`,
+  `fairness_findings`, and `corpus_composition`.
+- The current report contract keeps `comparison_contract` as the stable
+  comparison token and carries the structured affordance details in
+  `comparison_contract_details`. Publication docs may render those details as
+  `comparison_contract.primary_claim`,
+  `comparison_contract.odylith_on_affordances`, and
+  `comparison_contract.raw_agent_affordances`, but the machine-readable report
+  must preserve both the stable token and the explicit affordance mapping.
+- Packet-only diagnostic scenarios may attach a bounded `benchmark.packet_fixture`
+  to restore missing proof, routing, external-state, or context fields when the
+  scenario is explicitly measuring packet or runtime-summary carry-through
+  instead of re-running the whole live host path. Those fixtures are
+  non-publication scaffolding only: they must stay whitelisted, additive,
+  scenario-local, and unable to inject hidden repo truth outside the declared
+  packet payload seam.
+- When focused preflight evidence is what turns a no-op lane into a validator
+  pass, the result must say so explicitly through
+  `validator_status_basis=focused_noop_proxy` instead of looking like a normal
+  broad-validator success.
 - The README numbers, benchmark explainer, reviewer guide, and canonical SVG
   graphs are derived outputs. They must never outrun the latest validated
   published report or drift away from the benchmark priority order.
@@ -303,7 +335,7 @@ with the families that look and feel most like normal coding-agent work.
   creation for `odylith_on` versus `odylith_off` without running the live
   end-to-end host pair.
 - The proof lane answers:
-  - "Does Odylith beat the raw host CLI on the same live end-to-end task contract?"
+  - "Does the full Odylith assistance stack beat the raw host CLI on the same live end-to-end task contract?"
   - "What is the full matched-pair time to valid outcome?"
   - "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
 - The diagnostic lane answers:
@@ -319,7 +351,8 @@ with the families that look and feel most like normal coding-agent work.
 - `odylith_off` means `raw_agent_baseline`, and plain-English `Odylith off`
   means the same lane.
 - The release-safe primary comparison is `odylith_on` versus
-  `raw_agent_baseline`.
+  `raw_agent_baseline`, under the `full_product_assistance_vs_raw_agent`
+  comparison contract.
 - Older history artifacts may still carry the legacy repo-scan key
   `full_scan_baseline`; report readers must continue to accept it.
 - The release-safe default cache profiles are `warm` and `cold`.
@@ -377,6 +410,10 @@ with the families that look and feel most like normal coding-agent work.
   auto-consumed instruction entrypoints and tool config surfaces. It must not
   delete truth-bearing repo docs, maintainer markdown, or product skill files
   that remain valid explicit read targets during the task.
+- The fairness contract fails closed if `odylith_on` receives undeclared
+  preflight evidence, if `odylith_off` loses prompt-visible path attribution
+  that the prompt actually showed, or if the report cannot expose those lane
+  affordances explicitly.
 - If stripped guidance or validator-truth files must reappear before
   validation, they must be restored from a stash captured inside the scoped
   benchmark workspace snapshot, never from the ambient repo root. Restoring
@@ -452,6 +489,10 @@ with the families that look and feel most like normal coding-agent work.
 - If Odylith only wins when it gets extra hidden truth, that is a weaker story
   than the true benchmark claim and must not be presented as the primary
   proof.
+- The benchmark therefore prefers declared product advantages over pretend
+  symmetry. If an affordance is intentional Odylith behavior, document it in
+  the comparison contract and report it explicitly; do not hide it behind a
+  narrower public claim.
 - If `odylith_on` beats `odylith_off` when both lanes can explicitly read the
   same truthful repo surfaces, then Odylith has demonstrated real systems
   value rather than a hidden-information advantage.

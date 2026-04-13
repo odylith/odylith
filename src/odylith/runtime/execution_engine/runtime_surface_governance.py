@@ -143,10 +143,10 @@ def _infer_execution_mode(
 ) -> ExecutionMode:
     if active_blocker:
         return "recover"
+    if full_scan_recommended or packet_state.startswith("gated_") or not route_ready:
+        return "recover" if packet_kind == "governance_slice" else "explore"
     if validation_signal or packet_kind == "governance_slice":
         return "verify"
-    if full_scan_recommended or packet_state.startswith("gated_") or not route_ready:
-        return "explore"
     return "implement"
 
 

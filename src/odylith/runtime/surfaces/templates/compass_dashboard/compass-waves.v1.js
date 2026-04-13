@@ -22,6 +22,7 @@
       const scopedWorkstream = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : ""))
         ? String(state.workstream || "")
         : "";
+      const disclosureGroup = "programs";
       const scopedWaveView = executionWaveEntriesForScope(payload, scopedWorkstream);
       if (scopedWorkstream && !scopedWaveView.hasRelevantScope) {
         clearHost();
@@ -119,6 +120,12 @@
           ? `${umbrellaTitle} (${umbrellaId})`
           : (umbrellaTitle || umbrellaId);
       };
+      const disclosureKeyForProgram = (program) => {
+        const umbrellaId = String(program && program.umbrella_id ? program.umbrella_id : "").trim();
+        if (umbrellaId) return `program:${umbrellaId}`;
+        const label = formatExecutionWaveProgramTitle(program);
+        return label ? `program:${label}` : "program:execution-waves";
+      };
       const executionWaveCompletionChip = (program) => {
         const completionLabel = String(program && program.completion_label || "").trim();
         if (!completionLabel) return "";
@@ -127,6 +134,7 @@
       const renderProgramSection = (entry) => {
         const program = entry && entry.program ? entry.program : null;
         if (!program) return "";
+        const persistenceKey = disclosureKeyForProgram(program);
         const sectionChips = [];
         const programWaveCount = Number(program && program.wave_count || 0);
         if (programWaveCount > 0) {
@@ -144,9 +152,11 @@
             title: formatExecutionWaveProgramTitle(program),
             entries: [entry],
             selectedWorkstreamId: scopedWorkstream,
+            persistenceKey,
             contextLine: "",
             summaryLine: programSummaryLine,
             sectionChips,
+            openByDefault: resolveCompassDisclosureOpen(disclosureGroup, state, persistenceKey, false),
           },
           {
             ...renderOptions,
@@ -158,6 +168,7 @@
 
       if (entries.length > 1) {
         target.innerHTML = `<div class="execution-wave-program-stack">${entries.map(renderProgramSection).filter(Boolean).join("")}</div>`;
+        bindCompassDisclosurePersistence(target, disclosureGroup, state);
         return;
       }
 
@@ -193,6 +204,7 @@
         if (waveSpan) sectionChips.push(`<span class="label execution-wave-label wave-status-planned">${escapeHtml(waveSpan)}</span>`);
         if (roleLabel) sectionChips.push(`<span class="label execution-wave-label wave-role-chip">${escapeHtml(roleLabel)}</span>`);
       }
+      const sectionPersistenceKey = disclosureKeyForProgram(primaryProgram);
 
       target.innerHTML = renderExecutionWaveSection(
         {
@@ -201,16 +213,19 @@
             : "Execution Waves",
           entries,
           selectedWorkstreamId: scopedWorkstream,
+          persistenceKey: sectionPersistenceKey,
           programLabel: sectionLabel,
           contextLine: sectionContextLine,
           summaryLine: sectionSummaryLine,
           sectionChips,
+          openByDefault: resolveCompassDisclosureOpen(disclosureGroup, state, sectionPersistenceKey, false),
         },
         {
           ...renderOptions,
           boardWrapperClass: "",
         },
       );
+      bindCompassDisclosurePersistence(target, disclosureGroup, state);
 
       Array.from(target.querySelectorAll("[data-execution-wave-scope]")).forEach((node) => {
         if (String(node.tagName || "").toLowerCase() === "a") {

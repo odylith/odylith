@@ -56,6 +56,12 @@ def test_load_benchmark_scenarios_preserves_benchmark_metadata(tmp_path: Path) -
                         "critical_paths": ["src/odylith/runtime/orchestration/subagent_router.py", "tests/unit/runtime/test_subagent_router.py"],
                         "validation_commands": ["PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q tests/unit/runtime/test_subagent_router.py"],
                         "focused_local_checks": ["Run the router unit test first."],
+                        "packet_fixture": {
+                            "proof_state": {
+                                "frontier_phase": "verify",
+                                "proof_status": "diagnosed",
+                            }
+                        },
                         "allow_noop_completion": True,
                         "correctness_critical": True,
                         "live_timeout_seconds": 210.0,
@@ -89,6 +95,12 @@ def test_load_benchmark_scenarios_preserves_benchmark_metadata(tmp_path: Path) -
     assert packet["packet_source"] == "bootstrap_session"
     assert packet["validation_commands"] == ["PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q tests/unit/runtime/test_subagent_router.py"]
     assert packet["focused_local_checks"] == ["Run the router unit test first."]
+    assert packet["packet_fixture"] == {
+        "proof_state": {
+            "frontier_phase": "verify",
+            "proof_status": "diagnosed",
+        }
+    }
     assert packet["allow_noop_completion"] is True
     assert packet["correctness_critical"] is True
     assert packet["live_timeout_seconds"] == 210.0
@@ -3315,7 +3327,7 @@ def test_run_benchmarks_writes_and_clears_progress_checkpoint(
 
     assert report["modes"] == ["odylith_on", "raw_agent_baseline"]
     assert report["latest_eligible"] is True
-    assert report["comparison_contract"] == "live_end_to_end"
+    assert report["comparison_contract"] == runner.LIVE_COMPARISON_CONTRACT
     assert seen_progress
     assert all(row["status"] == "running" for row in seen_progress)
     assert runner.progress_report_path(repo_root=tmp_path).exists() is False
@@ -3777,10 +3789,17 @@ def test_compact_report_summary_includes_candidate_odylith_adoption_rates() -> N
         {
             "report_id": "report-123",
             "generated_utc": "2026-03-24T12:00:00Z",
+            "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+            "comparison_contract_details": runner._comparison_contract_details(runner.LIVE_COMPARISON_CONTRACT),  # noqa: SLF001
             "acceptance": {"status": "provisional_pass"},
             "scenario_count": 4,
             "published_view_strategy": "conservative_multi_profile",
             "published_cache_profiles": ["warm", "cold"],
+            "fairness_contract_passed": True,
+            "fairness_findings": [],
+            "observed_path_sources": ["odylith_prompt_payload", "raw_prompt_visible_paths"],
+            "preflight_evidence_mode": "mixed",
+            "preflight_evidence_modes": ["none", "scenario_declared_focused_local_checks"],
             "mode_summaries": {
                 "odylith_on": {
                     "odylith_packet_present_rate": 1.0,
@@ -3897,9 +3916,20 @@ def test_compact_report_summary_includes_candidate_odylith_adoption_rates() -> N
                 "packet_scenario_key": "scenarios",
                 "architecture_scenario_key": "architecture_scenarios",
             },
+            "corpus_composition": {
+                "seriousness_floor_passed": True,
+                "full_corpus_coverage_rate": 1.0,
+                "full_corpus_selected": True,
+                "implementation_scenario_count": 60,
+                "write_plus_validator_scenario_count": 43,
+                "correctness_critical_scenario_count": 18,
+                "mechanism_heavy_implementation_ratio": 0.3,
+            },
         }
     )
 
+    assert summary["comparison_contract"] == runner.LIVE_COMPARISON_CONTRACT
+    assert summary["comparison_primary_claim"] == "full_product_assistance_vs_raw_agent"
     assert summary["odylith_packet_present_rate"] == 0.9
     assert summary["required_path_precision_delta"] == 0.2
     assert summary["hallucinated_surface_rate_delta"] == -0.2
@@ -3952,9 +3982,63 @@ def test_compact_report_summary_includes_candidate_odylith_adoption_rates() -> N
     assert summary["corpus_contract_status"] == "canonical"
     assert summary["corpus_packet_scenario_key"] == "scenarios"
     assert summary["corpus_architecture_scenario_key"] == "architecture_scenarios"
+    assert summary["fairness_contract_passed"] is True
+    assert summary["fairness_finding_count"] == 0
+    assert summary["observed_path_sources"] == ["odylith_prompt_payload", "raw_prompt_visible_paths"]
+    assert summary["preflight_evidence_modes"] == ["none", "scenario_declared_focused_local_checks"]
+    assert summary["corpus_seriousness_floor_passed"] is True
+    assert summary["corpus_full_coverage_rate"] == 1.0
+    assert summary["corpus_implementation_scenario_count"] == 60
+    assert summary["corpus_write_plus_validator_scenario_count"] == 43
+    assert summary["corpus_correctness_critical_scenario_count"] == 18
+    assert summary["corpus_mechanism_heavy_implementation_ratio"] == 0.3
     assert summary["prompt_token_delta"] == -20.0
     assert summary["published_view_strategy"] == "conservative_multi_profile"
     assert summary["published_cache_profiles"] == ["warm", "cold"]
+
+
+def test_render_report_summary_includes_fairness_and_corpus_contract_fields() -> None:
+    report_text = runner._render_report_summary(  # noqa: SLF001
+        {
+            "report_id": "report-123",
+            "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+            "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+            "comparison_contract_details": runner._comparison_contract_details(runner.LIVE_COMPARISON_CONTRACT),  # noqa: SLF001
+            "acceptance": {
+                "status": "provisional_pass",
+                "hard_quality_gate_cleared": True,
+                "secondary_guardrails_cleared": True,
+                "hard_gate_failure_labels": [],
+                "secondary_guardrail_failure_labels": [],
+            },
+            "scenario_count": 65,
+            "published_view_strategy": "conservative_multi_profile",
+            "published_cache_profiles": ["warm", "cold"],
+            "published_comparison": {
+                "candidate_mode": "odylith_on",
+                "baseline_mode": "raw_agent_baseline",
+            },
+            "corpus_contract": {"status": "canonical"},
+            "corpus_composition": {
+                "seriousness_floor_passed": True,
+                "full_corpus_coverage_rate": 1.0,
+                "implementation_scenario_count": 60,
+                "write_plus_validator_scenario_count": 43,
+                "correctness_critical_scenario_count": 18,
+            },
+            "fairness_contract_passed": True,
+            "fairness_findings": [],
+            "observed_path_sources": ["odylith_prompt_payload", "raw_prompt_visible_paths"],
+            "preflight_evidence_modes": ["none", "scenario_declared_focused_local_checks"],
+        }
+    )
+
+    assert "- comparison_contract: full_product_assistance_vs_raw_agent" in report_text
+    assert "- fairness_contract_passed: True" in report_text
+    assert "- observed_path_sources: odylith_prompt_payload, raw_prompt_visible_paths" in report_text
+    assert "- preflight_evidence_modes: none, scenario_declared_focused_local_checks" in report_text
+    assert "- corpus_seriousness_floor_passed: True" in report_text
+    assert "- corpus_implementation_scenario_count: 60" in report_text
 
 
 def test_latency_measurement_fields_expose_uninstrumented_overhead() -> None:
@@ -4478,6 +4562,75 @@ def test_live_explicit_workstream_packet_keeps_docs_bounded(monkeypatch: pytest.
     assert payload.get("docs") in (None, [])
 
 
+def test_execution_governance_router_recovery_packet_fixture_drives_truthful_recover_posture() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-governance-router-recovery-posture"
+    )
+
+    result = runner._packet_result(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+    )
+
+    packet = dict(result["packet"])
+    assert result["expectation_ok"] is True
+    assert packet["packet_kind"] == "impact"
+    assert packet["route_ready"] is False
+    assert packet["native_spawn_ready"] is False
+    assert packet["execution_governance_mode"] == "recover"
+    assert packet["execution_governance_next_move"] == "recover.current_blocker"
+    assert packet["execution_governance_current_phase"] == "status synthesis"
+    assert packet["execution_governance_closure"] == "incomplete"
+    assert packet["execution_governance_validation_archetype"] == "recover"
+
+
+def test_execution_governance_runtime_surface_packet_fixture_keeps_phase_truth() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-governance-runtime-surface-phase-carry-through"
+    )
+
+    result = runner._packet_result(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+    )
+
+    packet = dict(result["packet"])
+    assert result["expectation_ok"] is True
+    assert packet["execution_governance_mode"] == "verify"
+    assert packet["execution_governance_current_phase"] == "verify"
+    assert packet["execution_governance_closure"] == "incomplete"
+    assert packet["execution_governance_resume_token"] == "resume:governance_slice"
+
+
+def test_execution_governance_governance_slice_ambiguity_uses_narrowing_lane() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-governance-governance-slice-ambiguity-recovery"
+    )
+
+    result = runner._packet_result(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+    )
+
+    packet = dict(result["packet"])
+    assert result["expectation_ok"] is True
+    assert packet["packet_kind"] == "governance_slice"
+    assert packet["selection_state"] == "none"
+    assert packet["execution_governance_authoritative_lane"] == "context_engine.governance_slice.narrowing"
+
+
 def test_live_corpus_workstream_ids_exist_in_repo_truth() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     referenced = {
@@ -4504,6 +4657,9 @@ def test_live_corpus_workstream_ids_exist_in_repo_truth() -> None:
         "B-063",
         "B-062",
         "B-067",
+        "B-072",
+        "B-092",
+        "B-093",
         "B-073",
         "B-074",
         "B-078",
@@ -5197,6 +5353,99 @@ def test_raw_prompt_visible_paths_extracts_repo_paths(tmp_path: Path) -> None:
     )
 
     assert observed == ["README.md", "docs/benchmarks/README.md"]
+
+
+def test_comparison_contract_details_describe_full_product_live_pair() -> None:
+    details = runner._comparison_contract_details(runner.LIVE_COMPARISON_CONTRACT)  # noqa: SLF001
+
+    assert details["primary_claim"] == runner.LIVE_COMPARISON_CONTRACT
+    assert "grounding_packet" in details["odylith_on_affordances"]
+    assert "execution_governance_posture_and_truthful_next_move" in details["odylith_on_affordances"]
+    assert "preflight_focused_check_results_when_executed_in_disposable_workspace" in details["odylith_on_affordances"]
+    assert "raw_prompt_visible_repo_anchors_only" in details["raw_agent_affordances"]
+
+
+def test_fairness_findings_require_raw_prompt_visible_path_attribution_for_raw_lane(tmp_path: Path) -> None:
+    (tmp_path / "README.md").write_text("readme\n", encoding="utf-8")
+
+    findings = runner._fairness_findings(  # noqa: SLF001
+        repo_root=tmp_path,
+        comparison_contract=runner.LIVE_COMPARISON_CONTRACT,
+        published_scenarios=[
+            {
+                "scenario_id": "case-a",
+                "prompt": "Only touch `README.md`.",
+                "acceptance_criteria": [],
+                "results": [
+                    {
+                        "mode": "raw_agent_baseline",
+                        "observed_path_sources": [],
+                        "preflight_evidence_mode": "",
+                    }
+                ],
+            }
+        ],
+    )
+
+    assert findings == ["case-a/raw_agent_baseline is missing raw prompt-visible path attribution"]
+
+
+def test_fairness_findings_allow_empty_preflight_mode_for_odylith_on(tmp_path: Path) -> None:
+    findings = runner._fairness_findings(  # noqa: SLF001
+        repo_root=tmp_path,
+        comparison_contract=runner.LIVE_COMPARISON_CONTRACT,
+        published_scenarios=[
+            {
+                "scenario_id": "case-a",
+                "prompt": "Audit the benchmark runner.",
+                "acceptance_criteria": [],
+                "results": [
+                    {
+                        "mode": "odylith_on",
+                        "observed_path_sources": ["odylith_prompt_payload"],
+                    }
+                ],
+            }
+        ],
+    )
+
+    assert findings == []
+
+
+def test_corpus_composition_requires_serious_floor_and_full_coverage() -> None:
+    composition = runner._corpus_composition(  # noqa: SLF001
+        scenarios=[
+            {
+                "kind": "packet",
+                "family": "validation_heavy_fix",
+                "needs_write": True,
+                "validation_commands": ["pytest -q"],
+                "correctness_critical": True,
+            }
+        ],
+        available_scenarios=[
+            {
+                "kind": "packet",
+                "family": "validation_heavy_fix",
+                "needs_write": True,
+                "validation_commands": ["pytest -q"],
+                "correctness_critical": True,
+            },
+            {
+                "kind": "packet",
+                "family": "api_contract_evolution",
+                "needs_write": True,
+                "validation_commands": ["pytest -q"],
+                "correctness_critical": False,
+            },
+        ],
+    )
+
+    assert composition["seriousness_floor_passed"] is False
+    assert composition["full_corpus_selected"] is False
+    assert any("implementation_scenario_count=1" in finding for finding in composition["findings"])
+    assert any("required serious families missing" in finding for finding in composition["findings"])
+    assert any("published selection covers 1/2 tracked scenarios" in finding for finding in composition["findings"])
 
 
 def test_packet_result_scores_prompt_visible_paths_for_raw_agent_baseline(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001

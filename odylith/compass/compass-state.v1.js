@@ -18,6 +18,95 @@
       };
     }
 
+    const compassDisclosureStateMemory = Object.create(null);
+
+    function compassDisclosureRouteKey(state) {
+      const current = state && typeof state === "object" ? state : params();
+      const windowToken = current.window === "24h" ? "24h" : "48h";
+      const scopeToken = WORKSTREAM_RE.test(String(current.workstream || "").trim())
+        ? String(current.workstream || "").trim()
+        : "global";
+      const dateToken = DATE_RE.test(String(current.date || "").trim())
+        ? String(current.date || "").trim()
+        : "live";
+      const auditDayToken = DATE_RE.test(String(current.audit_day || "").trim())
+        ? String(current.audit_day || "").trim()
+        : "-";
+      return `${scopeToken}|${windowToken}|${dateToken}|${auditDayToken}`;
+    }
+
+    function compassDisclosureStateStorageKey(group, state) {
+      const token = String(group || "").trim().toLowerCase() || "default";
+      return `odylith.compass.disclosure:${window.location.pathname}:${token}:${compassDisclosureRouteKey(state)}`;
+    }
+
+    function readCompassDisclosureState(group, state) {
+      const key = compassDisclosureStateStorageKey(group, state);
+      let raw = compassDisclosureStateMemory[key] || "";
+      try {
+        if (window.sessionStorage) {
+          const stored = window.sessionStorage.getItem(key);
+          if (stored !== null) raw = stored;
+        }
+      } catch (_error) {
+        // Ignore storage access failures and fall back to in-memory state.
+      }
+      if (!raw) return {};
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (_error) {
+        return {};
+      }
+    }
+
+    function writeCompassDisclosureState(group, state, nextState) {
+      const key = compassDisclosureStateStorageKey(group, state);
+      let rendered = "{}";
+      try {
+        rendered = JSON.stringify(nextState && typeof nextState === "object" ? nextState : {});
+      } catch (_error) {
+        rendered = "{}";
+      }
+      compassDisclosureStateMemory[key] = rendered;
+      try {
+        if (window.sessionStorage) {
+          window.sessionStorage.setItem(key, rendered);
+        }
+      } catch (_error) {
+        // Ignore storage access failures and keep the in-memory copy.
+      }
+    }
+
+    function resolveCompassDisclosureOpen(group, state, disclosureKey, defaultOpen = false) {
+      const token = String(disclosureKey || "").trim();
+      if (!token) return Boolean(defaultOpen);
+      const storedState = readCompassDisclosureState(group, state);
+      if (!Object.prototype.hasOwnProperty.call(storedState, token)) {
+        return Boolean(defaultOpen);
+      }
+      return Boolean(storedState[token]);
+    }
+
+    function bindCompassDisclosurePersistence(root, group, state) {
+      const container = root instanceof Element ? root : document;
+      const storedState = readCompassDisclosureState(group, state);
+      Array.from(container.querySelectorAll("details[data-compass-disclosure-key]")).forEach((node) => {
+        const disclosureKey = String(node.getAttribute("data-compass-disclosure-key") || "").trim();
+        if (!disclosureKey) return;
+        if (Object.prototype.hasOwnProperty.call(storedState, disclosureKey)) {
+          node.open = Boolean(storedState[disclosureKey]);
+        }
+        if (node.dataset && node.dataset.compassDisclosureBound === "1") return;
+        if (node.dataset) node.dataset.compassDisclosureBound = "1";
+        node.addEventListener("toggle", () => {
+          const nextState = readCompassDisclosureState(group, state);
+          nextState[disclosureKey] = Boolean(node.open);
+          writeCompassDisclosureState(group, state, nextState);
+        });
+      });
+    }
+
     function toDate(value) {
       const ts = Date.parse(String(value || ""));
       if (Number.isNaN(ts)) return null;
@@ -771,8 +860,19 @@
       return payload;
     }
 
+    function currentWorkstreamRowsForState(payload, state) {
+      const payloadRowsByWindow = payload && payload.current_workstreams_by_window && typeof payload.current_workstreams_by_window === "object"
+        ? payload.current_workstreams_by_window
+        : null;
+      const windowKey = state && state.window === "24h" ? "24h" : "48h";
+      if (payloadRowsByWindow && Array.isArray(payloadRowsByWindow[windowKey])) {
+        return payloadRowsByWindow[windowKey];
+      }
+      return Array.isArray(payload && payload.current_workstreams) ? payload.current_workstreams : [];
+    }
+
     function scopeWorkstreams(payload, state) {
-      const rows = Array.isArray(payload.current_workstreams) ? payload.current_workstreams : [];
+      const rows = currentWorkstreamRowsForState(payload, state);
       const executionRows = rows.filter((row) => {
         const status = String(row && row.status ? row.status : "").trim();
         return status === "planning" || status === "implementation";
@@ -996,7 +1096,7 @@
       };
 
       const validIds = new Set(
-        (Array.isArray(payload.current_workstreams) ? payload.current_workstreams : [])
+        currentWorkstreamRowsForState(payload, baseState)
           .map((row) => String(row && row.idea_id ? row.idea_id : "").trim())
           .filter((token) => WORKSTREAM_RE.test(token))
       );
@@ -1067,12 +1167,10 @@
           .map(([ws]) => String(ws || ""));
       }
 
-      const executionFallbackRows = Array.isArray(payload.current_workstreams)
-        ? payload.current_workstreams.filter((row) => {
-            const status = String(row && row.status ? row.status : "").trim();
-            return status === "planning" || status === "implementation";
-          })
-        : [];
+      const executionFallbackRows = currentWorkstreamRowsForState(payload, baseState).filter((row) => {
+        const status = String(row && row.status ? row.status : "").trim();
+        return status === "planning" || status === "implementation";
+      });
       return executionFallbackRows
         .map((row) => String(row && row.idea_id ? row.idea_id : "").trim())
         .filter((token) => WORKSTREAM_RE.test(token))

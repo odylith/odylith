@@ -106,8 +106,8 @@ def _sort_key(
 def select_current_workstream_rows(
     *,
     all_rows: Sequence[Mapping[str, Any]],
-    window_events_48h: Sequence[Mapping[str, Any]],
-    recent_completed_rows_48h: Sequence[Mapping[str, str]],
+    window_events: Sequence[Mapping[str, Any]],
+    recent_completed_rows: Sequence[Mapping[str, str]],
 ) -> list[dict[str, Any]]:
     by_id: dict[str, dict[str, Any]] = {}
     ordered_rows: list[dict[str, Any]] = []
@@ -122,7 +122,7 @@ def select_current_workstream_rows(
         ordered_rows.append(row)
 
     event_counts_by_ws: dict[str, int] = {}
-    for row in window_events_48h:
+    for row in window_events:
         if not isinstance(row, Mapping):
             continue
         for raw_id in row.get("workstreams", []):
@@ -133,7 +133,7 @@ def select_current_workstream_rows(
 
     recent_completed_ids = {
         _normalized_id(row.get("backlog"))
-        for row in recent_completed_rows_48h
+        for row in recent_completed_rows
         if isinstance(row, Mapping) and _normalized_id(row.get("backlog"))
     }
 

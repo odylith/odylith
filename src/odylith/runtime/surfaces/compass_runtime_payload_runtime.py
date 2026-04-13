@@ -1060,12 +1060,19 @@ def _build_runtime_payload(
         recent_completed_rows_by_hours[hours] = built
         return built
 
-    recent_completed_rows_48h = _recent_completed_rows(48)
-    ws_payloads = _select_current_workstream_rows(
-        all_rows=all_ws_payloads,
-        window_events_48h=_window_events(48),
-        recent_completed_rows_48h=recent_completed_rows_48h,
-    )
+    current_workstreams_by_window = {
+        "24h": _select_current_workstream_rows(
+            all_rows=all_ws_payloads,
+            window_events=_window_events(24),
+            recent_completed_rows=_recent_completed_rows(24),
+        ),
+        "48h": _select_current_workstream_rows(
+            all_rows=all_ws_payloads,
+            window_events=_window_events(48),
+            recent_completed_rows=_recent_completed_rows(48),
+        ),
+    }
+    ws_payloads = list(current_workstreams_by_window["48h"])
     execution_waves = _filter_execution_wave_payload_for_current_context(
         payload=execution_waves_all,
         current_workstream_rows=ws_payloads,
@@ -1706,6 +1713,10 @@ def _build_runtime_payload(
         "self_host": self_host,
         "governance": governance_summary,
         "workstream_catalog": all_ws_payloads,
+        "current_workstreams_by_window": {
+            "24h": current_workstreams_by_window["24h"],
+            "48h": current_workstreams_by_window["48h"],
+        },
         "current_workstreams": ws_payloads,
         "execution_waves": execution_waves,
         "release_summary": release_summary,

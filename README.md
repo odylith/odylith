@@ -105,6 +105,25 @@ the right change.
 More on the operating frame:
 [Why Bolting Odylith Onto Codex Or Claude Code Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
 
+## Context Engine
+
+The Context Engine answers one question: **"what is true and relevant?"** It
+narrows the repo to the smallest grounded slice before the agent reasons,
+plans, or asks the execution engine whether a move is admissible.
+
+More on the Context Engine:
+[Context Engine](docs/CONTEXT_ENGINE.md)
+
+## Execution Engine
+
+The execution engine answers one question: **"given what we know is true,
+what is the next admissible move?"** It sits between the Context Engine and
+the actual tool invocation layer, turning grounded context into a
+machine-readable contract that governs what the agent can and cannot do next.
+
+More on the execution engine:
+[Execution Engine](docs/EXECUTION_ENGINE.md)
+
 ## Tribunal
 
 One of Odylith's core strengths is that it can take one blocked or ambiguous repo posture, run ten specialist actors over the same grounded evidence, and force an adjudicated case before the agent acts. Tribunal is the engine for that step. It is not the first-turn grounding path. It runs in higher-level delivery-intelligence flows such as odylith sync, governed surface refresh, and evaluation or benchmark paths when Odylith needs to explain a live blocker, conflict, failure, or ambiguous posture in a workstream, component, or diagram.
@@ -241,10 +260,11 @@ The example below shows case `CB-009` inside the Casebook shell.
 
 Odylith publishes two benchmark views and keeps their claims separate:
 
-- `Grounding Benchmark` (`--profile diagnostic`): measures how well Odylith
-  builds the right grounded context before the live agent run
+- `Internal Diagnostic Benchmark` (`--profile diagnostic`): measures how well
+  Odylith builds the right grounded context before the live agent run
 - `Live Benchmark` (`--profile proof`): measures how well Odylith completes
-  the real task end to end against the raw host CLI
+  the real task end to end as a full-product assistance stack against the raw
+  host CLI
 
 In README framing, `odylith_off` is the raw host CLI lane.
 
@@ -253,28 +273,29 @@ These are first public eval runs and should be read as a baseline, not a
 ceiling. Odylith supports both Codex and Claude Code, but the current
 published live proof is still Codex-host-scoped; the benchmark contract itself
 is host-neutral. Odylith wins by grounding and operationalizing shared repo
-truth better, not by hiding truth from the baseline lane.
+truth better, not by hiding truth from the baseline lane or by quietly using
+undeclared benchmark affordances.
 
-### Grounding Benchmark
+### Internal Diagnostic Benchmark
 
 > [!NOTE]
-> The Grounding Benchmark (`--profile diagnostic`) is not the product claim.
-> It isolates packet and prompt construction quality before any live host
-> session begins.
+> The Internal Diagnostic Benchmark (`--profile diagnostic`) is not the
+> product claim. It isolates packet and prompt construction quality before any
+> live host session begins.
 
-The Grounding Benchmark answers:
+The Internal Diagnostic Benchmark answers:
 
 - "Does Odylith build a better grounded packet/prompt than `odylith_off`?"
 - "What is the prep-time and prompt-size cost of Odylith’s retrieval/memory layer?"
 - "Does Odylith improve required-path coverage before the model starts working?"
 
-Grounding benchmark snapshot:
-[Current Grounding Benchmark Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md)
+Diagnostic benchmark snapshot:
+[Current Internal Diagnostic Benchmark Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md)
 
-Grounding benchmark tables:
+Diagnostic benchmark tables:
 [Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md)
 
-#### Grounding Graphs
+#### Diagnostic Graphs
 
 **Headline win:** Odylith starts the model with materially better grounding:
 `+0.320` required-path recall and `+0.690` validation-success proxy versus

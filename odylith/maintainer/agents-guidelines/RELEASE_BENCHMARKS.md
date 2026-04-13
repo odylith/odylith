@@ -42,6 +42,11 @@ execute the Odylith release benchmark publishing lane.
   lanes run through the same live host CLI model and reasoning contract.
   Current published release proof remains Codex-host-scoped until another host
   clears the same publication lane.
+- That public pair now means `full_product_assistance_vs_raw_agent`, not a
+  narrower grounding-only claim. If Odylith uses selected docs,
+  execution-governance hints, focused-check shaping, or logged disposable-
+  workspace preflight evidence by design, the report and docs must declare
+  that explicitly.
 
 ## Metric Order
 Evaluate Odylith benchmark outcomes in this order:
@@ -91,7 +96,13 @@ The benchmark itself must also stay representative:
 - include small, medium, and large or complex repo work
 - include single-file, cross-file, and cross-surface changes
 - include critical correctness and recovery-sensitive cases
+- include external-wait or resume cases and destructive-scope fail-closed cases
 - keep the published proof conservative across warm and cold profiles
+- keep the tracked corpus above the seriousness floor:
+  `60` implementation scenarios, `35` write-plus-validator scenarios,
+  `12` correctness-critical scenarios, mechanism-heavy implementation share at
+  or below `40%`, and explicit family coverage for API evolution, stateful
+  recovery, external dependency recovery, and destructive-scope control
 
 ## Working Posture
 - Use Odylith-first maintainer workflows when inspecting release readiness,
@@ -187,8 +198,12 @@ The benchmark itself must also stay representative:
    extra control lanes are internal tuning surfaces, not the publication
    contract.
    When the full proof is too large for one local sitting, split it with
-   `--family` and/or `--shard-count ... --shard-index ...`, then only publish
-   from a completed full proof run.
+   `--family` and/or `--shard-count ... --shard-index ...`, then rebuild one
+   completed full proof report before publication. For full-corpus shard
+   splits, merge the shard history reports with
+   `PYTHONPATH=src python3 -m odylith.runtime.evaluation.odylith_benchmark_shard_merge --repo-root . <report-id>...`
+   so `latest.v1.json` still comes from one complete proof artifact rather than
+   a partial shard snapshot.
 2. Regenerate the README SVG assets from the latest report:
    `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --report .odylith/runtime/odylith-benchmarks/latest.v1.json --out-dir docs/benchmarks`
 3. Update the repo-root `README.md` benchmark snapshot from that same
@@ -214,6 +229,9 @@ The benchmark itself must also stay representative:
   proof obligation or the first shipped release-baseline requirement.
 - The public comparison must stay conservative across the selected cache
   profiles.
+- The public comparison must also stay fairness-clean: no undeclared Odylith
+  lane affordances, no missing raw prompt-visible path credit, and no report
+  that hides comparison-contract or preflight-evidence state.
 - README and graph wording must keep the measurement basis explicit:
   conservative same-scenario warm/cold publication, time to valid outcome,
   live agent runtime, validator overhead, and full-session token spend are
