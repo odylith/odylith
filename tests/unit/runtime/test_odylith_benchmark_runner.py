@@ -859,6 +859,7 @@ def test_run_live_scenario_batch_executes_public_pair_once_with_matched_pair_met
         mode: str,
         packet_source: str,
         prompt_payload: dict[str, object] | None = None,
+        packet_summary: dict[str, object] | None = None,
         snapshot_paths: list[str] | None = None,
     ) -> dict[str, object]:
         del repo_root, packet_source
@@ -872,10 +873,12 @@ def test_run_live_scenario_batch_executes_public_pair_once_with_matched_pair_met
         assert "tests/unit/runtime/test_odylith_benchmark_runner.py" in snapshot_paths
         if mode == "odylith_on":
             assert prompt_payload is not None
+            assert packet_summary is not None
             assert prompt_payload["context_packet"]["anchors"]["changed_paths"] == [
                 "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
             ]
             assert prompt_payload["strict_boundary"] is True
+            assert packet_summary["packet_kind"] == "governance_slice"
         return {
             "kind": "packet",
             "mode": mode,
@@ -2350,6 +2353,20 @@ def test_run_benchmarks_records_cache_profile_summaries_without_overwriting_late
             "validation_commands": [],
             "correctness_critical": False,
             "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
         }
     ]
     prep_calls: list[str] = []
@@ -3331,6 +3348,232 @@ def test_run_benchmarks_writes_and_clears_progress_checkpoint(
     assert seen_progress
     assert all(row["status"] == "running" for row in seen_progress)
     assert runner.progress_report_path(repo_root=tmp_path).exists() is False
+
+
+def test_run_benchmarks_shards_do_not_touch_shared_progress_or_profile_latest(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-c",
+            "kind": "packet",
+            "label": "Case C",
+            "summary": "C",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/c.py"],
+            "workstream": "",
+            "required_paths": ["scripts/c.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-d",
+            "kind": "packet",
+            "label": "Case D",
+            "summary": "D",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/d.py"],
+            "workstream": "",
+            "required_paths": ["scripts/d.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+    ]
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
+    monkeypatch.setattr(
+        runner,
+        "_runtime_posture_summary",
+        lambda *, repo_root: {
+            "memory_standardization_state": "standardized",
+            "repo_scan_degraded_fallback_rate": 0.0,
+            "governance_runtime_first_usage_rate": 1.0,
+            "route_ready_rate": 1.0,
+            "native_spawn_ready_rate": 1.0,
+            "architecture_covered_case_count": 0,
+            "architecture_satisfied_case_count": 0,
+        },
+    )
+    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **_: {
+            "kind": "packet",
+            "mode": "odylith_on",
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": ["scripts/a.py"],
+            "effective_estimated_tokens": 100,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    progress_path = runner.progress_report_path(repo_root=tmp_path)
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text(
+        json.dumps({"report_id": "shared-progress", "status": "running"}) + "\n",
+        encoding="utf-8",
+    )
+    profile_latest_path = runner.latest_report_path(repo_root=tmp_path, benchmark_profile="proof")
+    profile_latest_path.parent.mkdir(parents=True, exist_ok=True)
+    profile_latest_path.write_text(
+        json.dumps({"report_id": "existing-proof", "benchmark_profile": "proof"}) + "\n",
+        encoding="utf-8",
+    )
+
+    report = runner.run_benchmarks(
+        repo_root=tmp_path,
+        shard_count=4,
+        shard_index=2,
+    )
+
+    progress_payload = json.loads(progress_path.read_text(encoding="utf-8"))
+    profile_latest_payload = json.loads(profile_latest_path.read_text(encoding="utf-8"))
+    assert report["latest_eligible"] is False
+    assert progress_payload["report_id"] == "shared-progress"
+    assert profile_latest_payload["report_id"] == "existing-proof"
+    assert runner.history_report_path(repo_root=tmp_path, report_id=report["report_id"]).is_file()
+
+
+def test_run_benchmarks_shards_use_shard_specific_lock_key(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-c",
+            "kind": "packet",
+            "label": "Case C",
+            "summary": "C",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/c.py"],
+            "workstream": "",
+            "required_paths": ["scripts/c.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+    ]
+    seen_lock_keys: list[str] = []
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
+    monkeypatch.setattr(
+        runner,
+        "_runtime_posture_summary",
+        lambda *, repo_root: {
+            "memory_standardization_state": "standardized",
+            "repo_scan_degraded_fallback_rate": 0.0,
+            "governance_runtime_first_usage_rate": 1.0,
+            "route_ready_rate": 1.0,
+            "native_spawn_ready_rate": 1.0,
+            "architecture_covered_case_count": 0,
+            "architecture_satisfied_case_count": 0,
+        },
+    )
+    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **_: {
+            "kind": "packet",
+            "mode": "odylith_on",
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": ["scripts/a.py"],
+            "effective_estimated_tokens": 100,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    @contextlib.contextmanager
+    def _fake_lock(*, repo_root: Path, key: str):
+        del repo_root
+        seen_lock_keys.append(key)
+        yield
+
+    monkeypatch.setattr(runner.odylith_context_cache, "advisory_lock", _fake_lock)
+
+    runner.run_benchmarks(repo_root=tmp_path, shard_count=3, shard_index=2, write_report=False)
+
+    assert seen_lock_keys == ["odylith-benchmark-runner:proof:2-of-3"]
 
 
 def test_diagnostic_profile_keeps_public_pair_packet_only(
@@ -5833,6 +6076,29 @@ def test_prepare_live_scenario_request_supplements_bounded_support_docs_for_impa
     assert prompt_payload["strict_boundary"] is True
     assert "docs" not in prompt_payload
     assert "implementation_anchors" not in prompt_payload
+
+
+def test_prepare_live_scenario_request_preserves_execution_governance_packet_summary() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-governance-runtime-surface-phase-carry-through"
+    )
+
+    prepared = runner._prepare_live_scenario_request(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+    )
+
+    packet_summary = dict(prepared["packet_summary"])
+    assert packet_summary["packet_kind"] == "governance_slice"
+    assert packet_summary["execution_governance_present"] is True
+    assert packet_summary["execution_governance_mode"] == "verify"
+    assert packet_summary["execution_governance_current_phase"] == "verify"
+    assert packet_summary["execution_governance_resume_token"] == "resume:governance_slice"
 
 
 def test_prepare_live_scenario_request_adds_architecture_component_anchors() -> None:

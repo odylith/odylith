@@ -53,39 +53,39 @@ Related Bugs:
 - [CB-107](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md)
 
 ## Learnings
-- [ ] A benchmark can be technically isolated and still tell the wrong story if
+- [x] A benchmark can be technically isolated and still tell the wrong story if
       the contract language lags behind the real lane affordances.
-- [ ] Corpus size alone does not make a benchmark serious; the task mix needs
+- [x] Corpus size alone does not make a benchmark serious; the task mix needs
       enough real write-plus-validator, recovery, and scope-control work to
       support a strong claim.
 
 ## Must-Ship
-- [ ] Redefine the primary benchmark contract and report language as
+- [x] Redefine the primary benchmark contract and report language as
       `full_product_assistance_vs_raw_agent`.
-- [ ] Enumerate declared `odylith_on` affordances and expose them in the report
+- [x] Enumerate declared `odylith_on` affordances and expose them in the report
       contract together with fairness findings and observed-path sources.
-- [ ] Fix live observed-path scoring so raw prompt-visible anchors are credited
+- [x] Fix live observed-path scoring so raw prompt-visible anchors are credited
       symmetrically without creating hidden truth.
-- [ ] Harden preflight evidence logging and focused no-op proxy handling so any
+- [x] Harden preflight evidence logging and focused no-op proxy handling so any
       Odylith-only preflight basis is explicit, bounded, and inspectable.
-- [ ] Keep packet-only diagnostic `benchmark.packet_fixture` usage explicit,
+- [x] Keep packet-only diagnostic `benchmark.packet_fixture` usage explicit,
       whitelisted, and confined to declared packet/runtime-summary seams.
-- [ ] Expand the implementation corpus to at least `60` implementation
+- [x] Expand the implementation corpus to at least `60` implementation
       scenarios with at least `35` write-plus-validator scenarios and at least
       `12` correctness-critical scenarios.
 - [ ] Refresh benchmark docs, graphs, component truth, Atlas, and release proof
       from the validated full-corpus report selected for `0.1.11`.
-- [ ] Support release-safe full-corpus proof by merging shard history reports
+- [x] Support release-safe full-corpus proof by merging shard history reports
       back into one canonical report when operational shard splits are used.
 
 ## Should-Ship
-- [ ] Add cross-layer tests that packet, live runner, report summaries, docs,
+- [x] Add cross-layer tests that packet, live runner, report summaries, docs,
       and graphs agree on the new contract and fairness fields.
-- [ ] Surface `validator_status_basis` so focused no-op proxy passes are
+- [x] Surface `validator_status_basis` so focused no-op proxy passes are
       inspectable in both machine-readable reports and reviewer-facing docs.
-- [ ] Add corpus-composition guards that fail when mechanism-heavy control
+- [x] Add corpus-composition guards that fail when mechanism-heavy control
       families exceed the seriousness floor.
-- [ ] Keep benchmark publication artifacts aligned to the strongest validated
+- [x] Keep benchmark publication artifacts aligned to the strongest validated
       proof without stale-subset drift.
 
 ## Defer
@@ -117,19 +117,25 @@ Related Bugs:
 - [ ] [odylith_benchmark_live_execution.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py)
 - [ ] [odylith_benchmark_live_prompt.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py)
 - [ ] [odylith_benchmark_runner.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_runner.py)
+- [ ] [odylith_benchmark_publication.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_publication.py)
 - [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/benchmark/CURRENT_SPEC.md)
 - [ ] [FAMILIES_AND_EVALS.md](/Users/freedom/code/odylith/docs/benchmarks/FAMILIES_AND_EVALS.md)
 - [ ] [METRICS_AND_PRIORITIES.md](/Users/freedom/code/odylith/docs/benchmarks/METRICS_AND_PRIORITIES.md)
 - [ ] [README.md](/Users/freedom/code/odylith/README.md)
+- [ ] [docs/benchmarks/README.md](/Users/freedom/code/odylith/docs/benchmarks/README.md)
+- [ ] [RELEASE_BENCHMARKS.md](/Users/freedom/code/odylith/odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md)
+- [ ] [release-benchmark-publishing/SKILL.md](/Users/freedom/code/odylith/odylith/maintainer/skills/release-benchmark-publishing/SKILL.md)
+- [ ] [test_odylith_benchmark_publication.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_publication.py)
 - [ ] [test_odylith_benchmark_live_execution.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_live_execution.py)
 - [ ] [test_odylith_benchmark_runner.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_runner.py)
 - [ ] [test_odylith_benchmark_corpus.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_corpus.py)
 
 ## Validation
-- [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_corpus.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_corpus.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_publication.py tests/unit/runtime/test_odylith_benchmark_shard_merge.py`
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_execution_governance.py tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_odylith_runtime_surface_summary.py`
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
-- [ ] `PYTHONPATH=src python3 -m odylith.cli benchmark --repo-root . --profile diagnostic`
+- [x] `PYTHONPATH=src python3 -m odylith.cli benchmark --repo-root . --profile diagnostic`
 - [ ] `PYTHONPATH=src python3 -m odylith.cli benchmark --repo-root . --profile proof`
 - [ ] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full`
 - [ ] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone`

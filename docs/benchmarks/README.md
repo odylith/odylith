@@ -118,73 +118,19 @@ The main machine-readable artifacts are:
 
 ## Current Published Snapshot
 
-Current local published artifacts:
+Current published artifacts should be read from the generated snapshot files,
+not copied into this overview by hand:
 
-- Internal Diagnostic Benchmark (`diagnostic`):
-  report `74cbe36427f2c375`, status `hold`, `37` scenarios
-- Live Benchmark (`proof`):
-  report `52aa3f76538cf12f`, status `provisional_pass`, `37` scenarios
+- [Current Internal Diagnostic Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
+- [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
+- [Benchmark Tables](BENCHMARK_TABLES.md)
+- `docs/benchmarks/latest-summary.v1.json`
 
-Current diagnostic movement versus `odylith_off`:
-
-- `+0.320` required-path recall
-- `+0.084` required-path precision
-- `+0.690` validation success
-- `+1.000` expectation success
-- `+47` median prompt-bundle tokens
-- `+57` median total-payload tokens
-- `+7.045 ms` median packet latency
-
-Current live-proof movement versus `odylith_off`:
-
-- `+0.227` required-path recall
-- `+0.168` required-path precision
-- `-0.141` hallucinated-surface rate
-- `+0.069` validation success
-- `+0.124` write-surface precision
-- `+0.330` critical required-path recall
-- `+0.167` critical validation success
-- `+0.393` expectation success
-- `-52,561` median live-session input tokens
-- `-53,774` median total model tokens
-- `-12,426.968 ms` median time to valid outcome
-
-Current live-proof hard-gate blockers:
-
-- none on the current full proof
-
-Current live-proof secondary guardrails:
-
-- both cache profiles clear the hard quality gate
-- `within_budget_rate` is back above the `0.80` floor
-
-Current proof attention families:
-
-- `architecture`
-- `browser_surface_reliability`
-- `component_governance`
-- `cross_surface_governance_sync`
-- `governed_surface_sync`
-- `orchestration_feedback`
-
-Current diagnostic weak families:
-
-- `browser_surface_reliability`
-- `install_upgrade_runtime`
-- `runtime_state_integrity`
-
-Current product-repo baseline note:
-
-- the current full proof pass is the detached `source-local` benchmark posture
-- `benchmark_compare` still reports `warn` until a shipped release baseline is
-  recorded in `docs/benchmarks/release-baselines.v1.json`
-
-The published proof view is conservative:
-
-- it uses both `warm` and `cold` cache profiles
-- it publishes the less favorable same-profile result per scenario
-- it keeps the public headline on the primary pair instead of the prettier
-  secondary controls
+Tracked source truth is currently ahead of some older published artifacts, so
+do not infer release-safe benchmark posture from stale report ids embedded in
+overview prose. The serious claim only refreshes when the selected proof report,
+generated snapshot docs, graph artifacts, and registry or governance truth all
+move together on the same validated tree.
 
 ## Fair Comparison Protocol
 

@@ -297,22 +297,9 @@ Diagnostic benchmark tables:
 
 #### Diagnostic Graphs
 
-**Headline win:** Odylith starts the model with materially better grounding:
-`+0.320` required-path recall and `+0.690` validation-success proxy versus
-`odylith_off`.
-
-On the warm-cache diagnostic lane, `odylith_on` beat `odylith_off` across `37`
-seeded packet and prompt scenarios with:
-
-- `+0.320` required-path recall
-- `+0.084` required-path precision
-- `+0.690` validation-success proxy
-- `+7.048 ms` median wall clock (`9.881 ms` p95, `254.219 ms` total across all `37` pairs)
-
-The family heatmap uses the linked developer-first family order rather than raw
-token cost. The grounding quality frontier credits prompt-visible repo paths on
-the raw control lane, and the operating-posture view comes from the sampled
-`adoption_proof` slice.
+Read the current diagnostic outcome in the linked snapshot and tables. The
+graphs below should be interpreted together with the generated diagnostic
+snapshot, not as standalone claims detached from the selected report.
 
 <p align="center">
   <img
@@ -346,8 +333,9 @@ the raw control lane, and the operating-posture view comes from the sampled
 ### Live Benchmark
 
 > [!TIP]
-> The Live Benchmark (`--profile proof`) is the product-claim lane. Current
-> full-proof status: `provisional_pass`.
+> The Live Benchmark (`--profile proof`) is the product-claim lane. Read the
+> current generated snapshot for the active proof status instead of relying on
+> stale README prose.
 
 The Live Benchmark answers:
 
@@ -363,25 +351,9 @@ Live benchmark tables:
 
 #### Live Graphs
 
-**Headline win:** Odylith reaches valid outcomes faster and with far less
-model spend: `-12.43s` median time to valid outcome and `-52,561` median
-live-session input tokens versus `odylith_off`.
-
-On the conservative published proof view, `odylith_on` beat `odylith_off`
-across `37` seeded scenarios with:
-
-- `-12.43s` median time to valid outcome
-- `-52,561` median live-session input tokens
-- `+0.227` required-path recall
-- `+0.168` required-path precision
-- `+0.393` expectation success
-
-This published view keeps the scenario-wise worst-of-warm/cold result for each
-scenario, drawn from `74` matched pairs (`148` total live results), so the
-headline stays conservative rather than cherry-picked.
-
-The family heatmap uses the linked developer-first family order rather than
-prompt-token cost.
+Read the current live-proof outcome in the linked snapshot and tables. The
+graphs below should be read as report-backed views of the selected proof
+artifact, not as a second hand-maintained benchmark claim in the README.
 
 <p align="center">
   <img

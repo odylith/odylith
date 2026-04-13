@@ -1087,9 +1087,10 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
   const contextLine = contextMeta
     ? `This workstream participates across ${String(contextMeta.wave_span_label || "").trim() || "the program"} as ${String(contextMeta.role_label || "").trim() || "a member"}.`
     : "Umbrella-owned execution waves for this program.";
-
-  return `
-    <div class="execution-wave-board">
+  const hideProgramFocusPanel = Boolean(options.hideProgramFocusPanel);
+  const focusHtml = hideProgramFocusPanel
+    ? ""
+    : `
       <div class="execution-wave-focus">
         <div class="execution-wave-focus-grid">
           <div class="execution-wave-focus-copy">
@@ -1100,6 +1101,11 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
           ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
+    `;
+
+  return `
+    <div class="execution-wave-board">
+      ${focusHtml}
       <div class="execution-wave-sequence">${cardsHtml}</div>
     </div>
   `;
@@ -1121,6 +1127,9 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
     ? section.sectionChips.filter((row) => String(row || "").trim())
     : [];
   const boardWrapperClass = String(options.boardWrapperClass || "").trim();
+  const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]
+    .filter(Boolean)
+    .join(" ");
   const boardsHtml = entries
     .map((entry) => renderExecutionWaveProgram(
       entry && entry.program ? entry.program : null,
@@ -1141,7 +1150,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   if (sectionHeaderVariant === "compass") {
     return `
       <section class="block">
-        <details class="execution-wave-section"${openAttr}${disclosureAttr}>
+        <details class="${escapeHtml(sectionClassName)}"${openAttr}${disclosureAttr}>
           <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
             <span class="execution-wave-section-copy">
               <span class="execution-wave-section-title">${escapeHtml(sectionTitle)}</span>
@@ -1159,7 +1168,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   }
   return `
     <section class="block">
-      <details class="execution-wave-section"${openAttr}${disclosureAttr}>
+      <details class="${escapeHtml(sectionClassName)}"${openAttr}${disclosureAttr}>
         <summary class="execution-wave-section-summary">
           <span class="execution-wave-section-copy">
             <span class="execution-wave-section-title">${escapeHtml(sectionTitle)}</span>

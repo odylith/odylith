@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 56,
+    "explicit_event_count": 57,
     "mapped_workstream_evidence_count": 4,
     "recent_path_match_count": 0,
     "spec_history_event_count": 27,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 56
+    "timeline_event_count": 57
   },
   "name": "Compass",
   "path_prefixes": [
@@ -50,6 +50,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 110,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "Hardened Compass Programs with an explicit flat disclosure section, captured CB-108 for the redundant nested inner card regression, and refreshed sync/browser proof so the inner card cannot silently return.",
+      "ts_iso": "2026-04-12T19:00:46-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

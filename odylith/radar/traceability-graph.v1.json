@@ -903,7 +903,8 @@
       "workstream_parent": "",
       "workstream_children": [
         "B-068",
-        "B-092"
+        "B-092",
+        "B-093"
       ],
       "workstream_depends_on": [
         "B-009",
@@ -4125,7 +4126,9 @@
           "B-084",
           "B-085",
           "B-087",
-          "B-088"
+          "B-088",
+          "B-092",
+          "B-093"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4147,7 +4150,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 5,
+        "active_workstream_count": 7,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4225,7 +4228,9 @@
           "B-084",
           "B-085",
           "B-087",
-          "B-088"
+          "B-088",
+          "B-092",
+          "B-093"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4247,7 +4252,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 5,
+        "active_workstream_count": 7,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4323,7 +4328,9 @@
           "B-084",
           "B-085",
           "B-087",
-          "B-088"
+          "B-088",
+          "B-092",
+          "B-093"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4345,7 +4352,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 5,
+        "active_workstream_count": 7,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4459,7 +4466,9 @@
           "B-084",
           "B-085",
           "B-087",
-          "B-088"
+          "B-088",
+          "B-092",
+          "B-093"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4481,7 +4490,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 5,
+        "active_workstream_count": 7,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4567,7 +4576,9 @@
           "B-084",
           "B-085",
           "B-087",
-          "B-088"
+          "B-088",
+          "B-092",
+          "B-093"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4589,7 +4600,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 5,
+        "active_workstream_count": 7,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4741,7 +4752,8 @@
       "workstream_depends_on": [
         "B-021",
         "B-072",
-        "B-091"
+        "B-091",
+        "B-093"
       ],
       "workstream_blocks": [],
       "workstream_reopens": "",
@@ -4761,13 +4773,175 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 7,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-092",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T23:19:04Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-093",
+      "title": "Benchmark Full-Product Contract, Live-Lane Fairness, and Real-World Corpus Hardening",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-021",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-021",
+        "B-022",
+        "B-091"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-024"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 7,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-093",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-12T23:19:04Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -4797,7 +4971,9 @@
         "B-084",
         "B-085",
         "B-087",
-        "B-088"
+        "B-088",
+        "B-092",
+        "B-093"
       ],
       "completed_workstreams": [
         "B-061",
@@ -4819,7 +4995,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 5,
+      "active_workstream_count": 7,
       "completed_workstream_count": 16
     },
     {
@@ -4870,7 +5046,9 @@
         "B-084",
         "B-085",
         "B-087",
-        "B-088"
+        "B-088",
+        "B-092",
+        "B-093"
       ],
       "completed_workstreams": [
         "B-061",
@@ -4892,7 +5070,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 5,
+      "active_workstream_count": 7,
       "completed_workstream_count": 16
     },
     "next": {
@@ -4942,7 +5120,9 @@
       "B-084",
       "B-085",
       "B-087",
-      "B-088"
+      "B-088",
+      "B-092",
+      "B-093"
     ],
     "completed_workstreams": [
       "B-061",
@@ -4964,7 +5144,7 @@
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 5,
+    "active_workstream_count": 7,
     "completed_workstream_count": 16
   },
   "next_release": {
@@ -4995,7 +5175,7 @@
   "release_summary": {
     "release_count": 2,
     "alias_count": 2,
-    "active_assignment_count": 6
+    "active_assignment_count": 8
   },
   "execution_programs": [
     {
@@ -5788,6 +5968,13 @@
       "label": "Execution Governance Benchmark Family and Honest Ablation Proof",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-12-execution-governance-benchmark-family-and-honest-ablation-proof.md"
+    },
+    {
+      "id": "B-093",
+      "type": "workstream",
+      "label": "Benchmark Full-Product Contract, Live-Lane Fairness, and Real-World Corpus Hardening",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md"
     },
     {
       "id": "artifact:.github/workflows/release.yml",
@@ -6640,6 +6827,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
@@ -7586,6 +7779,16 @@
     },
     {
       "source": "B-021",
+      "target": "B-093",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-021",
+      "target": "B-093",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-021",
       "target": "diagram:D-024",
       "edge_type": "diagram_linkage"
     },
@@ -7712,6 +7915,11 @@
     {
       "source": "B-022",
       "target": "B-061",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-022",
+      "target": "B-093",
       "edge_type": "depends_on"
     },
     {
@@ -9141,6 +9349,11 @@
     },
     {
       "source": "B-091",
+      "target": "B-093",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-091",
       "target": "diagram:D-005",
       "edge_type": "diagram_linkage"
     },
@@ -9173,6 +9386,31 @@
       "source": "B-092",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-092",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-093",
+      "target": "B-092",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-093",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-093",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-093",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
     }
   ],
   "coverage": {
@@ -9819,6 +10057,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-093": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -9870,15 +10115,15 @@
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 92,
+    "workstream_count": 93,
     "release_count": 2,
-    "active_release_assignment_count": 6,
+    "active_release_assignment_count": 8,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 228,
-    "edge_count": 497,
+    "node_count": 230,
+    "edge_count": 506,
     "warning_count": 4,
     "warning_item_count": 4
   },
-  "generated_utc": "2026-04-12 22:50:05Z"
+  "generated_utc": "2026-04-13 01:58:55Z"
 }

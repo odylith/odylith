@@ -141,6 +141,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     ).read_text(encoding="utf-8")
 
     assert "function radarWorkstreamHref(workstreamId, options = {})" in shared_js
+    assert 'const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]' in shared_js
+    assert '<details class="${escapeHtml(sectionClassName)}"' in shared_js
     assert 'execution-wave-card-shell execution-wave-card-shell-full-copy' in shared_js
     assert 'const radarHref = radarWorkstreamHref(item.ideaId);' in workstreams_js
     assert '<td class="ws-col-id"><div class="ws-id-stack"><a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
@@ -191,6 +193,9 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'if (value === null || value === undefined || value === "") return null;' in releases_js
     assert "function numericProgressOrNull(value)" in waves_js
     assert '<article class="card execution-waves-card"><h2>Programs</h2><div id="execution-waves" class="muted"></div></article>' in waves_js
+    assert "const hideProgramFocusPanel = Boolean(options.hideProgramFocusPanel);" in shared_js
+    assert 'hideProgramFocusPanel: true,' in waves_js
+    assert 'sectionClassName: "execution-wave-section-flat"' in waves_js
     assert 'if (value === null || value === undefined || value === "") return null;' in waves_js
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in waves_js
     assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}' in releases_js
@@ -329,9 +334,9 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     ) in base_css
     assert ".digest-link,\n    .brief-inline-link {" in base_css
     assert ".execution-wave-program-stack-release .execution-wave-section-title {" in execution_wave_css
-    assert ".execution-wave-program-stack:not(.execution-wave-program-stack-release) .execution-wave-section {" in execution_wave_css
-    assert "border-color: #dbeafe;" in execution_wave_css
-    assert "background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);" in execution_wave_css
+    assert ".execution-wave-section.execution-wave-section-flat {" in execution_wave_css
+    assert "border: 0;" in execution_wave_css
+    assert "background: none;" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-section {" in execution_wave_css
     assert "border-color: #dbe9df;" in execution_wave_css
     assert "background: linear-gradient(180deg, #fbfdfa 0%, #ffffff 100%);" in execution_wave_css

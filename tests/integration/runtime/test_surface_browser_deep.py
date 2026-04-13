@@ -15,6 +15,7 @@ from odylith.runtime.surfaces import compass_standup_brief_maintenance
 from odylith.runtime.surfaces import compass_transaction_runtime
 from odylith.runtime.surfaces import render_casebook_dashboard
 from odylith.runtime.surfaces import render_compass_dashboard
+from odylith.runtime.surfaces import render_mermaid_catalog
 from odylith.runtime.surfaces import render_tooling_dashboard as tooling_dashboard_renderer
 from tests.integration.runtime.surface_browser_test_support import (
     _REPO_ROOT,
@@ -2518,6 +2519,221 @@ def test_compass_unavailable_brief_hides_copy_button_and_stays_compact(
                 digest_text = compass.locator("#digest-list").inner_text()
                 assert "Brief unavailable right now" in digest_text
                 assert "Next retry" in digest_text
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_live_brief_warm_poll_reasons_match_retry_policy(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    _assert_compass_live_state(compass, window_token="24h")
+
+    retry_matrix = compass.locator("body").evaluate(
+        """() => ({
+            providerDeferred: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "provider_deferred" } },
+              { date: "live" }
+            ),
+            rateLimited: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "rate_limited" } },
+              { date: "live" }
+            ),
+            timeout: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "timeout" } },
+              { date: "live" }
+            ),
+            transportError: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "transport_error" } },
+              { date: "live" }
+            ),
+            creditsExhausted: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "credits_exhausted" } },
+              { date: "live" }
+            ),
+            authError: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "auth_error" } },
+              { date: "live" }
+            ),
+            providerUnavailable: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "provider_unavailable" } },
+              { date: "live" }
+            ),
+            providerError: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "provider_error" } },
+              { date: "live" }
+            ),
+            invalidBatch: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "invalid_batch" } },
+              { date: "live" }
+            ),
+            scopedGlobalBorrow: shouldPollForWarmBrief(
+              { status: "ready", notice: { reason: "scoped_provider_deferred_showing_global" } },
+              { date: "live" }
+            ),
+            scopedWiderGlobalBorrow: shouldPollForWarmBrief(
+              { status: "ready", notice: { reason: "scoped_provider_deferred_showing_wider_global" } },
+              { date: "live" }
+            ),
+            historicalSnapshot: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "provider_deferred" } },
+              { date: "2026-04-10" }
+            ),
+        })"""
+    )
+    assert retry_matrix == {
+        "providerDeferred": True,
+        "rateLimited": True,
+        "timeout": True,
+        "transportError": True,
+        "creditsExhausted": False,
+        "authError": False,
+        "providerUnavailable": False,
+        "providerError": False,
+        "invalidBatch": False,
+        "scopedGlobalBorrow": True,
+        "scopedWiderGlobalBorrow": True,
+        "historicalSnapshot": False,
+    }
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    fixture_context_engine_dir = fixture_root / ".odylith" / "runtime"
+    fixture_context_engine_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(
+        _REPO_ROOT / ".odylith" / "runtime" / "odylith-context-engine-state.v1.js",
+        fixture_context_engine_dir / "odylith-context-engine-state.v1.js",
+    )
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    payload["generated_utc"] = "2026-04-12T23:10:00Z"
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    standup_brief["24h"] = {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": "provider-deferred-24h",
+        "generated_utc": "",
+        "sections": [],
+        "diagnostics": {
+            "reason": "provider_deferred",
+            "title": "Standup brief unavailable",
+            "message": "Compass is still warming the live 24-hour brief.",
+        },
+        "evidence_lookup": {},
+    }
+    payload["standup_brief"] = standup_brief
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _assert_compass_live_state(compass, window_token="24h")
+                _wait_for_compass_brief_state(
+                    page,
+                    window_token="24h",
+                    scope_label="Global",
+                    statuses=("unavailable",),
+                )
+
+                program_section = compass.locator("#execution-waves-host .execution-wave-section").first
+                program_section.wait_for(timeout=15000)
+                if program_section.get_attribute("open") is None:
+                    program_section.locator("> summary").first.click()
+                program_section.evaluate("(node) => { node.dataset.codexWarmBriefProbe = '1'; }")
+                assert program_section.evaluate("(node) => node.dataset.codexWarmBriefProbe") == "1"
+
+                compass.locator("body").evaluate(
+                    """() => {
+                        const readyBrief = {
+                          status: "ready",
+                          source: "provider",
+                          fingerprint: "provider-ready-24h",
+                          generated_utc: "2026-04-12T23:11:45Z",
+                          sections: [
+                            {
+                              key: "completed",
+                              label: "Completed in this window",
+                              bullets: [{ text: "The live brief warmed successfully.", fact_ids: [] }],
+                            },
+                            {
+                              key: "current_execution",
+                              label: "Current execution",
+                              bullets: [{ text: "Only the standup brief card should update now.", fact_ids: [] }],
+                            },
+                            {
+                              key: "next_planned",
+                              label: "Next planned",
+                              bullets: [{ text: "Keep the existing governance DOM intact.", fact_ids: [] }],
+                            },
+                            {
+                              key: "risks_to_watch",
+                              label: "Risks to watch",
+                              bullets: [{ text: "No extra live risk callout for this browser proof.", fact_ids: [] }],
+                            },
+                          ],
+                          evidence_lookup: {},
+                        };
+                        const originalLoadRuntime = window.loadRuntime;
+                        window.__codexWarmBriefLoadRuntimeCalls__ = 0;
+                        window.loadRuntime = async (state) => {
+                          window.__codexWarmBriefLoadRuntimeCalls__ += 1;
+                          const runtime = await originalLoadRuntime(state);
+                          const payload = runtime && runtime.payload && typeof runtime.payload === "object"
+                            ? JSON.parse(JSON.stringify(runtime.payload))
+                            : null;
+                          if (!payload) return runtime;
+                          const standupBrief = payload.standup_brief && typeof payload.standup_brief === "object"
+                            ? payload.standup_brief
+                            : {};
+                          standupBrief["24h"] = readyBrief;
+                          payload.generated_utc = readyBrief.generated_utc;
+                          payload.standup_brief = standupBrief;
+                          return Object.assign({}, runtime, { payload });
+                        };
+                    }"""
+                )
+
+                page.wait_for_function(
+                    """() => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const digest = doc && doc.querySelector("#digest-list");
+                        if (!digest || !digest.dataset) return false;
+                        return (digest.dataset.briefStatus || "") === "ready"
+                          && (digest.dataset.briefSource || "") === "provider";
+                    }""",
+                    timeout=15000,
+                )
+                page.wait_for_timeout(250)
+
+                assert program_section.evaluate("(node) => node.dataset.codexWarmBriefProbe") == "1"
+                assert program_section.evaluate("(node) => node.hasAttribute('open')") is True
+                assert "The live brief warmed successfully." in compass.locator("#digest-list").inner_text()
+                assert compass.locator("body").evaluate("() => window.__codexWarmBriefLoadRuntimeCalls__") == 1
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:

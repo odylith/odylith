@@ -256,6 +256,10 @@ with the families that look and feel most like normal coding-agent work.
 ### Maintainer publication helpers
 - `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --report .odylith/runtime/odylith-benchmarks/latest.v1.json --out-dir docs/benchmarks`
   Regenerate the canonical README SVG graph set from the current report.
+- `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_publication --repo-root .`
+  Refresh the benchmark snapshot markdown and tracked `latest-summary` JSON
+  from the selected diagnostic and live reports without hand-editing the
+  generated snapshot files.
 - [Maintainer benchmark release guidance](../../../../maintainer/agents-guidelines/RELEASE_BENCHMARKS.md)
   defines the release-safe publication contract and graph order.
 
@@ -267,6 +271,9 @@ with the families that look and feel most like normal coding-agent work.
   Benchmark runner, aggregation, and publication logic.
 - `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`
   Canonical graph renderer for the maintained README SVG set.
+- `src/odylith/runtime/evaluation/odylith_benchmark_publication.py`
+  Canonical publication writer for benchmark snapshot markdown and tracked
+  latest-summary truth.
 - `src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py`
   Canonical developer-first family ordering for README and graph publication.
 - `README.md`

@@ -70,6 +70,7 @@ Related Bugs:
 - [2026-04-09-compass-current-workstream-ranking-can-hide-active-release-and-wave-lanes.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-current-workstream-ranking-can-hide-active-release-and-wave-lanes.md)
 - [2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md)
 - [2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md)
+- [2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md)
 - no related Casebook-specific bug record exists yet for detail-view field repetition or header-collapse regressions; keep the failure mode visible in this plan and handoff until it is formalized
 
 ## Context/Problem Statement
@@ -295,6 +296,9 @@ Related Bugs:
 - [x] Compass labels the outer program container `Programs`, parallel to
       `Release Targets`, so the two grouped sections are legible before the
       inner cards open.
+- [x] Compass `Programs` now treats its disclosure shell as an explicit flat
+      section contract, so the grouped outer box cannot silently regrow a
+      redundant nested inner card when shared section chrome shifts.
 - [x] Compass outer `Programs` and `Release Targets` containers now keep
       subtle but distinct surface tints so the two governance families are
       visually separable without changing the shared layout contract.

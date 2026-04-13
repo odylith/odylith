@@ -36,6 +36,8 @@ Do not use this skill in consumer repos.
   `odylith/radar/source/releases/release-assignment-events.v1.jsonl`
 - README:
   `README.md`
+- Publication snapshot writer:
+  `src/odylith/runtime/evaluation/odylith_benchmark_publication.py`
 - Graph generator:
   `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`
 - Graph outputs:
@@ -84,7 +86,17 @@ Do not use this skill in consumer repos.
    continuing the release lane.
 5. Regenerate the graph assets from the latest report:
    `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --report .odylith/runtime/odylith-benchmarks/latest.v1.json --out-dir docs/benchmarks`
-6. Update the repo-root `README.md` benchmark snapshot from that same report.
+6. Refresh the benchmark snapshot docs and tracked latest-summary JSON from
+   that same selected report:
+   `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_publication --repo-root .`
+   This is the canonical path for:
+   - `docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md`
+   - `docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md`
+   - `docs/benchmarks/BENCHMARK_TABLES.md`
+   - `docs/benchmarks/latest-summary.v1.json`
+   Do not hand-edit those snapshot files when the publication writer can
+   derive them from the validated report.
+7. Update the repo-root `README.md` benchmark snapshot from that same report.
    Make the README explicit that the current published snapshot is Codex-host-scoped and conservative
    across the published cache profiles, that `odylith_off` is the raw host
    CLI lane, that `raw_agent_baseline` is only the internal report alias, and
@@ -110,20 +122,20 @@ Do not use this skill in consumer repos.
    follow the detailed wording contract in
    [Odylith Chatter](../../registry/source/components/odylith-chatter/CURRENT_SPEC.md)
    instead of expanding the benchmark lane's own prompt tax.
-7. Keep the README graph order and tone unchanged unless the product is intentionally adding benchmark-marketing cuts from the same report:
+8. Keep the README graph order and tone unchanged unless the product is intentionally adding benchmark-marketing cuts from the same report:
    - family heatmap
    - quality frontier
    - frontier
    - operating posture
-8. Keep the README graph block in this exact order:
+9. Keep the README graph block in this exact order:
    - `odylith-benchmark-family-heatmap.svg`
    - `odylith-benchmark-quality-frontier.svg`
    - `odylith-benchmark-frontier.svg`
    - `odylith-benchmark-operating-posture.svg`
-9. If the benchmark slice surfaced a named failure mode, stale diagram, or thin
+10. If the benchmark slice surfaced a named failure mode, stale diagram, or thin
    component boundary, update Casebook, Atlas, Registry, and Compass in the
    same change.
-10. Run:
+11. Run:
    `PYTHONPATH=src pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py`
 
 ## Non-Negotiables

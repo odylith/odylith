@@ -158,12 +158,14 @@
             sectionChips,
             openByDefault: resolveCompassDisclosureOpen(disclosureGroup, state, persistenceKey, false),
           },
-          {
-            ...renderOptions,
-            hideProgramFocusTitle: true,
-            boardWrapperClass: "",
-          },
-        );
+        {
+          ...renderOptions,
+          hideProgramFocusTitle: true,
+          hideProgramFocusPanel: true,
+          boardWrapperClass: "",
+          sectionClassName: "execution-wave-section-flat",
+        },
+      );
       };
 
       if (entries.length > 1) {
@@ -222,7 +224,9 @@
         },
         {
           ...renderOptions,
+          hideProgramFocusPanel: true,
           boardWrapperClass: "",
+          sectionClassName: "execution-wave-section-flat",
         },
       );
       bindCompassDisclosurePersistence(target, disclosureGroup, state);

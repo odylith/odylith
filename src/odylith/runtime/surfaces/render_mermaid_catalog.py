@@ -795,19 +795,10 @@ def _merge_related_workstreams_from_traceability(
     return by_diagram
 
 
-def _meaningful_active_diagram_touches(
+def _delivery_workstream_rows(
     *,
     delivery_intelligence: Mapping[str, Any],
-) -> dict[str, set[str]]:
-    """Return workstreams with recent meaningful evidence for each diagram.
-
-    Atlas needs a narrower notion of "active touches" than the broad
-    traceability graph. We only surface workstreams here when the delivery
-    intelligence slice says the scope both links to the diagram and still has
-    meaningful recent evidence worth operator attention.
-    """
-
-    by_diagram: dict[str, set[str]] = {}
+) -> list[tuple[str, Mapping[str, Any]]]:
     workstreams = (
         delivery_intelligence.get("workstreams", [])
         if isinstance(delivery_intelligence.get("workstreams"), list)
@@ -822,8 +813,23 @@ def _meaningful_active_diagram_touches(
         for snapshot in workstreams:
             if isinstance(snapshot, Mapping):
                 rows.append((str(snapshot.get("scope_id", "")), snapshot))
+    return rows
 
-    for raw_scope_id, snapshot in rows:
+
+def _meaningful_active_diagram_touches(
+    *,
+    delivery_intelligence: Mapping[str, Any],
+) -> dict[str, set[str]]:
+    """Return workstreams with recent meaningful evidence for each diagram.
+
+    Atlas needs a narrower notion of "active touches" than the broad
+    traceability graph. We only surface workstreams here when the delivery
+    intelligence slice says the scope both links to the diagram and still has
+    meaningful recent evidence worth operator attention.
+    """
+
+    by_diagram: dict[str, set[str]] = {}
+    for raw_scope_id, snapshot in _delivery_workstream_rows(delivery_intelligence=delivery_intelligence):
         workstream_id = _normalize_workstream_id(raw_scope_id) or _normalize_workstream_id(
             str(snapshot.get("scope_id", ""))
         )
@@ -908,27 +914,11 @@ def _workstream_title_entries(
             return
         lookup[normalized_id] = text
 
-    workstreams = (
-        delivery_intelligence.get("workstreams", [])
-        if isinstance(delivery_intelligence.get("workstreams"), list)
-        else delivery_intelligence.get("workstreams", {})
-    )
-    if isinstance(workstreams, Mapping):
-        for raw_scope_id, snapshot in workstreams.items():
-            if not isinstance(snapshot, Mapping):
-                continue
-            remember(
-                workstream_id=str(raw_scope_id or snapshot.get("scope_id", "")),
-                title=str(snapshot.get("scope_label") or snapshot.get("title") or snapshot.get("label") or ""),
-            )
-    elif isinstance(workstreams, list):
-        for snapshot in workstreams:
-            if not isinstance(snapshot, Mapping):
-                continue
-            remember(
-                workstream_id=str(snapshot.get("scope_id", "")),
-                title=str(snapshot.get("scope_label") or snapshot.get("title") or snapshot.get("label") or ""),
-            )
+    for raw_scope_id, snapshot in _delivery_workstream_rows(delivery_intelligence=delivery_intelligence):
+        remember(
+            workstream_id=str(raw_scope_id or snapshot.get("scope_id", "")),
+            title=str(snapshot.get("scope_label") or snapshot.get("title") or snapshot.get("label") or ""),
+        )
 
     backlog_metadata_cache: dict[str, dict[str, str]] = {}
     for diagram in diagrams:

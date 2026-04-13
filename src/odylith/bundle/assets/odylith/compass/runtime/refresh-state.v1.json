@@ -1,0 +1,80 @@
+{
+  "completed_utc": "2026-04-13T01:57:32.637Z",
+  "current_stage": "complete",
+  "current_stage_detail": "Compass refresh complete at /Users/freedom/code/odylith/odylith/compass/compass.html",
+  "next_command": "",
+  "pid": 0,
+  "rc": 0,
+  "request_id": "compass-1a00e4e3594a",
+  "requested_profile": "shell-safe",
+  "requested_runtime_mode": "auto",
+  "requested_utc": "2026-04-13T01:57:31.118Z",
+  "resolved_runtime_mode": "standalone",
+  "schema_version": "odylith_compass_refresh_state.v1",
+  "stage_timings": {
+    "activity_events_collected": {
+      "completed_utc": "2026-04-13T01:57:32.003Z",
+      "detail": "collected 41 commits, 36 local changes, and 221 timeline events",
+      "elapsed_ms": 129.0,
+      "started_utc": "2026-04-13T01:57:31.874Z"
+    },
+    "complete": {
+      "completed_utc": "2026-04-13T01:57:32.637Z",
+      "detail": "Compass refresh complete at /Users/freedom/code/odylith/odylith/compass/compass.html",
+      "elapsed_ms": 1.0,
+      "started_utc": "2026-04-13T01:57:32.636Z"
+    },
+    "execution_projection_built": {
+      "completed_utc": "2026-04-13T01:57:32.035Z",
+      "detail": "projected 93 workstreams, 93 current rows, 89 transactions, and 12 next actions",
+      "elapsed_ms": 32.0,
+      "started_utc": "2026-04-13T01:57:32.003Z"
+    },
+    "input_resolution": {
+      "completed_utc": "2026-04-13T01:57:31.466Z",
+      "detail": "refresh_profile=shell-safe, runtime_mode=standalone",
+      "elapsed_ms": 347.0,
+      "started_utc": "2026-04-13T01:57:31.119Z"
+    },
+    "projection_inputs_loaded": {
+      "completed_utc": "2026-04-13T01:57:31.874Z",
+      "detail": "loaded 93 workstreams, 23 active plans, 1 bugs, and 36 diagrams",
+      "elapsed_ms": 408.0,
+      "started_utc": "2026-04-13T01:57:31.466Z"
+    },
+    "runtime_payload_built": {
+      "completed_utc": "2026-04-13T01:57:32.561Z",
+      "detail": "built a fresh Compass runtime payload",
+      "elapsed_ms": 276.0,
+      "started_utc": "2026-04-13T01:57:32.285Z"
+    },
+    "runtime_snapshots_written": {
+      "completed_utc": "2026-04-13T01:57:32.635Z",
+      "detail": "wrote the current runtime snapshot and history files",
+      "elapsed_ms": 74.0,
+      "started_utc": "2026-04-13T01:57:32.561Z"
+    },
+    "shell_bundle_written": {
+      "completed_utc": "2026-04-13T01:57:32.636Z",
+      "detail": "wrote the Compass shell bundle to /Users/freedom/code/odylith/odylith/compass/compass.html",
+      "elapsed_ms": 1.0,
+      "started_utc": "2026-04-13T01:57:32.635Z"
+    },
+    "standup_briefs_built": {
+      "completed_utc": "2026-04-13T01:57:32.154Z",
+      "detail": "48h: global unavailable, scoped cache=2, inactive=91",
+      "elapsed_ms": 55.0,
+      "started_utc": "2026-04-13T01:57:32.099Z"
+    },
+    "window_facts_prepared": {
+      "completed_utc": "2026-04-13T01:57:32.099Z",
+      "detail": "48h: 49 active scopes, 35 verified scoped, 35 promoted, 131 events, 82 transactions, 17 recent completions",
+      "elapsed_ms": 64.0,
+      "started_utc": "2026-04-13T01:57:32.035Z"
+    }
+  },
+  "started_utc": "2026-04-13T01:57:31.119Z",
+  "status": "passed",
+  "terminal_detail": "",
+  "terminal_reason": ""
+}

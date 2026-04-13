@@ -228,6 +228,12 @@
     let liveBriefWarmPollTimer = null;
     const LIVE_BRIEF_WARM_POLL_INTERVAL_MS = 1500;
     const LIVE_BRIEF_WARM_POLL_MAX_ATTEMPTS = 8;
+    const LIVE_BRIEF_WARM_POLL_RETRY_REASONS = new Set([
+      "provider_deferred",
+      "rate_limited",
+      "timeout",
+      "transport_error",
+    ]);
 
     function clearLiveBriefWarmPoll() {
       if (!liveBriefWarmPollTimer) return;
@@ -242,27 +248,15 @@
       if (String(safeBrief.status || "").trim() !== "ready") {
         const diagnostics = safeBrief.diagnostics && typeof safeBrief.diagnostics === "object" ? safeBrief.diagnostics : {};
         const reason = String(diagnostics.reason || "").trim().toLowerCase();
-        return [
-          "provider_deferred",
-          "rate_limited",
-          "credits_exhausted",
-          "timeout",
-          "provider_unavailable",
-          "transport_error",
-          "auth_error",
-          "provider_error",
-          "invalid_batch",
-        ].includes(reason);
+        return LIVE_BRIEF_WARM_POLL_RETRY_REASONS.has(reason);
       }
       const notice = safeBrief.notice && typeof safeBrief.notice === "object" ? safeBrief.notice : {};
-      return String(notice.reason || "").trim().toLowerCase().endsWith("_showing_global");
+      const noticeReason = String(notice.reason || "").trim().toLowerCase();
+      return noticeReason === "scoped_provider_deferred_showing_global"
+        || noticeReason === "scoped_provider_deferred_showing_wider_global";
     }
 
-    async function renderCompassRuntime(rawState, runtime) {
-      if (!runtime.payload) {
-        showFallback("Compass runtime files were not found. Run `odylith sync --repo-root . --force`.");
-        return { brief: null, state: rawState };
-      }
+    async function resolveCompassRuntimeView(rawState, runtime) {
       let payload = runtime.payload;
       let normalized = normalizeStateWithPayload(rawState, payload);
       payload = await augmentLiveHistoryIntoPayload(payload, normalized.state);
@@ -270,6 +264,25 @@
       const state = normalized.state;
       const summaryState = stateForSummary(state);
       const summaryEvents = filterEventsByWindow(payload, summaryState);
+      return { payload, normalized, state, summaryState, summaryEvents };
+    }
+
+    async function renderCompassWarmBriefOnly(rawState, runtime) {
+      if (!runtime.payload) {
+        return { brief: null, state: rawState };
+      }
+      const resolved = await resolveCompassRuntimeView(rawState, runtime);
+      renderDigest(resolved.payload, resolved.summaryState, resolved.summaryEvents);
+      return { brief: CURRENT_STANDUP_BRIEF, state: resolved.state };
+    }
+
+    async function renderCompassRuntime(rawState, runtime) {
+      if (!runtime.payload) {
+        showFallback("Compass runtime files were not found. Run `odylith sync --repo-root . --force`.");
+        return { brief: null, state: rawState };
+      }
+      const resolved = await resolveCompassRuntimeView(rawState, runtime);
+      const { payload, normalized, state, summaryState, summaryEvents } = resolved;
       const summaryTransactions = filterTransactionsByWindow(payload, summaryState);
       const timelineEvents = filterEventsByWindow(payload, state);
       const timelineTransactions = filterTransactionsByWindow(payload, state);
@@ -314,7 +327,7 @@
         const nextRawState = params();
         const runtime = await loadRuntime(nextRawState);
         if (!runtime.payload) return;
-        const rerendered = await renderCompassRuntime(nextRawState, runtime);
+        const rerendered = await renderCompassWarmBriefOnly(nextRawState, runtime);
         if (!shouldPollForWarmBrief(rerendered.brief, rerendered.state)) return;
         scheduleLiveBriefWarmPoll(nextRawState, rerendered, attempt + 1);
       }, LIVE_BRIEF_WARM_POLL_INTERVAL_MS);

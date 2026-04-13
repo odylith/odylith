@@ -37,21 +37,22 @@
     {
       "artifacts": [
         "docs/benchmarks/FAMILIES_AND_EVALS.md",
-        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+        "docs/benchmarks/README.md",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
         "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
         "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
       ],
       "confidence": "high",
-      "event_index": 97,
+      "event_index": 113,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "benchmark"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/FAMILIES_AND_EVALS.md, docs/benchmarks/METRICS_AND_PRIORITIES.md +3 more",
-      "ts_iso": "2026-04-12T15:52:28-07:00",
+      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/FAMILIES_AND_EVALS.md, docs/benchmarks/README.md +4 more",
+      "ts_iso": "2026-04-12T20:33:52-07:00",
       "workstreams": []
     },
     {
@@ -348,6 +349,7 @@
     "B-070",
     "B-069",
     "B-083",
+    "B-093",
     "B-092"
   ]
 }

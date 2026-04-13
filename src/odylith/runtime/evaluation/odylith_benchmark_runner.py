@@ -2868,7 +2868,7 @@ def _architecture_result(
             "expectation_ok": False,
             "expectation_details": {
                 "baseline_mode": "repo_scan_only",
-                "note": "Raw repo scan baseline does not produce an architecture dossier; compare Odylith dossier quality against this grounding-only baseline.",
+                "note": "Raw repo scan baseline does not produce an architecture dossier; compare Odylith dossier quality against this repo-scan-only control.",
             },
             "required_path_recall": required_path_recall,
             "required_path_misses": required_path_misses,
@@ -3805,6 +3805,7 @@ def _prepare_live_scenario_request(
             mode=normalized_mode,
             existing_paths=existing_paths,
         )
+        payload = _apply_packet_fixture(payload=payload, scenario=scenario, packet_source=packet_source)
         prompt_keys = set(_PROMPT_PAYLOAD_KEYS)
         if not isinstance(payload.get("narrowing_guidance"), Mapping):
             prompt_keys.discard("narrowing_guidance")
@@ -3824,6 +3825,11 @@ def _prepare_live_scenario_request(
         "benchmark_profile": _normalize_benchmark_profile(benchmark_profile),
         "packet_source": packet_source,
         "prompt_payload": prompt_payload,
+        "packet_summary": (
+            store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+            if normalized_mode == _ODYLITH_ON_MODE
+            else {}
+        ),
     }
 
 
@@ -3838,6 +3844,9 @@ def _run_prepared_live_scenario(prepared_request: Mapping[str, Any]) -> dict[str
         packet_source=str(prepared_request.get("packet_source", "")).strip() or "raw_codex_cli",
         prompt_payload=dict(prepared_request.get("prompt_payload", {}))
         if isinstance(prepared_request.get("prompt_payload"), Mapping)
+        else {},
+        packet_summary=dict(prepared_request.get("packet_summary", {}))
+        if isinstance(prepared_request.get("packet_summary"), Mapping)
         else {},
         snapshot_paths=[
             str(token).strip()
@@ -7025,8 +7034,17 @@ def run_benchmarks(
         else DIAGNOSTIC_COMPARISON_CONTRACT
     )
     total_results = len(scenarios) * len(normalized_modes) * len(normalized_cache_profiles)
-    with odylith_context_cache.advisory_lock(repo_root=root, key=_BENCHMARK_LOCK_KEY):
-        startup_hygiene = _cleanup_stale_benchmark_state(repo_root=root, clear_progress=True)
+    sharded_run = normalized_shard_count > 1
+    lock_key = (
+        f"{_BENCHMARK_LOCK_KEY}:{normalized_profile}:{normalized_shard_index}-of-{normalized_shard_count}"
+        if sharded_run
+        else _BENCHMARK_LOCK_KEY
+    )
+    with odylith_context_cache.advisory_lock(repo_root=root, key=lock_key):
+        startup_hygiene = _cleanup_stale_benchmark_state(
+            repo_root=root,
+            clear_progress=not sharded_run,
+        )
         progress_payload: dict[str, Any] = {
             "contract": PROGRESS_CONTRACT,
             "version": PROGRESS_VERSION,
@@ -7072,7 +7090,8 @@ def run_benchmarks(
                 "cache_profiles": list(normalized_cache_profiles),
             },
         }
-        _write_progress(repo_root=root, payload=progress_payload)
+        if not sharded_run:
+            _write_progress(repo_root=root, payload=progress_payload)
         try:
             cache_profile_reports: dict[str, list[dict[str, Any]]] = {}
             cache_profile_mode_rows: dict[str, dict[str, list[dict[str, Any]]]] = {}
@@ -7120,7 +7139,8 @@ def run_benchmarks(
                                 "completed_results": completed_results,
                             }
                         )
-                        _write_progress(repo_root=root, payload=progress_payload)
+                        if not sharded_run:
+                            _write_progress(repo_root=root, payload=progress_payload)
                         normalized_mode = _normalize_mode(mode)
                         if normalized_mode in live_batch_modes:
                             if not live_batch_executed:
@@ -7171,7 +7191,8 @@ def run_benchmarks(
                             "completed_results": completed_results,
                         }
                     )
-                    _write_progress(repo_root=root, payload=progress_payload)
+                    if not sharded_run:
+                        _write_progress(repo_root=root, payload=progress_payload)
                 cache_profile_reports[cache_profile] = scenario_reports
                 cache_profile_mode_rows[cache_profile] = mode_rows
             progress_payload.update(
@@ -7186,7 +7207,8 @@ def run_benchmarks(
                     "completed_results": completed_results,
                 }
             )
-            _write_progress(repo_root=root, payload=progress_payload)
+            if not sharded_run:
+                _write_progress(repo_root=root, payload=progress_payload)
             latency_probes = _singleton_family_latency_probes(
                 repo_root=root,
                 scenarios=scenarios,
@@ -7534,21 +7556,24 @@ def run_benchmarks(
                         "phase": "persisting_report",
                     }
                 )
-                _write_progress(repo_root=root, payload=progress_payload)
+                if not sharded_run:
+                    _write_progress(repo_root=root, payload=progress_payload)
                 latest_path = latest_report_path(repo_root=root)
                 profile_latest_path = latest_report_path(
                     repo_root=root,
                     benchmark_profile=normalized_profile,
                 )
-                publish_latest = bool(report.get("latest_eligible")) or (
-                    not latest_path.exists() and normalized_cache_profiles == list(DEFAULT_CACHE_PROFILES)
+                publish_latest = not sharded_run and (
+                    bool(report.get("latest_eligible"))
+                    or (not latest_path.exists() and normalized_cache_profiles == list(DEFAULT_CACHE_PROFILES))
                 )
-                odylith_context_cache.write_json_if_changed(
-                    repo_root=root,
-                    path=profile_latest_path,
-                    payload=report,
-                    lock_key=str(profile_latest_path),
-                )
+                if not sharded_run:
+                    odylith_context_cache.write_json_if_changed(
+                        repo_root=root,
+                        path=profile_latest_path,
+                        payload=report,
+                        lock_key=str(profile_latest_path),
+                    )
                 if publish_latest:
                     odylith_context_cache.write_json_if_changed(
                         repo_root=root,
@@ -7568,8 +7593,9 @@ def run_benchmarks(
                     "phase": "final_cleanup",
                 }
             )
-            _write_progress(repo_root=root, payload=progress_payload)
-            _clear_progress(repo_root=root)
+            if not sharded_run:
+                _write_progress(repo_root=root, payload=progress_payload)
+                _clear_progress(repo_root=root)
             return report
         except Exception as exc:
             progress_payload.update(
@@ -7579,10 +7605,14 @@ def run_benchmarks(
                     "error": f"{type(exc).__name__}: {exc}",
                 }
             )
-            _write_progress(repo_root=root, payload=progress_payload)
+            if not sharded_run:
+                _write_progress(repo_root=root, payload=progress_payload)
             raise
         finally:
-            _cleanup_stale_benchmark_state(repo_root=root, clear_progress=False)
+            _cleanup_stale_benchmark_state(
+                repo_root=root,
+                clear_progress=not sharded_run,
+            )
 
 
 __all__ = [

@@ -885,17 +885,23 @@ def _assert_compass_programs_do_not_render_nested_inner_card_chrome(  # noqa: AN
             const summary = node.querySelector("summary");
             const summaryStyle = summary ? window.getComputedStyle(summary) : null;
             return {
+              flatClass: node.classList.contains("execution-wave-section-flat"),
               borderTopWidth: sectionStyle.borderTopWidth,
               backgroundImage: sectionStyle.backgroundImage,
+              borderRadius: sectionStyle.borderRadius,
               summaryPaddingLeft: summaryStyle ? summaryStyle.paddingLeft : "",
               summaryPaddingRight: summaryStyle ? summaryStyle.paddingRight : "",
             };
         }"""
     )
 
+    assert style["flatClass"] is True
     assert style["borderTopWidth"] == "0px"
+    assert style["backgroundImage"] == "none"
+    assert style["borderRadius"] == "0px"
     assert style["summaryPaddingLeft"] == "0px"
     assert style["summaryPaddingRight"] == "0px"
+    assert section.locator(".execution-wave-focus").count() == 0
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -908,7 +914,7 @@ def test_compass_programs_do_not_render_nested_inner_card_chrome_in_compact_brow
     _assert_compass_programs_do_not_render_nested_inner_card_chrome(*compact_browser_context)
 
 
-def _assert_compass_program_box_highlights_active_inner_wave(  # noqa: ANN001
+def _assert_compass_program_box_does_not_highlight_active_inner_wave(  # noqa: ANN001
     base_url: str,
     context,
 ) -> None:
@@ -942,18 +948,18 @@ def _assert_compass_program_box_highlights_active_inner_wave(  # noqa: ANN001
     )
 
     assert style["openWaveCount"] >= 1
-    assert style["boxShadow"] != "none"
-    assert style["backgroundImage"] != "none"
+    assert style["boxShadow"] == "none"
+    assert style["backgroundImage"] == "none"
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_compass_program_box_highlights_active_inner_wave_in_browser(browser_context) -> None:  # noqa: ANN001
-    _assert_compass_program_box_highlights_active_inner_wave(*browser_context)
+def test_compass_program_box_does_not_highlight_active_inner_wave_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_program_box_does_not_highlight_active_inner_wave(*browser_context)
 
 
-def test_compass_program_box_highlights_active_inner_wave_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
-    _assert_compass_program_box_highlights_active_inner_wave(*compact_browser_context)
+def test_compass_program_box_does_not_highlight_active_inner_wave_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_program_box_does_not_highlight_active_inner_wave(*compact_browser_context)
 
 
 def _assert_compass_program_focus_does_not_repeat_outer_program_chip(  # noqa: ANN001

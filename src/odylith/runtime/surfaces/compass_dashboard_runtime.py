@@ -2204,13 +2204,21 @@ def _build_global_standup_fact_packet(
 def _select_current_workstream_rows(
     *,
     all_rows: Sequence[Mapping[str, Any]],
-    window_events_48h: Sequence[Mapping[str, Any]],
-    recent_completed_rows_48h: Sequence[Mapping[str, str]],
+    window_events: Sequence[Mapping[str, Any]] | None = None,
+    recent_completed_rows: Sequence[Mapping[str, str]] | None = None,
+    window_events_48h: Sequence[Mapping[str, Any]] | None = None,
+    recent_completed_rows_48h: Sequence[Mapping[str, str]] | None = None,
 ) -> list[dict[str, Any]]:
+    selected_window_events = list(window_events) if window_events is not None else list(window_events_48h or [])
+    selected_recent_completed = (
+        list(recent_completed_rows)
+        if recent_completed_rows is not None
+        else list(recent_completed_rows_48h or [])
+    )
     return compass_current_workstreams_runtime.select_current_workstream_rows(
         all_rows=all_rows,
-        window_events_48h=window_events_48h,
-        recent_completed_rows_48h=recent_completed_rows_48h,
+        window_events=selected_window_events,
+        recent_completed_rows=selected_recent_completed,
     )
 
 

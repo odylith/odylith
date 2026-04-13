@@ -15,13 +15,14 @@ The source of truth is
 - Required real-world families now present in tracked source truth:
   `api_contract_evolution`, `stateful_bug_recovery`,
   `external_dependency_recovery`, and `destructive_scope_control`
-- Latest published proof snapshot:
-  report `52aa3f76538cf12f`, status `provisional_pass`, `37` scenarios
-- Latest published diagnostic snapshot:
-  report `74cbe36427f2c375`, status `hold`, `37` scenarios
+- Current published proof snapshot:
+  read [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
+- Current published diagnostic snapshot:
+  read [Current Internal Diagnostic Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
 - Publication note:
-  those published reports are now behind the tracked corpus and must be
-  rerun before release-safe publication claims are refreshed
+  publication claims are only current when the selected report, generated
+  snapshot docs, tables, graphs, and supporting governance truth are refreshed
+  together from the same validated tree
 
 ## Developer-Priority Order
 

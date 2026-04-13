@@ -3,8 +3,10 @@
 This module executes the same benchmark task through the same Codex CLI in a
 disposable git worktree for both public comparison lanes:
 
-- ``odylith_on``: the task prompt plus Odylith grounding scaffold
-- ``odylith_off`` / ``raw_agent_baseline``: the task prompt only
+- ``odylith_on``: the task prompt plus the declared full-product Odylith
+  assistance stack
+- ``odylith_off`` / ``raw_agent_baseline``: the same host CLI with Odylith
+  assistance disabled
 
 The runner neutralizes repo-local guidance in two places:
 
@@ -1332,6 +1334,7 @@ def run_live_scenario(
     mode: str,
     packet_source: str,
     prompt_payload: Mapping[str, Any] | None = None,
+    packet_summary: Mapping[str, Any] | None = None,
     snapshot_paths: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     normalized_mode = _normalize_mode(mode)
@@ -1688,6 +1691,22 @@ def run_live_scenario(
                 "workspace_state_post_codex": workspace_state_post_codex,
                 "workspace_state_pre_validator": workspace_state_pre_validator,
             }
+        packet = (
+            {
+                str(key).strip(): value
+                for key, value in packet_summary.items()
+                if str(key).strip()
+            }
+            if isinstance(packet_summary, Mapping)
+            else {}
+        )
+        packet.update(
+            {
+                "within_budget": within_budget,
+                "route_ready": expectation_ok,
+                "live_status": status,
+            }
+        )
         return {
             "kind": str(scenario.get("kind", "")).strip() or "packet",
             "mode": normalized_mode,
@@ -1696,11 +1715,7 @@ def run_live_scenario(
             "latency_ms": total_latency_ms,
             "instrumented_reasoning_duration_ms": agent_duration_ms,
             "uninstrumented_overhead_ms": float(validator_result.get("duration_ms", 0.0) or 0.0),
-            "packet": {
-                "within_budget": within_budget,
-                "route_ready": expectation_ok,
-                "live_status": status,
-            },
+            "packet": packet,
             "expectation_ok": expectation_ok,
             "expectation_details": {
                 "live_runner": True,

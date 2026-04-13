@@ -80,8 +80,8 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "120bd8a915f7d1d55a9ebd335c9395ecb072b72ecadd5d404b7dde65604adb48",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "d48218fced4fc62fe34602e025419adb9a43955a669a753feaf9392e995f33ee",
-        "odylith/radar/source/INDEX.md": "c064268249e955ef9f574707aa69b9b11f915cbc9085d228c3b33e4ccf91975b",
-        "odylith/technical-plans/INDEX.md": "b14ff1540a7f4cbdbfd401a2611c7f811a214a3008d18ce0fa083467851d0497"
+        "odylith/radar/source/INDEX.md": "583b388b8dbd304424661d9740a4cbe2417897ac6bb511c220fba70075bb54eb",
+        "odylith/technical-plans/INDEX.md": "260d141e25066e95c913d460ac386b4bec933324605b8e1bd04ae7feeea950db"
       }
     },
     {
@@ -207,7 +207,7 @@
       ],
       "reviewed_watch_fingerprints": {
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8ce5d10e1e16ff2768093b72714e381684a3559bf5f24aa9bcfbe6e94119700b",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "c646fac2d3c8c7771b1249185e46a47466a40ec34c1acdee0c5e1618c962cdf4",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "7b668ed23d0693240afa0751629cc706db4e3bbdb9c372614fd37df68031bb32",
         "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py": "4f3e210f4f3b46b07deb7ecbac33f9e3df15d779b412a0dc4ea915bd9a7447dc",
         "src/odylith/runtime/context_engine/odylith_context_engine_projection_backlog_runtime.py": "f6673e30f248fc090a69c472d1d235fb5befdfa763bd44608883c2749dcd679b",
         "src/odylith/runtime/context_engine/odylith_context_engine_projection_registry_runtime.py": "31726804bffc37c6b0d97f897aacf3c4ef7fdeac075f83efa69bf59ead432061",
@@ -217,7 +217,7 @@
         "src/odylith/runtime/memory/odylith_remote_retrieval.py": "13146732679f783425cb0e85f0ae7c21a11538f29a5de15e8d7813e0df2b8638",
         "src/odylith/runtime/memory/tooling_memory_contracts.py": "036a5dd04346bf34ee675dda7a255a06e31987c3794cde416771c15cbe7b43be",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "e72c75b6b33cc62228b585bf5cd20e1d9b821b4a92a8a58b0b75e363af072d63",
-        "src/odylith/runtime/execution_engine": "c71ee3550bcec804250abe67c2fc48e8c4c01d01300658327dfa336fe7da6ae5",
+        "src/odylith/runtime/execution_engine": "720b354d04ae5d7d346b9457ecb55f7dc1fd000d1b1cfabe2005de401329223a",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "ae4cca2563f657b1fe49854c2b83b49d06226c417fed4af380e20346c717b970",
         "src/odylith/runtime/orchestration/subagent_router.py": "40076ddd54c414b88f7255a22061cc1ddeb8ad8bc702b93a8804f6558b672321",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py": "8a72429103f4cebfffcd92694b532353832cc5d718b44d8725225d5b2407f062",
@@ -405,17 +405,17 @@
         "src/odylith/runtime/governance/component_registry_intelligence.py": "dac4989e391a6dffe605552f2a434d5f3e269fe064ac4fb3707c148d73c8455d",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "e72c75b6b33cc62228b585bf5cd20e1d9b821b4a92a8a58b0b75e363af072d63",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8ce5d10e1e16ff2768093b72714e381684a3559bf5f24aa9bcfbe6e94119700b",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "c646fac2d3c8c7771b1249185e46a47466a40ec34c1acdee0c5e1618c962cdf4",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "7b668ed23d0693240afa0751629cc706db4e3bbdb9c372614fd37df68031bb32",
         "src/odylith/runtime/governance/operator_readout.py": "290f73bebc132e23c7fc6c4bc837a4b1935d18ee5780d16dfa06c43ecc03f5b8",
         "src/odylith/runtime/reasoning/remediator.py": "97493f5319c6562b60fe57d24535220a9927b1ec53eda957528112fc73969719",
         "src/odylith/runtime/reasoning/odylith_reasoning.py": "f9c2c91aff3c2a9f4f17a7c0b8d884bd6327a7da9868cc1ccd61c49536e1f97c",
         "src/odylith/runtime/surfaces/render_casebook_dashboard.py": "92d956788cdf17438b93997183d99e642b181819b96df5733554d883661490ae",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "8cc670a492eb8267531e912970980cf96187ccfd8526d911969f895ecb2f2c27",
         "src/odylith/runtime/surfaces/render_backlog_ui.py": "d88da545e2cda8a20e24571d188a6be4c55e16a0c8204e9fa03bba27178376db",
-        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "56ccd541886572e2c079ddacce60dbe84fceafd42c858debe88586e920fa6aef",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "2610982bcb60069bce324db77a09eaa1ca406a706c6368dfb20c54e2186439c3",
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py": "0e170f9a3e3aca48c7c865c3d3affb19774903a2cecd30a46edbd715786d085d",
-        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "a30807bfc5e55fbc339cc03094cf5cb699af5521f274bcc774e0db52b3f691e1",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "e25cd69ca8c6de9d2c67f6448046d80ac83b1b4356c1c7cab92df8bc1480e45e",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "ed88fda8c18a680ec177a45aef3d6a2f9eb8b37a88280eadc5f6d7975ac32660",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "bbff878143efd2aa92a8b526805e9a18f013601e4720598ed2a6991c4dc27e89",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "ae4cca2563f657b1fe49854c2b83b49d06226c417fed4af380e20346c717b970"
       }
     },
@@ -509,12 +509,12 @@
         "src/odylith/runtime/governance/operator_readout.py": "290f73bebc132e23c7fc6c4bc837a4b1935d18ee5780d16dfa06c43ecc03f5b8",
         "src/odylith/runtime/reasoning/remediator.py": "97493f5319c6562b60fe57d24535220a9927b1ec53eda957528112fc73969719",
         "src/odylith/runtime/reasoning/odylith_reasoning.py": "f9c2c91aff3c2a9f4f17a7c0b8d884bd6327a7da9868cc1ccd61c49536e1f97c",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "e25cd69ca8c6de9d2c67f6448046d80ac83b1b4356c1c7cab92df8bc1480e45e",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "bbff878143efd2aa92a8b526805e9a18f013601e4720598ed2a6991c4dc27e89",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8ce5d10e1e16ff2768093b72714e381684a3559bf5f24aa9bcfbe6e94119700b",
         "src/odylith/runtime/governance/agent_governance_intelligence.py": "8b9e7881c10e8090d5e7497d05db523c33c66ce6986d9539790322de15d91506",
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py": "0e170f9a3e3aca48c7c865c3d3affb19774903a2cecd30a46edbd715786d085d",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "8cc670a492eb8267531e912970980cf96187ccfd8526d911969f895ecb2f2c27",
-        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "56ccd541886572e2c079ddacce60dbe84fceafd42c858debe88586e920fa6aef",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "2610982bcb60069bce324db77a09eaa1ca406a706c6368dfb20c54e2186439c3",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "ae4cca2563f657b1fe49854c2b83b49d06226c417fed4af380e20346c717b970"
       }
     },
@@ -612,14 +612,14 @@
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "e72c75b6b33cc62228b585bf5cd20e1d9b821b4a92a8a58b0b75e363af072d63",
         "src/odylith/runtime/reasoning/remediator.py": "97493f5319c6562b60fe57d24535220a9927b1ec53eda957528112fc73969719",
         "src/odylith/runtime/reasoning/odylith_reasoning.py": "f9c2c91aff3c2a9f4f17a7c0b8d884bd6327a7da9868cc1ccd61c49536e1f97c",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "e25cd69ca8c6de9d2c67f6448046d80ac83b1b4356c1c7cab92df8bc1480e45e",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "bbff878143efd2aa92a8b526805e9a18f013601e4720598ed2a6991c4dc27e89",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "ae4cca2563f657b1fe49854c2b83b49d06226c417fed4af380e20346c717b970",
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py": "0e170f9a3e3aca48c7c865c3d3affb19774903a2cecd30a46edbd715786d085d",
         "src/odylith/runtime/surfaces/render_backlog_ui.py": "d88da545e2cda8a20e24571d188a6be4c55e16a0c8204e9fa03bba27178376db",
         "src/odylith/runtime/surfaces/render_casebook_dashboard.py": "92d956788cdf17438b93997183d99e642b181819b96df5733554d883661490ae",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "8cc670a492eb8267531e912970980cf96187ccfd8526d911969f895ecb2f2c27",
-        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "a30807bfc5e55fbc339cc03094cf5cb699af5521f274bcc774e0db52b3f691e1",
-        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "56ccd541886572e2c079ddacce60dbe84fceafd42c858debe88586e920fa6aef"
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "ed88fda8c18a680ec177a45aef3d6a2f9eb8b37a88280eadc5f6d7975ac32660",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "2610982bcb60069bce324db77a09eaa1ca406a706c6368dfb20c54e2186439c3"
       }
     },
     {
@@ -700,7 +700,7 @@
         "src/odylith/runtime/reasoning/odylith_reasoning.py": "f9c2c91aff3c2a9f4f17a7c0b8d884bd6327a7da9868cc1ccd61c49536e1f97c",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "e72c75b6b33cc62228b585bf5cd20e1d9b821b4a92a8a58b0b75e363af072d63",
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py": "0e170f9a3e3aca48c7c865c3d3affb19774903a2cecd30a46edbd715786d085d",
-        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "a30807bfc5e55fbc339cc03094cf5cb699af5521f274bcc774e0db52b3f691e1"
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "ed88fda8c18a680ec177a45aef3d6a2f9eb8b37a88280eadc5f6d7975ac32660"
       }
     },
     {
@@ -782,7 +782,7 @@
         "odylith/runtime/odylith-tribunal-and-remediation-design.md": "ba937a1da845bb96fbe1c1e7a6cc831d035d8ca12013cf7ab9c798a4ef8e02b2",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "ae4cca2563f657b1fe49854c2b83b49d06226c417fed4af380e20346c717b970",
         "src/odylith/runtime/reasoning/remediator.py": "97493f5319c6562b60fe57d24535220a9927b1ec53eda957528112fc73969719",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "e25cd69ca8c6de9d2c67f6448046d80ac83b1b4356c1c7cab92df8bc1480e45e",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "bbff878143efd2aa92a8b526805e9a18f013601e4720598ed2a6991c4dc27e89",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "e72c75b6b33cc62228b585bf5cd20e1d9b821b4a92a8a58b0b75e363af072d63",
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py": "0e170f9a3e3aca48c7c865c3d3affb19774903a2cecd30a46edbd715786d085d"
       }
@@ -863,7 +863,7 @@
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "d48218fced4fc62fe34602e025419adb9a43955a669a753feaf9392e995f33ee",
         "odylith/registry/source/components/atlas/CURRENT_SPEC.md": "0e7dfdb691d49f842fbd234f31bd647f488640e9700b5075b86e80359d1758c3",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8ce5d10e1e16ff2768093b72714e381684a3559bf5f24aa9bcfbe6e94119700b",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "e25cd69ca8c6de9d2c67f6448046d80ac83b1b4356c1c7cab92df8bc1480e45e",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "bbff878143efd2aa92a8b526805e9a18f013601e4720598ed2a6991c4dc27e89",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "e72c75b6b33cc62228b585bf5cd20e1d9b821b4a92a8a58b0b75e363af072d63",
         "src/odylith/runtime/reasoning/odylith_reasoning.py": "f9c2c91aff3c2a9f4f17a7c0b8d884bd6327a7da9868cc1ccd61c49536e1f97c",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "ae4cca2563f657b1fe49854c2b83b49d06226c417fed4af380e20346c717b970",
@@ -946,7 +946,7 @@
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "e72c75b6b33cc62228b585bf5cd20e1d9b821b4a92a8a58b0b75e363af072d63",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "ae4cca2563f657b1fe49854c2b83b49d06226c417fed4af380e20346c717b970",
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py": "0e170f9a3e3aca48c7c865c3d3affb19774903a2cecd30a46edbd715786d085d",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "e25cd69ca8c6de9d2c67f6448046d80ac83b1b4356c1c7cab92df8bc1480e45e"
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "bbff878143efd2aa92a8b526805e9a18f013601e4720598ed2a6991c4dc27e89"
       }
     },
     {
@@ -1029,7 +1029,7 @@
         "src/odylith/runtime/reasoning/odylith_reasoning.py": "f9c2c91aff3c2a9f4f17a7c0b8d884bd6327a7da9868cc1ccd61c49536e1f97c",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "ae4cca2563f657b1fe49854c2b83b49d06226c417fed4af380e20346c717b970",
         "src/odylith/runtime/reasoning/remediator.py": "97493f5319c6562b60fe57d24535220a9927b1ec53eda957528112fc73969719",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "e25cd69ca8c6de9d2c67f6448046d80ac83b1b4356c1c7cab92df8bc1480e45e",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "bbff878143efd2aa92a8b526805e9a18f013601e4720598ed2a6991c4dc27e89",
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py": "0e170f9a3e3aca48c7c865c3d3affb19774903a2cecd30a46edbd715786d085d"
       }
     },
@@ -1625,14 +1625,14 @@
         "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md": "7869eafca706346993f035acc03409a6bc238c3bb934bf77b43d771f0cbca8a8",
         "odylith/registry/source/component_registry.v1.json": "120bd8a915f7d1d55a9ebd335c9395ecb072b72ecadd5d404b7dde65604adb48",
         "src/odylith/runtime/surfaces/render_backlog_ui.py": "d88da545e2cda8a20e24571d188a6be4c55e16a0c8204e9fa03bba27178376db",
-        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "a30807bfc5e55fbc339cc03094cf5cb699af5521f274bcc774e0db52b3f691e1",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "ed88fda8c18a680ec177a45aef3d6a2f9eb8b37a88280eadc5f6d7975ac32660",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "8cc670a492eb8267531e912970980cf96187ccfd8526d911969f895ecb2f2c27",
-        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "56ccd541886572e2c079ddacce60dbe84fceafd42c858debe88586e920fa6aef",
-        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "8820913ee27d4195e04538a17a3475485a43f52edff810ff57eab4296b99d540",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "2610982bcb60069bce324db77a09eaa1ca406a706c6368dfb20c54e2186439c3",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "da471f8467ee0d6ba6b8f3adc6e6e91e287f32dedf0576a74b2def9c60862e75",
         "src/odylith/runtime/surfaces/compass_dashboard_shell.py": "ce4bca5aaa2816eeee480861755e8f87b05983c56a5bcec4f1c3b86663d3f3ef",
         "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py": "b988abecc0430f9ce3059e4d97d1ec53c56c79de7f22e50ff3ac144a2ede2b57",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8ce5d10e1e16ff2768093b72714e381684a3559bf5f24aa9bcfbe6e94119700b",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "c646fac2d3c8c7771b1249185e46a47466a40ec34c1acdee0c5e1618c962cdf4",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "7b668ed23d0693240afa0751629cc706db4e3bbdb9c372614fd37df68031bb32",
         "src/odylith/runtime/memory/odylith_projection_bundle.py": "984732d1634b4555fb09cad9bd1997818db64600024c89d21893891e0ce486af",
         "src/odylith/runtime/memory/odylith_projection_snapshot.py": "b2ef0610a3f3c59acb6621846d5d422626d0407c97277686d9a799d41a4f0a6d",
         "src/odylith/runtime/memory/odylith_memory_backend.py": "87d939ee80c57b1671aa73b81c68551813b79ecab04ca3ae68863e32bb475942",
@@ -1745,14 +1745,14 @@
         "odylith/registry/source/components/registry/CURRENT_SPEC.md": "574a192d705e9878c027b5c19a3ce56dd9f8dfd666b1d7de36b2534dc6450400",
         "odylith/registry/source/component_registry.v1.json": "120bd8a915f7d1d55a9ebd335c9395ecb072b72ecadd5d404b7dde65604adb48",
         "src/odylith/runtime/surfaces/render_backlog_ui.py": "d88da545e2cda8a20e24571d188a6be4c55e16a0c8204e9fa03bba27178376db",
-        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "a30807bfc5e55fbc339cc03094cf5cb699af5521f274bcc774e0db52b3f691e1",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "ed88fda8c18a680ec177a45aef3d6a2f9eb8b37a88280eadc5f6d7975ac32660",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "8cc670a492eb8267531e912970980cf96187ccfd8526d911969f895ecb2f2c27",
-        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "56ccd541886572e2c079ddacce60dbe84fceafd42c858debe88586e920fa6aef",
-        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "8820913ee27d4195e04538a17a3475485a43f52edff810ff57eab4296b99d540",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "2610982bcb60069bce324db77a09eaa1ca406a706c6368dfb20c54e2186439c3",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "da471f8467ee0d6ba6b8f3adc6e6e91e287f32dedf0576a74b2def9c60862e75",
         "src/odylith/runtime/surfaces/compass_dashboard_shell.py": "ce4bca5aaa2816eeee480861755e8f87b05983c56a5bcec4f1c3b86663d3f3ef",
         "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py": "b988abecc0430f9ce3059e4d97d1ec53c56c79de7f22e50ff3ac144a2ede2b57",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8ce5d10e1e16ff2768093b72714e381684a3559bf5f24aa9bcfbe6e94119700b",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "c646fac2d3c8c7771b1249185e46a47466a40ec34c1acdee0c5e1618c962cdf4",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "7b668ed23d0693240afa0751629cc706db4e3bbdb9c372614fd37df68031bb32",
         "src/odylith/runtime/memory/odylith_memory_backend.py": "87d939ee80c57b1671aa73b81c68551813b79ecab04ca3ae68863e32bb475942",
         "src/odylith/runtime/memory/odylith_remote_retrieval.py": "13146732679f783425cb0e85f0ae7c21a11538f29a5de15e8d7813e0df2b8638"
       }
@@ -1950,13 +1950,13 @@
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py": "0e170f9a3e3aca48c7c865c3d3affb19774903a2cecd30a46edbd715786d085d",
         "src/odylith/runtime/surfaces/dashboard_surface_bundle.py": "164395c0e0c6f2eaa8a5b087b22cba92d0b579b8f5936212534c08be36ebcece",
         "src/odylith/runtime/surfaces/render_backlog_ui.py": "d88da545e2cda8a20e24571d188a6be4c55e16a0c8204e9fa03bba27178376db",
-        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "a30807bfc5e55fbc339cc03094cf5cb699af5521f274bcc774e0db52b3f691e1",
-        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "56ccd541886572e2c079ddacce60dbe84fceafd42c858debe88586e920fa6aef",
-        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "8820913ee27d4195e04538a17a3475485a43f52edff810ff57eab4296b99d540",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "ed88fda8c18a680ec177a45aef3d6a2f9eb8b37a88280eadc5f6d7975ac32660",
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py": "2610982bcb60069bce324db77a09eaa1ca406a706c6368dfb20c54e2186439c3",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "da471f8467ee0d6ba6b8f3adc6e6e91e287f32dedf0576a74b2def9c60862e75",
         "src/odylith/runtime/surfaces/compass_dashboard_shell.py": "ce4bca5aaa2816eeee480861755e8f87b05983c56a5bcec4f1c3b86663d3f3ef",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "8cc670a492eb8267531e912970980cf96187ccfd8526d911969f895ecb2f2c27",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8ce5d10e1e16ff2768093b72714e381684a3559bf5f24aa9bcfbe6e94119700b",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "c646fac2d3c8c7771b1249185e46a47466a40ec34c1acdee0c5e1618c962cdf4",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "7b668ed23d0693240afa0751629cc706db4e3bbdb9c372614fd37df68031bb32",
         "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py": "b988abecc0430f9ce3059e4d97d1ec53c56c79de7f22e50ff3ac144a2ede2b57",
         "src/odylith/runtime/memory/odylith_projection_bundle.py": "984732d1634b4555fb09cad9bd1997818db64600024c89d21893891e0ce486af",
         "src/odylith/runtime/memory/odylith_projection_snapshot.py": "b2ef0610a3f3c59acb6621846d5d422626d0407c97277686d9a799d41a4f0a6d",
@@ -2058,7 +2058,7 @@
         "src/odylith/cli.py": "f837292f1802d5c6124da3c54d32277a83be1dea461ea9e3c719c3959c8cc3e5",
         "src/odylith/runtime/governance/validate_self_host_posture.py": "f6cd337a472e23c8b3e300326610e12a329c4707f67c2da8ae0eda2ca94dfeb7",
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py": "0e170f9a3e3aca48c7c865c3d3affb19774903a2cecd30a46edbd715786d085d",
-        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "8820913ee27d4195e04538a17a3475485a43f52edff810ff57eab4296b99d540",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "da471f8467ee0d6ba6b8f3adc6e6e91e287f32dedf0576a74b2def9c60862e75",
         "src/odylith/runtime/surfaces/compass_dashboard_shell.py": "ce4bca5aaa2816eeee480861755e8f87b05983c56a5bcec4f1c3b86663d3f3ef",
         ".github/workflows/release.yml": "5f57d160c119782bd031fd5f427c0cdefcf25b17b0150d77942aa6139a8da207"
       }
@@ -2244,7 +2244,7 @@
       ],
       "render_source_fingerprint": "519f144358e8198a37b27910c784281a8df72cc630241878be31f2fa6f3b85f8",
       "reviewed_watch_fingerprints": {
-        "README.md": "4b6af902319b693cce584c4f55f93978ed0d1b3b43006162804ee49cb1ebfe5d",
+        "README.md": "2127d0d7f804eb0837a9566ad82d2f56535be5c920b8c875317110b5f8a301db",
         "odylith/INSTALL.md": "835268e9bdce67e4d91abfcca07ebb40d5dbac51a67adcd72d91783aa68c4861",
         "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md": "7afef7d868b56cb72a4d364f50729f423c89675795012589a2879b75ec18c0d1",
         "odylith/MAINTAINER_RELEASE_RUNBOOK.md": "dedb84dce1821940aea0769a6143a14d4e086c2e8c9bbeba9097bd667becbf94",
@@ -2345,9 +2345,9 @@
         "B-022",
         "B-038"
       ],
-      "render_source_fingerprint": "3e3334298a4bd7d19ce5dbb79f9e9b88e8654e0886dd83f32f10025be9c77e0d",
+      "render_source_fingerprint": "9d84bc417401166947770e2a17d8f78108ce956deb70766c3beb59f071e2bb62",
       "reviewed_watch_fingerprints": {
-        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md": "8b75ed7f58678322c9b4c07eb73e8efcb2ac3bd256e619569c23bdd8e8a2af20",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md": "8c615b9f53c5a88707f765f6fd9ff4618b2addaf7629ef5104f750930f2ede1e",
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md": "04d7318be2519093358f5939f9b77b2bac1cdeb07fede8e49e0b1a9ff0db3b92",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md": "ff0dfa85e11e8e60cf99199351e16c544a7e749e18273714c4bb3afcece9432b",
         "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md": "7cc825b53fefdf1fa2db49938862da91ac8eb2141f35619aa470c491549ad1b6",
@@ -2355,15 +2355,21 @@
         "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md": "0a59534a4363d58f87445f9265edf360641d12be832499ec5635c393dc292101",
         "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md": "60949dfbba815d20b031d5f11e43c332bb95c8cd96600006510ba80d4d2ca8e6",
         "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md": "958ec9194bd70118e9a3ec37f401a57f0712d61702ff48d48f80f062c4bf0b70",
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "cbe2f6342f184f5e4059bc82681a3a589e75cef7eed997602bdeb9e431c7d53c",
-        "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py": "ad3f486d4f2e69809e974c75869f82d6e9ce79bd31214c758a0bbc124a2ed605",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-execution-governance-benchmark-family-and-honest-ablation-proof.md": "e4686a62d39af11e63c74502b7d0be89db680e7d66955a9f01c8756fedcf95c8",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md": "9db465c5cdc33143b474a12eaebc1009e9fc74b32a5c12d2177ed69b323f02b7",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md": "049a1e88ce0f3ef4f4c3ea399771b203b9b38e66a710b6e05152ea1fb4588d1c",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md": "c06b1d0b65baa48e10d72d3ecdc6ae7d48e87350df198181aa1d93562c71ef40",
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "46dc4c35d603aea743c74f5448d6e2555763efbdd87a08052797902c852f0b65",
+        "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py": "5acdd5583e2387c29cb759e056cdfb0817cc16a72cb3ac6ffefed1bc1c6bf30f",
         "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py": "662c32dc53bd8556a33891908a894d471e3e88ccaff01a9da32080576a05a040",
-        "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py": "78c045f3ed9863f8caef7aeb6bda05d3342f282058b6fb5ed1a6407e46641bba",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json": "3e42e6bef0a017ec47e5259f641dbc40b75e2ba9aaf75382005f47b44c71c57b",
-        "README.md": "4b6af902319b693cce584c4f55f93978ed0d1b3b43006162804ee49cb1ebfe5d",
-        "docs/benchmarks/README.md": "7edf19e390ae831c9533f0ebc31fb5232f558f670346e2ead4835ef67cadc4fc",
-        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md": "756b18aff889c405fa424c3c49c047d07549f49ee3960d33109b155eec43148a",
-        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md": "fc1e18ba7fde296247fc070931d7f4481ca368d2fec97bcee5e14bf519490ea9",
+        "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py": "9b8ed78d46f7bcbbd16be55b1a46ef6975faf19e938b3c6e2010593e2bb47305",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json": "3a34c3c8b52c2598f1cd32d0903baa8d106b4ab114cf3885eea1256f405c7662",
+        "README.md": "2127d0d7f804eb0837a9566ad82d2f56535be5c920b8c875317110b5f8a301db",
+        "docs/benchmarks/README.md": "fefe494634193c20284bf71a69587389548de3c707acc2bfca5052b1c3fae04f",
+        "docs/benchmarks/FAMILIES_AND_EVALS.md": "643b42e865200a49ba1105129ff92b2db6b8c145832b1cd5e93f5887324ce4b1",
+        "docs/benchmarks/METRICS_AND_PRIORITIES.md": "eeb906950a3cdcdfb94bce3b63098852f29c11a7481bfa57ee411379a7f94c0d",
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md": "649e1d34bee52fe392aa377026e5aa304165a76f7143d7cc48b11173d9b7ca90",
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md": "d9c37afa2d8008ef40ee8b1b3a69d128d6ea279ae94bcd27f85f4c050d8d3252",
         "docs/benchmarks/odylith-benchmark-family-heatmap.svg": "6fdf96706771cd9e26cc8eeee407e2a76062f19f42d5b9fa7c90490ea5204ef0",
         "docs/benchmarks/odylith-benchmark-operating-posture.svg": "c7909d18c9b4652b9dd231676733d438c0161b5ce46bf5df49d833cbf4e14178",
         "docs/benchmarks/odylith-benchmark-frontier.svg": "49b3cc24faaff499acd74ca92b8a905d6c33d9b34946191368d1548d6def201a"
@@ -2471,7 +2477,7 @@
         "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md": "c2f4631557b4abd1c2851b0ed82dfbdd2816858531e17b06bb32d3a9a4cb4ca7",
         "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md": "f9af462ee0d3fc53eebf92252268f86c81add72def7135cbbd1d4cac0d526810",
         "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md": "2e7d5e970274f3026059fd7eede27caca11da51d8680759a507b58c13b102618",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "c646fac2d3c8c7771b1249185e46a47466a40ec34c1acdee0c5e1618c962cdf4",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "7b668ed23d0693240afa0751629cc706db4e3bbdb9c372614fd37df68031bb32",
         "src/odylith/runtime/memory/odylith_projection_bundle.py": "984732d1634b4555fb09cad9bd1997818db64600024c89d21893891e0ce486af",
         "src/odylith/runtime/memory/odylith_projection_snapshot.py": "b2ef0610a3f3c59acb6621846d5d422626d0407c97277686d9a799d41a4f0a6d",
         "src/odylith/runtime/memory/odylith_memory_backend.py": "87d939ee80c57b1671aa73b81c68551813b79ecab04ca3ae68863e32bb475942",
@@ -2647,13 +2653,13 @@
         "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md": "91a6302d9217711cc1413a3c7890a2411c0275ecbdd4382756b2430cc523d80f",
         "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md": "4166d4a6d35da31e714a1d200867e09970adfdb7e19bef129a1d3b262e917318",
         "odylith/radar/source/releases/releases.v1.json": "f5ba79d451241f24bbf4fb21ce35a7123f6e57ccc525c6e9db084f1cf4d6f243",
-        "odylith/radar/source/releases/release-assignment-events.v1.jsonl": "90e36134f28acbd47b3c7058e4e850a7f4603ad86934a16adf48f7600d8fa371",
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl": "158b12a48133e66678cb7873a0f205ba177f2ec36574a4d271fae16722d0f8dc",
         "odylith/runtime/source/release-notes/v0.1.11.md": "1eeb7380cabaf6f134ba55057c95b5230f0c0001179e1002c44540e21296f9e0",
         "src/odylith/runtime/governance/release_planning_contract.py": "9052cb86ae8ccfbba30ef475118c089c1c5486ffd68806bfc3cdeda8953a3b5c",
         "src/odylith/runtime/governance/release_planning_authoring.py": "7e7b12255148884acba095c0ee1fd9fb5db7e50089167c783ad19d5a8d3a4692",
         "src/odylith/runtime/governance/build_traceability_graph.py": "20baa1a12da7d18347e7cbb215dd3ee3466d325c6b262b51f106ee356da0ff6b",
         "src/odylith/runtime/surfaces/render_backlog_ui.py": "d88da545e2cda8a20e24571d188a6be4c55e16a0c8204e9fa03bba27178376db",
-        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "659eaceed10b0f64f7902a0ff3fbed69720c869c5d1acfea5fefb37b07796464",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "1cf6a0b73742d8c631b1a208c565e69a200bfb061375f75ecf4ccba344b72ee9",
         "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py": "4f3e210f4f3b46b07deb7ecbac33f9e3df15d779b412a0dc4ea915bd9a7447dc"
       }
     },
@@ -2730,10 +2736,10 @@
         "src/odylith/runtime/governance/delivery/scope_signal_ladder.py": "f46c661776a3cb2ad8c9b22e84ffcb2e141ac735ce47818566d77907104cdae2",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "e72c75b6b33cc62228b585bf5cd20e1d9b821b4a92a8a58b0b75e363af072d63",
         "src/odylith/runtime/governance/operator_readout.py": "290f73bebc132e23c7fc6c4bc837a4b1935d18ee5780d16dfa06c43ecc03f5b8",
-        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "659eaceed10b0f64f7902a0ff3fbed69720c869c5d1acfea5fefb37b07796464",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "1cf6a0b73742d8c631b1a208c565e69a200bfb061375f75ecf4ccba344b72ee9",
         "src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py": "300789031adb17d125a84beb4b7455a05cd49ffc7499ada4bb4652c40c6b80d2",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "8cc670a492eb8267531e912970980cf96187ccfd8526d911969f895ecb2f2c27",
-        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "a30807bfc5e55fbc339cc03094cf5cb699af5521f274bcc774e0db52b3f691e1"
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "ed88fda8c18a680ec177a45aef3d6a2f9eb8b37a88280eadc5f6d7975ac32660"
       }
     },
     {
@@ -2806,11 +2812,11 @@
       "render_source_fingerprint": "5194a20d834e576d515bc176e263d32ea92dc94d160dfa3385530d051f79b832",
       "reviewed_watch_fingerprints": {
         "src/odylith/runtime/governance/delivery/scope_signal_ladder.py": "f46c661776a3cb2ad8c9b22e84ffcb2e141ac735ce47818566d77907104cdae2",
-        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "659eaceed10b0f64f7902a0ff3fbed69720c869c5d1acfea5fefb37b07796464",
-        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-state.v1.js": "8133a5012b8eeb3866c1df1c43bceaea46978df1154c87ec4fa041b97d65c815",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "1cf6a0b73742d8c631b1a208c565e69a200bfb061375f75ecf4ccba344b72ee9",
+        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-state.v1.js": "461adafbf2060c17e85c2e94ab5389f5e5ef7e5b247741d9cb5fc4c398e61d11",
         "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py": "ca79fd4f7e2d21286a2ec3fcd0eeb67997f559d9577412e1e507aeeed45b7ab9",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "8cc670a492eb8267531e912970980cf96187ccfd8526d911969f895ecb2f2c27",
-        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "a30807bfc5e55fbc339cc03094cf5cb699af5521f274bcc774e0db52b3f691e1",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "ed88fda8c18a680ec177a45aef3d6a2f9eb8b37a88280eadc5f6d7975ac32660",
         "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py": "8484d89e03b1e28a40ba3eb2f99741e95d5907ce8205b059d9b1551d82480c13"
       }
     },
@@ -2887,8 +2893,8 @@
         "remediator"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/execution_engine/contract.py": "9632f1c5800caf47d4c6e69073fb1f5ab2b8aded53847221d0d5880f49ba3b2f",
-        "src/odylith/runtime/execution_engine/policy.py": "06764af99d99718c87be4d4b3e123888fcb47eacccab1c6ee5cfeafce897d3dc",
+        "src/odylith/runtime/execution_engine/contract.py": "bf6c9231e21988b020970bf437dde88826aeb2ab7fda7857a1fa9f33238e8c1d",
+        "src/odylith/runtime/execution_engine/policy.py": "8ea24ed3428df6203088cc8c12d686d119e837e35abb9352af3c2d86dfa08bf6",
         "src/odylith/runtime/execution_engine/frontier.py": "25add7a87221d298c0b9c330ae736547f85e70574b8d582bd96b4c0022aea5fa",
         "src/odylith/runtime/execution_engine/resource_closure.py": "f8e25446c00200138f817ffa7b4eba23c02d80fb006b44fe791c6346e538fd71",
         "src/odylith/runtime/execution_engine/receipts.py": "82779ac486039cb516c5af3aec6b48f4167f98e133d040e0f20fb13001fa77a2",
@@ -3044,8 +3050,8 @@
       "reviewed_watch_fingerprints": {
         "src/odylith/runtime/surfaces/compass_refresh_contract.py": "be157086fe7b775a9b68cc972d7d5bdd3352bf71670c74b425e0f86c0855cdaf",
         "src/odylith/runtime/surfaces/compass_refresh_runtime.py": "ca2e15328e874de10e8cc224878e4db74edb8a23f7339a005124bbb0a33b9134",
-        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "8820913ee27d4195e04538a17a3475485a43f52edff810ff57eab4296b99d540",
-        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "659eaceed10b0f64f7902a0ff3fbed69720c869c5d1acfea5fefb37b07796464",
+        "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "da471f8467ee0d6ba6b8f3adc6e6e91e287f32dedf0576a74b2def9c60862e75",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "1cf6a0b73742d8c631b1a208c565e69a200bfb061375f75ecf4ccba344b72ee9",
         "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py": "205e84cc2e3684b98f752060fbf77be8ec47b821bb17ef2be26daac0d9a74f55",
         "src/odylith/runtime/surfaces/compass_standup_brief_batch.py": "e5e86be799e5fd437c0cbcfd1c326b444dd2c55d7737673c2ce6a203b0056c33",
         "src/odylith/runtime/surfaces/compass_standup_brief_maintenance.py": "7f25445f930f1ec38d81d1002e1b70cfed7ffa7f7ce31b0cc81a510b0b5dd5eb",
@@ -3141,7 +3147,7 @@
         "src/odylith/runtime/common/consumer_profile.py": "910c27ad2a952ce46fdf50d358c301a851691e42f03ef511f54de4016c893719",
         "src/odylith/runtime/common/dirty_overlap.py": "9d51158b8bc969c5d9071068ad7b95ede0d70b5b55ce931ba5a59206c28f839f",
         "src/odylith/runtime/governance/workstream_inference.py": "a120ede9f3d2e76484fb78e9a38627dc8d5a2364fc489a7f60c552bf6551aa45",
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "f83dd79429f6fd115a5d167a8c044a061f937c4871f54504f91d07bc021b2abd"
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "46dc4c35d603aea743c74f5448d6e2555763efbdd87a08052797902c852f0b65"
       },
       "render_source_fingerprint": "143dfdcd44727563d2920beef80ad00e4934cbde53e8bd45de9aedef4227de40"
     },
@@ -3309,12 +3315,12 @@
         "src/odylith/runtime/common/consumer_profile.py": "910c27ad2a952ce46fdf50d358c301a851691e42f03ef511f54de4016c893719",
         "src/odylith/runtime/common/dirty_overlap.py": "9d51158b8bc969c5d9071068ad7b95ede0d70b5b55ce931ba5a59206c28f839f",
         "src/odylith/runtime/governance/workstream_inference.py": "a120ede9f3d2e76484fb78e9a38627dc8d5a2364fc489a7f60c552bf6551aa45",
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "f83dd79429f6fd115a5d167a8c044a061f937c4871f54504f91d07bc021b2abd",
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "46dc4c35d603aea743c74f5448d6e2555763efbdd87a08052797902c852f0b65",
         "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py": "662c32dc53bd8556a33891908a894d471e3e88ccaff01a9da32080576a05a040",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8ce5d10e1e16ff2768093b72714e381684a3559bf5f24aa9bcfbe6e94119700b",
         "tests/unit/runtime/test_workstream_inference.py": "83426ae92a27cc68dd5b6be2de9ff05823498a21ce782ae27c216f11fe100ace",
         "tests/unit/runtime/test_tooling_context_routing.py": "5753136544bfdc94ebe6cbe97b87a2f004c387e7abf894a7b9f445504615d260",
-        "tests/unit/runtime/test_odylith_benchmark_runner.py": "f80d9a6a61828a4e1c543c3d49ffa3496a5084f1de895df9ea78268c9d656f9f",
+        "tests/unit/runtime/test_odylith_benchmark_runner.py": "9e6625d962f57ff0be0127a9c9e565d0c419265a5ed38cea043557c2bc79df40",
         "tests/unit/runtime/test_hygiene.py": "5dabac2592ac80e69afa60cfa0689e66056107dd7123834c759d0dec6342c95b",
         "odylith/casebook/bugs/2026-04-09-host-contract-drift-leaks-codex-only-policy-into-claude-and-shared-runtime-surfaces.md": "9000b007e1b0cf0b0934fd4812d4d9e08f949f0442563105a0798521def3c64f"
       },
@@ -3378,7 +3384,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "d48218fced4fc62fe34602e025419adb9a43955a669a753feaf9392e995f33ee",
         "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md": "b1eac7bce3a2837dac5da32672672879f25ff34177bbd183a4c8ecf1390ab2fd",
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "e25cd69ca8c6de9d2c67f6448046d80ac83b1b4356c1c7cab92df8bc1480e45e",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py": "bbff878143efd2aa92a8b526805e9a18f013601e4720598ed2a6991c4dc27e89",
         "src/odylith/runtime/governance/workstream_inference.py": "a120ede9f3d2e76484fb78e9a38627dc8d5a2364fc489a7f60c552bf6551aa45",
         "src/odylith/runtime/governance/validate_backlog_contract.py": "e926e2eb40b77d8a25681b10c8feed54202ae79255a9d520ffa76e55c3663d43",
         "src/odylith/runtime/governance/component_registry_intelligence.py": "dac4989e391a6dffe605552f2a434d5f3e269fe064ac4fb3707c148d73c8455d",

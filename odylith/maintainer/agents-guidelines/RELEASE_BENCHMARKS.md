@@ -180,6 +180,8 @@ The benchmark itself must also stay representative:
 ## Canonical Inputs
 - Machine-readable report:
   `.odylith/runtime/odylith-benchmarks/latest.v1.json`
+- Publication snapshot writer:
+  `src/odylith/runtime/evaluation/odylith_benchmark_publication.py`
 - Graph generator:
   `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`
 - Published README benchmark section:
@@ -206,7 +208,17 @@ The benchmark itself must also stay representative:
    a partial shard snapshot.
 2. Regenerate the README SVG assets from the latest report:
    `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --report .odylith/runtime/odylith-benchmarks/latest.v1.json --out-dir docs/benchmarks`
-3. Update the repo-root `README.md` benchmark snapshot from that same
+3. Refresh the benchmark snapshot docs and tracked summary from that same
+   selected report:
+   `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_publication --repo-root .`
+   This refreshes:
+   - `docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md`
+   - `docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md`
+   - `docs/benchmarks/BENCHMARK_TABLES.md`
+   - `docs/benchmarks/latest-summary.v1.json`
+   Do not hand-edit those generated snapshot files when the publication writer
+   can derive them from the validated report.
+4. Update the repo-root `README.md` benchmark snapshot from that same
    `latest.v1.json` report.
    README numbers and wording must describe the conservative published view,
    not the easiest single-profile snapshot. The public table should center on
@@ -215,8 +227,8 @@ The benchmark itself must also stay representative:
    If the report came from detached `source-local`, say that explicitly and
    keep the first-release baseline warning visible until
    `docs/benchmarks/release-baselines.v1.json` records a shipped proof.
-4. Keep the README benchmark section explicitly Codex-labeled.
-5. Validate the graph contract with:
+5. Keep the README benchmark section explicitly Codex-labeled.
+6. Validate the graph contract with:
    `PYTHONPATH=src pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py`
 
 ## Publication Contract

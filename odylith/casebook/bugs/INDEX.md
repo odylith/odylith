@@ -1,6 +1,6 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-12
+Last updated (UTC): 2026-04-13
 
 ## Open Bugs
 
@@ -25,6 +25,14 @@ Last updated (UTC): 2026-04-12
   (`build_delivery_intelligence_artifact`),
   `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`
   (`warm_projections`, `projection_input_fingerprint`). | Resolved | [2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md](2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md) |
+| CB-106 | 2026-04-12 | Benchmark live preflight evidence is only injected for odylith on without a declared comparison contract | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, benchmark
+  publication contract, benchmark component spec, README benchmark framing. | Open | [2026-04-12-benchmark-live-preflight-evidence-is-only-injected-for-odylith-on-without-a-declared-comparison-contract.md](2026-04-12-benchmark-live-preflight-evidence-is-only-injected-for-odylith-on-without-a-declared-comparison-contract.md) |
+| CB-107 | 2026-04-12 | Benchmark live observed path scoring credits odylith prompt surfaces but not equivalent raw prompt anchors | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, benchmark
+  required-path scoring contract, proof fairness interpretation. | Open | [2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md](2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md) |
 | CB-102 | 2026-04-11 | Odylith start returns no candidates when dirty path set is dominated by bundle asset mirrors | P1 | `src/odylith/runtime/governance/agent_governance_intelligence.py`
   (`_changed_path_aliases`, `normalize_changed_paths`,
   `collect_git_changed_paths`),
@@ -170,6 +178,13 @@ Last updated (UTC): 2026-04-12
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-108 | 2026-04-12 | Compass programs can regrow a redundant nested inner card | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-shared.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-waves.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-execution-waves.v1.css`,
+  `tests/integration/runtime/test_surface_browser_layout_audit.py`,
+  `tests/unit/runtime/test_compass_dashboard_shell.py`,
+  live checked-in Compass shell assets, bundled Compass shell mirrors, and the
+  `B-025` UX/browser-hardening plan. | Closed | [2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md](2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md) |
 | CB-101 | 2026-04-10 | Dashboard and upgrade can queue compass behind a command the activated launcher does not expose | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
   `src/odylith/runtime/governance/dashboard_refresh_contract.py`,
   `tests/unit/runtime/test_sync_cli_compat.py`, Compass component spec, and
