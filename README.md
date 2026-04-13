@@ -58,6 +58,12 @@ What you should see within the first turn:
 - `odylith/index.html` reflecting the repo's live execution state
 - durable repo-local records under `odylith/` for the chosen slice
 
+For the full set of instructions you can give the agent — from "fix this bug"
+to "validate the registry" to "hand this off" — see
+**[Operator Instructions](docs/OPERATOR_INSTRUCTIONS.md)**. It covers every
+natural language instruction, slash command, automatic hook, subagent, and
+execution governance check with measured latencies.
+
 > [!TIP]
 > **⭐ If Odylith makes your coding agent materially sharper in real repo work,
 > star the repo so other operators can find it.**
