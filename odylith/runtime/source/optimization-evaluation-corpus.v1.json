@@ -2727,8 +2727,12 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_runner.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py::test_run_live_scenario_records_declared_preflight_evidence_and_observed_path_sources tests/unit/runtime/test_odylith_benchmark_runner.py::test_fairness_findings_require_raw_prompt_visible_path_attribution_for_raw_lane"
+        ],
         "allow_noop_completion": true,
         "correctness_critical": true,
+        "live_timeout_seconds": 420.0,
         "needs_write": true,
         "workstream": "B-093",
         "component": "benchmark"

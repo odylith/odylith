@@ -486,9 +486,11 @@ def _cheap_config(
         failure_detail=str(retry_context.get("failure_detail", "")).strip(),
     )
     provider = str(profile.provider or base_config.provider).strip()
+    narrator_timeout = compass_standup_brief_narrator._COMPASS_PROVIDER_TIMEOUT_SECONDS
     updates: dict[str, Any] = {
         "provider": provider,
         "model": str(profile.model or base_config.model).strip(),
+        "timeout_seconds": max(base_config.timeout_seconds, narrator_timeout),
     }
     if provider == "codex-cli":
         updates["codex_reasoning_effort"] = str(profile.reasoning_effort or base_config.codex_reasoning_effort).strip()
@@ -707,6 +709,7 @@ def _record_result(
     scope_id: str = "",
     source: str = "",
     diagnostics: Mapping[str, Any] | None = None,
+    provider_name: str = "",
 ) -> dict[str, Any]:
     entries = dict(state.get("entries", {}))
     key = _candidate_key(window_key=window_key, scope_id=scope_id)
@@ -722,6 +725,8 @@ def _record_result(
         "attempted_utc": _now_utc_iso(),
         "attempt_count": attempt_count,
     }
+    if provider_name:
+        payload["provider_name"] = str(provider_name).strip()
     normalized_diagnostics = _normalized_entry_diagnostics(diagnostics)
     if (
         str(normalized_diagnostics.get("reason", "")).strip().lower() == "skipped_not_worth_calling"
@@ -857,6 +862,7 @@ def _pending_request_delay_seconds(
     *,
     request: Mapping[str, Any],
     state_entries: Mapping[str, Any],
+    current_provider_name: str = "",
 ) -> float | None:
     if not _request_has_entries(request):
         return None
@@ -867,6 +873,10 @@ def _pending_request_delay_seconds(
         nonlocal min_delay
         state_entry = state_entries.get(key) if isinstance(state_entries.get(key), Mapping) else {}
         if str(state_entry.get("fingerprint", "")).strip() != str(entry.get("fingerprint", "")).strip():
+            min_delay = 0.0
+            return
+        prior_provider = str(state_entry.get("provider_name", "")).strip().lower()
+        if prior_provider and current_provider_name and prior_provider != current_provider_name.lower():
             min_delay = 0.0
             return
         if str(state_entry.get("status", "")).strip().lower() in {"ready", "skipped"}:
@@ -1224,7 +1234,26 @@ def run_pending_request(
                 runtime_packet_fingerprint=str(request.get("runtime_input_fingerprint", "")).strip(),
                 config=cheap_config,
                 provider=provider,
+                defer_scoped=True,
             )
+            if not compass_standup_brief_batch._provider_failure_should_abort_fanout(provider) and scoped_packets:
+                scoped_bundle = compass_standup_brief_batch.build_brief_bundle(
+                    repo_root=repo_root,
+                    global_fact_packets_by_window={},
+                    scoped_fact_packets_by_window=scoped_packets,
+                    generated_utc=generated_utc,
+                    runtime_packet_fingerprint=str(request.get("runtime_input_fingerprint", "")).strip(),
+                    config=cheap_config,
+                    provider=provider,
+                    defer_scoped=False,
+                )
+                for window_key, window_results in (scoped_bundle.get("scoped", {}) if isinstance(scoped_bundle.get("scoped"), Mapping) else {}).items():
+                    if isinstance(window_results, Mapping):
+                        existing = bundle_results.get("scoped", {}).get(str(window_key).strip(), {}) if isinstance(bundle_results.get("scoped"), Mapping) else {}
+                        merged = {**existing, **window_results}
+                        if "scoped" not in bundle_results:
+                            bundle_results["scoped"] = {}
+                        bundle_results["scoped"][str(window_key).strip()] = merged
             global_batch_results = (
                 dict(bundle_results.get("global", {}))
                 if isinstance(bundle_results.get("global"), Mapping)
@@ -1282,6 +1311,7 @@ def run_pending_request(
                         status="skipped" if is_skipped else "failed",
                         source=source or str(failed_brief.get("source", "")).strip().lower(),
                         diagnostics=failed_brief.get("diagnostics"),
+                        provider_name=type(provider).__name__ if provider is not None else "",
                     )
                     failed_brief = (
                         dict(brief)
@@ -1398,6 +1428,7 @@ def run_pending_request(
         pending_delay_seconds = _pending_request_delay_seconds(
             request=pending_request,
             state_entries=dict(state.get("entries", {})),
+            current_provider_name=type(provider).__name__ if provider is not None else "",
         )
         if _request_has_entries(pending_request):
             _write_json(
@@ -1469,9 +1500,12 @@ def main(argv: list[str] | None = None) -> int:
         state = _load_state(repo_root=repo_root)
         state["active_pid"] = int(os.getpid())
         _write_state(repo_root=repo_root, state=state)
+        _loop_config = _cheap_config(repo_root=repo_root, request=request, state=state)
+        _loop_provider = _provider_for_cheap_config(repo_root=repo_root, config=_loop_config)
         delay_seconds = _pending_request_delay_seconds(
             request=request,
             state_entries=dict(state.get("entries", {})),
+            current_provider_name=type(_loop_provider).__name__ if _loop_provider is not None else "",
         )
         if delay_seconds is not None and delay_seconds > 0:
             time.sleep(min(delay_seconds, float(_RETRY_POLL_INTERVAL_SECONDS)))

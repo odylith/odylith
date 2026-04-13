@@ -926,6 +926,89 @@ def test_run_live_scenario_batch_executes_public_pair_once_with_matched_pair_met
     assert results["odylith_on"]["live_execution"]["latency_measurement_basis"] == "matched_pair_contended_validated_task_cycle"
 
 
+def test_run_live_scenario_batch_converts_mode_exceptions_into_failed_results(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenario = {
+        "scenario_id": "live-pair-failure",
+        "kind": "packet",
+        "label": "Live pair failure",
+        "summary": "pair failure",
+        "family": "validation_heavy_fix",
+        "priority": "high",
+        "changed_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+        "workstream": "B-022",
+        "required_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+        "validation_commands": [],
+        "needs_write": True,
+        "correctness_critical": True,
+        "critical_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+    }
+
+    def _fake_prepare_live_scenario_request(**kwargs: object) -> dict[str, object]:
+        mode = str(kwargs["mode"])
+        return {
+            "repo_root": kwargs["repo_root"],
+            "scenario": dict(kwargs["scenario"]),
+            "mode": mode,
+            "benchmark_profile": kwargs["benchmark_profile"],
+            "packet_source": "impact" if mode == "odylith_on" else "raw_codex_cli",
+            "prompt_payload": {},
+            "packet_summary": {},
+        }
+
+    def _fake_run_prepared_live_scenario(prepared_request: dict[str, object]) -> dict[str, object]:
+        mode = str(prepared_request["mode"])
+        if mode == "odylith_on":
+            raise RuntimeError("live child died")
+        return {
+            "kind": "packet",
+            "mode": mode,
+            "latency_ms": 5.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": list(scenario["required_paths"]),
+            "observed_path_count": 1,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "expected_write_path_count": 1,
+            "candidate_write_path_count": 1,
+            "candidate_write_paths": list(scenario["required_paths"]),
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "effective_estimated_tokens": 10,
+            "total_payload_estimated_tokens": 10,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+            "live_execution": {},
+        }
+
+    monkeypatch.setattr(runner, "_prepare_live_scenario_request", _fake_prepare_live_scenario_request)
+    monkeypatch.setattr(runner, "_run_prepared_live_scenario", _fake_run_prepared_live_scenario)
+
+    results = runner._run_live_scenario_batch(  # noqa: SLF001
+        repo_root=tmp_path,
+        scenario=scenario,
+        modes=("odylith_on", "odylith_off"),
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+    )
+
+    assert list(results) == ["odylith_on", "raw_agent_baseline"]
+    assert results["odylith_on"]["expectation_ok"] is False
+    assert results["odylith_on"]["validation_success_proxy"] == 0.0
+    assert results["odylith_on"]["benchmark_exception"] == "RuntimeError: live child died"
+    assert results["odylith_on"]["live_execution"]["benchmark_exception"] == "RuntimeError: live child died"
+    assert results["raw_agent_baseline"]["expectation_ok"] is True
+
+
 def test_live_workspace_snapshot_paths_include_dirty_same_package_python_dependencies(
     tmp_path: Path,
 ) -> None:
@@ -3576,6 +3659,232 @@ def test_run_benchmarks_shards_use_shard_specific_lock_key(
     assert seen_lock_keys == ["odylith-benchmark-runner:proof:2-of-3"]
 
 
+def test_run_benchmarks_shards_persist_failed_history_report_on_exception(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        }
+    ]
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(runner, "_benchmark_report_id", lambda **_: "failed-shard")
+    monkeypatch.setattr(runner, "_utc_now", lambda: "2026-04-13T12:00:00Z")
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **_: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
+
+    with pytest.raises(RuntimeError, match="boom"):
+        runner.run_benchmarks(
+            repo_root=tmp_path,
+            shard_count=2,
+            shard_index=1,
+        )
+
+    payload = json.loads(
+        runner.history_report_path(repo_root=tmp_path, report_id="failed-shard").read_text(encoding="utf-8")
+    )
+    assert payload["status"] == "failed"
+    assert payload["acceptance"]["status"] == "failed"
+    assert payload["published_summary"]["status"] == "failed"
+    assert payload["selection"]["shard_count"] == 2
+    assert payload["selection"]["shard_index"] == 1
+    assert payload["error"] == "RuntimeError: boom"
+
+
+def test_run_benchmarks_shards_skip_merge_only_post_run_metrics(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+    ]
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(runner, "_singleton_family_latency_probes", lambda **_: (_ for _ in ()).throw(AssertionError("skip latency probes")))
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda **_: (_ for _ in ()).throw(AssertionError("skip adoption proof")))
+    monkeypatch.setattr(runner, "_runtime_posture_summary", lambda **_: (_ for _ in ()).throw(AssertionError("skip runtime posture")))
+    monkeypatch.setattr(runner, "_robustness_summary", lambda **_: (_ for _ in ()).throw(AssertionError("skip robustness")))
+    monkeypatch.setattr(
+        runner,
+        "_benchmark_runtime_hygiene_snapshot",
+        lambda **_: (_ for _ in ()).throw(AssertionError("skip final hygiene")),
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **kwargs: {
+            "kind": "packet",
+            "mode": kwargs["mode"],
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": [kwargs["scenario"]["required_paths"][0]],
+            "observed_path_count": 1,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "expected_write_path_count": 0,
+            "candidate_write_path_count": 0,
+            "candidate_write_paths": [],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "effective_estimated_tokens": 10,
+            "total_payload_estimated_tokens": 10,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    report = runner.run_benchmarks(
+        repo_root=tmp_path,
+        shard_count=2,
+        shard_index=1,
+        write_report=False,
+    )
+
+    assert report["selection"]["shard_count"] == 2
+    assert report["adoption_proof"] == {}
+    assert report["runtime_posture"] == {}
+    assert report["robustness_summary"] == {}
+    assert report["final_hygiene"] == {}
+
+
+def test_run_benchmarks_shards_skip_live_batch_pairing(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+    ]
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner,
+        "_run_live_scenario_batch",
+        lambda **_: (_ for _ in ()).throw(AssertionError("shards should not use live batch pairing")),
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **kwargs: {
+            "kind": "packet",
+            "mode": kwargs["mode"],
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": [kwargs["scenario"]["required_paths"][0]],
+            "observed_path_count": 1,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "expected_write_path_count": 0,
+            "candidate_write_path_count": 0,
+            "candidate_write_paths": [],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "effective_estimated_tokens": 10,
+            "total_payload_estimated_tokens": 10,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    report = runner.run_benchmarks(
+        repo_root=tmp_path,
+        shard_count=2,
+        shard_index=1,
+        write_report=False,
+    )
+
+    assert report["selection"]["shard_count"] == 2
+    assert [row["scenario_id"] for row in report["scenarios"]] == ["case-a"]
+
+
 def test_diagnostic_profile_keeps_public_pair_packet_only(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
@@ -5165,6 +5474,19 @@ def test_consumer_profile_hot_path_allows_validator_backed_noop_completion() -> 
     assert scenario["focused_local_checks"] == [
         "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_consumer_profile.py"
     ]
+
+
+def test_live_preflight_evidence_hot_path_declares_focused_check_and_timeout_budget() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row for row in scenarios if row["scenario_id"] == "live-preflight-evidence-disposable-workspace-contract"
+    )
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == [
+        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py::test_run_live_scenario_records_declared_preflight_evidence_and_observed_path_sources tests/unit/runtime/test_odylith_benchmark_runner.py::test_fairness_findings_require_raw_prompt_visible_path_attribution_for_raw_lane"
+    ]
+    assert scenario["live_timeout_seconds"] == 420.0
 
 
 def test_governed_surface_sync_hot_path_allows_validator_backed_noop_completion() -> None:

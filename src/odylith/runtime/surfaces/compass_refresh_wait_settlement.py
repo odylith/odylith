@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import time
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 from typing import Any
 from typing import Mapping
@@ -10,27 +12,72 @@ from typing import Mapping
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
 
-_DEFAULT_SETTLE_TIMEOUT_SECONDS = 20.0
+_DEFAULT_SETTLE_TIMEOUT_SECONDS = 75.0
 _DEFAULT_POLL_INTERVAL_SECONDS = 0.25
 _CURRENT_RUNTIME_PATH = "odylith/compass/runtime/current.v1.json"
+_BRIEF_FRESHNESS_THRESHOLD_SECONDS = 1800  # 30 minutes
+
+_UNSETTLED_BRIEF_REASONS: frozenset[str] = frozenset(
+    {
+        "provider_deferred",
+        "credits_exhausted",
+        "provider_unavailable",
+        "provider_error",
+        "provider_timeout",
+        "rate_limited",
+    }
+)
 
 
-def provider_deferred_global_windows(*, repo_root: Path) -> tuple[str, ...]:
-    """Return any global windows still stuck in transient provider-deferred state."""
+def unsettled_global_windows(*, repo_root: Path, force: bool = False) -> tuple[str, ...]:
+    """Return global windows with a failed, deferred, or stale brief.
 
+    A brief is unsettled when:
+    - its diagnostics reason is a known unsettled state (provider_deferred,
+      credits_exhausted, etc.), OR
+    - its status is not 'ready', OR
+    - force is True and it is older than the freshness threshold.
+    """
     payload = odylith_context_cache.read_json_object((Path(repo_root).resolve() / _CURRENT_RUNTIME_PATH).resolve())
     standup_brief = payload.get("standup_brief") if isinstance(payload, Mapping) else {}
     if not isinstance(standup_brief, Mapping):
         return ()
-    deferred: list[str] = []
+    unsettled: list[str] = []
+    now = datetime.now(tz=timezone.utc)
     for window_key, brief in standup_brief.items():
         if not isinstance(brief, Mapping):
             continue
+        status = str(brief.get("status", "")).strip().lower()
         diagnostics = brief.get("diagnostics") if isinstance(brief.get("diagnostics"), Mapping) else {}
         reason = str(diagnostics.get("reason", "")).strip().lower()
-        if reason == "provider_deferred":
-            deferred.append(str(window_key).strip())
-    return tuple(sorted(token for token in deferred if token))
+        if reason in _UNSETTLED_BRIEF_REASONS:
+            unsettled.append(str(window_key).strip())
+            continue
+        if status not in {"ready", ""}:
+            unsettled.append(str(window_key).strip())
+            continue
+        if force and status == "ready":
+            generated = str(brief.get("generated_utc", "")).strip()
+            if generated and _brief_age_seconds(generated, now) > _BRIEF_FRESHNESS_THRESHOLD_SECONDS:
+                unsettled.append(str(window_key).strip())
+    return tuple(sorted(token for token in unsettled if token))
+
+
+def provider_deferred_global_windows(*, repo_root: Path) -> tuple[str, ...]:
+    """Return any global windows still stuck in transient provider-deferred state.
+
+    Kept for backward compatibility. Prefer unsettled_global_windows for
+    broader failure-state coverage.
+    """
+    return unsettled_global_windows(repo_root=repo_root)
+
+
+def _brief_age_seconds(generated_utc: str, now: datetime) -> float:
+    try:
+        ts = datetime.fromisoformat(generated_utc.replace("Z", "+00:00"))
+        return max(0.0, (now - ts).total_seconds())
+    except (ValueError, TypeError):
+        return float("inf")
 
 
 def settle_standup_maintenance(
@@ -38,6 +85,7 @@ def settle_standup_maintenance(
     repo_root: Path,
     timeout_seconds: float = _DEFAULT_SETTLE_TIMEOUT_SECONDS,
     poll_interval_seconds: float = _DEFAULT_POLL_INTERVAL_SECONDS,
+    force_brief: bool = False,
 ) -> dict[str, Any]:
     """Drive or observe pending standup maintenance until it drains or backs off."""
 
@@ -46,7 +94,7 @@ def settle_standup_maintenance(
     poll_seconds = max(0.05, float(poll_interval_seconds))
 
     while True:
-        if not provider_deferred_global_windows(repo_root=root):
+        if not unsettled_global_windows(repo_root=root, force=force_brief):
             return {
                 "status": "already_settled",
                 "request_retained": False,

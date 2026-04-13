@@ -17,11 +17,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.surfaces import claude_host_shared
+
+_BRIEF_STALENESS_THRESHOLD_SECONDS = 4 * 60 * 60  # 4 hours
+_CURRENT_RUNTIME_PATH = "odylith/compass/runtime/current.v1.json"
 
 
 _STARTUP_PREFIX = "Odylith startup"
@@ -80,6 +85,49 @@ def render_session_brief(
     return _summary_from_start_output(completed.stdout or "")
 
 
+def _queue_refresh_if_briefs_stale(*, repo_root: Path) -> None:
+    """Check if the global standup briefs are older than the staleness threshold.
+
+    If stale, queue a background compass refresh. This runs at session start
+    so the operator gets fresh briefs without manually refreshing. The refresh
+    runs in the background and does not block session startup.
+    """
+    try:
+        runtime_path = Path(repo_root).resolve() / _CURRENT_RUNTIME_PATH
+        if not runtime_path.is_file():
+            return
+        with runtime_path.open("r", encoding="utf-8") as f:
+            payload = json.load(f)
+        standup_brief = payload.get("standup_brief")
+        if not isinstance(standup_brief, Mapping):
+            return
+        now = datetime.now(tz=timezone.utc)
+        for window_key in ("24h", "48h"):
+            brief = standup_brief.get(window_key)
+            if not isinstance(brief, Mapping):
+                continue
+            generated = str(brief.get("generated_utc", "")).strip()
+            if not generated:
+                continue
+            try:
+                ts = datetime.fromisoformat(generated.replace("Z", "+00:00"))
+                age_seconds = (now - ts).total_seconds()
+            except (ValueError, TypeError):
+                continue
+            if age_seconds > _BRIEF_STALENESS_THRESHOLD_SECONDS:
+                launcher = Path(repo_root).resolve() / ".odylith" / "bin" / "odylith"
+                if launcher.is_file():
+                    subprocess.Popen(
+                        [str(launcher), "compass", "refresh", "--repo-root", str(repo_root), "--wait"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        start_new_session=True,
+                    )
+                return
+    except Exception:
+        pass
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude session-start",
@@ -100,6 +148,7 @@ def main(argv: list[str] | None = None) -> int:
         snapshot=snapshot,
         start_output=summary,
     )
+    _queue_refresh_if_briefs_stale(repo_root=repo_root)
     if summary and not args.quiet:
         sys.stdout.write(summary + "\n")
     return 0

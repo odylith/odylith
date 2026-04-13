@@ -1416,6 +1416,8 @@ def _cmd_compass_refresh(args: argparse.Namespace) -> int:
     if bool(getattr(args, "status", False)):
         forwarded.append("--status")
     forwarded.extend(["--runtime-mode", str(getattr(args, "runtime_mode", "auto"))])
+    if bool(getattr(args, "force_brief", False)):
+        forwarded.append("--force-brief")
     return _run_module_main(_COMPASS_REFRESH_MODULE, forwarded)
 
 
@@ -1899,6 +1901,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--status",
         action="store_true",
         help="Read the local Compass refresh state without mutating it.",
+    )
+    compass_refresh.add_argument(
+        "--force-brief",
+        action="store_true",
+        help="Force re-narration of the standup brief even if a recent successful brief exists.",
     )
     compass_update = compass_subparsers.add_parser("update", help="Append Compass updates and refresh the surface.")
     compass_update.add_argument("--repo-root", default=".", help="Consumer repository root.")

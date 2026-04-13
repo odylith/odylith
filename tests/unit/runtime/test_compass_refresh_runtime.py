@@ -213,6 +213,7 @@ def test_shell_safe_wait_mode_runs_in_foreground_when_no_request_is_active(
         "requested_profile": "shell-safe",
         "requested_runtime_mode": "auto",
         "settle_standup_maintenance": True,
+        "force_brief": False,
     }
 
 
@@ -409,6 +410,10 @@ def test_foreground_wait_contract_fails_when_global_brief_stays_provider_deferre
         def provider_deferred_global_windows(**_kwargs):  # noqa: ANN003
             return ("24h",)
 
+        @staticmethod
+        def unsettled_global_windows(**_kwargs):  # noqa: ANN003
+            return ("24h",)
+
     monkeypatch.setattr(runtime, "_execute_request", _fake_execute_request)
     monkeypatch.setattr(runtime, "_refresh_wait_settlement", lambda: _FakeSettlement)
 
@@ -460,6 +465,10 @@ def test_wait_for_terminal_settles_standup_maintenance_before_returning(
         def provider_deferred_global_windows(**_kwargs):  # noqa: ANN003
             return ()
 
+        @staticmethod
+        def unsettled_global_windows(**_kwargs):  # noqa: ANN003
+            return ()
+
     monkeypatch.setattr(runtime, "_refresh_wait_settlement", lambda: _FakeSettlement)
 
     result = runtime._wait_for_terminal(  # noqa: SLF001
@@ -471,7 +480,7 @@ def test_wait_for_terminal_settles_standup_maintenance_before_returning(
     assert result["rc"] == 0
     assert result["status"] == "passed"
     assert result["standup_maintenance"]["status"] == "drained"
-    assert captured["settle"] == {"repo_root": tmp_path.resolve()}
+    assert captured["settle"] == {"repo_root": tmp_path.resolve(), "force_brief": False}
 
 
 def test_progress_callback_persists_stage_detail(

@@ -75,6 +75,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Read the local Compass refresh state only without mutating it.",
     )
     parser.add_argument(
+        "--force-brief",
+        action="store_true",
+        help="Force re-narration of the standup brief even if a recent successful brief exists.",
+    )
+    parser.add_argument(
         "--run-request",
         default="",
         help=argparse.SUPPRESS,
@@ -548,10 +553,13 @@ def _settle_standup_wait_contract(
     repo_root: Path,
     request_id: str,
     requested_runtime_mode: str,
+    force_brief: bool = False,
 ) -> dict[str, Any]:
     settlement_runtime = _refresh_wait_settlement()
     try:
-        settlement = settlement_runtime.settle_standup_maintenance(repo_root=repo_root)
+        settlement = settlement_runtime.settle_standup_maintenance(
+            repo_root=repo_root, force_brief=force_brief,
+        )
     except Exception as exc:
         detail = f"{type(exc).__name__}: {exc}".strip().replace("\n", " ")
         with _refresh_lock(repo_root=repo_root):
@@ -568,7 +576,7 @@ def _settle_standup_wait_contract(
                 _write_state(repo_root=repo_root, payload=failed_state)
         return {"rc": 1, "detail": detail, "settlement": {"status": "failed"}}
 
-    deferred_windows = settlement_runtime.provider_deferred_global_windows(repo_root=repo_root)
+    deferred_windows = settlement_runtime.unsettled_global_windows(repo_root=repo_root, force=force_brief)
     if deferred_windows:
         detail = (
             "Compass refresh finished before the live global standup brief settled for "
@@ -924,6 +932,7 @@ def _run_foreground_request(
     requested_profile: str,
     requested_runtime_mode: str,
     settle_standup_maintenance: bool = False,
+    force_brief: bool = False,
 ) -> dict[str, Any]:
     with _refresh_lock(repo_root=repo_root):
         current = _repair_stale_active_state(repo_root=repo_root, state=_load_state(repo_root=repo_root))
@@ -975,6 +984,7 @@ def _run_foreground_request(
             repo_root=repo_root,
             request_id=request_id,
             requested_runtime_mode=requested_runtime_mode,
+            force_brief=force_brief,
         )
         settlement = dict(settlement_result.get("settlement", {}))
         rc = int(settlement_result.get("rc", rc) or rc)
@@ -1203,6 +1213,8 @@ def run_refresh(
     wait: bool,
     status_only: bool,
     emit_output: bool = True,
+    force_brief: bool = False,
+    skip_settlement: bool = False,
 ) -> dict[str, Any]:
     normalized_profile = _normalize_refresh_profile(requested_profile)
     normalized_runtime_mode = _normalize_runtime_mode(requested_runtime_mode)
@@ -1244,7 +1256,8 @@ def run_refresh(
                 repo_root=root,
                 requested_profile=normalized_profile,
                 requested_runtime_mode=normalized_runtime_mode,
-                settle_standup_maintenance=True,
+                settle_standup_maintenance=not skip_settlement,
+                force_brief=force_brief,
             )
             if emit_output:
                 _print_terminal_result(result)
@@ -1305,6 +1318,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         wait=bool(args.wait),
         status_only=bool(args.status),
         emit_output=True,
+        force_brief=bool(args.force_brief),
     )
     return int(result.get("rc", 0) or 0)
 

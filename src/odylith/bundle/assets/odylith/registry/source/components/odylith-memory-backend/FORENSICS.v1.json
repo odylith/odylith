@@ -4,6 +4,7 @@
     "D-002",
     "D-020",
     "D-025",
+    "D-037",
     "D-024",
     "D-018"
   ],
@@ -12,7 +13,7 @@
     "explicit_event_count": 2,
     "mapped_workstream_evidence_count": 2,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 4,
+    "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
     "timeline_event_count": 2
   },
@@ -116,6 +117,7 @@
     "B-059",
     "B-021",
     "B-011",
-    "B-038"
+    "B-038",
+    "B-094"
   ]
 }

@@ -1,0 +1,37 @@
+%% Created 2026-04-13 for B-094 to show the current stateless connection model, the daemon gap, and the planned caching layer.
+flowchart TB
+    subgraph Current["Current: stateless open-close per CLI call"]
+        CLI["CLI invocation<br/>odylith start / context / query"] --> PythonStart["Python process start<br/>~200ms startup + import"]
+        PythonStart --> LanceOpen["lancedb.connect(lance_root)<br/>open metadata from disk"]
+        PythonStart --> TantivyOpen["tantivy.Index.open(tantivy_root)<br/>open index segments from disk"]
+        LanceOpen --> Query["exact_lookup / sparse_search /<br/>hybrid_rerank_search<br/>sub-ms for 2711 docs"]
+        TantivyOpen --> Query
+        Query --> LanceClose["close LanceDB connection"]
+        Query --> TantivyClose["close Tantivy index"]
+        LanceClose --> Exit["Process exits"]
+        TantivyClose --> Exit
+    end
+
+    subgraph Daemon["Daemon: exists but unused"]
+        Serve["odylith context-engine serve<br/>Unix socket + TCP + in-process"] --> Dispatch["_dispatch_daemon_command<br/>per-request thread"]
+        Dispatch --> NoCache["No warm connections held<br/>each dispatch opens + closes<br/>its own LanceDB and Tantivy handles"]
+    end
+
+    subgraph Planned["Planned: B-094 connection caching"]
+        Cache["Process-global connection cache<br/>dict keyed by repo root"]
+        Fingerprint["Invalidation: backend manifest<br/>input_fingerprint changes<br/>on materialize_local_backend"]
+        DaemonWarm["Daemon holds warm cache<br/>across all sessions and requests"]
+        Cache --> Fingerprint
+        DaemonWarm --> Cache
+    end
+
+    subgraph MultiSafety["Multi-repo and multi-session safety"]
+        PerRepo["One daemon per repo root<br/>discovered via PID file"]
+        PerProcess["Each process owns its cache<br/>no cross-process sharing"]
+        Materialize["materialize_local_backend<br/>clears cache + changes fingerprint"]
+    end
+
+    CLI -.->|"today: new process every call"| Current
+    CLI -.->|"planned: route through daemon"| Daemon
+    Daemon -.->|"planned: hold warm handles"| Planned
+    Planned -.->|"safety contract"| MultiSafety

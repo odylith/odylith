@@ -259,3 +259,20 @@ def test_publication_benchmark_cases_preload_narrow_focused_checks() -> None:
 
     assert proof_checks == [proof["validation_commands"][1]]
     assert raw_checks == [raw["validation_commands"][0]]
+
+
+def test_live_preflight_evidence_case_declares_narrow_preflight_check_and_timeout_budget() -> None:
+    corpus = _load(PUBLIC_CORPUS)
+    scenarios = {
+        str(case.get("case_id", "")).strip(): case
+        for case in corpus.get("scenarios", [])
+        if isinstance(case, dict)
+    }
+
+    benchmark = dict(scenarios["live-preflight-evidence-disposable-workspace-contract"].get("benchmark", {}))
+    focused_checks = [str(token).strip() for token in benchmark.get("focused_local_checks", []) if str(token).strip()]
+
+    assert focused_checks == [
+        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py::test_run_live_scenario_records_declared_preflight_evidence_and_observed_path_sources tests/unit/runtime/test_odylith_benchmark_runner.py::test_fairness_findings_require_raw_prompt_visible_path_attribution_for_raw_lane"
+    ]
+    assert float(benchmark.get("live_timeout_seconds", 0.0) or 0.0) == 420.0

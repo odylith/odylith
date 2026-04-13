@@ -1,8 +1,8 @@
 # Execution Governance
-Last updated: 2026-04-12
+Last updated: 2026-04-13
 
 
-Last updated (UTC): 2026-04-12
+Last updated (UTC): 2026-04-13
 
 ## Purpose
 Execution Governance is Odylith's constraint-aware execution runtime. It
@@ -287,3 +287,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-10: Expanded the runtime contract so packet summaries can carry structured `turn_context`, lane-fenced `target_resolution`, and `presentation_policy` through the shared execution-governance snapshot. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
 - 2026-04-11: Grew the execution profile ladder to a `(host_family, profile) -> (model, reasoning_effort)` map so Claude delegation resolves to haiku, sonnet, or opus while Codex tuples stay byte-identical, and flipped the host-capability contract to declare `supports_explicit_model_selection=True` for both validated host families. (Plan: [B-084](odylith/radar/radar.html?view=plan&workstream=B-084), Bug: [CB-103](odylith/casebook/casebook.html?view=bug&bug=CB-103))
 - 2026-04-12: Hardened the core engine with inline user-correction promotion, richer closure domains, typed pressure signals, sync-aware runtime provenance, and shared execution-event shaping so packet summaries, shell or Compass posture, and sync-backed surfaces all explain the same admissibility state. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072), Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-13: Optimized the execution engine for Claude Code with host-specific capability fields, Claude presentation defaults, context-pressure events, artifact-path lane guards, and two Claude-specific history-rule failure classes. Wired execution governance into all three delivery paths that previously bypassed it: the non-hot-path bootstrap compactor, the hot-path bootstrap delivery, and the context dossier delivery. 49 tests, 385 regression pass. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

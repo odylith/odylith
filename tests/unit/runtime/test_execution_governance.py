@@ -1126,37 +1126,23 @@ def test_history_rule_collect_includes_new_failure_classes() -> None:
 
 
 def test_bootstrap_delivery_includes_execution_governance() -> None:
-    """Verify the bootstrap delivery path builds governance via the live CLI.
+    """Verify the non-hot-path bootstrap compactor injects execution governance."""
+    from odylith.runtime.context_engine import session_bootstrap_payload_compactor
 
-    The bootstrap module uses a late-binding pattern that requires full context
-    engine initialization, so we test through the CLI entry point instead of
-    calling the function directly.
-    """
-    import subprocess
+    payload = {
+        "context_packet": {
+            "packet_kind": "bootstrap_session",
+            "route": {"route_ready": True, "native_spawn_ready": True},
+        },
+        "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        "changed_paths": ["src/odylith/runtime/execution_engine/contract.py"],
+        "selection_state": "selected",
+    }
+    compact = session_bootstrap_payload_compactor.compact_finalized_bootstrap_payload(payload)
 
-    result = subprocess.run(
-        ["./.odylith/bin/odylith", "start", "--repo-root", "."],
-        capture_output=True, text=True, timeout=30,
-    )
-    combined = result.stdout + result.stderr
-    start = combined.find("{")
-    if start < 0:
-        assert False, f"odylith start produced no JSON: {combined[:200]}"
-    depth = 0
-    end = start
-    for i, ch in enumerate(combined[start:], start):
-        if ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-        if depth == 0:
-            end = i + 1
-            break
-    import json
-    payload = json.loads(combined[start:end])
-    context_packet = payload.get("context_packet", {})
+    context_packet = compact.get("context_packet", {})
     eg = context_packet.get("execution_governance", {})
-    assert eg, f"execution_governance should be present in bootstrap; got keys: {sorted(payload.keys())}"
+    assert eg, f"execution_governance should be present in bootstrap; got context_packet keys: {sorted(context_packet.keys())}"
     assert "outcome" in eg
     assert "mode" in eg
 

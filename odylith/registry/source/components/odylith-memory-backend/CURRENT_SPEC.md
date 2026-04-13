@@ -1,8 +1,8 @@
 # Odylith Memory Backend
-Last updated: 2026-04-07
+Last updated: 2026-04-13
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-13
 
 ## Purpose
 Odylith Memory Backend is the local-first derived memory substrate that stores
@@ -131,6 +131,26 @@ without polluting the coding hot path.
   off by default until it improves precision, hallucination control, and
   warm/cold consistency without harming recall or validation.
 
+## Connection Lifecycle
+
+The current connection model is stateless open-close: every `exact_lookup`,
+`sparse_search`, and `hybrid_rerank_search` call opens a fresh
+`lancedb.connect()` and `tantivy.Index.open()`, runs the query, and tears down.
+No connection pooling, no caching, no singleton. This is correct for
+multi-repo and multi-session safety but incurs per-query overhead dominated by
+Python process startup (~200ms) rather than the LanceDB/Tantivy open itself
+(~5-10ms) or the query (~sub-ms for 2,711 documents).
+
+The daemon infrastructure (`odylith context-engine serve`) exists and supports
+Unix socket, TCP, and in-process transports, but it holds no warm connections
+even when running — each dispatched command opens and closes its own database
+handles independently.
+
+Connection caching with manifest-fingerprint invalidation is planned as
+[B-094](odylith/radar/radar.html?view=plan&workstream=B-094) to allow
+within-process reuse and daemon-held warm connections without sacrificing the
+isolation guarantees of the current model.
+
 ## Failure And Recovery Posture
 - Missing `lancedb`, `pyarrow`, or `tantivy` must degrade retrieval cleanly to
   the compiler snapshot path.
@@ -160,3 +180,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-29: Tightened memory coherence so open bug pressure survives multiline Casebook rows, contradiction memory retains cross-surface risk, onboarding continuity survives a hidden welcome state, and top-level memory readouts expose one coherent headline/status. (Plan: [B-011](odylith/radar/radar.html?view=plan&workstream=B-011))
 - 2026-04-05: Documented the current local-memory-first benchmark posture, making LanceDB plus Tantivy the explicit proof substrate and keeping hybrid rerank plus Vespa in the experiment lane until they show no-regression gains. (Plan: [B-021](odylith/radar/radar.html?view=plan&workstream=B-021))
 - 2026-04-07: Narrowed the backend's Registry boundary to the actual local backend plus judgment-memory contract and promoted the surrounding projection, remote, and packet-contract seams into sibling first-class components. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
+- 2026-04-13: Documented the stateless open-close connection lifecycle, the unused daemon warm-connection gap, and the planned connection-caching optimization with manifest-fingerprint invalidation. (Workstream: [B-094](odylith/radar/radar.html?view=plan&workstream=B-094))

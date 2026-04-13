@@ -4947,6 +4947,80 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-094",
+      "title": "Context Engine Connection Lifecycle and Process-Spawn Optimization",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-037"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-13-context-engine-connection-lifecycle-and-process-spawn-optimization.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-095",
+      "title": "Zero-Configuration Host Binary Discovery for Consumer Lane",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-13-zero-configuration-host-binary-discovery-for-consumer-lane.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -5977,6 +6051,20 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md"
     },
     {
+      "id": "B-094",
+      "type": "workstream",
+      "label": "Context Engine Connection Lifecycle and Process-Spawn Optimization",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-13-context-engine-connection-lifecycle-and-process-spawn-optimization.md"
+    },
+    {
+      "id": "B-095",
+      "type": "workstream",
+      "label": "Zero-Configuration Host Binary Discovery for Consumer Lane",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-13-zero-configuration-host-binary-discovery-for-consumer-lane.md"
+    },
+    {
       "id": "artifact:.github/workflows/release.yml",
       "type": "artifact",
       "label": ".github/workflows/release.yml",
@@ -6437,6 +6525,13 @@
       "label": "Governed Sync Shared Read Model and Incremental Derivation Loop",
       "diagram_id": "D-036",
       "file": "odylith/atlas/source/odylith-governed-sync-shared-read-model-and-incremental-derivation-loop.mmd"
+    },
+    {
+      "id": "diagram:D-037",
+      "type": "diagram",
+      "label": "Context Engine Connection Lifecycle and Process Topology",
+      "diagram_id": "D-037",
+      "file": "odylith/atlas/source/odylith-context-engine-connection-lifecycle-and-process-topology.mmd"
     },
     {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -9411,6 +9506,11 @@
       "source": "B-093",
       "target": "release:release-0-1-11",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-094",
+      "target": "diagram:D-037",
+      "edge_type": "diagram_linkage"
     }
   ],
   "coverage": {
@@ -10064,6 +10164,20 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-094": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-095": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -10115,15 +10229,15 @@
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 93,
+    "workstream_count": 95,
     "release_count": 2,
     "active_release_assignment_count": 8,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 230,
-    "edge_count": 506,
+    "node_count": 233,
+    "edge_count": 507,
     "warning_count": 4,
     "warning_item_count": 4
   },
-  "generated_utc": "2026-04-13 01:58:55Z"
+  "generated_utc": "2026-04-13 18:55:06Z"
 }

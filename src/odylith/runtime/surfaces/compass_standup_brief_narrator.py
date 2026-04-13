@@ -160,7 +160,7 @@ _WORKSTREAM_TOKEN_RE = re.compile(r"\bB-\d{3,}\b")
 _VOLATILE_FRESHNESS_TEXT_RE = re.compile(r"^Freshness signal is (?:aging|stale):", re.IGNORECASE)
 _MAX_BULLET_WORDS = 48
 _EMPTY_PROVIDER_MAX_ATTEMPTS = 2
-_COMPASS_PROVIDER_TIMEOUT_SECONDS = 30.0
+_COMPASS_PROVIDER_TIMEOUT_SECONDS = 60.0
 _PROVIDER_FACT_LIMITS_BY_SECTION = {
     "completed": 3,
     "current_execution": 4,
@@ -174,11 +174,14 @@ _COMPACT_RETRY_PROVIDER_FACT_LIMITS_BY_SECTION = {
     "risks_to_watch": 2,
 }
 _VALID_FRESHNESS_BUCKETS = {"live", "recent", "aging", "stale", "unknown"}
+_CLAUDE_COMPASS_NARRATION_MODEL = "claude-haiku-4-5"
+
+
 def _default_compass_reasoning_config() -> odylith_reasoning.ReasoningConfig:
     return odylith_reasoning.ReasoningConfig(
         mode="auto",
         provider="auto-local",
-        model="",
+        model=_CLAUDE_COMPASS_NARRATION_MODEL,
         base_url="",
         api_key="",
         scope_cap=5,
@@ -186,7 +189,7 @@ def _default_compass_reasoning_config() -> odylith_reasoning.ReasoningConfig:
         codex_bin="codex",
         codex_reasoning_effort="medium",
         claude_bin="claude",
-        claude_reasoning_effort="medium",
+        claude_reasoning_effort="low",
     )
 
 

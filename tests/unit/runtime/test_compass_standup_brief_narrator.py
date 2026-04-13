@@ -537,7 +537,7 @@ def test_provider_request_contract_emphasizes_maintainer_voice_without_a_dedicat
     assert "over the last 48 hours" in request.system_prompt.lower()
     assert request.model == ""
     assert request.reasoning_effort == "medium"
-    assert request.timeout_seconds == 30.0
+    assert request.timeout_seconds == 60.0
 
     assert "voice_values" not in request.prompt_payload["brief_contract"]
     assert all("required_voice_counts" not in section for section in request.prompt_payload["brief_contract"]["sections"])
@@ -2854,7 +2854,7 @@ def test_build_standup_brief_default_config_uses_auto_local_provider_contract(
     assert observed["require_auto_mode"] is False
     assert observed["allow_implicit_local_provider"] is True
     assert narrator._default_compass_reasoning_config().codex_reasoning_effort == "medium"  # noqa: SLF001
-    assert narrator._default_compass_reasoning_config().claude_reasoning_effort == "medium"  # noqa: SLF001
+    assert narrator._default_compass_reasoning_config().claude_reasoning_effort == "low"  # noqa: SLF001
     assert provider.calls == 1
 
 

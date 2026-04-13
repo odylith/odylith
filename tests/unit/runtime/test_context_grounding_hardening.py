@@ -384,12 +384,13 @@ def test_finalized_bootstrap_payload_compactor_drops_duplicate_views() -> None:
         "reason": "Need one code path.",
     }
     assert payload.get("packet_metrics") is None
-    assert payload["context_packet"] == {
-        "packet_kind": "bootstrap_session",
-        "packet_state": "gated_ambiguous",
-        "retrieval_plan": {"ambiguity_class": "no_candidates"},
-        "packet_quality": {"rc": "low"},
-    }
+    context_packet = payload["context_packet"]
+    assert context_packet["packet_kind"] == "bootstrap_session"
+    assert context_packet["packet_state"] == "gated_ambiguous"
+    assert context_packet["retrieval_plan"] == {"ambiguity_class": "no_candidates"}
+    assert context_packet["packet_quality"] == {"rc": "low"}
+    if "execution_governance" in context_packet:
+        assert isinstance(context_packet["execution_governance"], dict)
 
 
 def test_finalized_bootstrap_payload_compactor_preserves_turn_targets_and_anchor_followup() -> None:

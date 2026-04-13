@@ -1223,12 +1223,9 @@ def test_claude_cli_reasoning_provider_passes_schema_model_and_effort(
     assert isinstance(command, list)
     assert command[command.index("--model") + 1] == "claude-custom"
     assert command[command.index("--effort") + 1] == "low"
-    assert json.loads(command[command.index("--json-schema") + 1]) == {
-        "type": "object",
-        "required": ["ok"],
-        "additionalProperties": False,
-        "properties": {"ok": {"type": "boolean"}},
-    }
+    system_prompt = command[command.index("--append-system-prompt") + 1]
+    assert '"ok"' in system_prompt
+    assert "schema" in system_prompt.lower()
     assert observed["stdin"] == json.dumps({"case": "B-061"}, sort_keys=True, ensure_ascii=False)
     assert observed["timeout"] == 17.0
 

@@ -972,6 +972,7 @@ def _dashboard_surface_steps(
                     wait=True,
                     status_only=False,
                     emit_output=True,
+                    skip_settlement=True,
                 ),
                 mutation_classes=("generated_surfaces",),
                 paths=_surface_render_outputs("compass"),

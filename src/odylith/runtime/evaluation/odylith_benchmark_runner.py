@@ -699,6 +699,122 @@ def load_benchmark_progress(*, repo_root: Path) -> dict[str, Any]:
     return odylith_context_cache.read_json_object(progress_report_path(repo_root=repo_root))
 
 
+def _benchmark_exception_text(exc: BaseException | str) -> str:
+    if isinstance(exc, BaseException):
+        return f"{type(exc).__name__}: {exc}"
+    return str(exc).strip() or "benchmark runner exception"
+
+
+def _scenario_exception_result(
+    *,
+    scenario: Mapping[str, Any],
+    mode: str,
+    error: BaseException | str,
+    live_runner: bool = False,
+    packet_source: str = "",
+) -> dict[str, Any]:
+    normalized_mode = _normalize_mode(mode)
+    required_paths = [str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()]
+    critical_paths = [str(token).strip() for token in scenario.get("critical_paths", []) if str(token).strip()]
+    expected_write_paths = (
+        [str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()]
+        if bool(scenario.get("needs_write"))
+        else []
+    )
+    command_count = len([str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()])
+    error_text = _benchmark_exception_text(error)
+    resolved_packet_source = (
+        str(packet_source).strip()
+        or ("raw_codex_cli" if normalized_mode == _RAW_AGENT_BASELINE_MODE else "benchmark_exception")
+    )
+    result: dict[str, Any] = {
+        "kind": str(scenario.get("kind", "")).strip() or "packet",
+        "mode": normalized_mode,
+        "packet_source": resolved_packet_source,
+        "latency_ms": 0.0,
+        "packet": {
+            "within_budget": False,
+            "route_ready": False,
+            "live_status": "failed",
+        }
+        if live_runner or _is_live_public_mode(normalized_mode)
+        else {"within_budget": False, "route_ready": False},
+        "expectation_ok": False,
+        "expectation_details": {
+            "live_runner": bool(live_runner or _is_live_public_mode(normalized_mode)),
+            "codex_status": "failed" if live_runner or _is_live_public_mode(normalized_mode) else "not_applicable",
+            "validator_status": "failed",
+            "validator_status_basis": "benchmark_exception",
+            "structured_summary": error_text,
+            "validator_backed_noop_completion": False,
+            "validator_backed_completion": False,
+            "benchmark_exception": error_text,
+        },
+        "required_path_recall": 1.0 if not required_paths else 0.0,
+        "required_path_misses": required_paths,
+        "critical_path_misses": critical_paths,
+        "observed_paths": [],
+        "observed_path_sources": [],
+        "observed_path_count": 0,
+        "required_path_precision": 1.0 if not required_paths else 0.0,
+        "hallucinated_surface_count": 0,
+        "hallucinated_surface_rate": 0.0,
+        "hallucinated_surfaces": [],
+        "expected_write_path_count": len(expected_write_paths),
+        "candidate_write_path_count": 0,
+        "candidate_write_paths": [],
+        "write_surface_precision": 1.0 if not expected_write_paths else 0.0,
+        "unnecessary_widening_count": 0,
+        "unnecessary_widening_rate": 0.0,
+        "unnecessary_widening_paths": [],
+        "selected_doc_count": 0,
+        "selected_test_count": 0,
+        "selected_command_count": 0,
+        "strict_gate_command_count": command_count,
+        "effective_estimated_tokens": 0,
+        "total_payload_estimated_tokens": 0,
+        "validation_success_proxy": 0.0,
+        "validation_results": {
+            "status": "failed",
+            "status_basis": "benchmark_exception",
+            "duration_ms": 0.0,
+            "results": [],
+            "summary": error_text,
+        },
+        "preflight_evidence_mode": "none",
+        "preflight_evidence_commands": [],
+        "preflight_evidence_result_status": "not_applicable",
+        "full_scan": {},
+        "orchestration": {"leaf_count": 0},
+        "benchmark_exception": error_text,
+    }
+    if live_runner or _is_live_public_mode(normalized_mode):
+        result["live_execution"] = {
+            "exit_code": 1,
+            "structured_output": {
+                "status": "failed",
+                "summary": error_text,
+                "changed_files": [],
+                "validation_commands_run": [],
+                "validation_summary": "benchmark_exception",
+                "notes": [],
+            },
+            "stdout_tail": "",
+            "stderr_tail": error_text,
+            "preflight_evidence_mode": "none",
+            "preflight_evidence_commands": [],
+            "preflight_evidence_result_status": "not_applicable",
+            "observed_path_sources": [],
+            "failure_artifacts": {
+                "tracked_paths": [*required_paths, *expected_write_paths],
+                "workspace_state_post_codex": {},
+                "workspace_state_pre_validator": {},
+            },
+            "benchmark_exception": error_text,
+        }
+    return result
+
+
 def _benchmark_owned_codex_process_ids() -> list[int]:
     with contextlib.suppress(OSError, subprocess.SubprocessError):
         completed = subprocess.run(
@@ -3887,15 +4003,27 @@ def _run_live_scenario_batch(
 ) -> dict[str, dict[str, Any]]:
     live_modes = [_normalize_mode(str(token).strip()) for token in modes if _is_live_public_mode(str(token).strip())]
     ordered_live_modes = list(dict.fromkeys(live_modes))
-    prepared_requests = [
-        _prepare_live_scenario_request(
-            repo_root=repo_root,
-            scenario=scenario,
-            mode=mode,
-            benchmark_profile=benchmark_profile,
-        )
-        for mode in ordered_live_modes
-    ]
+    prepared_requests: list[dict[str, Any]] = []
+    request_by_mode: dict[str, dict[str, Any]] = {}
+    results: dict[str, dict[str, Any]] = {}
+    for mode in ordered_live_modes:
+        try:
+            request = _prepare_live_scenario_request(
+                repo_root=repo_root,
+                scenario=scenario,
+                mode=mode,
+                benchmark_profile=benchmark_profile,
+            )
+        except Exception as exc:
+            results[mode] = _scenario_exception_result(
+                scenario=scenario,
+                mode=mode,
+                error=exc,
+                live_runner=True,
+            )
+            continue
+        prepared_requests.append(request)
+        request_by_mode[mode] = request
     matched_pair_batch = len(prepared_requests) > 1
     paired_modes = [str(request.get("mode", "")).strip() for request in prepared_requests if str(request.get("mode", "")).strip()]
     for request in prepared_requests:
@@ -3918,18 +4046,50 @@ def _run_live_scenario_batch(
     for request in prepared_requests:
         request["snapshot_paths"] = list(shared_snapshot_paths)
     if not prepared_requests:
-        return {}
+        return results
     if len(prepared_requests) == 1:
         only_request = prepared_requests[0]
-        return {str(only_request.get("mode", "")).strip(): _run_prepared_live_scenario(only_request)}
-    results: dict[str, dict[str, Any]] = {}
+        only_mode = str(only_request.get("mode", "")).strip()
+        try:
+            results[only_mode] = _run_prepared_live_scenario(only_request)
+        except Exception as exc:
+            results[only_mode] = _scenario_exception_result(
+                scenario=scenario,
+                mode=only_mode,
+                error=exc,
+                live_runner=True,
+                packet_source=str(only_request.get("packet_source", "")).strip(),
+            )
+        return results
     with concurrent.futures.ThreadPoolExecutor(max_workers=min(_LIVE_MATCHED_PAIR_MAX_WORKERS, len(prepared_requests))) as executor:
         future_by_mode = {
             str(request.get("mode", "")).strip(): executor.submit(_run_prepared_live_scenario, request)
             for request in prepared_requests
         }
         for mode in ordered_live_modes:
-            results[mode] = future_by_mode[mode].result()
+            if mode in results:
+                continue
+            request = request_by_mode.get(mode, {})
+            future = future_by_mode.get(mode)
+            if future is None:
+                results[mode] = _scenario_exception_result(
+                    scenario=scenario,
+                    mode=mode,
+                    error="live benchmark batch did not schedule this mode",
+                    live_runner=True,
+                    packet_source=str(request.get("packet_source", "")).strip(),
+                )
+                continue
+            try:
+                results[mode] = future.result()
+            except Exception as exc:
+                results[mode] = _scenario_exception_result(
+                    scenario=scenario,
+                    mode=mode,
+                    error=exc,
+                    live_runner=True,
+                    packet_source=str(request.get("packet_source", "")).strip(),
+                )
     return results
 
 
@@ -4972,6 +5132,120 @@ def _clear_progress(*, repo_root: Path) -> None:
     with odylith_context_cache.advisory_lock(repo_root=repo_root, key=str(path)):
         if path.exists():
             path.unlink()
+
+
+def _failed_benchmark_report(
+    *,
+    repo_root: Path,
+    report_id: str,
+    benchmark_profile: str,
+    comparison_contract: str,
+    modes: Sequence[str],
+    cache_profiles: Sequence[str],
+    primary_cache_profile: str,
+    scenarios: Sequence[Mapping[str, Any]],
+    all_scenarios: Sequence[Mapping[str, Any]],
+    progress_payload: Mapping[str, Any],
+    selection_strategy: str,
+    latest_eligible: bool,
+    startup_hygiene: Mapping[str, Any],
+    corpus_contract: Mapping[str, Any],
+    error: BaseException | str,
+) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    normalized_profile = _normalize_benchmark_profile(benchmark_profile)
+    error_text = _benchmark_exception_text(error)
+    generated_utc = str(progress_payload.get("updated_utc", "")).strip() or _utc_now()
+    acceptance = {
+        "status": "failed",
+        "hard_quality_gate_cleared": False,
+        "secondary_guardrails_cleared": False,
+        "advisory_checks_cleared": False,
+        "checks": {
+            "benchmark_run_completed": False,
+        },
+        "hard_gate_failures": ["benchmark_run_completed"],
+        "hard_gate_failure_labels": [error_text],
+        "secondary_guardrail_failures": [],
+        "secondary_guardrail_failure_labels": [],
+        "advisory_failures": [],
+        "advisory_failure_labels": [],
+        "weak_families": [],
+        "advisory_families": [],
+        "notes": [f"Benchmark run aborted before report completion: {error_text}"],
+    }
+    report: dict[str, Any] = {
+        "contract": REPORT_CONTRACT,
+        "version": REPORT_VERSION,
+        "report_id": str(report_id).strip(),
+        "repo_root": str(root),
+        "benchmark_profile": normalized_profile,
+        "benchmark_profile_label": _benchmark_profile_label(normalized_profile),
+        "benchmark_profile_description": _benchmark_profile_description(normalized_profile),
+        "comparison_contract": str(comparison_contract).strip(),
+        "comparison_contract_details": _comparison_contract_details(str(comparison_contract).strip()),
+        "generated_utc": generated_utc,
+        "started_utc": str(progress_payload.get("started_utc", "")).strip() or generated_utc,
+        "modes": list(modes),
+        "cache_profiles": list(cache_profiles),
+        "primary_cache_profile": str(primary_cache_profile).strip() or "warm",
+        "selection_strategy": str(selection_strategy).strip() or "manual_selection",
+        "scenario_count": len(scenarios),
+        "selection": dict(progress_payload.get("selection", {}))
+        if isinstance(progress_payload.get("selection"), Mapping)
+        else {},
+        "latest_eligible": bool(latest_eligible),
+        "scenarios": [],
+        "published_scenarios": [],
+        "cache_profile_scenarios": {},
+        "cache_profile_summaries": {},
+        "cache_profile_reports": {},
+        "cache_profile_mode_rows": {},
+        "singleton_family_latency_probes": {},
+        "mode_summaries": {},
+        "published_mode_summaries": {},
+        "published_mode_table": {},
+        "published_mode_table_markdown": _published_mode_table_markdown({}),
+        "published_pair_timing_summary": {},
+        "full_pair_timing_summary": {},
+        "tracked_mode_table": {},
+        "tracked_mode_table_markdown": _published_mode_table_markdown({}),
+        "family_summaries": {},
+        "published_family_summaries": {},
+        "packet_source_summaries": {},
+        "published_packet_source_summaries": {},
+        "execution_contracts": {},
+        "family_deltas": {},
+        "published_family_deltas": {},
+        "packet_source_deltas": {},
+        "published_packet_source_deltas": {},
+        "primary_comparison": {},
+        "published_comparison": {},
+        "comparison": {},
+        "adoption_proof": {},
+        "runtime_posture": {},
+        "startup_hygiene": dict(startup_hygiene),
+        "final_hygiene": {},
+        "robustness_summary": {},
+        "corpus_contract": dict(corpus_contract),
+        "corpus_composition": _corpus_composition(
+            scenarios=scenarios,
+            available_scenarios=all_scenarios,
+        ),
+        "fairness_contract_passed": True,
+        "fairness_findings": [],
+        "observed_path_sources": [],
+        "preflight_evidence_mode": "none",
+        "preflight_evidence_commands": [],
+        "preflight_evidence_result_status": "not_applicable",
+        "preflight_evidence_modes": [],
+        "status": "failed",
+        "acceptance": acceptance,
+        "error": error_text,
+    }
+    report["published_summary"] = compact_report_summary(report)
+    report["summary_text"] = _render_report_summary(report)
+    return report
 
 
 def _family_summaries(
@@ -7122,7 +7396,7 @@ def run_benchmarks(
                     live_batch_results: dict[str, dict[str, Any]] = {}
                     live_batch_modes = (
                         [normalized_mode for normalized_mode in normalized_modes if _is_live_public_mode(normalized_mode)]
-                        if live_batching_available and use_live_public_modes
+                        if live_batching_available and use_live_public_modes and not sharded_run
                         else []
                     )
                     live_batch_executed = False
@@ -7209,15 +7483,21 @@ def run_benchmarks(
             )
             if not sharded_run:
                 _write_progress(repo_root=root, payload=progress_payload)
-            latency_probes = _singleton_family_latency_probes(
-                repo_root=root,
-                scenarios=scenarios,
-                modes=normalized_modes,
-                cache_profiles=normalized_cache_profiles,
-                benchmark_profile=normalized_profile,
+            latency_probes = (
+                {}
+                if sharded_run
+                else _singleton_family_latency_probes(
+                    repo_root=root,
+                    scenarios=scenarios,
+                    modes=normalized_modes,
+                    cache_profiles=normalized_cache_profiles,
+                    benchmark_profile=normalized_profile,
+                )
             )
             final_hygiene = (
-                _enforce_diagnostic_runtime_hygiene(repo_root=root)
+                {}
+                if sharded_run
+                else _enforce_diagnostic_runtime_hygiene(repo_root=root)
                 if normalized_profile == BENCHMARK_PROFILE_DIAGNOSTIC
                 else _benchmark_runtime_hygiene_snapshot(repo_root=root)
             )
@@ -7372,9 +7652,9 @@ def run_benchmarks(
                 grouped_summaries=published_packet_source_summaries,
                 compare=_summary_comparison,
             )
-            adoption_proof = _run_live_adoption_proof(repo_root=root, scenarios=scenarios)
-            runtime_posture = _runtime_posture_summary(repo_root=root)
-            if int(adoption_proof.get("sample_size", 0) or 0) > 0:
+            adoption_proof = {} if sharded_run else _run_live_adoption_proof(repo_root=root, scenarios=scenarios)
+            runtime_posture = {} if sharded_run else _runtime_posture_summary(repo_root=root)
+            if not sharded_run and int(adoption_proof.get("sample_size", 0) or 0) > 0:
                 runtime_posture["route_ready_rate"] = float(adoption_proof.get("route_ready_rate", 0.0) or 0.0)
                 runtime_posture["native_spawn_ready_rate"] = float(
                     adoption_proof.get("native_spawn_ready_rate", 0.0) or 0.0
@@ -7427,10 +7707,14 @@ def run_benchmarks(
                     if isinstance(result, Mapping) and str(result.get("preflight_evidence_result_status", "")).strip()
                 }
             )
-            robustness_summary = _robustness_summary(
-                cache_profile_summaries=cache_profile_summaries,
-                candidate_mode=_ODYLITH_ON_MODE,
-                latency_probes=latency_probes,
+            robustness_summary = (
+                {}
+                if sharded_run
+                else _robustness_summary(
+                    cache_profile_summaries=cache_profile_summaries,
+                    candidate_mode=_ODYLITH_ON_MODE,
+                    latency_probes=latency_probes,
+                )
             )
             published_mode_table = _published_mode_table(
                 mode_summaries=published_mode_summaries,
@@ -7605,6 +7889,30 @@ def run_benchmarks(
                     "error": f"{type(exc).__name__}: {exc}",
                 }
             )
+            if write_report:
+                failed_report = _failed_benchmark_report(
+                    repo_root=root,
+                    report_id=report_id,
+                    benchmark_profile=normalized_profile,
+                    comparison_contract=comparison_contract,
+                    modes=normalized_modes,
+                    cache_profiles=normalized_cache_profiles,
+                    primary_cache_profile=primary_cache_profile,
+                    scenarios=scenarios,
+                    all_scenarios=all_scenarios,
+                    progress_payload=progress_payload,
+                    selection_strategy=selection_strategy,
+                    latest_eligible=latest_eligible,
+                    startup_hygiene=startup_hygiene,
+                    corpus_contract=corpus_contract,
+                    error=exc,
+                )
+                odylith_context_cache.write_json_if_changed(
+                    repo_root=root,
+                    path=history_report_path(repo_root=root, report_id=report_id),
+                    payload=failed_report,
+                    lock_key=str(history_report_path(repo_root=root, report_id=report_id)),
+                )
             if not sharded_run:
                 _write_progress(repo_root=root, payload=progress_payload)
             raise

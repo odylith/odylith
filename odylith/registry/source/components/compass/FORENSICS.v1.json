@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 57,
+    "explicit_event_count": 61,
     "mapped_workstream_evidence_count": 4,
     "recent_path_match_count": 0,
     "spec_history_event_count": 27,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 57
+    "timeline_event_count": 61
   },
   "name": "Compass",
   "path_prefixes": [
@@ -50,6 +50,70 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 122,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "Here's the final state: Compass refresh performance: First run (cold, no cached briefs): ~22s \u2014 narrates 2 global briefs through Claude Haiku in parallel, defers 8 scoped briefs...",
+      "ts_iso": "2026-04-13T13:16:58-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 121,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "That's the full tests/unit/runtime/ suite completing \u2014 1397 passed, and the 5 failures I already fixed (compass refresh kwargs, compactor shape assertion, plus the 2 pre-existin...",
+      "ts_iso": "2026-04-13T12:17:59-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 115,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "The standup brief and the Compass refresh are two different things.",
+      "ts_iso": "2026-04-13T11:35:22-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 114,
+      "explicit_components": [
+        "compass"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": false,
+      "summary": "Compass refresh completed in 2.0 seconds, standalone mode.",
+      "ts_iso": "2026-04-13T11:23:45-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

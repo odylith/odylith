@@ -18,6 +18,37 @@ DEFAULT_SCOPED_PROVIDER_PACK_SIZE = 12
 DEFAULT_SCOPED_PROVIDER_PACK_MAX_CHARS = 18000
 DEFAULT_BUNDLE_PROVIDER_MAX_CHARS = 18000
 DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES = 4
+_PARALLEL_PACK_TARGET_ENTRIES = 12
+
+# Context window budgets per host family. Use ~40% of the model's context window
+# for the prompt payload to leave room for system prompt, schema, and output.
+_HOST_CONTEXT_BUDGET: dict[str, tuple[int, int]] = {
+    # (max_chars, max_entries) — chars is a rough proxy for tokens at ~4 chars/token
+    "claude": (160000, 24),    # Haiku/Sonnet/Opus: 200K context → 160K budget
+    "codex": (160000, 24),     # Codex Spark/Codex: 200K context → 160K budget
+    "unknown": (18000, 4),     # Conservative fallback for unknown hosts
+}
+
+
+def _host_aware_bundle_budget(
+    config: odylith_reasoning.ReasoningConfig | None = None,
+) -> tuple[int, int]:
+    """Return (max_chars, max_entries) based on the resolved provider's host family."""
+    if config is None:
+        return DEFAULT_BUNDLE_PROVIDER_MAX_CHARS, DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES
+    provider_token = str(config.provider or "").strip().lower()
+    if "claude" in provider_token:
+        return _HOST_CONTEXT_BUDGET["claude"]
+    if "codex" in provider_token:
+        return _HOST_CONTEXT_BUDGET["codex"]
+    import os
+    from odylith.runtime.common import host_runtime as host_runtime_contract
+    detected = host_runtime_contract.detect_host_runtime(environ=os.environ)
+    if detected == "claude_cli":
+        return _HOST_CONTEXT_BUDGET["claude"]
+    if detected == "codex_cli":
+        return _HOST_CONTEXT_BUDGET["codex"]
+    return _HOST_CONTEXT_BUDGET["unknown"]
 _ABORT_FANOUT_FAILURE_CODES = frozenset(
     {
         "rate_limited",
@@ -716,6 +747,8 @@ def _bundle_provider_request(
         for scope_id in window_packets
     ]
     profile = narrator._provider_request_profile(config=config)  # noqa: SLF001
+    entry_count = len(window_keys) + len(scope_ids)
+    scaled_timeout = max(30.0, 10.0 * max(1, entry_count))
     return odylith_reasoning.StructuredReasoningRequest(
         system_prompt=_bundle_provider_system_prompt(),
         schema_name="compass_standup_brief_bundle",
@@ -727,7 +760,7 @@ def _bundle_provider_request(
         ),
         model=profile.model,
         reasoning_effort=profile.reasoning_effort,
-        timeout_seconds=max(45.0, narrator._COMPASS_PROVIDER_TIMEOUT_SECONDS * 2),  # noqa: SLF001
+        timeout_seconds=scaled_timeout,
     )
 
 
@@ -1792,6 +1825,7 @@ def build_brief_bundle(
     config: odylith_reasoning.ReasoningConfig | None = None,
     provider: odylith_reasoning.ReasoningProvider | None = None,
     max_bundle_payload_chars: int = DEFAULT_BUNDLE_PROVIDER_MAX_CHARS,
+    defer_scoped: bool = False,
 ) -> dict[str, Any]:
     """Build one packet-level narrated bundle with exact-cache reuse first."""
 
@@ -1927,14 +1961,45 @@ def build_brief_bundle(
     provider_scoped: dict[str, dict[str, dict[str, Any]]] = {}
     blocked_global: dict[str, dict[str, Any]] = {}
     blocked_scoped: dict[str, dict[str, dict[str, Any]]] = {}
+    use_host_aware_budget = max_bundle_payload_chars == DEFAULT_BUNDLE_PROVIDER_MAX_CHARS
+    if use_host_aware_budget:
+        host_max_chars, host_max_entries = _host_aware_bundle_budget(config=resolved_config)
+    else:
+        host_max_chars, host_max_entries = max_bundle_payload_chars, DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES
+    immediate_global = cold_global
+    if defer_scoped:
+        deferred_scoped = cold_scoped
+        immediate_scoped: dict[str, dict[str, Mapping[str, Any]]] = {}
+    else:
+        immediate_scoped = cold_scoped
+        deferred_scoped = {}
+    if deferred_scoped:
+        for window_key, window_packets in deferred_scoped.items():
+            if not isinstance(window_packets, Mapping):
+                continue
+            deferred_window: dict[str, dict[str, Any]] = {}
+            for scope_id, fact_packet in window_packets.items():
+                if not isinstance(fact_packet, Mapping):
+                    continue
+                deferred_window[str(scope_id).strip()] = _skip_brief(
+                    fingerprint="",
+                    generated_utc=generated_utc,
+                    decision_reason="deferred_to_background",
+                )
+            if deferred_window:
+                skipped_scoped[str(window_key).strip()] = deferred_window
+    pack_entry_limit = 1 if defer_scoped else host_max_entries
     bundle_packs = _bundle_provider_subset_by_window(
         repo_root=repo_root,
-        global_packets_by_window=cold_global,
-        scoped_packets_by_window=cold_scoped,
-        max_payload_chars=max_bundle_payload_chars,
+        global_packets_by_window=immediate_global,
+        scoped_packets_by_window=immediate_scoped,
+        max_payload_chars=host_max_chars,
+        max_entries=pack_entry_limit,
     )
-    for pack_index, (pack_globals, pack_scoped) in enumerate(bundle_packs):
-        pack_ready_global, pack_ready_scoped = _resolve_bundle_pack(
+
+    def _resolve_pack(pack_data: tuple[dict[str, Mapping[str, Any]], dict[str, dict[str, Mapping[str, Any]]]]) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, dict[str, Any]]]]:
+        pack_globals, pack_scoped = pack_data
+        return _resolve_bundle_pack(
             repo_root=repo_root,
             global_packets_by_window=pack_globals,
             scoped_packets_by_window=pack_scoped,
@@ -1943,41 +2008,59 @@ def build_brief_bundle(
             config=resolved_config,
             provider=resolved_provider,
         )
-        provider_global.update(pack_ready_global)
-        for window_key, window_results in pack_ready_scoped.items():
-            merged_window = dict(provider_scoped.get(window_key, {}))
-            merged_window.update(window_results)
-            provider_scoped[window_key] = merged_window
-        if _provider_failure_should_abort_fanout(resolved_provider):
-            remaining_global: dict[str, Mapping[str, Any]] = {}
-            remaining_scoped: dict[str, dict[str, Mapping[str, Any]]] = {}
-            for remaining_globals, remaining_scoped_window in bundle_packs[pack_index:]:
-                remaining_global.update(
-                    {
-                        str(window_key).strip(): dict(fact_packet)
-                        for window_key, fact_packet in remaining_globals.items()
-                        if str(window_key).strip() and isinstance(fact_packet, Mapping)
-                    }
-                )
-                for window_key, window_packets in remaining_scoped_window.items():
-                    if not str(window_key).strip() or not isinstance(window_packets, Mapping):
-                        continue
-                    merged_window = dict(remaining_scoped.get(str(window_key).strip(), {}))
-                    merged_window.update(
+
+    if defer_scoped and len(bundle_packs) > 1:
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(bundle_packs), 4)) as pool:
+            futures = [pool.submit(_resolve_pack, pack) for pack in bundle_packs]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    pack_ready_global, pack_ready_scoped = future.result()
+                except Exception:
+                    continue
+                provider_global.update(pack_ready_global)
+                for window_key, window_results in pack_ready_scoped.items():
+                    merged_window = dict(provider_scoped.get(window_key, {}))
+                    merged_window.update(window_results)
+                    provider_scoped[window_key] = merged_window
+    else:
+        for pack_index, (pack_globals, pack_scoped) in enumerate(bundle_packs):
+            pack_ready_global, pack_ready_scoped = _resolve_pack((pack_globals, pack_scoped))
+            provider_global.update(pack_ready_global)
+            for window_key, window_results in pack_ready_scoped.items():
+                merged_window = dict(provider_scoped.get(window_key, {}))
+                merged_window.update(window_results)
+                provider_scoped[window_key] = merged_window
+            if _provider_failure_should_abort_fanout(resolved_provider):
+                remaining_global: dict[str, Mapping[str, Any]] = {}
+                remaining_scoped: dict[str, dict[str, Mapping[str, Any]]] = {}
+                for remaining_globals, remaining_scoped_window in bundle_packs[pack_index:]:
+                    remaining_global.update(
                         {
-                            str(scope_id).strip(): dict(fact_packet)
-                            for scope_id, fact_packet in window_packets.items()
-                            if str(scope_id).strip() and isinstance(fact_packet, Mapping)
+                            str(wk).strip(): dict(fp)
+                            for wk, fp in remaining_globals.items()
+                            if str(wk).strip() and isinstance(fp, Mapping)
                         }
                     )
-                    remaining_scoped[str(window_key).strip()] = merged_window
-            blocked_global, blocked_scoped = _provider_failure_briefs_for_packets(
-                global_packets_by_window=remaining_global,
-                scoped_packets_by_window=remaining_scoped,
-                generated_utc=generated_utc,
-                provider=resolved_provider,
-            )
-            break
+                    for wk, wp in remaining_scoped_window.items():
+                        if not str(wk).strip() or not isinstance(wp, Mapping):
+                            continue
+                        mw = dict(remaining_scoped.get(str(wk).strip(), {}))
+                        mw.update(
+                            {
+                                str(sid).strip(): dict(fp)
+                                for sid, fp in wp.items()
+                                if str(sid).strip() and isinstance(fp, Mapping)
+                            }
+                        )
+                        remaining_scoped[str(wk).strip()] = mw
+                blocked_global, blocked_scoped = _provider_failure_briefs_for_packets(
+                    global_packets_by_window=remaining_global,
+                    scoped_packets_by_window=remaining_scoped,
+                    generated_utc=generated_utc,
+                    provider=resolved_provider,
+                )
+                break
 
     _persist_provider_results(
         repo_root=repo_root,

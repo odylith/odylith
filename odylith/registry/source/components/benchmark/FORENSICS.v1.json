@@ -18,10 +18,10 @@
     "empty_reasons": [],
     "explicit_event_count": 8,
     "mapped_workstream_evidence_count": 8,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 9
+    "timeline_event_count": 8
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -34,27 +34,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "docs/benchmarks/FAMILIES_AND_EVALS.md",
-        "docs/benchmarks/README.md",
-        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
-        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
-        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
-      ],
-      "confidence": "high",
-      "event_index": 113,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "benchmark"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/FAMILIES_AND_EVALS.md, docs/benchmarks/README.md +4 more",
-      "ts_iso": "2026-04-12T20:33:52-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/radar/source/INDEX.md",
