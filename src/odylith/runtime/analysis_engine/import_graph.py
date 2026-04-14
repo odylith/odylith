@@ -509,11 +509,12 @@ def _group_by_filename_prefix(
     e.g., compass_dashboard_runtime.py, compass_standup_brief.py → "compass"
           claude_host_session_brief.py, claude_host_bash_guard.py → "claude_host"
     """
+    filenames = [Path(art.path).stem for art in artifacts]
+    prefix_map = _refine_prefixes_by_frequency(filenames)
+
     groups: dict[str, list[ImportArtifact]] = {}
-    for art in artifacts:
-        filename = Path(art.path).stem
-        # Find the longest common prefix that groups at least 2 files
-        prefix = _extract_meaningful_prefix(filename)
+    for art, fname in zip(artifacts, filenames):
+        prefix = prefix_map.get(fname, fname.split("_")[0])
         groups.setdefault(prefix, []).append(art)
 
     # Merge tiny groups (< 2 files) into an "other" bucket
@@ -534,32 +535,56 @@ def _group_by_filename_prefix(
 
 
 def _extract_meaningful_prefix(filename: str) -> str:
-    """Extract the semantic prefix from a filename like 'compass_dashboard_runtime' → 'compass'."""
+    """Extract a grouping prefix from a filename using frequency analysis.
+
+    No domain-specific knowledge — works on any codebase by detecting the
+    natural word boundary where filenames diverge.
+    """
     parts = filename.split("_")
     if not parts:
         return filename
+    # Use the first word as the default prefix
+    return parts[0]
 
-    # Common multi-word prefixes to detect
-    two_word_prefixes = {
-        "claude_host", "codex_host", "compass_standup", "compass_dashboard",
-        "compass_execution", "compass_narrative", "compass_runtime",
-        "render_backlog", "render_casebook", "render_compass", "render_registry",
-        "render_tooling", "dashboard_template", "dashboard_ui",
-        "tooling_dashboard", "execution_wave",
-    }
 
-    if len(parts) >= 2:
-        two = f"{parts[0]}_{parts[1]}"
-        if two in two_word_prefixes:
-            return two
+def _refine_prefixes_by_frequency(
+    filenames: list[str],
+) -> dict[str, str]:
+    """Compute the best grouping prefix for each filename by analyzing
+    which prefixes produce the most balanced groups.
 
-    # Single-word prefix
-    first = parts[0]
-    # Skip overly generic prefixes
-    if first in ("render", "build", "auto", "generated", "update"):
+    Strategy: try 1-word and 2-word prefixes. A 2-word prefix wins if
+    it groups at least 3 files and the 1-word prefix would be too broad
+    (groups > 60% of all files).
+    """
+    total = len(filenames)
+    if total < 4:
+        return {f: f.split("_")[0] if "_" in f else f for f in filenames}
+
+    # Count 1-word and 2-word prefix frequencies
+    one_word: Counter[str] = Counter()
+    two_word: Counter[str] = Counter()
+    for f in filenames:
+        parts = f.split("_")
+        if parts:
+            one_word[parts[0]] += 1
         if len(parts) >= 2:
-            return f"{first}_{parts[1]}"
-    return first
+            two_word[f"{parts[0]}_{parts[1]}"] += 1
+
+    # For each filename, pick the best prefix
+    result: dict[str, str] = {}
+    for f in filenames:
+        parts = f.split("_")
+        p1 = parts[0] if parts else f
+        p2 = f"{parts[0]}_{parts[1]}" if len(parts) >= 2 else ""
+
+        # Use 2-word prefix if it groups 3+ files AND the 1-word prefix is too broad
+        if p2 and two_word.get(p2, 0) >= 3 and one_word.get(p1, 0) > total * 0.5:
+            result[f] = p2
+        else:
+            result[f] = p1
+
+    return result
 
 
 def _count_cross_component_edges(
