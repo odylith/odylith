@@ -20,6 +20,7 @@ from odylith.runtime.analysis_engine.types import (
     progress,
     slugify,
 )
+from odylith.runtime.analysis_engine import component_discovery
 from odylith.runtime.analysis_engine import import_graph
 from odylith.runtime.analysis_engine import repo_analysis
 
@@ -53,7 +54,7 @@ def analyze_repo(repo_root: Path) -> ShowResult:
     result.total_modules = len(artifacts)
 
     if artifacts:
-        all_components = import_graph.discover_components_from_imports(repo_root, artifacts, edges)
+        all_components = component_discovery.discover_components_from_imports(repo_root, artifacts, edges)
     else:
         all_components = repo_analysis.discover_components_fallback(repo_root, result.identity)
 
@@ -73,8 +74,8 @@ def analyze_repo(repo_root: Path) -> ShowResult:
         result.component_postures, result.already_governed, edges,
     )
 
-    # Phase 5: Grounded diagrams from import edges
-    all_diagrams = _suggest_grounded_diagrams(result.components, result.identity, repo_root, edges)
+    # Phase 5: Grounded diagrams — use the surviving components but ALL edges for evidence
+    all_diagrams = _suggest_grounded_diagrams(result.components, result.identity, repo_root, edges, all_components)
     result.diagrams = [d for d in all_diagrams if d.slug not in existing_diagram_slugs]
 
     # Phase 6: Issues
@@ -262,6 +263,7 @@ def _suggest_grounded_diagrams(
     identity: Any,
     repo_root: Path,
     edges: list[Any],
+    all_components: list[ComponentSuggestion] | None = None,
 ) -> list[DiagramSuggestion]:
     """Suggest diagrams grounded in actual import edges, not templates."""
     diagrams: list[DiagramSuggestion] = []
@@ -270,12 +272,12 @@ def _suggest_grounded_diagrams(
     if not components:
         return diagrams
 
-    # Count cross-component edges for diagram evidence
-    comp_paths = {c.path for c in components}
+    # Use all_components for edge counting (includes pre-filter components)
+    lookup_components = all_components if all_components else components
     cross_edges: Counter[tuple[str, str]] = Counter()
     for edge in edges:
-        src_comp = _path_to_component(edge.source_path if hasattr(edge, "source_path") else edge.get("source_path", ""), components)
-        tgt_comp = _path_to_component(edge.target_path if hasattr(edge, "target_path") else edge.get("target_path", ""), components)
+        src_comp = _path_to_component(edge.source_path if hasattr(edge, "source_path") else "", lookup_components)
+        tgt_comp = _path_to_component(edge.target_path if hasattr(edge, "target_path") else "", lookup_components)
         if src_comp and tgt_comp and src_comp != tgt_comp:
             pair = tuple(sorted([src_comp, tgt_comp]))
             cross_edges[pair] += 1
@@ -413,7 +415,13 @@ def format_text(result: ShowResult) -> str:
     if has_any:
         lines.append("Run any command to create it.")
     else:
-        lines.append("Nothing new to suggest.")
+        governed_count = sum(1 for v in result.already_governed.values() if v)
+        if governed_count == 4:
+            lines.append("Your repo is well-governed across all surfaces. Nothing new to suggest.")
+            if result.total_modules:
+                lines.append(f"The import graph covers {result.total_modules} modules — use `odylith context` to ground agent sessions in that structure.")
+        else:
+            lines.append("Nothing to suggest yet. Run `odylith show` again after adding source files.")
 
     return "\n".join(lines)
 
