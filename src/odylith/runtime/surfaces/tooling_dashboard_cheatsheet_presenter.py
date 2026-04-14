@@ -567,11 +567,14 @@ def build_agent_cheatsheet_state(payload: Mapping[str, Any]) -> AgentCheatsheetS
     if not cards:
         cards = list(_default_cards())
     return AgentCheatsheetState(
-        title=str(raw_state.get("title", "")).strip() or "",
-        note=str(raw_state.get("note", "")).strip() or "",
+        title=str(raw_state.get("title", "")).strip() or "Odylith Dashboard Cheatsheet",
+        note=(
+            str(raw_state.get("note", "")).strip()
+            or "Release planning picks the ship target for one workstream, like `B-067 -> 0.1.11`. Program/wave planning picks execution order under one umbrella, like `B-021 -> W1, W2, W3`. A workstream can belong to both. Replace the names and ids; when a prompt names a component like payments or a workstream id like B-025, Odylith scopes to the tied files and governed records."
+        ),
         search_placeholder=(
             str(raw_state.get("search_placeholder", "")).strip()
-            or "Search prompts, commands, or surfaces..."
+            or "Search a surface, action, prompt, route, CLI, or Atlas win..."
         ),
         cards=tuple(cards),
     )
@@ -662,11 +665,15 @@ def render_agent_cheatsheet_html(payload: Mapping[str, Any]) -> str:
     return (
         '<section class="agent-cheatsheet-shell" data-agent-cheatsheet="true">'
         '<div class="agent-cheatsheet-toolbar">'
+        '<div class="agent-cheatsheet-toolbar-copy">'
+        '<p class="agent-cheatsheet-kicker">Prompt + CLI quick path</p>'
+        f'<p id="agentCheatsheetResults" class="agent-cheatsheet-results" aria-live="polite">{len(state.cards)} workflows ready</p>'
+        "</div>"
         '<label class="agent-cheatsheet-search" for="agentCheatsheetSearch">'
-        '<span class="agent-cheatsheet-search-label">Search</span>'
+        '<span class="agent-cheatsheet-search-label">Search workflows</span>'
         f'<input id="agentCheatsheetSearch" class="agent-cheatsheet-search-input" data-cheatsheet-search="true" type="search" placeholder="{html.escape(state.search_placeholder, quote=True)}" autocomplete="off" spellcheck="false" />'
         "</label>"
-        f'<p id="agentCheatsheetCopyStatus" class="agent-cheatsheet-copy-status" aria-live="polite"></p>'
+        f'<p id="agentCheatsheetCopyStatus" class="agent-cheatsheet-copy-status" aria-live="polite">{html.escape(state.note)}</p>'
         f'<div class="agent-cheatsheet-filter-row">{"".join(filter_buttons)}</div>'
         "</div>"
         f'<div id="agentCheatsheetCardList" class="agent-cheatsheet-card-list">{"".join(cards_html)}</div>'
