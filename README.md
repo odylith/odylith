@@ -11,9 +11,11 @@
 
 Install it into any repo. Use it through Codex or Claude Code.
 
-Odylith improves the operating frame around the model — grounding, continuity,
-governance, validation, and recovery — so the agent operates from real repo
-truth instead of guessing. Both Codex and Claude Code are first-class hosts.
+Odylith gives the model a better operating frame: deterministic grounding,
+durable repo-local memory, execution governance, delivery intelligence,
+structured recovery, and bounded delegation. The model weights stay the same.
+Everything around them gets sharper. Both Codex and Claude Code are first-class
+hosts.
 
 More on the operating frame:
 [Why Bolting Odylith Onto Codex Or Claude Code Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
