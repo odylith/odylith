@@ -9,6 +9,8 @@
 <h2 align="center" style="font-size: 2.4rem;">Odylith Stops Coding Agents From Confidently Doing The Wrong Thing</h2>
 <p align="center" style="font-size: 1.35rem;"><strong>It makes coding agents operate like disciplined engineers instead of clever tourists.</strong></p>
 
+## Intro
+
 Install it into any repo. Use it through Codex or Claude Code.
 
 Without Odylith, every agent session starts from scratch. Reading the repo,
