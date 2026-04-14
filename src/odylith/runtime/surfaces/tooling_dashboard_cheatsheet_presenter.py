@@ -246,8 +246,8 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Start",
             title="Search governed memory",
             summary="Search repo memory for the exact phrase, posture, or proof trail you want to recover fast.",
-            prompt="Search Odylith for benchmark proof posture.",
-            command='odylith query --repo-root . "benchmark proof posture"',
+            prompt="Search Odylith for payment webhook idempotency.",
+            command='odylith query --repo-root . "payment webhook idempotency"',
             tags=("query", "memory", "search"),
         ),
         _card(
@@ -463,22 +463,31 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             tags=("developer-notes", "shell", "delete", "drop"),
         ),
         _card(
-            card_id="strict-sync",
+            card_id="sync-governance",
             category="Validate",
-            title="Run the strict canonical sync",
-            summary="Use the hardest proof path when you want release-grade confidence instead of a quick rerender.",
-            prompt="Run the strict Odylith sync before release proof.",
-            command="odylith sync --repo-root . --force --impact-mode full --registry-policy-mode enforce-critical --enforce-deep-skills",
-            tags=("sync", "proof", "contracts"),
+            title="Sync all governance surfaces",
+            summary="Run the full governance pipeline — validates contracts, renders all surfaces, mirrors the bundle.",
+            prompt="Sync the governance surfaces.",
+            command="odylith sync --repo-root . --force",
+            tags=("sync", "governance", "surfaces"),
         ),
         _card(
-            card_id="self-host-posture",
+            card_id="validate-backlog",
             category="Validate",
-            title="Check self-host posture",
-            summary="Verify whether the product repo is pinned or detached before you trust benchmark or release proof.",
-            prompt="Check self-host posture before release proof.",
-            command="odylith validate self-host-posture --repo-root .",
-            tags=("self-host", "lane", "release-proof"),
+            title="Validate the backlog",
+            summary="Check workstreams for schema, traceability, plan bindings, and queue posture.",
+            prompt="Validate the backlog.",
+            command="odylith validate backlog-contract --repo-root .",
+            tags=("validate", "backlog", "radar"),
+        ),
+        _card(
+            card_id="validate-registry",
+            category="Validate",
+            title="Validate the registry",
+            summary="Check components for shape, linkage, forensics, and policy.",
+            prompt="Validate the registry.",
+            command="odylith validate component-registry --repo-root .",
+            tags=("validate", "registry", "components"),
         ),
         _card(
             card_id="plan-binding-check",
@@ -558,14 +567,11 @@ def build_agent_cheatsheet_state(payload: Mapping[str, Any]) -> AgentCheatsheetS
     if not cards:
         cards = list(_default_cards())
     return AgentCheatsheetState(
-        title=str(raw_state.get("title", "")).strip() or "Odylith Dashboard Cheatsheet",
-        note=(
-            str(raw_state.get("note", "")).strip()
-            or "Release planning picks the ship target for one workstream, like `B-067 -> 0.1.11`. Program/wave planning picks execution order under one umbrella, like `B-021 -> W1, W2, W3`. A workstream can belong to both. Replace the names and ids; when a prompt names a component like payments or a workstream id like B-025, Odylith scopes to the tied files and governed records."
-        ),
+        title=str(raw_state.get("title", "")).strip() or "",
+        note=str(raw_state.get("note", "")).strip() or "",
         search_placeholder=(
             str(raw_state.get("search_placeholder", "")).strip()
-            or "Search a surface, action, prompt, route, CLI, or Atlas win..."
+            or "Search prompts, commands, or surfaces..."
         ),
         cards=tuple(cards),
     )
@@ -656,15 +662,11 @@ def render_agent_cheatsheet_html(payload: Mapping[str, Any]) -> str:
     return (
         '<section class="agent-cheatsheet-shell" data-agent-cheatsheet="true">'
         '<div class="agent-cheatsheet-toolbar">'
-        '<div class="agent-cheatsheet-toolbar-copy">'
-        '<p class="agent-cheatsheet-kicker">Prompt + CLI quick path</p>'
-        f'<p id="agentCheatsheetResults" class="agent-cheatsheet-results" aria-live="polite">{len(state.cards)} workflows ready</p>'
-        "</div>"
         '<label class="agent-cheatsheet-search" for="agentCheatsheetSearch">'
-        '<span class="agent-cheatsheet-search-label">Search workflows</span>'
+        '<span class="agent-cheatsheet-search-label">Search</span>'
         f'<input id="agentCheatsheetSearch" class="agent-cheatsheet-search-input" data-cheatsheet-search="true" type="search" placeholder="{html.escape(state.search_placeholder, quote=True)}" autocomplete="off" spellcheck="false" />'
         "</label>"
-        f'<p id="agentCheatsheetCopyStatus" class="agent-cheatsheet-copy-status" aria-live="polite">{html.escape(state.note)}</p>'
+        f'<p id="agentCheatsheetCopyStatus" class="agent-cheatsheet-copy-status" aria-live="polite"></p>'
         f'<div class="agent-cheatsheet-filter-row">{"".join(filter_buttons)}</div>'
         "</div>"
         f'<div id="agentCheatsheetCardList" class="agent-cheatsheet-card-list">{"".join(cards_html)}</div>'
