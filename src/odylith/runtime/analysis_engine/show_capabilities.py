@@ -60,13 +60,17 @@ def analyze_repo(repo_root: Path) -> ShowResult:
     # Deduplicate against existing registry
     result.components = [c for c in all_components if c.component_id not in existing_comp_ids]
 
+    # Match discovered components against existing registered boundaries by path
+    _annotate_registry_matches(repo_root, result.components, existing_comp_ids)
+
     # Phase 3: Delivery intelligence posture
     progress("Classifying governance posture...")
     result.component_postures = _classify_component_postures(repo_root, result.components)
 
-    # Phase 4: Workstreams
-    result.workstreams = repo_analysis.suggest_workstreams(
-        repo_root, result.identity, result.components, result.already_governed, scan_ctx,
+    # Phase 4: Workstreams — grounded in import graph insights
+    result.workstreams = _suggest_grounded_workstreams(
+        repo_root, result.identity, result.components,
+        result.component_postures, result.already_governed, edges,
     )
 
     # Phase 5: Grounded diagrams from import edges
@@ -87,6 +91,68 @@ def analyze_repo(repo_root: Path) -> ShowResult:
 # ---------------------------------------------------------------------------
 # Delivery intelligence integration
 # ---------------------------------------------------------------------------
+
+def _suggest_grounded_workstreams(
+    repo_root: Path,
+    identity: Any,
+    components: list[ComponentSuggestion],
+    postures: dict[str, ComponentPosture],
+    governed: dict[str, bool],
+    edges: list[Any],
+) -> list[WorkstreamSuggestion]:
+    """Suggest workstreams grounded in actual import-graph findings."""
+    workstreams: list[WorkstreamSuggestion] = []
+    repo_name = identity.name or repo_root.name
+
+    # 1. High-blast-radius components with no governance
+    risky = [c for c in components if c.component_id in postures
+             and postures[c.component_id].blast_radius in ("cross-surface", "contract-level")]
+    if risky and not governed.get("components"):
+        top = risky[0]
+        workstreams.append(WorkstreamSuggestion(
+            title=f"Register governance boundaries for {repo_name}",
+            description=(
+                f"{len(risky)} components have high blast radius but no governance. "
+                f"{top.label} alone has {top.n_inbound} dependents — changes there cascade silently without tracked ownership."
+            ),
+        ))
+
+    # 2. Tightly coupled component pairs (from cross-edges)
+    cross: Counter[tuple[str, str]] = Counter()
+    comp_paths = {c.path for c in components}
+    for edge in edges:
+        src = _path_to_component(edge.source_path if hasattr(edge, "source_path") else "", components)
+        tgt = _path_to_component(edge.target_path if hasattr(edge, "target_path") else "", components)
+        if src and tgt and src != tgt:
+            cross[tuple(sorted([src, tgt]))] += 1
+
+    if cross:
+        (a, b), count = cross.most_common(1)[0]
+        label_a = next((c.label for c in components if c.component_id == a), a)
+        label_b = next((c.label for c in components if c.component_id == b), b)
+        if count > 10:
+            workstreams.append(WorkstreamSuggestion(
+                title=f"Clarify the contract between {label_a} and {label_b}",
+                description=f"{count} import edges cross this boundary. Documenting the contract prevents breaking changes.",
+            ))
+
+    # 3. Volatile edge components (high fan-out, low fan-in)
+    volatile = [c for c in components if c.n_outbound > c.n_inbound * 3 and c.n_outbound > 10]
+    if volatile:
+        v = volatile[0]
+        workstreams.append(WorkstreamSuggestion(
+            title=f"Reduce coupling in {v.label}",
+            description=f"{v.label} depends on {v.n_outbound} modules but only {v.n_inbound} depend on it. High fan-out makes it fragile to upstream changes.",
+        ))
+
+    # Fallback if nothing graph-specific found
+    if not workstreams:
+        workstreams = repo_analysis.suggest_workstreams(
+            repo_root, identity, components, governed,
+        )
+
+    return workstreams[:3]
+
 
 def _classify_component_postures(
     repo_root: Path,
@@ -155,6 +221,41 @@ def _classify_component_postures(
 # ---------------------------------------------------------------------------
 # Grounded diagram suggestions
 # ---------------------------------------------------------------------------
+
+def _annotate_registry_matches(
+    repo_root: Path,
+    components: list[ComponentSuggestion],
+    existing_ids: set[str],
+) -> None:
+    """Check if discovered components overlap with existing registered boundaries by path prefix."""
+    registry_path = repo_root / "odylith" / "registry" / "source" / "component_registry.v1.json"
+    if not registry_path.is_file():
+        return
+    try:
+        data = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return
+    # Build path prefix lookup from existing components
+    existing_prefixes: dict[str, str] = {}
+    for entry in data.get("components", []):
+        if not isinstance(entry, dict):
+            continue
+        comp_id = str(entry.get("component_id", "")).strip()
+        for prefix in entry.get("path_prefixes", []):
+            existing_prefixes[str(prefix).strip()] = comp_id
+
+    # Note: we can't modify frozen dataclasses, so we filter out components
+    # whose path already falls under an existing registered boundary
+    # (This prevents suggesting a sub-component when the parent is already tracked)
+    to_remove: set[int] = set()
+    for idx, comp in enumerate(components):
+        for prefix, existing_id in existing_prefixes.items():
+            if comp.path.startswith(prefix) or prefix.startswith(comp.path):
+                to_remove.add(idx)
+                break
+    for idx in sorted(to_remove, reverse=True):
+        components.pop(idx)
+
 
 def _suggest_grounded_diagrams(
     components: list[ComponentSuggestion],
@@ -264,23 +365,21 @@ def format_text(result: ShowResult) -> str:
         other = [c for c in result.components if c.n_inbound <= 5]
 
         if core:
-            lines.append(f"Core boundaries ({len(core)} — high centrality, changes cascade):")
+            lines.append(f"Core boundaries ({len(core)}):")
             for comp in core:
                 posture = result.component_postures.get(comp.component_id)
-                posture_tag = f" [{posture.posture_mode.replace('_', ' ')}]" if posture else ""
-                lines.append(f'  \u2192 odylith component register "{comp.label}"')
-                blast = ""
+                posture_tag = ""
                 if posture and posture.blast_radius != "local":
-                    blast = f" Blast radius: {posture.blast_radius}."
-                lines.append(f"    {comp.description}.{blast}{posture_tag}")
+                    posture_tag = f" [{posture.blast_radius}]"
+                lines.append(f'  \u2192 odylith component register "{comp.label}"{posture_tag}')
+                lines.append(f"    {comp.description}")
             lines.append("")
 
         if other:
-            label = "Other boundaries:" if core else f"Component boundaries ({len(other)}):"
-            lines.append(label)
+            lines.append(f"Other boundaries ({len(other)}):")
             for comp in other:
                 lines.append(f'  \u2192 odylith component register "{comp.label}"')
-                lines.append(f"    {comp.description}.")
+                lines.append(f"    {comp.description}")
             lines.append("")
 
     # Workstreams

@@ -694,29 +694,25 @@ def _build_component_suggestions(
         if not comp_name:
             continue
 
-        # Build label from the full group path context
-        parts = comp_name.split("/")
-        deepest_dir = parts[-1] if parts else comp_name
-        comp_id = slugify(deepest_dir)
+        # Build label from the directory path — try all path parts left to right
+        path_parts = comp_name.split("/")
         rel_path = f"{module_prefix}/{comp_name}" if module_prefix else comp_name
-        file_names = [a.module_name.split(".")[-1] for a in comp_arts]
 
-        # For compound paths like "surfaces/compass", combine parent context + child name
-        if len(parts) >= 2:
-            parent_label = infer_label(parts[0], [], [])
-            child_label = infer_label(deepest_dir, [], file_names)
-            if child_label == humanize(deepest_dir):
-                # Child is generic — use parent + child humanized
-                label = f"{humanize(deepest_dir)} {parent_label}" if humanize(deepest_dir) != "Core" else parent_label
-            elif child_label != parent_label:
-                label = child_label
-            else:
-                label = f"{humanize(deepest_dir)} {parent_label}"
-        else:
-            label = infer_label(deepest_dir, [], file_names)
+        # The component ID comes from the most specific non-generic part
+        meaningful_parts = [p for p in path_parts if p and p.lower() not in ("core", "")]
+        comp_id = slugify(meaningful_parts[-1] if meaningful_parts else comp_name)
+
+        # Label inference: try each path part against patterns, pick the best match
+        label = _label_from_path_parts(path_parts)
 
         if label in seen_labels:
-            label = f"{label} ({humanize(deepest_dir)})"
+            # Disambiguate using the most specific path part that differs
+            all_parts = [p for p in path_parts if p and p.lower() not in ("core", "")]
+            suffix = humanize(all_parts[-1]) if all_parts else comp_id
+            if suffix.lower() != label.lower():
+                label = f"{suffix} {label}"
+            else:
+                label = f"{label} {comp_id}"
         seen_labels.add(label)
 
         n_modules = len(comp_arts)
@@ -742,33 +738,59 @@ def _build_component_suggestions(
     return components
 
 
+def _label_from_path_parts(parts: list[str]) -> str:
+    """Try each path part against the label patterns, return the most specific match.
+
+    For ["surfaces", "compass"] → try "compass" first (more specific), then "surfaces".
+    Skip generic parts like "core", empty strings.
+    """
+    generic = {"core", "main", "base", "default", "internal", "src", "lib", ""}
+
+    # Try from most specific (rightmost) to least specific (leftmost)
+    for part in reversed(parts):
+        if part.lower() in generic:
+            continue
+        label = infer_label(part, [], [])
+        if label != humanize(part):
+            return label
+
+    # No pattern match — try combining: parent + child humanized
+    meaningful = [p for p in parts if p.lower() not in generic]
+    if len(meaningful) >= 2:
+        return f"{humanize(meaningful[-1])} {humanize(meaningful[0])}"
+    if meaningful:
+        return humanize(meaningful[0])
+    return humanize(parts[0]) if parts else "Unknown"
+
+
 def _build_import_description(
     n_modules: int, n_in: int, n_out: int, n_int: int,
     instability: float, cohesion: float,
 ) -> str:
-    """Build a description using real software engineering metrics."""
-    parts: list[str] = [f"{n_modules} modules"]
+    """Build a concise, high-signal description from import metrics.
 
-    # Centrality insight
-    if n_in > 20:
-        parts.append(f"imported by {n_in} others — foundational dependency")
-    elif n_in > 10:
-        parts.append(f"imported by {n_in} others — core boundary")
-    elif n_in > 0:
-        parts.append(f"imported by {n_in} others")
-
-    # Architecture role from instability metric
-    if instability < 0.2 and n_in > 5:
-        parts.append("stable core (low instability, high fan-in)")
-    elif instability > 0.8 and n_out > 3:
-        parts.append("volatile edge (high fan-out, depends on many others)")
+    Each description should tell you ONE key thing about this component's
+    role in the architecture. No filler, no repeating what every component has.
+    """
+    # Pick the single most important architectural insight
+    if instability < 0.2 and n_in > 20:
+        role = f"stable foundation — {n_in} modules depend on it, changes here ripple everywhere"
+    elif instability < 0.2 and n_in > 5:
+        role = f"stable core — {n_in} dependents, low churn risk"
+    elif instability > 0.8 and n_out > 5:
+        role = f"edge consumer — depends on {n_out} others, absorbs upstream changes"
     elif 0.3 < instability < 0.7 and n_in > 3 and n_out > 3:
-        parts.append("integration layer (balanced fan-in/fan-out)")
+        role = f"integration layer — {n_in} dependents, {n_out} dependencies, bridges other components"
+    elif n_in > 10:
+        role = f"{n_in} modules depend on it"
+    elif n_in > 0:
+        role = f"{n_in} dependents"
+    elif n_out > 5:
+        role = f"depends on {n_out} other modules"
+    else:
+        role = "self-contained"
 
-    # Cohesion insight
     if cohesion > 0.7 and n_int > 5:
-        parts.append("highly cohesive")
-    elif cohesion < 0.3 and n_in + n_out > 5:
-        parts.append("loosely coupled to everything")
+        role += ", highly cohesive"
 
-    return ". ".join(parts)
+    return f"{n_modules} modules. {role}"
