@@ -329,101 +329,117 @@ def _path_to_component(file_path: str, components: list[ComponentSuggestion]) ->
 # ---------------------------------------------------------------------------
 
 def format_text(result: ShowResult) -> str:
-    """Render as clean Odylith English with governance insight."""
+    """Render as clean, scannable Odylith output. Every line earns its place."""
     lines: list[str] = []
     identity = result.identity
-
-    # Opening
-    stack_parts = identity.frameworks[:2] + identity.languages[:2]
-    stack = " + ".join(stack_parts) if stack_parts else ""
     governed_count = sum(1 for v in result.already_governed.values() if v)
 
-    opening = f"I read your {'monorepo' if identity.monorepo else 'repo'}."
+    # --- Opening: one line, identity + scale ---
+    parts = []
+    stack = " + ".join((identity.frameworks[:2] + identity.languages[:2])[:3])
     if stack:
-        opening += f" {stack} project"
-        if result.total_modules:
-            opening += f", {result.total_modules} source modules."
-        else:
-            opening += "."
+        parts.append(stack)
+    if result.total_modules:
+        parts.append(f"{result.total_modules} modules")
+    if identity.monorepo:
+        parts.append("monorepo")
+    opening = ", ".join(parts) + "." if parts else ""
     if governed_count == 4:
-        lines.append(opening)
-        lines.append("Already governed across all four surfaces. Here's what I'd add.")
+        lines.append(f"I read your repo. {opening} Already governed across all four surfaces.")
     elif governed_count > 0:
-        lines.append(opening)
-        lines.append("Here's what I see.")
+        lines.append(f"I read your repo. {opening}")
     else:
-        if identity.description:
-            opening += f" {identity.description}"
-        lines.append(opening)
-        lines.append("Here's what I can do for it.")
+        desc = f" {identity.description}" if identity.description else ""
+        lines.append(f"I read your repo. {opening}{desc}")
     lines.append("")
 
     has_any = False
 
-    # Components — split into core (high centrality) and other
+    # --- Components: name + metric on one line, command below ---
     if result.components:
         has_any = True
-        core = [c for c in result.components if c.n_inbound > 5]
-        other = [c for c in result.components if c.n_inbound <= 5]
-
-        if core:
-            lines.append(f"Core boundaries ({len(core)}):")
-            for comp in core:
-                posture = result.component_postures.get(comp.component_id)
-                posture_tag = ""
-                if posture and posture.blast_radius != "local":
-                    posture_tag = f" [{posture.blast_radius}]"
-                lines.append(f'  \u2192 odylith component register "{comp.label}"{posture_tag}')
-                lines.append(f"    {comp.description}")
+        n = len(result.components)
+        lines.append(f"COMPONENTS \u2014 {n} boundar{'ies' if n != 1 else 'y'} discovered")
+        lines.append("")
+        for comp in result.components:
+            posture = result.component_postures.get(comp.component_id)
+            # One-line summary: name + key metric
+            metric = _short_metric(comp, posture)
+            lines.append(f"  {comp.label:<40s} {metric}")
+            lines.append(f'  \u2192 odylith component register "{comp.label}"')
             lines.append("")
 
-        if other:
-            lines.append(f"Other boundaries ({len(other)}):")
-            for comp in other:
-                lines.append(f'  \u2192 odylith component register "{comp.label}"')
-                lines.append(f"    {comp.description}")
-            lines.append("")
-
-    # Workstreams
+    # --- Workstreams ---
     if result.workstreams:
         has_any = True
-        lines.append(f"I'd create {len(result.workstreams)} workstream{'s' if len(result.workstreams) != 1 else ''}:")
-        for ws in result.workstreams:
-            lines.append(f'  \u2192 odylith backlog create --title "{ws.title}"')
-            lines.append(f"    {ws.description}")
+        lines.append(f"WORKSTREAMS \u2014 {len(result.workstreams)} to get started")
         lines.append("")
+        for ws in result.workstreams:
+            lines.append(f"  {ws.description}")
+            lines.append(f'  \u2192 odylith backlog create --title "{ws.title}"')
+            lines.append("")
 
-    # Diagrams
+    # --- Diagrams ---
     if result.diagrams:
         has_any = True
-        lines.append("I can diagram these relationships:")
-        for d in result.diagrams:
-            lines.append(f'  \u2192 odylith atlas scaffold "{d.title}"')
-            lines.append(f"    {d.description}")
+        # Compute total cross-edges for the header
+        total_cross = sum(1 for d in result.diagrams if "import edge" in d.description.lower())
+        header = "DIAGRAMS"
+        lines.append(header)
         lines.append("")
+        for d in result.diagrams:
+            lines.append(f"  {d.description}")
+            lines.append(f'  \u2192 odylith atlas scaffold "{d.title}"')
+            lines.append("")
 
-    # Issues
+    # --- Issues ---
     if result.issues:
         has_any = True
-        lines.append(f"Issues worth tracking ({len(result.issues)}):")
-        for issue in result.issues:
-            sev_tag = f" [{issue.severity}]" if issue.severity != "medium" else ""
-            lines.append(f'  \u2192 odylith bug capture "{issue.title}"{sev_tag}')
-            lines.append(f"    {issue.detail}")
+        lines.append(f"ISSUES \u2014 {len(result.issues)} worth tracking")
         lines.append("")
+        for issue in result.issues:
+            sev = f" [{issue.severity}]" if issue.severity != "medium" else ""
+            lines.append(f"  {issue.detail}{sev}")
+            lines.append(f'  \u2192 odylith bug capture "{issue.title}"')
+            lines.append("")
 
+    # --- Footer ---
     if has_any:
         lines.append("Run any command to create it.")
     else:
-        governed_count = sum(1 for v in result.already_governed.values() if v)
         if governed_count == 4:
-            lines.append("Your repo is well-governed across all surfaces. Nothing new to suggest.")
-            if result.total_modules:
-                lines.append(f"The import graph covers {result.total_modules} modules — use `odylith context` to ground agent sessions in that structure.")
+            lines.append("Your repo is well-governed. Nothing new to suggest.")
         else:
             lines.append("Nothing to suggest yet. Run `odylith show` again after adding source files.")
 
     return "\n".join(lines)
+
+
+def _short_metric(comp: ComponentSuggestion, posture: ComponentPosture | None) -> str:
+    """One short right-aligned metric string for a component."""
+    parts: list[str] = []
+    if comp.n_inbound > 20:
+        parts.append(f"{comp.n_inbound} dependents")
+    elif comp.n_inbound > 0:
+        parts.append(f"{comp.n_inbound} dependents")
+
+    # Architecture role
+    total = comp.n_inbound + comp.n_outbound
+    if total > 0:
+        instability = comp.n_outbound / total
+        if instability < 0.2 and comp.n_inbound > 5:
+            parts.append("stable foundation")
+        elif instability > 0.8 and comp.n_outbound > 5:
+            parts.append("edge consumer")
+        elif 0.3 < instability < 0.7 and comp.n_inbound > 3:
+            parts.append("integration layer")
+    elif comp.n_modules > 0:
+        parts.append(f"{comp.n_modules} modules")
+
+    if not parts:
+        parts.append("self-contained")
+
+    return " \u00b7 ".join(parts)
 
 
 def format_json(result: ShowResult) -> str:
