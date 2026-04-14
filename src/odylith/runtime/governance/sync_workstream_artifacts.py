@@ -38,6 +38,7 @@ from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
+from odylith.runtime.governance import surface_refresh_fingerprint_dag
 from odylith.runtime.governance import sync_session as governed_sync_session
 from odylith.runtime.governance.legacy_backlog_normalization import backlog_next_action
 from odylith.runtime.governance.legacy_backlog_normalization import collect_backlog_contract_errors
@@ -1703,22 +1704,49 @@ def _run_surface_worker(
     Returns ``(captured_output, result_dict)`` so the caller can replay
     output in deterministic surface order after all workers finish.
     """
-    steps = _dashboard_surface_steps(
-        repo_root=repo_root,
-        surface=surface,
-        runtime_mode=runtime_mode,
-        atlas_sync=atlas_sync,
-    )
     capture = io.StringIO()
     _dashboard_thread_capture.buf = capture
     try:
-        result = _execute_dashboard_refresh_surface(
+        outputs = _surface_render_outputs(surface)
+        cache_hit, cache_details = surface_refresh_fingerprint_dag.can_reuse_surface_refresh(
             repo_root=repo_root,
             surface=surface,
-            steps=steps,
-            runtime_mode=runtime_mode,
-            run_impl=run_impl,
+            atlas_sync=atlas_sync if surface == "atlas" else False,
+            outputs=outputs,
         )
+        if cache_hit:
+            print(
+                f"- {surface} step 1/1: Reuse the current rendered surface because its input and output fingerprints are unchanged."
+            )
+            result = {
+                "surface": surface,
+                "status": "passed",
+                "cache_hit": True,
+                "cache_details": cache_details,
+                "fallback_used": False,
+            }
+        else:
+            steps = _dashboard_surface_steps(
+                repo_root=repo_root,
+                surface=surface,
+                runtime_mode=runtime_mode,
+                atlas_sync=atlas_sync,
+            )
+            result = _execute_dashboard_refresh_surface(
+                repo_root=repo_root,
+                surface=surface,
+                steps=steps,
+                runtime_mode=runtime_mode,
+                run_impl=run_impl,
+            )
+            if str(result.get("status", "")).strip() == "passed":
+                surface_refresh_fingerprint_dag.record_surface_refresh(
+                    repo_root=repo_root,
+                    surface=surface,
+                    atlas_sync=atlas_sync if surface == "atlas" else False,
+                    outputs=outputs,
+                    details={"runtime_mode": runtime_mode},
+                )
     finally:
         _dashboard_thread_capture.buf = None
     return capture.getvalue(), result
@@ -1822,19 +1850,17 @@ def refresh_dashboard_surfaces(
             )
         else:
             for surface in selected:
-                steps = _dashboard_surface_steps(
+                output, result = _run_surface_worker(
                     repo_root=repo_root,
                     surface=surface,
                     runtime_mode=normalized_runtime_mode,
                     atlas_sync=atlas_sync,
-                )
-                result = _execute_dashboard_refresh_surface(
-                    repo_root=repo_root,
-                    surface=surface,
-                    steps=steps,
-                    runtime_mode=normalized_runtime_mode,
                     run_impl=run_impl,
                 )
+                if output:
+                    sys.stdout.write(output)
+                    if not output.endswith("\n"):
+                        sys.stdout.write("\n")
                 surface_results.append(result)
     for result in surface_results:
         runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
@@ -1854,6 +1880,8 @@ def refresh_dashboard_surfaces(
         surface = str(result.get("surface", "")).strip()
         status = str(result.get("status", "")).strip() or "failed"
         suffix = " (standalone fallback used)" if bool(result.get("fallback_used")) else ""
+        if bool(result.get("cache_hit")):
+            suffix += " (fingerprint reuse)"
         print(f"- {surface}: {status}{suffix}")
         if status not in {"passed", "queued"}:
             failed_step = str(result.get("failed_step", "")).strip()

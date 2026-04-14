@@ -72,6 +72,14 @@ def _load_runtime_impl():
     return import_module("odylith.runtime.surfaces.compass_dashboard_runtime")
 
 
+def _sync_runtime_bundle_mirror(*, repo_root: Path, runtime_paths: tuple[Path, Path, Path, Path, Path]) -> None:
+    current_json_path, _current_js_path, _daily_path, _history_index_path, _history_js_path = runtime_paths
+    history_dir = current_json_path.parent / "history"
+    source_bundle_mirror.sync_live_paths(repo_root=repo_root, live_paths=runtime_paths)
+    source_bundle_mirror.sync_live_glob(repo_root=repo_root, live_dir=history_dir, pattern="*.v1.json")
+    source_bundle_mirror.sync_live_glob(repo_root=repo_root, live_dir=history_dir / "archive", pattern="*.v1.json.gz")
+
+
 def _normalize_refresh_profile(value: str) -> str:
     return compass_refresh_contract.normalize_refresh_profile(value, default=_DEFAULT_REFRESH_PROFILE)
 
@@ -1086,6 +1094,7 @@ def render_compass_artifacts(
             *shell_asset_paths.values(),
         ),
     )
+    _sync_runtime_bundle_mirror(repo_root=repo_root, runtime_paths=runtime_paths)
     _emit_progress(
         progress_callback,
         stage="shell_bundle_written",

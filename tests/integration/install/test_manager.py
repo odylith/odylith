@@ -920,6 +920,134 @@ def test_upgrade_install_prunes_previous_consumer_release_notes_and_keeps_curren
     assert "Target upgrade note." in (notes_root / f"v{target_version}.md").read_text(encoding="utf-8")
 
 
+def test_upgrade_install_migrates_legacy_compass_history_archive_layout(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="0.1.10")
+
+    runtime_dir = repo_root / "odylith" / "compass" / "runtime"
+    history_dir = runtime_dir / "history"
+    history_dir.mkdir(parents=True, exist_ok=True)
+    archive_dir = history_dir / "archive"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+
+    stale_active_day = "2020-01-01"
+    archived_day = "2020-01-02"
+    live_payload = {
+        "version": "v1",
+        "generated_utc": "2026-04-14T20:20:00Z",
+        "history": {
+            "retention_days": 15,
+            "dates": [stale_active_day],
+            "restored_dates": [],
+            "archive": {
+                "compressed": True,
+                "path": "archive",
+                "count": 1,
+                "dates": [archived_day],
+                "newest_date": archived_day,
+                "oldest_date": archived_day,
+            },
+        },
+    }
+    (runtime_dir / "current.v1.json").write_text(json.dumps(live_payload, indent=2) + "\n", encoding="utf-8")
+    (runtime_dir / "current.v1.js").write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(live_payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    (history_dir / f"{stale_active_day}.v1.json").write_text(json.dumps(live_payload, indent=2) + "\n", encoding="utf-8")
+    (archive_dir / f"{archived_day}.v1.json.gz").write_text("legacy-archive", encoding="utf-8")
+    (history_dir / "restore-pins.v1.json").write_text(
+        json.dumps({"version": "v1", "generated_utc": "2026-04-14T20:20:00Z", "dates": [archived_day]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (history_dir / "index.v1.json").write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-14T20:20:00Z",
+                "retention_days": 15,
+                "dates": [stale_active_day],
+                "restored_dates": [],
+                "archive": live_payload["history"]["archive"],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (history_dir / "embedded.v1.js").write_text(
+        "window.__ODYLITH_COMPASS_HISTORY__ = "
+        + json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-14T20:20:00Z",
+                "retention_days": 15,
+                "dates": [stale_active_day],
+                "restored_dates": [],
+                "archive": live_payload["history"]["archive"],
+                "snapshots": {
+                    archived_day: live_payload,
+                },
+            },
+            separators=(",", ":"),
+        )
+        + ";\n",
+        encoding="utf-8",
+    )
+
+    staged_root, staged_python = _seed_verified_release_runtime(repo_root, version="0.1.11")
+    monkeypatch.setattr(
+        install_manager_module,
+        "fetch_release",
+        lambda **kwargs: SimpleNamespace(version="0.1.11"),
+    )
+    monkeypatch.setattr(
+        install_manager_module,
+        "install_release_runtime",
+        lambda **kwargs: SimpleNamespace(
+            version="0.1.11",
+            manifest={"repo_schema_version": 1, "migration_required": False},
+            python=staged_python,
+            root=staged_root,
+            verification={"wheel_sha256": "abc123"},
+        ),
+    )
+    monkeypatch.setattr(
+        install_manager_module,
+        "_ensure_managed_context_engine_pack",
+        lambda **kwargs: {},
+    )
+    monkeypatch.setattr(
+        install_manager_module.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+
+    summary = upgrade_install(
+        repo_root=repo_root,
+        release_repo="odylith/odylith",
+        version="0.1.11",
+        write_pin=True,
+    )
+
+    assert summary.active_version == "0.1.11"
+    assert not archive_dir.exists()
+    assert not (history_dir / "restore-pins.v1.json").exists()
+    assert not (history_dir / f"{stale_active_day}.v1.json").exists()
+
+    current_payload = json.loads((runtime_dir / "current.v1.json").read_text(encoding="utf-8"))
+    assert current_payload["history"]["archive"]["count"] == 0
+    index_payload = json.loads((history_dir / "index.v1.json").read_text(encoding="utf-8"))
+    assert index_payload["archive"]["count"] == 0
+    embedded_payload = json.loads(
+        (history_dir / "embedded.v1.js").read_text(encoding="utf-8").removeprefix("window.__ODYLITH_COMPASS_HISTORY__ = ").removesuffix(";\n")
+    )
+    assert embedded_payload["archive"]["count"] == 0
+    assert archived_day not in embedded_payload["snapshots"]
+
+
 def test_install_bundle_creates_root_guidance_files_when_missing(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()

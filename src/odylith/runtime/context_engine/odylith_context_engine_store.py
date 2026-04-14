@@ -53,6 +53,7 @@ from odylith.runtime.context_engine import odylith_context_engine_memory_snapsho
 from odylith.runtime.context_engine import odylith_context_engine_projection_query_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
+from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.evaluation import odylith_evaluation_ledger
 from odylith.runtime.memory import odylith_memory_backend
 from odylith.runtime.memory import odylith_projection_bundle
@@ -270,16 +271,16 @@ _FULL_SCAN_EXCLUDED_GLOBS = (
 _TOPOLOGY_DOMAIN_RULES: tuple[dict[str, Any], ...] = odylith_architecture_mode.TOPOLOGY_DOMAIN_RULES
 _PROCESS_WARM_CACHE: dict[str, float] = {}
 _PROCESS_WARM_CACHE_FINGERPRINTS: dict[str, str] = {}
-_PROCESS_PROJECTION_ROWS_CACHE: dict[str, tuple[str, Any]] = {}
-_PROCESS_OPTIMIZATION_SNAPSHOT_CACHE: dict[str, tuple[tuple[Any, ...], float, dict[str, Any]]] = {}
-_PROCESS_MISS_RECOVERY_INDEX_CACHE: dict[str, tuple[str, dict[str, Any]]] = {}
-_PROCESS_PATH_SCOPE_CACHE: dict[str, tuple[str, dict[str, Any]]] = {}
-_PROCESS_PATH_SIGNAL_PROFILE_CACHE: dict[str, dict[str, Any]] = {}
-_PROCESS_ARCHITECTURE_PACKET_CACHE: dict[str, dict[str, Any]] = {}
-_PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE: dict[str, tuple[tuple[Any, ...], float, dict[str, Any]]] = {}
-_PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE: dict[str, tuple[tuple[bool, int, int], dict[str, Any]]] = {}
-_PROCESS_GIT_REF_CACHE: dict[str, tuple[float, dict[str, str]]] = {}
-_PROCESS_PROJECTION_CONNECTION_CACHE: dict[str, tuple[tuple[Any, ...], Any]] = {}
+_PROCESS_PROJECTION_ROWS_CACHE = runtime_read_session.shared_process_cache_view("projection_rows")
+_PROCESS_OPTIMIZATION_SNAPSHOT_CACHE = runtime_read_session.shared_process_cache_view("optimization_snapshot")
+_PROCESS_MISS_RECOVERY_INDEX_CACHE = runtime_read_session.shared_process_cache_view("miss_recovery_index")
+_PROCESS_PATH_SCOPE_CACHE = runtime_read_session.shared_process_cache_view("path_scope")
+_PROCESS_PATH_SIGNAL_PROFILE_CACHE = runtime_read_session.shared_process_cache_view("path_signal_profile")
+_PROCESS_ARCHITECTURE_PACKET_CACHE = runtime_read_session.shared_process_cache_view("architecture_packet")
+_PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE = runtime_read_session.shared_process_cache_view("orchestration_adoption")
+_PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE = runtime_read_session.shared_process_cache_view("judgment_memory")
+_PROCESS_GIT_REF_CACHE = runtime_read_session.shared_process_cache_view("git_ref")
+_PROCESS_PROJECTION_CONNECTION_CACHE = runtime_read_session.shared_process_cache_view("projection_connection")
 _PROCESS_GIT_REF_CACHE_TTL_SECONDS = 5.0
 _ENTITY_KIND_ALIASES: dict[str, str] = {
     "workstream": "workstream",

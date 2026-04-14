@@ -5,11 +5,12 @@ from typing import Any
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
 from odylith.runtime.context_engine import projection_repo_state_runtime
+from odylith.runtime.context_engine import runtime_read_session
 
 
-_PROCESS_PROJECTED_INPUTS_CACHE: dict[str, tuple[str, dict[str, str]]] = {}
-_PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE: dict[str, tuple[str, str]] = {}
-_PROCESS_PATH_FINGERPRINT_CACHE: dict[str, tuple[str, str]] = {}
+_PROCESS_PROJECTED_INPUTS_CACHE = runtime_read_session.shared_process_cache_view("projected_inputs")
+_PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE = runtime_read_session.shared_process_cache_view("projection_input_fingerprint")
+_PROCESS_PATH_FINGERPRINT_CACHE = runtime_read_session.shared_process_cache_view("path_fingerprint")
 
 
 def bind(host: Any) -> None:
@@ -305,27 +306,47 @@ def _connect(repo_root: Path) -> _ProjectionConnection:
     root = Path(repo_root).resolve()
     cache_key = str(root)
     signature = _projection_snapshot_cache_signature(repo_root=root)
+    read_session = runtime_read_session.active_runtime_read_session()
+
+    def _load_connection() -> _ProjectionConnection:
+        snapshot = odylith_projection_snapshot.load_snapshot(repo_root=root)
+        if bool(snapshot.get("ready")) and isinstance(snapshot.get("tables"), Mapping):
+            return _ProjectionConnection(repo_root=root, snapshot=snapshot)
+        raise RuntimeError(
+            f"Odylith projection snapshot is unavailable at {projection_snapshot_path(repo_root=root)}; run warmup first."
+        )
+
+    if read_session is not None and read_session.matches_repo(root):
+        return read_session.get_or_compute(
+            namespace="projection_connection",
+            key=f"{cache_key}:{signature}",
+            builder=_load_connection,
+        )
     cached = _PROCESS_PROJECTION_CONNECTION_CACHE.get(cache_key)
     if cached is not None and cached[0] == signature:
         connection = cached[1]
         if isinstance(connection, _ProjectionConnection):
             return connection
-    snapshot = odylith_projection_snapshot.load_snapshot(repo_root=root)
-    if bool(snapshot.get("ready")) and isinstance(snapshot.get("tables"), Mapping):
-        connection = _ProjectionConnection(repo_root=root, snapshot=snapshot)
-        _PROCESS_PROJECTION_CONNECTION_CACHE[cache_key] = (signature, connection)
-        return connection
-    raise RuntimeError(
-        f"Odylith projection snapshot is unavailable at {projection_snapshot_path(repo_root=root)}; run warmup first."
-    )
+    connection = _load_connection()
+    _PROCESS_PROJECTION_CONNECTION_CACHE[cache_key] = (signature, connection)
+    return connection
 
 def _path_fingerprint(path: Path, *, repo_root: Path | None = None, glob: str = "*.md") -> str:
     target = Path(path)
     state_token = ""
+    read_session = runtime_read_session.active_runtime_read_session()
     if repo_root is not None:
         root = Path(repo_root).resolve()
         state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
         cache_key = f"{target.resolve()}::{glob}"
+        if read_session is not None and read_session.matches_repo(root):
+            cached = read_session.get_or_compute(
+                namespace="path_fingerprint_lookup",
+                key=f"{state_token}:{cache_key}",
+                builder=lambda: _PROCESS_PATH_FINGERPRINT_CACHE.get(cache_key),
+            )
+            if cached is not None and cached[0] == state_token:
+                return str(cached[1]).strip()
         cached = _PROCESS_PATH_FINGERPRINT_CACHE.get(cache_key)
         if cached is not None and cached[0] == state_token:
             return str(cached[1]).strip()
@@ -540,6 +561,15 @@ def _projected_input_fingerprints(*, repo_root: Path, scope: str = "default") ->
     scope_token = str(scope or "default").strip().lower() or "default"
     state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
     cache_key = f"{root}:{scope_token}"
+    read_session = runtime_read_session.active_runtime_read_session()
+    if read_session is not None and read_session.matches_repo(root):
+        cached = read_session.get_or_compute(
+            namespace="projected_inputs_lookup",
+            key=f"{state_token}:{cache_key}",
+            builder=lambda: _PROCESS_PROJECTED_INPUTS_CACHE.get(cache_key),
+        )
+        if cached is not None and cached[0] == state_token:
+            return dict(cached[1])
     cached = _PROCESS_PROJECTED_INPUTS_CACHE.get(cache_key)
     if cached is not None and cached[0] == state_token:
         return dict(cached[1])
@@ -554,6 +584,15 @@ def projection_input_fingerprint(*, repo_root: Path, scope: str = "default") -> 
     scope_token = str(scope or "default").strip().lower() or "default"
     state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
     cache_key = f"{root}:{scope_token}"
+    read_session = runtime_read_session.active_runtime_read_session()
+    if read_session is not None and read_session.matches_repo(root):
+        cached = read_session.get_or_compute(
+            namespace="projection_input_fingerprint_lookup",
+            key=f"{state_token}:{cache_key}",
+            builder=lambda: _PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE.get(cache_key),
+        )
+        if cached is not None and cached[0] == state_token:
+            return str(cached[1]).strip()
     cached = _PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE.get(cache_key)
     if cached is not None and cached[0] == state_token:
         return str(cached[1]).strip()
@@ -1459,6 +1498,20 @@ def _warm_runtime(
                     ),
                 )
             )
+    read_session = runtime_read_session.active_runtime_read_session()
+    if read_session is not None and read_session.matches_repo(root):
+        return bool(
+            read_session.get_or_compute(
+                namespace="runtime_warm",
+                key=scope_token,
+                builder=lambda: _warm_runtime_uncached(
+                    repo_root=root,
+                    runtime_mode=runtime_mode,
+                    reason=reason,
+                    scope=scope_token,
+                ),
+            )
+        )
     return _warm_runtime_uncached(
         repo_root=root,
         runtime_mode=runtime_mode,
@@ -1525,6 +1578,15 @@ def _cached_projection_rows(
     root = Path(repo_root).resolve()
     signature = _projection_cache_signature(repo_root=root, scope=scope)
     cache_key = f"{root}:{str(cache_name).strip()}"
+    read_session = runtime_read_session.active_runtime_read_session()
+    if read_session is not None and read_session.matches_repo(root):
+        cached = read_session.get_or_compute(
+            namespace="projection_rows_lookup",
+            key=f"{cache_key}:{signature}",
+            builder=lambda: _PROCESS_PROJECTION_ROWS_CACHE.get(cache_key),
+        )
+        if cached is not None and cached[0] == signature:
+            return cached[1]
     cached = _PROCESS_PROJECTION_ROWS_CACHE.get(cache_key)
     if cached is not None and cached[0] == signature:
         return cached[1]

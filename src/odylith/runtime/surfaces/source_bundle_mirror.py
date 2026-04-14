@@ -82,4 +82,6 @@ def sync_live_glob(*, repo_root: Path, live_dir: Path, pattern: str) -> tuple[Pa
                 continue
             if stale_path.is_file():
                 stale_path.unlink()
+        if not any(mirror_dir.iterdir()):
+            mirror_dir.rmdir()
     return mirrored

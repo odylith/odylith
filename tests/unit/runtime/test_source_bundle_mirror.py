@@ -56,6 +56,25 @@ def test_sync_live_glob_updates_active_shards_and_removes_stale_bundle_mirrors(t
     assert (bundle_dir / "casebook-detail-shard-002.v1.js").read_text(encoding="utf-8") == "two\n"
 
 
+def test_sync_live_glob_removes_empty_mirror_dir_when_live_dir_is_missing(tmp_path: Path) -> None:
+    repo_root = _product_repo_root(tmp_path)
+    live_dir = repo_root / "odylith" / "compass" / "runtime" / "history" / "archive"
+    bundle_dir = repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "compass" / "runtime" / "history" / "archive"
+    bundle_dir.mkdir(parents=True, exist_ok=True)
+    stale_bundle = bundle_dir / "2026-03-01.v1.json.gz"
+    stale_bundle.write_text("stale\n", encoding="utf-8")
+
+    mirrored = source_bundle_mirror.sync_live_glob(
+        repo_root=repo_root,
+        live_dir=live_dir,
+        pattern="*.v1.json.gz",
+    )
+
+    assert mirrored == ()
+    assert not stale_bundle.exists()
+    assert not bundle_dir.exists()
+
+
 def test_repo_governance_docs_preserve_watcher_and_brief_contract_in_bundle_mirrors() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     checks = (

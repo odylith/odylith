@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.surfaces import codex_host_shared
+from odylith.runtime.surfaces import session_brief_refresh_queue
 
 _BRIEF_STALENESS_THRESHOLD_SECONDS = 4 * 60 * 60  # 4 hours
 _CURRENT_RUNTIME_PATH = "odylith/compass/runtime/current.v1.json"
@@ -51,41 +50,11 @@ def render_codex_session_brief(
 
 
 def _queue_refresh_if_briefs_stale(*, repo_root: Path) -> None:
-    """Check if the global standup briefs are older than 4 hours and queue a background refresh."""
-    try:
-        runtime_path = Path(repo_root).resolve() / _CURRENT_RUNTIME_PATH
-        if not runtime_path.is_file():
-            return
-        with runtime_path.open("r", encoding="utf-8") as f:
-            payload = json.load(f)
-        standup_brief = payload.get("standup_brief")
-        if not isinstance(standup_brief, Mapping):
-            return
-        now = datetime.now(tz=timezone.utc)
-        for window_key in ("24h", "48h"):
-            brief = standup_brief.get(window_key)
-            if not isinstance(brief, Mapping):
-                continue
-            generated = str(brief.get("generated_utc", "")).strip()
-            if not generated:
-                continue
-            try:
-                ts = datetime.fromisoformat(generated.replace("Z", "+00:00"))
-                age_seconds = (now - ts).total_seconds()
-            except (ValueError, TypeError):
-                continue
-            if age_seconds > _BRIEF_STALENESS_THRESHOLD_SECONDS:
-                launcher = Path(repo_root).resolve() / ".odylith" / "bin" / "odylith"
-                if launcher.is_file():
-                    subprocess.Popen(
-                        [str(launcher), "compass", "refresh", "--repo-root", str(repo_root), "--wait"],
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                        start_new_session=True,
-                    )
-                return
-    except Exception:
-        pass
+    """Check if the global standup briefs are older than 4 hours and queue one background refresh."""
+    session_brief_refresh_queue.queue_refresh_if_briefs_stale(
+        repo_root=repo_root,
+        threshold_seconds=_BRIEF_STALENESS_THRESHOLD_SECONDS,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

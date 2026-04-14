@@ -82,6 +82,12 @@
   governed target, the checkpoint skips selective refresh instead of
   guessing. Scoped `AGENTS.md` and `CLAUDE.md` companions inside
   governed subtrees are ignored.
+- The command-scoped inference must stay exact under dirty worktrees and
+  shell edge cases: rename and move operations preserve the old governed path
+  when truth leaves a governed subtree, shell control operators and
+  redirection tails cannot widen the target set, and explicit inline
+  `python -c` / `node -e` file-write one-liners may refresh only when the
+  hook can recover an exact governed path literal from the current command.
 - The Bash checkpoint never blocks the command: sync failures exit the
   hook with code 0 and emit a fail-soft `systemMessage` describing the
   failure so the operator can recover manually.

@@ -250,12 +250,11 @@ tree in place, run:
 ./.odylith/bin/odylith uninstall --repo-root .
 ```
 
-If you need an older Compass day that aged out of the active window, restore
-it from the compressed archive with:
-
-```bash
-./.odylith/bin/odylith compass restore-history --repo-root . --date YYYY-MM-DD
-```
+Compass keeps today plus the previous 15 days active in
+`odylith/compass/runtime/history/`. Older days are deleted when they age out of
+that window. Upgrading from `v0.1.10` to `v0.1.11` automatically removes legacy
+Compass archive files and rewrites retained history metadata to the current
+layout.
 
 ## License And Attribution
 

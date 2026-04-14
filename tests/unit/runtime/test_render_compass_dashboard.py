@@ -555,6 +555,62 @@ def test_render_compass_dashboard_writes_source_truth_snapshot_and_shell_href(tm
     assert "source_truth_href" in payload_js
 
 
+def test_render_compass_dashboard_syncs_runtime_history_bundle_mirror(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path
+    (repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith").mkdir(parents=True, exist_ok=True)
+    output_path = repo_root / "odylith" / "compass" / "compass.html"
+    runtime_dir = repo_root / "odylith" / "compass" / "runtime"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    _seed_required_render_inputs(repo_root)
+    current_json_path, current_js_path, daily_path, history_index_path, history_js_path = _seed_runtime_paths(runtime_dir)
+    current_json_path.write_text('{"runtime":"json"}\n', encoding="utf-8")
+    current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {\"runtime\":\"js\"};\n", encoding="utf-8")
+    daily_path.write_text('{"day":"today"}\n', encoding="utf-8")
+    history_index_path.write_text('{"dates":["2026-04-14"]}\n', encoding="utf-8")
+    history_js_path.write_text("window.__ODYLITH_COMPASS_HISTORY__ = {\"dates\":[\"2026-04-14\"]};\n", encoding="utf-8")
+
+    stale_archive_bundle = (
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "compass"
+        / "runtime"
+        / "history"
+        / "archive"
+        / "2026-03-01.v1.json.gz"
+    )
+    stale_archive_bundle.parent.mkdir(parents=True, exist_ok=True)
+    stale_archive_bundle.write_text("stale\n", encoding="utf-8")
+    runtime_paths = (current_json_path, current_js_path, daily_path, history_index_path, history_js_path)
+
+    monkeypatch.setattr(
+        render_compass_dashboard,
+        "refresh_runtime_artifacts",
+        lambda **_kwargs: (
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-09T12:00:00Z",
+            },
+            runtime_paths,
+        ),
+    )
+
+    rc = render_compass_dashboard.main(["--repo-root", str(repo_root), "--output", str(output_path)])
+
+    assert rc == 0
+    mirror_root = repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "compass" / "runtime"
+    assert (mirror_root / "current.v1.json").read_text(encoding="utf-8") == '{"runtime":"json"}\n'
+    assert (mirror_root / "current.v1.js").read_text(encoding="utf-8") == "window.__ODYLITH_COMPASS_RUNTIME__ = {\"runtime\":\"js\"};\n"
+    assert (mirror_root / "history" / daily_path.name).read_text(encoding="utf-8") == '{"day":"today"}\n'
+    assert (mirror_root / "history" / "index.v1.json").read_text(encoding="utf-8") == '{"dates":["2026-04-14"]}\n'
+    assert (mirror_root / "history" / "embedded.v1.js").read_text(encoding="utf-8") == "window.__ODYLITH_COMPASS_HISTORY__ = {\"dates\":[\"2026-04-14\"]};\n"
+    assert not stale_archive_bundle.exists()
+    assert not stale_archive_bundle.parent.exists()
+
+
 def test_refresh_runtime_artifacts_reuses_matching_payload(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     runtime_dir = repo_root / "odylith/compass/runtime"

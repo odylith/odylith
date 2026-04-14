@@ -2059,7 +2059,7 @@ def build_parser() -> argparse.ArgumentParser:
     compass_update.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
     compass_restore_history = compass_subparsers.add_parser(
         "restore-history",
-        help="Restore archived Compass daily history into the active calendar.",
+        help="Report legacy Compass history restore attempts after archive retention removal.",
     )
     compass_restore_history.add_argument("--repo-root", default=".", help="Consumer repository root.")
     compass_restore_history.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)

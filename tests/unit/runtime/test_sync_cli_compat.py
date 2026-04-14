@@ -828,6 +828,42 @@ def test_dashboard_refresh_uses_in_process_runtime_for_single_surface_fast_path(
     ]
 
 
+def test_dashboard_refresh_reuses_fingerprint_when_surface_is_unchanged(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.surface_refresh_fingerprint_dag,
+        "can_reuse_surface_refresh",
+        lambda **kwargs: (  # noqa: ARG005
+            True,
+            {
+                "input_fingerprint": "input",
+                "output_fingerprint": "output",
+                "outputs_exist": True,
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_run_command",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("unchanged surface should not rerender")),
+    )
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("radar",),
+        runtime_mode="auto",
+        atlas_sync=False,
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "fingerprint reuse" in output
+
+
 def test_dashboard_refresh_dry_run_accepts_shell_alias_without_running_commands(tmp_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
     monkeypatch.setattr(

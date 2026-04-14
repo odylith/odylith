@@ -26,6 +26,7 @@ the operator can recover manually if needed.
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import shlex
@@ -39,6 +40,47 @@ from odylith.runtime.surfaces import codex_host_shared
 _PATCH_PATH_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$", re.MULTILINE)
 _PATCH_MOVE_RE = re.compile(r"^\*\*\* Move to: (.+)$", re.MULTILINE)
 _REDIRECT_TARGET_RE = re.compile(r">\s*(?:'([^']+)'|\"([^\"]+)\"|([^\s;&|]+))")
+_NODE_SINGLE_PATH_CALL_RE = re.compile(
+    r"""
+    \b(?:[\w$]+\.)*
+    (?:
+        writeFileSync|appendFileSync|rmSync|unlinkSync|mkdirSync|openSync|
+        writeFile|appendFile|rm|unlink|mkdir
+    )
+    \(\s*(['"])([^'"]+)\1
+    """,
+    re.VERBOSE,
+)
+_NODE_TWO_PATH_CALL_RE = re.compile(
+    r"""
+    \b(?:[\w$]+\.)*
+    (?:
+        renameSync|copyFileSync|
+        rename|copyFile
+    )
+    \(\s*(['"])([^'"]+)\1\s*,\s*(['"])([^'"]+)\3
+    """,
+    re.VERBOSE,
+)
+_SHELL_CONTROL_TOKENS: frozenset[str] = frozenset({"&&", "||", ";", "|", "&"})
+
+
+def _is_shell_redirection_token(token: str) -> bool:
+    candidate = str(token or "").strip()
+    if not candidate:
+        return False
+    if candidate.startswith((">", "<", "&>")):
+        return True
+    return bool(re.match(r"^\d+[<>]", candidate))
+
+
+def _trim_shell_command_tokens(tokens: list[str]) -> list[str]:
+    trimmed: list[str] = []
+    for token in tokens:
+        if token in _SHELL_CONTROL_TOKENS or _is_shell_redirection_token(token):
+            break
+        trimmed.append(token)
+    return trimmed
 
 
 def should_checkpoint(command: str) -> bool:
@@ -81,16 +123,24 @@ def dirty_governed_paths(*, project_dir: Path | str) -> list[str]:
             continue
         status_xy = record[:2]
         path = record[3:]
+        if "R" in status_xy:
+            if claude_host_shared.should_refresh_governed_edit(path):
+                paths.append(path)
+            if index + 1 < len(records):
+                old_path = records[index + 1]
+                if claude_host_shared.should_refresh_governed_edit(old_path):
+                    paths.append(old_path)
+            index += 2
+            continue
+        if "C" in status_xy:
+            if claude_host_shared.should_refresh_governed_edit(path):
+                paths.append(path)
+            index += 2
+            continue
         if claude_host_shared.should_refresh_governed_edit(path):
             paths.append(path)
-        # For rename/copy entries `git status --porcelain -z` emits the
-        # old path as a separate null-terminated record immediately
-        # after; skip it so we do not double-count.
-        if "R" in status_xy or "C" in status_xy:
-            index += 2
-        else:
-            index += 1
-    return paths
+        index += 1
+    return _dedupe_paths(paths)
 
 
 def governed_changed_paths(*, project_dir: Path | str) -> list[str]:
@@ -153,12 +203,45 @@ def _operand_tokens(tokens: list[str]) -> list[str]:
     return operands
 
 
-def _destinations_from_cp_mv(*, tokens: list[str], project_dir: Path) -> list[str]:
-    operands = _operand_tokens(tokens)
+def _copy_move_sources_and_destination(tokens: list[str]) -> tuple[list[str], str]:
+    operands: list[str] = []
+    after_double_dash = False
+    target_directory = ""
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if after_double_dash:
+            operands.append(token)
+            index += 1
+            continue
+        if token == "--":
+            after_double_dash = True
+            index += 1
+            continue
+        if token in {"-t", "--target-directory"} and index + 1 < len(tokens):
+            target_directory = tokens[index + 1]
+            index += 2
+            continue
+        if token.startswith("--target-directory="):
+            target_directory = token.split("=", 1)[1].strip()
+            index += 1
+            continue
+        if token.startswith("-"):
+            index += 1
+            continue
+        operands.append(token)
+        index += 1
+    if target_directory:
+        return operands, target_directory
     if len(operands) < 2:
+        return [], ""
+    return operands[:-1], operands[-1]
+
+
+def _copy_destinations(*, tokens: list[str], project_dir: Path) -> list[str]:
+    sources, destination = _copy_move_sources_and_destination(tokens)
+    if not sources or not destination:
         return []
-    sources = operands[:-1]
-    destination = operands[-1]
     destination_path = Path(destination).expanduser()
     resolved_destination = destination_path.resolve() if destination_path.is_absolute() else (project_dir / destination_path).resolve()
     if len(sources) == 1 and not resolved_destination.is_dir() and not destination.endswith("/"):
@@ -178,33 +261,231 @@ def _destinations_from_cp_mv(*, tokens: list[str], project_dir: Path) -> list[st
     return _dedupe_paths(targets)
 
 
+def _move_paths(*, tokens: list[str], project_dir: Path) -> list[str]:
+    sources, destination = _copy_move_sources_and_destination(tokens)
+    if not sources or not destination:
+        return []
+    destination_path = Path(destination).expanduser()
+    resolved_destination = destination_path.resolve() if destination_path.is_absolute() else (project_dir / destination_path).resolve()
+    targets: list[str] = []
+    multi_target_dir = len(sources) > 1 or resolved_destination.is_dir() or destination.endswith("/")
+    if not multi_target_dir:
+        source_relative = _project_relative_path(project_dir=project_dir, raw_path=sources[0])
+        if source_relative:
+            targets.append(source_relative)
+        destination_relative = _project_relative_path(project_dir=project_dir, raw_path=destination)
+        if destination_relative:
+            targets.append(destination_relative)
+        return _dedupe_paths(targets)
+    for source in sources:
+        source_relative = _project_relative_path(project_dir=project_dir, raw_path=source)
+        if source_relative:
+            targets.append(source_relative)
+        source_name = Path(source).name
+        if not source_name:
+            continue
+        destination_relative = _project_relative_path(
+            project_dir=project_dir,
+            raw_path=str(Path(destination) / source_name),
+        )
+        if destination_relative:
+            targets.append(destination_relative)
+    return _dedupe_paths(targets)
+
+
 def _targets_after_script_operand(*, tokens: list[str]) -> list[str]:
-    if len(tokens) < 3:
+    args = tokens[1:]
+    if not args:
         return []
-    index = 1
-    while index < len(tokens):
-        token = tokens[index]
+    saw_explicit_script_option = False
+    expect_script_argument = False
+    pending_inplace_suffix = False
+    index = 0
+    while index < len(args):
+        token = args[index]
         if token == "--":
+            return args[index + 1 :]
+        if expect_script_argument:
+            expect_script_argument = False
+            saw_explicit_script_option = True
             index += 1
-            break
-        if not token.startswith("-"):
-            break
-        index += 1
-        if token in {"-i", "-e", "-f"} and index < len(tokens):
+            continue
+        if pending_inplace_suffix:
+            pending_inplace_suffix = False
+            if token == "" or token.startswith("."):
+                index += 1
+                continue
+        if token in {"-e", "-f"}:
+            expect_script_argument = True
             index += 1
-    if index >= len(tokens):
+            continue
+        if token == "-i":
+            pending_inplace_suffix = True
+            index += 1
+            continue
+        if token.startswith("-"):
+            index += 1
+            continue
+        if saw_explicit_script_option:
+            return args[index:]
+        return args[index + 1 :]
+    return []
+
+
+def _inline_script(tokens: list[str], *, option: str) -> str:
+    if option not in tokens:
+        return ""
+    index = tokens.index(option)
+    if index + 1 >= len(tokens):
+        return ""
+    return str(tokens[index + 1] or "")
+
+
+def _literal_string(node: ast.AST | None, *, bindings: dict[str, str]) -> str:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    if isinstance(node, ast.Name):
+        return bindings.get(node.id, "")
+    return ""
+
+
+def _is_path_ctor(node: ast.AST | None) -> bool:
+    if isinstance(node, ast.Name):
+        return node.id == "Path"
+    if isinstance(node, ast.Attribute) and node.attr == "Path":
+        return isinstance(node.value, ast.Name) and node.value.id == "pathlib"
+    return False
+
+
+def _path_from_expr(node: ast.AST | None, *, bindings: dict[str, str]) -> str:
+    literal = _literal_string(node, bindings=bindings)
+    if literal:
+        return literal
+    if not isinstance(node, ast.Call) or not _is_path_ctor(node.func) or not node.args:
+        return ""
+    return _literal_string(node.args[0], bindings=bindings)
+
+
+def _mode_writes(mode: str) -> bool:
+    candidate = str(mode or "")
+    return any(flag in candidate for flag in ("w", "a", "x", "+"))
+
+
+class _PythonInlineWriteCollector(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.bindings: dict[str, str] = {}
+        self.paths: list[str] = []
+
+    def visit_Assign(self, node: ast.Assign) -> None:
+        value = _path_from_expr(node.value, bindings=self.bindings) or _literal_string(node.value, bindings=self.bindings)
+        if value:
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    self.bindings[target.id] = value
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        self.paths.extend(self._paths_from_call(node))
+        self.generic_visit(node)
+
+    def _paths_from_call(self, node: ast.Call) -> list[str]:
+        func = node.func
+        if isinstance(func, ast.Name) and func.id == "open" and node.args:
+            mode = ""
+            if len(node.args) > 1:
+                mode = _literal_string(node.args[1], bindings=self.bindings)
+            if not mode:
+                for keyword in node.keywords:
+                    if keyword.arg == "mode":
+                        mode = _literal_string(keyword.value, bindings=self.bindings)
+                        break
+            if _mode_writes(mode):
+                path = _path_from_expr(node.args[0], bindings=self.bindings)
+                return [path] if path else []
+            return []
+        if isinstance(func, ast.Attribute):
+            if func.attr in {"write_text", "write_bytes", "touch", "unlink", "mkdir"}:
+                path = _path_from_expr(func.value, bindings=self.bindings)
+                return [path] if path else []
+            if func.attr == "open":
+                mode = ""
+                if node.args:
+                    mode = _literal_string(node.args[0], bindings=self.bindings)
+                if not mode:
+                    for keyword in node.keywords:
+                        if keyword.arg == "mode":
+                            mode = _literal_string(keyword.value, bindings=self.bindings)
+                            break
+                if _mode_writes(mode):
+                    path = _path_from_expr(func.value, bindings=self.bindings)
+                    return [path] if path else []
+                return []
+            if func.attr in {"rename", "replace"}:
+                source = _path_from_expr(func.value, bindings=self.bindings)
+                destination = _path_from_expr(node.args[0], bindings=self.bindings) if node.args else ""
+                return [path for path in (source, destination) if path]
+            if isinstance(func.value, ast.Name) and func.value.id == "shutil":
+                if func.attr in {"copy", "copy2", "copyfile"}:
+                    destination = _path_from_expr(node.args[1], bindings=self.bindings) if len(node.args) > 1 else ""
+                    return [destination] if destination else []
+                if func.attr == "move":
+                    source = _path_from_expr(node.args[0], bindings=self.bindings) if node.args else ""
+                    destination = _path_from_expr(node.args[1], bindings=self.bindings) if len(node.args) > 1 else ""
+                    return [path for path in (source, destination) if path]
+                return []
+            if isinstance(func.value, ast.Name) and func.value.id == "os" and func.attr in {"remove", "unlink"}:
+                path = _path_from_expr(node.args[0], bindings=self.bindings) if node.args else ""
+                return [path] if path else []
         return []
-    index += 1
-    return tokens[index:]
+
+
+def _paths_from_python_inline_script(*, tokens: list[str], project_dir: Path) -> list[str]:
+    script = _inline_script(tokens, option="-c")
+    if not script:
+        return []
+    try:
+        tree = ast.parse(script, mode="exec")
+    except SyntaxError:
+        return []
+    collector = _PythonInlineWriteCollector()
+    collector.visit(tree)
+    return _dedupe_paths(
+        [
+            relative
+            for relative in (_project_relative_path(project_dir=project_dir, raw_path=path) for path in collector.paths)
+            if relative
+        ]
+    )
+
+
+def _paths_from_node_inline_script(*, tokens: list[str], project_dir: Path) -> list[str]:
+    script = _inline_script(tokens, option="-e")
+    if not script:
+        return []
+    raw_paths: list[str] = []
+    for match in _NODE_TWO_PATH_CALL_RE.finditer(script):
+        raw_paths.extend([match.group(2).strip(), match.group(4).strip()])
+    for match in _NODE_SINGLE_PATH_CALL_RE.finditer(script):
+        raw_paths.append(match.group(2).strip())
+    return _dedupe_paths(
+        [
+            relative
+            for relative in (_project_relative_path(project_dir=project_dir, raw_path=path) for path in raw_paths)
+            if relative
+        ]
+    )
 
 
 def _paths_from_token_list(*, tokens: list[str], project_dir: Path, raw_command: str) -> list[str]:
+    tokens = _trim_shell_command_tokens(tokens)
     if not tokens:
         return []
     command = tokens[0]
     raw_targets: list[str] = []
-    if command in {"cp", "mv"}:
-        return _destinations_from_cp_mv(tokens=tokens[1:], project_dir=project_dir)
+    if command == "cp":
+        return _copy_destinations(tokens=tokens[1:], project_dir=project_dir)
+    if command == "mv":
+        return _move_paths(tokens=tokens[1:], project_dir=project_dir)
     if command == "touch":
         raw_targets = _operand_tokens(tokens[1:])
     elif command == "mkdir":
@@ -219,6 +500,10 @@ def _paths_from_token_list(*, tokens: list[str], project_dir: Path, raw_command:
         match = _REDIRECT_TARGET_RE.search(raw_command)
         if match:
             raw_targets = [next(group for group in match.groups() if group)]
+    elif command in {"python", "python3"}:
+        return _paths_from_python_inline_script(tokens=tokens, project_dir=project_dir)
+    elif command == "node":
+        return _paths_from_node_inline_script(tokens=tokens, project_dir=project_dir)
     return _dedupe_paths(
         [
             relative

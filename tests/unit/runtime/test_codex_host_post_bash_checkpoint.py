@@ -180,6 +180,7 @@ def test_governed_changed_paths_parses_porcelain_z_output(monkeypatch, tmp_path:
         "odylith/casebook/bugs/foo.md",
         "odylith/technical-plans/in-progress/2026-04/new-plan.md",
         "odylith/casebook/bugs/new-name.md",
+        "odylith/casebook/bugs/old-name.md",
     ]
 
 
@@ -211,6 +212,26 @@ def test_governed_changed_paths_fails_soft_on_nonzero_git_returncode(
 
     paths = codex_host_post_bash_checkpoint.governed_changed_paths(project_dir=tmp_path)
     assert paths == []
+
+
+def test_governed_changed_paths_keeps_old_governed_path_for_rename_out_of_truth(
+    monkeypatch, tmp_path: Path
+) -> None:
+    porcelain_z = "R  docs/foo.md\x00odylith/casebook/bugs/foo.md\x00"
+
+    def _fake_subprocess_run(args, **kwargs):
+        assert args == ["git", "status", "--porcelain", "-z"]
+        return SimpleNamespace(returncode=0, stdout=porcelain_z, stderr="")
+
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint.subprocess,
+        "run",
+        _fake_subprocess_run,
+    )
+
+    paths = codex_host_post_bash_checkpoint.governed_changed_paths(project_dir=tmp_path)
+
+    assert paths == ["odylith/casebook/bugs/foo.md"]
 
 
 def test_command_scoped_governed_paths_intersects_dirty_set_with_command_targets(
@@ -260,3 +281,59 @@ def test_command_scoped_governed_paths_skips_repo_wide_dirty_files_when_command_
     )
 
     assert paths == []
+
+
+def test_inferred_command_paths_ignores_shell_tail_after_copy(tmp_path: Path) -> None:
+    paths = codex_host_post_bash_checkpoint.inferred_command_paths(
+        project_dir=tmp_path,
+        command="cp src/a.py odylith/radar/source/INDEX.md && echo done",
+    )
+
+    assert paths == ["odylith/radar/source/INDEX.md"]
+
+
+def test_inferred_command_paths_ignores_redirection_tail_after_sed(tmp_path: Path) -> None:
+    paths = codex_host_post_bash_checkpoint.inferred_command_paths(
+        project_dir=tmp_path,
+        command="sed -i 's/a/b/' odylith/casebook/bugs/foo.md >/dev/null",
+    )
+
+    assert paths == ["odylith/casebook/bugs/foo.md"]
+
+
+def test_command_scoped_governed_paths_refreshes_move_out_of_governed_truth(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "dirty_governed_paths",
+        lambda *, project_dir: ["odylith/casebook/bugs/foo.md"],
+    )
+
+    paths = codex_host_post_bash_checkpoint.command_scoped_governed_paths(
+        project_dir=tmp_path,
+        command="mv odylith/casebook/bugs/foo.md docs/foo.md",
+    )
+
+    assert paths == ["odylith/casebook/bugs/foo.md"]
+
+
+def test_inferred_command_paths_detects_python_inline_write_target(tmp_path: Path) -> None:
+    paths = codex_host_post_bash_checkpoint.inferred_command_paths(
+        project_dir=tmp_path,
+        command=(
+            "python -c \"from pathlib import Path; "
+            "Path('odylith/casebook/bugs/foo.md').write_text('x')\""
+        ),
+    )
+
+    assert paths == ["odylith/casebook/bugs/foo.md"]
+
+
+def test_inferred_command_paths_detects_node_inline_write_target(tmp_path: Path) -> None:
+    paths = codex_host_post_bash_checkpoint.inferred_command_paths(
+        project_dir=tmp_path,
+        command="node -e \"require('fs').writeFileSync('odylith/radar/source/INDEX.md', 'x')\"",
+    )
+
+    assert paths == ["odylith/radar/source/INDEX.md"]

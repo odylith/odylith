@@ -3223,7 +3223,7 @@ def test_compass_live_window_anchors_to_loaded_snapshot_time(tmp_path) -> None: 
                 context.close()
 
 
-def test_compass_archived_timeline_day_loads_from_embedded_history(tmp_path) -> None:  # noqa: ANN001
+def test_compass_legacy_archived_timeline_day_is_ignored(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
 
@@ -3300,7 +3300,7 @@ def test_compass_archived_timeline_day_loads_from_embedded_history(tmp_path) -> 
                 "version": "v1",
                 "generated_utc": live_payload["generated_utc"],
                 "retention_days": 1,
-                "dates": [live_day],
+                "dates": [archived_day],
                 "restored_dates": [],
                 "archive": live_payload["history"]["archive"],
                 "snapshots": {
@@ -3325,16 +3325,26 @@ def test_compass_archived_timeline_day_loads_from_embedded_history(tmp_path) -> 
 
                 compass = page.frame_locator("#frame-compass")
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-                compass.locator("#timeline .timeline-day-title", has_text=archived_day).wait_for(timeout=15000)
-                assert compass.locator("#timeline .hour-row").count() > 0
-                compass.locator("#timeline .empty", has_text="No snapshot available for this day.").wait_for(
-                    state="detached",
+                page.wait_for_function(
+                    """() => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        if (!doc) return false;
+                        return doc.querySelectorAll("#timeline .tx-card, #timeline .empty, #timeline .timeline-day-title, #timeline .hour-empty").length > 0;
+                    }""",
                     timeout=15000,
                 )
+                compass.locator("#status-banner").wait_for(timeout=15000)
+                assert "No snapshot available for this day" in compass.locator("#status-banner").inner_text().strip()
+                assert compass.locator("#timeline .tx-headline", has_text=archived_tx["headline"]).count() == 0
 
-                bad_responses[:] = [
+                assert not [
+                    entry for entry in failed_requests
+                    if entry.endswith(f"/odylith/compass/runtime/history/{archived_day}.v1.json")
+                ]
+                assert not [
                     entry for entry in bad_responses
-                    if not entry.endswith(f"/odylith/compass/runtime/history/{archived_day}.v1.json")
+                    if entry.endswith(f"/odylith/compass/runtime/history/{archived_day}.v1.json")
                 ]
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:

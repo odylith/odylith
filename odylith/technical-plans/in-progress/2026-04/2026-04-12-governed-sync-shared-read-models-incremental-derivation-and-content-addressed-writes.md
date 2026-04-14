@@ -183,6 +183,29 @@ Related Bugs:
       instead of rescanning repo-wide git state, and let single-surface
       Radar/Registry/Casebook refreshes stay on the in-process runtime fast
       lane when the shared LanceDB/Tantivy substrate is ready.
+- [x] Add a low-RAM-aware `RuntimeReadSession` plus one shared byte-budgeted
+      process hot cache so `query`, `impact`, `governance-slice`,
+      `surface-read`, `session-brief`, and `bootstrap-session` can reuse the
+      same projection connection, projection fingerprints, warm verdicts, and
+      compact row caches inside one command without letting separate dict caches
+      silently exceed a fixed resident-memory budget.
+- [x] Move `odylith show` onto a persistent incremental import-graph manifest
+      under `.odylith/runtime/latency-cache/` so unchanged source files reuse
+      prior parse results from disk instead of reparsing the full repo on every
+      run.
+- [x] Add a fingerprint-gated surface refresh DAG for the manual
+      Radar/Registry/Casebook/Atlas/Compass/tooling-shell refresh lane so
+      unchanged input and output fingerprints short-circuit no-op rerenders
+      without weakening freshness.
+- [x] Deduplicate stale SessionStart brief refresh queueing across Claude Code
+      and Codex so the same stale Compass brief does not enqueue repeated
+      background refreshes on every host session start.
+- [x] Harden the Codex post-bash governed-refresh lane so exact command-scoped
+      selective sync survives dirty worktrees, rename/move-out-of-governed
+      operations, shell control operators, redirection tails, and explicit
+      inline `python -c` / `node -e` file-write one-liners without widening to
+      repo-wide governed dirtiness, while Claude keeps the direct exact-path
+      `PostToolUse` lane unchanged.
 
 ## Defer
 - [ ] Persistent sync daemon with warm resident session state across commands.
@@ -212,6 +235,33 @@ Related Bugs:
 - [x] Dev guidance, dogfood bundle assets, consumer install guidance, Codex
       shims, and Claude helper commands all advertise the same owned-surface
       quick-refresh commands for Radar, Registry, Casebook, Atlas, and Compass.
+- [x] Codex's governed-edit Bash checkpoint now stays command-scoped under the
+      same real shell edge cases Claude never had to infer, and both host hook
+      suites pass together without weakening the shared owned-surface refresh
+      contract.
+- [x] The old highest-latency CLI profile is now materially stale on the live
+      source-local lane: `dashboard refresh` measures `7.75s` cold / `0.98s`
+      warm, `context-engine warmup` `5.00s` cold / `1.47s` warm, `show`
+      `1.03s` cold / `0.53s` warm, `governance-slice` `0.89s`, `query`
+      `1.45s` cold / `1.37s` warm, `context-engine query` `1.40s` cold /
+      `1.32s` warm, and `claude session-start` `1.96s` cold / `2.14s` warm.
+      `impact` remains the obvious cold-path laggard at `5.65s` cold /
+      `1.90s` warm and is the next clear follow-on if another latency wave is
+      needed.
+- [x] The context-engine hot path now runs under a command-scoped
+      `RuntimeReadSession` and a shared byte-budgeted process cache with
+      conservative low-RAM fallback (`<= 8 GiB` total, `< 1.5 GiB` available,
+      or undetectable memory telemetry) so warm reuse stays bounded instead of
+      multiplying across unrelated cache dictionaries.
+- [x] `odylith show` now persists an incremental import-graph manifest under
+      `.odylith/runtime/latency-cache/show-import-graph/` and reuses unchanged
+      file parses across runs.
+- [x] Repeated manual surface refreshes now consult an input/output fingerprint
+      DAG and skip unchanged rerenders while preserving the same visible bytes
+      and freshness contract.
+- [x] Claude and Codex SessionStart hooks now share one stale-brief queue helper
+      that suppresses duplicate Compass refresh launches for the same stale
+      brief marker.
 
 ## Non-Goals
 - [ ] Claiming sub-second cold forced full sync from scratch in Python.
@@ -233,7 +283,11 @@ Related Bugs:
 - [x] [consumer_profile.py](/Users/freedom/code/odylith/src/odylith/runtime/common/consumer_profile.py)
 - [x] [derivation_provenance.py](/Users/freedom/code/odylith/src/odylith/runtime/common/derivation_provenance.py)
 - [x] [sync_session.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/sync_session.py)
+- [x] [runtime_read_session.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/runtime_read_session.py)
+- [x] [cache_budget_policy.py](/Users/freedom/code/odylith/src/odylith/runtime/common/cache_budget_policy.py)
 - [x] [odylith_memory_backend.py](/Users/freedom/code/odylith/src/odylith/runtime/memory/odylith_memory_backend.py)
+- [x] [incremental_import_graph.py](/Users/freedom/code/odylith/src/odylith/runtime/analysis_engine/incremental_import_graph.py)
+- [x] [surface_refresh_fingerprint_dag.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py)
 - [x] [render_compass_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_compass_dashboard.py)
 - [x] [render_backlog_ui.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui.py)
 - [x] [render_backlog_ui_payload_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py)
@@ -244,6 +298,9 @@ Related Bugs:
 - [x] [CONTEXT_ENGINE_OPERATIONS.md](/Users/freedom/code/odylith/odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md)
 - [x] focused sync/runtime tests covering session reuse, path-cache behavior, no-op
       write elision, generation gating, and cache-explain evidence
+- [x] focused latency/runtime tests covering shared runtime-read-session cache
+      reuse, incremental import-graph cache reuse, fingerprint-gated
+      no-op dashboard refresh, and stale SessionStart refresh dedupe
 
 ## Rollout
 1. Bind the workstream, plan, Registry dossier, and Atlas diagram so the
@@ -258,6 +315,9 @@ Related Bugs:
 
 ## Validation
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_workstream_inference.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_component_registry_intelligence.py`
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_runtime_read_session.py tests/unit/runtime/test_incremental_import_graph.py tests/unit/runtime/test_session_brief_refresh_queue.py tests/unit/runtime/test_claude_host_session_brief.py tests/unit/runtime/test_codex_host_session_brief.py tests/unit/runtime/test_sync_cli_compat.py -k 'runtime_read_session or incremental or session_brief_refresh_queue or dashboard_refresh_reuses_fingerprint_when_surface_is_unchanged or render_session_brief or render_codex_session_brief or main_writes_session_start_hook_json or main_writes_project_memory'`
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_odylith_context_engine_store.py -k 'load_backlog_detail_uses_cached_runtime_projection_rows or load_backlog_list_reuses_cached_runtime_rows or build_governance_slice_hot_path_requests_unfinalized_impact or build_governance_slice_hot_path_uses_grounding_light_workstream_detail'`
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_sync_cli_compat.py -k 'dashboard_refresh'`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_context_grounding_hardening.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_render_backlog_ui.py`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_workstream_inference.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_sync_component_spec_requirements.py tests/unit/runtime/test_surface_projection_fingerprint.py`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_odylith_context_engine_store.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py`

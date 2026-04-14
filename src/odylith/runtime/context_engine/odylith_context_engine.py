@@ -28,6 +28,7 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_compass_runtime_cache
 from odylith.runtime.context_engine import odylith_context_engine_daemon_wait_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
+from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.common.command_surface import module_invocation
 
 _WORKSPACE_PYTHON_HANDOFF_ENV = "ODYLITH_CONTEXT_ENGINE_WORKSPACE_PYTHON_HANDOFF"
@@ -1445,14 +1446,15 @@ def _run_status(*, repo_root: Path) -> int:
 
 
 def _run_memory_snapshot(*, repo_root: Path) -> int:
-    store._warm_runtime(repo_root=repo_root, runtime_mode="auto", reason="memory_snapshot", scope="full")  # noqa: SLF001
-    optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)
-    evaluation_snapshot = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
-    payload = store.load_runtime_memory_snapshot(
-        repo_root=repo_root,
-        optimization_snapshot=optimization_snapshot,
-        evaluation_snapshot=evaluation_snapshot,
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="full"):
+        store._warm_runtime(repo_root=repo_root, runtime_mode="auto", reason="memory_snapshot", scope="full")  # noqa: SLF001
+        optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)
+        evaluation_snapshot = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
+        payload = store.load_runtime_memory_snapshot(
+            repo_root=repo_root,
+            optimization_snapshot=optimization_snapshot,
+            evaluation_snapshot=evaluation_snapshot,
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1626,12 +1628,13 @@ def _run_stop(*, repo_root: Path) -> int:
 
 
 def _run_query(*, repo_root: Path, text: str, limit: int, kinds: Sequence[str]) -> int:
-    payload = store.search_entities_payload(
-        repo_root=repo_root,
-        query=text,
-        limit=limit,
-        kinds=kinds,
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.search_entities_payload(
+            repo_root=repo_root,
+            query=text,
+            limit=limit,
+            kinds=kinds,
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1677,18 +1680,19 @@ def _run_context(
     event_limit: int,
     relation_limit: int,
 ) -> int:
-    payload = store.compact_context_dossier_for_delivery(
-        store.load_context_dossier(
-            repo_root=repo_root,
-            ref=ref,
-            kind=str(kind or "").strip() or None,
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.compact_context_dossier_for_delivery(
+            store.load_context_dossier(
+                repo_root=repo_root,
+                ref=ref,
+                kind=str(kind or "").strip() or None,
+                event_limit=max(1, int(event_limit)),
+                relation_limit=max(1, int(relation_limit)),
+            ),
             event_limit=max(1, int(event_limit)),
-            relation_limit=max(1, int(relation_limit)),
-        ),
-        event_limit=max(1, int(event_limit)),
-        relation_limit_per_kind=max(1, int(relation_limit)),
-        delivery_limit=1,
-    )
+            relation_limit_per_kind=max(1, int(relation_limit)),
+            delivery_limit=1,
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1780,18 +1784,20 @@ def _run_surface_read(
     case: str,
     view: str,
 ) -> int:
-    payload = _surface_read_payload(
-        repo_root=repo_root,
-        entity=entity,
-        workstream=workstream,
-        component=component,
-        paths=paths,
-        session_id=session_id,
-        claim_paths=claim_paths,
-        working_tree_scope=working_tree_scope,
-        case=case,
-        view=view,
-    )
+    requested_scope = "reasoning" if str(entity).strip().lower() == "governance-detail" else "default"
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope=requested_scope):
+        payload = _surface_read_payload(
+            repo_root=repo_root,
+            entity=entity,
+            workstream=workstream,
+            component=component,
+            paths=paths,
+            session_id=session_id,
+            claim_paths=claim_paths,
+            working_tree_scope=working_tree_scope,
+            case=case,
+            view=view,
+        )
     print(json.dumps(_surface_payload_json_ready(payload), indent=2, ensure_ascii=False))
     return 0
 
@@ -1806,15 +1812,16 @@ def _run_impact(
     claim_paths: Sequence[str],
     test_limit: int,
 ) -> int:
-    payload = store.build_impact_report(
-        repo_root=repo_root,
-        changed_paths=paths,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        claimed_paths=claim_paths,
-        test_limit=max(1, int(test_limit)),
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.build_impact_report(
+            repo_root=repo_root,
+            changed_paths=paths,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            claimed_paths=claim_paths,
+            test_limit=max(1, int(test_limit)),
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1828,14 +1835,15 @@ def _run_architecture(
     session_id: str,
     claim_paths: Sequence[str],
 ) -> int:
-    payload = store.build_architecture_audit(
-        repo_root=repo_root,
-        changed_paths=paths,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        claimed_paths=claim_paths,
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.build_architecture_audit(
+            repo_root=repo_root,
+            changed_paths=paths,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            claimed_paths=claim_paths,
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1851,16 +1859,17 @@ def _run_governance_slice(
     session_id: str,
     claim_paths: Sequence[str],
 ) -> int:
-    payload = store.build_governance_slice(
-        repo_root=repo_root,
-        changed_paths=paths,
-        workstream=workstream,
-        component=component,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        claimed_paths=claim_paths,
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.build_governance_slice(
+            repo_root=repo_root,
+            changed_paths=paths,
+            workstream=workstream,
+            component=component,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            claimed_paths=claim_paths,
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1883,23 +1892,24 @@ def _run_session_brief(
     claim_paths: Sequence[str],
     lease_seconds: int,
 ) -> int:
-    payload = store.build_session_brief(
-        repo_root=repo_root,
-        changed_paths=paths,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        workstream=workstream,
-        intent=intent,
-        generated_surfaces=surfaces,
-        visible_text=visible_text,
-        active_tab=active_tab,
-        user_turn_id=user_turn_id,
-        supersedes_turn_id=supersedes_turn_id,
-        claim_mode=claim_mode,
-        claimed_paths=claim_paths,
-        lease_seconds=max(60, int(lease_seconds)),
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.build_session_brief(
+            repo_root=repo_root,
+            changed_paths=paths,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            workstream=workstream,
+            intent=intent,
+            generated_surfaces=surfaces,
+            visible_text=visible_text,
+            active_tab=active_tab,
+            user_turn_id=user_turn_id,
+            supersedes_turn_id=supersedes_turn_id,
+            claim_mode=claim_mode,
+            claimed_paths=claim_paths,
+            lease_seconds=max(60, int(lease_seconds)),
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1925,26 +1935,27 @@ def _run_bootstrap_session(
     command_limit: int,
     test_limit: int,
 ) -> int:
-    payload = store.build_session_bootstrap(
-        repo_root=repo_root,
-        changed_paths=paths,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        workstream=workstream,
-        intent=intent,
-        generated_surfaces=surfaces,
-        visible_text=visible_text,
-        active_tab=active_tab,
-        user_turn_id=user_turn_id,
-        supersedes_turn_id=supersedes_turn_id,
-        claim_mode=claim_mode,
-        claimed_paths=claim_paths,
-        lease_seconds=max(60, int(lease_seconds)),
-        doc_limit=max(1, int(doc_limit)),
-        command_limit=max(1, int(command_limit)),
-        test_limit=max(1, int(test_limit)),
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.build_session_bootstrap(
+            repo_root=repo_root,
+            changed_paths=paths,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            workstream=workstream,
+            intent=intent,
+            generated_surfaces=surfaces,
+            visible_text=visible_text,
+            active_tab=active_tab,
+            user_turn_id=user_turn_id,
+            supersedes_turn_id=supersedes_turn_id,
+            claim_mode=claim_mode,
+            claimed_paths=claim_paths,
+            lease_seconds=max(60, int(lease_seconds)),
+            doc_limit=max(1, int(doc_limit)),
+            command_limit=max(1, int(command_limit)),
+            test_limit=max(1, int(test_limit)),
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 

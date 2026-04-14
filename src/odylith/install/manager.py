@@ -2210,7 +2210,28 @@ def _persist_runtime_state(
         active_version=active_version,
     )
     write_install_state(repo_root=repo_root, payload=normalized)
-    return normalized, retention_warnings
+    history_layout_warnings = _migrate_compass_history_layout(repo_root=repo_root)
+    return normalized, tuple([*retention_warnings, *history_layout_warnings])
+
+
+def _migrate_compass_history_layout(*, repo_root: Path) -> tuple[str, ...]:
+    runtime_dir = Path(repo_root).resolve() / "odylith" / "compass" / "runtime"
+    if not runtime_dir.exists():
+        return ()
+    try:
+        from odylith.runtime.surfaces import compass_dashboard_runtime
+
+        compass_dashboard_runtime.migrate_legacy_history_layout(
+            repo_root=Path(repo_root).resolve(),
+            runtime_dir=runtime_dir,
+        )
+    except Exception as exc:
+        return (
+            "Compass history cleanup could not normalize retained snapshots. "
+            "Active runtime stayed healthy; rerun `odylith compass refresh --repo-root .` after fixing repo writability. "
+            f"({exc})",
+        )
+    return ()
 
 
 def _version_sort_key(version: str) -> tuple[int, int, int, str]:

@@ -15,6 +15,7 @@ import json
 import math
 from pathlib import Path
 import re
+import shutil
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.governance import agent_governance_intelligence as governance
@@ -41,6 +42,7 @@ _FRESHNESS_RECENT_MAX_MINUTES = 6 * 60
 _FRESHNESS_AGING_MAX_MINUTES = 24 * 60
 DEFAULT_HISTORY_RETENTION_DAYS = 15
 _EMBEDDED_HISTORY_SNAPSHOT_ENCODING = "gzip+base64+json"
+_COMPASS_RUNTIME_JS_ASSIGNMENT_PREFIX = "window.__ODYLITH_COMPASS_RUNTIME__ = "
 
 
 def _global_brief_provider_allowed(
@@ -2374,15 +2376,67 @@ def _history_restore_pins_path(history_dir: Path) -> Path:
     return history_dir / "restore-pins.v1.json"
 
 
-def _history_archive_path(*, history_dir: Path, date_token: str) -> Path:
-    return _history_archive_dir(history_dir) / f"{date_token}.v1.json.gz"
+def _load_json_assignment(path: Path, *, prefix: str) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    try:
+        raw = path.read_text(encoding="utf-8").strip()
+    except Exception:
+        return None
+    if not raw.startswith(prefix):
+        return None
+    payload_text = raw[len(prefix) :].strip()
+    if payload_text.endswith(";"):
+        payload_text = payload_text[:-1].strip()
+    if not payload_text:
+        return None
+    try:
+        payload = json.loads(payload_text)
+    except Exception:
+        return None
+    return dict(payload) if isinstance(payload, Mapping) else None
 
 
-def _write_bytes_atomic(path: Path, content: bytes) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = path.parent / f".{path.name}.tmp"
-    tmp_path.write_bytes(content)
-    tmp_path.replace(path)
+def _load_current_runtime_payload(runtime_dir: Path) -> dict[str, Any] | None:
+    current_json_path = runtime_dir / "current.v1.json"
+    if current_json_path.is_file():
+        try:
+            payload = _load_json(current_json_path)
+        except Exception:
+            payload = None
+        if isinstance(payload, Mapping):
+            return dict(payload)
+    return _load_json_assignment(
+        runtime_dir / "current.v1.js",
+        prefix=_COMPASS_RUNTIME_JS_ASSIGNMENT_PREFIX,
+    )
+
+
+def _clear_legacy_history_archive(*, history_dir: Path) -> tuple[Path, ...]:
+    removed: list[Path] = []
+    pins_path = _history_restore_pins_path(history_dir)
+    if pins_path.is_file() or pins_path.is_symlink():
+        pins_path.unlink()
+        removed.append(pins_path)
+    archive_dir = _history_archive_dir(history_dir)
+    if archive_dir.is_dir() and not archive_dir.is_symlink():
+        shutil.rmtree(archive_dir)
+        removed.append(archive_dir)
+    elif archive_dir.is_file() or archive_dir.is_symlink():
+        archive_dir.unlink()
+        removed.append(archive_dir)
+    return tuple(removed)
+
+
+def _empty_history_archive_meta() -> dict[str, Any]:
+    return {
+        "compressed": False,
+        "path": "",
+        "count": 0,
+        "dates": [],
+        "newest_date": "",
+        "oldest_date": "",
+    }
 
 
 def _normalize_history_date_tokens(values: Sequence[str]) -> list[str]:
@@ -2403,144 +2457,39 @@ def _normalize_history_date_tokens(values: Sequence[str]) -> list[str]:
     return normalized
 
 
-def _scan_archived_dates(history_dir: Path) -> list[str]:
-    archive_dir = _history_archive_dir(history_dir)
-    if not archive_dir.is_dir():
-        return []
-    dates: list[str] = []
-    for path in sorted(archive_dir.glob("*.v1.json.gz")):
-        token = path.name.replace(".v1.json.gz", "")
-        parsed = _parse_date(token)
-        if parsed is None:
-            continue
-        dates.append(parsed.isoformat())
-    dates.sort(reverse=True)
-    return dates
-
-
-def _load_restore_pins(history_dir: Path) -> list[str]:
-    path = _history_restore_pins_path(history_dir)
-    if not path.is_file():
-        return []
-    try:
-        payload = _load_json(path)
-    except Exception:
-        return []
-    if not isinstance(payload, Mapping):
-        return []
-    dates = payload.get("dates")
-    if not isinstance(dates, list):
-        return []
-    try:
-        return _normalize_history_date_tokens([str(item) for item in dates])
-    except ValueError:
-        return []
-
-
-def _write_restore_pins(*, repo_root: Path, history_dir: Path, dates: Sequence[str]) -> Path:
-    path = _history_restore_pins_path(history_dir)
-    payload = {
-        "version": "v1",
-        "generated_utc": _safe_iso(dt.datetime.now(tz=dt.timezone.utc)),
-        "dates": _normalize_history_date_tokens(dates),
-    }
-    odylith_context_cache.write_text_if_changed(
-        repo_root=repo_root,
-        path=path,
-        content=json.dumps(payload, indent=2) + "\n",
-        lock_key=str(path),
-    )
-    return path
-
-
-def _archive_daily_snapshot(*, active_path: Path, archive_path: Path) -> None:
-    try:
-        raw = active_path.read_bytes()
-        json.loads(raw.decode("utf-8"))
-    except Exception:
-        return
-    _write_bytes_atomic(archive_path, gzip.compress(raw, compresslevel=9))
-    active_path.unlink(missing_ok=True)
-
-
-def _rehydrate_restored_history(*, history_dir: Path, restored_dates: Sequence[str]) -> list[str]:
-    realized: list[str] = []
-    for token in _normalize_history_date_tokens(restored_dates):
-        active_path = history_dir / f"{token}.v1.json"
-        if active_path.is_file():
-            realized.append(token)
-            continue
-        archive_path = _history_archive_path(history_dir=history_dir, date_token=token)
-        if not archive_path.is_file():
-            continue
-        try:
-            raw = gzip.decompress(archive_path.read_bytes())
-            json.loads(raw.decode("utf-8"))
-        except Exception:
-            continue
-        _write_bytes_atomic(active_path, raw)
-        realized.append(token)
-    realized.sort(reverse=True)
-    return realized
-
-
-def _archive_history(
-    history_dir: Path,
-    *,
-    retention_days: int,
-    today: dt.date,
-    restored_dates: Sequence[str],
-) -> list[str]:
-    history_dir.mkdir(parents=True, exist_ok=True)
-    restored = set(_normalize_history_date_tokens(restored_dates))
-    kept: list[str] = []
-    for path in sorted(history_dir.glob("*.v1.json")):
-        token = path.name.replace(".v1.json", "")
-        date = _parse_date(token)
-        if date is None:
-            continue
-        age = (today - date).days
-        if age > retention_days and token not in restored:
-            _archive_daily_snapshot(
-                active_path=path,
-                archive_path=_history_archive_path(history_dir=history_dir, date_token=token),
-            )
-            continue
-        kept.append(date.isoformat())
-    kept.sort(reverse=True)
-    return kept
-
-
 def _history_archive_meta(history_dir: Path) -> dict[str, Any]:
-    archived_dates = _scan_archived_dates(history_dir)
-    return {
-        "compressed": True,
-        "path": "archive",
-        "count": len(archived_dates),
-        "dates": archived_dates,
-        "newest_date": archived_dates[0] if archived_dates else "",
-        "oldest_date": archived_dates[-1] if archived_dates else "",
-    }
+    del history_dir
+    return _empty_history_archive_meta()
 
 
 def load_history_retention_days(*, runtime_dir: Path) -> int:
     history_dir = runtime_dir / "history"
-    for path in (history_dir / "index.v1.json", runtime_dir / "current.v1.json"):
-        if not path.is_file():
-            continue
+    index_path = history_dir / "index.v1.json"
+    if index_path.is_file():
         try:
-            payload = _load_json(path)
+            payload = _load_json(index_path)
         except Exception:
-            continue
-        history = payload.get("history") if path.name == "current.v1.json" and isinstance(payload, Mapping) else payload
+            payload = None
+        history = payload if isinstance(payload, Mapping) else None
         if isinstance(history, Mapping):
             value = history.get("retention_days")
             try:
                 parsed = int(value)
             except (TypeError, ValueError):
-                continue
+                parsed = 0
             if parsed >= 1:
                 return parsed
+
+    payload = _load_current_runtime_payload(runtime_dir)
+    history = payload.get("history") if isinstance(payload, Mapping) else None
+    if isinstance(history, Mapping):
+        value = history.get("retention_days")
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            parsed = 0
+        if parsed >= 1:
+            return parsed
     return DEFAULT_HISTORY_RETENTION_DAYS
 
 
@@ -2550,38 +2499,95 @@ def restore_archived_history_dates(
     runtime_dir: Path,
     dates: Sequence[str],
 ) -> tuple[list[str], list[str], Path]:
-    history_dir = runtime_dir / "history"
-    requested = _normalize_history_date_tokens(dates)
-    if not requested:
-        raise ValueError("provide at least one --date YYYY-MM-DD")
+    del repo_root, runtime_dir, dates
+    raise ValueError(
+        "Compass history beyond retention is deleted instead of archived; restore-history is no longer available"
+    )
 
-    missing: list[str] = []
-    already_active: list[str] = []
-    for token in requested:
-        active_path = history_dir / f"{token}.v1.json"
-        archive_path = _history_archive_path(history_dir=history_dir, date_token=token)
-        if active_path.is_file():
-            already_active.append(token)
-            continue
-        if not archive_path.is_file():
-            missing.append(token)
-    if missing:
-        raise ValueError("missing archived Compass history for: " + ", ".join(missing))
 
-    restored: list[str] = []
-    for token in requested:
-        active_path = history_dir / f"{token}.v1.json"
-        if active_path.is_file():
-            continue
-        archive_path = _history_archive_path(history_dir=history_dir, date_token=token)
-        raw = gzip.decompress(archive_path.read_bytes())
-        json.loads(raw.decode("utf-8"))
-        _write_bytes_atomic(active_path, raw)
-        restored.append(token)
+def migrate_legacy_history_layout(*, repo_root: Path, runtime_dir: Path) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    resolved_runtime_dir = Path(runtime_dir).resolve()
+    history_dir = resolved_runtime_dir / "history"
+    history_dir.mkdir(parents=True, exist_ok=True)
 
-    pins = sorted(set(_load_restore_pins(history_dir)) | set(requested), reverse=True)
-    pins_path = _write_restore_pins(repo_root=repo_root, history_dir=history_dir, dates=pins)
-    return restored, already_active, pins_path
+    removed_paths = []
+    for path in _clear_legacy_history_archive(history_dir=history_dir):
+        try:
+            removed_paths.append(str(path.relative_to(root)))
+        except ValueError:
+            removed_paths.append(str(path))
+
+    retention_days = load_history_retention_days(runtime_dir=resolved_runtime_dir)
+    payload = _load_current_runtime_payload(resolved_runtime_dir)
+    rewritten = False
+    kept_dates: list[str] = []
+    if isinstance(payload, Mapping):
+        _write_runtime_snapshots(
+            repo_root=root,
+            runtime_dir=resolved_runtime_dir,
+            payload=dict(payload),
+            retention_days=retention_days,
+        )
+        rewritten = True
+        kept_dates = list(
+            (_load_json(history_dir / "index.v1.json").get("dates", []))
+            if (history_dir / "index.v1.json").is_file()
+            else []
+        )
+
+    if not rewritten:
+        today = dt.datetime.now(tz=_COMPASS_TZ).date()
+        kept_dates = _prune_history(history_dir, retention_days=retention_days, today=today)
+        index_payload = {
+            "version": "v1",
+            "generated_utc": "",
+            "retention_days": retention_days,
+            "dates": kept_dates,
+            "restored_dates": [],
+            "archive": _empty_history_archive_meta(),
+        }
+        index_path = history_dir / "index.v1.json"
+        if index_path.is_file():
+            try:
+                existing_index = _load_json(index_path)
+            except Exception:
+                existing_index = {}
+            index_payload["generated_utc"] = str(existing_index.get("generated_utc", "")).strip()
+        odylith_context_cache.write_text_if_changed(
+            repo_root=root,
+            path=index_path,
+            content=json.dumps(index_payload, indent=2) + "\n",
+            lock_key=str(index_path),
+        )
+        history_js_path = history_dir / "embedded.v1.js"
+        if kept_dates or history_js_path.is_file():
+            embedded_history_payload = _build_embedded_history_payload(
+                history_dir=history_dir,
+                kept_dates=kept_dates,
+                history_meta=index_payload,
+            )
+            odylith_context_cache.write_text_if_changed(
+                repo_root=root,
+                path=history_js_path,
+                content="window.__ODYLITH_COMPASS_HISTORY__ = "
+                + json.dumps(embedded_history_payload, separators=(",", ":"))
+                + ";\n",
+                lock_key=str(history_js_path),
+            )
+        return {
+            "removed_paths": removed_paths,
+            "retention_days": retention_days,
+            "kept_dates": kept_dates,
+            "rewritten": rewritten,
+        }
+
+    return {
+        "removed_paths": removed_paths,
+        "retention_days": retention_days,
+        "kept_dates": kept_dates,
+        "rewritten": rewritten,
+    }
 
 
 def _build_embedded_history_payload(
@@ -2607,42 +2613,13 @@ def _build_embedded_history_payload(
             "payload": base64.b64encode(compressed).decode("ascii"),
         }
 
-    restored_dates_raw = history_meta.get("restored_dates", [])
-    restored_dates = (
-        [str(item) for item in restored_dates_raw]
-        if isinstance(restored_dates_raw, Sequence) and not isinstance(restored_dates_raw, (str, bytes))
-        else []
-    )
-    archive_meta = history_meta.get("archive", {})
-    archive_dates_raw = archive_meta.get("dates", []) if isinstance(archive_meta, Mapping) else []
-    archive_dates = (
-        [str(item) for item in archive_dates_raw]
-        if isinstance(archive_dates_raw, Sequence) and not isinstance(archive_dates_raw, (str, bytes))
-        else []
-    )
-    known_dates = _normalize_history_date_tokens(
-        [*[str(item) for item in kept_dates], *restored_dates, *archive_dates]
-    )
-    if known_dates:
-        newest_known_date = _parse_date(known_dates[0])
-    else:
-        newest_known_date = None
-    window_floor = newest_known_date - dt.timedelta(days=29) if newest_known_date is not None else None
-
     snapshots: dict[str, Any] = {}
-    for token in known_dates:
-        token_date = _parse_date(token)
-        if window_floor is not None and token_date is not None and token_date < window_floor:
-            continue
+    for token in _normalize_history_date_tokens([str(item) for item in kept_dates]):
         path = history_dir / f"{token}.v1.json"
-        archive_path = _history_archive_path(history_dir=history_dir, date_token=token)
         try:
-            if path.is_file():
-                snapshot = _load_json(path)
-            elif archive_path.is_file():
-                snapshot = json.loads(gzip.decompress(archive_path.read_bytes()).decode("utf-8"))
-            else:
+            if not path.is_file():
                 continue
+            snapshot = _load_json(path)
         except Exception:
             continue
         snapshot_history = snapshot.get("history")
@@ -2657,11 +2634,7 @@ def _build_embedded_history_payload(
             if isinstance(history_meta.get("restored_dates"), list)
             else []
         )
-        merged_history["archive"] = (
-            dict(history_meta.get("archive", {}))
-            if isinstance(history_meta.get("archive"), Mapping)
-            else {}
-        )
+        merged_history["archive"] = _empty_history_archive_meta()
         snapshot["history"] = merged_history
         snapshots[token] = _encode_snapshot(snapshot)
     return {
@@ -2674,7 +2647,7 @@ def _build_embedded_history_payload(
             if isinstance(history_meta.get("restored_dates"), list)
             else []
         ),
-        "archive": dict(history_meta.get("archive", {})) if isinstance(history_meta.get("archive"), Mapping) else {},
+        "archive": _empty_history_archive_meta(),
         "snapshots": snapshots,
     }
 
@@ -2715,18 +2688,9 @@ def _write_runtime_snapshots(
         lock_key=str(daily_path),
     )
 
-    requested_restored_dates = _load_restore_pins(history_dir)
-    realized_restored_dates = _rehydrate_restored_history(
-        history_dir=history_dir,
-        restored_dates=requested_restored_dates,
-    )
-    kept_dates = _archive_history(
-        history_dir,
-        retention_days=retention_days,
-        today=today,
-        restored_dates=realized_restored_dates,
-    )
-    active_restored_dates = sorted(set(realized_restored_dates) & set(kept_dates), reverse=True)
+    _clear_legacy_history_archive(history_dir=history_dir)
+    kept_dates = _prune_history(history_dir, retention_days=retention_days, today=today)
+    active_restored_dates: list[str] = []
     archive_meta = _history_archive_meta(history_dir)
     index_payload = {
         "version": "v1",

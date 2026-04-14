@@ -21,11 +21,24 @@ flowchart TB
         delivery["Delivery intelligence substrate"]
     end
 
+    subgraph runtimehot["Low-RAM-aware runtime hot path"]
+        budget["CacheBudgetPolicy<br/>normal vs low_ram<br/>shared byte ceilings"]
+        read["RuntimeReadSession<br/>command-scoped fingerprints,<br/>warm verdicts, projection handles"]
+        hotcache["Shared hot-path process cache<br/>projection rows / path scopes /<br/>optimization snapshots"]
+        showcache["Incremental show import graph<br/>.odylith/runtime/latency-cache"]
+    end
+
     subgraph provenance["Reuse guardrails"]
         tuple["Immutable provenance tuple"]
         closed{"Provenance or generation mismatch?"}
         rebuild["Fail closed and rebuild locally"]
         manifest["Cache-explain debug manifest"]
+    end
+
+    subgraph surfacefast["Surface refresh reuse"]
+        dag["Surface fingerprint DAG<br/>input + output fingerprints"]
+        rerender{"Changed input or output?"}
+        reuse["Skip unchanged rerender<br/>keep visible bytes"]
     end
 
     subgraph derivation["Derived governed work"]
@@ -47,12 +60,19 @@ flowchart TB
     plans --> ideas
     registry --> report
     compass --> delivery
+    root --> budget
     code --> validators
     code --> renderers
     atlas --> renderers
     root --> profile
     root --> generation
     root --> paths
+    budget --> read
+    budget --> hotcache
+    budget --> showcache
+    read --> hotcache
+    read --> validators
+    read --> renderers
     profile --> ideas
     profile --> report
     generation --> tuple
@@ -69,7 +89,10 @@ flowchart TB
     closed -- no --> validators
     closed -- no --> renderers
     validators --> fixpoint
-    renderers --> fixpoint
+    renderers --> dag
+    dag --> rerender
+    rerender -- no --> reuse
+    rerender -- yes --> fixpoint
     fixpoint -- yes --> root
     fixpoint -- yes --> generation
     fixpoint -- no --> compare

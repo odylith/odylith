@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-14T21:29:54Z",
+  "generated_utc": "2026-04-14T22:43:24Z",
   "retention_days": 15,
   "dates": [
     "2026-04-14",
@@ -22,16 +22,11 @@
   ],
   "restored_dates": [],
   "archive": {
-    "compressed": true,
-    "path": "archive",
-    "count": 4,
-    "dates": [
-      "2026-03-29",
-      "2026-03-28",
-      "2026-03-27",
-      "2026-03-26"
-    ],
-    "newest_date": "2026-03-29",
-    "oldest_date": "2026-03-26"
+    "compressed": false,
+    "path": "",
+    "count": 0,
+    "dates": [],
+    "newest_date": "",
+    "oldest_date": ""
   }
 }

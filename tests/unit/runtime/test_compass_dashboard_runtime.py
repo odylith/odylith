@@ -425,7 +425,7 @@ def test_cached_odylith_runtime_summary_reuses_current_payload_for_shell_safe(tm
     ) == {"memory_ready": True}
 
 
-def test_write_runtime_snapshots_archives_days_older_than_retention(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_write_runtime_snapshots_deletes_days_older_than_retention_and_clears_legacy_archive(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _fixed_now(monkeypatch, year=2026, month=3, day=20)
     runtime_dir = tmp_path / "odylith" / "compass" / "runtime"
     history_dir = runtime_dir / "history"
@@ -434,6 +434,14 @@ def test_write_runtime_snapshots_archives_days_older_than_retention(tmp_path: Pa
     (history_dir / "2026-03-01.v1.json").write_text(old_payload, encoding="utf-8")
     retained_payload = json.dumps(_payload(generated_utc="2026-03-05T00:00:00Z"), indent=2) + "\n"
     (history_dir / "2026-03-05.v1.json").write_text(retained_payload, encoding="utf-8")
+    archive_dir = history_dir / "archive"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    archived_payload = json.dumps(_payload(generated_utc="2026-02-28T00:00:00Z"), indent=2) + "\n"
+    (archive_dir / "2026-02-28.v1.json.gz").write_bytes(gzip.compress(archived_payload.encode("utf-8"), compresslevel=9))
+    (history_dir / "restore-pins.v1.json").write_text(
+        json.dumps({"version": "v1", "generated_utc": "2026-03-20T00:00:00Z", "dates": ["2026-02-28"]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
     runtime._write_runtime_snapshots(
         repo_root=tmp_path,
@@ -446,63 +454,102 @@ def test_write_runtime_snapshots_archives_days_older_than_retention(tmp_path: Pa
     assert index_payload["retention_days"] == 15
     assert index_payload["dates"] == ["2026-03-20", "2026-03-05"]
     assert index_payload["restored_dates"] == []
-    assert index_payload["archive"]["count"] == 1
-    assert index_payload["archive"]["dates"] == ["2026-03-01"]
+    assert index_payload["archive"]["count"] == 0
+    assert index_payload["archive"]["dates"] == []
+    assert index_payload["archive"]["path"] == ""
 
-    archived_path = history_dir / "archive" / "2026-03-01.v1.json.gz"
-    assert archived_path.is_file()
     assert not (history_dir / "2026-03-01.v1.json").exists()
-    restored_payload = json.loads(gzip.decompress(archived_path.read_bytes()).decode("utf-8"))
-    assert restored_payload["generated_utc"] == "2026-03-01T00:00:00Z"
+    assert not archive_dir.exists()
+    assert not (history_dir / "restore-pins.v1.json").exists()
 
     current_payload = json.loads((runtime_dir / "current.v1.json").read_text(encoding="utf-8"))
     assert current_payload["history"]["retention_days"] == 15
     assert current_payload["history"]["dates"] == ["2026-03-20", "2026-03-05"]
-    assert current_payload["history"]["archive"]["count"] == 1
+    assert current_payload["history"]["archive"]["count"] == 0
 
     embedded_raw = (history_dir / "embedded.v1.js").read_text(encoding="utf-8")
     embedded_payload = json.loads(
         embedded_raw.removeprefix("window.__ODYLITH_COMPASS_HISTORY__ = ").removesuffix(";\n")
     )
-    assert embedded_payload["archive"]["dates"] == ["2026-03-01"]
-    archived_snapshot = embedded_payload["snapshots"]["2026-03-01"]
-    assert archived_snapshot["encoding"] == "gzip+base64+json"
-    decoded_snapshot = json.loads(gzip.decompress(base64.b64decode(archived_snapshot["payload"])).decode("utf-8"))
-    assert decoded_snapshot["generated_utc"] == "2026-03-01T00:00:00Z"
-    assert decoded_snapshot["history"]["archive"]["count"] == 1
+    assert embedded_payload["archive"]["dates"] == []
+    assert set(embedded_payload["snapshots"]) == {"2026-03-05", "2026-03-20"}
+    retained_snapshot = embedded_payload["snapshots"]["2026-03-05"]
+    assert retained_snapshot["encoding"] == "gzip+base64+json"
+    decoded_snapshot = json.loads(gzip.decompress(base64.b64decode(retained_snapshot["payload"])).decode("utf-8"))
+    assert decoded_snapshot["generated_utc"] == "2026-03-05T00:00:00Z"
+    assert decoded_snapshot["history"]["archive"]["count"] == 0
 
 
-def test_restore_archived_history_dates_keeps_restored_day_active(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_restore_archived_history_dates_is_no_longer_supported(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="deleted instead of archived"):
+        runtime.restore_archived_history_dates(
+            repo_root=tmp_path,
+            runtime_dir=tmp_path / "odylith" / "compass" / "runtime",
+            dates=["2026-02-01"],
+        )
+
+
+def test_migrate_legacy_history_layout_rewrites_from_current_runtime_js_when_json_missing(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # noqa: ANN001
     _fixed_now(monkeypatch, year=2026, month=3, day=20)
     runtime_dir = tmp_path / "odylith" / "compass" / "runtime"
     history_dir = runtime_dir / "history"
     archive_dir = history_dir / "archive"
     archive_dir.mkdir(parents=True, exist_ok=True)
-    archived_payload = json.dumps(_payload(generated_utc="2026-02-01T08:00:00Z"), indent=2) + "\n"
-    (archive_dir / "2026-02-01.v1.json.gz").write_bytes(gzip.compress(archived_payload.encode("utf-8"), compresslevel=9))
 
-    restored, already_active, pins_path = runtime.restore_archived_history_dates(
-        repo_root=tmp_path,
-        runtime_dir=runtime_dir,
-        dates=["2026-02-01"],
-    )
-    assert restored == ["2026-02-01"]
-    assert already_active == []
-    assert (history_dir / "2026-02-01.v1.json").is_file()
-    pins_payload = json.loads(pins_path.read_text(encoding="utf-8"))
-    assert pins_payload["dates"] == ["2026-02-01"]
+    stale_active_day = "2026-03-01"
+    archived_day = "2026-02-28"
+    payload = _payload(generated_utc="2026-03-20T12:00:00Z")
+    payload["history"] = {
+        "retention_days": 15,
+        "dates": [stale_active_day],
+        "restored_dates": [],
+        "archive": {
+            "compressed": True,
+            "path": "archive",
+            "count": 1,
+            "dates": [archived_day],
+            "newest_date": archived_day,
+            "oldest_date": archived_day,
+        },
+    }
 
-    runtime._write_runtime_snapshots(
-        repo_root=tmp_path,
-        runtime_dir=runtime_dir,
-        payload=_payload(generated_utc="2026-03-20T12:00:00Z"),
-        retention_days=15,
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    (runtime_dir / "current.v1.js").write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
     )
+    (history_dir / f"{stale_active_day}.v1.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    (archive_dir / f"{archived_day}.v1.json.gz").write_bytes(
+        gzip.compress((json.dumps(payload, indent=2) + "\n").encode("utf-8"), compresslevel=9)
+    )
+    (history_dir / "restore-pins.v1.json").write_text(
+        json.dumps({"version": "v1", "generated_utc": "2026-03-20T12:00:00Z", "dates": [archived_day]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = runtime.migrate_legacy_history_layout(repo_root=tmp_path, runtime_dir=runtime_dir)
+
+    assert result["rewritten"] is True
+    assert "odylith/compass/runtime/history/archive" in result["removed_paths"]
+    assert not archive_dir.exists()
+    assert not (history_dir / "restore-pins.v1.json").exists()
+
+    current_payload = json.loads((runtime_dir / "current.v1.json").read_text(encoding="utf-8"))
+    assert current_payload["history"]["archive"]["count"] == 0
+    assert current_payload["history"]["dates"] == ["2026-03-20"]
 
     index_payload = json.loads((history_dir / "index.v1.json").read_text(encoding="utf-8"))
-    assert "2026-02-01" in index_payload["dates"]
-    assert index_payload["restored_dates"] == ["2026-02-01"]
-    assert (history_dir / "2026-02-01.v1.json").is_file()
+    assert index_payload["archive"]["count"] == 0
+    assert index_payload["dates"] == ["2026-03-20"]
+
+    embedded_payload = json.loads(
+        (history_dir / "embedded.v1.js").read_text(encoding="utf-8").removeprefix("window.__ODYLITH_COMPASS_HISTORY__ = ").removesuffix(";\n")
+    )
+    assert embedded_payload["archive"]["count"] == 0
+    assert set(embedded_payload["snapshots"]) == {"2026-03-20"}
 
 
 def test_self_host_risk_rows_surface_detached_source_local_product_repo() -> None:

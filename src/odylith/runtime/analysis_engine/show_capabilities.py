@@ -21,7 +21,7 @@ from odylith.runtime.analysis_engine.types import (
     slugify,
 )
 from odylith.runtime.analysis_engine import component_discovery
-from odylith.runtime.analysis_engine import import_graph
+from odylith.runtime.analysis_engine import incremental_import_graph
 from odylith.runtime.analysis_engine import repo_analysis
 
 
@@ -34,7 +34,10 @@ def analyze_repo(repo_root: Path) -> ShowResult:
     repo_root = repo_root.resolve()
     result = ShowResult()
 
-    print("Scanning your repo for the first time. This takes a moment...", file=sys.stderr, flush=True)
+    if incremental_import_graph.has_incremental_cache(repo_root=repo_root):
+        print("Refreshing your repo analysis from the incremental cache...", file=sys.stderr, flush=True)
+    else:
+        print("Scanning your repo for the first time. This takes a moment...", file=sys.stderr, flush=True)
 
     # Phase 1: Identity
     progress("Reading project manifests...")
@@ -47,7 +50,7 @@ def analyze_repo(repo_root: Path) -> ShowResult:
     existing_bug_titles = repo_analysis.load_existing_bug_titles(repo_root)
 
     # Phase 2: Import graph + component discovery
-    artifacts, edges, scan_ctx = import_graph.build_import_graph(
+    artifacts, edges, scan_ctx = incremental_import_graph.build_import_graph(
         repo_root, result.identity.languages,
     )
     result.scan_context = scan_ctx

@@ -1,4 +1,4 @@
-"""Restore archived Compass history snapshots back into the active history lane."""
+"""Handle legacy Compass history restore attempts after archive retention removal."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from odylith.runtime.surfaces import render_compass_dashboard
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith compass restore-history",
-        description="Restore archived Compass daily history snapshots into active history.",
+        description="Report restore attempts for legacy Compass history archives.",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root.")
     parser.add_argument(
@@ -25,12 +25,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--date",
         action="append",
         default=[],
-        help="Archived Compass history date to restore (`YYYY-MM-DD`). Repeatable.",
+        help="Legacy Compass history date to restore (`YYYY-MM-DD`). Repeatable.",
     )
     parser.add_argument(
         "--no-render",
         action="store_true",
-        help="Skip Compass surface refresh after restoring history files.",
+        help="Skip Compass surface refresh after checking legacy history files.",
     )
     return parser.parse_args(argv)
 

@@ -203,19 +203,22 @@
         : {};
     }
 
+    function emptyHistoryArchiveMeta() {
+      return {
+        compressed: false,
+        path: "",
+        count: 0,
+        dates: [],
+        newest_date: "",
+        oldest_date: "",
+      };
+    }
+
     function normalizeHistoryIndexDates(historyLike) {
       const history = historyLike && typeof historyLike === "object" ? historyLike : {};
-      const archive = history && history.archive && typeof history.archive === "object"
-        ? history.archive
-        : {};
-      const snapshots = history && history.snapshots && typeof history.snapshots === "object"
-        ? Object.keys(history.snapshots)
-        : [];
       return normalizeHistoryDateTokens([
         ...(Array.isArray(history.dates) ? history.dates : []),
         ...(Array.isArray(history.restored_dates) ? history.restored_dates : []),
-        ...(Array.isArray(archive.dates) ? archive.dates : []),
-        ...snapshots,
       ]);
     }
 
@@ -225,13 +228,9 @@
 
     function loadableHistoryDateTokens(payload) {
       const history = historyMeta(payload);
-      const snapshots = history && history.snapshots && typeof history.snapshots === "object"
-        ? Object.keys(history.snapshots)
-        : [];
       return normalizeHistoryDateTokens([
         ...(Array.isArray(history.dates) ? history.dates : []),
         ...(Array.isArray(history.restored_dates) ? history.restored_dates : []),
-        ...snapshots,
       ]);
     }
 
@@ -616,19 +615,11 @@
       const history = runtime && typeof runtime === "object" && runtime.history && typeof runtime.history === "object"
         ? runtime.history
         : {};
-      const archive = history && history.archive && typeof history.archive === "object"
-        ? history.archive
-        : {};
-      const archiveDates = normalizeHistoryDateTokens(archive.dates);
       return {
         retention_days: Number(history.retention_days || 0),
         dates: normalizeHistoryDateTokens(history.dates),
         restored_dates: normalizeHistoryDateTokens(history.restored_dates),
-        archive: {
-          ...archive,
-          dates: archiveDates,
-          count: Math.max(Number(archive.count || 0), archiveDates.length),
-        },
+        archive: emptyHistoryArchiveMeta(),
       };
     }
 
@@ -642,10 +633,7 @@
       if (meta.retention_days > 0) history.retention_days = meta.retention_days;
       history.dates = [...meta.dates];
       history.restored_dates = [...meta.restored_dates];
-      history.archive = {
-        ...meta.archive,
-        dates: Array.isArray(meta.archive && meta.archive.dates) ? [...meta.archive.dates] : [],
-      };
+      history.archive = emptyHistoryArchiveMeta();
       payload.history = history;
       return payload;
     }
@@ -699,6 +687,15 @@
       const token = String(dayToken || "").trim();
       if (!DATE_RE.test(token)) return null;
       const store = window.__ODYLITH_COMPASS_HISTORY__;
+      const storeDates = normalizeHistoryIndexDates(store);
+      const liveMeta = liveHistoryMeta();
+      const knownDates = liveMeta && Array.isArray(liveMeta.dates) && liveMeta.dates.length
+        ? normalizeHistoryDateTokens([
+          ...liveMeta.dates,
+          ...(Array.isArray(liveMeta.restored_dates) ? liveMeta.restored_dates : []),
+        ])
+        : storeDates;
+      if (!knownDates.includes(token)) return null;
       const snapshots = store && typeof store === "object" && store.snapshots && typeof store.snapshots === "object"
         ? store.snapshots
         : {};
@@ -732,6 +729,7 @@
       if (historyAvailabilityLoad) return historyAvailabilityLoad;
       historyAvailabilityLoad = (async () => {
         let dates = [];
+        const liveMeta = liveHistoryMeta();
         const isFileProtocol = String(window.location.protocol || "").toLowerCase() === "file:";
         const indexHref = String(compassShell().history_index_href || "").trim();
         if (!isFileProtocol && indexHref) {
@@ -746,6 +744,12 @@
         if (!dates.length) {
           await ensureEmbeddedHistoryLoaded();
           dates = normalizeHistoryIndexDates(window.__ODYLITH_COMPASS_HISTORY__);
+        }
+        if (liveMeta && Array.isArray(liveMeta.dates) && liveMeta.dates.length) {
+          dates = normalizeHistoryDateTokens([
+            ...liveMeta.dates,
+            ...(Array.isArray(liveMeta.restored_dates) ? liveMeta.restored_dates : []),
+          ]);
         }
         historyAvailabilityDates = dates;
         historyAvailabilityLoad = null;
@@ -773,9 +777,11 @@
           }
         } catch (_error) {}
       }
-      await ensureEmbeddedHistoryLoaded();
-      const embeddedPayload = await embeddedHistorySnapshot(token);
-      if (embeddedPayload) return { payload: embeddedPayload, warning: "" };
+      if (availableDates.has(token) || availableDates.size === 0) {
+        await ensureEmbeddedHistoryLoaded();
+        const embeddedPayload = await embeddedHistorySnapshot(token);
+        if (embeddedPayload) return { payload: embeddedPayload, warning: "" };
+      }
       return {
         payload: null,
         warning: warnOnFailure ? `No snapshot available for this day (${token}). Showing live runtime.` : "",

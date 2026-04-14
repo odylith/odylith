@@ -50,7 +50,18 @@
   planner and broad backlog preflight, scopes source-truth bundle mirroring to
   the explicit changed paths instead of rescanning git, and lets single-surface
   Radar/Registry/Casebook refreshes stay on the in-process runtime fast lane
-  when LanceDB/Tantivy are ready.
+  when LanceDB/Tantivy are ready. A third same-day latency wave then added a
+  low-RAM-aware command-scoped `RuntimeReadSession`, one shared byte-budgeted
+  process cache for hot-path runtime facts, an incremental `odylith show`
+  import-graph manifest under `.odylith/runtime/latency-cache/`,
+  fingerprint-gated no-op dashboard refresh reuse, and a shared Claude/Codex
+  SessionStart stale-brief refresh queue so repeated no-op reads and refreshes
+  stop widening into unnecessary work. A fourth same-day hardening pass then
+  tightened the Codex post-bash governed-refresh hook so command-scoped
+  selective sync stays exact under dirty worktrees, rename/move operations,
+  shell control operators, redirection tails, and explicit inline
+  `python -c` / `node -e` file-write one-liners, while Claude kept the direct
+  `PostToolUse` exact-path lane unchanged.
 
 - Verification: `PYTHONPATH=src python3 -m pytest -q
   tests/unit/runtime/test_owned_surface_refresh_authoring.py
@@ -91,7 +102,41 @@
   `atlas refresh --atlas-sync: 0.35s` wall, and
   `sync --impact-mode selective <casebook,plan,spec,atlas>`: `6.9s`
   sync-reported / `7.33s` wall with the local LanceDB/Tantivy substrate still
-  reporting `ready: true`.
+  reporting `ready: true`. A third 2026-04-14 proof wave also passed with
+  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/unit/runtime/test_runtime_read_session.py
+  tests/unit/runtime/test_incremental_import_graph.py
+  tests/unit/runtime/test_session_brief_refresh_queue.py
+  tests/unit/runtime/test_claude_host_session_brief.py
+  tests/unit/runtime/test_codex_host_session_brief.py
+  tests/unit/runtime/test_sync_cli_compat.py -k 'runtime_read_session or
+  incremental or session_brief_refresh_queue or
+  dashboard_refresh_reuses_fingerprint_when_surface_is_unchanged or
+  render_session_brief or render_codex_session_brief or
+  main_writes_session_start_hook_json or main_writes_project_memory'`
+  (`12 passed`) plus `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/unit/runtime/test_odylith_context_engine_store.py -k
+  'load_backlog_detail_uses_cached_runtime_projection_rows or
+  load_backlog_list_reuses_cached_runtime_rows or
+  build_governance_slice_hot_path_requests_unfinalized_impact or
+  build_governance_slice_hot_path_uses_grounding_light_workstream_detail'`
+  (`4 passed`) and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/unit/runtime/test_sync_cli_compat.py -k 'dashboard_refresh'`
+  (`11 passed`). A fourth 2026-04-14 hardening wave also passed with
+  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/unit/runtime/test_codex_host_post_bash_checkpoint.py
+  tests/unit/runtime/test_claude_host_post_edit_checkpoint.py`
+  (`21 passed`) after move-out-of-governed, shell-tail, redirection-tail, and
+  inline-script exact-target regressions were added to the Codex hook suite. A
+  fifth 2026-04-14 focused latency sweep on the live source-local lane also
+  confirmed that the older top-row CLI profile is stale: `dashboard refresh`
+  fell from the earlier `36.4s` class down to `7.75s` cold / `0.98s` warm,
+  `context-engine warmup` to `5.00s` cold / `1.47s` warm, `show` to `1.03s`
+  cold / `0.53s` warm, `governance-slice` to `0.89s`, `query` to `1.45s`
+  cold / `1.37s` warm, `context-engine query` to `1.40s` cold / `1.32s` warm,
+  `claude session-start` to `1.96s` cold / `2.14s` warm, and `impact` to
+  `5.65s` cold / `1.90s` warm. The remaining obvious cold-path laggard is
+  `impact`; the rest of the old red/orange rows are now materially lower.
 
 - Prevention: Every routine authoring command that mutates owned source truth
   must refresh its owned surface before returning success, and every narrow
@@ -102,7 +147,16 @@
   dogfood, and consumer lanes. When the caller already names the exact changed
   source-truth files, the quick lane must trust that slice and skip unrelated
   planner, git-scan, and broad-preflight work unless the touched owned surface
-  itself still needs targeted validation.
+  itself still needs targeted validation. The hot-path runtime cache budget must
+  stay explicit and low-RAM aware (`<= 8 GiB` total RAM, `< 1.5 GiB`
+  available, or unknown telemetry -> conservative mode), `odylith show` must
+  persist and reuse unchanged parse rows instead of reparsing the full repo, and
+  repeated manual surface refreshes or SessionStart stale-brief checks must
+  consult fingerprint/marker state before launching another render or Compass
+  refresh. Cross-host governed-refresh parity must stay explicit: Claude keeps
+  exact-path `PostToolUse` refresh semantics, while Codex's narrower
+  post-bash lane must prove command-scoped exactness instead of falling back to
+  repo-wide dirty governed files.
 
 - Detected By: `odylith show`
 

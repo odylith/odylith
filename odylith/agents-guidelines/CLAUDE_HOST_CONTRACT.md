@@ -84,6 +84,10 @@
   command, matched against `Write|Edit|MultiEdit`, so the project-root
   `.claude/` layer stays declarative and the governance refresh runs through
   `odylith sync --impact-mode selective <path>`.
+- Claude's governed-refresh precision comes from the exact edited path in the
+  `PostToolUse` payload itself, so this lane does not depend on Bash-command
+  target inference and remains the authoritative exact-path parity target for
+  Codex's narrower Bash checkpoint contract.
 - `PreCompact` snapshotting runs through
   `./.odylith/bin/odylith claude pre-compact-snapshot --repo-root .`, which
   writes the active Odylith slice into Claude's project auto-memory
