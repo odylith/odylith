@@ -12,12 +12,12 @@
 Install it into any repo. Use it through Codex or Claude Code.
 
 Without Odylith, every agent session starts from scratch — re-reading the
-repo, re-inferring the architecture, re-guessing the constraints, and
+repo, re-inferring the architecture, re-guessing intent and constraints, and
 re-discovering what went wrong last time. With Odylith, the agent starts from
 governed truth: the right slice, the real component boundaries, the live
-blockers, and the full execution history. It gets to the actual work faster,
-makes fewer wrong moves, and leaves durable evidence behind for the next
-session.
+blockers, the invariants, the historical learnings from past failures, and the
+full execution history. It gets to the actual work faster, makes fewer wrong
+moves, and leaves durable evidence behind for the next session.
 
 Odylith reasons about your repo through delivery intelligence, grounds every
 turn through local-first retrieval, governs every action through execution
