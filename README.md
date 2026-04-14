@@ -9,16 +9,11 @@
 <h2 align="center" style="font-size: 2.4rem;">Odylith Stops Coding Agents From Confidently Doing The Wrong Thing</h2>
 <p align="center" style="font-size: 1.35rem;"><strong>It makes coding agents operate like disciplined engineers instead of clever tourists.</strong></p>
 
-> [!IMPORTANT]
-> Odylith is not a standalone app or IDE. Install it into a repo, then use it
-> through an AI coding agent such as Codex or Claude Code. In Odylith, the
-> agent is the execution interface and `odylith/index.html` is the operating
-> surface that keeps intent, constraints, topology, and execution state
-> visible.
->
-> Odylith supports both Codex and Claude Code as first-class agent hosts.
->
-> Odylith is GA on its supported public install platforms as of `2026-04-07`.
+Install it into any repo. Use it through Codex or Claude Code. Odylith gives
+the agent delivery intelligence, component boundaries, execution governance,
+and durable memory — so it operates from real repo truth instead of guessing.
+
+Both Codex and Claude Code are supported as first-class agent hosts.
 
 ## Quick Start
 
