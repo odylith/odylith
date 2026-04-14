@@ -17,10 +17,9 @@ re-discovering what went wrong last time. With Odylith, the agent starts from
 governed truth: the right slice, the real component boundaries, the live
 blockers, the invariants, the historical learnings from past failures, and the
 full execution history. It gets to the actual work faster, makes fewer wrong
-moves, and leaves durable evidence behind for the next session. The more you
-use Odylith, the better it gets — every workstream, every bug, every component
-boundary, every decision compounds into repo memory that makes the next session
-sharper than the last.
+moves, and leaves durable evidence behind for the next session. The more you use Odylith, the better it gets — every workstream, every bug,
+every component boundary, every decision teaches it more about your repo, so it
+grounds the next session deeper than the last.
 
 Odylith reasons about your repo through delivery intelligence, grounds every
 turn through local-first retrieval, governs every action through execution
