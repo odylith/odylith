@@ -11,10 +11,18 @@
 
 Install it into any repo. Use it through Codex or Claude Code.
 
-Odylith gives the model a better operating frame: deterministic grounding,
-durable repo-local memory, execution governance, delivery intelligence,
-structured recovery, and bounded delegation. Both Codex and Claude Code are
-first-class hosts.
+Without Odylith, every agent session starts from scratch — re-reading the
+repo, re-inferring the architecture, re-guessing the constraints, and
+re-discovering what went wrong last time. With Odylith, the agent starts from
+governed truth: the right slice, the real component boundaries, the live
+blockers, and the full execution history. It gets to the actual work faster,
+makes fewer wrong moves, and leaves durable evidence behind for the next
+session.
+
+Odylith is a control plane for coding agents. It grounds every turn through
+local-first retrieval, governs every action through execution admissibility,
+and keeps delivery intelligence, component forensics, and workstream state
+durable across sessions. Both Codex and Claude Code are first-class hosts.
 
 More on the operating frame:
 [Why Bolting Odylith Onto Codex Or Claude Code Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
@@ -89,7 +97,7 @@ With Odylith, that execution truth becomes explicit and durable in the
 repository, so the agent starts from governed context instead of
 reconstructing it from scratch on every turn.
 
-### Turn Requests Into Execution Truth
+**Turn Requests Into Execution Truth**
 
 Odylith gives coding agents two durable advantages: **delivery intelligence**
 and **delivery governance**.
@@ -102,9 +110,6 @@ right owner, the blockers, and the real definition of done.
 
 That is the real value: less time re-deriving the repository, more time making
 the right change.
-
-More on the operating frame:
-[Why Bolting Odylith Onto Codex Or Claude Code Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
 
 ## Context Engine
 
