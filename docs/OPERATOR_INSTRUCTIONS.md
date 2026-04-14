@@ -13,11 +13,11 @@ Explore your repo and understand what Odylith sees.
 | Say this | What happens |
 |---|---|
 | **"Odylith, show me what you can do"** | Reads source structure, import graph, and manifests. Suggests components, workstreams, diagrams, and issues with the exact command to create each one. `odylith show` |
-| **"What's the state of the repo?"** | Builds a Compass-derived summary — active workstreams, next actions, risks, recent activity. `odylith session-brief` |
-| **"Find everything related to auth"** | Searches LanceDB + Tantivy across all compiled documents — workstreams, components, plans, bugs, diagrams. `odylith query "auth"` |
-| **"Show me the auth-service component"** | Resolves one entity into a full context dossier with relations, delivery scopes, and governance snapshot. `odylith context auth-service` |
-| **"What workstreams are active?"** | Reads the live Compass runtime payload for current workstream posture. |
-| **"What's the architecture impact of these changes?"** | Resolves plane/stack topology grounding and diagram-watch gaps for changed paths. `odylith architecture` |
+| **"Odylith, what's the state of the repo?"** | Builds a Compass-derived summary — active workstreams, next actions, risks, recent activity. `odylith session-brief` |
+| **"Odylith, find everything related to auth"** | Searches LanceDB + Tantivy across all compiled documents — workstreams, components, plans, bugs, diagrams. `odylith query "auth"` |
+| **"Odylith, show me the auth-service component"** | Resolves one entity into a full context dossier with relations, delivery scopes, and governance snapshot. `odylith context auth-service` |
+| **"Odylith, what workstreams are active?"** | Reads the live Compass runtime payload for current workstream posture. |
+| **"Odylith, what's the architecture impact of these changes?"** | Resolves plane/stack topology grounding and diagram-watch gaps for changed paths. `odylith architecture` |
 
 ---
 
