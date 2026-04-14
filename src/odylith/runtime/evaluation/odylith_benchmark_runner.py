@@ -172,6 +172,35 @@ _BENCHMARK_WARM_CACHE_SECONDS = 30.0
 _BENCHMARK_ADOPTION_PROOF_SAMPLE_TIMEOUT_SECONDS = 60.0
 _BENCHMARK_ADOPTION_PROOF_TERMINATION_GRACE_SECONDS = 1.0
 _BENCHMARK_LOCK_KEY = "odylith-benchmark-runner"
+
+
+class BenchmarkRunInterrupted(RuntimeError):
+    """Raised when a benchmark run receives a termination-style interrupt."""
+
+
+@contextlib.contextmanager
+def _benchmark_interrupt_guard() -> Iterator[None]:
+    handlers: list[tuple[int, Any]] = []
+
+    def _handler(signum: int, _frame: Any) -> None:
+        signal_name = getattr(signal.Signals(signum), "name", str(signum))
+        raise BenchmarkRunInterrupted(f"received {signal_name}")
+
+    if multiprocessing.current_process().name == "MainProcess":
+        for signum in (signal.SIGTERM, signal.SIGINT, getattr(signal, "SIGHUP", signal.SIGTERM)):
+            if any(existing == signum for existing, _ in handlers):
+                continue
+            with contextlib.suppress(OSError, RuntimeError, ValueError):
+                previous = signal.getsignal(signum)
+                signal.signal(signum, _handler)
+                handlers.append((signum, previous))
+    try:
+        yield
+    finally:
+        for signum, previous in reversed(handlers):
+            with contextlib.suppress(OSError, RuntimeError, ValueError):
+                signal.signal(signum, previous)
+
 _PROMPT_PAYLOAD_KEYS = frozenset({"context_packet", "narrowing_guidance", "docs", "relevant_docs"})
 _RUNTIME_CONTRACT_KEYS = frozenset(
     {
@@ -7314,7 +7343,7 @@ def run_benchmarks(
         if sharded_run
         else _BENCHMARK_LOCK_KEY
     )
-    with odylith_context_cache.advisory_lock(repo_root=root, key=lock_key):
+    with odylith_context_cache.advisory_lock(repo_root=root, key=lock_key), _benchmark_interrupt_guard():
         startup_hygiene = _cleanup_stale_benchmark_state(
             repo_root=root,
             clear_progress=not sharded_run,
@@ -7881,7 +7910,7 @@ def run_benchmarks(
                 _write_progress(repo_root=root, payload=progress_payload)
                 _clear_progress(repo_root=root)
             return report
-        except Exception as exc:
+        except BaseException as exc:
             progress_payload.update(
                 {
                     "updated_utc": _utc_now(),

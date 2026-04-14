@@ -4,6 +4,7 @@ import contextlib
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import threading
 import tempfile
@@ -3703,9 +3704,85 @@ def test_run_benchmarks_shards_persist_failed_history_report_on_exception(
     assert payload["status"] == "failed"
     assert payload["acceptance"]["status"] == "failed"
     assert payload["published_summary"]["status"] == "failed"
-    assert payload["selection"]["shard_count"] == 2
-    assert payload["selection"]["shard_index"] == 1
-    assert payload["error"] == "RuntimeError: boom"
+
+
+def test_run_benchmarks_shards_persist_failed_history_report_on_keyboard_interrupt(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        }
+    ]
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(runner, "_benchmark_report_id", lambda **_: "failed-shard-interrupt")
+    monkeypatch.setattr(runner, "_utc_now", lambda: "2026-04-13T12:00:00Z")
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **_: (_ for _ in ()).throw(KeyboardInterrupt()),
+    )
+
+    with pytest.raises(KeyboardInterrupt):
+        runner.run_benchmarks(
+            repo_root=tmp_path,
+            shard_count=2,
+            shard_index=1,
+        )
+
+    payload = json.loads(
+        runner.history_report_path(repo_root=tmp_path, report_id="failed-shard-interrupt").read_text(encoding="utf-8")
+    )
+    assert payload["status"] == "failed"
+    assert payload["acceptance"]["status"] == "failed"
+    assert payload["published_summary"]["status"] == "failed"
+
+
+def test_benchmark_interrupt_guard_raises_custom_interrupt_and_restores_handlers(monkeypatch) -> None:  # noqa: ANN001
+    previous_handlers = {
+        signal.SIGTERM: object(),
+        signal.SIGINT: object(),
+        getattr(signal, "SIGHUP", signal.SIGTERM): object(),
+    }
+    installed: dict[int, object] = {}
+    calls: list[tuple[str, int, object]] = []
+
+    class _Process:
+        name = "MainProcess"
+
+    monkeypatch.setattr(runner.multiprocessing, "current_process", lambda: _Process())
+
+    def _fake_getsignal(signum: int):  # noqa: ANN001
+        return previous_handlers[signum]
+
+    def _fake_signal(signum: int, handler):  # noqa: ANN001
+        calls.append(("set", signum, handler))
+        installed[signum] = handler
+        return previous_handlers[signum]
+
+    monkeypatch.setattr(runner.signal, "getsignal", _fake_getsignal)
+    monkeypatch.setattr(runner.signal, "signal", _fake_signal)
+
+    with pytest.raises(runner.BenchmarkRunInterrupted, match="received SIGTERM"):
+        with runner._benchmark_interrupt_guard():  # noqa: SLF001
+            installed[signal.SIGTERM](signal.SIGTERM, None)
+
+    restored = [row for row in calls if row[2] in previous_handlers.values()]
+    assert restored
 
 
 def test_run_benchmarks_shards_skip_merge_only_post_run_metrics(

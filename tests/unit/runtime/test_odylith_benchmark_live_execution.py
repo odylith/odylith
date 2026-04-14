@@ -1473,6 +1473,58 @@ def test_run_subprocess_capture_kills_orphaned_process_group_on_timeout(tmp_path
         pytest.fail("timed-out benchmark child marker remained alive after process-group cleanup")
 
 
+def test_run_subprocess_capture_enforces_wall_clock_timeout_for_chatty_sigterm_ignoring_child(
+    tmp_path: Path,
+) -> None:
+    marker = "odylith-benchmark-wall-clock-timeout-marker"
+    script = tmp_path / "chatty_timeout_child.py"
+    script.write_text(
+        "\n".join(
+            [
+                "import signal",
+                "import sys",
+                "import time",
+                "",
+                "signal.signal(signal.SIGTERM, lambda *_: None)",
+                "print('start', flush=True)",
+                "sys.stderr.write('stderr-start\\n')",
+                "sys.stderr.flush()",
+                "while True:",
+                "    print('tick', flush=True)",
+                "    sys.stderr.write('tock\\n')",
+                "    sys.stderr.flush()",
+                "    time.sleep(0.05)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    command = [sys.executable, str(script), marker]
+
+    with pytest.raises(subprocess.TimeoutExpired) as exc_info:
+        live_execution._run_subprocess_capture(  # noqa: SLF001
+            command=command,
+            cwd=tmp_path,
+            timeout_seconds=0.3,
+        )
+
+    assert "tick" in str(exc_info.value.stdout or "")
+    assert "tock" in str(exc_info.value.stderr or "")
+
+    deadline = time.time() + 3.0
+    while time.time() < deadline:
+        completed = subprocess.run(
+            ["ps", "-axo", "command="],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if marker not in str(completed.stdout or ""):
+            break
+        time.sleep(0.1)
+    else:
+        pytest.fail("chatty benchmark child remained alive after enforced wall-clock timeout cleanup")
+
+
 def test_provision_workspace_odylith_root_copies_minimal_state(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     workspace_root = tmp_path / "workspace"
