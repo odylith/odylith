@@ -14,7 +14,6 @@ from odylith.runtime.surfaces import dashboard_template_runtime
 from odylith.runtime.surfaces import tooling_dashboard_cheatsheet_presenter
 from odylith.runtime.surfaces import tooling_dashboard_execution_governance_presenter
 from odylith.runtime.surfaces import tooling_dashboard_release_presenter
-from odylith.runtime.surfaces import tooling_dashboard_system_status_presenter
 from odylith.runtime.surfaces import tooling_dashboard_template_context
 from odylith.runtime.surfaces import tooling_dashboard_welcome_presenter
 
@@ -2793,15 +2792,6 @@ def _render_curated_system_status_html(drawer_payload: Mapping[str, Any]) -> str
     )
 
 
-def _render_system_status_html(payload: Mapping[str, Any]) -> str:
-    return tooling_dashboard_system_status_presenter.render_system_status_html(
-        payload,
-        odylith_switch=_odylith_switch(payload),
-        build_drawer_payload=build_odylith_drawer_payload,
-        render_curated_system_status_html=_render_curated_system_status_html,
-    )
-
-
 def build_template_context(payload: Mapping[str, Any]) -> tooling_dashboard_template_context.ToolingDashboardTemplateContext:
     """Build the reusable template context for one tooling shell render."""
 
@@ -2810,7 +2800,6 @@ def build_template_context(payload: Mapping[str, Any]) -> tooling_dashboard_temp
     return tooling_dashboard_template_context.build_template_context(
         payload,
         welcome_html=_render_welcome_state_html(payload),
-        system_status_html="",
         maintainer_notes_html=maintainer_notes_html,
         cheatsheet_html=cheatsheet_html,
     )
