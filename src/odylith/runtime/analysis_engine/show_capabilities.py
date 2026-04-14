@@ -359,53 +359,52 @@ def format_text(result: ShowResult) -> str:
     if result.components:
         has_any = True
         n = len(result.components)
-        lines.append(f"\u2588\u2588 Components \u2014 {n} boundar{'ies' if n != 1 else 'y'} discovered")
+        lines.append(f"### Components — {n} boundar{'ies' if n != 1 else 'y'} discovered")
         lines.append("")
         for comp in result.components:
             posture = result.component_postures.get(comp.component_id)
             metric = _short_metric(comp, posture)
-            lines.append(f"  \u25cf {comp.label}")
-            lines.append(f"    {metric}")
-            lines.append(f'    \u2192 odylith component register "{comp.label}"')
-            lines.append("")
+            lines.append(f"- **{comp.label}** — {metric}")
+            lines.append(f'  `odylith component register "{comp.label}"`')
+        lines.append("")
 
     # --- Workstreams ---
     if result.workstreams:
         has_any = True
-        lines.append(f"\u2588\u2588 Workstreams \u2014 {len(result.workstreams)} to get started")
+        lines.append(f"### Workstreams — {len(result.workstreams)} to get started")
         lines.append("")
         for ws in result.workstreams:
-            lines.append(f"  \u25cf {ws.title}")
-            lines.append(f"    {ws.description}")
-            lines.append(f'    \u2192 odylith backlog create --title "{ws.title}"')
-            lines.append("")
+            lines.append(f"- **{ws.title}**")
+            lines.append(f"  {ws.description}")
+            lines.append(f'  `odylith backlog create --title "{ws.title}"`')
+        lines.append("")
 
     # --- Diagrams ---
     if result.diagrams:
         has_any = True
-        lines.append("\u2588\u2588 Diagrams")
+        lines.append("### Diagrams")
         lines.append("")
         for d in result.diagrams:
-            lines.append(f"  \u25cf {d.title}")
-            lines.append(f"    {d.description}")
-            lines.append(f'    \u2192 odylith atlas scaffold "{d.title}"')
-            lines.append("")
+            lines.append(f"- **{d.title}**")
+            lines.append(f"  {d.description}")
+            lines.append(f'  `odylith atlas scaffold "{d.title}"`')
+        lines.append("")
 
     # --- Issues ---
     if result.issues:
         has_any = True
-        lines.append(f"\u2588\u2588 Issues \u2014 {len(result.issues)} worth tracking")
+        lines.append(f"### Issues — {len(result.issues)} worth tracking")
         lines.append("")
         for issue in result.issues:
             sev = f" [{issue.severity}]" if issue.severity != "medium" else ""
-            lines.append(f"  \u25cf {issue.title}{sev}")
-            lines.append(f"    {issue.detail}")
-            lines.append(f'    \u2192 odylith bug capture "{issue.title}"')
-            lines.append("")
+            lines.append(f"- **{issue.title}**{sev}")
+            lines.append(f"  {issue.detail}")
+            lines.append(f'  `odylith bug capture "{issue.title}"`')
+        lines.append("")
 
     # --- Footer ---
     if has_any:
-        lines.append("\u2500\u2500\u2500")
+        lines.append("---")
         lines.append("Run any command to create it.")
     else:
         if governed_count == 4:
