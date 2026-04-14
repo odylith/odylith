@@ -2810,7 +2810,7 @@ def build_template_context(payload: Mapping[str, Any]) -> tooling_dashboard_temp
     return tooling_dashboard_template_context.build_template_context(
         payload,
         welcome_html=_render_welcome_state_html(payload),
-        system_status_html=_render_system_status_html(payload),
+        system_status_html="",
         maintainer_notes_html=maintainer_notes_html,
         cheatsheet_html=cheatsheet_html,
     )
