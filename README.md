@@ -21,10 +21,10 @@ session.
 
 Odylith is an AI agent that operates through your coding agent. It reasons
 about your repo through delivery intelligence, grounds every turn through
-local-first retrieval on LanceDB and Tantivy, governs every action through
-execution admissibility, adjudicates ambiguous postures through its Tribunal,
-and keeps its own durable memory across sessions. It runs through both Codex
-and Claude Code as first-class hosts.
+local-first retrieval, governs every action through execution admissibility,
+adjudicates ambiguous postures through its Tribunal, and keeps its own durable
+memory across sessions. It runs through both Codex and Claude Code as
+first-class hosts.
 
 More on the operating frame:
 [Why Bolting Odylith Onto Codex Or Claude Code Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
