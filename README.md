@@ -73,37 +73,6 @@ heart of the product: motion with a center, exploration with structure, and a
 path toward agentic AI swarms that replace rigid monoliths with adaptive,
 living networks.
 
-## Intro
-
-**Odylith changes the operating conditions for Codex or Claude Code.**
-
-- It replaces blind repo search with scoped grounding.
-- It gives the agent durable repo-local memory and a forensic trail.
-- It governs validation, diagnosis, recovery, and closeout.
-
-Base coding agents can read a repo, search files, sketch a plan, write code,
-and infer some local context from the code itself. But serious work depends on
-intent, constraints, ownership, validation obligations, and definition of done
-that are not reliably encoded in code alone.
-
-With Odylith, that execution truth becomes explicit and durable in the
-repository, so the agent starts from governed context instead of
-reconstructing it from scratch on every turn.
-
-**Turn Requests Into Execution Truth**
-
-Odylith gives coding agents two durable advantages: **delivery intelligence**
-and **delivery governance**.
-
-Delivery intelligence recovers intent, constraints, dependencies, topology,
-and validation requirements from the repository's real operating history.
-
-Delivery governance turns that into execution truth: the right slice, the
-right owner, the blockers, and the real definition of done.
-
-That is the real value: less time re-deriving the repository, more time making
-the right change.
-
 ## Context Engine
 
 The Context Engine answers one question: **"what is true and relevant?"** It
