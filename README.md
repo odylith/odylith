@@ -33,6 +33,8 @@ any subdirectory inside the same repo. The current GA platform contract covers
 macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). Intel macOS and Windows
 are not part of the current GA platform set.
 
+## Prove It In 2 Minutes
+
 After install, open the repo in Codex or Claude Code and say:
 
 > **"Odylith, show me what you can do."**
