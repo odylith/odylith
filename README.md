@@ -51,17 +51,8 @@ Odylith reads your repo — source structure, import graph, manifest files — a
 shows you the component boundaries, workstreams, architecture diagrams, and
 issues it can create. Each suggestion comes with the command to run it.
 
-Then open `odylith/index.html` in a browser. This is the local operating
-surface — five tabs showing everything Odylith knows about your repo:
-
-- **Radar** — ranked workstream backlog with delivery state
-- **Compass** — standup briefs, execution timeline, and audit history
-- **Atlas** — architecture diagrams with component topology
-- **Registry** — component inventory with specs and forensic evidence
-- **Casebook** — bug records with root cause, fix history, and prevention
-
-The **Cheatsheet** drawer inside the shell has copyable prompts for every
-operation — from creating your first workstream to validating the registry.
+Then open `odylith/index.html` in a browser and follow the Cheatsheet in the
+drawer.
 
 From here, start working normally. Odylith grounds every turn automatically —
 no special prompts, no commands to memorize. See
