@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
@@ -1167,10 +1168,27 @@ def _customer_bootstrap_guidance() -> str:
             "- Queued backlog items, case queues, and shell or Compass queue previews are not implicit implementation instructions. Unless the user explicitly asks to work a queued item, do not pick it up automatically just because it appears in Radar, Compass, the shell, or another Odylith queue surface.",
             "- Search existing workstream, plan, bug, component, diagram, and recent session/Compass context first; for consumer Odylith-fix requests, cite that evidence and hand it off to the platform maintainer instead of extending or creating Odylith truth locally.",
             "- If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation; if the issue is Odylith itself in a consumer repo, produce a maintainer-ready feedback packet instead.",
-            "- Use Odylith packets and managed skills to narrow the slice, gather proof, and keep intent plus constraints alive across turns, but do not treat grounding as permission to patch `odylith/` for consumer Odylith-fix requests.",
+            "- Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, plan, bug, spec, component, and diagram upkeep. Treat `.agents/skills/` and `odylith/skills/` as specialist overlays for advanced packet control, orchestration, or high-risk lanes rather than as the default path.",
+            "- When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`, go straight to that CLI and keep any `.agents/skills` lookup, missing-shim, or fallback-path details implicit unless they change the next user-visible action.",
+            "- For quick visibility after a narrow truth change, rerender only the owned surface: `odylith radar refresh`, `odylith registry refresh`, `odylith casebook refresh`, `odylith atlas refresh`, or bounded `odylith compass refresh --wait`. Keep `odylith sync` as the broader governance and correctness lane.",
             "- Treat routed or orchestrated native delegation as the default execution path for substantive grounded consumer-lane work when the current host supports it unless Odylith explicitly keeps the slice local.",
-            "- Codex and Claude Code are both validated Odylith delegation hosts. On Codex, the baseline-safe lane is the repo-root `AGENTS.md` contract plus `./.odylith/bin/odylith`; the managed `.codex/` and `.agents/skills/` project assets are best-effort enhancements for hosts that honor them, and install or repair derives the effective `.codex/config.toml` from the local Codex capability snapshot when possible. Claude Code uses Task-tool subagents plus the installed `.claude/` project assets under the same grounding, memory, surfaces, and orchestration contract.",
-            "- Treat the managed guidance files under `.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer; keep repo-specific truth in the governance surfaces beside them.",
+            "- Codex and Claude Code share the same default Odylith lane: the repo-root `AGENTS.md` contract, `./.odylith/bin/odylith`, truthful `odylith ... --help`, and the grounded governance workflow. Keep host-specific tips rare and capability-gated.",
+            "- On Codex, the managed `.codex/` project assets and curated `.agents/skills/` command shims are best-effort enhancements for trusted projects, and install or repair derives the effective `.codex/config.toml` from the local Codex capability snapshot when possible. Claude Code uses Task-tool subagents plus the installed `.claude/` project assets under the same grounding, memory, surfaces, and orchestration contract.",
+            "- Treat the managed guidance files under `.claude/`, `.codex/`, the curated `.agents/skills/` command shims, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and the specialist references under `odylith/skills/` as the Odylith operating layer; keep repo-specific truth in the governance surfaces beside them.",
+            "",
+            "## Common Fast Paths",
+            "- `./.odylith/bin/odylith bug capture --help`",
+            "- `./.odylith/bin/odylith backlog create --help`",
+            "- `./.odylith/bin/odylith component register --help`",
+            "- `./.odylith/bin/odylith atlas scaffold --help`",
+            "- `./.odylith/bin/odylith compass log --help`",
+            "- `./.odylith/bin/odylith radar refresh --repo-root .`",
+            "- `./.odylith/bin/odylith registry refresh --repo-root .`",
+            "- `./.odylith/bin/odylith casebook refresh --repo-root .`",
+            "- `./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync`",
+            "- `./.odylith/bin/odylith compass refresh --repo-root . --wait`",
+            "- Codex-only when useful: `./.odylith/bin/odylith codex compatibility --repo-root .` tells you whether optional project-asset optimizations are actually active on this host.",
+            "- Keep `.agents/skills` lookup, missing-shim, and fallback-source details implicit unless they change the next user-visible action.",
             "",
             "## Routing",
             "- Context engine behavior: `agents-guidelines/ODYLITH_CONTEXT_ENGINE.md`",
@@ -1182,7 +1200,8 @@ def _customer_bootstrap_guidance() -> str:
             "- Validation and testing: `agents-guidelines/VALIDATION_AND_TESTING.md`",
             "- Install, upgrade, and recovery: `agents-guidelines/UPGRADE_AND_RECOVERY.md`",
             "",
-            "## Skills",
+            "## Specialist Skills",
+            "- `odylith/skills/` is a specialist reference layer. Routine backlog, plan, bug, spec, component, and diagram upkeep should stay on `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` first.",
             "- `skills/delivery-governance-surface-ops/`",
             "- `skills/odylith-context-engine-operations/`",
             "- `skills/subagent-router/`",
@@ -1201,7 +1220,7 @@ def _customer_bootstrap_guidance() -> str:
             "",
             "## Consumer Boundary",
             "- Consumer installs intentionally exclude Odylith product-maintainer release workflow from the local repo guidance and skill set.",
-            "- Use the installed Odylith guidance and skills to power repo work here; do not mirror the Odylith product repo release process into this repository.",
+            "- Use the installed Odylith guidance as the default lane here, and pull in specialist skills only when the task is genuinely advanced or high-risk; do not mirror the Odylith product repo release process into this repository.",
             "",
         ]
     )
@@ -1508,6 +1527,32 @@ def _sync_managed_scoped_guidance(*, repo_root: Path) -> None:
         shutil.copy2(source_path, target_path)
 
 
+def _prune_removed_project_root_skill_shims(*, source_root: Path, target_root: Path) -> None:
+    source_skills_root = source_root / ".agents" / "skills"
+    target_skills_root = target_root / ".agents" / "skills"
+    if not target_skills_root.exists():
+        return
+    expected_files = (
+        {
+            path.relative_to(source_skills_root).as_posix()
+            for path in source_skills_root.rglob("*")
+            if path.is_file() and path.name != ".DS_Store"
+        }
+        if source_skills_root.is_dir()
+        else set()
+    )
+    for candidate in sorted(target_skills_root.rglob("*"), key=lambda path: len(path.parts), reverse=True):
+        if candidate.name == ".DS_Store":
+            continue
+        if candidate.is_file():
+            relative = candidate.relative_to(target_skills_root).as_posix()
+            if relative not in expected_files:
+                candidate.unlink()
+        elif candidate.is_dir():
+            with contextlib.suppress(OSError):
+                candidate.rmdir()
+
+
 def _sync_managed_project_root_assets(*, repo_root: Path) -> None:
     source_root = bundled_project_root_assets_root()
     if not source_root.is_dir():
@@ -1519,6 +1564,7 @@ def _sync_managed_project_root_assets(*, repo_root: Path) -> None:
         target_path = target_root / source_path.relative_to(source_root)
         target_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, target_path)
+    _prune_removed_project_root_skill_shims(source_root=source_root, target_root=target_root)
     _write_effective_codex_project_config(repo_root=target_root)
     _write_effective_claude_project_settings(repo_root=target_root)
 

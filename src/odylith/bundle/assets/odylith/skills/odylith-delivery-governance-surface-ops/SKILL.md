@@ -74,8 +74,11 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 ./.odylith/bin/odylith context-engine --repo-root . governance-slice --working-tree
 ./.odylith/bin/odylith sync --repo-root .
 ./.odylith/bin/odylith dashboard refresh --repo-root .
-./.odylith/bin/odylith dashboard refresh --repo-root . --surfaces shell,radar,compass
-./.odylith/bin/odylith dashboard refresh --repo-root . --surfaces atlas --atlas-sync
+./.odylith/bin/odylith radar refresh --repo-root .
+./.odylith/bin/odylith registry refresh --repo-root .
+./.odylith/bin/odylith casebook refresh --repo-root .
+./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync
+./.odylith/bin/odylith compass refresh --repo-root . --wait
 ./.odylith/bin/odylith sync --repo-root . --force --impact-mode full --check-clean
 ./.odylith/bin/odylith sync --repo-root . --debug-cache
 ./.odylith/bin/odylith sync --repo-root . --check-only --check-clean --runtime-mode standalone

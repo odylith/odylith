@@ -20,12 +20,6 @@ CODEX_COMMAND_SKILLS = {
     "odylith-doctor/SKILL.md",
     "odylith-compass-log/SKILL.md",
     "odylith-compass-refresh/SKILL.md",
-    "odylith-atlas-render/SKILL.md",
-    "odylith-atlas-auto-update/SKILL.md",
-    "odylith-backlog-create/SKILL.md",
-    "odylith-backlog-validate/SKILL.md",
-    "odylith-registry-validate/SKILL.md",
-    "odylith-registry-sync-specs/SKILL.md",
 }
 
 
@@ -103,11 +97,7 @@ def test_codex_hooks_register_supported_events_only() -> None:
     assert bundled_scripts == set()
 
 
-def test_codex_skill_shims_mirror_the_claude_skill_inventory() -> None:
-    claude_skill_files = {
-        path.relative_to(LIVE_CLAUDE_ROOT / "skills").as_posix()
-        for path in (LIVE_CLAUDE_ROOT / "skills").rglob("SKILL.md")
-    }
+def test_codex_skill_shims_stay_on_the_curated_command_surface() -> None:
     codex_skill_files = {
         path.relative_to(LIVE_SKILLS_ROOT).as_posix()
         for path in LIVE_SKILLS_ROOT.rglob("SKILL.md")
@@ -117,8 +107,8 @@ def test_codex_skill_shims_mirror_the_claude_skill_inventory() -> None:
         for path in (PROJECT_ROOT_BUNDLE / ".agents" / "skills").rglob("SKILL.md")
     }
 
-    assert codex_skill_files == claude_skill_files | CODEX_COMMAND_SKILLS
-    assert bundled_codex_skill_files == claude_skill_files | CODEX_COMMAND_SKILLS
+    assert codex_skill_files == CODEX_COMMAND_SKILLS
+    assert bundled_codex_skill_files == CODEX_COMMAND_SKILLS
 
 
 def test_codex_command_skill_sources_exist_for_curated_cli_surface() -> None:

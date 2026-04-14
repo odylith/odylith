@@ -6,11 +6,224 @@ from types import SimpleNamespace
 import pytest
 
 from odylith import cli
+from odylith.runtime.governance import bug_authoring
 
 
 class _TTYStream:
     def isatty(self) -> bool:
         return True
+
+
+def _write_casebook_bug(
+    path: Path,
+    *,
+    bug_id: str,
+    status: str,
+    created: str,
+    severity: str,
+    components: str,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join(
+            [
+                f"- Bug ID: {bug_id}",
+                "",
+                f"- Status: {status}",
+                "",
+                f"- Created: {created}",
+                "",
+                f"- Severity: {severity}",
+                "",
+                f"- Components Affected: {components}",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_bug_capture_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["bug", "capture", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith bug capture" in output
+    assert "--title" in output
+    assert "--component" in output
+    assert "--severity" in output
+    assert "--dry-run" in output
+    assert "--json" in output
+
+
+def test_compass_log_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["compass", "log", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith compass log" in output
+    assert "--kind" in output
+    assert "--summary" in output
+    assert "--workstream" in output
+    assert "--artifact" in output
+
+
+def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["backlog", "create", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith backlog create" in output
+    assert "--title" in output
+    assert "--priority" in output
+    assert "--dry-run" in output
+    assert "--json" in output
+
+
+def test_component_register_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["component", "register", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith component register" in output
+    assert "--id" in output
+    assert "--path" in output
+    assert "--label" in output
+    assert "--kind" in output
+
+
+def test_atlas_scaffold_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["atlas", "scaffold", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith atlas scaffold" in output
+    assert "--diagram-id" in output
+    assert "--slug" in output
+    assert "--title" in output
+    assert "--component" in output
+
+
+def test_atlas_render_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["atlas", "render", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith atlas render" in output
+    assert "Render odylith/atlas/atlas.html from catalog metadata" in output
+    assert "Skip current Atlas rerenders" not in output
+    assert "--catalog" in output
+    assert "--output" in output
+    assert "--diagram-id" in output
+
+
+def test_atlas_auto_update_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["atlas", "auto-update", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith atlas auto-update" in output
+    assert "--changed-path" in output
+    assert "--from-git-head" in output
+    assert "--dry-run" in output
+
+
+def test_atlas_install_autosync_hook_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["atlas", "install-autosync-hook", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith atlas install-autosync-hook" in output
+    assert "--force" in output
+
+
+def test_bug_capture_rebuilds_multiline_casebook_index_from_source(tmp_path: Path, monkeypatch) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    existing_bug = bug_root / "2026-04-12-existing-open-bug.md"
+    refresh_calls: list[Path] = []
+
+    monkeypatch.setattr(
+        bug_authoring,
+        "_refresh_casebook_surface",
+        lambda *, repo_root: refresh_calls.append(repo_root) or 0,
+    )
+    _write_casebook_bug(
+        existing_bug,
+        bug_id="CB-101",
+        status="Open",
+        created="2026-04-12",
+        severity="P1",
+        components=(
+            "`src/odylith/runtime/governance/sync_workstream_artifacts.py`,\n"
+            "  `src/odylith/runtime/governance/sync_casebook_bug_index.py`"
+        ),
+    )
+    (bug_root / "INDEX.md").write_text(
+        "\n".join(
+            [
+                "# Bug Index",
+                "",
+                "Last updated (UTC): 2026-04-12",
+                "",
+                "## Open Bugs",
+                "",
+                "| Bug ID | Date | Title | Severity | Components | Status | Link |",
+                "| --- | --- | --- | --- | --- | --- | --- |",
+                "| CB-101 | 2026-04-12 | Existing open bug | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,",
+                "  `src/odylith/runtime/governance/sync_casebook_bug_index.py` | Open | [2026-04-12-existing-open-bug.md](2026-04-12-existing-open-bug.md) |",
+                "",
+                "## Closed Bugs",
+                "",
+                "| Bug ID | Date | Title | Severity | Components | Status | Link |",
+                "| --- | --- | --- | --- | --- | --- | --- |",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    created = bug_authoring.capture_bug(
+        repo_root=tmp_path,
+        title="Fresh Casebook bug capture stays out of multiline rows",
+        component="compass",
+        severity="P1",
+    )
+    index_text = (bug_root / "INDEX.md").read_text(encoding="utf-8")
+
+    existing_row = (
+        "| CB-101 | 2026-04-12 | Existing open bug | P1 | "
+        "`src/odylith/runtime/governance/sync_workstream_artifacts.py`,\n"
+        "  `src/odylith/runtime/governance/sync_casebook_bug_index.py` | Open | "
+        "[2026-04-12-existing-open-bug.md](2026-04-12-existing-open-bug.md) |"
+    )
+    assert created.bug_id == "CB-102"
+    assert existing_row in index_text
+    assert "`src/odylith/runtime/governance/sync_workstream_artifacts.py`,\n| CB-102 |" not in index_text
+    assert "## Closed Bugs" in index_text
+    assert refresh_calls == [tmp_path]
+
+
+def test_bug_capture_raises_when_casebook_refresh_fails(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(bug_authoring, "_refresh_casebook_surface", lambda *, repo_root: 1)
+
+    with pytest.raises(RuntimeError, match="Casebook-only refresh failed"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Refresh failure should not hide stale Casebook state",
+            component="casebook",
+            severity="P1",
+        )
 
 
 def _seed_product_repo_shape(repo_root: Path) -> None:
@@ -620,9 +833,106 @@ def test_dashboard_refresh_defaults_to_tooling_shell_radar_and_compass(monkeypat
     assert rc == 0
     assert captured["repo_root"] == tmp_path.resolve()
     assert captured["surfaces"] == ["tooling_shell", "radar", "compass"]
-    assert captured["runtime_mode"] == "auto"
-    assert captured["atlas_sync"] is False
-    assert captured["dry_run"] is True
+
+
+def test_radar_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        captured.update(kwargs)
+        return 0
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        fake_refresh_dashboard_surfaces,
+    )
+
+    rc = cli.main(["radar", "refresh", "--repo-root", str(tmp_path), "--dry-run"])
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "surfaces": ("radar",),
+        "runtime_mode": "auto",
+        "atlas_sync": False,
+        "dry_run": True,
+    }
+
+
+def test_registry_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        captured.update(kwargs)
+        return 0
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        fake_refresh_dashboard_surfaces,
+    )
+
+    rc = cli.main(["registry", "refresh", "--repo-root", str(tmp_path), "--runtime-mode", "standalone"])
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "surfaces": ("registry",),
+        "runtime_mode": "standalone",
+        "atlas_sync": False,
+        "dry_run": False,
+    }
+
+
+def test_casebook_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        captured.update(kwargs)
+        return 0
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        fake_refresh_dashboard_surfaces,
+    )
+
+    rc = cli.main(["casebook", "refresh", "--repo-root", str(tmp_path)])
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "surfaces": ("casebook",),
+        "runtime_mode": "auto",
+        "atlas_sync": False,
+        "dry_run": False,
+    }
+
+
+def test_atlas_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        captured.update(kwargs)
+        return 0
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        fake_refresh_dashboard_surfaces,
+    )
+
+    rc = cli.main(["atlas", "refresh", "--repo-root", str(tmp_path), "--atlas-sync"])
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "surfaces": ("atlas",),
+        "runtime_mode": "auto",
+        "atlas_sync": True,
+        "dry_run": False,
+    }
 
 
 def test_product_repo_main_branch_guard_uses_local_shape_without_install_manager(monkeypatch, tmp_path: Path) -> None:

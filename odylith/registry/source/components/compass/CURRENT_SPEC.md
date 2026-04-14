@@ -1,8 +1,8 @@
 # Compass
-Last updated: 2026-04-12
+Last updated: 2026-04-14
 
 
-Last updated (UTC): 2026-04-12
+Last updated (UTC): 2026-04-14
 
 ## Purpose
 Compass is Odylith's execution, decision, and runtime-posture surface. It turns
@@ -410,6 +410,11 @@ churn does not drown out meaningful implementation evidence.
 ## Snapshot-Age Contract
 - Compass rolling windows, per-day timelines, and audit-hour detail are anchored
   to the loaded runtime snapshot timestamp, not the browser wall clock.
+- Rolling-window Timeline Audit must render every populated local day that
+  falls inside the active `24h` or `48h` bounds. `audit_day` anchors the
+  chosen window and current-day hour horizon, but it must not collapse the
+  visible audit down to one selected day while prior-day in-window evidence
+  still exists.
 - If the loaded runtime snapshot is materially stale, Compass must surface that
   explicitly as a warning with the snapshot age and timestamp; it must not
   silently render recent day buckets as if they were live empty days.
@@ -622,6 +627,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-14: Restored true rolling-window Timeline Audit rendering so Compass now shows every populated local day inside the active `24h` or `48h` window instead of collapsing to the selected `audit_day`; current-day future hours still stay clipped at the loaded runtime horizon. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-109`)
 - 2026-04-12: Tightened Compass live narration around the human-voice contract again: deterministic rules now explicitly govern evidence eligibility and fail-closed drift rejection, while the brief itself stays free-flowing. `Current execution` now prefers one live lane plus one concrete action, `Next planned` stays on the immediate next move, `Risks to watch` must name explicit seams, and thin evidence packets are expected to produce shorter output instead of broader portfolio prose. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Centralized Compass brief voice under the Registry-owned `briefs-voice-contract` component, retired deterministic brief fallback, and tightened the brief runtime to fresh provider, exact cache, or explicit unavailable. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Collapsed global and scoped standup warming into one packet-level narrated bundle, removed separate scoped maintenance fanout, and made verified scoped briefs warm through the same provider transaction as their parent global windows. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

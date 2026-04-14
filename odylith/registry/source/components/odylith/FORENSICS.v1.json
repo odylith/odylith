@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 61,
-    "mapped_workstream_evidence_count": 16,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 12,
+    "explicit_event_count": 62,
+    "mapped_workstream_evidence_count": 17,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 17,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 61
+    "timeline_event_count": 63
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -56,6 +56,51 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "AGENTS.md",
+        "odylith/README.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 153,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/README.md +1 more",
+      "ts_iso": "2026-04-14T10:32:46-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 134,
+      "explicit_components": [],
+      "kind": "subagent_stop",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "",
+      "ts_iso": "2026-04-13T23:57:57Z",
+      "workstreams": [
+        "B-001"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",

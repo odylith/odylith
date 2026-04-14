@@ -21,6 +21,7 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.proof_state.contract import DEPLOYMENT_TRUTH_FIELDS
 from odylith.runtime.governance.proof_state.contract import PROOF_STATUSES
@@ -471,6 +472,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"- workstreams: {len(payload.get('workstreams', []))}")
     print(f"- artifacts: {len(payload.get('artifacts', []))}")
     print(f"- components: {len(payload.get('components', []))}")
+    try:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=repo_root,
+            surface="compass",
+            operation_label="Compass timeline append",
+        )
+    except RuntimeError as exc:
+        print(str(exc))
+        return 1
     return 0
 
 

@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 38,
-    "mapped_workstream_evidence_count": 4,
+    "explicit_event_count": 40,
+    "mapped_workstream_evidence_count": 5,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 38
+    "timeline_event_count": 40
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -51,6 +51,49 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 149,
+      "explicit_components": [
+        "dashboard"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "dashboard"
+      ],
+      "meaningful": false,
+      "summary": "Here's the complete before/after comparison for dashboard refresh: | Metric | Before | After | Change | |--------|--------|-------|--------| | Single run | 36,407 ms | 7,315 ms...",
+      "ts_iso": "2026-04-14T07:30:22-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 134,
+      "explicit_components": [],
+      "kind": "subagent_stop",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "",
+      "ts_iso": "2026-04-13T23:57:57Z",
+      "workstreams": [
+        "B-001"
+      ]
+    },
     {
       "artifacts": [
         "odylith/install.json",

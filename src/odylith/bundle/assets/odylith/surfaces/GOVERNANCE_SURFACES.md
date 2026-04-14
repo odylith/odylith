@@ -14,6 +14,10 @@ Related docs:
 ```bash
 odylith sync --repo-root . --force
 odylith sync --repo-root . --check-only --check-clean
+odylith radar refresh --repo-root .
+odylith registry refresh --repo-root .
+odylith casebook refresh --repo-root .
+odylith atlas refresh --repo-root . --atlas-sync
 odylith compass refresh --repo-root . --wait
 odylith compass log --repo-root . --kind decision --summary "<summary>"
 odylith compass update --repo-root . --statement "<current execution state>"
@@ -52,9 +56,11 @@ current and next ship lanes. Atlas and Registry say what the system is.
 Compass says what changed recently. Casebook says what failed before. The
 shell connects those views so the agent can move through one grounded slice
 without rebuilding the repo story from scratch. Compass runtime refresh now
-flows through `odylith compass refresh`, with `dashboard refresh --surfaces
-compass` kept only as the multi-surface compatibility wrapper over the same
-engine.
+flows through `odylith compass refresh`, while quick visibility for other
+single-surface truth edits flows through `odylith radar refresh`,
+`odylith registry refresh`, `odylith casebook refresh`, or
+`odylith atlas refresh --atlas-sync`. Keep `dashboard refresh` for explicit
+multi-surface shell rerenders rather than one owned surface.
 
 ## Concrete Surface Examples
 

@@ -5,6 +5,13 @@ from odylith.runtime.common.product_assets import bundled_project_root_assets_ro
 def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     root = bundle_root()
     assert (root / "AGENTS.md").is_file()
+    assert "Keep the default operating lane shared across Codex and Claude Code" in (root / "AGENTS.md").read_text(encoding="utf-8")
+    assert "rerender only the owned surface" in (root / "AGENTS.md").read_text(encoding="utf-8")
+    assert "Codex-Only Optimizations When Supported" in (root / "agents-guidelines" / "CODEX_HOST_CONTRACT.md").read_text(encoding="utf-8")
+    assert "./.odylith/bin/odylith codex compatibility --repo-root ." in (root / "README.md").read_text(encoding="utf-8")
+    assert "./.odylith/bin/odylith radar refresh --repo-root ." in (root / "README.md").read_text(encoding="utf-8")
+    assert "./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync" in (root / "README.md").read_text(encoding="utf-8")
+    assert "./.odylith/bin/odylith dashboard refresh --repo-root . --surfaces <surface>" not in (root / "agents-guidelines" / "CLI_FIRST_POLICY.md").read_text(encoding="utf-8")
     assert (root / "CLAUDE.md").is_file()
     assert (root / "agents-guidelines").is_dir()
     assert (root / "skills").is_dir()
@@ -19,6 +26,9 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (project_root / ".claude" / "commands" / "odylith-plan.md").is_file()
     assert (project_root / ".claude" / "commands" / "odylith-worktree.md").is_file()
     assert (project_root / ".claude" / "commands" / "odylith-sync-governance.md").is_file()
+    sync_command = (project_root / ".claude" / "commands" / "odylith-sync-governance.md").read_text(encoding="utf-8")
+    assert "./.odylith/bin/odylith radar refresh --repo-root ." in sync_command
+    assert "./.odylith/bin/odylith dashboard refresh --repo-root . --surfaces <surface>" not in sync_command
     assert (project_root / ".claude" / "agents" / "odylith-compass-narrator.md").is_file()
     assert (project_root / ".claude" / "agents" / "odylith-reviewer.md").is_file()
     assert (project_root / ".claude" / "agents" / "odylith-workstream.md").is_file()
@@ -39,7 +49,8 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (project_root / ".codex" / "agents" / "odylith-workstream.toml").is_file()
     codex_hooks = (project_root / ".codex" / "hooks.json").read_text(encoding="utf-8")
     assert "./.odylith/bin/odylith codex session-start-ground --repo-root ." in codex_hooks
-    assert (project_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (project_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
+    assert not (project_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
 
 
 def test_bundle_root_contains_managed_governance_surface_assets() -> None:

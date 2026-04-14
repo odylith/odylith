@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-04-12
 
-Updated: 2026-04-12
+Updated: 2026-04-14
 
 Backlog: B-091
 
@@ -43,6 +43,18 @@ Boundary Conditions:
 
 Related Bugs:
 - [CB-066](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-07-sync-refresh-rewrites-unchanged-artifacts-and-stales-generated-timestamps.md)
+- [CB-110](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-14-forwarded-cli-help-hides-backend-flags-and-selective-sync-stays-too-wide-for-gov.md)
+  tracks the governed-memory upkeep follow-on: forwarded `bug capture` and
+  `compass log` help hid backend flags, `bug capture` line-patched the live
+  Casebook index instead of regenerating it from source, and selective sync
+  still widened explicit bug/plan/spec memory updates into the broad render
+  graph.
+- [CB-112](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md)
+  tracks the next quick-update follow-on: routine authoring commands outside
+  Casebook stopped after writing truth, and direct Radar/Registry/Atlas
+  selective refreshes still needed a surface-local visibility contract so the
+  shared projection bundle plus local LanceDB/Tantivy substrate stayed fresh
+  without a full sync wave.
 
 ## Learnings
 - [x] Full governed sync is paying mainly for repeated discovery, not inherently
@@ -143,6 +155,34 @@ Related Bugs:
 - [x] Keep in-process heartbeat wrapping on the truly long render modules only,
       so validators and lighter reconciliation steps run directly without
       paying thread/queue wait overhead in the runtime fast path.
+- [x] Add a truth-only selective sync lane for explicit Casebook bug markdown,
+      active-plan, and Registry living-spec edits so governed memory upkeep can
+      validate and mirror the touched source truth without widening into Atlas,
+      delivery-intelligence, or dashboard renders.
+- [x] Make forwarded top-level help for `odylith bug capture` and
+      `odylith compass log` resolve against the backend parser so operators can
+      discover real flags without source spelunking.
+- [x] Route routine authoring commands through one shared owned-surface refresh
+      helper so `backlog create`, `component register`, `atlas scaffold`, and
+      `compass log` mutate truth, refresh the smallest visible owned surface,
+      and stop.
+- [x] Let the selective governed-memory lane refresh owned Radar, Registry,
+      Atlas, and Casebook surfaces directly from touched source truth while
+      keeping the shared projection compiler and local LanceDB/Tantivy backend
+      current through the same narrow render path.
+- [x] Land the same owned-surface quick-refresh contract in repo-root guidance,
+      consumer guidance, bundle docs, Codex shims, and Claude commands so dev,
+      dogfood, and consumer lanes stop advertising a stale
+      `dashboard refresh --surfaces <surface>` hop for routine single-surface
+      visibility.
+- [x] Short-circuit explicit truth-only selective sync before the runtime
+      governance-packet planner and broad backlog preflight when the changed
+      paths already determine the owned surfaces, while still keeping targeted
+      Radar validation on plan/backlog slices.
+- [x] Scope source-truth bundle mirroring to the explicit changed-path slice
+      instead of rescanning repo-wide git state, and let single-surface
+      Radar/Registry/Casebook refreshes stay on the in-process runtime fast
+      lane when the shared LanceDB/Tantivy substrate is ready.
 
 ## Defer
 - [ ] Persistent sync daemon with warm resident session state across commands.
@@ -162,6 +202,16 @@ Related Bugs:
       governed slice fail-closed.
 - [x] Reused and cold-built substrate decisions are explainable from a local
       debug manifest instead of only from profiler receipts.
+- [x] Explicit selective bug/plan/spec memory edits stay on a truth-only sync
+      lane, and forwarded `bug capture` / `compass log` help surfaces expose
+      the real backend flags at the top-level CLI.
+- [x] Routine authoring writes and selective direct surface-truth edits become
+      immediately visible on the owned surface without widening into the full
+      governance sync DAG, while the shared projection/memory substrate stays
+      fresh.
+- [x] Dev guidance, dogfood bundle assets, consumer install guidance, Codex
+      shims, and Claude helper commands all advertise the same owned-surface
+      quick-refresh commands for Radar, Registry, Casebook, Atlas, and Compass.
 
 ## Non-Goals
 - [ ] Claiming sub-second cold forced full sync from scratch in Python.
@@ -229,6 +279,17 @@ Related Bugs:
 - [x] `/usr/bin/time -p env PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --force --impact-mode full` (`5.9s` sync-reported elapsed / `6.96s` wall clock on 2026-04-12 after Compass started reusing the settled Radar index for backlog rows during sync and short in-process steps stopped paying the heartbeat thread wrapper)
 - [x] `PYTHONPATH=src python3 -m cProfile -o /tmp/odylith_latency_after.prof -m odylith.cli sync --repo-root . --force --impact-mode full` (`10.6s` sync-reported elapsed / `12.77s` cProfile total on 2026-04-12; `render_compass_dashboard.main` is `4.10s`, `_build_runtime_payload()` is `3.52s`, `load_backlog_rows()` collapsed to `0.034s`, `warm_projections()` is `1.048s`, `select.poll` is `1.066s`, and `normalize_repo_token()` is `0.968s`)
 - [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (`5.1s` on 2026-04-12 after the same source-backed Compass backlog-row and selective-heartbeat cut, with delivery intelligence current and the strict standalone lane still fail-closed)
+- [x] `pytest -q tests/unit/test_cli.py::test_bug_capture_help_forwards_backend_flags tests/unit/test_cli.py::test_compass_log_help_forwards_backend_flags tests/unit/test_cli.py::test_bug_capture_rebuilds_multiline_casebook_index_from_source tests/unit/runtime/test_sync_cli_compat.py::test_build_sync_execution_plan_uses_truth_only_selective_lane_for_governance_memory_slice tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_odylith_memory_areas.py::test_load_bug_projection_handles_multiline_open_bug_rows` (`11 passed` on 2026-04-14 after forwarded-help exposure, Casebook-index regeneration, and truth-only selective sync landed)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_owned_surface_refresh_authoring.py tests/unit/test_cli.py -k 'dashboard_refresh_dispatches_selected_surfaces or dashboard_refresh_defaults_to_tooling_shell_radar_and_compass or radar_refresh_dispatches_owned_surface_lane or registry_refresh_dispatches_owned_surface_lane or casebook_refresh_dispatches_owned_surface_lane or atlas_refresh_dispatches_owned_surface_lane or bug_capture_help_forwards_backend_flags or compass_log_help_forwards_backend_flags or backlog_create_help_forwards_backend_flags or component_register_help_forwards_backend_flags or atlas_scaffold_help_forwards_backend_flags or atlas_render_help_forwards_backend_flags or atlas_auto_update_help_forwards_backend_flags or atlas_install_autosync_hook_help_forwards_backend_flags or bug_capture_rebuilds_multiline_casebook_index_from_source or bug_capture_raises_when_casebook_refresh_fails'` (`16 passed` on 2026-04-14 after the owned-surface authoring refresh helper plus `radar`/`registry`/`casebook`/`atlas refresh` entrypoints landed)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_sync_cli_compat.py -k 'owned_surface_selective_lane_for_governance_memory_slice or refreshes_registry_for_spec_only_selective_slice or refreshes_atlas_for_catalog_only_selective_slice or requires_sync_treats_casebook_bug_markdown_as_sync_relevant or build_sync_execution_plan_runs_final_registry_reconcile_after_bundle_mirror'` (`5 passed` on 2026-04-14 after selective sync started refreshing owned Radar/Registry/Atlas surfaces on the shared projection/memory lane)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_owned_surface_refresh_authoring.py tests/unit/runtime/test_odylith_memory_backend.py tests/unit/runtime/test_generated_refresh_guard.py tests/unit/runtime/test_derivation_provenance.py` (`68 passed` on 2026-04-14 after the truth-only entrypoint short-circuit, explicit changed-path mirror scoping, and single-surface in-process refresh lane landed)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_agents.py tests/integration/install/test_bundle.py::test_bundle_root_contains_installed_agents_entrypoint tests/integration/install/test_manager.py -k 'install_bundle_bootstraps_customer_owned_tree_without_copying_product_bundle or upgrade_install_resyncs_consumer_guidance_and_skills'` (`5 passed` on 2026-04-14 after root guidance, consumer guidance, bundle docs, and Claude command shims all switched to the same owned-surface quick-refresh wording)
+- [x] `/usr/bin/time -p env PYTHONPATH=src .venv/bin/python -m odylith.cli radar refresh --repo-root .` (`1.5s` sync-reported / `1.78s` wall on 2026-04-14 after single-surface refreshes started staying on the in-process fast lane)
+- [x] `/usr/bin/time -p env PYTHONPATH=src .venv/bin/python -m odylith.cli registry refresh --repo-root .` (`4.8s` sync-reported / `5.03s` wall on 2026-04-14 with delivery-intelligence current and Registry rerendered on the narrow lane)
+- [x] `/usr/bin/time -p env PYTHONPATH=src .venv/bin/python -m odylith.cli casebook refresh --repo-root .` (`1.5s` sync-reported / `1.67s` wall on the warmed 2026-04-14 proof lane after the owned-surface refresh used the in-process runtime path)
+- [x] `/usr/bin/time -p env PYTHONPATH=src .venv/bin/python -m odylith.cli atlas refresh --repo-root . --atlas-sync` (`0.2s` sync-reported / `0.35s` wall on 2026-04-14 with `37 fresh / 0 stale`)
+- [x] `/usr/bin/time -p env PYTHONPATH=src .venv/bin/python -m odylith.cli sync --repo-root . --impact-mode selective --registry-policy-mode advisory --proceed-with-overlap odylith/casebook/bugs/2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md odylith/registry/source/components/odylith/CURRENT_SPEC.md odylith/atlas/source/catalog/diagrams.v1.json` (`6.9s` sync-reported / `7.33s` wall on 2026-04-14 while refreshing only Radar, Atlas, Registry, and Casebook)
+- [x] `pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_sync_changed_source_truth_bundle_mirrors_updates_changed_docs tests/unit/runtime/test_sync_cli_compat.py::test_sync_changed_source_truth_bundle_mirrors_updates_runtime_source_corpus tests/unit/runtime/test_sync_cli_compat.py::test_build_sync_execution_plan_appends_source_bundle_mirror_step tests/unit/runtime/test_sync_cli_compat.py::test_build_sync_execution_plan_runs_final_registry_reconcile_after_bundle_mirror tests/unit/runtime/test_sync_cli_compat.py::test_build_sync_execution_plan_final_registry_reconcile_triggers_delivery_stabilization` (`5 passed` on 2026-04-14 to prove the narrowed mirror scope did not regress the broader plan contract)
 - [x] `git diff --check`
 
 ## Outcome Snapshot
@@ -298,6 +359,14 @@ Related Bugs:
 - [x] Atlas all-stale review refreshes now bypass stale cached auto-update
       short-circuits, so full sync and strict standalone proof no longer diverge
       on review-only diagram freshness.
+- [x] Explicit selective bug/plan/spec memory updates now stay on a truth-only
+      lane that validates the touched plan slice, refreshes Casebook index
+      truth, mirrors the touched bundle docs, and skips Atlas,
+      delivery-intelligence, and dashboard renders.
+- [x] Forwarded top-level help for `odylith bug capture` and
+      `odylith compass log` now exposes the backend flags directly, and
+      `bug capture` regenerates the Casebook index from markdown source instead
+      of patching multiline table rows in place.
 - [x] The remaining hot path is now much narrower and more honest: Compass
       runtime payload assembly, Registry snapshot shaping, and projection
       fingerprint trees dominate after the path storm and redundant surface

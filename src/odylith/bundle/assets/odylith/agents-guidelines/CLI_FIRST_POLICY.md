@@ -26,10 +26,11 @@
 - `./.odylith/bin/odylith governance sync-component-spec-requirements` for regenerating Registry `FORENSICS.v1.json` sidecars and component spec requirements.
 - `./.odylith/bin/odylith governance normalize-plan-risk-mitigation` for technical-plan risk and mitigation sections.
 - `./.odylith/bin/odylith sync [--check-only] [--impact-mode selective <paths>]` for governance and surface refresh.
+- `./.odylith/bin/odylith radar refresh --repo-root .`, `./.odylith/bin/odylith registry refresh --repo-root .`, `./.odylith/bin/odylith casebook refresh --repo-root .`, `./.odylith/bin/odylith atlas refresh --repo-root . [--atlas-sync]`, and `./.odylith/bin/odylith compass refresh --repo-root . --wait` for owned-surface quick visibility after a narrow truth change.
 - `./.odylith/bin/odylith compass {log,refresh,update,restore-history,watch-transactions}` for Compass timeline events and runtime snapshots.
 - `./.odylith/bin/odylith atlas ...` for Atlas diagram catalog and rendering operations.
 - `./.odylith/bin/odylith program ...` and `./.odylith/bin/odylith wave ...` for umbrella execution-wave members and gates.
-- `./.odylith/bin/odylith dashboard refresh --repo-root . --surfaces <surface>` for narrow dashboard re-render after a sync decision.
+- `./.odylith/bin/odylith dashboard refresh --repo-root . [--surfaces ...]` for explicit multi-surface shell rerenders when the task is about a combined view rather than one owned surface.
 - `./.odylith/bin/odylith validate ...` for governance and contract validators.
 - `./.odylith/bin/odylith context`, `./.odylith/bin/odylith query`, `./.odylith/bin/odylith session-brief`, `./.odylith/bin/odylith context-engine ...` for grounding and retrieval.
 - `./.odylith/bin/odylith subagent-router ...` and `./.odylith/bin/odylith subagent-orchestrator ...` for bounded leaf routing and orchestration.

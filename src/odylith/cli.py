@@ -47,6 +47,7 @@ _VERSION_TRUTH_MODULE = "odylith.runtime.governance.version_truth"
 _BENCHMARK_COMPARE_MODULE = "odylith.runtime.evaluation.benchmark_compare"
 _PROGRAM_WAVE_AUTHORING_MODULE = "odylith.runtime.governance.program_wave_authoring"
 _MAINTAINER_LANE_STATUS_MODULE = "odylith.runtime.governance.maintainer_lane_status"
+_BACKLOG_AUTHORING_MODULE = "odylith.runtime.governance.backlog_authoring"
 _COMPASS_LOG_MODULE = "odylith.runtime.common.log_compass_timeline_event"
 _COMPASS_REFRESH_MODULE = "odylith.runtime.surfaces.compass_refresh_runtime"
 _COMPASS_UPDATE_MODULE = "odylith.runtime.surfaces.update_compass"
@@ -187,7 +188,7 @@ sync_component_spec_requirements = _register_lazy_module("odylith.runtime.govern
 version_truth = _register_lazy_module(_VERSION_TRUTH_MODULE)
 validate_guidance_portability = _register_lazy_module("odylith.runtime.governance.validate_guidance_portability")
 validate_plan_traceability_contract = _register_lazy_module("odylith.runtime.governance.validate_plan_traceability_contract")
-backlog_authoring = _register_lazy_module("odylith.runtime.governance.backlog_authoring")
+backlog_authoring = _register_lazy_module(_BACKLOG_AUTHORING_MODULE)
 release_planning_authoring = _register_lazy_module("odylith.runtime.governance.release_planning_authoring")
 program_wave_authoring = _register_lazy_module(_PROGRAM_WAVE_AUTHORING_MODULE)
 validate_backlog_contract = _register_lazy_module("odylith.runtime.governance.validate_backlog_contract")
@@ -1243,6 +1244,19 @@ def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_owned_surface_refresh(args: argparse.Namespace, *, surface: str) -> int:
+    blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+    if blocked:
+        return blocked
+    return _sync_workstream_artifacts().refresh_dashboard_surfaces(
+        repo_root=Path(args.repo_root).expanduser().resolve(),
+        surfaces=(str(surface).strip().lower(),),
+        runtime_mode=str(getattr(args, "runtime_mode", "auto")),
+        atlas_sync=bool(getattr(args, "atlas_sync", False)),
+        dry_run=bool(getattr(args, "dry_run", False)),
+    )
+
+
 def _cmd_governance(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
@@ -1287,6 +1301,13 @@ def _cmd_bug(args: argparse.Namespace) -> int:
     return _run_module_main(
         _BUG_AUTHORING_MODULE,
         ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
+
+
+def _forward_backend_help(*, module_name: str, repo_root: str, forwarded: Sequence[str]) -> int:
+    return _run_module_main(
+        module_name,
+        ensure_repo_root_args(repo_root=repo_root, argv=forwarded),
     )
 
 
@@ -1496,6 +1517,10 @@ def _cmd_atlas_render(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_atlas_refresh(args: argparse.Namespace) -> int:
+    return _cmd_owned_surface_refresh(args, surface="atlas")
+
+
 def _cmd_atlas_auto_update(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
@@ -1574,6 +1599,49 @@ def _parse_dashboard_refresh_fast_args(*, repo_root: str, forwarded: Sequence[st
     parser.add_argument("--atlas-sync", action="store_true")
     parser.add_argument("--runtime-mode", choices=("auto", "standalone", "daemon"), default="auto")
     return parser.parse_args(["--repo-root", repo_root, *list(forwarded)])
+
+
+def _parse_owned_surface_refresh_fast_args(
+    *,
+    command: str,
+    repo_root: str,
+    forwarded: Sequence[str],
+    atlas: bool,
+) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog=f"odylith {command} refresh",
+        description=f"Refresh the local {command} surface without a full governance sync.",
+    )
+    parser.add_argument("--repo-root", default=repo_root, help=argparse.SUPPRESS)
+    parser.add_argument("--dry-run", action="store_true")
+    if atlas:
+        parser.add_argument("--atlas-sync", action="store_true")
+    parser.add_argument("--runtime-mode", choices=("auto", "standalone", "daemon"), default="auto")
+    return parser.parse_args(["--repo-root", repo_root, *list(forwarded)])
+
+
+def _configure_surface_refresh_parser(parser: argparse.ArgumentParser, *, atlas: bool = False) -> None:
+    parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview the owned-surface refresh plan without writing files.",
+    )
+    if atlas:
+        parser.add_argument(
+            "--atlas-sync",
+            action="store_true",
+            help="Refresh stale Mermaid diagrams before rerendering Atlas.",
+        )
+    parser.add_argument(
+        "--runtime-mode",
+        choices=("auto", "standalone", "daemon"),
+        default="auto",
+        help=(
+            "Execution mode for the render helpers. `auto` prefers the local runtime-backed fast path, "
+            "`standalone` stays subprocess-only, and `daemon` requires runtime-backed execution."
+        ),
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1836,6 +1904,14 @@ def build_parser() -> argparse.ArgumentParser:
     backlog_create.add_argument("--repo-root", default=".", help="Consumer repository root.")
     backlog_create.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
+    radar = subparsers.add_parser("radar", help="Refresh Radar without widening into full sync.")
+    radar_subparsers = radar.add_subparsers(dest="radar_command", required=True)
+    radar_refresh = radar_subparsers.add_parser(
+        "refresh",
+        help="Refresh the Radar surface only.",
+    )
+    _configure_surface_refresh_parser(radar_refresh)
+
     release = subparsers.add_parser("release", help="Create and maintain repo-local release planning truth.")
     release_subparsers = release.add_subparsers(dest="release_command", required=True)
     for command, help_text in (
@@ -1896,6 +1972,14 @@ def build_parser() -> argparse.ArgumentParser:
     component_register.add_argument("--repo-root", default=".", help="Consumer repository root.")
     component_register.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
+    registry_surface = subparsers.add_parser("registry", help="Refresh Registry without widening into full sync.")
+    registry_subparsers = registry_surface.add_subparsers(dest="registry_command", required=True)
+    registry_refresh = registry_subparsers.add_parser(
+        "refresh",
+        help="Refresh the Registry surface only.",
+    )
+    _configure_surface_refresh_parser(registry_refresh)
+
     bug = subparsers.add_parser("bug", help="Create and maintain Casebook bug records.")
     bug_subparsers = bug.add_subparsers(dest="bug_command", required=True)
     bug_capture = bug_subparsers.add_parser(
@@ -1904,6 +1988,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     bug_capture.add_argument("--repo-root", default=".", help="Consumer repository root.")
     bug_capture.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    casebook_surface = subparsers.add_parser("casebook", help="Refresh Casebook without widening into full sync.")
+    casebook_subparsers = casebook_surface.add_subparsers(dest="casebook_command", required=True)
+    casebook_refresh = casebook_subparsers.add_parser(
+        "refresh",
+        help="Refresh the Casebook surface only.",
+    )
+    _configure_surface_refresh_parser(casebook_refresh)
 
     validate = subparsers.add_parser("validate", help="Run Odylith governance and contract validators.")
     validate_subparsers = validate.add_subparsers(dest="validate_command", required=True)
@@ -1991,6 +2083,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     atlas = subparsers.add_parser("atlas", help="Render or maintain Atlas diagram assets.")
     atlas_subparsers = atlas.add_subparsers(dest="atlas_command", required=True)
+    atlas_refresh = atlas_subparsers.add_parser(
+        "refresh",
+        help="Refresh the Atlas surface through the shared owned-surface refresh lane.",
+    )
+    _configure_surface_refresh_parser(atlas_refresh, atlas=True)
     atlas_render = atlas_subparsers.add_parser("render", help="Render Atlas from the Mermaid catalog.")
     atlas_render.add_argument("--repo-root", default=".", help="Consumer repository root.")
     atlas_render.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
@@ -2132,18 +2229,22 @@ def main(argv: list[str] | None = None) -> int:
         if tokens[0] == "component" and len(tokens) >= 2 and tokens[1] == "register":
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if _help_requested(forwarded):
-                parser = build_parser()
-                args = parser.parse_args(tokens)
-                return _cmd_component(args)
+                return _forward_backend_help(
+                    module_name=_COMPONENT_AUTHORING_MODULE,
+                    repo_root=repo_root,
+                    forwarded=forwarded,
+                )
             return _cmd_component(
                 argparse.Namespace(repo_root=repo_root, component_command="register", forwarded=forwarded)
             )
         if tokens[0] == "bug" and len(tokens) >= 2 and tokens[1] == "capture":
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if _help_requested(forwarded):
-                parser = build_parser()
-                args = parser.parse_args(tokens)
-                return _cmd_bug(args)
+                return _forward_backend_help(
+                    module_name=_BUG_AUTHORING_MODULE,
+                    repo_root=repo_root,
+                    forwarded=forwarded,
+                )
             return _cmd_bug(
                 argparse.Namespace(repo_root=repo_root, bug_command="capture", forwarded=forwarded)
             )
@@ -2151,9 +2252,11 @@ def main(argv: list[str] | None = None) -> int:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if tokens[1] == "create":
                 if _help_requested(forwarded):
-                    parser = build_parser()
-                    args = parser.parse_args(tokens)
-                    return _cmd_backlog(args)
+                    return _forward_backend_help(
+                        module_name=_BACKLOG_AUTHORING_MODULE,
+                        repo_root=repo_root,
+                        forwarded=forwarded,
+                    )
                 return _cmd_backlog(
                     argparse.Namespace(
                         repo_root=repo_root,
@@ -2161,6 +2264,22 @@ def main(argv: list[str] | None = None) -> int:
                         forwarded=forwarded,
                     )
                 )
+        if tokens[0] in {"radar", "registry", "casebook"} and len(tokens) >= 2 and tokens[1] == "refresh":
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            surface = tokens[0]
+            if _help_requested(forwarded):
+                parser = build_parser()
+                args = parser.parse_args(tokens)
+                return _cmd_owned_surface_refresh(args, surface=surface)
+            return _cmd_owned_surface_refresh(
+                _parse_owned_surface_refresh_fast_args(
+                    command=surface,
+                    repo_root=repo_root,
+                    forwarded=forwarded,
+                    atlas=False,
+                ),
+                surface=surface,
+            )
         if tokens[0] == "release" and len(tokens) >= 2:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if _help_requested(forwarded):
@@ -2214,10 +2333,14 @@ def main(argv: list[str] | None = None) -> int:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             compass_command = tokens[1]
             if _help_requested(forwarded):
+                if compass_command == "log":
+                    return _forward_backend_help(
+                        module_name=_COMPASS_LOG_MODULE,
+                        repo_root=repo_root,
+                        forwarded=forwarded,
+                    )
                 parser = build_parser()
                 args = parser.parse_args(tokens)
-                if compass_command == "log":
-                    return _cmd_compass_log(args)
                 if compass_command == "refresh":
                     return _cmd_compass_refresh(args)
                 if compass_command == "update":
@@ -2268,19 +2391,28 @@ def main(argv: list[str] | None = None) -> int:
                     codex_command=tokens[1],
                 )
             )
-        if tokens[0] == "atlas" and len(tokens) >= 2 and tokens[1] in {"render", "auto-update", "scaffold", "install-autosync-hook"}:
+        if tokens[0] == "atlas" and len(tokens) >= 2 and tokens[1] in {"refresh", "render", "auto-update", "scaffold", "install-autosync-hook"}:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             atlas_command = tokens[1]
+            if atlas_command == "refresh":
+                if _help_requested(forwarded):
+                    parser = build_parser()
+                    args = parser.parse_args(tokens)
+                    return _cmd_atlas_refresh(args)
+                return _cmd_atlas_refresh(
+                    _parse_owned_surface_refresh_fast_args(
+                        command="atlas",
+                        repo_root=repo_root,
+                        forwarded=forwarded,
+                        atlas=True,
+                    )
+                )
             if _help_requested(forwarded):
-                parser = build_parser()
-                args = parser.parse_args(tokens)
-                if atlas_command == "render":
-                    return _cmd_atlas_render(args)
-                if atlas_command == "auto-update":
-                    return _cmd_atlas_auto_update(args)
-                if atlas_command == "scaffold":
-                    return _cmd_atlas_scaffold(args)
-                return _cmd_atlas_install_autosync_hook(args)
+                return _forward_backend_help(
+                    module_name=_ATLAS_COMMAND_MODULES[atlas_command],
+                    repo_root=repo_root,
+                    forwarded=forwarded,
+                )
             if atlas_command == "render":
                 return _cmd_atlas_render(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
             if atlas_command == "auto-update":
@@ -2337,10 +2469,16 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_dashboard_refresh(args)
     if args.command == "show":
         return _cmd_show(args)
+    if args.command == "radar" and args.radar_command == "refresh":
+        return _cmd_owned_surface_refresh(args, surface="radar")
     if args.command == "component":
         return _cmd_component(args)
+    if args.command == "registry" and args.registry_command == "refresh":
+        return _cmd_owned_surface_refresh(args, surface="registry")
     if args.command == "bug":
         return _cmd_bug(args)
+    if args.command == "casebook" and args.casebook_command == "refresh":
+        return _cmd_owned_surface_refresh(args, surface="casebook")
     if args.command == "backlog":
         return _cmd_backlog(args)
     if args.command == "release":
@@ -2371,6 +2509,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_subagent_router(args)
     if args.command == "subagent-orchestrator":
         return _cmd_subagent_orchestrator(args)
+    if args.command == "atlas" and args.atlas_command == "refresh":
+        return _cmd_atlas_refresh(args)
     if args.command == "atlas" and args.atlas_command == "render":
         return _cmd_atlas_render(args)
     if args.command == "atlas" and args.atlas_command == "auto-update":

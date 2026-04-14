@@ -76,7 +76,10 @@ def _extract_svg_viewbox_dimensions(svg_path: Path) -> tuple[float, float] | Non
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Render odylith/atlas/atlas.html from catalog metadata")
+    parser = argparse.ArgumentParser(
+        prog="odylith atlas render",
+        description="Render odylith/atlas/atlas.html from catalog metadata",
+    )
     parser.add_argument("--repo-root", default=".", help="Repository root")
     parser.add_argument(
         "--catalog",

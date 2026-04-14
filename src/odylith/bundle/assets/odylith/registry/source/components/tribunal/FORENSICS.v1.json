@@ -28,12 +28,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 4,
-    "mapped_workstream_evidence_count": 4,
+    "explicit_event_count": 5,
+    "mapped_workstream_evidence_count": 5,
     "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 4
+    "timeline_event_count": 5
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -42,6 +42,33 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 134,
+      "explicit_components": [],
+      "kind": "subagent_stop",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "",
+      "ts_iso": "2026-04-13T23:57:57Z",
+      "workstreams": [
+        "B-001"
+      ]
+    },
     {
       "artifacts": [
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",

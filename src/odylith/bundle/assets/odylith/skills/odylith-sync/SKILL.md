@@ -9,6 +9,11 @@ to refresh governed Odylith surfaces for the current changed slice.
    Odylith paths.
 2. Run `./.odylith/bin/odylith sync --repo-root . --impact-mode selective <changed_paths...>`.
 3. If the change only needs a narrow rerender after the sync decision, you may
-   use `./.odylith/bin/odylith dashboard refresh --repo-root . --surfaces <surface>`.
+   use the owned-surface command for the touched slice:
+   `./.odylith/bin/odylith radar refresh --repo-root .`,
+   `./.odylith/bin/odylith registry refresh --repo-root .`,
+   `./.odylith/bin/odylith casebook refresh --repo-root .`,
+   `./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync`, or
+   `./.odylith/bin/odylith compass refresh --repo-root . --wait`.
 4. Report what refreshed, what still needs manual follow-through, and whether
    generated bundle mirrors also changed.

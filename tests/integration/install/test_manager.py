@@ -577,7 +577,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert (repo_root / ".codex" / "agents" / "odylith-workstream.toml").is_file()
     codex_hooks = json.loads((repo_root / ".codex" / "hooks.json").read_text(encoding="utf-8"))
     assert codex_hooks["SessionStart"][0]["hooks"][0]["command"] == "./.odylith/bin/odylith codex session-start-ground --repo-root ."
-    assert (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
+    assert not (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
     assert (repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "tooling_shell.v1.json").is_file()
     assert (repo_root / "odylith" / "index.html").is_file()
@@ -650,13 +651,28 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "stop at diagnosis and maintainer-ready feedback" in guidance_text
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in guidance_text
-    assert "Treat the managed guidance files under `.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer" in guidance_text
+    assert "Treat the managed guidance files under `.claude/`, `.codex/`, the curated `.agents/skills/` command shims, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md` companions, `odylith/agents-guidelines/`, and the specialist references under `odylith/skills/` as the Odylith operating layer" in guidance_text
     assert "Treat backlog/workstream, plan, Registry, Atlas, Casebook, Compass, and session upkeep as part of the same grounded Odylith workflow" in guidance_text
     assert "Queued backlog items" in guidance_text
     assert "do not pick it up automatically" in guidance_text
     assert "Search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
-    assert "Use Odylith packets and managed skills to narrow the slice, gather proof, and keep intent plus constraints alive across turns" in guidance_text
+    assert "Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, plan, bug, spec, component, and diagram upkeep." in guidance_text
+    assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
+    assert "rerender only the owned surface" in guidance_text
+    assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
+    assert "On Codex, the managed `.codex/` project assets and curated `.agents/skills/` command shims are best-effort enhancements" in guidance_text
+    assert "Treat the managed guidance files under `.claude/`, `.codex/`, the curated `.agents/skills/` command shims" in guidance_text
+    assert "## Common Fast Paths" in guidance_text
+    assert "./.odylith/bin/odylith bug capture --help" in guidance_text
+    assert "./.odylith/bin/odylith radar refresh --repo-root ." in guidance_text
+    assert "./.odylith/bin/odylith registry refresh --repo-root ." in guidance_text
+    assert "./.odylith/bin/odylith casebook refresh --repo-root ." in guidance_text
+    assert "./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync" in guidance_text
+    assert "./.odylith/bin/odylith compass refresh --repo-root . --wait" in guidance_text
+    assert "./.odylith/bin/odylith codex compatibility --repo-root ." in guidance_text
+    assert "Keep `.agents/skills` lookup, missing-shim, and fallback-source details implicit" in guidance_text
+    assert "## Specialist Skills" in guidance_text
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in guidance_text
     root_claude = (repo_root / "CLAUDE.md").read_text(encoding="utf-8")
     assert "@AGENTS.md" in root_claude
@@ -688,6 +704,14 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in root_agents
     assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in root_agents
+    assert "Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, plan, bug, spec, component, and diagram upkeep." in root_agents
+    assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in root_agents
+    assert "rerender only the owned surface" in root_agents
+    assert "odylith radar refresh" in root_agents
+    assert "odylith registry refresh" in root_agents
+    assert "odylith casebook refresh" in root_agents
+    assert "odylith atlas refresh" in root_agents
+    assert "odylith compass refresh --wait" in root_agents
     assert "Queued backlog items" in root_agents
     assert "do not pick it up automatically" in root_agents
     assert "If the slice expands beyond one truthful record, use child workstreams or execution waves" in root_agents
@@ -1214,7 +1238,10 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     (repo_root / "odylith" / "radar" / "source" / "CLAUDE.md").unlink()
     (repo_root / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md").unlink()
     (repo_root / ".codex" / "config.toml").unlink()
-    (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").unlink()
+    (repo_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").unlink()
+    stale_codex_skill = repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md"
+    stale_codex_skill.parent.mkdir(parents=True, exist_ok=True)
+    stale_codex_skill.write_text("# stale shim\n", encoding="utf-8")
 
     upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
@@ -1238,10 +1265,23 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
+    assert "Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, plan, bug, spec, component, and diagram upkeep." in guidance_text
+    assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
+    assert "rerender only the owned surface" in guidance_text
+    assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
+    assert "## Common Fast Paths" in guidance_text
+    assert "./.odylith/bin/odylith radar refresh --repo-root ." in guidance_text
+    assert "./.odylith/bin/odylith registry refresh --repo-root ." in guidance_text
+    assert "./.odylith/bin/odylith casebook refresh --repo-root ." in guidance_text
+    assert "./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync" in guidance_text
+    assert "./.odylith/bin/odylith compass refresh --repo-root . --wait" in guidance_text
+    assert "./.odylith/bin/odylith codex compatibility --repo-root ." in guidance_text
+    assert "## Specialist Skills" in guidance_text
     assert (repo_root / "odylith" / "radar" / "source" / "CLAUDE.md").is_file()
     assert (repo_root / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
     assert (repo_root / ".codex" / "config.toml").is_file()
-    assert (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
+    assert not (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
 
 
 def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and_activates_maintainer_overlay(tmp_path: Path) -> None:

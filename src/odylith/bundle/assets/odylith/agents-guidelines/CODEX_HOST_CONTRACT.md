@@ -3,6 +3,17 @@
 ## CLI-First Non-Negotiable
 - CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
 
+## Shared Host Default
+- The default Odylith operating lane is shared across Codex and Claude Code:
+  repo-root `AGENTS.md`, the repo-local `./.odylith/bin/odylith` launcher,
+  truthful `odylith ... --help`, and the grounded governance workflow should
+  mean the same thing on both hosts.
+- Routine backlog, plan, bug, spec, component, and diagram upkeep should stay
+  on that shared lane first.
+- Host-specific guidance belongs only where a native host capability is real,
+  locally supported, and materially reduces hops compared with the shared CLI
+  path.
+
 ## Codex Project-Asset Surface
 - Codex CLI can load repo-scoped project assets from `.codex/` plus repo-scoped
   skills from `.agents/skills/`.
@@ -31,7 +42,7 @@
   `[features] codex_hooks = true`.
 - Repo-scoped skill shims under `.agents/skills/*/SKILL.md`.
 
-## Supported With Odylith Workarounds
+## Codex-Only Optimizations When Supported
 - The checked-in `.codex/` and `.agents/skills/` layers are best-effort
   enhancements for hosts that honor them. They are not allowed to become the
   only path by which Odylith can start safely on Codex.
@@ -39,6 +50,8 @@
   probe, so routing and host banners can distinguish the baseline-safe lane
   from locally proven project-hook support instead of treating every Codex
   build as the same frozen capability set.
+- If you want to know whether those optional Codex project-asset optimizations
+  are actually live, run `./.odylith/bin/odylith codex compatibility --repo-root .`.
 - Session-start grounding runs through the CLI-backed
   `./.odylith/bin/odylith codex session-start-ground --repo-root .` hook
   command, which summarizes the active Odylith slice into hook-added developer
@@ -57,7 +70,7 @@
   `.agents/skills/` command-skills instead of trying to fake a
   `.codex/commands/` surface.
 - The worthwhile explicit Codex command-skill surface is the high-frequency,
-  deterministic CLI lane:
+  deterministic CLI lane only:
   - `$odylith-start`
   - `$odylith-context`
   - `$odylith-query`
@@ -67,18 +80,17 @@
   - `$odylith-doctor`
   - `$odylith-compass-log`
   - `$odylith-compass-refresh`
-  - `$odylith-atlas-render`
-  - `$odylith-atlas-auto-update`
-  - `$odylith-backlog-create`
-  - `$odylith-backlog-validate`
-  - `$odylith-registry-validate`
-  - `$odylith-registry-sync-specs`
-- Atlas, Radar, and Registry are worth explicit Codex command-skills because
-  they already expose stable CLI subcommands with low argument ambiguity.
-- Casebook remains explicit-skill-first rather than command-skill-first:
-  use `$casebook-bug-capture`, `$casebook-bug-investigation`, and
-  `$casebook-bug-preflight` until a first-class `odylith casebook ...` CLI
-  family exists.
+- Common consumer-lane fast paths should be one direct CLI hop:
+  - `./.odylith/bin/odylith bug capture --help`
+  - `./.odylith/bin/odylith backlog create --help`
+  - `./.odylith/bin/odylith component register --help`
+  - `./.odylith/bin/odylith atlas scaffold --help`
+  - `./.odylith/bin/odylith compass log --help`
+- Keep `.agents/skills` lookup, missing-shim, and fallback-source-path details
+  implicit unless they change the next user-visible action.
+- Specialist governance, packet, registry, diagram, and orchestration
+  workflows stay under `odylith/skills/` instead of being mirrored into the
+  default Codex discovery path.
 - The intentionally deferred lane is everything that is low-frequency,
   mutation-heavy, or better served by direct CLI invocation:
   `install`, `reinstall`, `upgrade`, `rollback`, `uninstall`, `on`, `off`,

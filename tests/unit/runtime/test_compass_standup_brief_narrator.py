@@ -2913,6 +2913,30 @@ def test_build_standup_brief_fails_over_to_alternate_local_provider_on_budget_fa
     assert claude_provider.calls == 1
 
 
+def test_unavailable_brief_for_budget_failure_names_provider_and_model() -> None:
+    class _BudgetFailingProvider:
+        provider_name = "codex-cli"
+        last_failure_code = "credits_exhausted"
+        last_failure_detail = "You've hit your usage limit for GPT-5.3-Codex-Spark."
+        last_request_model = "gpt-5.3-codex-spark"
+        last_request_reasoning_effort = "medium"
+
+    brief = narrator.unavailable_brief_for_provider_failure(
+        fingerprint="budget-hit",
+        generated_utc="2026-04-14T17:28:00Z",
+        provider=_BudgetFailingProvider(),
+    )
+
+    diagnostics = brief["diagnostics"]
+    assert diagnostics["title"] == "Brief is waiting on Codex CLI budget"
+    assert (
+        diagnostics["message"]
+        == "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
+    )
+    assert diagnostics["provider"] == "codex-cli"
+    assert diagnostics["provider_model"] == "gpt-5.3-codex-spark"
+
+
 def test_build_standup_brief_fails_closed_when_no_provider_or_cache(tmp_path: Path) -> None:
     brief = narrator.build_standup_brief(
         repo_root=tmp_path,

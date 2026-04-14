@@ -13,6 +13,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
+from odylith.runtime.governance import owned_surface_refresh
+
 _REGISTRY_PATH_RELATIVE = Path("odylith/registry/source/component_registry.v1.json")
 _COMPONENTS_ROOT_RELATIVE = Path("odylith/registry/source/components")
 _SLUGIFY_RE = re.compile(r"[^a-z0-9]+")
@@ -170,6 +172,11 @@ def register_component(
         )
         spec_dir.mkdir(parents=True, exist_ok=True)
         spec_path.write_text(spec_text, encoding="utf-8")
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=repo_root,
+            surface="registry",
+            operation_label="Component register",
+        )
 
     return CreatedComponent(
         component_id=component_id,
@@ -212,9 +219,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             kind=str(args.kind).strip(),
             dry_run=bool(args.dry_run),
         )
-    except ValueError as exc:
+    except (ValueError, RuntimeError) as exc:
         print(str(exc))
-        return 2
+        return 2 if isinstance(exc, ValueError) else 1
 
     mode = "dry-run" if args.dry_run else "registered"
     if args.as_json:

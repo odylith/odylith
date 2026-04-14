@@ -35,10 +35,10 @@ After install, you should have:
 - repo-root Codex project assets under `.codex/` including `config.toml`,
   `hooks.json`, and custom project agents under `.codex/agents/`
 - repo-root Codex skill shims under `.agents/skills/`, including explicit
-  command-skills such as `$odylith-start`, `$odylith-context`,
-  `$odylith-query`, `$odylith-sync`, `$odylith-doctor`,
-  `$odylith-atlas-render`, `$odylith-backlog-create`, and
-  `$odylith-registry-validate`
+  command-shims such as `$odylith-start`, `$odylith-context`,
+  `$odylith-query`, `$odylith-session-brief`, `$odylith-sync`,
+  `$odylith-version`, `$odylith-doctor`, `$odylith-compass-log`, and
+  `$odylith-compass-refresh`
 - root `.gitignore` updated with `/.odylith/` when the repo is Git-backed
 - gitignored managed-runtime trust anchors under
   `.odylith/trust/managed-runtime-trust/` when the repo is Git-backed
@@ -48,16 +48,23 @@ as Codex or Claude Code. In Odylith, the agent is the execution interface and
 `odylith/index.html` is the operating surface that keeps intent, constraints,
 topology, and execution state visible.
 
-Codex and Claude Code are both supported host lanes for Odylith. The shared
-grounding and governance contract is the same; `.claude/` gives Claude Code a
-first-class project-native lane, while `.codex/` and `.agents/skills/` do the
-same for trusted Codex CLI projects.
+Codex and Claude Code share the same default Odylith lane: the repo-root
+`AGENTS.md` contract, `./.odylith/bin/odylith`, truthful `odylith ... --help`,
+and the grounded governance workflow. Routine backlog, plan, bug, spec,
+component, and diagram upkeep should stay on that shared lane first, and the
+specialist overlays stay under `odylith/skills/`.
+
+Host-specific tips belong only where a native host capability materially
+reduces hops. `.claude/` gives Claude Code its project-native lane. On Codex,
+`.codex/` and the curated `.agents/skills/` command shims are best-effort
+enhancements for trusted projects rather than the default operating contract.
 
 On Codex, the repo-root `AGENTS.md` plus `./.odylith/bin/odylith` are the
 baseline-safe contract. The checked-in `.codex/` and `.agents/skills/` layers
 are best-effort host enhancements rather than hard prerequisites, so Odylith
 should still start safely even when a local Codex build ignores some
-project-asset features. To inspect the local Codex posture, run:
+project-asset features. If you want to know whether those optional Codex
+optimizations are actually active, run:
 
 ```bash
 ./.odylith/bin/odylith codex compatibility --repo-root .
@@ -84,6 +91,33 @@ Once concrete nouns exist, use:
 ```bash
 ./.odylith/bin/odylith query --repo-root . "<text>"
 ```
+
+For the common governance authoring fast paths, use:
+
+```bash
+./.odylith/bin/odylith bug capture --help
+./.odylith/bin/odylith backlog create --help
+./.odylith/bin/odylith component register --help
+./.odylith/bin/odylith atlas scaffold --help
+./.odylith/bin/odylith compass log --help
+```
+
+For quick visibility after a narrow truth change, rerender only the owned
+surface:
+
+```bash
+./.odylith/bin/odylith radar refresh --repo-root .
+./.odylith/bin/odylith registry refresh --repo-root .
+./.odylith/bin/odylith casebook refresh --repo-root .
+./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync
+./.odylith/bin/odylith compass refresh --repo-root . --wait
+```
+
+Keep `odylith sync` as the broader governance and correctness lane when the
+task spans multiple truth roots or needs full lifecycle reconciliation.
+
+Keep `.agents/skills` lookup, missing-shim, and fallback-source details in the
+background unless they change the next user-visible action.
 
 On a successful local interactive install, Odylith tries to open
 `odylith/index.html` automatically. Use `ODYLITH_NO_BROWSER=1` for the hosted
@@ -169,13 +203,13 @@ and factual. Silence is better than filler.
   and repo-scoped custom agents. These reinforce the baseline Codex contract;
   they do not replace repo-root `AGENTS.md` plus the Odylith launcher.
 - repo-root `.agents/skills/`
-  Codex repo-scoped skill shims that mirror the shared Odylith skills in a
-  host-native discovery path and expose the curated explicit Odylith
-  command-skill surface.
+  Codex repo-scoped command shims for the curated high-frequency Odylith CLI
+  lane. They are intentionally narrow and do not mirror the full specialist
+  skill inventory.
 - `agents-guidelines/`
   Shared Odylith operating guidance.
 - `skills/`
-  Shared Odylith skills intended to stay consumer-safe.
+  Shared Odylith specialist skills intended to stay consumer-safe.
 - `maintainer/`
   Maintainer-only release guidance and skills for the Odylith product repo.
 - `FAQ.md`, `INSTALL.md`, `OPERATING_MODEL.md`, `PRODUCT_COMPONENTS.md`

@@ -68,6 +68,16 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "hard policy violation, not a stylistic preference" in block
     assert "odylith/agents-guidelines/CLI_FIRST_POLICY.md" in block
     assert "CB-104" in block
+    assert "odylith bug capture" in block
+    assert "odylith backlog create" in block
+    assert "rerender only the owned surface" in block
+    assert "odylith radar refresh" in block
+    assert "odylith registry refresh" in block
+    assert "odylith casebook refresh" in block
+    assert "odylith atlas refresh" in block
+    assert "odylith compass refresh --wait" in block
+    assert "missing-shim, or fallback-path details implicit" in block
+    assert "Keep the default operating lane shared across Codex and Claude Code" in block
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in block
     assert "the exact file/workstream, the bug under test, or the validation in flight" in block
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in block
@@ -100,6 +110,7 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "run `./.odylith/bin/odylith version --repo-root .` when the launcher exists" in block
     assert "If the launcher is missing, confirm that from the filesystem first" in block
     assert "substantive grounded consumer-lane work" in block
+    assert "validated Odylith delegation hosts under the same grounding and validation contract" in block
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in block
     assert "Odylith grounding:" not in block
     assert "Odylith didn't return immediately" not in block
@@ -113,6 +124,8 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "the consumer lane and the Odylith product repo's maintainer mode" in block
     assert "pinned dogfood and detached `source-local` maintainer-dev posture" in block
     assert "pinned dogfood is the default proof posture and detached `source-local` is the explicit dev posture" in block
+    assert "Keep the default operating lane shared across Codex and Claude Code" in block
+    assert "rerender only the owned surface" in block
 
 
 def test_managed_block_matches_repo_root_product_scope_truth() -> None:

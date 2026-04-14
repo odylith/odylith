@@ -13,10 +13,12 @@ Behavior:
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import contextlib
 from contextvars import copy_context
 from dataclasses import dataclass
 import importlib
+import io
 import json
 import os
 from pathlib import Path
@@ -66,6 +68,7 @@ _SYNC_PATH_PREFIXES: tuple[str, ...] = (
     "odylith/technical-plans/in-progress/",
     "odylith/technical-plans/parked/",
     "odylith/technical-plans/done/",
+    "odylith/casebook/bugs/",
     "odylith/casebook/bugs/INDEX.md",
     "odylith/casebook/bugs/archive/",
     "odylith/agents-guidelines/",
@@ -171,6 +174,12 @@ _DELIVERY_SURFACE_INVALIDATION_PREFIXES: tuple[str, ...] = (
 _SOURCE_TRUTH_BUNDLE_MIRROR_EXCLUDE_PREFIXES: tuple[str, ...] = (
     "odylith/radar/source/ideas/",
     "odylith/technical-plans/in-progress/",
+)
+_TRUTH_ONLY_SELECTIVE_EXACT_PATHS: frozenset[str] = frozenset(
+    {
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/technical-plans/INDEX.md",
+    }
 )
 
 
@@ -314,16 +323,23 @@ def _should_bundle_mirror_source_truth_path(path_token: str) -> bool:
     return any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES)
 
 
-def _sync_changed_source_truth_bundle_mirrors(*, repo_root: Path) -> int:
-    changed_paths = governance.normalize_changed_paths(
-        repo_root=repo_root,
-        values=governance.collect_git_changed_paths(repo_root=repo_root),
-    )
+def _sync_changed_source_truth_bundle_mirrors(
+    *,
+    repo_root: Path,
+    changed_paths: Sequence[str] | None = None,
+) -> int:
+    if changed_paths is not None:
+        candidate_paths = governance.normalize_changed_paths(repo_root=repo_root, values=changed_paths)
+    else:
+        candidate_paths = governance.normalize_changed_paths(
+            repo_root=repo_root,
+            values=governance.collect_git_changed_paths(repo_root=repo_root),
+        )
     live_paths: list[Path] = []
     removed_paths: list[Path] = []
     seen_live_paths: set[Path] = set()
 
-    for token in changed_paths:
+    for token in candidate_paths:
         if not _should_bundle_mirror_source_truth_path(token):
             continue
         live_path = (repo_root / token).resolve()
@@ -349,6 +365,229 @@ def _sync_changed_source_truth_bundle_mirrors(*, repo_root: Path) -> int:
     print(f"- mirrored: {len(mirrored_paths)}")
     print(f"- removed: {len(removed_paths)}")
     return 0
+
+
+def _is_truth_only_selective_changed_path(token: str) -> bool:
+    return bool(_owned_surface_for_selective_changed_path(token))
+
+
+def _owned_surface_for_selective_changed_path(token: str) -> str:
+    normalized = str(token or "").strip()
+    if not normalized:
+        return ""
+    if normalized in _TRUTH_ONLY_SELECTIVE_EXACT_PATHS:
+        return "casebook" if "casebook" in normalized else "radar"
+    if normalized.startswith("odylith/casebook/bugs/") and normalized.endswith(".md"):
+        return "casebook"
+    if normalized.startswith("odylith/technical-plans/") and normalized.endswith(".md"):
+        return "radar"
+    if normalized.startswith("odylith/radar/source/"):
+        return "radar"
+    if normalized == "odylith/registry/source/component_registry.v1.json":
+        return "registry"
+    if normalized.startswith("odylith/registry/source/components/") and normalized.endswith(".md"):
+        return "registry"
+    if normalized.startswith("odylith/atlas/source/") and not normalized.endswith((".png", ".svg")):
+        return "atlas"
+    if normalized in agent_runtime_contract.candidate_stream_tokens():
+        return "compass"
+    return ""
+
+
+def _owned_surfaces_for_selective_slice(changed_paths: Sequence[str]) -> tuple[str, ...]:
+    selected: list[str] = []
+    seen: set[str] = set()
+    touched = {surface for surface in (_owned_surface_for_selective_changed_path(token) for token in changed_paths) if surface}
+    for surface in _SURFACE_RENDER_ORDER:
+        if surface in touched and surface not in seen:
+            seen.add(surface)
+            selected.append(surface)
+    return tuple(selected)
+
+
+def _touches_radar_selective_truth(changed_paths: Sequence[str]) -> bool:
+    return "radar" in _owned_surfaces_for_selective_slice(changed_paths)
+
+
+def _dashboard_impact_for_truth_only_selective_slice(changed_paths: Sequence[str]) -> governance.DashboardImpact:
+    surfaces = set(_owned_surfaces_for_selective_slice(changed_paths))
+    reasons = {
+        surface: ["explicit_selective_slice"]
+        for surface in surfaces
+    }
+    return governance.DashboardImpact(
+        radar="radar" in surfaces,
+        atlas="atlas" in surfaces,
+        compass="compass" in surfaces,
+        registry="registry" in surfaces,
+        casebook="casebook" in surfaces,
+        reasons=reasons,
+    )
+
+
+def _should_use_truth_only_selective_sync(
+    *,
+    args: argparse.Namespace,
+    changed_paths: Sequence[str],
+) -> bool:
+    if bool(getattr(args, "check_only", False)) or bool(getattr(args, "force", False)):
+        return False
+    if str(getattr(args, "impact_mode", "")).strip().lower() != "selective":
+        return False
+    normalized = [str(token).strip() for token in changed_paths if str(token).strip()]
+    if not normalized:
+        return False
+    return all(_is_truth_only_selective_changed_path(token) for token in normalized)
+
+
+def _build_truth_only_selective_sync_plan(
+    *,
+    repo_root: Path,
+    args: argparse.Namespace,
+    changed_paths: Sequence[str],
+    sync_failure_command: str,
+    runtime_mode: str,
+) -> ExecutionPlan:
+    normalized = tuple(str(token).strip() for token in changed_paths if str(token).strip())
+    touches_plan = any(token.startswith("odylith/technical-plans/") for token in normalized)
+    refresh_surfaces = _owned_surfaces_for_selective_slice(normalized)
+    touches_radar = _touches_radar_selective_truth(normalized)
+    steps: list[ExecutionStep] = []
+
+    if touches_radar:
+        steps.append(
+            _execution_step(
+                "Normalize legacy Radar backlog sections for the touched selective slice before validation.",
+                action=lambda: (
+                    normalize_legacy_backlog_index(repo_root=repo_root),
+                    0,
+                )[1],
+                mutation_classes=("repo_owned_truth",),
+                paths=("odylith/radar/source/INDEX.md",),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
+
+    if touches_plan:
+        steps.extend(
+            [
+                _execution_step(
+                    "Normalize active-plan risk/mitigation sections before targeted plan validation.",
+                    command=("python", "-m", "odylith.runtime.governance.normalize_plan_risk_mitigation", "--repo-root", str(repo_root)),
+                    mutation_classes=("repo_owned_truth",),
+                    paths=("odylith/technical-plans/in-progress/",),
+                    next_command_on_failure=sync_failure_command,
+                ),
+                _execution_step(
+                    "Reconcile the active plan to its Radar workstream bindings.",
+                    command=(
+                        "python",
+                        "-m",
+                        "odylith.runtime.governance.reconcile_plan_workstream_binding",
+                        "--repo-root",
+                        str(repo_root),
+                        *normalized,
+                    ),
+                    mutation_classes=("repo_owned_truth",),
+                    paths=("odylith/technical-plans/in-progress/", "odylith/radar/source/"),
+                    next_command_on_failure=sync_failure_command,
+                ),
+                _execution_step(
+                    "Validate plan/workstream bindings for the touched plan slice.",
+                    command=(
+                        "python",
+                        "-m",
+                        "odylith.runtime.governance.validate_plan_workstream_binding",
+                        "--repo-root",
+                        str(repo_root),
+                        *normalized,
+                    ),
+                    paths=("odylith/technical-plans/in-progress/", "odylith/radar/source/"),
+                    next_command_on_failure=sync_failure_command,
+                ),
+                _execution_step(
+                    "Validate Radar backlog contract for the touched plan slice.",
+                    command=("python", "-m", "odylith.runtime.governance.validate_backlog_contract", "--repo-root", str(repo_root)),
+                    paths=("odylith/radar/source/",),
+                    next_command_on_failure=sync_failure_command,
+                ),
+                _execution_step(
+                    "Auto-promote workstream phase transitions for the touched plan slice.",
+                    command=("python", "-m", "odylith.runtime.governance.auto_promote_workstream_phase", "--repo-root", str(repo_root)),
+                    mutation_classes=("repo_owned_truth",),
+                    paths=("odylith/radar/source/ideas/",),
+                    next_command_on_failure=sync_failure_command,
+                ),
+                _execution_step(
+                    "Validate plan traceability.",
+                    command=("python", "-m", "odylith.runtime.governance.validate_plan_traceability_contract", "--repo-root", str(repo_root)),
+                    paths=("odylith/technical-plans/in-progress/",),
+                    next_command_on_failure=sync_failure_command,
+                ),
+                _execution_step(
+                    "Validate plan risk/mitigation structure.",
+                    command=("python", "-m", "odylith.runtime.governance.validate_plan_risk_mitigation_contract", "--repo-root", str(repo_root)),
+                    paths=("odylith/technical-plans/in-progress/",),
+                    next_command_on_failure=sync_failure_command,
+                ),
+            ]
+        )
+    elif touches_radar:
+        steps.append(
+            _execution_step(
+                "Validate Radar backlog contract for the touched selective slice.",
+                command=("python", "-m", "odylith.runtime.governance.validate_backlog_contract", "--repo-root", str(repo_root)),
+                paths=("odylith/radar/source/",),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
+    if any(_should_bundle_mirror_source_truth_path(token) for token in normalized):
+        steps.append(
+            _execution_step(
+                "Mirror the touched source-truth docs into the shipped bundle asset tree.",
+                action=lambda: _sync_changed_source_truth_bundle_mirrors(
+                    repo_root=repo_root,
+                    changed_paths=normalized,
+                ),
+                mutation_classes=("generated_surfaces",),
+                paths=_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES,
+                next_command_on_failure=sync_failure_command,
+            )
+        )
+    for surface in refresh_surfaces:
+        steps.extend(
+            _dashboard_surface_steps(
+                repo_root=repo_root,
+                surface=surface,
+                runtime_mode=runtime_mode,
+                atlas_sync=surface == "atlas",
+            )
+        )
+
+    touched_surfaces: list[str] = []
+    if "casebook" in refresh_surfaces:
+        touched_surfaces.append("Casebook")
+    if touches_plan:
+        touched_surfaces.append("plan/Radar binding")
+    for label, surface in (
+        ("Radar", "radar"),
+        ("Registry", "registry"),
+        ("Atlas", "atlas"),
+        ("Compass", "compass"),
+    ):
+        if surface in refresh_surfaces and label not in touched_surfaces:
+            touched_surfaces.append(label)
+    notes = [
+        "Selective owned-surface sync keeps the projection compiler plus local LanceDB/Tantivy memory backend fresh on the shared refresh lane while skipping unrelated surface renders.",
+    ]
+    if touched_surfaces:
+        notes.append("Touched truth: " + ", ".join(touched_surfaces) + ".")
+    return _execution_plan(
+        headline=f"Sync only the governed truth for the explicit selective slice in `{runtime_mode}` mode.",
+        steps=steps,
+        notes=notes,
+        repo_root=repo_root,
+    )
 
 
 def _execution_plan(*, headline: str, steps: Sequence[ExecutionStep], notes: Sequence[str], repo_root: Path) -> ExecutionPlan:
@@ -913,6 +1152,64 @@ def _runtime_retry_command(command: Sequence[str]) -> tuple[str, ...]:
     return _replace_runtime_mode_args(command, runtime_mode="standalone")
 
 
+def _casebook_index_refresh_step(*, repo_root: Path, next_command_on_failure: str, label: str) -> ExecutionStep:
+    return _execution_step(
+        label,
+        surface="casebook",
+        mutation_classes=("repo_owned_truth",),
+        paths=("odylith/casebook/bugs/INDEX.md",),
+        action=lambda: (
+            sync_casebook_bug_index.sync_casebook_bug_index(
+                repo_root=repo_root,
+                migrate_bug_ids=True,
+            ),
+            0,
+        )[1],
+        next_command_on_failure=next_command_on_failure,
+    )
+
+
+def _casebook_render_step(
+    *,
+    repo_root: Path,
+    runtime_mode: str,
+    next_command_on_failure: str,
+    label: str,
+) -> ExecutionStep:
+    command = (
+        "python",
+        "-m",
+        "odylith.runtime.surfaces.render_casebook_dashboard",
+        "--repo-root",
+        str(repo_root),
+        *_runtime_args(runtime_mode),
+    )
+    return _execution_step(
+        label,
+        surface="casebook",
+        command=command,
+        standalone_command=_runtime_retry_command(command),
+        mutation_classes=("generated_surfaces",),
+        paths=_surface_render_outputs("casebook"),
+        next_command_on_failure=next_command_on_failure,
+        timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
+    )
+
+
+def _owned_surface_refresh_command(*, surface: str, atlas_sync: bool = False) -> str:
+    normalized = str(surface).strip().lower()
+    if normalized in {"radar", "registry", "casebook"}:
+        return display_command(normalized, "refresh", "--repo-root", ".")
+    if normalized == "atlas":
+        argv: list[str] = ["atlas", "refresh", "--repo-root", "."]
+        if atlas_sync:
+            argv.append("--atlas-sync")
+        return display_command(*argv)
+    if normalized == "compass":
+        return display_command("compass", "refresh", "--repo-root", ".", "--wait")
+    return display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", normalized)
+
+
 def _dashboard_surface_steps(
     *,
     repo_root: Path,
@@ -921,7 +1218,7 @@ def _dashboard_surface_steps(
     atlas_sync: bool,
 ) -> list[ExecutionStep]:
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
-    refresh_command = display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", surface)
+    refresh_command = _owned_surface_refresh_command(surface=surface, atlas_sync=atlas_sync)
     steps: list[ExecutionStep] = []
     if surface in {"registry", "tooling_shell"}:
         command = _delivery_intelligence_command(repo_root=repo_root, check_only=False)
@@ -1048,39 +1345,18 @@ def _dashboard_surface_steps(
         return steps
     if surface == "casebook":
         steps.append(
-            _execution_step(
-                "Refresh the Casebook bug index before rerendering the Casebook dashboard.",
-                surface=surface,
-                mutation_classes=("repo_owned_truth",),
-                paths=("odylith/casebook/bugs/INDEX.md",),
-                action=lambda: (
-                    sync_casebook_bug_index.sync_casebook_bug_index(
-                        repo_root=repo_root,
-                        migrate_bug_ids=True,
-                    ),
-                    0,
-                )[1],
+            _casebook_index_refresh_step(
+                repo_root=repo_root,
                 next_command_on_failure=refresh_command,
+                label="Refresh the Casebook bug index before rerendering the Casebook dashboard.",
             )
         )
-        command = (
-            "python",
-            "-m",
-            "odylith.runtime.surfaces.render_casebook_dashboard",
-            "--repo-root",
-            str(repo_root),
-            *_runtime_args(normalized_runtime_mode),
-        )
         steps.append(
-            _execution_step(
-                "Render Casebook for the updated bug index.",
-                surface=surface,
-                command=command,
-                standalone_command=_runtime_retry_command(command),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("casebook"),
+            _casebook_render_step(
+                repo_root=repo_root,
+                runtime_mode=normalized_runtime_mode,
                 next_command_on_failure=refresh_command,
-                timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
+                label="Render Casebook for the updated bug index.",
             )
         )
         return steps
@@ -1270,6 +1546,7 @@ def _run_dashboard_refresh_step(
     repo_root: Path,
     step: ExecutionStep,
     runtime_mode: str,
+    run_impl: Callable[..., int],
 ) -> dict[str, Any]:
     if step.action is not None:
         action_result = step.action()
@@ -1309,9 +1586,9 @@ def _run_dashboard_refresh_step(
         "args": step.command,
         "heartbeat_label": heartbeat_label,
     }
-    if step.timeout_seconds is not None:
+    if step.timeout_seconds is not None and run_impl is not _run_command_in_process:
         command_kwargs["timeout_seconds"] = step.timeout_seconds
-    rc = _run_command(**command_kwargs)
+    rc = run_impl(**command_kwargs)
     if rc == 0 or rc == 3 or str(runtime_mode).strip().lower() != "auto" or not step.standalone_command:
         return {
             "rc": rc,
@@ -1327,9 +1604,9 @@ def _run_dashboard_refresh_step(
         "args": step.standalone_command,
         "heartbeat_label": fallback_label,
     }
-    if step.timeout_seconds is not None:
+    if step.timeout_seconds is not None and run_impl is not _run_command_in_process:
         fallback_kwargs["timeout_seconds"] = step.timeout_seconds
-    fallback_rc = _run_command(**fallback_kwargs)
+    fallback_rc = run_impl(**fallback_kwargs)
     return {
         "rc": fallback_rc,
         "fallback_used": True,
@@ -1345,6 +1622,7 @@ def _execute_dashboard_refresh_surface(
     surface: str,
     steps: Sequence[ExecutionStep],
     runtime_mode: str,
+    run_impl: Callable[..., int],
 ) -> dict[str, Any]:
     fallback_used = False
     surface_status = "passed"
@@ -1354,6 +1632,7 @@ def _execute_dashboard_refresh_surface(
             repo_root=repo_root,
             step=step,
             runtime_mode=runtime_mode,
+            run_impl=run_impl,
         )
         rc = int(step_result.get("rc", 0) or 0)
         step_status = str(step_result.get("status", "")).strip() or ("passed" if rc == 0 else "failed")
@@ -1382,6 +1661,124 @@ def _execute_dashboard_refresh_surface(
     }
 
 
+_dashboard_thread_capture: threading.local = threading.local()
+
+
+class _ThreadCapturePrint:
+    """Thread-aware stdout wrapper that routes ``print()`` to per-thread buffers.
+
+    When a dashboard surface worker is active on the current thread,
+    writes go to that thread's ``io.StringIO`` buffer.  All other
+    threads (including the main thread) write to the original stdout.
+    """
+
+    def __init__(self, real_stdout: Any) -> None:
+        self._real = real_stdout
+
+    def _target(self) -> Any:
+        buf = getattr(_dashboard_thread_capture, "buf", None)
+        return buf if buf is not None else self._real
+
+    def write(self, s: str) -> int:
+        return self._target().write(s)
+
+    def flush(self) -> None:
+        self._target().flush()
+
+    # Forward everything else so nothing breaks.
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._real, name)
+
+
+def _run_surface_worker(
+    *,
+    repo_root: Path,
+    surface: str,
+    runtime_mode: str,
+    atlas_sync: bool,
+    run_impl: Callable[..., int],
+) -> tuple[str, dict[str, Any]]:
+    """Execute one surface's step chain and capture its stdout.
+
+    Returns ``(captured_output, result_dict)`` so the caller can replay
+    output in deterministic surface order after all workers finish.
+    """
+    steps = _dashboard_surface_steps(
+        repo_root=repo_root,
+        surface=surface,
+        runtime_mode=runtime_mode,
+        atlas_sync=atlas_sync,
+    )
+    capture = io.StringIO()
+    _dashboard_thread_capture.buf = capture
+    try:
+        result = _execute_dashboard_refresh_surface(
+            repo_root=repo_root,
+            surface=surface,
+            steps=steps,
+            runtime_mode=runtime_mode,
+            run_impl=run_impl,
+        )
+    finally:
+        _dashboard_thread_capture.buf = None
+    return capture.getvalue(), result
+
+
+def _refresh_surfaces_parallel(
+    *,
+    repo_root: Path,
+    selected: Sequence[str],
+    runtime_mode: str,
+    atlas_sync: bool,
+    run_impl: Callable[..., int],
+) -> list[dict[str, Any]]:
+    """Refresh multiple dashboard surfaces concurrently.
+
+    Each surface's step chain runs in its own thread.  In-process actions
+    (Compass refresh) and subprocess commands (Radar, shell renders) are
+    both thread-safe, so the wall-clock time is dominated by the single
+    slowest surface instead of the sum of all surfaces.
+
+    stdout is captured per-worker and replayed in surface order so the
+    combined output stays readable.
+    """
+    future_map: dict[concurrent.futures.Future[tuple[str, dict[str, Any]]], str] = {}
+    real_stdout = sys.stdout
+    capture_proxy = _ThreadCapturePrint(real_stdout)
+    sys.stdout = capture_proxy  # type: ignore[assignment]
+    try:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=len(selected),
+            thread_name_prefix="dashboard_surface",
+        ) as executor:
+            for surface in selected:
+                future = executor.submit(
+                    _run_surface_worker,
+                    repo_root=repo_root,
+                    surface=surface,
+                    runtime_mode=runtime_mode,
+                    atlas_sync=atlas_sync,
+                    run_impl=run_impl,
+                )
+                future_map[future] = surface
+    finally:
+        sys.stdout = real_stdout
+    # Collect results in original surface order.
+    results_by_surface: dict[str, tuple[str, dict[str, Any]]] = {}
+    for future, surface in future_map.items():
+        output, result = future.result()
+        results_by_surface[surface] = (output, result)
+    ordered_results: list[dict[str, Any]] = []
+    for surface in selected:
+        output, result = results_by_surface[surface]
+        if output:
+            sys.stdout.write(output)
+            if not output.endswith("\n"):
+                sys.stdout.write("\n")
+        ordered_results.append(result)
+    return ordered_results
+
+
 def refresh_dashboard_surfaces(
     *,
     repo_root: Path,
@@ -1404,21 +1801,43 @@ def refresh_dashboard_surfaces(
     started_at = time.perf_counter()
     surface_results: list[dict[str, Any]] = []
     runtime_fallback_used = False
-    for surface in selected:
-        steps = _dashboard_surface_steps(
-            repo_root=repo_root,
-            surface=surface,
-            runtime_mode=normalized_runtime_mode,
-            atlas_sync=atlas_sync,
+    run_impl = _run_command
+    session_context: contextlib.AbstractContextManager[object] = contextlib.nullcontext()
+    if len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
+        run_impl = _run_command_in_process
+        session_context = governed_sync_session.activate_sync_session(
+            governed_sync_session.GovernedSyncSession(repo_root=repo_root)
         )
-        result = _execute_dashboard_refresh_surface(
-            repo_root=repo_root,
-            surface=surface,
-            steps=steps,
-            runtime_mode=normalized_runtime_mode,
-        )
+    elif len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode):
+        print("- runtime_fallback: standalone (runtime prerequisites missing)")
+        runtime_fallback_used = True
+    with session_context:
+        if len(selected) >= 2:
+            surface_results = _refresh_surfaces_parallel(
+                repo_root=repo_root,
+                selected=selected,
+                runtime_mode=normalized_runtime_mode,
+                atlas_sync=atlas_sync,
+                run_impl=run_impl,
+            )
+        else:
+            for surface in selected:
+                steps = _dashboard_surface_steps(
+                    repo_root=repo_root,
+                    surface=surface,
+                    runtime_mode=normalized_runtime_mode,
+                    atlas_sync=atlas_sync,
+                )
+                result = _execute_dashboard_refresh_surface(
+                    repo_root=repo_root,
+                    surface=surface,
+                    steps=steps,
+                    runtime_mode=normalized_runtime_mode,
+                    run_impl=run_impl,
+                )
+                surface_results.append(result)
+    for result in surface_results:
         runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
-        surface_results.append(result)
     elapsed = time.perf_counter() - started_at
     failures = [result for result in surface_results if str(result.get("status", "")).strip() == "failed"]
     queued = [result for result in surface_results if str(result.get("status", "")).strip() == "queued"]
@@ -1648,6 +2067,7 @@ def build_sync_execution_plan(
             "Check-only sync is non-mutating and proves the governed surfaces against current tracked truth.",
         ]
         compass_runtime_path = repo_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+        warning = ""
         if compass_runtime_path.is_file():
             try:
                 payload = json.loads(compass_runtime_path.read_text(encoding="utf-8"))
@@ -1662,16 +2082,25 @@ def build_sync_execution_plan(
                 else {}
             )
             warning = str(drift.get("warning", "")).strip()
-            if warning:
-                notes.append(
-                    "Visible Compass runtime drift: "
-                    + warning
-                )
+        if warning:
+            notes.append(
+                "Visible Compass runtime drift: "
+                + warning
+            )
         return _execution_plan(
             headline=f"Validate the current sync slice in `{runtime_mode}` mode without writing files.",
             steps=steps,
             notes=notes,
             repo_root=repo_root,
+        )
+
+    if _should_use_truth_only_selective_sync(args=args, changed_paths=changed_paths):
+        return _build_truth_only_selective_sync_plan(
+            repo_root=repo_root,
+            args=args,
+            changed_paths=changed_paths,
+            sync_failure_command=sync_failure_command,
+            runtime_mode=runtime_mode,
         )
 
     steps.append(
@@ -2035,7 +2464,10 @@ def build_sync_execution_plan(
     steps.append(
         _execution_step(
             "Mirror changed source-truth docs into the shipped bundle asset tree.",
-            action=lambda: _sync_changed_source_truth_bundle_mirrors(repo_root=repo_root),
+            action=lambda: _sync_changed_source_truth_bundle_mirrors(
+                repo_root=repo_root,
+                changed_paths=changed_paths,
+            ),
             mutation_classes=("generated_surfaces",),
             paths=_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES,
             next_command_on_failure=sync_failure_command,
@@ -2096,7 +2528,7 @@ def _execute_plan(
                     "args": step.command,
                     "heartbeat_label": heartbeat_label,
                 }
-                if step.timeout_seconds is not None:
+                if step.timeout_seconds is not None and run_impl is not _run_command_in_process:
                     command_kwargs["timeout_seconds"] = step.timeout_seconds
                 rc = run_impl(**command_kwargs)
             else:
@@ -2184,6 +2616,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         changed_paths=tuple(args.changed_paths),
         force=bool(args.force),
     )
+    truth_only_selective = _should_use_truth_only_selective_sync(
+        args=args,
+        changed_paths=changed_paths,
+    )
 
     if not _requires_sync(
         repo_root=repo_root,
@@ -2194,7 +2630,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     normalization = None
-    if _backlog_contract_preflight_ready(repo_root):
+    if _backlog_contract_preflight_ready(repo_root) and not truth_only_selective:
         if not args.check_only:
             normalization = normalize_legacy_backlog_index(repo_root=repo_root)
             if normalization.changed:
@@ -2224,7 +2660,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     impact = None
     governance_fallback_reason = ""
-    if _should_use_governance_runtime_packet(
+    if truth_only_selective:
+        impact = _dashboard_impact_for_truth_only_selective_slice(changed_paths)
+    elif _should_use_governance_runtime_packet(
         args=args,
         changed_paths=changed_paths,
         runtime_mode=effective_runtime_mode,

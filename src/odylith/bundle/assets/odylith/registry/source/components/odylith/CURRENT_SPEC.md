@@ -1,8 +1,8 @@
 # Odylith
-Last updated: 2026-04-12
+Last updated: 2026-04-14
 
 
-Last updated (UTC): 2026-04-12
+Last updated (UTC): 2026-04-14
 
 ## Purpose
 Odylith is the installable local governance and execution agent and platform
@@ -108,6 +108,44 @@ remediation, and rendering.
 - `odylith subagent-orchestrator ...`
 
 Public docs should describe these commands, not direct module entrypoints.
+- When a top-level command forwards into a backend parser, the top-level
+  `--help` surface must expose the backend flags rather than a shim-only
+  placeholder. `odylith bug capture --help` and `odylith compass log --help`
+  are canonical examples of that forwarded-help contract.
+- Forwarded help must preserve the public command identity and copy, not just
+  the backend flags. `odylith atlas render --help` must not degrade to
+  `cli.py`, `__main__.py`, or wrapper-internal descriptions when the command
+  routes through a lightweight proxy module.
+
+## Coding-Agent Host Contract
+- The default Odylith host contract is shared across Codex and Claude Code:
+  repo-root `AGENTS.md`, the repo-local launcher `./.odylith/bin/odylith`,
+  truthful `odylith ... --help`, and the grounded governance workflow should
+  mean the same thing on both hosts.
+- The baseline-safe Codex lane is the repo-root `AGENTS.md` contract plus the
+  repo-local launcher `./.odylith/bin/odylith`.
+- The checked-in `.codex/` project assets and repo-root `.agents/skills/`
+  shims are enhancements for hosts that honor them; they must not become the
+  only way routine governance work stays safe or discoverable.
+- Codex-specific shortcuts are only justified when a local capability probe or
+  native host feature materially reduces hops compared with the shared CLI
+  lane. The canonical proof surface for those optional optimizations is
+  `odylith codex compatibility`.
+- Repo-root `.agents/skills/` must stay a curated command-shim surface for the
+  high-frequency Odylith CLI lane: `start`, `context`, `query`,
+  `session-brief`, `sync`, `version`, `doctor`, `compass log`, and
+  `compass refresh`.
+- Specialist governance, packet, registry, diagram, and orchestration
+  workflows remain under `odylith/skills/` rather than being mirrored into the
+  default Codex discovery path.
+- Common consumer-lane governance authoring should stay one direct CLI hop:
+  `odylith bug capture --help`, `odylith backlog create --help`,
+  `odylith component register --help`, `odylith atlas scaffold --help`, and
+  `odylith compass log --help` must expose backend help instead of shim-only
+  parser surfaces.
+- Consumer-facing narration must keep `.agents/skills` lookup, missing-shim,
+  and fallback-source-path details implicit unless they change the next
+  user-visible action.
 
 ## Repository And State Layout
 ### Tracked product truth
@@ -308,6 +346,14 @@ Public docs should describe these commands, not direct module entrypoints.
   catalog mutations, Registry spec reconciliation, and delivery-intelligence
   refresh must settle before Compass, Radar, Registry, and shell consume the
   projection/runtime lane, so one final warm can serve that whole render phase.
+- Selective sync also has a truth-only lane: when the explicit changed-path
+  slice is limited to Casebook bug markdown, active-plan files, and Registry
+  living-spec docs, `odylith sync` should validate and mirror that governed
+  memory slice without widening into Atlas, delivery-intelligence, or
+  dashboard renders. When those explicit changed paths already determine the
+  owned surfaces, the entrypoint must skip broad planner and git-rescan work
+  and keep only the targeted Radar/backlog validation still required by the
+  touched slice.
 - Forced/full sync must not pay the governance-packet reasoning lane just to
   rediscover an all-surfaces impact set, and a direct sync projection warm must
   prime the same-process runtime warm cache so later surface readers do not
@@ -564,3 +610,11 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Added `odylith release ...` and the repo-local release-planning contract so workstreams can target explicit ship lanes without smuggling release scope into prose, execution waves, or publication-only lore. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
 - 2026-04-12: Bound governed sync to a shared-read-model and content-addressed-write architecture so the product can cut warm sync latency by reusing one truthful derivation context instead of repeatedly rediscovering the same repo state. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-12: Tightened the governed sync fast path again so Compass reads backlog rows from the already-settled Radar source truth during sync and only the genuinely slow in-process render steps keep heartbeat wrapping; the same-day source-local proof came back at `5.9s` sync-reported / `6.96s` wall with `load_backlog_rows()` reduced to `0.034s` and `select.poll` reduced to `1.066s`. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Added truthful forwarded-help exposure for backend-owned CLI subcommands and a selective truth-only governed-memory sync lane so routine bug/plan/spec upkeep no longer requires source spelunking or a render-heavy sync wave. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Extended the quick-update contract so routine authoring commands rerender only their owned surface by default (`backlog create` -> Radar, `component register` -> Registry, `atlas scaffold` -> Atlas, `compass log` -> Compass), while selective direct Radar/Registry/Atlas/Casebook truth edits refresh the same surface-local lane and keep the shared projection compiler plus local LanceDB/Tantivy substrate fresh. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Propagated that owned-surface quick-refresh contract across repo-root guidance, consumer guidance, bundled docs, Codex shims, and Claude helper commands so dev, dogfood, and consumer lanes all teach the same single-surface refresh commands instead of a stale `dashboard refresh --surfaces <surface>` hop. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Tightened that quick-update lane again so explicit truth-only selective sync slices skip the runtime governance-packet planner and broad backlog preflight when the changed paths already determine the owned surfaces, source-truth bundle mirroring stays scoped to the explicit files instead of rescanning git, and single-surface Radar/Registry/Casebook refreshes stay on the in-process runtime fast path when the local LanceDB/Tantivy backend is ready. The same-day source-local proof came back at `radar refresh: 1.78s` wall, `registry refresh: 5.03s` wall, `casebook refresh: 1.67s` warm wall, `atlas refresh --atlas-sync: 0.35s` wall, and a four-surface selective sync at `6.9s` sync-reported / `7.33s` wall while the memory backend still reported `ready: true`. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Narrowed the repo-root Codex skill surface to explicit command shims for the high-frequency CLI lane so routine governance upkeep defaults back to `AGENTS.md`, the launcher, and truthful help instead of a mirrored specialist skill stack. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
+- 2026-04-14: Extended the consumer-lane fast path so common governed authoring commands (`bug capture`, `backlog create`, `component register`, `atlas scaffold`, `compass log`) forward backend help and the installed guidance keeps shim and fallback plumbing out of normal user-facing narration. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
+- 2026-04-14: Tightened the forwarded-help contract so Atlas public help surfaces keep the real `odylith atlas ...` command name and user-facing descriptions instead of leaking `cli.py`, `__main__.py`, or refresh-wrapper copy. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
+- 2026-04-14: Reframed the host guidance so the default lane stays shared across Codex and Claude Code, while Codex-only advice is limited to capability-gated project-asset optimizations such as `odylith codex compatibility`. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))

@@ -15,16 +15,50 @@ _ATLAS_RENDER_GUARD_KEY = "atlas-render"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Skip current Atlas rerenders before importing the full renderer.")
-    parser.add_argument("--repo-root", default=".")
-    parser.add_argument("--catalog", default="odylith/atlas/source/catalog/diagrams.v1.json")
-    parser.add_argument("--output", default="odylith/atlas/atlas.html")
-    parser.add_argument("--traceability-graph", default="odylith/radar/traceability-graph.v1.json")
-    parser.add_argument("--max-review-age-days", type=int, default=21)
-    parser.add_argument("--fail-on-stale", action="store_true")
-    parser.add_argument("--check-only", action="store_true")
-    parser.add_argument("--diagram-id", action="append", default=[])
-    parser.add_argument("--runtime-mode", choices=("auto", "standalone", "daemon"), default="auto")
+    parser = argparse.ArgumentParser(
+        prog="odylith atlas render",
+        description="Render odylith/atlas/atlas.html from catalog metadata",
+    )
+    parser.add_argument("--repo-root", default=".", help="Repository root")
+    parser.add_argument(
+        "--catalog",
+        default="odylith/atlas/source/catalog/diagrams.v1.json",
+        help="Diagram catalog metadata path",
+    )
+    parser.add_argument("--output", default="odylith/atlas/atlas.html", help="HTML output path")
+    parser.add_argument(
+        "--traceability-graph",
+        default="odylith/radar/traceability-graph.v1.json",
+        help="Shared workstream traceability graph JSON path.",
+    )
+    parser.add_argument(
+        "--max-review-age-days",
+        type=int,
+        default=21,
+        help="Maximum allowed age for `last_reviewed_utc` before diagram is marked stale",
+    )
+    parser.add_argument(
+        "--fail-on-stale",
+        action="store_true",
+        help="Fail with non-zero exit when one or more diagrams are stale",
+    )
+    parser.add_argument(
+        "--check-only",
+        action="store_true",
+        help="Validate catalog + freshness without writing odylith/atlas/atlas.html.",
+    )
+    parser.add_argument(
+        "--diagram-id",
+        action="append",
+        default=[],
+        help="Optional diagram id to scope freshness failure checks (repeatable).",
+    )
+    parser.add_argument(
+        "--runtime-mode",
+        choices=("auto", "standalone", "daemon"),
+        default="auto",
+        help="Use the local runtime projection store when available for fast local rendering.",
+    )
     return parser.parse_args(argv)
 
 

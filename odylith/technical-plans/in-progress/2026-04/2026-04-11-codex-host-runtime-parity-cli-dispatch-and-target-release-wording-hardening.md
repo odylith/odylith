@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-04-11
 
-Updated: 2026-04-11
+Updated: 2026-04-14
 
 Backlog: B-088
 
@@ -69,9 +69,11 @@ Boundary Conditions:
   beyond the dispatcher additions required for the new host group.
 
 Related Bugs:
-- No new Casebook bug is opened for the architectural Codex host drift unless a
-  specific regression emerges during the bake-in. `B-087` remains the parent
-  project-asset parity slice.
+- [CB-111](../../../casebook/bugs/2026-04-14-consumer-lane-routine-governance-ux-can-leak-shim-plumbing-instead-of-direct-cli.md)
+  tracks the consumer-lane help-surface regression where Atlas forwarded help
+  still leaked backend filenames and refresh-wrapper copy after the broader
+  skill-surface simplification. `B-087` remains the parent project-asset
+  parity slice.
 
 ## Learnings
 - [ ] Codex project-root assets are only half the parity story. Without a
@@ -85,6 +87,23 @@ Related Bugs:
       strict minimum version. Local proof should explicitly cover the
       installed `0.119.0-alpha.28` build when that build already exposes the
       needed host capabilities.
+- [x] Mirroring the full specialist governance skill inventory into repo-root
+      `.agents/skills/` adds ceremony to routine Codex work. The repo-root
+      Codex lane should stay on `AGENTS.md`, the launcher, truthful CLI help,
+      and a narrow explicit command-shim surface instead.
+- [x] Common governed authoring commands in the consumer lane must forward
+      backend help and present direct CLI fast paths. If `bug capture`,
+      `backlog create`, `component register`, or `atlas scaffold` still land
+      on shim-only `--help`, the user is back in source spelunking instead of
+      a crisp first-hop lane.
+- [x] Forwarded-help polish has to cover the full public surface, not just flag
+      exposure. A command like `odylith atlas render --help` still regresses
+      the consumer lane if it prints `cli.py` / `__main__.py` or wrapper-only
+      copy instead of the top-level command name and description.
+- [x] The host default has to stay shared across Codex and Claude Code.
+      Codex-specific guidance should exist only for capability-gated
+      optimizations that materially reduce hops compared with the shared CLI
+      lane; otherwise the extra host-specific copy is just ceremony.
 
 ## Must-Ship
 - [ ] Promote `B-088` into an active plan and bind it to `release-0-1-11`.
@@ -110,7 +129,7 @@ Related Bugs:
       capability set.
 - [ ] Derive the effective consumer `.codex/config.toml` from the detected
       local Codex capability snapshot during install or repair.
-- [ ] Add explicit Codex command-skills for the curated high-frequency Odylith
+- [x] Add explicit Codex command-skills for the curated high-frequency Odylith
       CLI surface: `start`, `context`, `query`, `session-brief`, `sync`,
       `version`, `doctor`, `compass log`, and `compass refresh --wait`.
 
@@ -142,9 +161,19 @@ Related Bugs:
 - [ ] Consumer installs adapt the effective `.codex/config.toml` to the local
       Codex capability snapshot instead of blindly shipping one static hooks
       assumption.
-- [ ] Codex exposes a curated explicit command-skill surface for the
+- [x] Codex exposes a curated explicit command-skill surface for the
       worthwhile Odylith CLI lane instead of pretending repo-scoped custom
       slash commands exist.
+- [x] Common consumer-lane governance authoring commands expose backend help
+      and the installed guidance points users straight to those CLI fast
+      paths without surfacing `.agents/skills` lookup or fallback plumbing.
+- [x] Forwarded consumer-lane help surfaces identify themselves as the public
+      `odylith ...` command rather than leaking backend filenames or wrapper
+      implementation descriptions.
+- [x] Installed and shipped guidance present one shared host lane across dev,
+      dogfood, and consumer postures, and limit Codex-only advice to
+      capability-gated project-asset optimizations such as `odylith codex
+      compatibility`.
 - [ ] Focused validation is green across the new Codex runtime modules, the
       updated asset contract, and the touched release wording.
 

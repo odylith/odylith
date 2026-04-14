@@ -1035,7 +1035,34 @@ def _section_facts(
     return ranked
 
 
-def _unavailable_brief_message(reason: str) -> str:
+def _provider_display_name(provider: str) -> str:
+    token = str(provider or "").strip().lower()
+    if token == "codex-cli":
+        return "Codex CLI"
+    if token == "claude-cli":
+        return "Claude Code"
+    if token == "openai-compatible":
+        return "OpenAI-compatible endpoint"
+    if token == "auto-local":
+        return "local provider"
+    return str(provider or "").strip()
+
+
+def _provider_attempt_label(*, diagnostics: Mapping[str, Any] | None = None) -> str:
+    if not isinstance(diagnostics, Mapping):
+        return ""
+    provider_label = _provider_display_name(str(diagnostics.get("provider", "")).strip())
+    model_label = str(diagnostics.get("provider_model", "") or diagnostics.get("model", "")).strip()
+    if provider_label and model_label:
+        return f"{provider_label} using {model_label}"
+    return provider_label or model_label
+
+
+def _unavailable_brief_message(
+    reason: str,
+    *,
+    diagnostics: Mapping[str, Any] | None = None,
+) -> str:
     token = str(reason or "").strip().lower()
     if token == "skipped_not_worth_calling":
         return "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
@@ -1044,6 +1071,12 @@ def _unavailable_brief_message(reason: str) -> str:
     if token == "rate_limited":
         return "Compass hit narration provider capacity while warming this brief. It will retry on backoff."
     if token == "credits_exhausted":
+        attempt_label = _provider_attempt_label(diagnostics=diagnostics)
+        if attempt_label:
+            return (
+                "Compass could not warm this brief because the last narration attempt through "
+                f"{attempt_label} may have hit a credit or budget limit. It will retry on backoff."
+            )
         return "Compass could not warm this brief because the narration provider may have hit a credit or budget limit. It will retry on backoff."
     if token == "timeout":
         return "Compass asked the narration provider for this brief, but the reply took too long. It will retry on backoff."
@@ -1064,7 +1097,11 @@ def _unavailable_brief_message(reason: str) -> str:
     return "Compass could not build a current standup brief for this packet."
 
 
-def _unavailable_brief_title(reason: str) -> str:
+def _unavailable_brief_title(
+    reason: str,
+    *,
+    diagnostics: Mapping[str, Any] | None = None,
+) -> str:
     token = str(reason or "").strip().lower()
     if token == "skipped_not_worth_calling":
         return "Brief stayed on wallet-safe local truth"
@@ -1073,6 +1110,11 @@ def _unavailable_brief_title(reason: str) -> str:
     if token == "rate_limited":
         return "Brief is waiting on provider capacity"
     if token == "credits_exhausted":
+        provider_label = ""
+        if isinstance(diagnostics, Mapping):
+            provider_label = _provider_display_name(str(diagnostics.get("provider", "")).strip())
+        if provider_label:
+            return f"Brief is waiting on {provider_label} budget"
         return "Brief is waiting on provider budget"
     if token == "timeout":
         return "Brief timed out"
@@ -1161,8 +1203,8 @@ def _unavailable_ready_brief(
     token = str(reason or "").strip().lower() or "brief_unavailable"
     diagnostic_payload = {
         "reason": token,
-        "title": _unavailable_brief_title(token),
-        "message": _unavailable_brief_message(token),
+        "title": _unavailable_brief_title(token, diagnostics=diagnostics),
+        "message": _unavailable_brief_message(token, diagnostics=diagnostics),
     }
     if isinstance(diagnostics, Mapping):
         for key, value in diagnostics.items():

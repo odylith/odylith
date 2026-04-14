@@ -10,6 +10,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
+from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 _WORKSTREAM_RE = re.compile(r"^B-(\d{3,})$")
@@ -626,6 +627,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         for raw_path, text in result["idea_files"].items():
             Path(raw_path).write_text(str(text), encoding="utf-8")
         backlog_index_path.write_text(str(result["backlog_index_text"]), encoding="utf-8")
+        try:
+            owned_surface_refresh.raise_for_failed_refresh(
+                repo_root=repo_root,
+                surface="radar",
+                operation_label="Backlog create",
+            )
+        except RuntimeError as exc:
+            print(str(exc))
+            return 1
 
     if bool(args.as_json):
         payload = {

@@ -1,7 +1,8 @@
 """CLI backend for `odylith bug capture` — create a Casebook bug record.
 
 Creates a new bug file in `odylith/casebook/bugs/` with a properly assigned
-CB-### ID and patches the INDEX.md.
+CB-### ID, rebuilds `INDEX.md` from markdown source, and rerenders the
+Casebook surface so the new bug is immediately visible.
 """
 
 from __future__ import annotations
@@ -13,6 +14,9 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
+
+from odylith.runtime.governance import owned_surface_refresh
+from odylith.runtime.governance import sync_casebook_bug_index
 
 _CASEBOOK_BUGS_RELATIVE = Path("odylith/casebook/bugs")
 _BUG_ID_RE = re.compile(r"^CB-(\d{3,})$")
@@ -40,6 +44,10 @@ class CreatedBug:
             "severity": self.severity,
             "component": self.component,
         }
+
+
+def _refresh_casebook_surface(*, repo_root: Path) -> int:
+    return owned_surface_refresh.refresh_owned_surface(repo_root=repo_root, surface="casebook")
 
 
 def _next_bug_id(bugs_dir: Path) -> str:
@@ -125,114 +133,6 @@ def _build_bug_text(
 """
 
 
-def _update_bug_index(
-    *,
-    index_path: Path,
-    bug_id: str,
-    title: str,
-    severity: str,
-    component: str,
-    bug_filename: str,
-    today: dt.date,
-) -> str:
-    """Patch the bug INDEX.md with the new entry and return the updated text."""
-    if not index_path.is_file():
-        # Create a fresh index
-        return _fresh_index(
-            bug_id=bug_id,
-            title=title,
-            severity=severity,
-            component=component,
-            bug_filename=bug_filename,
-            today=today,
-        )
-
-    content = index_path.read_text(encoding="utf-8")
-    row = _format_index_row(
-        bug_id=bug_id,
-        title=title,
-        severity=severity,
-        component=component,
-        bug_filename=bug_filename,
-        today=today,
-    )
-
-    # Find the Open Bugs table and append
-    lines = content.splitlines()
-    insert_at = -1
-    for idx, line in enumerate(lines):
-        if line.strip().startswith("| --- |") or line.strip().startswith("| ---"):
-            # Insert after the separator line — but after any existing rows
-            insert_at = idx + 1
-            # Advance past existing rows
-            while insert_at < len(lines) and lines[insert_at].strip().startswith("|"):
-                insert_at += 1
-            break
-
-    if insert_at >= 0:
-        lines.insert(insert_at, row)
-    else:
-        # Fallback: append at end
-        lines.append("")
-        lines.append(row)
-
-    # Update last updated date
-    updated = "\n".join(lines)
-    updated = re.sub(
-        r"(?m)^Last updated \(UTC\):\s*\d{4}-\d{2}-\d{2}\s*$",
-        f"Last updated (UTC): {today.isoformat()}",
-        updated,
-        count=1,
-    )
-    if not updated.endswith("\n"):
-        updated += "\n"
-    return updated
-
-
-def _format_index_row(
-    *,
-    bug_id: str,
-    title: str,
-    severity: str,
-    component: str,
-    bug_filename: str,
-    today: dt.date,
-) -> str:
-    return (
-        f"| {bug_id} | {today.isoformat()} | {title} | {severity} | "
-        f"`{component}` | Open | [{bug_filename}]({bug_filename}) |"
-    )
-
-
-def _fresh_index(
-    *,
-    bug_id: str,
-    title: str,
-    severity: str,
-    component: str,
-    bug_filename: str,
-    today: dt.date,
-) -> str:
-    row = _format_index_row(
-        bug_id=bug_id,
-        title=title,
-        severity=severity,
-        component=component,
-        bug_filename=bug_filename,
-        today=today,
-    )
-    return f"""# Bug Index
-
-Last updated (UTC): {today.isoformat()}
-
-## Open Bugs
-
-| Bug ID | Date | Title | Severity | Components | Status | Link |
-| --- | --- | --- | --- | --- | --- | --- |
-{row}
-"""
-
-
 def capture_bug(
     *,
     repo_root: Path,
@@ -241,9 +141,8 @@ def capture_bug(
     severity: str,
     dry_run: bool = False,
 ) -> CreatedBug:
-    """Create a new bug record in Casebook."""
+    """Create a new bug record in Casebook and refresh the Casebook surface."""
     bugs_dir = (repo_root / _CASEBOOK_BUGS_RELATIVE).resolve()
-    index_path = bugs_dir / "INDEX.md"
     today = dt.datetime.now(tz=dt.UTC).date()
 
     bug_id = _next_bug_id(bugs_dir)
@@ -266,28 +165,30 @@ def capture_bug(
         today=today,
     )
 
-    index_text = _update_bug_index(
-        index_path=index_path,
-        bug_id=bug_id,
-        title=title,
-        severity=severity,
-        component=component,
-        bug_filename=filename,
-        today=today,
-    )
-
-    if not dry_run:
-        bugs_dir.mkdir(parents=True, exist_ok=True)
-        bug_path.write_text(bug_text, encoding="utf-8")
-        index_path.write_text(index_text, encoding="utf-8")
-
-    return CreatedBug(
+    created_bug = CreatedBug(
         bug_id=bug_id,
         title=title,
         bug_path=bug_path,
         severity=severity,
         component=component,
     )
+
+    if not dry_run:
+        bugs_dir.mkdir(parents=True, exist_ok=True)
+        bug_path.write_text(bug_text, encoding="utf-8")
+        sync_casebook_bug_index.sync_casebook_bug_index(
+            repo_root=repo_root,
+            migrate_bug_ids=False,
+        )
+        refresh_rc = _refresh_casebook_surface(repo_root=repo_root)
+        if refresh_rc != 0:
+            raise RuntimeError(
+                "Bug record captured but Casebook-only refresh failed; "
+                f"bug_id={created_bug.bug_id} path={created_bug.bug_path}. "
+                "Retry with `./.odylith/bin/odylith casebook refresh --repo-root .`."
+            )
+
+    return created_bug
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -316,9 +217,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             severity=str(args.severity).strip(),
             dry_run=bool(args.dry_run),
         )
-    except ValueError as exc:
+    except (ValueError, RuntimeError) as exc:
         print(str(exc))
-        return 2
+        return 2 if isinstance(exc, ValueError) else 1
 
     mode = "dry-run" if args.dry_run else "captured"
     if args.as_json:

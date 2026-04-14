@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-13
+Last updated (UTC): 2026-04-14
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-112 | 2026-04-14 | Routine authoring commands can leave owned surfaces stale and selective sync can | P1 | odylith | Open | [2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md](2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md) |
 | CB-105 | 2026-04-12 | Sync performance engineering from 30s to sub 6s with session hoisting and incremental derivation | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py` (22-step
   pipeline executor, `_execute_plan`, `_run_callable_with_heartbeat`,
   `build_sync_execution_plan`),
@@ -178,6 +179,25 @@ Last updated (UTC): 2026-04-13
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-110 | 2026-04-14 | Forwarded cli help hides backend flags and selective sync stays too wide for gov | P1 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/bug_authoring.py`,
+  `src/odylith/runtime/governance/sync_casebook_bug_index.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  `tests/unit/test_cli.py`,
+  `tests/unit/runtime/test_sync_cli_compat.py`, and governed-sync operator
+  contract under `B-091`. | Closed | [2026-04-14-forwarded-cli-help-hides-backend-flags-and-selective-sync-stays-too-wide-for-gov.md](2026-04-14-forwarded-cli-help-hides-backend-flags-and-selective-sync-stays-too-wide-for-gov.md) |
+| CB-111 | 2026-04-14 | Consumer lane routine governance ux can leak shim plumbing instead of direct cli | P2 | `src/odylith/runtime/surfaces/scaffold_mermaid_diagram.py`,
+  `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`,
+  `src/odylith/runtime/surfaces/render_mermaid_catalog.py`,
+  `src/odylith/runtime/surfaces/render_mermaid_catalog_refresh.py`,
+  `src/odylith/runtime/surfaces/install_mermaid_autosync_hook.py`,
+  `tests/unit/test_cli.py`, and consumer-lane CLI help UX under `B-088`. | Closed | [2026-04-14-consumer-lane-routine-governance-ux-can-leak-shim-plumbing-instead-of-direct-cli.md](2026-04-14-consumer-lane-routine-governance-ux-can-leak-shim-plumbing-instead-of-direct-cli.md) |
+| CB-109 | 2026-04-14 | Compass rolling timeline audit can hide prior day window activity behind selecte | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
+  `odylith/compass/compass-workstreams.v1.js`,
+  `src/odylith/bundle/assets/odylith/compass/compass-workstreams.v1.js`,
+  `tests/integration/runtime/test_surface_browser_deep.py`,
+  `tests/integration/runtime/test_surface_browser_filter_audit.py`,
+  Compass component spec, and `B-025` governance memory. | Closed | [2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md](2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md) |
 | CB-108 | 2026-04-12 | Compass programs can regrow a redundant nested inner card | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-shared.v1.js`,
   `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-waves.v1.js`,
   `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-execution-waves.v1.css`,

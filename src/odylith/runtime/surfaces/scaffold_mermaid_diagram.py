@@ -8,9 +8,14 @@ import json
 from pathlib import Path
 from typing import Sequence
 
+from odylith.runtime.governance import owned_surface_refresh
+
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Scaffold Mermaid diagram metadata + source")
+    parser = argparse.ArgumentParser(
+        prog="odylith atlas scaffold",
+        description="Scaffold Mermaid diagram metadata + source",
+    )
     parser.add_argument("--repo-root", default=".", help="Repository root")
     parser.add_argument("--catalog", default="odylith/atlas/source/catalog/diagrams.v1.json", help="Catalog JSON path")
     parser.add_argument("--diagram-id", required=True, help="Diagram ID (for example D-010)")
@@ -169,6 +174,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             source_path.write_text(template, encoding="utf-8")
             print(f"source created: {source_path}")
+    try:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=repo_root,
+            surface="atlas",
+            operation_label="Atlas scaffold",
+        )
+    except RuntimeError as exc:
+        print(str(exc))
+        return 1
 
     return 0
 

@@ -12,6 +12,7 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
+import threading
 import time
 import uuid
 from typing import Any, Iterator, Mapping, Sequence
@@ -421,7 +422,11 @@ def _resolve_runtime_mode(*, repo_root: Path, requested_runtime_mode: str) -> st
 @contextlib.contextmanager
 def _refresh_timeout(*, seconds: float) -> Iterator[None]:
     timeout_seconds = max(0.0, float(seconds))
-    if timeout_seconds <= 0.0 or not hasattr(signal, "setitimer"):
+    # signal.setitimer / signal.signal only work in the main thread.
+    # When dashboard refresh runs surfaces in parallel, Compass executes
+    # in a worker thread where signal-based timeouts are unavailable.
+    _in_main_thread = threading.current_thread() is threading.main_thread()
+    if timeout_seconds <= 0.0 or not hasattr(signal, "setitimer") or not _in_main_thread:
         yield
         return
 

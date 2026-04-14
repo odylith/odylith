@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-12
+Updated: 2026-04-14
 
 Backlog: B-025
 
@@ -71,6 +71,7 @@ Related Bugs:
 - [2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md)
 - [2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md)
 - [2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md)
+- [2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md)
 - no related Casebook-specific bug record exists yet for detail-view field repetition or header-collapse regressions; keep the failure mode visible in this plan and handoff until it is formalized
 
 ## Context/Problem Statement
@@ -156,6 +157,10 @@ Related Bugs:
 - [x] Timeline Audit could headline a checkpoint on one workstream while the
       visible workstream chip row still hid that anchor scope behind broader
       linked ids, which made the most important fix harder to click.
+- [x] Timeline Audit could still make a rolling `24h` or `48h` window look
+      underfilled by collapsing the rendered audit to the selected `audit_day`
+      even when the prior local day still contained populated in-window
+      activity.
 - [ ] Compass is still below release bar after the maintained-global narration
       follow-on. The bounded hot exact-reuse lane now measures `0.3s`
       internal (`0.73s` wall), the rebuilt cold shell-safe lane measures
@@ -193,6 +198,10 @@ Related Bugs:
 - [x] Timeline Audit transaction cards keep the anchor workstream visible and
       first in the chip row whenever the headline or checkpoint text names the
       primary fix.
+- [x] Timeline Audit now renders all populated day sections inside the active
+      `24h` or `48h` window. `audit_day` still anchors the chosen window and
+      the current-day visible-hour horizon, but it no longer collapses
+      rolling-window evidence to a single day.
 - [x] Explicit `odylith dashboard refresh --surfaces compass` now delegates to
       the same bounded Compass refresh engine instead of advertising a second
       deeper contract.
@@ -459,6 +468,8 @@ Related Bugs:
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_ux_audit.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_render_mermaid_catalog.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_filter_audit.py`
+- [x] `pytest -q tests/integration/runtime/test_surface_browser_deep.py -k 'compass_scoped_live_view_prefers_latest_non_empty_audit_day or compass_live_timeline_keeps_prior_window_day_while_hiding_future_hours'`
+- [x] `pytest -q tests/integration/runtime/test_surface_browser_filter_audit.py -k 'compass_filter_audit_preserves_valid_audit_day_across_window_changes'`
 - [ ] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime tests/integration/runtime/test_surface_browser_smoke.py`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_tooling_dashboard --repo-root . --output odylith/index.html`
@@ -508,6 +519,9 @@ Related Bugs:
       runtime snapshot timestamp and show an explicit stale-runtime warning
       instead of rendering empty recent-day buckets from browser wall-clock
       drift.
+- [x] Timeline Audit now preserves the full populated rolling window instead of
+      collapsing `24h` or `48h` to the selected `audit_day`; current-day
+      horizons still clip future empty hours.
 - [x] Dashboard live refresh now exposes three modes: `balanced` for consumer
       and detached maintainer-dev lanes, `proof_frozen` for pinned proof and
       benchmark lanes, and explicit `full_dev` override for faster maintainer

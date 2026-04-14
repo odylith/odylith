@@ -2985,8 +2985,10 @@ def test_compass_scoped_provider_deferred_can_borrow_wider_global_live_brief(tmp
         "sections": [],
         "diagnostics": {
             "reason": "credits_exhausted",
-            "title": "Brief is waiting on provider budget",
-            "message": "Compass could not warm the 24-hour brief because the provider budget was exhausted.",
+            "title": "Brief is waiting on Codex CLI budget",
+            "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
+            "provider": "codex-cli",
+            "provider_model": "gpt-5.3-codex-spark",
         },
         "evidence_lookup": {},
     }
@@ -3603,7 +3605,7 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
                 context.close()
 
 
-def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  # noqa: ANN001
+def test_compass_live_timeline_keeps_prior_window_day_while_hiding_future_hours(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
 
@@ -3611,6 +3613,7 @@ def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
 
+    previous_day = "2026-04-04"
     current_day = "2026-04-05"
     files = ["src/odylith/runtime/surfaces/templates/compass_dashboard/compass-state.v1.js"]
 
@@ -3624,6 +3627,11 @@ def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  
     event["author"] = "assistant"
     event["files"] = list(files)
     event["workstreams"] = ["B-004"]
+
+    previous_event = dict(event)
+    previous_event["id"] = "live-horizon:previous-event"
+    previous_event["summary"] = "Live prior-day window event."
+    previous_event["ts_iso"] = "2026-04-04T23:41:00-07:00"
 
     transaction = dict((payload.get("timeline_transactions") or [0])[0] if (payload.get("timeline_transactions") or []) else {})
     if not transaction:
@@ -3650,13 +3658,21 @@ def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  
     transaction["workstreams"] = ["B-004"]
     transaction["events"] = [event]
 
+    previous_transaction = dict(transaction)
+    previous_transaction["id"] = "live-horizon:previous-tx"
+    previous_transaction["transaction_id"] = "live-horizon:previous-tx"
+    previous_transaction["headline"] = "Live prior-day Compass window transaction"
+    previous_transaction["start_ts_iso"] = "2026-04-04T23:33:00-07:00"
+    previous_transaction["end_ts_iso"] = "2026-04-04T23:41:00-07:00"
+    previous_transaction["events"] = [previous_event]
+
     payload["generated_utc"] = "2026-04-05T07:29:00Z"
     payload["now_local_iso"] = "2026-04-05T00:29:00-07:00"
-    payload["timeline_events"] = [event]
-    payload["timeline_transactions"] = [transaction]
+    payload["timeline_events"] = [event, previous_event]
+    payload["timeline_transactions"] = [transaction, previous_transaction]
     payload["history"] = {
         "retention_days": 15,
-        "dates": [current_day, "2026-04-04"],
+        "dates": [current_day, previous_day],
         "restored_dates": [],
         "archive": {"compressed": True, "path": "archive", "count": 0, "dates": [], "newest_date": "", "oldest_date": ""},
     }
@@ -3681,10 +3697,31 @@ def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  
                 compass = page.frame_locator("#frame-compass")
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
                 compass.locator("#timeline .timeline-day-title", has_text=current_day).wait_for(timeout=15000)
-                compass.locator("#timeline .hour-label", has_text="00:00").wait_for(timeout=15000)
-                compass.locator("#timeline .hour-label", has_text="01:00").wait_for(state="detached", timeout=15000)
-                compass.locator("#timeline .hour-label", has_text="23:00").wait_for(state="detached", timeout=15000)
+                compass.locator("#timeline .timeline-day-title", has_text=previous_day).wait_for(timeout=15000)
+                page.wait_for_function(
+                    """({ currentDay, previousDay }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        if (!doc) return false;
+                        const sections = Array.from(doc.querySelectorAll("#timeline .timeline-day"));
+                        const findSection = (token) => sections.find((section) => {
+                            const title = section.querySelector(".timeline-day-title");
+                            return Boolean(title) && (title.textContent || "").includes(token);
+                        });
+                        const current = findSection(currentDay);
+                        const previous = findSection(previousDay);
+                        if (!current || !previous) return false;
+                        const currentLabels = Array.from(current.querySelectorAll(".hour-label")).map((node) => (node.textContent || "").trim());
+                        const previousLabels = Array.from(previous.querySelectorAll(".hour-label")).map((node) => (node.textContent || "").trim());
+                        return currentLabels.includes("00:00")
+                          && !currentLabels.includes("01:00")
+                          && previousLabels.includes("23:00");
+                    }""",
+                    arg={"currentDay": current_day, "previousDay": previous_day},
+                    timeout=15000,
+                )
                 compass.locator("#timeline", has_text=event["summary"]).wait_for(timeout=15000)
+                compass.locator("#timeline", has_text=previous_event["summary"]).wait_for(timeout=15000)
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:

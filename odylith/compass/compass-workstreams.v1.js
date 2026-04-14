@@ -855,22 +855,23 @@
         return;
       }
 
-      const selectedAuditDay = DATE_RE.test(String(state.audit_day || "").trim())
-        ? String(state.audit_day || "").trim()
-        : "";
-      const renderDays = selectedAuditDay ? [selectedAuditDay] : dayTokens.slice().reverse();
       const rows = [];
       const txRows = Array.isArray(transactions) ? transactions : [];
       const eventRows = Array.isArray(events) ? events : [];
-      const renderDaySet = new Set(renderDays);
-      const relevantTransactions = txRows.filter((row) => renderDaySet.has(toLocalDateToken(row.end_ts_iso || row.start_ts_iso)));
-      const relevantEvents = eventRows.filter((row) => renderDaySet.has(toLocalDateToken(row.ts_iso)));
+      const timelineDaySet = new Set(dayTokens);
+      const relevantTransactions = txRows.filter((row) => timelineDaySet.has(toLocalDateToken(row.end_ts_iso || row.start_ts_iso)));
+      const relevantEvents = eventRows.filter((row) => timelineDaySet.has(toLocalDateToken(row.ts_iso)));
       if (!relevantTransactions.length && !relevantEvents.length) {
         target.innerHTML = state.workstream
           ? '<div class="empty">No audit events in this scope and window.</div>'
           : '<div class="empty">No audit events in this window.</div>';
         return;
       }
+      const populatedDaySet = new Set([
+        ...relevantTransactions.map((row) => toLocalDateToken(row.end_ts_iso || row.start_ts_iso)).filter((token) => timelineDaySet.has(token)),
+        ...relevantEvents.map((row) => toLocalDateToken(row.ts_iso)).filter((token) => timelineDaySet.has(token)),
+      ]);
+      const renderDays = dayTokens.slice().reverse().filter((token) => populatedDaySet.has(token));
 
       const renderTimelineEventCard = (eventRow) => {
         const eventTime = toDate(eventRow.ts_iso);

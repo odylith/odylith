@@ -744,6 +744,7 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
             "wait": True,
             "status_only": False,
             "emit_output": True,
+            "skip_settlement": True,
         }
     ]
     assert "odylith.runtime.governance.sync_component_spec_requirements" not in modules
@@ -787,6 +788,44 @@ def test_dashboard_refresh_casebook_migrates_bug_ids_during_refresh(tmp_path: Pa
     assert casebook_sync_calls == [True]
     modules = [command[2] for command in executed if len(command) >= 3 and command[0] == "python" and command[1] == "-m"]
     assert modules == ["odylith.runtime.surfaces.render_casebook_dashboard"]
+
+
+def test_dashboard_refresh_uses_in_process_runtime_for_single_surface_fast_path(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    executed: list[tuple[str, ...]] = []
+
+    def _fake_run_command_in_process(
+        *,
+        repo_root: Path,
+        args: tuple[str, ...],
+        heartbeat_label: str = "",
+        timeout_seconds: float | None = None,
+    ) -> int:  # noqa: ARG001
+        executed.append(tuple(args))
+        assert timeout_seconds is None
+        return 0
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_runtime_fast_path_prerequisites_met", lambda _repo_root: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_command_in_process", _fake_run_command_in_process)
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_run_command",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("single-surface fast path should not shell out")),
+    )
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("radar",),
+        runtime_mode="auto",
+        atlas_sync=False,
+    )
+
+    assert rc == 0
+    assert executed == [
+        ("python", "-m", "odylith.runtime.surfaces.render_backlog_ui", "--repo-root", str(tmp_path))
+    ]
 
 
 def test_dashboard_refresh_dry_run_accepts_shell_alias_without_running_commands(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -954,6 +993,43 @@ def test_sync_changed_source_truth_bundle_mirrors_updates_runtime_source_corpus(
     assert mirror_path.read_text(encoding="utf-8") == "{\"version\": \"v1\", \"scenarios\": [\"fresh\"]}\n"
 
 
+def test_sync_changed_source_truth_bundle_mirrors_scopes_to_explicit_paths_without_git_scan(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo_root = tmp_path
+    live_path = repo_root / "odylith" / "casebook" / "bugs" / "2026-04-14-fast-path.md"
+    mirror_path = (
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "casebook"
+        / "bugs"
+        / "2026-04-14-fast-path.md"
+    )
+    live_path.parent.mkdir(parents=True, exist_ok=True)
+    mirror_path.parent.mkdir(parents=True, exist_ok=True)
+    live_path.write_text("fresh bug\n", encoding="utf-8")
+    mirror_path.write_text("stale bug\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_git_changed_paths",
+        lambda **_: (_ for _ in ()).throw(AssertionError("explicit changed-path mirror sync should not rescan git")),
+    )
+
+    rc = sync_workstream_artifacts._sync_changed_source_truth_bundle_mirrors(  # noqa: SLF001
+        repo_root=repo_root,
+        changed_paths=("odylith/casebook/bugs/2026-04-14-fast-path.md",),
+    )
+
+    assert rc == 0
+    assert mirror_path.read_text(encoding="utf-8") == "fresh bug\n"
+
+
 def test_build_sync_execution_plan_appends_source_bundle_mirror_step(tmp_path: Path) -> None:
     plan = sync_workstream_artifacts.build_sync_execution_plan(
         repo_root=tmp_path,
@@ -1014,6 +1090,158 @@ def test_build_sync_execution_plan_runs_final_registry_reconcile_after_bundle_mi
     )
 
     assert mirror_index < final_registry_sync_index
+
+
+def test_build_sync_execution_plan_uses_owned_surface_selective_lane_for_governance_memory_slice(tmp_path: Path) -> None:
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=False,
+            force=False,
+            impact_mode="selective",
+            registry_policy_mode="advisory",
+            enforce_deep_skills=False,
+            no_traceability_autofix=False,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=(
+            "odylith/casebook/bugs/2026-04-14-memory-bug.md",
+            "odylith/technical-plans/in-progress/2026-04-14-memory-fix.md",
+            "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+        ),
+        impact=SimpleNamespace(
+            atlas=False,
+            radar=True,
+            compass=False,
+            registry=True,
+            casebook=True,
+        ),
+        impact_tooling_shell=True,
+        runtime_mode="standalone",
+    )
+
+    labels = [step.label for step in plan.steps]
+
+    assert plan.headline == "Sync only the governed truth for the explicit selective slice in `standalone` mode."
+    assert "Normalize legacy Radar backlog sections for the touched selective slice before validation." in labels
+    assert "Refresh the Casebook bug index before rerendering the Casebook dashboard." in labels
+    assert "Render Casebook for the updated bug index." in labels
+    assert "Render Radar without widening into the full governance sync pipeline." in labels
+    assert "Render Registry without re-running broader governance reconciliation." in labels
+    assert "Mirror the touched source-truth docs into the shipped bundle asset tree." in labels
+    assert "Validate Registry contract and deep-skill policy bindings." not in labels
+    assert "Sync Registry component spec requirements after Atlas mutations settle." not in labels
+    assert "Render the top-level Odylith shell after the selected surfaces settle." not in labels
+    assert any(
+        "Selective owned-surface sync keeps the projection compiler plus local LanceDB/Tantivy memory backend fresh"
+        in note
+        for note in plan.notes
+    )
+
+
+def test_requires_sync_treats_casebook_bug_markdown_as_sync_relevant(tmp_path: Path) -> None:
+    assert sync_workstream_artifacts._requires_sync(
+        repo_root=tmp_path,
+        changed_paths=("odylith/casebook/bugs/2026-04-14-memory-bug.md",),
+        force=False,
+    )
+
+
+def test_build_sync_execution_plan_refreshes_registry_for_spec_only_selective_slice(tmp_path: Path) -> None:
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=False,
+            force=False,
+            impact_mode="selective",
+            registry_policy_mode="advisory",
+            enforce_deep_skills=False,
+            no_traceability_autofix=False,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=("odylith/registry/source/components/odylith/CURRENT_SPEC.md",),
+        impact=SimpleNamespace(
+            atlas=False,
+            radar=False,
+            compass=False,
+            registry=True,
+            casebook=False,
+        ),
+        impact_tooling_shell=True,
+        runtime_mode="standalone",
+    )
+
+    labels = [step.label for step in plan.steps]
+
+    assert "Refresh delivery intelligence inputs for this shell-facing surface." in labels
+    assert "Render Registry without re-running broader governance reconciliation." in labels
+    assert "Render the top-level Odylith shell after the selected surfaces settle." not in labels
+
+
+def test_build_sync_execution_plan_refreshes_atlas_for_catalog_only_selective_slice(tmp_path: Path) -> None:
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=False,
+            force=False,
+            impact_mode="selective",
+            registry_policy_mode="advisory",
+            enforce_deep_skills=False,
+            no_traceability_autofix=False,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=("odylith/atlas/source/catalog/diagrams.v1.json",),
+        impact=SimpleNamespace(
+            atlas=True,
+            radar=False,
+            compass=False,
+            registry=False,
+            casebook=False,
+        ),
+        impact_tooling_shell=False,
+        runtime_mode="standalone",
+    )
+
+    labels = [step.label for step in plan.steps]
+
+    assert "Refresh stale Atlas Mermaid diagrams before rerendering the Atlas surface." in labels
+    assert "Render Atlas from the current Mermaid catalog state." in labels
+    assert "Render the top-level Odylith shell after the selected surfaces settle." not in labels
+
+
+def test_build_sync_execution_plan_validates_radar_for_backlog_only_selective_slice(tmp_path: Path) -> None:
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=False,
+            force=False,
+            impact_mode="selective",
+            registry_policy_mode="advisory",
+            enforce_deep_skills=False,
+            no_traceability_autofix=False,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=("odylith/radar/source/ideas/2026-04/2026-04-14-fast-lane.md",),
+        impact=SimpleNamespace(
+            atlas=False,
+            radar=True,
+            compass=False,
+            registry=False,
+            casebook=False,
+        ),
+        impact_tooling_shell=True,
+        runtime_mode="standalone",
+    )
+
+    labels = [step.label for step in plan.steps]
+
+    assert "Normalize legacy Radar backlog sections for the touched selective slice before validation." in labels
+    assert "Validate Radar backlog contract for the touched selective slice." in labels
+    assert "Render Radar without widening into the full governance sync pipeline." in labels
 
 
 def test_build_sync_execution_plan_final_registry_reconcile_triggers_delivery_stabilization(tmp_path: Path) -> None:
@@ -1200,6 +1428,7 @@ def test_dashboard_refresh_compass_waits_for_shared_engine_and_reports_failure(
             "wait": True,
             "status_only": False,
             "emit_output": True,
+            "skip_settlement": True,
         }
     ]
     assert "next: odylith dashboard refresh --repo-root . --surfaces compass" in output
@@ -1240,6 +1469,7 @@ def test_dashboard_refresh_compass_waits_for_terminal_success(tmp_path: Path, mo
             "wait": True,
             "status_only": False,
             "emit_output": True,
+            "skip_settlement": True,
         }
     ]
     assert "- compass: passed" in output
@@ -1666,3 +1896,81 @@ def test_sync_auto_normalizes_legacy_backlog_before_continuing(monkeypatch, tmp_
     assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." in backlog_index
     assert "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream." in backlog_index
     assert "- ranking basis: score-based rank; no manual priority override." in backlog_index
+
+
+def test_sync_truth_only_selective_slice_skips_broad_preflight_and_runtime_packet(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    captured: dict[str, object] = {}
+
+    class _Meaningful:
+        def as_dict(self) -> dict[str, int]:
+            return {
+                "linked_meaningful_event_count": 0,
+                "unlinked_meaningful_event_count": 0,
+            }
+
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_effective_changed_paths",
+        lambda **_: (
+            "odylith/casebook/bugs/2026-04-14-fast-bug.md",
+            "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+        ),
+    )
+    monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_backlog_contract_preflight_ready", lambda _repo_root: True)
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "normalize_legacy_backlog_index",
+        lambda **_: (_ for _ in ()).throw(AssertionError("narrow truth-only sync should skip backlog preflight normalization")),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "collect_backlog_contract_errors",
+        lambda **_: (_ for _ in ()).throw(AssertionError("narrow truth-only sync should skip backlog preflight validation")),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_context_engine_store",
+        lambda: SimpleNamespace(
+            build_governance_slice=lambda **_: (_ for _ in ()).throw(
+                AssertionError("narrow truth-only sync should skip governance runtime packet build")
+            ),
+            record_runtime_timing=lambda **_: (_ for _ in ()).throw(
+                AssertionError("narrow truth-only sync should skip governance runtime packet timing")
+            ),
+            clear_runtime_process_caches=lambda **_: None,
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "build_dashboard_impact",
+        lambda **_: (_ for _ in ()).throw(AssertionError("narrow truth-only sync should not use heuristic broad impact build")),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_meaningful_activity_evidence",
+        lambda **_: _Meaningful(),
+    )
+
+    def _capture_plan(**kwargs):  # noqa: ANN001
+        captured["impact"] = kwargs["impact"]
+        return sync_workstream_artifacts.ExecutionPlan(
+            headline="preview",
+            steps=(),
+            dirty_overlap=(),
+            notes=(),
+        )
+
+    monkeypatch.setattr(sync_workstream_artifacts, "build_sync_execution_plan", _capture_plan)
+
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--impact-mode", "selective", "--dry-run"])
+
+    assert rc == 0
+    impact = captured["impact"]
+    assert bool(getattr(impact, "casebook", False)) is True
+    assert bool(getattr(impact, "registry", False)) is True
+    assert bool(getattr(impact, "radar", False)) is False
+    assert bool(getattr(impact, "atlas", False)) is False

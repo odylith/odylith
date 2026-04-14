@@ -57,7 +57,10 @@ class AtlasImpactClassification:
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Auto-sync Mermaid diagrams from changed implementation files")
+    parser = argparse.ArgumentParser(
+        prog="odylith atlas auto-update",
+        description="Auto-sync Mermaid diagrams from changed implementation files",
+    )
     parser.add_argument("--repo-root", default=".", help="Repository root path")
     parser.add_argument("--catalog", default="odylith/atlas/source/catalog/diagrams.v1.json", help="Catalog JSON path")
     parser.add_argument(
