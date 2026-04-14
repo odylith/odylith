@@ -41,11 +41,60 @@ need to know the CLI — just describe what you want.
 
 | Instruction | What happens | Time |
 |---|---|---|
-| "Create a workstream for this" | Agent runs `/odylith-workstream-new` which calls `odylith backlog create --repo-root . --title <title>` to create a new Radar workstream with proper schema | ~0.3s |
+| "Show me what you can do" | Agent runs `odylith show` — reads the repo's source structure, import graph, and manifests, then suggests components, workstreams, diagrams, and issues with the exact command to create each one | ~4s |
+| "Create a workstream for auth migration" | Agent runs `odylith backlog create --title "Auth migration to JWT"` to create a new Radar workstream with proper schema, ordering score, and INDEX patching | ~0.3s |
 | "Plan the implementation" | Agent runs `/odylith-plan` which first grounds via `/odylith-start` or `/odylith-context`, then builds a bounded technical plan under `odylith/technical-plans/` | varies |
-| "File a bug for this" | Agent runs `/odylith-case` which searches existing Casebook bugs first (to avoid duplicates), then captures the failure evidence with repro details | varies |
 | "Hand this off" | Agent runs `/odylith-handoff` to prepare a bounded handoff document with the active slice, what was done, what remains, and validation state | varies |
-| "Create a worktree for this" | Agent runs `/odylith-worktree` to create an isolated git worktree with the required `<year>/freedom/<tag>` branch format | ~1s |
+| "Create a worktree for this" | Agent runs `/odylith-worktree` to create an isolated git worktree with the required branch format | ~1s |
+
+### Components and Registry
+
+| Instruction | What happens | Time |
+|---|---|---|
+| "Register a component for the auth service" | Agent runs `odylith component register --id auth-service --path src/auth --label "Auth Service"` to create a registry entry and scaffold `CURRENT_SPEC.md` | ~0.1s |
+| "Update the component spec for auth" | Agent spawns the `odylith-registry-scribe` subagent to edit `CURRENT_SPEC.md` with implementation evidence | varies |
+| "What components exist?" | Agent reads `odylith/registry/source/component_registry.v1.json` or runs `/odylith-context <component-id>` for a specific component dossier | ~0.1s |
+| "Sync the component specs" | Agent runs `/odylith-registry-sync-specs` to fold Compass requirement evidence into per-component living specs | ~0.1s |
+
+### Bugs and Casebook
+
+| Instruction | What happens | Time |
+|---|---|---|
+| "File a bug for this" | Agent runs `odylith bug capture --title "Description" --component <id>` to create a Casebook record with proper CB-### ID and INDEX patching | ~0.1s |
+| "Investigate CB-105" | Agent runs `/odylith-context CB-105` to load the bug dossier, then uses the `casebook-bug-investigation` skill to gather evidence and connect to governed surfaces | varies |
+| "Is there already a bug for this?" | Agent searches existing Casebook bugs first (to avoid duplicates) via `/odylith-query` or reads the bug INDEX | ~1.3s |
+
+### Diagrams and Atlas
+
+| Instruction | What happens | Time |
+|---|---|---|
+| "Create a diagram for the auth flow" | Agent runs `odylith atlas scaffold --slug auth-flow --title "Auth Flow" --kind flowchart` to create catalog entry and optional `.mmd` source | ~0.1s |
+| "Update diagram D-017" | Agent spawns the `odylith-atlas-diagrammer` subagent to edit the `.mmd` source with rendered-artifact discipline | varies |
+| "Render the Atlas diagrams" | Agent runs `/odylith-atlas-render` to validate the Mermaid catalog and check diagram freshness | ~0.1s |
+| "Auto-update impacted diagrams" | Agent runs `/odylith-atlas-auto-update` to refresh diagrams based on change-watch metadata | ~0.1s |
+
+### Programs, Waves, and Releases
+
+| Instruction | What happens | Time |
+|---|---|---|
+| "Create a program for the v2 launch" | Agent runs `odylith program create --title "V2 Launch"` to create an umbrella execution-wave program | ~0.1s |
+| "Create a wave inside the v2 program" | Agent runs `odylith wave create --program <id> --label "Wave 1: Core"` to add a wave with member slots | ~0.1s |
+| "Assign B-073 to wave 1" | Agent runs `odylith wave assign --program <id> --wave <wave-id> --workstream B-073` | ~0.1s |
+| "Create a release definition" | Agent runs `odylith release create --version <version>` to define a release with workstream targeting | ~0.1s |
+| "Assign B-073 to the next release" | Agent runs `odylith release add --workstream B-073 --release <release-id>` | ~0.1s |
+| "Move B-073 to a different release" | Agent runs `odylith release move --workstream B-073 --to <release-id>` | ~0.1s |
+| "What's in the current release?" | Agent runs `odylith release show --release <release-id>` to list active assignments | ~0.1s |
+
+### Compass and Briefs
+
+| Instruction | What happens | Time |
+|---|---|---|
+| "Refresh the Compass" | Agent runs `/odylith-compass-refresh-wait` — renders the full Compass surface and waits for brief settlement | ~2s cached / ~25s cold |
+| "Log this checkpoint" | Agent runs `/odylith-compass-log` to append a bounded execution note to the Compass timeline | ~0.07s |
+| "I want the brief to focus on auth work" | Agent narrows the Compass brief scope by filtering to workstreams touching the auth component — the brief adapts to what you care about | instant |
+| "Show me what happened in the last 48 hours" | Agent reads the Compass timeline events, switching the audit window to the 48h view | instant |
+| "What's the standup brief?" | Agent reads the latest narrated brief from Compass — a human-readable summary of what changed, what matters, and what's next | ~0.1s |
+| "Make the brief shorter" | Agent adjusts narration to the compact voice contract — fewer details, same signal | instant |
 
 ### Making Changes
 
@@ -54,28 +103,15 @@ need to know the CLI — just describe what you want.
 | "Fix it" / "Implement this" / "Refactor that" | Agent edits files → PostToolUse hook fires async governance sync (validates backlog contract, renders surfaces, mirrors bundle) | ~0.1s hook, ~7s background sync |
 | "Only use the authoritative lane" | Execution governance promotes this as a `HardConstraint` on the active contract; future actions that leave the lane are denied | instant |
 | "Don't touch the test files" | Execution governance promotes this as a forbidden-move constraint; edits to test files are denied by admissibility | instant |
-| "Deploy to cell-01" | Execution governance checks resource closure (safe/incomplete/destructive), validates scope, checks external dependencies, and admits or denies | instant |
 
-### Validating and Testing
+### Validating and Syncing
 
 | Instruction | What happens | Time |
 |---|---|---|
 | "Run the tests" | Agent runs the repo's test toolchain; Odylith tracks the result in the execution frontier | varies |
-| "Validate the backlog" | Agent runs `/odylith-backlog-validate` which checks 95 workstreams for schema, traceability, plan bindings, and queue posture | ~0.3s |
-| "Validate the registry" | Agent runs `/odylith-registry-validate` which checks 25 components for shape, linkage, forensics, and deep-skill policy | ~0.4s |
-| "Sync the governance surfaces" | Agent runs `/odylith-sync-governance` — the full 22-step pipeline: normalize plans, backfill traceability, validate contracts, render Compass/Radar/Registry/Casebook/Atlas/Shell, mirror bundle | ~7s forced |
-| "Render the Atlas diagrams" | Agent runs `/odylith-atlas-render` to validate the Mermaid catalog and check diagram freshness | ~0.1s |
-| "Update the Atlas diagrams" | Agent runs `/odylith-atlas-auto-update` to refresh impacted diagrams from change-watch metadata | ~0.1s |
-| "Sync the component specs" | Agent runs `/odylith-registry-sync-specs` to fold Compass requirement evidence into per-component living specs | ~0.1s |
-
-### Compass and Observability
-
-| Instruction | What happens | Time |
-|---|---|---|
-| "Refresh the Compass" | Agent runs `/odylith-compass-refresh-wait` — renders the full Compass surface and waits for brief settlement | ~2s cached / ~25s cold |
-| "Log this checkpoint" | Agent runs `/odylith-compass-log` to append a bounded execution note to the Compass timeline | ~0.07s |
-| "What's the execution state?" | Agent reads the execution governance snapshot from the context packet — admissibility outcome, frontier phase, active blocker, pressure signals | instant |
-| "What changed recently?" | Agent reads the Compass timeline events and transaction history from the runtime payload | instant |
+| "Validate the backlog" | Agent runs `/odylith-backlog-validate` which checks workstreams for schema, traceability, plan bindings, and queue posture | ~0.3s |
+| "Validate the registry" | Agent runs `/odylith-registry-validate` which checks components for shape, linkage, forensics, and policy | ~0.4s |
+| "Sync the governance surfaces" | Agent runs `/odylith-sync-governance` — the full pipeline: normalize plans, backfill traceability, validate contracts, render all surfaces, mirror bundle | ~7s forced |
 
 ### Delegation and Subagents
 
@@ -95,6 +131,9 @@ Odylith CLI call.
 
 | Command | CLI | Time |
 |---|---|---|
+| Command | CLI | Time |
+|---|---|---|
+| `/odylith-show-me` | `odylith show --repo-root .` | ~4s |
 | `/odylith-start` | `odylith start --repo-root .` | 1.7s |
 | `/odylith-version` | `odylith version --repo-root .` | 0.8s |
 | `/odylith-session-brief` | `odylith claude session-start --repo-root .` | 1.8s |
@@ -113,7 +152,7 @@ Odylith CLI call.
 | `/odylith-workstream-new` | `odylith backlog create --repo-root . --title <title>` | 0.3s |
 | `/odylith-plan` | Grounds context, then builds a technical plan | varies |
 | `/odylith-handoff` | Grounds context, then builds a handoff document | varies |
-| `/odylith-case` | Searches existing bugs, then captures failure evidence | varies |
+| `/odylith-case` | `odylith bug capture --repo-root . --title <title>` | ~0.1s |
 | `/odylith-worktree` | Creates an isolated git worktree | ~1s |
 
 ---
