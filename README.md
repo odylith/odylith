@@ -44,7 +44,8 @@ command to create it.
 
 That one instruction is all you need. From there, start working normally.
 Odylith grounds every turn automatically — no special prompts, no commands to
-memorize.
+memorize. See **[Operator Instructions](docs/OPERATOR_INSTRUCTIONS.md)** for
+the full set of things the agent understands.
 
 > [!TIP]
 > **⭐ If Odylith makes your coding agent materially sharper in real repo work,
