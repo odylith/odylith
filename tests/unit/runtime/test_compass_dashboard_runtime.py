@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import datetime as dt
 import gzip
 import json
@@ -464,8 +465,11 @@ def test_write_runtime_snapshots_archives_days_older_than_retention(tmp_path: Pa
         embedded_raw.removeprefix("window.__ODYLITH_COMPASS_HISTORY__ = ").removesuffix(";\n")
     )
     assert embedded_payload["archive"]["dates"] == ["2026-03-01"]
-    assert embedded_payload["snapshots"]["2026-03-01"]["generated_utc"] == "2026-03-01T00:00:00Z"
-    assert embedded_payload["snapshots"]["2026-03-01"]["history"]["archive"]["count"] == 1
+    archived_snapshot = embedded_payload["snapshots"]["2026-03-01"]
+    assert archived_snapshot["encoding"] == "gzip+base64+json"
+    decoded_snapshot = json.loads(gzip.decompress(base64.b64decode(archived_snapshot["payload"])).decode("utf-8"))
+    assert decoded_snapshot["generated_utc"] == "2026-03-01T00:00:00Z"
+    assert decoded_snapshot["history"]["archive"]["count"] == 1
 
 
 def test_restore_archived_history_dates_keeps_restored_day_active(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001

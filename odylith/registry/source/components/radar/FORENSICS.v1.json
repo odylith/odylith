@@ -33,10 +33,10 @@
     "empty_reasons": [],
     "explicit_event_count": 27,
     "mapped_workstream_evidence_count": 7,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 28
+    "timeline_event_count": 27
   },
   "name": "Radar",
   "path_prefixes": [
@@ -46,22 +46,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/runtime/governance/sync_workstream_artifacts.py"
-      ],
-      "confidence": "high",
-      "event_index": 155,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "radar"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/sync_workstream_artifacts.py",
-      "ts_iso": "2026-04-14T08:53:40-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [],
       "confidence": "medium",

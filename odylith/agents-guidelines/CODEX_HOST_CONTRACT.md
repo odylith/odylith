@@ -75,10 +75,13 @@
   ``odylith/casebook/bugs/``, ``odylith/registry/source/``,
   ``odylith/atlas/source/``), it runs
   `./.odylith/bin/odylith sync --impact-mode selective <paths>` so the
-  derived dashboards stay aligned. The changed-path set comes from
-  `git status --porcelain -z` and is filtered through the shared
-  `should_refresh_governed_edit` predicate. Scoped `AGENTS.md` and
-  `CLAUDE.md` companions inside governed subtrees are ignored.
+  derived dashboards stay aligned. The changed-path set is inferred from
+  the current Bash command itself, then intersected with the current
+  dirty governed path set so the hook does not widen refresh to
+  unrelated repo dirtiness. If the command does not expose an exact
+  governed target, the checkpoint skips selective refresh instead of
+  guessing. Scoped `AGENTS.md` and `CLAUDE.md` companions inside
+  governed subtrees are ignored.
 - The Bash checkpoint never blocks the command: sync failures exit the
   hook with code 0 and emit a fail-soft `systemMessage` describing the
   failure so the operator can recover manually.

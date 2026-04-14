@@ -591,6 +591,25 @@
       }
     }
 
+    async function inflateGzipBase64JsonPayload(encoded) {
+      const token = String(encoded || "").trim();
+      if (!token || typeof DecompressionStream !== "function") return null;
+      try {
+        const binary = window.atob(token);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        const response = new Response(bytes);
+        if (!response.body) return null;
+        const inflated = new Response(response.body.pipeThrough(new DecompressionStream("gzip")));
+        const payload = await inflated.json();
+        return payload && typeof payload === "object" ? payload : null;
+      } catch (_error) {
+        return null;
+      }
+    }
+
     function liveHistoryMeta() {
       const runtime = window.__ODYLITH_COMPASS_RUNTIME__;
       if (!runtime || typeof runtime !== "object") return null;
@@ -676,14 +695,27 @@
       return resolved && typeof resolved === "object" ? resolved : null;
     }
 
-    function embeddedHistorySnapshot(dayToken) {
+    async function embeddedHistorySnapshot(dayToken) {
       const token = String(dayToken || "").trim();
       if (!DATE_RE.test(token)) return null;
       const store = window.__ODYLITH_COMPASS_HISTORY__;
       const snapshots = store && typeof store === "object" && store.snapshots && typeof store.snapshots === "object"
         ? store.snapshots
         : {};
-      const snapshot = cloneJsonPayload(snapshots[token]);
+      const entry = snapshots[token];
+      if (
+        entry
+        && typeof entry === "object"
+        && !Array.isArray(entry)
+        && entry.encoding === "gzip+base64+json"
+        && typeof entry.payload === "string"
+      ) {
+        const inflated = await inflateGzipBase64JsonPayload(entry.payload);
+        if (!inflated) return null;
+        snapshots[token] = inflated;
+        return applyLiveHistoryMeta(inflated);
+      }
+      const snapshot = cloneJsonPayload(entry);
       if (!snapshot) return null;
       return applyLiveHistoryMeta(snapshot);
     }
@@ -742,7 +774,7 @@
         } catch (_error) {}
       }
       await ensureEmbeddedHistoryLoaded();
-      const embeddedPayload = embeddedHistorySnapshot(token);
+      const embeddedPayload = await embeddedHistorySnapshot(token);
       if (embeddedPayload) return { payload: embeddedPayload, warning: "" };
       return {
         payload: null,

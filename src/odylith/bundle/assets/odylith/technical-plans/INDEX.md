@@ -28,6 +28,7 @@ Last updated (UTC): 2026-04-12
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md` | In progress | 2026-04-12 | 2026-04-12 | `B-090` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md` | In progress | 2026-04-12 | 2026-04-12 | `B-091` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md` | In progress | 2026-04-12 | 2026-04-12 | `B-092` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md` | In progress | 2026-04-12 | 2026-04-12 | `B-093` |
 
 ## Parked Plans
 

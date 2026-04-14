@@ -19,8 +19,8 @@ def _patch_stdin(monkeypatch, command: str) -> None:
 def _patch_no_governed_changes(monkeypatch) -> None:
     monkeypatch.setattr(
         codex_host_post_bash_checkpoint,
-        "governed_changed_paths",
-        lambda *, project_dir: [],
+        "command_scoped_governed_paths",
+        lambda *, project_dir, command: [],
     )
 
 
@@ -72,8 +72,8 @@ def test_post_bash_checkpoint_runs_selective_sync_when_governed_paths_change(
     monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
     monkeypatch.setattr(
         codex_host_post_bash_checkpoint,
-        "governed_changed_paths",
-        lambda *, project_dir: [
+        "command_scoped_governed_paths",
+        lambda *, project_dir, command: [
             "odylith/casebook/bugs/2026-04-14-example.md",
             "odylith/radar/source/INDEX.md",
         ],
@@ -112,8 +112,8 @@ def test_post_bash_checkpoint_emits_failure_message_on_selective_sync_error(
     monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
     monkeypatch.setattr(
         codex_host_post_bash_checkpoint,
-        "governed_changed_paths",
-        lambda *, project_dir: ["odylith/casebook/bugs/2026-04-14-example.md"],
+        "command_scoped_governed_paths",
+        lambda *, project_dir, command: ["odylith/casebook/bugs/2026-04-14-example.md"],
     )
 
     exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
@@ -136,8 +136,8 @@ def test_post_bash_checkpoint_emits_skipped_message_when_launcher_unavailable(
     monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
     monkeypatch.setattr(
         codex_host_post_bash_checkpoint,
-        "governed_changed_paths",
-        lambda *, project_dir: ["odylith/casebook/bugs/foo.md"],
+        "command_scoped_governed_paths",
+        lambda *, project_dir, command: ["odylith/casebook/bugs/foo.md"],
     )
 
     exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
@@ -210,4 +210,53 @@ def test_governed_changed_paths_fails_soft_on_nonzero_git_returncode(
     )
 
     paths = codex_host_post_bash_checkpoint.governed_changed_paths(project_dir=tmp_path)
+    assert paths == []
+
+
+def test_command_scoped_governed_paths_intersects_dirty_set_with_command_targets(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "dirty_governed_paths",
+        lambda *, project_dir: [
+            "odylith/casebook/bugs/2026-04-14-example.md",
+            "odylith/radar/source/INDEX.md",
+        ],
+    )
+
+    command = """apply_patch <<'PATCH'
+*** Begin Patch
+*** Update File: odylith/casebook/bugs/2026-04-14-example.md
+@@
+-old
++new
+*** End Patch
+PATCH"""
+
+    paths = codex_host_post_bash_checkpoint.command_scoped_governed_paths(
+        project_dir=tmp_path,
+        command=command,
+    )
+
+    assert paths == ["odylith/casebook/bugs/2026-04-14-example.md"]
+
+
+def test_command_scoped_governed_paths_skips_repo_wide_dirty_files_when_command_lacks_exact_target(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "dirty_governed_paths",
+        lambda *, project_dir: [
+            "odylith/casebook/bugs/2026-04-14-example.md",
+            "odylith/radar/source/INDEX.md",
+        ],
+    )
+
+    paths = codex_host_post_bash_checkpoint.command_scoped_governed_paths(
+        project_dir=tmp_path,
+        command="python -c \"from pathlib import Path; Path('src/odylith/cli.py').write_text('x')\"",
+    )
+
     assert paths == []

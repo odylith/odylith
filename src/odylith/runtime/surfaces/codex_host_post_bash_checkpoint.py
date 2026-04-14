@@ -27,6 +27,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -34,12 +36,16 @@ from pathlib import Path
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_shared
 
+_PATCH_PATH_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$", re.MULTILINE)
+_PATCH_MOVE_RE = re.compile(r"^\*\*\* Move to: (.+)$", re.MULTILINE)
+_REDIRECT_TARGET_RE = re.compile(r">\s*(?:'([^']+)'|\"([^\"]+)\"|([^\s;&|]+))")
+
 
 def should_checkpoint(command: str) -> bool:
     return codex_host_shared.edit_like_bash(command)
 
 
-def governed_changed_paths(*, project_dir: Path | str) -> list[str]:
+def dirty_governed_paths(*, project_dir: Path | str) -> list[str]:
     """Return repo-relative governed paths with uncommitted changes.
 
     Uses ``git status --porcelain -z`` rooted at the project dir,
@@ -85,6 +91,163 @@ def governed_changed_paths(*, project_dir: Path | str) -> list[str]:
         else:
             index += 1
     return paths
+
+
+def governed_changed_paths(*, project_dir: Path | str) -> list[str]:
+    """Back-compat alias for repo-wide dirty governed paths."""
+    return dirty_governed_paths(project_dir=project_dir)
+
+
+def _project_relative_path(*, project_dir: Path, raw_path: str) -> str:
+    token = str(raw_path or "").strip()
+    if not token:
+        return ""
+    candidate = Path(token).expanduser()
+    resolved = candidate.resolve() if candidate.is_absolute() else (project_dir / candidate).resolve()
+    try:
+        return resolved.relative_to(project_dir).as_posix()
+    except ValueError:
+        return ""
+
+
+def _dedupe_paths(paths: list[str]) -> list[str]:
+    collected: list[str] = []
+    for path in paths:
+        if path and path not in collected:
+            collected.append(path)
+    return collected
+
+
+def _paths_from_apply_patch(*, command: str, project_dir: Path) -> list[str]:
+    tokens = [match.strip() for match in _PATCH_PATH_RE.findall(command)]
+    tokens.extend(match.strip() for match in _PATCH_MOVE_RE.findall(command))
+    return _dedupe_paths(
+        [
+            relative
+            for relative in (_project_relative_path(project_dir=project_dir, raw_path=token) for token in tokens)
+            if relative
+        ]
+    )
+
+
+def _shell_tokens(command: str) -> list[str]:
+    try:
+        return shlex.split(command)
+    except ValueError:
+        return []
+
+
+def _operand_tokens(tokens: list[str]) -> list[str]:
+    operands: list[str] = []
+    after_double_dash = False
+    for token in tokens:
+        if after_double_dash:
+            operands.append(token)
+            continue
+        if token == "--":
+            after_double_dash = True
+            continue
+        if token.startswith("-"):
+            continue
+        operands.append(token)
+    return operands
+
+
+def _destinations_from_cp_mv(*, tokens: list[str], project_dir: Path) -> list[str]:
+    operands = _operand_tokens(tokens)
+    if len(operands) < 2:
+        return []
+    sources = operands[:-1]
+    destination = operands[-1]
+    destination_path = Path(destination).expanduser()
+    resolved_destination = destination_path.resolve() if destination_path.is_absolute() else (project_dir / destination_path).resolve()
+    if len(sources) == 1 and not resolved_destination.is_dir() and not destination.endswith("/"):
+        relative = _project_relative_path(project_dir=project_dir, raw_path=destination)
+        return [relative] if relative else []
+    targets: list[str] = []
+    for source in sources:
+        source_name = Path(source).name
+        if not source_name:
+            continue
+        relative = _project_relative_path(
+            project_dir=project_dir,
+            raw_path=str(Path(destination) / source_name),
+        )
+        if relative:
+            targets.append(relative)
+    return _dedupe_paths(targets)
+
+
+def _targets_after_script_operand(*, tokens: list[str]) -> list[str]:
+    if len(tokens) < 3:
+        return []
+    index = 1
+    while index < len(tokens):
+        token = tokens[index]
+        if token == "--":
+            index += 1
+            break
+        if not token.startswith("-"):
+            break
+        index += 1
+        if token in {"-i", "-e", "-f"} and index < len(tokens):
+            index += 1
+    if index >= len(tokens):
+        return []
+    index += 1
+    return tokens[index:]
+
+
+def _paths_from_token_list(*, tokens: list[str], project_dir: Path, raw_command: str) -> list[str]:
+    if not tokens:
+        return []
+    command = tokens[0]
+    raw_targets: list[str] = []
+    if command in {"cp", "mv"}:
+        return _destinations_from_cp_mv(tokens=tokens[1:], project_dir=project_dir)
+    if command == "touch":
+        raw_targets = _operand_tokens(tokens[1:])
+    elif command == "mkdir":
+        raw_targets = []
+    elif command == "sed":
+        raw_targets = _targets_after_script_operand(tokens=tokens)
+    elif command == "perl":
+        raw_targets = _targets_after_script_operand(tokens=tokens)
+    elif command == "tee":
+        raw_targets = _operand_tokens(tokens[1:])
+    elif command == "cat":
+        match = _REDIRECT_TARGET_RE.search(raw_command)
+        if match:
+            raw_targets = [next(group for group in match.groups() if group)]
+    return _dedupe_paths(
+        [
+            relative
+            for relative in (_project_relative_path(project_dir=project_dir, raw_path=token) for token in raw_targets)
+            if relative
+        ]
+    )
+
+
+def inferred_command_paths(*, project_dir: Path | str, command: str) -> list[str]:
+    """Infer exact repo-relative paths targeted by the current Bash command."""
+    project = Path(project_dir).expanduser().resolve()
+    raw_command = str(command or "")
+    if not raw_command.strip():
+        return []
+    if "apply_patch" in raw_command:
+        apply_patch_paths = _paths_from_apply_patch(command=raw_command, project_dir=project)
+        if apply_patch_paths:
+            return apply_patch_paths
+    return _paths_from_token_list(tokens=_shell_tokens(raw_command), project_dir=project, raw_command=raw_command)
+
+
+def command_scoped_governed_paths(*, project_dir: Path | str, command: str) -> list[str]:
+    """Return dirty governed paths explicitly targeted by the current Bash command."""
+    command_paths = inferred_command_paths(project_dir=project_dir, command=command)
+    if not command_paths:
+        return []
+    dirty = set(dirty_governed_paths(project_dir=project_dir))
+    return [path for path in command_paths if path in dirty and claude_host_shared.should_refresh_governed_edit(path)]
 
 
 def _changed_paths_preview(paths: list[str]) -> str:
@@ -169,7 +332,7 @@ def main(argv: list[str] | None = None) -> int:
     # is Bash-checkpoint parity with Claude's post-edit lane; non-Bash
     # edit surfaces would need their own hook.
     project_dir = claude_host_shared.resolve_repo_root(args.repo_root)
-    changed = governed_changed_paths(project_dir=project_dir)
+    changed = command_scoped_governed_paths(project_dir=project_dir, command=command)
     message = refresh_governance(project_dir=project_dir, paths=changed)
     if message:
         sys.stdout.write(json.dumps(message))

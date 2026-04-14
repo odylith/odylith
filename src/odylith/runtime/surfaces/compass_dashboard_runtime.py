@@ -8,6 +8,7 @@ identical while the facade remains stable.
 
 from __future__ import annotations
 
+import base64
 import datetime as dt
 import gzip
 import json
@@ -39,6 +40,7 @@ _FRESHNESS_LIVE_MAX_MINUTES = 90
 _FRESHNESS_RECENT_MAX_MINUTES = 6 * 60
 _FRESHNESS_AGING_MAX_MINUTES = 24 * 60
 DEFAULT_HISTORY_RETENTION_DAYS = 15
+_EMBEDDED_HISTORY_SNAPSHOT_ENCODING = "gzip+base64+json"
 
 
 def _global_brief_provider_allowed(
@@ -2597,6 +2599,14 @@ def _build_embedded_history_payload(
     calendar controls remain stable while switching between past days.
     """
 
+    def _encode_snapshot(snapshot: Mapping[str, Any]) -> dict[str, str]:
+        raw = json.dumps(snapshot, separators=(",", ":")).encode("utf-8")
+        compressed = gzip.compress(raw, compresslevel=9)
+        return {
+            "encoding": _EMBEDDED_HISTORY_SNAPSHOT_ENCODING,
+            "payload": base64.b64encode(compressed).decode("ascii"),
+        }
+
     restored_dates_raw = history_meta.get("restored_dates", [])
     restored_dates = (
         [str(item) for item in restored_dates_raw]
@@ -2653,7 +2663,7 @@ def _build_embedded_history_payload(
             else {}
         )
         snapshot["history"] = merged_history
-        snapshots[token] = snapshot
+        snapshots[token] = _encode_snapshot(snapshot)
     return {
         "version": "v1",
         "generated_utc": str(history_meta.get("generated_utc", "")).strip(),
