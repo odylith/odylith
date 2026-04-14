@@ -264,14 +264,23 @@ def _parse_go_mod(path: Path, identity: RepoIdentity) -> None:
 # ---------------------------------------------------------------------------
 
 def _discover_components(repo_root: Path, identity: RepoIdentity) -> list[ComponentSuggestion]:
-    """Walk the source tree and find real architectural boundaries."""
+    """Find real architectural boundaries using the best available analysis."""
     _progress("Reading source tree...")
 
     # For monorepos, use workspace directories
     if identity.monorepo and identity.workspace_dirs:
         return _discover_monorepo_components(repo_root, identity)
 
-    # Find the module level — walk through generic wrappers
+    # Try import-graph-based detection for Python repos
+    if "Python" in identity.languages:
+        try:
+            components = _discover_components_from_import_graph(repo_root)
+            if components:
+                return components
+        except Exception:
+            pass  # fall back to directory walking
+
+    # Fallback: directory structure analysis
     module_root = _find_module_level(repo_root)
     children = _source_children(module_root)
 
@@ -285,6 +294,345 @@ def _discover_components(repo_root: Path, identity: RepoIdentity) -> list[Compon
             components.append(comp)
 
     return components[:6]
+
+
+def _discover_components_from_import_graph(repo_root: Path) -> list[ComponentSuggestion]:
+    """Use the Odylith code graph builder to detect components from Python imports.
+
+    This gives much richer results than directory walking because it understands
+    which modules actually depend on each other, finds central vs leaf modules,
+    and detects coupling between boundaries.
+    """
+    _progress("Building import graph from Python AST...")
+
+    artifacts, edges = _build_import_graph(repo_root)
+
+    if not artifacts:
+        return []
+
+    # Filter out test and script artifacts — components come from source code
+    test_prefixes = ("tests/", "test/", "scripts/", "spec/", "benchmark/")
+    source_artifacts = [a for a in artifacts if not any(a["path"].startswith(p) for p in test_prefixes)]
+    if not source_artifacts:
+        source_artifacts = artifacts  # fallback if everything is tests
+
+    # Build artifact index and import graph
+    artifact_by_path: dict[str, dict[str, Any]] = {a["path"]: a for a in artifacts}
+    import_edges = [e for e in edges if e.get("relation") == "imports"]
+
+    # Find the module level from source artifacts only
+    module_prefix = _find_common_source_prefix(source_artifacts)
+
+    # Group artifacts into component directories
+    # For large modules (>40 files), go one level deeper to find real boundaries
+    raw_dirs: dict[str, list[dict[str, Any]]] = {}
+    for artifact in source_artifacts:
+        path = artifact["path"]
+        if not path.startswith(module_prefix + "/") and module_prefix:
+            continue
+        remainder = path[len(module_prefix):].lstrip("/") if module_prefix else path
+        parts = remainder.split("/")
+        if len(parts) >= 2:
+            raw_dirs.setdefault(parts[0], []).append(artifact)
+        else:
+            raw_dirs.setdefault("__root__", []).append(artifact)
+
+    # Split oversized directories into sub-components
+    component_dirs: dict[str, list[dict[str, Any]]] = {}
+    for name, arts in raw_dirs.items():
+        if name.startswith("__"):
+            component_dirs[name] = arts
+            continue
+        if len(arts) > 40:
+            # Go one level deeper
+            sub_dirs: dict[str, list[dict[str, Any]]] = {}
+            for a in arts:
+                remainder = a["path"][len(module_prefix):].lstrip("/") if module_prefix else a["path"]
+                parts = remainder.split("/")
+                if len(parts) >= 3:
+                    sub_key = f"{parts[0]}/{parts[1]}"
+                else:
+                    sub_key = parts[0]
+                sub_dirs.setdefault(sub_key, []).append(a)
+            # Only split if we get multiple meaningful sub-dirs
+            meaningful_subs = {k: v for k, v in sub_dirs.items() if "/" in k and len(v) >= 3}
+            if len(meaningful_subs) >= 2:
+                component_dirs.update(meaningful_subs)
+                # Include any remaining top-level files as root module
+                for k, v in sub_dirs.items():
+                    if "/" not in k:
+                        component_dirs.setdefault(name, []).extend(v)
+            else:
+                component_dirs[name] = arts
+        else:
+            component_dirs[name] = arts
+
+    # Count cross-component import edges
+    inbound: Counter[str] = Counter()
+    outbound: Counter[str] = Counter()
+    internal: Counter[str] = Counter()
+
+    def _comp_for_path(path: str) -> str:
+        if module_prefix and not path.startswith(module_prefix + "/"):
+            return "__external__"
+        remainder = path[len(module_prefix):].lstrip("/") if module_prefix else path
+        parts = remainder.split("/")
+        if len(parts) >= 3:
+            two_level = f"{parts[0]}/{parts[1]}"
+            if two_level in component_dirs:
+                return two_level
+        return parts[0] if len(parts) >= 2 else "__root__"
+
+    for edge in import_edges:
+        src_comp = _comp_for_path(edge["source_path"])
+        tgt_comp = _comp_for_path(edge["target_path"])
+        if src_comp == tgt_comp:
+            internal[src_comp] += 1
+        else:
+            outbound[src_comp] += 1
+            inbound[tgt_comp] += 1
+
+    # Build component suggestions ranked by importance (inbound imports = centrality)
+    components: list[ComponentSuggestion] = []
+    skip = {"__root__", "__external__"}
+    seen_labels: set[str] = set()
+
+    ranked = sorted(
+        ((name, arts) for name, arts in component_dirs.items() if name not in skip),
+        key=lambda x: -(inbound[x[0]] + len(x[1])),
+    )
+
+    for comp_name, comp_artifacts in ranked[:8]:
+        if not comp_name or comp_name.startswith("__"):
+            continue
+
+        comp_id = _slugify(comp_name)
+        rel_path = f"{module_prefix}/{comp_name}" if module_prefix else comp_name
+        full_path = repo_root / rel_path
+
+        # Infer label: directory name is the primary signal, file contents secondary
+        dir_parts = comp_name.split("/")
+        deepest_dir = dir_parts[-1]
+        file_names = [a.get("module_name", "").split(".")[-1] for a in comp_artifacts]
+
+        # First try to infer from the directory name itself
+        label = _infer_label(deepest_dir, [], [])
+        # If directory name alone gives a generic result, enrich with file contents
+        if label == _humanize(deepest_dir):
+            label_from_files = _infer_label(deepest_dir, [], file_names)
+            if label_from_files != _humanize(deepest_dir):
+                label = label_from_files
+
+        # Build description from import analysis
+        n_modules = len(comp_artifacts)
+        n_inbound = inbound[comp_name]
+        n_outbound = outbound[comp_name]
+        n_internal = internal[comp_name]
+
+        role_parts: list[str] = []
+        role_parts.append(f"{n_modules} modules")
+        if n_inbound > 5:
+            role_parts.append(f"imported by {n_inbound} other modules — this is a core dependency")
+        elif n_inbound > 0:
+            role_parts.append(f"imported by {n_inbound} other modules")
+        if n_outbound > n_inbound and n_outbound > 3:
+            role_parts.append("orchestrates across other components")
+        if n_internal > 5:
+            role_parts.append("tightly cohesive internally")
+
+        why = _describe_why_from_imports(n_inbound, n_outbound, n_internal, n_modules)
+        description = ", ".join(role_parts) + f". {why}"
+
+        # Deduplicate by label — if same label already used, append the directory name
+        if label in seen_labels:
+            label = f"{label} ({_humanize(deepest_dir)})"
+        seen_labels.add(label)
+
+        components.append(ComponentSuggestion(
+            component_id=comp_id,
+            label=label,
+            path=rel_path,
+            description=description,
+        ))
+
+    return components[:6]
+
+
+def _build_import_graph(repo_root: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Build an import graph by scanning Python files with AST.
+
+    Auto-discovers source roots (unlike the context engine which uses hardcoded roots).
+    Returns (artifacts, edges) in the same format as the context engine code graph.
+    """
+    import ast
+
+    # Find all Python source directories
+    source_roots = _auto_detect_python_roots(repo_root)
+    if not source_roots:
+        return [], []
+
+    # Collect all Python files and build module index
+    module_index: dict[str, str] = {}  # module_name → rel_path
+    for root_dir, module_root in source_roots:
+        full_root = repo_root / root_dir
+        if not full_root.is_dir():
+            continue
+        for py_file in sorted(full_root.rglob("*.py")):
+            rel_path = py_file.relative_to(repo_root).as_posix()
+            # Skip noise
+            if any(noise in rel_path for noise in ("__pycache__", ".venv", "node_modules")):
+                continue
+            # Build module name
+            module_path = py_file.relative_to(repo_root / root_dir).with_suffix("").as_posix()
+            module_name = f"{module_root}.{module_path.replace('/', '.')}" if module_root else module_path.replace("/", ".")
+            module_name = module_name.rstrip(".")
+            if module_name.endswith(".__init__"):
+                module_name = module_name[:-9]
+            module_index[module_name] = rel_path
+
+    # Parse each file for imports
+    artifacts: list[dict[str, Any]] = []
+    edges: list[dict[str, Any]] = []
+
+    for module_name, rel_path in sorted(module_index.items()):
+        full_path = repo_root / rel_path
+        parts = rel_path.split("/")
+        layer = parts[0] if parts else ""
+
+        # Extract the meaningful subdirectory for component grouping
+        artifact = {
+            "path": rel_path,
+            "module_name": module_name,
+            "layer": layer,
+            "imports": [],
+        }
+
+        try:
+            source = full_path.read_text(encoding="utf-8", errors="replace")
+            tree = ast.parse(source, filename=rel_path)
+        except (SyntaxError, OSError):
+            artifacts.append(artifact)
+            continue
+
+        # Extract imports
+        imported_modules: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    imported_modules.add(alias.name)
+            elif isinstance(node, ast.ImportFrom):
+                if node.module and node.level == 0:
+                    imported_modules.add(node.module)
+                elif node.module and node.level > 0:
+                    # Relative import — resolve against current package
+                    pkg_parts = module_name.split(".")
+                    trim = max(0, node.level - 1)
+                    base = ".".join(pkg_parts[:max(0, len(pkg_parts) - trim)])
+                    resolved = f"{base}.{node.module}" if base else node.module
+                    imported_modules.add(resolved)
+
+        # Resolve imports to known modules and create edges
+        for imp in sorted(imported_modules):
+            # Try exact match and prefix matches
+            target_path = module_index.get(imp)
+            if not target_path:
+                # Try parent module
+                parent = imp.rsplit(".", 1)[0] if "." in imp else ""
+                target_path = module_index.get(parent)
+            if target_path:
+                artifact["imports"].append(target_path)
+                edges.append({
+                    "source_path": rel_path,
+                    "relation": "imports",
+                    "target_path": target_path,
+                })
+
+        artifacts.append(artifact)
+
+    return artifacts, edges
+
+
+def _auto_detect_python_roots(repo_root: Path) -> list[tuple[str, str]]:
+    """Auto-detect Python source roots in the repo.
+
+    Returns list of (rel_root, module_root) tuples.
+    For src/odylith/ → ("src/odylith", "odylith")
+    For app/ → ("app", "app")
+    """
+    roots: list[tuple[str, str]] = []
+
+    # Check src/ layout (PEP 517 style)
+    src_dir = repo_root / "src"
+    if src_dir.is_dir():
+        for child in sorted(src_dir.iterdir()):
+            if child.is_dir() and not child.name.startswith(".") and not child.name.startswith("__"):
+                if (child / "__init__.py").is_file() or any(child.rglob("*.py")):
+                    roots.append((f"src/{child.name}", child.name))
+
+    # Check common top-level source directories
+    for name in ("app", "lib", "server", "backend", "api", "services"):
+        candidate = repo_root / name
+        if candidate.is_dir() and any(candidate.rglob("*.py")):
+            roots.append((name, name))
+
+    # Check for top-level package (pyproject.toml style)
+    if not roots:
+        for child in sorted(repo_root.iterdir()):
+            if child.is_dir() and (child / "__init__.py").is_file():
+                if child.name not in _NOISE_DIRS and not child.name.startswith("."):
+                    roots.append((child.name, child.name))
+
+    # Always include tests and scripts if they exist
+    for name in ("tests", "test", "scripts"):
+        candidate = repo_root / name
+        if candidate.is_dir() and any(candidate.rglob("*.py")):
+            roots.append((name, name))
+
+    return roots
+
+
+def _find_common_source_prefix(artifacts: list[dict[str, Any]]) -> str:
+    """Find the deepest directory prefix shared by most artifacts."""
+    if not artifacts:
+        return ""
+
+    # Count how many artifacts share each prefix
+    prefix_counts: Counter[str] = Counter()
+    for artifact in artifacts:
+        path = artifact["path"]
+        parts = path.split("/")
+        for depth in range(1, min(len(parts), 5)):
+            prefix = "/".join(parts[:depth])
+            prefix_counts[prefix] += 1
+
+    total = len(artifacts)
+    # Find the deepest prefix that covers >60% of artifacts
+    best = ""
+    for prefix, count in prefix_counts.most_common():
+        if count >= total * 0.6 and len(prefix.split("/")) > len(best.split("/")):
+            best = prefix
+
+    # Don't return single generic names
+    if best and best.split("/")[-1].lower() in _WRAPPER_NAMES:
+        # Keep it — the wrapper IS part of the prefix path
+        pass
+
+    return best
+
+
+def _describe_why_from_imports(n_inbound: int, n_outbound: int, n_internal: int, n_modules: int) -> str:
+    """Explain governance value based on import analysis."""
+    if n_inbound > 10:
+        return "Heavy dependency — changes here cascade across the codebase. Tracking it prevents silent breakage"
+    if n_inbound > 5:
+        return "Central boundary — many modules depend on it. Registering it makes ownership visible before changes land"
+    if n_outbound > n_inbound and n_outbound > 5:
+        return "Orchestration layer — coordinates across other components. Tracking it keeps the coordination contract explicit"
+    if n_internal > 5 and n_inbound <= 2:
+        return "Self-contained module — low coupling, high cohesion. Naming it now makes it a clean delegation target for agent sessions"
+    if n_modules >= 5:
+        return "Meaningful boundary — large enough to need explicit ownership and delivery accountability"
+    return "Tracking it gives agent sessions a named boundary to reason about"
 
 
 def _discover_monorepo_components(repo_root: Path, identity: RepoIdentity) -> list[ComponentSuggestion]:
@@ -430,7 +778,7 @@ def _analyze_module(directory: Path, repo_root: Path) -> ComponentSuggestion | N
 
 def _infer_label(dir_name: str, subdirs: list[str], files: list[str]) -> str:
     """Infer a product-level component name."""
-    all_names = {n.lower().replace("_", " ") for n in subdirs + files}
+    all_names = {n.lower().replace("_", " ") for n in [dir_name] + subdirs + files}
 
     # Pattern matching on module purpose
     patterns: list[tuple[set[str], str]] = [
