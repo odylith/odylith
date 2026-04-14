@@ -12,7 +12,7 @@ Explore your repo and understand what Odylith sees.
 
 | Say this | What happens |
 |---|---|
-| **"Show me what you can do"** | Reads source structure, import graph, and manifests. Suggests components, workstreams, diagrams, and issues with the exact command to create each one. `odylith show` |
+| **"Odylith, show me what you can do"** | Reads source structure, import graph, and manifests. Suggests components, workstreams, diagrams, and issues with the exact command to create each one. `odylith show` |
 | **"What's the state of the repo?"** | Builds a Compass-derived summary — active workstreams, next actions, risks, recent activity. `odylith session-brief` |
 | **"Find everything related to auth"** | Searches LanceDB + Tantivy across all compiled documents — workstreams, components, plans, bugs, diagrams. `odylith query "auth"` |
 | **"Show me the auth-service component"** | Resolves one entity into a full context dossier with relations, delivery scopes, and governance snapshot. `odylith context auth-service` |
