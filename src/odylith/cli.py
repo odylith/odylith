@@ -100,7 +100,7 @@ _CODEX_HOST_COMMAND_MODULES = {
     "stop-summary": "odylith.runtime.surfaces.codex_host_stop_summary",
     "compatibility": "odylith.runtime.surfaces.codex_host_compatibility",
 }
-_SHOW_CAPABILITIES_MODULE = "odylith.runtime.surfaces.show_capabilities"
+_SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
 _COMPONENT_AUTHORING_MODULE = "odylith.runtime.governance.component_authoring"
 _BUG_AUTHORING_MODULE = "odylith.runtime.governance.bug_authoring"
 
