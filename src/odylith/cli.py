@@ -100,6 +100,9 @@ _CODEX_HOST_COMMAND_MODULES = {
     "stop-summary": "odylith.runtime.surfaces.codex_host_stop_summary",
     "compatibility": "odylith.runtime.surfaces.codex_host_compatibility",
 }
+_SHOW_CAPABILITIES_MODULE = "odylith.runtime.surfaces.show_capabilities"
+_COMPONENT_AUTHORING_MODULE = "odylith.runtime.governance.component_authoring"
+_BUG_AUTHORING_MODULE = "odylith.runtime.governance.bug_authoring"
 
 
 def _load_module(name: str):
@@ -1260,6 +1263,33 @@ def _cmd_backlog(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_show(args: argparse.Namespace) -> int:
+    return _run_module_main(
+        _SHOW_CAPABILITIES_MODULE,
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
+
+
+def _cmd_component(args: argparse.Namespace) -> int:
+    blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+    if blocked:
+        return blocked
+    return _run_module_main(
+        _COMPONENT_AUTHORING_MODULE,
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
+
+
+def _cmd_bug(args: argparse.Namespace) -> int:
+    blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+    if blocked:
+        return blocked
+    return _run_module_main(
+        _BUG_AUTHORING_MODULE,
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
+
+
 def _cmd_release(args: argparse.Namespace) -> int:
     if args.release_command in {"create", "update", "add", "remove", "move"} and not _forwarded_has_flag(
         args.forwarded,
@@ -1850,6 +1880,31 @@ def build_parser() -> argparse.ArgumentParser:
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
         child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
+    show = subparsers.add_parser(
+        "show",
+        help="Analyze this repo and show what Odylith governance records it could create.",
+    )
+    show.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    show.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    component = subparsers.add_parser("component", help="Create and maintain Registry component records.")
+    component_subparsers = component.add_subparsers(dest="component_command", required=True)
+    component_register = component_subparsers.add_parser(
+        "register",
+        help="Register a new component in the Odylith registry and scaffold its CURRENT_SPEC.md.",
+    )
+    component_register.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    component_register.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    bug = subparsers.add_parser("bug", help="Create and maintain Casebook bug records.")
+    bug_subparsers = bug.add_subparsers(dest="bug_command", required=True)
+    bug_capture = bug_subparsers.add_parser(
+        "capture",
+        help="Capture a new bug record in the Odylith Casebook.",
+    )
+    bug_capture.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    bug_capture.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
     validate = subparsers.add_parser("validate", help="Run Odylith governance and contract validators.")
     validate_subparsers = validate.add_subparsers(dest="validate_command", required=True)
     for command, help_text in (
@@ -2067,6 +2122,31 @@ def main(argv: list[str] | None = None) -> int:
                         forwarded=forwarded,
                     )
                 )
+        if tokens[0] == "show":
+            repo_root, forwarded = _extract_repo_root(tokens[1:])
+            if _help_requested(forwarded):
+                parser = build_parser()
+                args = parser.parse_args(tokens)
+                return _cmd_show(args)
+            return _cmd_show(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
+        if tokens[0] == "component" and len(tokens) >= 2 and tokens[1] == "register":
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            if _help_requested(forwarded):
+                parser = build_parser()
+                args = parser.parse_args(tokens)
+                return _cmd_component(args)
+            return _cmd_component(
+                argparse.Namespace(repo_root=repo_root, component_command="register", forwarded=forwarded)
+            )
+        if tokens[0] == "bug" and len(tokens) >= 2 and tokens[1] == "capture":
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            if _help_requested(forwarded):
+                parser = build_parser()
+                args = parser.parse_args(tokens)
+                return _cmd_bug(args)
+            return _cmd_bug(
+                argparse.Namespace(repo_root=repo_root, bug_command="capture", forwarded=forwarded)
+            )
         if tokens[0] == "backlog" and len(tokens) >= 2:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if tokens[1] == "create":
@@ -2255,6 +2335,12 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_sync(args)
     if args.command == "dashboard" and args.dashboard_command == "refresh":
         return _cmd_dashboard_refresh(args)
+    if args.command == "show":
+        return _cmd_show(args)
+    if args.command == "component":
+        return _cmd_component(args)
+    if args.command == "bug":
+        return _cmd_bug(args)
     if args.command == "backlog":
         return _cmd_backlog(args)
     if args.command == "release":
