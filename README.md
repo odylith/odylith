@@ -19,10 +19,12 @@ blockers, and the full execution history. It gets to the actual work faster,
 makes fewer wrong moves, and leaves durable evidence behind for the next
 session.
 
-Odylith is a control plane for coding agents. It grounds every turn through
-local-first retrieval, governs every action through execution admissibility,
-and keeps delivery intelligence, component forensics, and workstream state
-durable across sessions. Both Codex and Claude Code are first-class hosts.
+Odylith is an AI agent that operates through your coding agent. It reasons
+about your repo through delivery intelligence, grounds every turn through
+local-first retrieval on LanceDB and Tantivy, governs every action through
+execution admissibility, adjudicates ambiguous postures through its Tribunal,
+and keeps its own durable memory across sessions. It runs through both Codex
+and Claude Code as first-class hosts.
 
 More on the operating frame:
 [Why Bolting Odylith Onto Codex Or Claude Code Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
