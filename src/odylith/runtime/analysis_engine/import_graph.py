@@ -159,12 +159,15 @@ def discover_components_from_imports(
     # Group into component directories
     component_groups = _group_into_components(source_arts, module_prefix)
 
-    # Count cross-component import edges
-    inbound, outbound, internal = _count_cross_component_edges(edges, component_groups, module_prefix)
+    # Merge small groups into their most-connected neighbor
+    merged_groups = _merge_small_groups(component_groups, edges, min_size=5)
+
+    # Count cross-component import edges on merged groups
+    inbound, outbound, internal = _count_cross_component_edges(edges, merged_groups, module_prefix)
 
     # Build ranked suggestions
     return _build_component_suggestions(
-        component_groups, inbound, outbound, internal, module_prefix, repo_root,
+        merged_groups, inbound, outbound, internal, module_prefix, repo_root,
     )
 
 
@@ -463,30 +466,100 @@ def _group_into_components(
         key = parts[0] if len(parts) >= 2 else "__root__"
         raw.setdefault(key, []).append(art)
 
-    # Split oversized groups
+    # Split oversized groups into sub-components
     result: dict[str, list[ImportArtifact]] = {}
     for name, arts in raw.items():
         if name.startswith("__"):
             result[name] = arts
             continue
-        if len(arts) > 40:
+        if len(arts) > 15:
+            # Strategy 1: split by subdirectory (if the directory has real subdirs)
             subs: dict[str, list[ImportArtifact]] = {}
             for a in arts:
                 remainder = a.path[len(module_prefix):].lstrip("/") if module_prefix else a.path
                 parts = remainder.split("/")
                 sub_key = f"{parts[0]}/{parts[1]}" if len(parts) >= 3 else parts[0]
                 subs.setdefault(sub_key, []).append(a)
-            meaningful = {k: v for k, v in subs.items() if "/" in k and len(v) >= 3}
-            if len(meaningful) >= 2:
-                result.update(meaningful)
+            dir_subs = {k: v for k, v in subs.items() if "/" in k and len(v) >= 3}
+
+            if len(dir_subs) >= 2:
+                result.update(dir_subs)
                 for k, v in subs.items():
                     if "/" not in k:
                         result.setdefault(name, []).extend(v)
             else:
-                result[name] = arts
+                # Strategy 2: split flat directories by file-name prefix
+                prefix_groups = _group_by_filename_prefix(arts, module_prefix)
+                if len(prefix_groups) >= 2:
+                    for prefix, prefix_arts in prefix_groups.items():
+                        result[f"{name}/{prefix}"] = prefix_arts
+                else:
+                    result[name] = arts
         else:
             result[name] = arts
     return result
+
+
+def _group_by_filename_prefix(
+    artifacts: list[ImportArtifact],
+    module_prefix: str,
+) -> dict[str, list[ImportArtifact]]:
+    """Group files in a flat directory by their common name prefix.
+
+    e.g., compass_dashboard_runtime.py, compass_standup_brief.py → "compass"
+          claude_host_session_brief.py, claude_host_bash_guard.py → "claude_host"
+    """
+    groups: dict[str, list[ImportArtifact]] = {}
+    for art in artifacts:
+        filename = Path(art.path).stem
+        # Find the longest common prefix that groups at least 2 files
+        prefix = _extract_meaningful_prefix(filename)
+        groups.setdefault(prefix, []).append(art)
+
+    # Merge tiny groups (< 2 files) into an "other" bucket
+    merged: dict[str, list[ImportArtifact]] = {}
+    other: list[ImportArtifact] = []
+    for prefix, arts in groups.items():
+        if len(arts) >= 2:
+            merged[prefix] = arts
+        else:
+            other.extend(arts)
+    if other:
+        merged["core"] = other
+
+    # Only split if we get meaningful groups
+    if len(merged) >= 2 and all(len(v) >= 2 for v in merged.values() if v):
+        return merged
+    return {}
+
+
+def _extract_meaningful_prefix(filename: str) -> str:
+    """Extract the semantic prefix from a filename like 'compass_dashboard_runtime' → 'compass'."""
+    parts = filename.split("_")
+    if not parts:
+        return filename
+
+    # Common multi-word prefixes to detect
+    two_word_prefixes = {
+        "claude_host", "codex_host", "compass_standup", "compass_dashboard",
+        "compass_execution", "compass_narrative", "compass_runtime",
+        "render_backlog", "render_casebook", "render_compass", "render_registry",
+        "render_tooling", "dashboard_template", "dashboard_ui",
+        "tooling_dashboard", "execution_wave",
+    }
+
+    if len(parts) >= 2:
+        two = f"{parts[0]}_{parts[1]}"
+        if two in two_word_prefixes:
+            return two
+
+    # Single-word prefix
+    first = parts[0]
+    # Skip overly generic prefixes
+    if first in ("render", "build", "auto", "generated", "update"):
+        if len(parts) >= 2:
+            return f"{first}_{parts[1]}"
+    return first
 
 
 def _count_cross_component_edges(
@@ -517,6 +590,63 @@ def _count_cross_component_edges(
     return inbound, outbound, internal
 
 
+def _merge_small_groups(
+    groups: dict[str, list[ImportArtifact]],
+    edges: list[ImportEdge],
+    min_size: int = 5,
+) -> dict[str, list[ImportArtifact]]:
+    """Merge groups under min_size into their most-connected neighbor by import edge count.
+
+    This ensures we don't end up with 37 tiny fragments — small groups merge into
+    the component they actually talk to most, not just their parent directory.
+    """
+    # Build edge count between groups
+    path_to_group: dict[str, str] = {}
+    for name, arts in groups.items():
+        for a in arts:
+            path_to_group[a.path] = name
+
+    cross: Counter[tuple[str, str]] = Counter()
+    for edge in edges:
+        src_g = path_to_group.get(edge.source_path, "")
+        tgt_g = path_to_group.get(edge.target_path, "")
+        if src_g and tgt_g and src_g != tgt_g:
+            cross[(src_g, tgt_g)] += 1
+            cross[(tgt_g, src_g)] += 1
+
+    merged = dict(groups)
+    changed = True
+    while changed:
+        changed = False
+        small = [name for name, arts in merged.items() if len(arts) < min_size and not name.startswith("__")]
+        for name in small:
+            # Find the neighbor with the most import edges
+            neighbors: Counter[str] = Counter()
+            for (a, b), count in cross.items():
+                if a == name and b in merged and b != name:
+                    neighbors[b] += count
+            if not neighbors:
+                # Merge into the first group that shares the parent directory
+                parent = name.rsplit("/", 1)[0] if "/" in name else ""
+                candidates = [k for k in merged if k != name and k.startswith(parent + "/")]
+                if candidates:
+                    target = candidates[0]
+                else:
+                    continue
+            else:
+                target = neighbors.most_common(1)[0][0]
+
+            # Merge
+            merged[target] = merged[target] + merged.pop(name)
+            # Update path_to_group
+            for a in merged[target]:
+                path_to_group[a.path] = target
+            changed = True
+            break  # restart after each merge to recompute sizes
+
+    return merged
+
+
 def _build_component_suggestions(
     groups: dict[str, list[ImportArtifact]],
     inbound: Counter[str],
@@ -525,28 +655,39 @@ def _build_component_suggestions(
     module_prefix: str,
     repo_root: Path,
 ) -> list[ComponentSuggestion]:
-    """Build ranked component suggestions from grouped artifacts + edge counts."""
+    """Build ranked component suggestions with software engineering metrics."""
     skip = {"__root__", "__external__"}
     seen_labels: set[str] = set()
 
     ranked = sorted(
-        ((name, arts) for name, arts in groups.items() if name not in skip),
+        ((name, arts) for name, arts in groups.items() if name not in skip and not name.startswith("__")),
         key=lambda x: -(inbound[x[0]] + len(x[1])),
     )
 
     components: list[ComponentSuggestion] = []
-    for comp_name, comp_arts in ranked[:8]:
-        if not comp_name or comp_name.startswith("__"):
+    for comp_name, comp_arts in ranked[:12]:
+        if not comp_name:
             continue
 
-        comp_id = slugify(comp_name.split("/")[-1] if "/" in comp_name else comp_name)
+        # Build label from the full group path context
+        parts = comp_name.split("/")
+        deepest_dir = parts[-1] if parts else comp_name
+        comp_id = slugify(deepest_dir)
         rel_path = f"{module_prefix}/{comp_name}" if module_prefix else comp_name
-        deepest_dir = comp_name.split("/")[-1] if "/" in comp_name else comp_name
         file_names = [a.module_name.split(".")[-1] for a in comp_arts]
 
-        # Infer label from directory name first
-        label = infer_label(deepest_dir, [], [])
-        if label == humanize(deepest_dir):
+        # For compound paths like "surfaces/compass", combine parent context + child name
+        if len(parts) >= 2:
+            parent_label = infer_label(parts[0], [], [])
+            child_label = infer_label(deepest_dir, [], file_names)
+            if child_label == humanize(deepest_dir):
+                # Child is generic — use parent + child humanized
+                label = f"{humanize(deepest_dir)} {parent_label}" if humanize(deepest_dir) != "Core" else parent_label
+            elif child_label != parent_label:
+                label = child_label
+            else:
+                label = f"{humanize(deepest_dir)} {parent_label}"
+        else:
             label = infer_label(deepest_dir, [], file_names)
 
         if label in seen_labels:
@@ -558,8 +699,14 @@ def _build_component_suggestions(
         n_out = outbound[comp_name]
         n_int = internal[comp_name]
 
-        # Build description
-        desc = _build_import_description(n_modules, n_in, n_out, n_int)
+        # Compute software engineering metrics
+        fan_in = n_in
+        fan_out = n_out
+        instability = fan_out / max(fan_in + fan_out, 1)
+        total_edges = n_in + n_out + n_int
+        cohesion = n_int / max(total_edges, 1)
+
+        desc = _build_import_description(n_modules, n_in, n_out, n_int, instability, cohesion)
 
         components.append(ComponentSuggestion(
             component_id=comp_id, label=label, path=rel_path,
@@ -567,24 +714,36 @@ def _build_component_suggestions(
             n_modules=n_modules, n_inbound=n_in, n_outbound=n_out,
         ))
 
-    return components[:6]
+    return components
 
 
-def _build_import_description(n_modules: int, n_in: int, n_out: int, n_int: int) -> str:
-    """Build a concise import-graph description."""
+def _build_import_description(
+    n_modules: int, n_in: int, n_out: int, n_int: int,
+    instability: float, cohesion: float,
+) -> str:
+    """Build a description using real software engineering metrics."""
     parts: list[str] = [f"{n_modules} modules"]
 
-    if n_in > 10:
-        parts.append(f"imported by {n_in} others — core dependency, changes cascade across the codebase")
-    elif n_in > 5:
-        parts.append(f"imported by {n_in} others — central boundary")
+    # Centrality insight
+    if n_in > 20:
+        parts.append(f"imported by {n_in} others — foundational dependency")
+    elif n_in > 10:
+        parts.append(f"imported by {n_in} others — core boundary")
     elif n_in > 0:
         parts.append(f"imported by {n_in} others")
 
-    if n_out > n_in and n_out > 5:
-        parts.append("orchestrates across other components")
+    # Architecture role from instability metric
+    if instability < 0.2 and n_in > 5:
+        parts.append("stable core (low instability, high fan-in)")
+    elif instability > 0.8 and n_out > 3:
+        parts.append("volatile edge (high fan-out, depends on many others)")
+    elif 0.3 < instability < 0.7 and n_in > 3 and n_out > 3:
+        parts.append("integration layer (balanced fan-in/fan-out)")
 
-    if n_int > 10 and n_in <= 2:
-        parts.append("self-contained with high internal cohesion")
+    # Cohesion insight
+    if cohesion > 0.7 and n_int > 5:
+        parts.append("highly cohesive")
+    elif cohesion < 0.3 and n_in + n_out > 5:
+        parts.append("loosely coupled to everything")
 
     return ". ".join(parts)
