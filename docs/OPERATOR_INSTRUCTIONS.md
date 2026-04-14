@@ -31,7 +31,7 @@ Build governance records that give the agent durable context.
 
 | Say this | What happens |
 |---|---|
-| **"Create a workstream for auth migration"** | Creates a Radar record with schema, ordering score, and INDEX patching. `odylith backlog create --title "Auth migration to JWT"` |
+| **"Create a workstream for shopping cart redesign"** | Creates a Radar record with schema, ordering score, and INDEX patching. `odylith backlog create --title "Shopping cart redesign"` |
 | **"Plan the implementation for B-073"** | Grounds the workstream, then builds a bounded technical plan under `odylith/technical-plans/`. |
 | **"Split B-073 into two workstreams"** | Creates child workstreams with proper parent-child traceability and split lineage. |
 | **"Reopen B-041"** | Reopens a finished or parked workstream with proper reopen lineage tracking. |
@@ -41,11 +41,11 @@ Build governance records that give the agent durable context.
 
 | Say this | What happens |
 |---|---|
-| **"Register a component for the auth service"** | Creates a registry entry and scaffolds `CURRENT_SPEC.md`. `odylith component register --id auth-service --path src/auth --label "Auth Service"` |
-| **"Update the component spec for auth"** | Spawns the registry-scribe subagent to edit the living spec with implementation evidence. |
+| **"Register a component for the payments service"** | Creates a registry entry and scaffolds `CURRENT_SPEC.md`. `odylith component register --id payments --path src/payments --label "Payments"` |
+| **"Update the component spec for payments"** | Spawns the registry-scribe subagent to edit the living spec with implementation evidence. |
 | **"What components exist?"** | Reads the component registry manifest. `odylith context <component-id>` for a specific dossier. |
 | **"Sync the component specs"** | Folds Compass requirement evidence into per-component living specs. `odylith governance sync-component-spec-requirements` |
-| **"Show me the forensic timeline for auth-service"** | Reads the component's forensic sidecar — timestamped events, coverage status, evidence channels. |
+| **"Show me the forensic timeline for payments"** | Reads the component's forensic sidecar — timestamped events, coverage status, evidence channels. |
 
 ### Bugs (Casebook)
 
@@ -61,7 +61,7 @@ Build governance records that give the agent durable context.
 
 | Say this | What happens |
 |---|---|
-| **"Create a diagram for the auth flow"** | Creates catalog entry and optional Mermaid source. `odylith atlas scaffold --slug auth-flow --title "Auth Flow" --kind flowchart` |
+| **"Create a diagram for the checkout flow"** | Creates catalog entry and optional Mermaid source. `odylith atlas scaffold --slug checkout-flow --title "Checkout Flow" --kind flowchart` |
 | **"Update diagram D-017"** | Spawns the atlas-diagrammer subagent to edit the `.mmd` source with rendered-artifact discipline. |
 | **"Render the Atlas diagrams"** | Validates the Mermaid catalog and checks diagram freshness. `odylith atlas render` |
 | **"Auto-update impacted diagrams"** | Refreshes diagrams based on change-watch metadata. `odylith atlas auto-update` |
@@ -96,7 +96,7 @@ Do the actual work — Odylith governs every move automatically.
 |---|---|
 | **"Fix the bug in the checkout flow"** | Grounds the task via `odylith start`, matches workstream, builds execution contract, resolves component, loads context packet — then edits. Every file edit triggers async governance sync in the background. |
 | **"Work on B-073"** | Resolves the workstream anchor, loads related entities and delivery scopes. `odylith context B-073` |
-| **"Only touch files in src/auth"** | Promoted to a hard constraint — edits outside `src/auth` are denied by the execution engine. |
+| **"Only touch files in src/payments"** | Promoted to a hard constraint — edits outside `src/payments` are denied by the execution engine. |
 | **"Don't touch the test files"** | Promoted to a forbidden-move constraint enforced on every subsequent action. |
 | **"Create a worktree for this"** | Creates an isolated git worktree so this work doesn't interfere with other branches. |
 | **"Hand this off"** | Prepares a bounded handoff with the active slice, what was done, what remains, and validation state. |
@@ -129,7 +129,7 @@ See what happened, what matters now, and what's next.
 | **"Show me what happened in the last 48 hours"** | Reads Compass timeline events in the 48h audit window. |
 | **"Refresh the Compass"** | Renders the full Compass surface and waits for brief settlement. `odylith compass refresh --wait` |
 | **"Log this checkpoint"** | Appends a bounded execution note to the Compass timeline. `odylith compass log` |
-| **"I want the brief to focus on auth work"** | Narrows Compass brief scope to workstreams touching the auth component. |
+| **"I want the brief to focus on payments work"** | Narrows Compass brief scope to workstreams touching the payments component. |
 | **"Make the brief shorter"** | Adjusts narration to the compact voice contract — fewer details, same signal. |
 | **"What's the execution state?"** | Reads the execution governance snapshot — admissibility outcome, frontier phase, active blocker, pressure signals. |
 | **"What changed recently?"** | Reads the Compass timeline events and transaction history from the runtime payload. |
