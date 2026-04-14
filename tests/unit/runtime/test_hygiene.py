@@ -245,16 +245,16 @@ def test_bundle_does_not_ship_public_live_governance_records_into_consumer_truth
     assert not (bundle / "compass" / "runtime" / "history").exists()
 
 
-def test_readme_starter_prompt_block_stays_verbatim() -> None:
+def test_readme_operator_instructions_link_stays_present() -> None:
     root_text = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "[Starter Prompt Inspirations](docs/STARTER_PROMPT_INSPIRATIONS.md)" in root_text
+    assert "[Operator Instructions](docs/OPERATOR_INSTRUCTIONS.md)" in root_text
 
     for path in (
         ROOT / "odylith" / "README.md",
         ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "README.md",
     ):
         text = path.read_text(encoding="utf-8")
-        assert STARTER_PROMPT_BLOCK in text, f"starter prompt block drifted in {path.relative_to(ROOT)}"
+        assert "[Operator Instructions]" in text, f"Operator Instructions link missing in {path.relative_to(ROOT)}"
 
 
 def test_root_readme_benchmark_graph_order_stays_verbatim() -> None:

@@ -116,10 +116,9 @@ Here are some starter prompt inspirations:
 - Edit: "Update developer note [N###] with [...]."
 - Delete: "Delete developer note [N###]."
 
-For more prompt examples, see
-[Starter Prompt Inspirations](../docs/STARTER_PROMPT_INSPIRATIONS.md). If the
-local shell is already open, the Cheatsheet drawer in `odylith/index.html`
-mirrors the strongest prompt patterns.
+For the full set of things the agent understands, see
+[Operator Instructions](../docs/OPERATOR_INSTRUCTIONS.md). The Cheatsheet
+drawer in `odylith/index.html` has copyable prompts for every operation.
 
 The shell refreshes itself as Odylith updates local surfaces.
 
