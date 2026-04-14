@@ -33,21 +33,23 @@ any subdirectory inside the same repo. The current GA platform contract covers
 macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). Intel macOS and Windows
 are not part of the current GA platform set.
 
-After install, open the repo in Codex or Claude Code. Both are supported
-interactive host lanes. For first-run behavior, the first prompt to use,
-browser-shell behavior, and repo-root selection or reduced-mode details, see
+After install, open the repo in Codex or Claude Code and say:
+
+> **"Odylith, show me what you can do."**
+
+Odylith reads your repo — source structure, import graph, manifest files — and
+shows you exactly what governance records it can create: component boundaries,
+workstreams, architecture diagrams, and issues. Each suggestion comes with the
+command to create it.
+
+That one instruction is all you need. From there, start working normally.
+Odylith grounds every turn automatically — no special prompts, no commands to
+memorize.
+
+For first-run details, browser-shell behavior, and repo-root selection, see
 [First Run In An Odylith Repo](odylith/README.md#first-run).
 For more example prompts, see
 [Starter Prompt Inspirations](docs/STARTER_PROMPT_INSPIRATIONS.md).
-
-## Prove It In 2 Minutes
-
-From the repo you just installed into, open `odylith/index.html` and follow
-the guidance in the **Cheatsheet** drawer.
-
-Then open the repo in Codex or Claude Code and start working normally. Odylith
-grounds every turn automatically — no special prompts, no commands to memorize.
-
 For the full set of instructions the agent understands — from "fix this bug"
 to "validate the registry" to "hand this off" — see
 **[Operator Instructions](docs/OPERATOR_INSTRUCTIONS.md)**.
