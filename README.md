@@ -11,7 +11,7 @@
 
 ## Intro
 
-Install it into any repo. Use it through Codex or Claude Code.
+Install Odylith into any repo. Use it through Codex or Claude Code.
 
 Without Odylith, every agent session starts from scratch. Reading the repo,
 inferring the architecture, guessing intent and constraints, discovering what
