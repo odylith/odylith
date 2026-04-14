@@ -9,11 +9,20 @@
 <h2 align="center" style="font-size: 2.4rem;">Odylith Stops Coding Agents From Confidently Doing The Wrong Thing</h2>
 <p align="center" style="font-size: 1.35rem;"><strong>It makes coding agents operate like disciplined engineers instead of clever tourists.</strong></p>
 
-Install it into any repo. Use it through Codex or Claude Code. Odylith gives
-the agent delivery intelligence, component boundaries, execution governance,
-and durable memory — so it operates from real repo truth instead of guessing.
+Install it into any repo. Use it through Codex or Claude Code.
 
-Both Codex and Claude Code are supported as first-class agent hosts.
+Odylith gives coding agents what they can't build on their own:
+
+- **Context Engine** — local-first retrieval on LanceDB + Tantivy that grounds every turn in the smallest relevant slice, not the whole repo
+- **Execution Engine** — admissibility screening, hard constraints, contradiction detection, and frontier tracking on every action the agent takes
+- **Component Registry** — named boundaries with living specs, forensic timelines, and ownership so the agent knows what it's changing before it changes it
+- **Delivery Intelligence** — governance lag, blast radius, decision debt, and posture scoring across workstreams, components, and diagrams
+- **Compass** — execution timeline, standup briefs, and audit history that survive across sessions
+- **Tribunal** — multi-actor adjudication engine that forces a grounded diagnosis before the agent acts on ambiguous or blocked postures
+- **Atlas** — architecture diagrams tracked as governed truth with change-watch and auto-update
+- **Subagent Routing** — bounded delegation with execution governance that travels through every spawned leaf
+
+Both Codex and Claude Code are first-class agent hosts.
 
 ## Quick Start
 
