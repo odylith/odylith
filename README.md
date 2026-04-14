@@ -46,14 +46,6 @@ That one instruction is all you need. From there, start working normally.
 Odylith grounds every turn automatically — no special prompts, no commands to
 memorize.
 
-For first-run details, browser-shell behavior, and repo-root selection, see
-[First Run In An Odylith Repo](odylith/README.md#first-run).
-For more example prompts, see
-[Starter Prompt Inspirations](docs/STARTER_PROMPT_INSPIRATIONS.md).
-For the full set of instructions the agent understands — from "fix this bug"
-to "validate the registry" to "hand this off" — see
-**[Operator Instructions](docs/OPERATOR_INSTRUCTIONS.md)**.
-
 > [!TIP]
 > **⭐ If Odylith makes your coding agent materially sharper in real repo work,
 > star the repo so other operators can find it.**
