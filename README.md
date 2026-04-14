@@ -54,10 +54,8 @@ issues it can create. Each suggestion comes with the command to run it.
 Then open `odylith/index.html` in a browser and follow the Cheatsheet in the
 drawer.
 
-From here, start working normally. Odylith grounds every turn automatically —
-no special prompts, no commands to memorize. See
-**[Operator Instructions](docs/OPERATOR_INSTRUCTIONS.md)** for the full set of
-things the agent understands.
+See **[Operator Instructions](docs/OPERATOR_INSTRUCTIONS.md)** for the full
+set of things you can ask the agent to do.
 
 > [!TIP]
 > **⭐ If Odylith makes your coding agent materially sharper in real repo work,
