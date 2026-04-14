@@ -14,13 +14,16 @@ Install it into any repo. Use it through Codex or Claude Code.
 Odylith gives coding agents what they can't build on their own:
 
 - **Context Engine** — local-first retrieval on LanceDB + Tantivy that grounds every turn in the smallest relevant slice, not the whole repo
-- **Execution Engine** — admissibility screening, hard constraints, contradiction detection, and frontier tracking on every action the agent takes
+- **Execution Engine** — admissibility screening, hard constraints, contradiction detection, frontier tracking, and structured recovery on every action
+- **Repo-Local Memory** — plans, specs, component boundaries, bugs, and execution records live as files beside the code, not in chat history or external SaaS
+- **Radar** — ranked workstream backlog with programs, execution waves, release targeting, and delivery posture so the agent always knows what matters now
 - **Component Registry** — named boundaries with living specs, forensic timelines, and ownership so the agent knows what it's changing before it changes it
+- **Casebook** — bug intelligence with root cause, failure signatures, prevention memory, and verification — failures become durable repo truth instead of disappearing into scrollback
 - **Delivery Intelligence** — governance lag, blast radius, decision debt, and posture scoring across workstreams, components, and diagrams
-- **Compass** — execution timeline, standup briefs, and audit history that survive across sessions
-- **Tribunal** — multi-actor adjudication engine that forces a grounded diagnosis before the agent acts on ambiguous or blocked postures
-- **Atlas** — architecture diagrams tracked as governed truth with change-watch and auto-update
-- **Subagent Routing** — bounded delegation with execution governance that travels through every spawned leaf
+- **Compass** — execution timeline, standup briefs, and audit history that survive across sessions and keep the next move grounded in what actually happened
+- **Tribunal** — multi-actor adjudication engine that forces a grounded diagnosis before the agent acts on ambiguous or blocked postures, then hands bounded remediation to the Remediator with validation and rollback guards
+- **Atlas** — architecture diagrams tracked as governed truth with change-watch paths and auto-update from implementation evidence
+- **Subagent Routing** — bounded delegation with execution governance, model-tier selection, and lane policy that travels through every spawned leaf on both Codex and Claude Code
 
 Both Codex and Claude Code are first-class agent hosts.
 
