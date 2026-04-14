@@ -2,22 +2,38 @@ from __future__ import annotations
 
 import io
 import json
+import subprocess
+from pathlib import Path
+from types import SimpleNamespace
 
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
+
+
+def _patch_stdin(monkeypatch, command: str) -> None:
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"tool_input": {"command": command}})),
+    )
+
+
+def _patch_no_governed_changes(monkeypatch) -> None:
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "governed_changed_paths",
+        lambda *, project_dir: [],
+    )
 
 
 def test_post_bash_checkpoint_runs_start_for_edit_like_commands(monkeypatch) -> None:
     calls: list[tuple[str, list[str], int]] = []
 
-    def _fake_run_odylith(*, project_dir: str, args: list[str], timeout: int = 20):
-        calls.append((project_dir, args, timeout))
+    def _fake_run_odylith(*, project_dir, args, timeout=20):
+        calls.append((str(project_dir), args, timeout))
         return None
 
-    monkeypatch.setattr(
-        "sys.stdin",
-        io.StringIO(json.dumps({"tool_input": {"command": "apply_patch <<'PATCH'"}})),
-    )
+    _patch_stdin(monkeypatch, "apply_patch <<'PATCH'")
     monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
+    _patch_no_governed_changes(monkeypatch)
 
     exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", "/tmp/repo"])
 
@@ -28,17 +44,170 @@ def test_post_bash_checkpoint_runs_start_for_edit_like_commands(monkeypatch) -> 
 def test_post_bash_checkpoint_skips_non_edit_like_commands(monkeypatch) -> None:
     calls: list[tuple[str, list[str], int]] = []
 
-    monkeypatch.setattr(
-        "sys.stdin",
-        io.StringIO(json.dumps({"tool_input": {"command": "pytest -q"}})),
-    )
+    _patch_stdin(monkeypatch, "pytest -q")
     monkeypatch.setattr(
         codex_host_post_bash_checkpoint.codex_host_shared,
         "run_odylith",
-        lambda **kwargs: calls.append((kwargs["project_dir"], kwargs["args"], kwargs["timeout"])),
+        lambda **kwargs: calls.append((str(kwargs["project_dir"]), kwargs["args"], kwargs["timeout"])),
     )
 
     exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", "/tmp/repo"])
 
     assert exit_code == 0
     assert calls == []
+
+
+def test_post_bash_checkpoint_runs_selective_sync_when_governed_paths_change(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
+    calls: list[tuple[str, list[str], int]] = []
+
+    def _fake_run_odylith(*, project_dir, args, timeout=20):
+        calls.append((str(project_dir), list(args), timeout))
+        if args and args[0] == "sync":
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        return None
+
+    _patch_stdin(monkeypatch, "apply_patch <<'PATCH'")
+    monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "governed_changed_paths",
+        lambda *, project_dir: [
+            "odylith/casebook/bugs/2026-04-14-example.md",
+            "odylith/radar/source/INDEX.md",
+        ],
+    )
+
+    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert len(calls) == 2
+    assert calls[0][1] == ["start", "--repo-root", "."]
+    sync_project_dir, sync_args, sync_timeout = calls[1]
+    assert sync_args[0:2] == ["sync", "--repo-root"]
+    assert sync_args[3:5] == ["--impact-mode", "selective"]
+    assert sync_args[5:] == [
+        "odylith/casebook/bugs/2026-04-14-example.md",
+        "odylith/radar/source/INDEX.md",
+    ]
+    assert sync_timeout == 180
+
+    payload = json.loads(out)
+    assert "systemMessage" in payload
+    assert "completed" in payload["systemMessage"]
+    assert "odylith/casebook/bugs/2026-04-14-example.md" in payload["systemMessage"]
+
+
+def test_post_bash_checkpoint_emits_failure_message_on_selective_sync_error(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
+    def _fake_run_odylith(*, project_dir, args, timeout=20):
+        if args and args[0] == "sync":
+            return SimpleNamespace(returncode=2, stdout="", stderr="validate failure\n")
+        return None
+
+    _patch_stdin(monkeypatch, "apply_patch <<'PATCH'")
+    monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "governed_changed_paths",
+        lambda *, project_dir: ["odylith/casebook/bugs/2026-04-14-example.md"],
+    )
+
+    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+
+    # Fail-soft: exits 0 even when sync fails, emits systemMessage describing failure.
+    assert exit_code == 0
+    payload = json.loads(out)
+    assert "failed" in payload["systemMessage"]
+    assert "validate failure" in payload["systemMessage"]
+
+
+def test_post_bash_checkpoint_emits_skipped_message_when_launcher_unavailable(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
+    def _fake_run_odylith(*, project_dir, args, timeout=20):
+        return None  # Launcher not available.
+
+    _patch_stdin(monkeypatch, "sed -i 's/foo/bar/g' odylith/casebook/bugs/foo.md")
+    monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "governed_changed_paths",
+        lambda *, project_dir: ["odylith/casebook/bugs/foo.md"],
+    )
+
+    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    payload = json.loads(out)
+    assert "skipped" in payload["systemMessage"]
+
+
+def test_governed_changed_paths_parses_porcelain_z_output(monkeypatch, tmp_path: Path) -> None:
+    # Simulate git status --porcelain -z output with a mix of:
+    # - modified governed bug markdown (should match)
+    # - modified guidance companion AGENTS.md (should be filtered out)
+    # - untracked governed plan markdown (should match)
+    # - modified non-governed source file (should be filtered out)
+    # - a rename with an old-path trailing record that must be skipped
+    porcelain_z = (
+        " M odylith/casebook/bugs/foo.md\x00"
+        " M odylith/radar/source/AGENTS.md\x00"
+        "?? odylith/technical-plans/in-progress/2026-04/new-plan.md\x00"
+        " M src/odylith/cli.py\x00"
+        "R  odylith/casebook/bugs/new-name.md\x00"
+        "odylith/casebook/bugs/old-name.md\x00"
+    )
+
+    def _fake_subprocess_run(args, **kwargs):
+        assert args == ["git", "status", "--porcelain", "-z"]
+        return SimpleNamespace(returncode=0, stdout=porcelain_z, stderr="")
+
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint.subprocess,
+        "run",
+        _fake_subprocess_run,
+    )
+
+    paths = codex_host_post_bash_checkpoint.governed_changed_paths(project_dir=tmp_path)
+
+    assert paths == [
+        "odylith/casebook/bugs/foo.md",
+        "odylith/technical-plans/in-progress/2026-04/new-plan.md",
+        "odylith/casebook/bugs/new-name.md",
+    ]
+
+
+def test_governed_changed_paths_fails_soft_on_git_error(monkeypatch, tmp_path: Path) -> None:
+    def _fake_subprocess_run(args, **kwargs):
+        raise subprocess.SubprocessError("git not available")
+
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint.subprocess,
+        "run",
+        _fake_subprocess_run,
+    )
+
+    paths = codex_host_post_bash_checkpoint.governed_changed_paths(project_dir=tmp_path)
+    assert paths == []
+
+
+def test_governed_changed_paths_fails_soft_on_nonzero_git_returncode(
+    monkeypatch, tmp_path: Path
+) -> None:
+    def _fake_subprocess_run(args, **kwargs):
+        return SimpleNamespace(returncode=128, stdout="", stderr="fatal: not a git repo")
+
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint.subprocess,
+        "run",
+        _fake_subprocess_run,
+    )
+
+    paths = codex_host_post_bash_checkpoint.governed_changed_paths(project_dir=tmp_path)
+    assert paths == []

@@ -26,14 +26,12 @@ from pathlib import Path
 from odylith.runtime.surfaces import claude_host_shared
 
 
-_GOVERNANCE_PREFIXES: tuple[str, ...] = (
-    "odylith/radar/source/",
-    "odylith/technical-plans/",
-    "odylith/casebook/bugs/",
-    "odylith/registry/source/",
-    "odylith/atlas/source/",
-)
-_IGNORED_BASENAMES: frozenset[str] = frozenset({"AGENTS.md", "CLAUDE.md"})
+# Kept as module-level aliases for tests and call-sites that imported these
+# names before the governed-edit predicate was promoted to shared host state.
+# New code should use ``claude_host_shared.GOVERNED_SOURCE_PREFIXES`` and
+# ``claude_host_shared.GOVERNED_IGNORED_BASENAMES`` directly.
+_GOVERNANCE_PREFIXES: tuple[str, ...] = claude_host_shared.GOVERNED_SOURCE_PREFIXES
+_IGNORED_BASENAMES: frozenset[str] = claude_host_shared.GOVERNED_IGNORED_BASENAMES
 
 
 def edited_path(*, payload: dict, project_dir: Path | str) -> str:
@@ -57,13 +55,7 @@ def edited_path(*, payload: dict, project_dir: Path | str) -> str:
 
 def should_refresh(path_token: str) -> bool:
     """Return True if the edited path is inside a governed Odylith subtree."""
-    if not path_token:
-        return False
-    path = Path(path_token)
-    if path.name in _IGNORED_BASENAMES:
-        return False
-    normalized = path.as_posix()
-    return any(normalized.startswith(prefix) for prefix in _GOVERNANCE_PREFIXES)
+    return claude_host_shared.should_refresh_governed_edit(path_token)
 
 
 def refresh_governance(*, project_dir: Path | str, path_token: str) -> dict[str, str]:

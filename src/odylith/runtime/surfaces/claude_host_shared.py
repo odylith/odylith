@@ -33,6 +33,35 @@ _SLUG_UNSAFE_RE = re.compile(r"[^A-Za-z0-9._-]+")
 
 AUTO_MEMORY_IMPORT = "@odylith-governed-brief.md"
 AUTO_MEMORY_NOTE = "odylith-governed-brief.md"
+
+# Shared governed-edit predicates for host post-edit/post-bash hooks.
+# These are the Odylith source-of-truth subtrees whose mutation should
+# trigger a selective governance refresh. Both the Claude PostToolUse
+# hook (direct Write/Edit/MultiEdit) and the Codex post-bash checkpoint
+# (edit-like Bash commands such as ``apply_patch``) import these so the
+# "what counts as a governed edit?" definition has one source of truth.
+GOVERNED_SOURCE_PREFIXES: tuple[str, ...] = (
+    "odylith/radar/source/",
+    "odylith/technical-plans/",
+    "odylith/casebook/bugs/",
+    "odylith/registry/source/",
+    "odylith/atlas/source/",
+)
+# Scoped guidance companions live inside governed subtrees but do not
+# represent governance truth. Their edits never require a selective
+# refresh.
+GOVERNED_IGNORED_BASENAMES: frozenset[str] = frozenset({"AGENTS.md", "CLAUDE.md"})
+
+
+def should_refresh_governed_edit(path_token: str) -> bool:
+    """Return True if the given repo-relative path is a governed edit worth refreshing."""
+    if not path_token:
+        return False
+    path = Path(path_token)
+    if path.name in GOVERNED_IGNORED_BASENAMES:
+        return False
+    normalized = path.as_posix()
+    return any(normalized.startswith(prefix) for prefix in GOVERNED_SOURCE_PREFIXES)
 AUTO_MEMORY_START = "<!-- odylith-auto-memory:start -->"
 AUTO_MEMORY_END = "<!-- odylith-auto-memory:end -->"
 

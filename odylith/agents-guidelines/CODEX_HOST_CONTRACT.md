@@ -66,6 +66,27 @@
 - Edit-like Bash checkpointing runs through the CLI-backed
   `./.odylith/bin/odylith codex post-bash-checkpoint --repo-root .` hook
   command so the project-root `.codex/` layer stays declarative.
+- The Bash checkpoint does two things, in order: first it runs
+  `./.odylith/bin/odylith start --repo-root .` to keep the session
+  grounded; then, if the edit-like Bash command (``apply_patch``, ``sed
+  -i``, ``cp``, ``mv``, ``tee``, ``cat >``, etc.) actually touched any
+  repo-relative path under the Odylith governed source-of-truth
+  subtrees (``odylith/radar/source/``, ``odylith/technical-plans/``,
+  ``odylith/casebook/bugs/``, ``odylith/registry/source/``,
+  ``odylith/atlas/source/``), it runs
+  `./.odylith/bin/odylith sync --impact-mode selective <paths>` so the
+  derived dashboards stay aligned. The changed-path set comes from
+  `git status --porcelain -z` and is filtered through the shared
+  `should_refresh_governed_edit` predicate. Scoped `AGENTS.md` and
+  `CLAUDE.md` companions inside governed subtrees are ignored.
+- The Bash checkpoint never blocks the command: sync failures exit the
+  hook with code 0 and emit a fail-soft `systemMessage` describing the
+  failure so the operator can recover manually.
+- This is **Bash-checkpoint parity** with Claude's `post-edit-checkpoint`
+  lane — it covers the primary Codex governed-edit workflow, whose
+  edit-like Bash commands include `apply_patch`. It is *not* universal
+  host-edit parity: if Codex ever grows a native non-Bash edit hook, a
+  separate Codex hook module would be needed to cover that surface.
 - Codex does not have project-scoped slash commands, so Odylith uses
   `.agents/skills/` command-skills instead of trying to fake a
   `.codex/commands/` surface.
