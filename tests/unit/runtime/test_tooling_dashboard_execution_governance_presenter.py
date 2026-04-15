@@ -125,4 +125,7 @@ def test_shell_curated_status_html_includes_latest_governed_packet_card() -> Non
         }
     )
 
-    assert html == ""
+    assert "Telemetry Snapshot" in html
+    assert "Latest Governed Packet" in html
+    assert "implement.target_scope" in html
+    assert "context_engine.governance_slice.authoritative" in html

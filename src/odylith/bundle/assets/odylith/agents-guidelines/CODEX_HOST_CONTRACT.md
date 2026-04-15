@@ -96,21 +96,58 @@
   edit-like Bash commands include `apply_patch`. It is *not* universal
   host-edit parity: if Codex ever grows a native non-Bash edit hook, a
   separate Codex hook module would be needed to cover that surface.
-- Codex prompt-context, post-bash checkpoint, and stop-summary all route
-  through the shared intervention engine. Prompt submit may emit one teaser
-  sentence only; post-bash is the primary visible Observation/Proposal lane;
-  stop is the fallback closeout lane.
-- When a post-bash checkpoint earns an Observation or Proposal, surface that
-  live beat visibly through `systemMessage` and also duplicate the full
+- Codex prompt-context, stop-summary, and post-bash checkpoint lanes all feed
+  the same shared conversation-observation core in
+  `src/odylith/runtime/intervention_engine/`. Prompt submit may emit one
+  teaser sentence only; stop-summary or post-bash may upgrade that into a full
+  `**Odylith Observation**`; governed writes stay inside one confirmation-gated
+  `Odylith Proposal`.
+- When prompt submit earns a teaser, Codex should surface that sentence as the
+  visible `systemMessage` beat and keep the fuller continuity payload
+  discreet in `hookSpecificOutput.additionalContext` alongside any anchor
+  summary. Prompt-time context should feel like one gentle interjection, not a
+  visible dump of narrowing scaffolding.
+- Post-bash checkpoint is the primary visible intervention lane. When the
+  recovered bundle earns an Observation or Proposal, Codex should surface that
+  live beat through a visible hook `systemMessage` and also duplicate the full
   Observation/Proposal/Assist bundle into
-  `hookSpecificOutput.additionalContext` so the next turn keeps continuity.
+  `hookSpecificOutput.additionalContext` so the next turn inherits continuity
+  without forcing the user to wait for stop.
 - Success-only governance refresh receipts must stay quiet when an earned live
   intervention exists. If refresh fails or is skipped, Codex may append that
   failure-level status after the visible Observation/Proposal beat instead of
   replacing it.
+- Stop-summary is the fallback closeout lane, not the primary delightful
+  intervention surface. When the recovered stop bundle carries a real closeout
+  delta or a missed late Observation, Codex may emit one visible stop
+  `systemMessage` containing that recovered beat and one short
+  `Odylith Assist:` line rather than burying both in summary state.
+- That live path is intervention-engine-owned on purpose. Do not route Codex
+  prompt or checkpoint hooks through the heavier closeout chatter stack just
+  to render teaser/Observation/Proposal text.
 - Empty or missing hook session ids must fall back to a stable host-local
-  synthetic token. Codex must never bleed prompt or changed-path memory across
-  sessions because a payload omitted `session_id`.
+  synthetic session token. Codex must never bleed recent prompt or changed-path
+  memory from one session into another just because the payload omitted
+  `session_id`.
+- Prompt-context should still surface a truthful teaser when the signal is
+  real even if anchor narrowing or launcher-backed context resolution is
+  unavailable. Missing anchor context may suppress the anchor summary, not the
+  earned teaser itself.
+- In Codex, the first Observation line must make the interjection explicit and
+  stay as short as `Odylith Assist`. Proposal should stay a short ruled block,
+  not a sectioned mini card. If the surface reads like filler or the user
+  cannot tell why Odylith stepped in, the host experience has failed even when
+  the underlying facts are correct.
+- The same conversation moment must keep one stable intervention identity
+  across prompt, stop, and post-bash checkpoints. Codex should feel like one
+  evolving intervention path, not a fresh branded interruption at each hook.
+- Post-bash may surface the first eligible Proposal even when the matching
+  Observation was already shown earlier in the session. Do not force Codex to
+  repeat the same Observation block just to unlock Proposal copy.
+- Codex must not invent Codex-only labels, alternate confirmation text, or a
+  colder host-specific voice for those blocks. The Observation/Proposal
+  markdown contract is shared with Claude and remains consistent across
+  detached `source-local`, pinned dogfood, and consumer lanes.
 - Codex does not have project-scoped slash commands, so Odylith uses
   `.agents/skills/` command-skills instead of trying to fake a
   `.codex/commands/` surface.

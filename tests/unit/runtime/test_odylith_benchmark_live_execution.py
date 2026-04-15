@@ -184,6 +184,54 @@ def test_minimal_codex_config_text_disables_guidance_surfaces() -> None:
     assert "multi_agent = false" in config_text
 
 
+def test_temporary_codex_home_uses_codex_home_when_home_is_stripped(tmp_path: Path) -> None:
+    source_codex_home = tmp_path / "real-codex-home"
+    source_codex_home.mkdir(parents=True, exist_ok=True)
+    (source_codex_home / "auth.json").write_text('{"token":"local"}\n', encoding="utf-8")
+    stripped_home = tmp_path / "stripped-home"
+    stripped_home.mkdir(parents=True, exist_ok=True)
+
+    with live_execution._temporary_codex_home(  # noqa: SLF001
+        execution_contract={"model": "gpt-5.4", "reasoning_effort": "medium"},
+        repo_root=tmp_path,
+        environ={
+            "HOME": str(stripped_home),
+            "CODEX_HOME": str(source_codex_home),
+        },
+    ) as temp_home:
+        copied_auth = temp_home / ".codex" / "auth.json"
+        copied_config = temp_home / ".codex" / "config.toml"
+        assert copied_auth.read_text(encoding="utf-8") == '{"token":"local"}\n'
+        assert 'model = "gpt-5.4"' in copied_config.read_text(encoding="utf-8")
+
+
+def test_temporary_codex_home_reports_all_checked_auth_candidates(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    stripped_home = tmp_path / "stripped-home"
+    explicit_codex_home = tmp_path / "missing-codex-home"
+    real_home = tmp_path / "real-home-without-auth"
+    stripped_home.mkdir(parents=True, exist_ok=True)
+    real_home.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(live_execution.Path, "home", classmethod(lambda cls: real_home))
+
+    with pytest.raises(RuntimeError) as exc_info:
+        with live_execution._temporary_codex_home(  # noqa: SLF001
+            execution_contract={"model": "gpt-5.4", "reasoning_effort": "medium"},
+            repo_root=tmp_path,
+            environ={
+                "HOME": str(stripped_home),
+                "CODEX_HOME": str(explicit_codex_home),
+            },
+        ):
+            pass
+
+    message = str(exc_info.value)
+    assert str(explicit_codex_home / "auth.json") in message
+    assert str(stripped_home / ".codex" / "auth.json") in message
+
+
 def test_resolved_live_timeout_budget_prefers_env_override_then_scenario_timeout() -> None:
     timeout_seconds, timeout_policy = live_execution._resolved_live_timeout_budget(  # noqa: SLF001
         scenario={

@@ -66,6 +66,11 @@ such as:
 The renderer and index sync both assume those metadata fields remain the
 authoritative representation of bug knowledge.
 
+`odylith bug capture` must fail closed when the caller cannot provide grounded
+intake evidence for a new bug. The capture path must not emit placeholder field
+values such as `TBD`, `unknown`, or other synthetic stand-ins as if they were
+authoritative Casebook truth.
+
 `Bug ID` is the primary Casebook identity. The source markdown owns it, the
 index projects it, and shell/render/runtime links should prefer it over file
 paths while still accepting legacy file-path aliases during migration.

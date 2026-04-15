@@ -68,7 +68,7 @@ diagnosis surfaces, and answer-time claim language.
 - `src/odylith/runtime/surfaces/dashboard_shell_links.py`
 - `src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py`
 - `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`
-- `src/odylith/runtime/orchestration/odylith_chatter_runtime.py`
+- `src/odylith/runtime/intervention_engine/conversation_runtime.py`
 
 ### Runtime memory
 - `.odylith/runtime/odylith-proof-surfaces.v1.json`

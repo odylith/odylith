@@ -116,6 +116,9 @@ Related Bugs:
 - [ ] Missing launcher-backed anchor resolution is not permission to silence a
       real prompt-submit teaser. The anchor summary may degrade; the earned
       intervention beat should survive.
+- [ ] Prompt-submit teaser surfacing must stay user-visible and discreet at
+      once: the teaser sentence is the visible beat, while any richer anchor
+      context stays in hidden additional-context continuity payloads.
 - [ ] Bare changed paths with no governed fact should stay silent. Near-zero
       latency matters, but fast low-signal filler is still product debt.
 - [ ] If the same moment earns a teaser first, then an Observation, then a
@@ -244,6 +247,14 @@ Related Bugs:
 - [x] Compass proposal summaries and pending rows no longer need to fall back
       to self-referential placeholders such as `Odylith Proposal pending.`;
       the event stream can carry human useful proposal summaries directly.
+- [x] Prompt-submit teasers now surface visibly for both Codex and Claude while
+      still carrying the full bundle in hidden model context for continuity.
+- [x] Source-bundle packaging now carries the intervention host/spec guidance
+      and command-skill shims, while Compass runtime state is stripped from the
+      shipped install bundle instead of leaking a maintainer repo snapshot.
+- [x] Registry and Radar validation caches now carry the Radar idea parser
+      contract version, so stale cached `idea-parse` diagnostics cannot block
+      valid component-registry validation after parser-shape changes.
 - [x] Focused runtime tests and governance validators pass on the touched
       slice.
 
@@ -308,4 +319,6 @@ Related Bugs:
 - [x] `./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync`
 - [x] `./.odylith/bin/odylith registry refresh --repo-root .`
 - [x] `./.odylith/bin/odylith radar refresh --repo-root .`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_validate_component_registry_contract.py` (`47 passed`)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_host_surface_runtime.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_intervention_cross_host_parity.py tests/unit/runtime/test_host_hook_cli_dispatch.py tests/unit/install/test_codex_project_assets.py tests/unit/test_claude_project_hooks.py tests/unit/test_codex_host_cli.py tests/unit/test_claude_host_cli.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_validate_component_registry_contract.py` (`143 passed`)
 - [x] `git diff --check`

@@ -34,7 +34,11 @@ After install, you should have:
   `settings.json`, commands, hooks, rules, and subagents
 - repo-root Codex project assets under `.codex/` including `config.toml`,
   `hooks.json`, and custom project agents under `.codex/agents/`
-- repo-root Codex skill shims under `.agents/skills/`
+- repo-root Codex skill shims under `.agents/skills/`, including explicit
+  command-shims such as `$odylith-start`, `$odylith-context`,
+  `$odylith-query`, `$odylith-session-brief`, `$odylith-sync`,
+  `$odylith-version`, `$odylith-doctor`, `$odylith-compass-log`, and
+  `$odylith-compass-refresh`
 - root `.gitignore` updated with `/.odylith/` when the repo is Git-backed
 - gitignored managed-runtime trust anchors under
   `.odylith/trust/managed-runtime-trust/` when the repo is Git-backed
@@ -65,6 +69,10 @@ optimizations are actually active, run:
 ```bash
 ./.odylith/bin/odylith codex compatibility --repo-root .
 ```
+
+Consumer install and repair also derive the effective `.codex/config.toml`
+from the local Codex capability snapshot when possible, so hook enablement
+tracks the detected Codex host instead of one static feature assumption.
 
 For the default grounded first turn, run:
 
@@ -168,7 +176,7 @@ Here are some starter prompt inspirations:
 - Delete: "Delete developer note [N###]."
 
 For the full set of things the agent understands, see
-[Odylith Operator Instructions](../docs/OPERATOR_INSTRUCTIONS.md). The Cheatsheet
+[Operator Instructions](../docs/OPERATOR_INSTRUCTIONS.md). The Cheatsheet
 drawer in `odylith/index.html` has copyable prompts for every operation.
 
 The shell refreshes itself as Odylith updates local surfaces.
@@ -199,7 +207,8 @@ and factual. Silence is better than filler.
   Codex.
 - repo-root `.codex/`
   Codex CLI project assets Odylith ships for project config, supported hooks,
-  and repo-scoped custom agents.
+  and repo-scoped custom agents. These reinforce the baseline Codex contract;
+  they do not replace repo-root `AGENTS.md` plus the Odylith launcher.
 - repo-root `.agents/skills/`
   Codex repo-scoped command shims for the curated high-frequency Odylith CLI
   lane. They are intentionally narrow and do not mirror the full specialist

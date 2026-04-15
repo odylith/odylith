@@ -18,19 +18,27 @@ def test_render_system_status_html_renders_ablation_notice() -> None:
 
 
 def test_render_system_status_html_prefers_existing_drawer_payload() -> None:
+    rendered_payloads: list[dict[str, object]] = []
+
+    def _render_curated(payload: dict[str, object]) -> str:
+        rendered_payloads.append(dict(payload))
+        return f"<section>{payload['headline']}</section>"
+
     html = presenter.render_system_status_html(
         {"odylith_drawer": {"status": "ready", "headline": "Current"}},
         odylith_switch={},
-        build_drawer_payload=lambda payload: (_ for _ in ()).throw(AssertionError("telemetry drawer should stay suppressed")),
-        render_curated_system_status_html=lambda payload: (_ for _ in ()).throw(
-            AssertionError("system-status telemetry should stay suppressed")
-        ),
+        build_drawer_payload=lambda payload: (_ for _ in ()).throw(AssertionError("existing drawer payload should not rebuild")),
+        render_curated_system_status_html=_render_curated,
     )
 
-    assert html == ""
+    assert html == "<section>Current</section>"
+    assert rendered_payloads == [{"status": "ready", "headline": "Current"}]
 
 
 def test_render_system_status_html_suppresses_benchmark_story_strip() -> None:
+    def _render_curated(payload: dict[str, object]) -> str:
+        return f"<section>{payload['headline']}</section>"
+
     html = presenter.render_system_status_html(
         {
             "benchmark_story": {
@@ -54,10 +62,9 @@ def test_render_system_status_html_suppresses_benchmark_story_strip() -> None:
             "odylith_drawer": {"status": "ready", "headline": "Current"},
         },
         odylith_switch={},
-        build_drawer_payload=lambda payload: (_ for _ in ()).throw(AssertionError("benchmark telemetry should stay suppressed")),
-        render_curated_system_status_html=lambda payload: (_ for _ in ()).throw(
-            AssertionError("curated telemetry drawer should stay suppressed")
-        ),
+        build_drawer_payload=lambda payload: (_ for _ in ()).throw(AssertionError("benchmark story should not rebuild drawer")),
+        render_curated_system_status_html=_render_curated,
     )
 
-    assert html == ""
+    assert html == "<section>Current</section>"
+    assert "Benchmark compare" not in html

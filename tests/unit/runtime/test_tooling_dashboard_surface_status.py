@@ -39,7 +39,7 @@ def _idea_text(*, idea_id: str, title: str, status: str) -> str:
         "workstream_merged_from:\n\n"
         "supersedes:\n\n"
         "superseded_by:\n\n"
-        "## Problem\nDetails.\n"
+        "## Problem\nGrounded fixture coverage for problem in this synthetic workstream.\n"
     )
 
 

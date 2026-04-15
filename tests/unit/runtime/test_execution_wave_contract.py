@@ -39,7 +39,10 @@ def _idea_text(
     workstream_children: str = "",
     workstream_depends_on: str = "",
 ) -> str:
-    body_sections = "\n\n".join([f"## {section}\nDetails." for section in _SECTIONS])
+    body_sections = "\n\n".join(
+        f"## {section}\nGrounded fixture coverage for {section.lower()} in this synthetic workstream."
+        for section in _SECTIONS
+    )
     return (
         "status: implementation\n\n"
         f"idea_id: {idea_id}\n\n"

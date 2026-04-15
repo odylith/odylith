@@ -171,6 +171,10 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - Prompt hooks must not suppress that teaser just because anchor resolution or
   launcher-backed context narrowing is unavailable. Missing anchor context is a
   degraded add-on, not permission to silence a real governed signal.
+- In shipped Codex and Claude prompt hooks, the visible user beat should be
+  that teaser sentence through hook `systemMessage`, while the fuller
+  continuity payload keeps the teaser plus any anchor summary in prompt-hook
+  additional context.
 - `stop_summary`
   May upgrade to a full `Odylith Observation` when corroboration exists, even
   when proposal readiness is still too low to surface `Odylith Proposal` yet.

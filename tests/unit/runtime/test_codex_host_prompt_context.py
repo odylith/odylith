@@ -65,3 +65,34 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "src/odylith/cli.py" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "systemMessage" not in payload
+
+
+def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "Design a conversation observation engine with governed proposal flow."})),
+    )
+    monkeypatch.setattr(
+        codex_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "teaser",
+                    "teaser_text": (
+                        "Odylith can already see governed truth starting to crystallize here. "
+                        "One more corroborating signal and it can turn that into a proposal."
+                    ),
+                }
+            }
+        },
+    )
+
+    exit_code = codex_host_prompt_context.main(["--repo-root", "."])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith can already")
+    assert payload["systemMessage"] == payload["hookSpecificOutput"]["additionalContext"]

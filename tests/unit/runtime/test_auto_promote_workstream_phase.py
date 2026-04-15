@@ -89,7 +89,10 @@ def _idea_text(
     status: str,
     promoted_to_plan: str,
 ) -> str:
-    body_sections = "\n\n".join([f"## {section}\nDetails." for section in _SECTIONS])
+    body_sections = "\n\n".join(
+        f"## {section}\nGrounded fixture coverage for {section.lower()} in this synthetic workstream."
+        for section in _SECTIONS
+    )
     return (
         f"status: {status}\n\n"
         f"idea_id: {idea_id}\n\n"

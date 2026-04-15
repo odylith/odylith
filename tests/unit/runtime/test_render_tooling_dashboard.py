@@ -458,7 +458,7 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "v0.1.0" in html
     assert ">odylith<" in html
-    assert "Telemetry Snapshot" not in html
+    assert "Telemetry Snapshot" in html
     assert "Maintainer Benchmark Lane" not in html
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert '"self_host"' in payload_js

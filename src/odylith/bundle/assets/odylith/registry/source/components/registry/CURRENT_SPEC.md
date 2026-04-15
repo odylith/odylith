@@ -1,8 +1,8 @@
 # Registry
-Last updated: 2026-04-09
+Last updated: 2026-04-15
 
 
-Last updated (UTC): 2026-04-09
+Last updated (UTC): 2026-04-15
 
 ## Purpose
 Registry is Odylith's authoritative component-inventory and component-centric
@@ -135,6 +135,19 @@ deep-skill policy expectations for configured high-risk components. Some
 diagnostics remain warn-only by design, such as candidate components pending
 review.
 
+### Local cache invalidation
+Registry component-index and component-report caches are performance artifacts,
+not governance truth. Their fingerprints must include:
+- manifest, catalog, stream, workspace-activity, and component spec signatures;
+- the Radar ideas tree fingerprint;
+- the active Radar idea parser/cache contract version from
+  `validate_backlog_contract.IDEA_SPEC_CACHE_VERSION`.
+
+When Radar idea parsing starts depending on new parsed fields, Registry must
+invalidate dependent caches in the same change. Stale cached `idea-parse`
+diagnostics must never survive a valid source reparse and block
+`odylith validate component-registry --repo-root .`.
+
 ## Intent Behind Registry
 Registry exists so a developer can answer:
 - what a component actually is
@@ -211,3 +224,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-26: Moved the authoritative Odylith product component inventory into the public repo so product components stop depending on consumer-local registry truth. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Promoted the hidden memory-substrate seams into first-class Registry components so projection bundle, projection snapshot, remote retrieval, and memory contracts have explicit governed ownership and rendered detail instead of one coarse backend silhouette. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
 - 2026-04-09: Bound Registry default operational ordering to Delivery Intelligence's shared Scope Signal Ladder so low-signal churn can stay visible in forensics without outranking real execution or blocker evidence. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
+- 2026-04-15: Hardened Registry cache fingerprints so Radar idea parser contract changes invalidate component-index and component-report diagnostics instead of letting stale `idea-parse` failures block valid governance validation. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))

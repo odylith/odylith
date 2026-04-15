@@ -9,6 +9,13 @@ Use when capturing a new Casebook bug record or updating an open bug with fresh 
 
 - Search for an existing bug first; update, reopen, or consolidate the existing record before creating a parallel duplicate.
 - Give every new bug record a stable `Bug ID` in the `CB-###` sequence and keep that ID unchanged when the title, status, or file location evolves.
+- Do not call `odylith bug capture` until you have the minimum grounded intake evidence in hand:
+  `component`, `reproducibility`, `impact`, `environment`, `detected by`,
+  `failure signature`, `trigger path`, `ownership`, `blast radius`,
+  `SLO/SLA impact`, `data risk`, `security/compliance`, and the
+  `invariant violated`.
+- If those fields are not yet grounded, keep investigating or update an
+  existing bug later. Do not publish a low-evidence placeholder bug record.
 - Keep the bug narrative factual and reproduction-oriented.
 - Link the affected workstream, components, tests, and artifacts explicitly.
 - Link the affected diagrams, validation obligations, and next guardrails or preflight checks whenever they are known.
@@ -17,6 +24,21 @@ Use when capturing a new Casebook bug record or updating an open bug with fresh 
 ## Canonical Commands
 
 ```bash
+./.odylith/bin/odylith bug capture --repo-root . \
+  --title "<bug title>" \
+  --component "<component>" \
+  --reproducibility "High" \
+  --impact "<user or operator impact>" \
+  --environment "<lane or environment>" \
+  --detected-by "<how it was detected>" \
+  --failure-signature "<concrete failure signature>" \
+  --trigger-path "<command or workflow path>" \
+  --ownership "<owning boundary>" \
+  --blast-radius "<affected surfaces or operators>" \
+  --slo-impact "<delivery or SLA impact>" \
+  --data-risk "<data risk posture>" \
+  --security-compliance "<security/compliance posture>" \
+  --invariant-violated "<broken invariant>"
 ./.odylith/bin/odylith compass log --repo-root . --kind implementation --summary "<bug capture update>"
 ./.odylith/bin/odylith sync --repo-root . --force
 ```

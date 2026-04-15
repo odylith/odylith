@@ -1,8 +1,8 @@
 # Radar
-Last updated: 2026-04-09
+Last updated: 2026-04-15
 
 
-Last updated (UTC): 2026-04-09
+Last updated (UTC): 2026-04-15
 
 ## Purpose
 Radar is Odylith's authoritative workstream backlog and execution-governance
@@ -116,6 +116,19 @@ Idea files are also validated fail-closed. Required metadata includes:
 Required sections include workstream problem framing, solution, scope,
 validation, rollout, components, interface changes, migration/compatibility,
 test strategy, and open questions.
+
+The core detail sections are a fail-closed authoring contract:
+- `## Problem`
+- `## Customer`
+- `## Opportunity`
+- `## Product View`
+- `## Success Metrics`
+
+Those sections must contain grounded narrative text. Placeholder bodies,
+`Details.`, title-derived backlog-create boilerplate, and empty values are
+invalid. `odylith backlog create` requires the same five grounded inputs before
+it can mint a new Radar workstream, and `validate backlog-contract` rejects
+source records that regress to generic core detail.
 
 The practical effect is that Radar doubles as both the visual backlog surface
 and the contract gate for workstream authoring quality.
@@ -283,6 +296,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-15: Hardened Radar detail and authoring so runtime backlog detail exposes renderer-ready workstream fields, summary payloads retain fail-closed fallback detail, `odylith backlog create` requires grounded core detail, and backlog validation rejects placeholder or boilerplate Problem/Customer/Opportunity/Product View/Success Metrics sections. (Plan: [B-098](odylith/radar/radar.html?view=plan&workstream=B-098))
 - 2026-04-09: Switched Radar default operational ordering onto Delivery Intelligence's shared Scope Signal Ladder while keeping the underlying backlog exhaustive. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
 - 2026-03-26: Created the first Odylith-owned Radar source tree so the public repo can maintain its own ranked product backlog instead of borrowing a consumer backlog as authority. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Curated default workstream warnings to stay operator-facing while keeping info-level autofix conflicts in shared diagnostics artifacts for maintainers. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

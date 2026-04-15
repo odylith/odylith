@@ -109,6 +109,11 @@
   one teaser sentence only; `Stop` or `PostToolUse` may upgrade that into a
   full `**Odylith Observation**`; governed write suggestions stay inside one
   confirmation-gated `Odylith Proposal`.
+- When `UserPromptSubmit` earns a teaser, Claude should surface that sentence
+  as the visible `systemMessage` beat and keep the fuller continuity payload
+  discreet inside `hookSpecificOutput.additionalContext` so anchor context and
+  teaser continuity survive without turning the prompt hook into visible
+  scaffolding spam.
 - `PostToolUse` is the primary visible intervention lane. When the recovered
   bundle earns an Observation or Proposal, Claude should surface that live
   beat through a visible hook `systemMessage` and also carry the full

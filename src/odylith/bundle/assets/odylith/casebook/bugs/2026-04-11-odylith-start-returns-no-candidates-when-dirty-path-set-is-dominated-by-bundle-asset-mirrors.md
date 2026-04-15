@@ -1,8 +1,10 @@
 - Bug ID: CB-102
 
-- Status: Open
+- Status: Resolved
 
 - Created: 2026-04-11
+
+- Updated: 2026-04-11
 
 - Severity: P1
 
@@ -11,14 +13,16 @@
 - Type: Product
 
 - Description: `odylith start --repo-root .` returns exit code 1 with
-  `selection_state: none` and `selection_reason: "No workstream evidence
-  matched the current changed-path set."` when the dirty path set is dominated
-  by bundle asset mirror files rather than workstream-specific source code.
-  The changed-path workstream inference cannot match a working in-progress
-  workstream (e.g., B-083) through the bundle mirror paths alone, so the start
-  command falls to a `gated_ambiguous` bootstrap packet with
-  `ambiguity_class: no_candidates` instead of routing to the obvious active
-  workstream.
+  `selection_state: none`, `selection_reason: "No workstream evidence
+  matched the current changed-path set."`, `lane: fallback`, and
+  `ambiguity_class: no_candidates` when the dirty path set contains a
+  nested git worktree tree (for example `.claude/worktrees/<slug>` or a
+  bundled copy of one under
+  `src/odylith/bundle/assets/project-root/.claude/worktrees/<slug>`) or
+  dotfile directories such as `.claude/…` or `.codex/…`. The underlying
+  cause is two latent bugs in the path-normalization pipeline plus a
+  missing nested-worktree filter, not a missing secondary signal as the
+  original framing of this bug assumed.
 
 - Impact: Agents following the AGENTS.md startup contract receive a
   degraded bootstrap packet and a fallback lane instead of the active
@@ -26,38 +30,96 @@
   manual context lookup steps that should not be needed when a clear in-progress
   workstream is already active.
 
-- Components Affected: `src/odylith/runtime/governance/workstream_inference.py`,
-  `src/odylith/runtime/context_engine/odylith_context_engine.py`,
-  `.odylith/bin/odylith` start command, changed-path to workstream evidence
-  matching logic.
+- Components Affected:
+  `src/odylith/runtime/governance/agent_governance_intelligence.py`
+  (`_changed_path_aliases`, `normalize_changed_paths`,
+  `collect_git_changed_paths`),
+  `src/odylith/runtime/common/consumer_profile.py`
+  (`_legacy_product_token_alias`),
+  `./.odylith/bin/odylith start` command, and every downstream consumer
+  of `normalize_repo_token` and the changed-path fan-out pipeline.
 
 - Environment(s): Odylith product repo maintainer mode, branch
-  `2026/freedom/v0.1.11`, dirty path set consisting entirely of bundle asset
-  mirrors under `src/odylith/bundle/assets/odylith/` and managed surface files
-  under `odylith/` (FAQ.md, INSTALL.md, INSTALL_AND_UPGRADE_RUNBOOK.md,
-  README.md, atlas/, casebook/, compass/, radar/, registry/ bundle outputs).
+  `2026/freedom/v0.1.11`, repo state with a registered nested git worktree
+  under `.claude/worktrees/funny-leavitt` and an accidental bundled copy
+  of that worktree under
+  `src/odylith/bundle/assets/project-root/.claude/worktrees/funny-leavitt`
+  carrying a `gitdir:` marker. The bug reproduces on any repo that
+  carries a real dotfile directory in its changed-path set (`.claude`,
+  `.codex`, `.github`, `.vscode`) even without a nested worktree.
 
-- Root Cause: Changed-path workstream inference relies on matching dirty file
-  paths against workstream evidence anchors. Bundle asset mirror paths
-  (e.g., `src/odylith/bundle/assets/odylith/FAQ.md`) are not themselves
-  workstream change-watch paths — the canonical source files are. When a broad
-  sync or surface-render pass marks many bundle mirrors as dirty without
-  touching any workstream-registered source paths, the inference returns
-  `no_candidates` even though the active workstream is unambiguous from other
-  signals (Compass context, recent session, plan status).
+- Root Cause: Two latent bugs in the path-normalization pipeline plus a
+  missing nested-worktree guard.
+  1. `str.lstrip("./")` is a broken idiom. `lstrip` takes a character
+     set, not a prefix, so `.claude/worktrees/funny-leavitt`.lstrip("./")
+     returns `claude/worktrees/funny-leavitt`. The broken call site in
+     `_legacy_product_token_alias` (in `consumer_profile.py`) sits
+     upstream of every `normalize_repo_token` call, so it silently
+     mangles every dotfile directory before the token ever reaches the
+     changed-path pipeline. Two more broken call sites in
+     `agent_governance_intelligence.py` (`_changed_path_aliases` and
+     `normalize_changed_paths`) re-mangle the token on each subsequent
+     normalization pass, so the same dotfile path can fan out into
+     multiple non-dotfile variants.
+  2. `collect_git_changed_paths` had no nested-worktree guard. When an
+     accidental bundled copy of a git worktree was committed (or left
+     untracked) inside the repo, git-status emitted the top-level
+     directory as a single untracked entry, and the path-alias fan-out
+     in `_changed_path_aliases` multiplied that into a source mirror
+     alias plus a project-root mirror alias, all of which then got
+     dot-stripped on the next normalization pass.
+  3. The combined effect: a single filesystem mistake (one nested
+     worktree copy under the bundle tree) produced three unrelated
+     changed-path entries — `src/odylith/bundle/assets/project-root/.claude/worktrees/funny-leavitt`,
+     `.claude/worktrees/funny-leavitt`, and the dot-stripped
+     `claude/worktrees/funny-leavitt` — zero of which matched any
+     workstream anchor. The start bootstrap correctly returned
+     `selection_state: none` because no real workstream evidence was
+     in the dirty set; the symptom looked like a missing secondary
+     signal but the underlying pathology was upstream path corruption
+     and missing nested-worktree filtering.
 
-- Solution: Extend the start bootstrap to fall back to secondary workstream
-  signals — recent session context, active Compass workstream, in-progress plan
-  status — when changed-path matching returns `no_candidates` on a dirty tree
-  that consists entirely of bundle mirror or managed surface output files.
-  Alternatively, add bundle mirror root paths as weak-signal evidence anchors
-  that contribute to, rather than determine, workstream selection.
+- Solution (Shipped): Land the forward fix as B-086 Governance Path
+  Normalization Hardening And Nested Worktree Guard.
+  1. Add a private `_strip_current_dir_prefix(token)` helper in
+     `agent_governance_intelligence.py` that only peels a literal `./`
+     prefix, with an inline docstring warning about the broken
+     `lstrip("./")` idiom. Use it in `_changed_path_aliases` and in
+     `normalize_changed_paths` in place of the broken idiom.
+  2. Fix `_legacy_product_token_alias` in `consumer_profile.py` to use
+     an explicit `startswith("./")` prefix check with the same warning
+     comment.
+  3. Add a private `_is_nested_git_worktree_path` helper that walks the
+     candidate path and each of its ancestors up to (but excluding)
+     the repo root and returns True when any of them carry a `.git`
+     marker (directory or `gitdir:` text file). Call it in
+     `collect_git_changed_paths` so paths under a nested worktree are
+     skipped before normalization.
+  4. Clean up the funny-leavitt worktree accident:
+     `git worktree remove --force .claude/worktrees/funny-leavitt`,
+     `git worktree prune`, `rmdir .claude/worktrees`, and
+     `git clean -fd src/odylith/bundle/assets/project-root/.claude/worktrees/`.
+  5. Add three characterization tests in
+     `tests/unit/runtime/test_agent_governance_intelligence.py`
+     covering dotfile-preserving normalization, bundle-mirror alias
+     fan-out without the broken variant, and nested-worktree
+     filtering.
 
-- Verification: Reproduce by running `odylith start --repo-root .` on a branch
-  where only bundle asset mirrors and managed surface files are dirty while an
-  in-progress workstream plan exists. Confirm `selection_state: none` is
-  returned. Fix is verified when the start command returns the active workstream
-  context even in this dirty-path condition.
+- Verification: Reproduce pre-fix by running `./.odylith/bin/odylith start
+  --repo-root .` against a repo state that contains a nested git worktree
+  under `.claude/worktrees/<slug>` or a bundled copy of one under
+  `src/odylith/bundle/assets/project-root/.claude/worktrees/<slug>`.
+  Pre-fix behavior: exit code 1, `lane: fallback`, `selection_state:
+  none`, and three phantom `changed_paths` entries (the source mirror
+  path, the correctly-stripped alias, and a dot-stripped broken variant
+  such as `claude/worktrees/<slug>`).
+
+  Post-fix: `./.odylith/bin/odylith start --repo-root .` returns exit
+  code 0 with `lane: bootstrap`, `selection_state: inferred_confident`,
+  `selection_confidence: high`, `precision_score >= 60`, and a
+  `changed_paths` set that contains only the real source edits. No
+  nested-worktree entries, no dot-stripped variants. Verified locally on
+  branch `2026/freedom/v0.1.11` on 2026-04-11.
 
 - Prevention: Workstream inference must have at least one secondary signal path
   that activates when changed-path matching produces `no_candidates` on a
@@ -109,10 +171,16 @@
   gap, confirm the dirty path set is dominated by bundle mirrors or managed
   output files and not by workstream-registered source files.
 
-- Regression Tests Added: None yet. Add to
-  `tests/unit/runtime/test_workstream_inference.py` a case where all dirty
-  paths are bundle mirror paths and an active in-progress plan exists; assert
-  that the start bootstrap resolves the active workstream via secondary signals.
+- Regression Tests Added:
+  `tests/unit/runtime/test_agent_governance_intelligence.py::test_normalize_changed_paths_preserves_leading_dot_directories`
+  asserts that `.claude/…`, `.codex/…`, and `.github/…` inputs survive
+  normalization and never produce a dot-stripped variant;
+  `tests/unit/runtime/test_agent_governance_intelligence.py::test_normalize_changed_paths_fans_out_bundle_mirror_aliases`
+  asserts legitimate bundle-mirror alias fan-out without the broken
+  dot-stripped variant; and
+  `tests/unit/runtime/test_agent_governance_intelligence.py::test_collect_git_changed_paths_skips_nested_worktree_copies`
+  synthesizes a bundled-worktree-copy tree with a `gitdir:` marker and
+  asserts the path is excluded from `collect_git_changed_paths`.
 
 - Monitoring Updates: Watch for `selection_state: none` in start bootstrap
   output on branches with broad surface-sync dirty trees.
@@ -120,8 +188,12 @@
 - Residual Risk: Until fixed, agents on bundle-heavy dirty branches must run an
   explicit `odylith context` step to ground each session.
 
-- Related Incidents/Bugs: None directly. Related to the broader B-083
-  Claude guidance surface work that triggered the dirty-tree condition.
+- Related Incidents/Bugs: None directly. Related to the broader B-083,
+  B-084, and B-085 Claude host parity work whose `.claude/worktrees/`
+  experimentation left the funny-leavitt worktree accident in place.
+  B-086 Governance Path Normalization Hardening And Nested Worktree
+  Guard is the bound forward fix and ships the corrected root cause
+  plus the nested-worktree filter.
 
 - Version/Build: Odylith product repo branch `2026/freedom/v0.1.11`,
   2026-04-11.
@@ -131,10 +203,19 @@
 
 - Customer Comms: N/A — internal product repo maintainer tooling.
 
-- Code References: `src/odylith/runtime/governance/workstream_inference.py`,
-  `src/odylith/runtime/context_engine/odylith_context_engine.py`
+- Code References:
+  `src/odylith/runtime/governance/agent_governance_intelligence.py`,
+  `src/odylith/runtime/common/consumer_profile.py`,
+  `tests/unit/runtime/test_agent_governance_intelligence.py`,
+  `odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md`
 
 - Runbook References: `AGENTS.md`, `odylith/AGENTS.md`,
   `odylith/agents-guidelines/VALIDATION_AND_TESTING.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: B-086 fix commit on branch `2026/freedom/v0.1.11`
+  lands `_strip_current_dir_prefix`,
+  `_is_nested_git_worktree_path`, the two `agent_governance_intelligence.py`
+  call-site fixes, the `consumer_profile.py` `_legacy_product_token_alias`
+  fix, three new `test_agent_governance_intelligence.py`
+  characterization tests, the funny-leavitt cleanup, and this CB-102
+  update.

@@ -44,12 +44,20 @@ class CreatedBacklogItem:
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith backlog create",
-        description="Create one or more queued backlog workstreams and patch Radar INDEX.md automatically.",
+        description=(
+            "Create one or more queued backlog workstreams with grounded core detail "
+            "and patch Radar INDEX.md automatically."
+        ),
     )
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--backlog-index", default="odylith/radar/source/INDEX.md")
     parser.add_argument("--ideas-root", default="odylith/radar/source/ideas")
     parser.add_argument("--title", action="append", dest="titles", required=True)
+    parser.add_argument("--problem", required=True, help="Grounded Problem section text.")
+    parser.add_argument("--customer", required=True, help="Grounded Customer section text.")
+    parser.add_argument("--opportunity", required=True, help="Grounded Opportunity section text.")
+    parser.add_argument("--product-view", required=True, help="Grounded Product View section text.")
+    parser.add_argument("--success-metrics", required=True, help="Grounded Success Metrics section text.")
     parser.add_argument("--priority", default=_DEFAULT_PRIORITY)
     parser.add_argument("--commercial-value", type=int, default=3)
     parser.add_argument("--product-impact", type=int, default=3)
@@ -243,27 +251,24 @@ def _update_backlog_last_updated(content: str, *, today: dt.date) -> str:
 
 
 def _default_sections_for_title(title: str) -> dict[str, str]:
-    plain_title = str(title).strip()
-    return {
-        "Problem": f"Odylith needs an explicit workstream for {plain_title} instead of leaving the slice implicit.",
-        "Customer": "Odylith maintainers and operators who need this capability to exist as governed product truth.",
-        "Opportunity": f"Bound {plain_title} as a queued workstream so implementation can attach to one clear source record.",
-        "Proposed Solution": f"Create the workstream for {plain_title} and refine the exact implementation plan during execution.",
-        "Scope": f"- Define and land the bounded work for {plain_title}.\n- Keep the first implementation wave narrow and test-backed.",
-        "Non-Goals": "- Do not widen this queued workstream into unrelated product cleanup.",
-        "Risks": "- The title may need refinement once the implementation owner confirms the exact boundary.",
-        "Dependencies": "- No explicit dependency recorded yet; confirm related workstreams before implementation starts.",
-        "Success Metrics": "- The workstream is specific enough to guide implementation and validation without further backlog surgery.",
-        "Validation": "- Run focused validation for the touched paths once implementation begins.",
-        "Rollout": "- Queue now, then bind a technical plan when the implementation wave starts.",
-        "Why Now": "This slice is active enough that it should exist as explicit backlog truth now.",
-        "Product View": "If the team is already acting as if this work exists, the backlog should say so explicitly.",
-        "Impacted Components": "- `odylith`",
-        "Interface Changes": "- None decided yet; record interface changes once implementation is scoped.",
-        "Migration/Compatibility": "- No migration impact recorded yet.",
-        "Test Strategy": "- Add targeted regression coverage when implementation begins.",
-        "Open Questions": "- Which existing workstreams or component specs should this attach to first?",
-    }
+    return backlog_contract.default_section_boilerplate(title)
+
+
+def _grounded_sections_for_title(*, title: str, args: argparse.Namespace) -> dict[str, str]:
+    sections = dict(_default_sections_for_title(title))
+    sections["Problem"] = str(args.problem).strip()
+    sections["Customer"] = str(args.customer).strip()
+    sections["Opportunity"] = str(args.opportunity).strip()
+    sections["Product View"] = str(args.product_view).strip()
+    sections["Success Metrics"] = str(args.success_metrics).strip()
+    validation_errors = backlog_contract.core_detail_section_errors(
+        title=title,
+        sections=sections,
+        path=Path("<generated>"),
+    )
+    if validation_errors:
+        raise ValueError("; ".join(validation_errors))
+    return sections
 
 
 def _build_metadata(
@@ -475,7 +480,7 @@ def create_queued_backlog_items(
         metadata = _build_metadata(idea_id=idea_id, title=title, today=today, args=args)
         idea_path = _unique_idea_path(ideas_root=ideas_root, title=title, today=today, reserved=reserved_paths)
         reserved_paths.add(idea_path)
-        sections = _default_sections_for_title(title)
+        sections = _grounded_sections_for_title(title=title, args=args)
         text = _render_idea_text(metadata=metadata, sections=sections)
         new_text_by_path[idea_path] = text
         item = CreatedBacklogItem(
@@ -490,6 +495,7 @@ def create_queued_backlog_items(
             path=idea_path,
             metadata=metadata,
             sections=set(sections),
+            section_bodies=dict(sections),
         )
 
     row_records: list[dict[str, Any]] = []

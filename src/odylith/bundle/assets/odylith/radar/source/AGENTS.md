@@ -16,3 +16,11 @@ Scope: applies to all files under `odylith/radar/source/`.
 - Idea specs live under `odylith/radar/source/ideas/`.
 - Program files live under `odylith/radar/source/programs/`.
 - Templates and policy live under `odylith/radar/source/templates/` and `odylith/radar/source/policy/`.
+- New idea specs must carry grounded core detail in `## Problem`,
+  `## Customer`, `## Opportunity`, `## Product View`, and
+  `## Success Metrics`. Placeholder text, title-derived boilerplate, and
+  generic backlog-create defaults are invalid workstream truth.
+- Use `odylith backlog create` with the required grounded core-detail flags for
+  new backlog ids. If an existing workstream is hollow, retrofill the source
+  record from the bound plan or implementation evidence before refreshing
+  Radar.

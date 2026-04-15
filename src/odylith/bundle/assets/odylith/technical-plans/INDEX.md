@@ -1,7 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-12
-
+Last updated (UTC): 2026-04-15
 ## Active Plans
 
 | Plan | Status | Created | Updated | Backlog |
@@ -29,11 +28,19 @@ Last updated (UTC): 2026-04-12
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md` | In progress | 2026-04-12 | 2026-04-12 | `B-091` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md` | In progress | 2026-04-12 | 2026-04-12 | `B-092` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md` | In progress | 2026-04-12 | 2026-04-12 | `B-093` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md` | In progress | 2026-04-15 | 2026-04-15 | `B-097` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-14 | `B-096` |
 
 ## Parked Plans
 
 | Plan | Status | Created | Updated | Backlog |
 | --- | --- | --- | --- | --- |
+
+## Recently Completed (2026-04-15)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-15-radar-backlog-detail-fail-closed-completeness-and-authoring-hardening.md` | Done | 2026-04-15 | 2026-04-15 | `B-098` |
 
 ## Recently Completed (2026-04-12)
 

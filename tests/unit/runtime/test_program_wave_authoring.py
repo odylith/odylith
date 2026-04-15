@@ -38,7 +38,10 @@ def _idea_text(
     workstream_parent: str = "",
     workstream_children: str = "",
 ) -> str:
-    sections = "\n\n".join(f"## {section}\nDetails." for section in _SECTIONS)
+    sections = "\n\n".join(
+        f"## {section}\nGrounded fixture coverage for {section.lower()} in this synthetic workstream."
+        for section in _SECTIONS
+    )
     return (
         "---\n"
         "status: implementation\n"

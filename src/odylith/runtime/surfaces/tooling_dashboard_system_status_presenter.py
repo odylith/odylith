@@ -40,4 +40,10 @@ def render_system_status_html(
             "</section>"
         )
 
-    return ""
+    existing_drawer = payload.get("odylith_drawer")
+    drawer_payload = dict(existing_drawer) if isinstance(existing_drawer, Mapping) else {}
+    if not drawer_payload:
+        drawer_payload = build_drawer_payload(payload)
+    if not drawer_payload:
+        return ""
+    return render_curated_system_status_html(drawer_payload)

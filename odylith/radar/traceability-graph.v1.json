@@ -4128,7 +4128,8 @@
           "B-087",
           "B-088",
           "B-092",
-          "B-093"
+          "B-093",
+          "B-097"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4150,7 +4151,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 7,
+        "active_workstream_count": 8,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4230,7 +4231,8 @@
           "B-087",
           "B-088",
           "B-092",
-          "B-093"
+          "B-093",
+          "B-097"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4252,7 +4254,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 7,
+        "active_workstream_count": 8,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4330,7 +4332,8 @@
           "B-087",
           "B-088",
           "B-092",
-          "B-093"
+          "B-093",
+          "B-097"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4352,7 +4355,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 7,
+        "active_workstream_count": 8,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4468,7 +4471,8 @@
           "B-087",
           "B-088",
           "B-092",
-          "B-093"
+          "B-093",
+          "B-097"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4490,7 +4494,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 7,
+        "active_workstream_count": 8,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4578,7 +4582,8 @@
           "B-087",
           "B-088",
           "B-092",
-          "B-093"
+          "B-093",
+          "B-097"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4600,7 +4605,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 7,
+        "active_workstream_count": 8,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4797,7 +4802,8 @@
           "B-087",
           "B-088",
           "B-092",
-          "B-093"
+          "B-093",
+          "B-097"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4819,7 +4825,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 7,
+        "active_workstream_count": 8,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4899,7 +4905,8 @@
           "B-087",
           "B-088",
           "B-092",
-          "B-093"
+          "B-093",
+          "B-097"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4921,7 +4928,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 7,
+        "active_workstream_count": 8,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5021,6 +5028,141 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-096",
+      "title": "Conversation observation engine, governed proposal flow, and human intervention voice contract",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-038"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-097",
+      "title": "Casebook Bug Capture Fail-Closed Evidence Contract and Cross-Host Guidance Hardening",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 8,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-097",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-15T16:48:23Z",
+          "note": "",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -5047,7 +5189,8 @@
         "B-087",
         "B-088",
         "B-092",
-        "B-093"
+        "B-093",
+        "B-097"
       ],
       "completed_workstreams": [
         "B-061",
@@ -5069,7 +5212,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 7,
+      "active_workstream_count": 8,
       "completed_workstream_count": 16
     },
     {
@@ -5122,7 +5265,8 @@
         "B-087",
         "B-088",
         "B-092",
-        "B-093"
+        "B-093",
+        "B-097"
       ],
       "completed_workstreams": [
         "B-061",
@@ -5144,7 +5288,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 7,
+      "active_workstream_count": 8,
       "completed_workstream_count": 16
     },
     "next": {
@@ -5196,7 +5340,8 @@
       "B-087",
       "B-088",
       "B-092",
-      "B-093"
+      "B-093",
+      "B-097"
     ],
     "completed_workstreams": [
       "B-061",
@@ -5218,7 +5363,7 @@
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 7,
+    "active_workstream_count": 8,
     "completed_workstream_count": 16
   },
   "next_release": {
@@ -5249,7 +5394,7 @@
   "release_summary": {
     "release_count": 2,
     "alias_count": 2,
-    "active_assignment_count": 8
+    "active_assignment_count": 9
   },
   "execution_programs": [
     {
@@ -6065,6 +6210,20 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-13-zero-configuration-host-binary-discovery-for-consumer-lane.md"
     },
     {
+      "id": "B-096",
+      "type": "workstream",
+      "label": "Conversation observation engine, governed proposal flow, and human intervention voice contract",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md"
+    },
+    {
+      "id": "B-097",
+      "type": "workstream",
+      "label": "Casebook Bug Capture Fail-Closed Evidence Contract and Cross-Host Guidance Hardening",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md"
+    },
+    {
       "id": "artifact:.github/workflows/release.yml",
       "type": "artifact",
       "label": ".github/workflows/release.yml",
@@ -6534,6 +6693,13 @@
       "file": "odylith/atlas/source/odylith-context-engine-connection-lifecycle-and-process-topology.mmd"
     },
     {
+      "id": "diagram:D-038",
+      "type": "diagram",
+      "label": "Conversation Observation And Governed Proposal Flow",
+      "diagram_id": "D-038",
+      "file": "odylith/atlas/source/odylith-conversation-observation-and-governed-proposal-flow.mmd"
+    },
+    {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -6946,6 +7112,18 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md"
     },
     {
       "id": "release:release-0-1-11",
@@ -9511,6 +9689,26 @@
       "source": "B-094",
       "target": "diagram:D-037",
       "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-096",
+      "target": "diagram:D-038",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-096",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-097",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-097",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
     }
   ],
   "coverage": {
@@ -10178,6 +10376,20 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-096": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-097": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -10229,15 +10441,15 @@
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 95,
+    "workstream_count": 97,
     "release_count": 2,
-    "active_release_assignment_count": 8,
+    "active_release_assignment_count": 9,
     "execution_program_count": 1,
     "execution_wave_count": 6,
-    "node_count": 233,
-    "edge_count": 507,
+    "node_count": 238,
+    "edge_count": 511,
     "warning_count": 4,
     "warning_item_count": 4
   },
-  "generated_utc": "2026-04-13 18:55:06Z"
+  "generated_utc": "2026-04-15 16:53:44Z"
 }

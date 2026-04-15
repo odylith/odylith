@@ -1,11 +1,24 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-14
+Last updated (UTC): 2026-04-15
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-114 | 2026-04-15 | Bug capture can publish placeholder tbd records before the maintainer has enough | P0 | `src/odylith/runtime/governance/bug_authoring.py`,
+  `src/odylith/runtime/intervention_engine/apply.py`,
+  `src/odylith/runtime/intervention_engine/engine.py`,
+  `src/odylith/runtime/analysis_engine/show_capabilities.py`,
+  `odylith/skills/odylith-casebook-bug-capture/SKILL.md`,
+  `odylith/skills/odylith-casebook-bug-preflight/SKILL.md`,
+  and the shared Casebook bug-authoring contract. | Open | [2026-04-15-bug-capture-can-publish-placeholder-tbd-records-before-the-maintainer-has-enough.md](2026-04-15-bug-capture-can-publish-placeholder-tbd-records-before-the-maintainer-has-enough.md) |
+| CB-113 | 2026-04-15 | Benchmark sharded proof can lose final shard artifacts and authoritative active | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
+  benchmark shard progress lifecycle, active-run ledger maintenance, shard
+  teardown/finalization, benchmark publication proof. | Open | [2026-04-15-benchmark-sharded-proof-can-lose-final-shard-artifacts-and-authoritative-active-.md](2026-04-15-benchmark-sharded-proof-can-lose-final-shard-artifacts-and-authoritative-active-.md) |
+| CB-117 | 2026-04-15 | Benchmark proof shards treat shell hangup as terminal interrupt | P1 | benchmark | Open | [2026-04-15-benchmark-proof-shards-treat-shell-hangup-as-terminal-interrupt.md](2026-04-15-benchmark-proof-shards-treat-shell-hangup-as-terminal-interrupt.md) |
+| CB-118 | 2026-04-15 | Benchmark live proof auth preflight only checks ambient home codex auth | P1 | benchmark | Open | [2026-04-15-benchmark-live-proof-auth-preflight-only-checks-ambient-home-codex-auth.md](2026-04-15-benchmark-live-proof-auth-preflight-only-checks-ambient-home-codex-auth.md) |
+| CB-116 | 2026-04-15 | Benchmark compare and publication can treat stale proof aliases as current head  2 | P1 | benchmark | Open | [2026-04-15-benchmark-compare-and-publication-can-treat-stale-proof-aliases-as-current-head--2.md](2026-04-15-benchmark-compare-and-publication-can-treat-stale-proof-aliases-as-current-head--2.md) |
 | CB-112 | 2026-04-14 | Routine authoring commands can leave owned surfaces stale and selective sync can | P1 | odylith | Open | [2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md](2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md) |
 | CB-105 | 2026-04-12 | Sync performance engineering from 30s to sub 6s with session hoisting and incremental derivation | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py` (22-step
   pipeline executor, `_execute_plan`, `_run_callable_with_heartbeat`,

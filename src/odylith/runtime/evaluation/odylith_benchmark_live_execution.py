@@ -178,8 +178,46 @@ def _read_toml_mapping(path: Path) -> dict[str, Any]:
 
 def _user_codex_home(*, environ: Mapping[str, str] | None = None) -> Path:
     env = dict(os.environ if environ is None else environ)
-    home_root = Path(str(env.get("HOME", "~"))).expanduser()
-    return (home_root / ".codex").resolve()
+    for candidate in _codex_home_candidates(environ=env):
+        if candidate.is_dir():
+            return candidate
+    candidates = _codex_home_candidates(environ=env)
+    if candidates:
+        return candidates[0]
+    return (Path.home() / ".codex").resolve()
+
+
+def _codex_home_candidates(*, environ: Mapping[str, str] | None = None) -> list[Path]:
+    env = dict(os.environ if environ is None else environ)
+    rows: list[Path] = []
+    for key in ("CODEX_HOME", "CODEX_CONFIG_HOME"):
+        raw = str(env.get(key, "")).strip()
+        if raw:
+            rows.append(Path(raw).expanduser())
+    home = str(env.get("HOME", "")).strip()
+    if home:
+        rows.append(Path(home).expanduser() / ".codex")
+    rows.append(Path.home() / ".codex")
+
+    seen: set[str] = set()
+    ordered: list[Path] = []
+    for candidate in rows:
+        with contextlib.suppress(OSError, RuntimeError):
+            candidate = candidate.resolve()
+        token = candidate.as_posix()
+        if token in seen:
+            continue
+        seen.add(token)
+        ordered.append(candidate)
+    return ordered
+
+
+def _codex_auth_source(*, environ: Mapping[str, str] | None = None) -> Path | None:
+    for codex_home in _codex_home_candidates(environ=environ):
+        auth_path = (codex_home / "auth.json").resolve()
+        if auth_path.is_file():
+            return auth_path
+    return None
 
 
 def _repo_reasoning_payload(*, repo_root: Path) -> dict[str, Any]:
@@ -253,10 +291,12 @@ def _temporary_codex_home(
     environ: Mapping[str, str] | None = None,
 ) -> Iterator[Path]:
     env = dict(os.environ if environ is None else environ)
-    auth_source = (_user_codex_home(environ=env) / "auth.json").resolve()
-    if not auth_source.is_file():
+    auth_source = _codex_auth_source(environ=env)
+    if auth_source is None:
+        checked = ", ".join((candidate / "auth.json").as_posix() for candidate in _codex_home_candidates(environ=env))
         raise RuntimeError(
-            "Codex CLI auth is unavailable at `~/.codex/auth.json`; cannot run live benchmark scenarios."
+            "Codex CLI auth is unavailable; checked "
+            f"{checked or '`~/.codex/auth.json`'} and cannot run live benchmark scenarios."
         )
     with _temporary_benchmark_temp_dir(
         repo_root=repo_root,

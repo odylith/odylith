@@ -18,8 +18,15 @@
 - Skipping CLI commands wastes operator time, forces a redundant refresh, and produces exactly the kind of governance drift Odylith exists to prevent.
 
 ## Authoritative CLI Surface (non-exhaustive)
+- `./.odylith/bin/odylith bug capture` for new Casebook bug records. The
+  command is fail-closed: it requires grounded intake evidence and must not be
+  used as a title-only placeholder writer.
 - `./.odylith/bin/odylith release {create,update,list,show,add,remove,move}` for release-planning truth. Never hand-edit `odylith/radar/source/releases/releases.v1.json` or `odylith/radar/source/releases/release-assignment-events.v1.jsonl`.
-- `./.odylith/bin/odylith backlog create` for new Radar workstreams. Never hand-author rows in `odylith/radar/source/INDEX.md` for new backlog ids.
+- `./.odylith/bin/odylith backlog create` for new Radar workstreams.
+  The command is fail-closed: it requires grounded Problem, Customer,
+  Opportunity, Product View, and Success Metrics input and must not be used as
+  a title-only placeholder writer. Never hand-author rows in
+  `odylith/radar/source/INDEX.md` for new backlog ids.
 - `./.odylith/bin/odylith governance backfill-workstream-traceability` for Radar idea traceability fields such as `workstream_parent`, `workstream_children`, and reciprocal links.
 - `./.odylith/bin/odylith governance reconcile-plan-workstream-binding` for active-plan rows and bindings in `odylith/technical-plans/INDEX.md`.
 - `./.odylith/bin/odylith governance auto-promote-workstream-phase` for Radar workstream phase promotion driven by live evidence.

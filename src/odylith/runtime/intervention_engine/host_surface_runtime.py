@@ -229,6 +229,24 @@ def codex_post_tool_payload(
     return payload
 
 
+def codex_prompt_payload(
+    *,
+    additional_context: str = "",
+    system_message: str = "",
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {}
+    context = _normalize_block_string(additional_context)
+    message = _normalize_block_string(system_message)
+    if context:
+        payload["hookSpecificOutput"] = {
+            "hookEventName": "UserPromptSubmit",
+            "additionalContext": context,
+        }
+    if message:
+        payload["systemMessage"] = message
+    return payload
+
+
 def stop_payload(*, system_message: str = "") -> dict[str, Any]:
     message = _normalize_block_string(system_message)
     return {"systemMessage": message} if message else {}
@@ -244,6 +262,24 @@ def claude_post_tool_payload(
     message = _normalize_block_string(system_message)
     if context:
         payload["additionalContext"] = context
+    if message:
+        payload["systemMessage"] = message
+    return payload
+
+
+def claude_prompt_payload(
+    *,
+    additional_context: str = "",
+    system_message: str = "",
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {}
+    context = _normalize_block_string(additional_context)
+    message = _normalize_block_string(system_message)
+    if context:
+        payload["hookSpecificOutput"] = {
+            "hookEventName": "UserPromptSubmit",
+            "additionalContext": context,
+        }
     if message:
         payload["systemMessage"] = message
     return payload

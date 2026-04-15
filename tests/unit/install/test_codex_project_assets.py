@@ -20,6 +20,8 @@ CODEX_COMMAND_SKILLS = {
     "odylith-doctor/SKILL.md",
     "odylith-compass-log/SKILL.md",
     "odylith-compass-refresh/SKILL.md",
+    "odylith-casebook-bug-capture/SKILL.md",
+    "odylith-casebook-bug-preflight/SKILL.md",
 }
 
 

@@ -1089,9 +1089,7 @@ def _telemetry_index_rows_html(
 
 
 def build_odylith_drawer_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
-    """Telemetry drawer removed from the shell contract."""
-
-    return {}
+    """Build the shell-owned telemetry drawer payload."""
 
     odylith_switch = _odylith_switch(payload)
     if odylith_switch and not bool(odylith_switch.get("enabled", True)):
@@ -2317,8 +2315,6 @@ def _render_odylith_chart_fallback_for_drawer(chart_key: str, drawer_payload: Ma
 
 
 def _render_curated_system_status_html(drawer_payload: Mapping[str, Any]) -> str:
-    return ""
-
     if str(drawer_payload.get("status", "")).strip() == "disabled":
         note = str(drawer_payload.get("note", "")).strip() or "Odylith runtime telemetry is not available for this comparison run."
         return (
@@ -2805,8 +2801,8 @@ def build_template_context(payload: Mapping[str, Any]) -> tooling_dashboard_temp
     system_status_html = tooling_dashboard_system_status_presenter.render_system_status_html(
         payload,
         odylith_switch=_odylith_switch(payload),
-        build_drawer_payload=lambda _payload: {},
-        render_curated_system_status_html=lambda _payload: "",
+        build_drawer_payload=build_odylith_drawer_payload,
+        render_curated_system_status_html=_render_curated_system_status_html,
     )
     return tooling_dashboard_template_context.build_template_context(
         payload,

@@ -10,6 +10,7 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.surfaces import codex_host_shared
 
@@ -69,6 +70,29 @@ def render_codex_prompt_context(
     return "\n\n".join(part for part in parts if part).strip()
 
 
+def render_codex_prompt_system_message(
+    *,
+    repo_root: str = ".",
+    prompt: str,
+    session_id: str = "",
+    conversation_bundle_override: Mapping[str, Any] | None = None,
+    intervention_bundle_override: Mapping[str, Any] | None = None,
+) -> str:
+    bundle = _prompt_conversation_bundle(
+        repo_root=repo_root,
+        prompt=prompt,
+        session_id=session_id,
+        bundle_override=conversation_bundle_override,
+        intervention_bundle_override=intervention_bundle_override,
+    )
+    return conversation_surface.render_live_text(
+        bundle,
+        markdown=False,
+        include_proposal=False,
+        prefer_ambient_over_teaser=True,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith codex prompt-context",
@@ -90,7 +114,13 @@ def main(argv: list[str] | None = None) -> int:
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
-    if not summary:
+    system_message = render_codex_prompt_system_message(
+        repo_root=args.repo_root,
+        prompt=prompt,
+        session_id=session_id,
+        conversation_bundle_override=bundle,
+    )
+    if not summary and not system_message:
         return 0
     conversation_surface.append_intervention_events(
         repo_root=Path(args.repo_root).expanduser().resolve(),
@@ -99,12 +129,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     sys.stdout.write(
         json.dumps(
-            {
-                "hookSpecificOutput": {
-                    "hookEventName": "UserPromptSubmit",
-                    "additionalContext": summary,
-                }
-            }
+            host_surface_runtime.codex_prompt_payload(
+                additional_context=summary,
+                system_message=system_message,
+            )
         )
     )
     return 0

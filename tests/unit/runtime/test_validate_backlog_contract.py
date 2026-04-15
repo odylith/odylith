@@ -26,6 +26,13 @@ _SECTIONS = (
     "Test Strategy",
     "Open Questions",
 )
+_CORE_SECTION_BODIES = {
+    "Problem": "Seed workstream problem detail is grounded enough for backlog validation.",
+    "Customer": "Maintainers and operators who rely on valid Radar seed fixtures.",
+    "Opportunity": "Exercise backlog contract behavior from realistic workstream source truth.",
+    "Product View": "Backlog tests should model usable Radar records instead of placeholders.",
+    "Success Metrics": "- Seed records validate with real detail.\n- Contract tests catch malformed workstream truth.",
+}
 
 
 def _repo_rel(root: Path, path: Path) -> str:
@@ -68,7 +75,12 @@ def _idea_text(
     workstream_merged_into: str = "",
     workstream_merged_from: str = "",
 ) -> str:
-    body_sections = "\n\n".join([f"## {section}\nDetails." for section in _SECTIONS])
+    body_sections = "\n\n".join(
+        [
+            f"## {section}\n{_CORE_SECTION_BODIES.get(section, 'Fixture section body for backlog contract tests.')}"
+            for section in _SECTIONS
+        ]
+    )
     return (
         f"status: {status}\n\n"
         f"idea_id: {idea_id}\n\n"
@@ -310,6 +322,96 @@ def test_backlog_contract_rejects_product_repo_workstream_title_prefix(
     assert rc == 2
     out = capsys.readouterr().out
     assert "must not start with `Odylith`" in out
+
+
+def test_backlog_contract_rejects_placeholder_core_detail_section(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001 - pytest fixture
+) -> None:
+    _implementation_path, queued_path = _seed_minimal_repo(tmp_path)
+    text = queued_path.read_text(encoding="utf-8")
+    text = text.replace(
+        "## Problem\nSeed workstream problem detail is grounded enough for backlog validation.",
+        "## Problem\nDetails.",
+    )
+    queued_path.write_text(text, encoding="utf-8")
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+
+    assert rc == 2
+    assert "core detail section `## Problem` uses placeholder-like text" in out
+
+
+def test_backlog_contract_rejects_boilerplate_core_detail_section(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001 - pytest fixture
+) -> None:
+    _implementation_path, queued_path = _seed_minimal_repo(tmp_path)
+    text = queued_path.read_text(encoding="utf-8")
+    text = text.replace(
+        "## Customer\nMaintainers and operators who rely on valid Radar seed fixtures.",
+        "## Customer\nOdylith maintainers and operators who need this capability to exist as governed product truth.",
+    )
+    queued_path.write_text(text, encoding="utf-8")
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+
+    assert rc == 2
+    assert "core detail section `## Customer` still uses backlog-create boilerplate" in out
+
+
+def test_validate_idea_specs_ignores_legacy_cache_without_section_bodies(tmp_path: Path) -> None:
+    _implementation_path, queued_path = _seed_minimal_repo(tmp_path)
+    repo_root = tmp_path.resolve()
+    target = queued_path.resolve()
+    cache_file = gate.odylith_context_cache.cache_path(
+        repo_root=repo_root,
+        namespace="backlog/idea-specs",
+        key=gate._repo_relative_cache_key(repo_root=repo_root, target=target),  # noqa: SLF001
+    )
+    gate.odylith_context_cache.write_json_if_changed(
+        repo_root=repo_root,
+        path=cache_file,
+        payload={
+            "version": "v1",
+            "signature": gate.odylith_context_cache.path_signature(target),
+            "spec": {
+                "metadata": {
+                    "idea_id": "B-101",
+                    "title": "Backlog Bootstrap",
+                    "date": "2026-02-27",
+                    "status": "queued",
+                    "priority": "P1",
+                    "commercial_value": "4",
+                    "product_impact": "4",
+                    "market_value": "3",
+                    "impacted_parts": "test surface",
+                    "sizing": "L",
+                    "complexity": "High",
+                    "ordering_score": "89",
+                    "ordering_rationale": "test rationale",
+                    "confidence": "high",
+                    "founder_override": "no",
+                    "promoted_to_plan": "",
+                },
+                "sections": list(_SECTIONS),
+            },
+        },
+        lock_key=str(cache_file),
+    )
+
+    ideas, errors = gate._validate_idea_specs(  # noqa: SLF001
+        tmp_path / "odylith" / "radar" / "source" / "ideas",
+        repo_root=tmp_path,
+    )
+
+    assert errors == []
+    assert ideas["B-101"].section_bodies["Problem"].startswith("Seed workstream problem detail")
+    refreshed = gate.odylith_context_cache.read_json_object(cache_file)
+    assert refreshed["version"] == gate.IDEA_SPEC_CACHE_VERSION
+    assert str(refreshed["spec"]["section_bodies"]["Problem"]).startswith("Seed workstream problem detail")
 
 
 def test_backlog_contract_fails_closed_on_invalid_release_planning_truth(

@@ -1503,6 +1503,7 @@ initSharedQuickTooltips();
         ? `<span class="chip" data-tooltip="Active target release for this workstream.">${escapeHtml(workstreamActiveReleaseLabel(row))}</span>`
         : "";
       const waveChips = executionWaveRoleChips(row);
+      const footerChips = `${waveChips}${typeChips}${stageChip}${executionChip}${releaseChip}`;
       return `
         <button class="row ${activeClass}" data-idea-id="${escapeHtml(row.idea_id)}">
           <div class="row-top">
@@ -1511,12 +1512,13 @@ initSharedQuickTooltips();
           </div>
           <div class="row-meta">
             <p class="row-id">${escapeHtml(row.idea_id)}</p>
-            <div class="row-chips">${typeChips}${stageChip}${executionChip}${releaseChip}</div>
+            <div class="row-chips row-chips-end">
+              <span class="chip">Age ${escapeHtml(ageLabel)}</span>
+              <span class="chip">Exec ${escapeHtml(executionDays)}</span>
+            </div>
           </div>
-          <div class="row-chips">
-            ${waveChips}
-            <span class="chip">Age ${escapeHtml(ageLabel)}</span>
-            <span class="chip">Exec ${escapeHtml(executionDays)}</span>
+          <div class="row-foot">
+            ${footerChips ? `<div class="row-chips row-chips-end">${footerChips}</div>` : ""}
           </div>
         </button>
       `;
@@ -2452,7 +2454,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         .map((diagramId) => {
           const href = atlasDiagramHref(diagramId, selectedIdeaId);
           const tooltip = diagramTooltip(diagramId);
-          return `<a class="chip chip-link chip-topology-diagram" href="${escapeHtml(href)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}" target="_top">${escapeHtml(diagramId)}</a>`;
+          return `<a class="chip chip-link entity-id-chip chip-topology-diagram" href="${escapeHtml(href)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}" target="_top">${escapeHtml(diagramId)}</a>`;
         })
         .join("");
     }
@@ -2899,7 +2901,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       const trace = workstreamTrace(selected.idea_id) || {};
       const activeRelease = workstreamActiveRelease(selected);
       const activeReleaseLabel = releaseLabel(activeRelease);
-      const releaseHistorySummary = String(trace.release_history_summary || "").trim();
       const fallbackTopology = {
         parents: trace.workstream_parent || selected.workstream_parent || "",
         children: Array.isArray(trace.workstream_children) ? trace.workstream_children : (Array.isArray(selected.workstream_children) ? selected.workstream_children : []),
@@ -3026,7 +3027,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
           </div>
           ${activeReleaseLabel ? `<p class="trace-subhead">Release Target</p><p>${escapeHtml(activeReleaseLabel)}</p>` : ""}
-          ${releaseHistorySummary ? `<p>${escapeHtml(releaseHistorySummary)}</p>` : ""}
           ${registryComponents.length ? `
             <p class="trace-subhead">Registry Components</p>
             <div class="topology-rel-body">${registryComponentLinksHtml}</div>

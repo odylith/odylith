@@ -63,17 +63,24 @@ def test_compare_latest_to_baseline_warns_without_latest_report_when_override_is
 
 
 def test_compare_latest_to_baseline_warns_when_no_release_has_shipped(monkeypatch, tmp_path: Path) -> None:
-    candidate_report = _report("candidate-1", "0.1.6")
-
     monkeypatch.setattr(
         benchmark_compare,
         "product_source_version",
         lambda **kwargs: "0.1.6",
     )
     monkeypatch.setattr(
-        benchmark_compare.runner,
-        "load_latest_benchmark_report",
+        benchmark_compare,
+        "_resolve_candidate_summary",
         lambda **kwargs: candidate_report,
+    )
+    candidate_report = (
+        {
+            "report_id": "candidate-1",
+            "product_version": "0.1.6",
+            "status": "provisional_pass",
+            "current_tree_identity_match": True,
+        },
+        "latest-runtime-report",
     )
     monkeypatch.setattr(
         benchmark_compare,
@@ -140,8 +147,51 @@ def test_resolve_candidate_summary_falls_back_to_tracked_summary(monkeypatch, tm
 
     summary, source = benchmark_compare._resolve_candidate_summary(repo_root=tmp_path)
 
-    assert summary == tracked_summary
+    assert summary["report_id"] == "tracked-1"
+    assert summary["tracked_summary_only"] is True
+    assert summary["tracked_summary_backing_report_present"] is False
+    assert summary["tracked_summary_backing_report_missing"] is True
+    assert summary["current_tree_identity_match"] is False
     assert source == "tracked-latest-summary"
+
+
+def test_resolve_candidate_summary_marks_stale_runtime_report_without_tracked_fallback(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    candidate_report = _report("candidate-1", "0.1.6")
+
+    monkeypatch.setattr(
+        benchmark_compare.runner,
+        "load_latest_benchmark_report",
+        lambda **kwargs: candidate_report,
+    )
+    monkeypatch.setattr(
+        benchmark_compare.runner,
+        "benchmark_report_matches_current_tree",
+        lambda **kwargs: False,
+    )
+    monkeypatch.setattr(
+        benchmark_compare.runner,
+        "compact_report_summary",
+        lambda report: {
+            "report_id": str(report["report_id"]),
+            "product_version": str(report["product_version"]),
+            "status": "hold",
+        },
+    )
+    monkeypatch.setattr(
+        benchmark_compare,
+        "load_tracked_latest_summary",
+        lambda **kwargs: {"report_id": "tracked-1", "status": "provisional_pass"},
+    )
+
+    summary, source = benchmark_compare._resolve_candidate_summary(repo_root=tmp_path)
+
+    assert summary["report_id"] == "candidate-1"
+    assert summary["stale_runtime_report"] is True
+    assert summary["current_tree_identity_match"] is False
+    assert source == "latest-runtime-report-stale"
 
 
 def test_resolve_baseline_report_falls_back_to_tracked_release_baseline(monkeypatch, tmp_path: Path) -> None:
@@ -179,7 +229,6 @@ def test_resolve_baseline_report_falls_back_to_tracked_release_baseline(monkeypa
 
 
 def test_compare_latest_to_baseline_flags_blocking_regressions(monkeypatch, tmp_path: Path) -> None:
-    candidate_report = _report("candidate-1", "0.1.6")
     baseline_summary = {
         "report_id": "baseline-1",
         "product_version": "0.1.5",
@@ -200,25 +249,25 @@ def test_compare_latest_to_baseline_flags_blocking_regressions(monkeypatch, tmp_
         lambda **kwargs: "0.1.6",
     )
     monkeypatch.setattr(
-        benchmark_compare.runner,
-        "load_latest_benchmark_report",
-        lambda **kwargs: candidate_report,
-    )
-    monkeypatch.setattr(
-        benchmark_compare.runner,
-        "compact_report_summary",
-        lambda report: {
-            "report_id": str(report["report_id"]),
-            "status": "provisional_pass",
-            "latency_delta_ms": 24.0 if report["report_id"] == "candidate-1" else 0.0,
-            "prompt_token_delta": 55.0 if report["report_id"] == "candidate-1" else 0.0,
-            "required_path_recall_delta": -0.08 if report["report_id"] == "candidate-1" else 0.0,
-            "validation_success_delta": -0.06 if report["report_id"] == "candidate-1" else 0.0,
-            "critical_required_path_recall_delta": -0.02 if report["report_id"] == "candidate-1" else 0.0,
-            "critical_validation_success_delta": -0.02 if report["report_id"] == "candidate-1" else 0.0,
-            "hallucinated_surface_rate_delta": 0.03 if report["report_id"] == "candidate-1" else 0.0,
-            "unnecessary_widening_rate_delta": 0.03 if report["report_id"] == "candidate-1" else 0.0,
-        },
+        benchmark_compare,
+        "_resolve_candidate_summary",
+        lambda **kwargs: (
+            {
+                "report_id": "candidate-1",
+                "product_version": "0.1.6",
+                "status": "provisional_pass",
+                "current_tree_identity_match": True,
+                "latency_delta_ms": 24.0,
+                "prompt_token_delta": 55.0,
+                "required_path_recall_delta": -0.08,
+                "validation_success_delta": -0.06,
+                "critical_required_path_recall_delta": -0.02,
+                "critical_validation_success_delta": -0.02,
+                "hallucinated_surface_rate_delta": 0.03,
+                "unnecessary_widening_rate_delta": 0.03,
+            },
+            "latest-runtime-report",
+        ),
     )
     monkeypatch.setattr(
         benchmark_compare,
@@ -235,7 +284,6 @@ def test_compare_latest_to_baseline_flags_blocking_regressions(monkeypatch, tmp_
 
 
 def test_compare_latest_to_baseline_passes_when_metrics_hold(monkeypatch, tmp_path: Path) -> None:
-    candidate_report = _report("candidate-1", "0.1.6")
     baseline_summary = {
         "report_id": "baseline-1",
         "product_version": "0.1.5",
@@ -256,25 +304,25 @@ def test_compare_latest_to_baseline_passes_when_metrics_hold(monkeypatch, tmp_pa
         lambda **kwargs: "0.1.6",
     )
     monkeypatch.setattr(
-        benchmark_compare.runner,
-        "load_latest_benchmark_report",
-        lambda **kwargs: candidate_report,
-    )
-    monkeypatch.setattr(
-        benchmark_compare.runner,
-        "compact_report_summary",
-        lambda report: {
-            "report_id": str(report["report_id"]),
-            "status": "provisional_pass",
-            "latency_delta_ms": 1.0 if report["report_id"] == "candidate-1" else 0.0,
-            "prompt_token_delta": 4.0 if report["report_id"] == "candidate-1" else 0.0,
-            "required_path_recall_delta": 0.0,
-            "validation_success_delta": 0.0,
-            "critical_required_path_recall_delta": 0.0,
-            "critical_validation_success_delta": 0.0,
-            "hallucinated_surface_rate_delta": 0.0,
-            "unnecessary_widening_rate_delta": 0.0,
-        },
+        benchmark_compare,
+        "_resolve_candidate_summary",
+        lambda **kwargs: (
+            {
+                "report_id": "candidate-1",
+                "product_version": "0.1.6",
+                "status": "provisional_pass",
+                "current_tree_identity_match": True,
+                "latency_delta_ms": 1.0,
+                "prompt_token_delta": 4.0,
+                "required_path_recall_delta": 0.0,
+                "validation_success_delta": 0.0,
+                "critical_required_path_recall_delta": 0.0,
+                "critical_validation_success_delta": 0.0,
+                "hallucinated_surface_rate_delta": 0.0,
+                "unnecessary_widening_rate_delta": 0.0,
+            },
+            "latest-runtime-report",
+        ),
     )
     monkeypatch.setattr(
         benchmark_compare,
@@ -293,17 +341,23 @@ def test_compare_latest_to_baseline_stays_blocking_when_release_exists_but_basel
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    candidate_report = _report("candidate-1", "0.1.6")
-
     monkeypatch.setattr(
         benchmark_compare,
         "product_source_version",
         lambda **kwargs: "0.1.6",
     )
     monkeypatch.setattr(
-        benchmark_compare.runner,
-        "load_latest_benchmark_report",
-        lambda **kwargs: candidate_report,
+        benchmark_compare,
+        "_resolve_candidate_summary",
+        lambda **kwargs: (
+            {
+                "report_id": "candidate-1",
+                "product_version": "0.1.6",
+                "status": "provisional_pass",
+                "current_tree_identity_match": True,
+            },
+            "latest-runtime-report",
+        ),
     )
     monkeypatch.setattr(
         benchmark_compare,
@@ -324,21 +378,18 @@ def test_compare_latest_to_baseline_stays_blocking_when_release_exists_but_basel
 
 
 def test_compare_latest_to_baseline_blocks_stale_candidate_version(monkeypatch, tmp_path: Path) -> None:
-    candidate_report = _report("candidate-1", "0.1.7")
-
     monkeypatch.setattr(
-        benchmark_compare.runner,
-        "load_latest_benchmark_report",
-        lambda **kwargs: candidate_report,
-    )
-    monkeypatch.setattr(
-        benchmark_compare.runner,
-        "compact_report_summary",
-        lambda report: {
-            "report_id": str(report["report_id"]),
-            "product_version": str(report["product_version"]),
-            "status": "provisional_pass",
-        },
+        benchmark_compare,
+        "_resolve_candidate_summary",
+        lambda **kwargs: (
+            {
+                "report_id": "candidate-1",
+                "product_version": "0.1.7",
+                "status": "provisional_pass",
+                "current_tree_identity_match": True,
+            },
+            "latest-runtime-report",
+        ),
     )
     monkeypatch.setattr(
         benchmark_compare,
@@ -355,23 +406,80 @@ def test_compare_latest_to_baseline_blocks_stale_candidate_version(monkeypatch, 
     assert any("does not match current source version `0.1.8`" in item for item in result.notes)
 
 
-def test_compare_latest_to_baseline_downgrades_stale_candidate_version_under_override(monkeypatch, tmp_path: Path) -> None:
-    _write_override(tmp_path)
-    candidate_report = _report("candidate-1", "0.1.8")
-
+def test_compare_latest_to_baseline_blocks_tracked_summary_candidate(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
-        benchmark_compare.runner,
-        "load_latest_benchmark_report",
-        lambda **kwargs: candidate_report,
+        benchmark_compare,
+        "product_source_version",
+        lambda **kwargs: "0.1.8",
     )
     monkeypatch.setattr(
-        benchmark_compare.runner,
-        "compact_report_summary",
-        lambda report: {
-            "report_id": str(report["report_id"]),
-            "product_version": str(report["product_version"]),
-            "status": "provisional_pass",
-        },
+        benchmark_compare,
+        "_resolve_candidate_summary",
+        lambda **kwargs: (
+            {
+                "report_id": "tracked-1",
+                "product_version": "0.1.8",
+                "status": "provisional_pass",
+                "current_tree_identity_match": False,
+                "tracked_summary_only": True,
+                "tracked_summary_backing_report_missing": True,
+            },
+            "tracked-latest-summary",
+        ),
+    )
+
+    result = benchmark_compare.compare_latest_to_baseline(repo_root=tmp_path)
+
+    assert result.status == "unavailable"
+    assert result.blocking is True
+    assert result.baseline_source == "tracked-latest-summary"
+    assert any("No current-tree authoritative proof candidate is available" in item for item in result.notes)
+    assert any("missing runtime report artifact" in item for item in result.notes)
+
+
+def test_compare_latest_to_baseline_blocks_stale_runtime_candidate(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        benchmark_compare,
+        "product_source_version",
+        lambda **kwargs: "0.1.8",
+    )
+    monkeypatch.setattr(
+        benchmark_compare,
+        "_resolve_candidate_summary",
+        lambda **kwargs: (
+            {
+                "report_id": "candidate-1",
+                "product_version": "0.1.8",
+                "status": "hold",
+                "current_tree_identity_match": False,
+                "stale_runtime_report": True,
+            },
+            "latest-runtime-report-stale",
+        ),
+    )
+
+    result = benchmark_compare.compare_latest_to_baseline(repo_root=tmp_path)
+
+    assert result.status == "unavailable"
+    assert result.blocking is True
+    assert result.baseline_source == "latest-runtime-report-stale"
+    assert any("current-tree authoritative proof candidate" in item for item in result.notes)
+
+
+def test_compare_latest_to_baseline_downgrades_stale_candidate_version_under_override(monkeypatch, tmp_path: Path) -> None:
+    _write_override(tmp_path)
+    monkeypatch.setattr(
+        benchmark_compare,
+        "_resolve_candidate_summary",
+        lambda **kwargs: (
+            {
+                "report_id": "candidate-1",
+                "product_version": "0.1.8",
+                "status": "provisional_pass",
+                "current_tree_identity_match": True,
+            },
+            "latest-runtime-report",
+        ),
     )
     monkeypatch.setattr(
         benchmark_compare,

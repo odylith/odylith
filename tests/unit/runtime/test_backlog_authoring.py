@@ -26,10 +26,32 @@ _SECTIONS = (
     "Test Strategy",
     "Open Questions",
 )
+_CORE_SECTION_BODIES = {
+    "Problem": "Seed workstream problem detail is grounded enough for validation.",
+    "Customer": "Maintainers who need the seeded workstream record to stay valid.",
+    "Opportunity": "Keep test backlog fixtures realistic while exercising create behavior.",
+    "Product View": "Test fixtures should model real Radar records instead of placeholders.",
+    "Success Metrics": "- Seed records validate with real detail.\n- Create tests start from valid backlog truth.",
+}
 
 
 def _repo_rel(root: Path, path: Path) -> str:
     return path.resolve().relative_to(root.resolve()).as_posix()
+
+
+def _grounded_backlog_args() -> list[str]:
+    return [
+        "--problem",
+        "Grounded backlog problem with enough detail to guide implementation.",
+        "--customer",
+        "Operators who need a real workstream record during Radar validation.",
+        "--opportunity",
+        "Create the workstream with real detail instead of boilerplate.",
+        "--product-view",
+        "Backlog records should read like product truth, not a title template.",
+        "--success-metrics",
+        "- The workstream renders with real detail.\n- The backlog contract stays valid.",
+    ]
 
 
 def _seed_product_repo_shape(root: Path) -> None:
@@ -50,7 +72,12 @@ def _idea_text(
     date: str,
     ordering_score: int,
 ) -> str:
-    body_sections = "\n\n".join([f"## {section}\nDetails." for section in _SECTIONS])
+    body_sections = "\n\n".join(
+        [
+            f"## {section}\n{_CORE_SECTION_BODIES.get(section, 'Fixture section body for backlog tests.')}"
+            for section in _SECTIONS
+        ]
+    )
     return (
         "status: queued\n\n"
         f"idea_id: {idea_id}\n\n"
@@ -143,6 +170,7 @@ def test_backlog_create_dry_run_batch_is_non_mutating_and_deterministic(tmp_path
             "First queued item",
             "--title",
             "Second queued item",
+            *_grounded_backlog_args(),
             "--dry-run",
             "--json",
         ]
@@ -166,6 +194,7 @@ def test_backlog_create_requires_override_review_date(tmp_path: Path, capsys) ->
             str(tmp_path),
             "--title",
             "Manual priority override item",
+            *_grounded_backlog_args(),
             "--founder-override",
         ]
     )
@@ -184,6 +213,7 @@ def test_backlog_create_writes_queued_item_and_updates_index(tmp_path: Path) -> 
             str(tmp_path),
             "--title",
             "Portable guidance cleanup",
+            *_grounded_backlog_args(),
             "--founder-override",
             "--override-review-date",
             "2026-04-15",
@@ -222,6 +252,7 @@ def test_backlog_create_rejects_non_governed_backlog_index_override(tmp_path: Pa
             str(outside_index),
             "--title",
             "Escaped backlog write",
+            *_grounded_backlog_args(),
         ]
     )
     output = capsys.readouterr().out
@@ -243,6 +274,7 @@ def test_backlog_create_rejects_non_governed_ideas_root_override(tmp_path: Path,
             str(escaped_ideas),
             "--title",
             "Escaped idea write",
+            *_grounded_backlog_args(),
         ]
     )
     output = capsys.readouterr().out
@@ -260,6 +292,7 @@ def test_backlog_create_normalizes_product_repo_title_prefix(tmp_path: Path) -> 
             str(tmp_path),
             "--title",
             "Odylith Radar Workstream Title Prefix Normalization",
+            *_grounded_backlog_args(),
         ]
     )
 
@@ -275,3 +308,30 @@ def test_backlog_create_normalizes_product_repo_title_prefix(tmp_path: Path) -> 
     index_text = backlog_index.read_text(encoding="utf-8")
     assert "| B-102 | Radar Workstream Title Prefix Normalization |" in index_text
     assert "| B-102 | Odylith Radar Workstream Title Prefix Normalization |" not in index_text
+
+
+def test_backlog_create_rejects_boilerplate_core_detail(tmp_path: Path, capsys) -> None:
+    _seed_backlog_repo(tmp_path)
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Boilerplate detail rejection",
+            "--problem",
+            "Odylith needs an explicit workstream for Boilerplate detail rejection instead of leaving the slice implicit.",
+            "--customer",
+            "Odylith maintainers and operators who need this capability to exist as governed product truth.",
+            "--opportunity",
+            "Bound Boilerplate detail rejection as a queued workstream so implementation can attach to one clear source record.",
+            "--product-view",
+            "If the team is already acting as if this work exists, the backlog should say so explicitly.",
+            "--success-metrics",
+            "- The workstream is specific enough to guide implementation and validation without further backlog surgery.",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 2
+    assert "core detail section `## Problem` still uses backlog-create boilerplate" in output

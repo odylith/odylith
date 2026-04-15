@@ -197,13 +197,19 @@ def _benchmark_interrupt_guard() -> Iterator[None]:
         raise BenchmarkRunInterrupted(f"received {signal_name}")
 
     if multiprocessing.current_process().name == "MainProcess":
-        for signum in (signal.SIGTERM, signal.SIGINT, getattr(signal, "SIGHUP", signal.SIGTERM)):
+        for signum in (signal.SIGTERM, signal.SIGINT):
             if any(existing == signum for existing, _ in handlers):
                 continue
             with contextlib.suppress(OSError, RuntimeError, ValueError):
                 previous = signal.getsignal(signum)
                 signal.signal(signum, _handler)
                 handlers.append((signum, previous))
+        sighup = getattr(signal, "SIGHUP", None)
+        if sighup is not None and not any(existing == sighup for existing, _ in handlers):
+            with contextlib.suppress(OSError, RuntimeError, ValueError):
+                previous = signal.getsignal(sighup)
+                signal.signal(sighup, signal.SIG_IGN)
+                handlers.append((sighup, previous))
     try:
         yield
     finally:
@@ -860,6 +866,20 @@ def _active_run_identity(progress: Mapping[str, Any]) -> tuple[str, str, int, in
     )
 
 
+def _history_report_for_progress(*, repo_root: Path, progress: Mapping[str, Any]) -> Path:
+    return history_report_path(
+        repo_root=Path(repo_root).resolve(),
+        report_id=str(progress.get("report_id", "")).strip(),
+    )
+
+
+def _history_report_exists_for_progress(*, repo_root: Path, progress: Mapping[str, Any]) -> bool:
+    explicit_path = Path(str(progress.get("history_report_path", "")).strip()) if str(progress.get("history_report_path", "")).strip() else None
+    if explicit_path is not None and explicit_path.is_file():
+        return True
+    return _history_report_for_progress(repo_root=repo_root, progress=progress).is_file()
+
+
 def _active_run_entry(*, repo_root: Path, progress: Mapping[str, Any]) -> dict[str, Any]:
     report_id, benchmark_profile, shard_index, shard_count, owning_pid = _active_run_identity(progress)
     progress_path = _active_run_progress_path(
@@ -1018,7 +1038,14 @@ def _clear_active_run_progress(
         shard_count=shard_count,
         owning_pid=owning_pid,
     )
-    _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
+    if _history_report_exists_for_progress(repo_root=root, progress=payload):
+        _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
+    else:
+        _benchmark_runtime_write_json_if_changed(
+            repo_root=root,
+            path=progress_path,
+            payload=dict(payload),
+        )
     active_runs_file = active_runs_path(repo_root=root)
     with odylith_context_cache.advisory_lock(repo_root=root, key=str(active_runs_file)):
         runs = [
@@ -1034,6 +1061,147 @@ def _clear_active_run_progress(
             != (report_id, benchmark_profile, shard_index, shard_count, owning_pid)
         ]
         _write_active_runs(repo_root=root, runs=runs)
+
+
+def _tree_identity_from_progress_payload(*, repo_root: Path, progress_payload: Mapping[str, Any]) -> dict[str, Any]:
+    selection = (
+        dict(progress_payload.get("selection", {}))
+        if isinstance(progress_payload.get("selection"), Mapping)
+        else {}
+    )
+    current = benchmark_tree_identity(repo_root=repo_root, selection=selection)
+    return {
+        "git_branch": str(progress_payload.get("git_branch", "")).strip() or str(current.get("git_branch", "")).strip(),
+        "git_commit": str(progress_payload.get("git_commit", "")).strip() or str(current.get("git_commit", "")).strip(),
+        "git_dirty": bool(progress_payload.get("git_dirty", current.get("git_dirty"))),
+        "repo_dirty_paths": [
+            str(token).strip()
+            for token in progress_payload.get("repo_dirty_paths", current.get("repo_dirty_paths", []))
+            if isinstance(progress_payload.get("repo_dirty_paths", current.get("repo_dirty_paths", [])), list)
+            and str(token).strip()
+        ],
+        "selection_fingerprint": str(progress_payload.get("selection_fingerprint", "")).strip()
+        or str(current.get("selection_fingerprint", "")).strip(),
+        "corpus_fingerprint": str(progress_payload.get("corpus_fingerprint", "")).strip()
+        or str(current.get("corpus_fingerprint", "")).strip(),
+        "snapshot_overlay_fingerprint": str(progress_payload.get("snapshot_overlay_fingerprint", "")).strip()
+        or str(current.get("snapshot_overlay_fingerprint", "")).strip(),
+        "source_posture": str(progress_payload.get("source_posture", "")).strip()
+        or str(current.get("source_posture", "")).strip(),
+    }
+
+
+def _reconstruct_progress_selection(
+    *,
+    repo_root: Path,
+    progress_payload: Mapping[str, Any],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], Mapping[str, Any]]:
+    selection = (
+        dict(progress_payload.get("selection", {}))
+        if isinstance(progress_payload.get("selection"), Mapping)
+        else {}
+    )
+    benchmark_profile = str(progress_payload.get("benchmark_profile", "")).strip() or str(
+        selection.get("benchmark_profile", "")
+    ).strip()
+    case_ids = [
+        str(token).strip()
+        for token in selection.get("case_ids", selection.get("scenario_ids", []))
+        if isinstance(selection.get("case_ids", selection.get("scenario_ids", [])), list) and str(token).strip()
+    ]
+    families = [
+        str(token).strip()
+        for token in selection.get("family_filters", [])
+        if isinstance(selection.get("family_filters"), list) and str(token).strip()
+    ]
+    shard_count = max(
+        1,
+        int(progress_payload.get("shard_count", selection.get("shard_count", 1)) or 1),
+    )
+    shard_index = max(
+        1,
+        int(progress_payload.get("shard_index", selection.get("shard_index", 1)) or 1),
+    )
+    limit = max(0, int(selection.get("limit", 0) or 0))
+    all_scenarios = load_benchmark_scenarios(repo_root=repo_root)
+    selection_state = _resolve_benchmark_scenario_selection(
+        all_scenarios=all_scenarios,
+        benchmark_profile=benchmark_profile,
+        case_ids=case_ids,
+        families=families,
+        shard_count=shard_count,
+        shard_index=shard_index,
+        limit=limit,
+    )
+    return (
+        [dict(row) for row in selection_state.get("scenarios", [])],
+        [dict(row) for row in selection_state.get("all_scenarios", [])],
+        selection_state,
+    )
+
+
+def _persist_orphaned_progress_failed_report(
+    *,
+    repo_root: Path,
+    progress_payload: Mapping[str, Any],
+    error: BaseException | str,
+) -> bool:
+    root = Path(repo_root).resolve()
+    history_path = _history_report_for_progress(repo_root=root, progress=progress_payload)
+    if history_path.is_file():
+        return False
+    corpus = odylith_context_cache.read_json_object(store.optimization_evaluation_corpus_path(repo_root=root))
+    corpus_contract = odylith_benchmark_contract.benchmark_corpus_contract(corpus)
+    scenarios, all_scenarios, selection_state = _reconstruct_progress_selection(
+        repo_root=root,
+        progress_payload=progress_payload,
+    )
+    payload = dict(progress_payload)
+    payload.update(
+        {
+            "updated_utc": _utc_now(),
+            "status": "failed",
+            "phase": "orphaned_progress_recovery",
+            "error": _benchmark_exception_text(error),
+            "selection_strategy": str(progress_payload.get("selection_strategy", "")).strip()
+            or str(selection_state.get("selection_strategy", "")).strip()
+            or "manual_selection",
+        }
+    )
+    tree_identity = _tree_identity_from_progress_payload(repo_root=root, progress_payload=payload)
+    report = _failed_benchmark_report(
+        repo_root=root,
+        report_id=str(payload.get("report_id", "")).strip(),
+        benchmark_profile=str(payload.get("benchmark_profile", "")).strip(),
+        comparison_contract=str(payload.get("comparison_contract", "")).strip(),
+        modes=[
+            str(token).strip()
+            for token in payload.get("modes", [])
+            if isinstance(payload.get("modes"), list) and str(token).strip()
+        ],
+        cache_profiles=[
+            str(token).strip()
+            for token in payload.get("cache_profiles", [])
+            if isinstance(payload.get("cache_profiles"), list) and str(token).strip()
+        ],
+        primary_cache_profile=str(payload.get("primary_cache_profile", "")).strip(),
+        scenarios=scenarios,
+        all_scenarios=all_scenarios,
+        progress_payload=payload,
+        selection_strategy=str(payload.get("selection_strategy", "")).strip() or "manual_selection",
+        latest_eligible=bool(payload.get("latest_eligible")),
+        startup_hygiene={},
+        corpus_contract=corpus_contract,
+        tree_identity=tree_identity,
+        error=error,
+    )
+    odylith_context_cache.write_json_if_changed(
+        repo_root=root,
+        path=history_path,
+        payload=report,
+        lock_key=str(history_path),
+    )
+    return True
 
 
 def _fingerprint_json_payload(payload: Mapping[str, Any]) -> str:
@@ -1517,14 +1685,40 @@ def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: b
         )
         stale_entries: list[dict[str, Any]] = []
         retained_entries: list[dict[str, Any]] = []
+        synthesized_failed_reports: list[str] = []
+        processed_progress_paths: set[Path] = set()
         for entry in active_entries:
             status = str(entry.get("status", "")).strip() or "running"
             owning_pid = max(0, int(entry.get("owning_pid", 0) or 0))
             progress_path = Path(str(entry.get("progress_path", "")).strip())
+            progress_payload = (
+                odylith_context_cache.read_json_object(progress_path)
+                if progress_path and progress_path.exists()
+                else {}
+            )
+            if progress_path:
+                processed_progress_paths.add(progress_path.resolve())
             if status != "running":
+                if not _history_report_exists_for_progress(
+                    repo_root=root,
+                    progress=progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry,
+                ):
+                    if _persist_orphaned_progress_failed_report(
+                        repo_root=root,
+                        progress_payload=progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry,
+                        error=BenchmarkRunInterrupted("benchmark shard entered teardown without a persisted final report"),
+                    ):
+                        synthesized_failed_reports.append(str(entry.get("report_id", "")).strip())
                 stale_entries.append(entry)
                 continue
             if progress_path and not progress_path.exists():
+                if not _history_report_exists_for_progress(repo_root=root, progress=entry):
+                    if _persist_orphaned_progress_failed_report(
+                        repo_root=root,
+                        progress_payload=entry,
+                        error=BenchmarkRunInterrupted("process lost progress state before persisting final report"),
+                    ):
+                        synthesized_failed_reports.append(str(entry.get("report_id", "")).strip())
                 stale_entries.append(entry)
                 continue
             if owning_pid > 0 and _process_exists(owning_pid):
@@ -1533,11 +1727,46 @@ def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: b
             if owning_pid <= 0 and active_runtime_present:
                 retained_entries.append(entry)
                 continue
+            if not _history_report_exists_for_progress(
+                repo_root=root,
+                progress=progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry,
+            ):
+                if _persist_orphaned_progress_failed_report(
+                    repo_root=root,
+                    progress_payload=progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry,
+                    error=BenchmarkRunInterrupted("benchmark process exited before persisting final report"),
+                ):
+                    synthesized_failed_reports.append(str(entry.get("report_id", "")).strip())
             stale_entries.append(entry)
+        benchmark_dir = benchmark_root(repo_root=root)
+        if benchmark_dir.is_dir():
+            with contextlib.suppress(OSError):
+                for progress_path in benchmark_dir.glob("progress-*.json"):
+                    resolved_progress_path = progress_path.resolve()
+                    if resolved_progress_path in processed_progress_paths:
+                        continue
+                    progress_payload = odylith_context_cache.read_json_object(progress_path)
+                    if not isinstance(progress_payload, Mapping):
+                        continue
+                    status = str(progress_payload.get("status", "")).strip() or "running"
+                    owning_pid = max(0, int(progress_payload.get("owning_pid", 0) or 0))
+                    running = status == "running" and ((owning_pid > 0 and _process_exists(owning_pid)) or (owning_pid <= 0 and active_runtime_present))
+                    if running:
+                        continue
+                    if not _history_report_exists_for_progress(repo_root=root, progress=progress_payload):
+                        if _persist_orphaned_progress_failed_report(
+                            repo_root=root,
+                            progress_payload=progress_payload,
+                            error=BenchmarkRunInterrupted("benchmark process exited before persisting final report"),
+                        ):
+                            synthesized_failed_reports.append(str(progress_payload.get("report_id", "")).strip())
+                    if _history_report_exists_for_progress(repo_root=root, progress=progress_payload):
+                        _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
         if stale_entries:
             for entry in stale_entries:
                 progress_path = Path(str(entry.get("progress_path", "")).strip())
-                _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
+                if progress_path.exists() and _history_report_exists_for_progress(repo_root=root, progress=entry):
+                    _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
             _write_active_runs(repo_root=root, runs=retained_entries)
     shared_progress_path = progress_report_path(repo_root=root)
     stale_shared_progress_cleared = False
@@ -1549,6 +1778,12 @@ def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: b
         or (shared_running and shared_pid > 0 and not _process_exists(shared_pid) and not active_runtime_present)
         or (shared_running and shared_pid <= 0 and not active_runtime_present)
     )
+    if shared_stale and isinstance(shared_payload, Mapping) and not _history_report_exists_for_progress(repo_root=root, progress=shared_payload):
+        _persist_orphaned_progress_failed_report(
+            repo_root=root,
+            progress_payload=shared_payload,
+            error=BenchmarkRunInterrupted("benchmark process exited before persisting final report"),
+        )
     if shared_stale and shared_progress_path.exists():
         with odylith_context_cache.advisory_lock(repo_root=root, key=str(shared_progress_path)):
             if shared_progress_path.exists():
@@ -1560,6 +1795,8 @@ def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: b
         "stale_shared_progress_cleared": stale_shared_progress_cleared,
         "active_run_count": len(retained_entries),
         "active_runtime_present": active_runtime_present,
+        "synthesized_failed_report_count": len(synthesized_failed_reports),
+        "synthesized_failed_reports": synthesized_failed_reports,
     }
 
 
@@ -1580,7 +1817,12 @@ def _cleanup_benchmark_temp_directories(*, repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _cleanup_stale_benchmark_state(*, repo_root: Path, clear_progress: bool) -> dict[str, Any]:
+def _cleanup_stale_benchmark_state(
+    *,
+    repo_root: Path,
+    clear_progress: bool,
+    allow_destructive_runtime_cleanup: bool = True,
+) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     progress_cleanup = _prune_stale_benchmark_progress(repo_root=root, clear_shared_progress=clear_progress)
     if int(progress_cleanup.get("active_run_count", 0) or 0) > 0:
@@ -1610,6 +1852,35 @@ def _cleanup_stale_benchmark_state(*, repo_root: Path, clear_progress: bool) -> 
                 "removed_temp_directories": [],
                 "failed_temp_directories": [],
                 "skipped_due_to_active_runs": True,
+            },
+        }
+    if bool(progress_cleanup.get("active_runtime_present")) and not allow_destructive_runtime_cleanup:
+        return {
+            "stale_progress_cleared": bool(progress_cleanup.get("stale_shared_progress_cleared")),
+            "progress_cleanup": progress_cleanup,
+            "process_cleanup": {
+                "requested_pid_count": 0,
+                "terminated_pid_count": 0,
+                "forced_pid_count": 0,
+                "remaining_pid_count": 0,
+                "terminated_pids": [],
+                "forced_pids": [],
+                "remaining_pids": [],
+                "skipped_due_to_unowned_sharded_runtime": True,
+            },
+            "worktree_cleanup": {
+                "removed_worktree_count": 0,
+                "failed_worktree_count": 0,
+                "removed_worktrees": [],
+                "failed_worktrees": [],
+                "skipped_due_to_unowned_sharded_runtime": True,
+            },
+            "temp_directory_cleanup": {
+                "removed_temp_directory_count": 0,
+                "failed_temp_directory_count": 0,
+                "removed_temp_directories": [],
+                "failed_temp_directories": [],
+                "skipped_due_to_unowned_sharded_runtime": True,
             },
         }
     process_cleanup = _terminate_processes(pids=_benchmark_owned_codex_process_ids())
@@ -2431,6 +2702,75 @@ def load_benchmark_scenarios(
     if limit > 0:
         scenarios = scenarios[: max(1, int(limit))]
     return scenarios
+
+
+def _resolve_benchmark_scenario_selection(
+    *,
+    all_scenarios: Sequence[Mapping[str, Any]],
+    benchmark_profile: str,
+    case_ids: Sequence[str] = (),
+    families: Sequence[str] = (),
+    shard_count: int = 1,
+    shard_index: int = 1,
+    limit: int = 0,
+) -> dict[str, Any]:
+    normalized_profile = _normalize_benchmark_profile(benchmark_profile)
+    normalized_shard_count = max(1, int(shard_count or 1))
+    normalized_shard_index = max(1, int(shard_index or 1))
+    selected_case_ids = {str(token).strip() for token in case_ids if str(token).strip()}
+    selected_families = set(_normalize_family_filters(families))
+    all_case_ids = {
+        str(row.get("scenario_id", "")).strip()
+        for row in all_scenarios
+        if str(row.get("scenario_id", "")).strip()
+    }
+    base_scenarios = [
+        dict(row)
+        for row in all_scenarios
+        if (not selected_case_ids or str(row.get("scenario_id", "")).strip() in selected_case_ids)
+        and (not selected_families or str(row.get("family", "")).strip() in selected_families)
+    ]
+    profile_default_narrowing = ""
+    if (
+        normalized_profile == BENCHMARK_PROFILE_QUICK
+        and not selected_case_ids
+        and not selected_families
+        and int(limit) <= 0
+        and normalized_shard_count <= 1
+    ):
+        scenarios = _representative_family_smoke_scenarios(scenarios=base_scenarios)
+        profile_default_narrowing = "representative_family_smoke"
+    else:
+        scenarios = [dict(row) for row in base_scenarios]
+    scenarios = _apply_scenario_shard(
+        scenarios=scenarios,
+        shard_count=normalized_shard_count,
+        shard_index=normalized_shard_index,
+    )
+    if limit > 0:
+        scenarios = scenarios[: max(1, int(limit))]
+    explicit_full_selection = bool(selected_case_ids) and selected_case_ids == all_case_ids and not selected_families
+    full_corpus_selected = bool(
+        not profile_default_narrowing
+        and int(limit) <= 0
+        and normalized_shard_count <= 1
+        and ((not selected_case_ids and not selected_families and len(scenarios) == len(all_scenarios)) or explicit_full_selection)
+    )
+    selection_strategy = "full_corpus"
+    if profile_default_narrowing:
+        selection_strategy = profile_default_narrowing
+    elif selected_case_ids or selected_families or normalized_shard_count > 1 or int(limit) > 0:
+        selection_strategy = "manual_selection"
+    return {
+        "all_case_ids": all_case_ids,
+        "selected_case_ids": selected_case_ids,
+        "selected_families": selected_families,
+        "profile_default_narrowing": profile_default_narrowing,
+        "full_corpus_selected": full_corpus_selected,
+        "selection_strategy": selection_strategy,
+        "scenarios": scenarios,
+        "all_scenarios": [dict(row) for row in all_scenarios],
+    }
 
 
 @contextlib.contextmanager
@@ -8107,38 +8447,20 @@ def run_benchmarks(
     corpus = odylith_context_cache.read_json_object(store.optimization_evaluation_corpus_path(repo_root=root))
     corpus_contract = odylith_benchmark_contract.benchmark_corpus_contract(corpus)
     all_scenarios = load_benchmark_scenarios(repo_root=root)
-    all_case_ids = {
-        str(row.get("scenario_id", "")).strip()
-        for row in all_scenarios
-        if str(row.get("scenario_id", "")).strip()
-    }
-    selected_case_ids = {str(token).strip() for token in case_ids if str(token).strip()}
-    selected_families = set(_normalize_family_filters(families))
-    base_scenarios = [
-        dict(row)
-        for row in all_scenarios
-        if (not selected_case_ids or str(row.get("scenario_id", "")).strip() in selected_case_ids)
-        and (not selected_families or str(row.get("family", "")).strip() in selected_families)
-    ]
-    profile_default_narrowing = ""
-    if (
-        normalized_profile == BENCHMARK_PROFILE_QUICK
-        and not selected_case_ids
-        and not selected_families
-        and int(limit) <= 0
-        and normalized_shard_count <= 1
-    ):
-        scenarios = _representative_family_smoke_scenarios(scenarios=base_scenarios)
-        profile_default_narrowing = "representative_family_smoke"
-    else:
-        scenarios = [dict(row) for row in base_scenarios]
-    scenarios = _apply_scenario_shard(
-        scenarios=scenarios,
+    selection_state = _resolve_benchmark_scenario_selection(
+        all_scenarios=all_scenarios,
+        benchmark_profile=normalized_profile,
+        case_ids=case_ids,
+        families=families,
         shard_count=normalized_shard_count,
         shard_index=normalized_shard_index,
+        limit=limit,
     )
-    if limit > 0:
-        scenarios = scenarios[: max(1, int(limit))]
+    all_case_ids = set(selection_state.get("all_case_ids", set()))
+    selected_case_ids = set(selection_state.get("selected_case_ids", set()))
+    selected_families = set(selection_state.get("selected_families", set()))
+    profile_default_narrowing = str(selection_state.get("profile_default_narrowing", "")).strip()
+    scenarios = [dict(row) for row in selection_state.get("scenarios", [])]
     if not scenarios:
         raise ValueError("No benchmark scenarios matched the requested selection.")
     generated_utc = _utc_now()
@@ -8148,18 +8470,8 @@ def run_benchmarks(
         scenario_ids=[str(row.get("scenario_id", "")).strip() for row in scenarios],
         cache_profiles=normalized_cache_profiles,
     )
-    explicit_full_selection = bool(selected_case_ids) and selected_case_ids == all_case_ids and not selected_families
-    full_corpus_selected = bool(
-        not profile_default_narrowing
-        and int(limit) <= 0
-        and normalized_shard_count <= 1
-        and ((not selected_case_ids and not selected_families and len(scenarios) == len(all_scenarios)) or explicit_full_selection)
-    )
-    selection_strategy = "full_corpus"
-    if profile_default_narrowing:
-        selection_strategy = profile_default_narrowing
-    elif selected_case_ids or selected_families or normalized_shard_count > 1 or int(limit) > 0:
-        selection_strategy = "manual_selection"
+    full_corpus_selected = bool(selection_state.get("full_corpus_selected"))
+    selection_strategy = str(selection_state.get("selection_strategy", "")).strip() or "manual_selection"
     latest_eligible = bool(
         normalized_profile == BENCHMARK_PROFILE_PROOF
         and full_corpus_selected
@@ -8182,6 +8494,7 @@ def run_benchmarks(
         startup_hygiene = _cleanup_stale_benchmark_state(
             repo_root=root,
             clear_progress=not sharded_run,
+            allow_destructive_runtime_cleanup=not sharded_run,
         )
         benchmark_runtime_storage = _require_benchmark_runtime_space(repo_root=root)
         progress_payload: dict[str, Any] = {
@@ -8234,6 +8547,22 @@ def run_benchmarks(
         initial_tree_identity = benchmark_tree_identity(
             repo_root=root,
             selection=dict(progress_payload.get("selection", {})),
+        )
+        progress_payload.update(
+            {
+                "git_branch": str(initial_tree_identity.get("git_branch", "")).strip(),
+                "git_commit": str(initial_tree_identity.get("git_commit", "")).strip(),
+                "git_dirty": bool(initial_tree_identity.get("git_dirty")),
+                "repo_dirty_paths": [
+                    str(token).strip()
+                    for token in initial_tree_identity.get("repo_dirty_paths", [])
+                    if isinstance(initial_tree_identity.get("repo_dirty_paths"), list) and str(token).strip()
+                ],
+                "selection_fingerprint": str(initial_tree_identity.get("selection_fingerprint", "")).strip(),
+                "corpus_fingerprint": str(initial_tree_identity.get("corpus_fingerprint", "")).strip(),
+                "snapshot_overlay_fingerprint": str(initial_tree_identity.get("snapshot_overlay_fingerprint", "")).strip(),
+                "source_posture": str(initial_tree_identity.get("source_posture", "")).strip(),
+            }
         )
         _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
         try:
@@ -8737,6 +9066,8 @@ def run_benchmarks(
             }
             report["published_summary"] = compact_report_summary(report)
             report["summary_text"] = _render_report_summary(report)
+            history_path = history_report_path(repo_root=root, report_id=report_id)
+            history_report_written = False
             if write_report:
                 progress_payload.update(
                     {
@@ -8745,6 +9076,19 @@ def run_benchmarks(
                     }
                 )
                 _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
+                odylith_context_cache.write_json_if_changed(
+                    repo_root=root,
+                    path=history_path,
+                    payload=report,
+                    lock_key=str(history_path),
+                )
+                history_report_written = True
+                progress_payload.update(
+                    {
+                        "history_report_path": str(history_path),
+                        "history_report_written": True,
+                    }
+                )
                 latest_path = latest_report_path(repo_root=root)
                 profile_latest_path = latest_report_path(
                     repo_root=root,
@@ -8768,16 +9112,13 @@ def run_benchmarks(
                         payload=report,
                         lock_key=str(latest_path),
                     )
-                odylith_context_cache.write_json_if_changed(
-                    repo_root=root,
-                    path=history_report_path(repo_root=root, report_id=report_id),
-                    payload=report,
-                    lock_key=str(history_report_path(repo_root=root, report_id=report_id)),
-                )
             progress_payload.update(
                 {
                     "updated_utc": _utc_now(),
                     "phase": "final_cleanup",
+                    "status": str(report.get("status", "")).strip() or "unknown",
+                    "history_report_path": str(history_path),
+                    "history_report_written": history_report_written,
                 }
             )
             _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
@@ -8792,7 +9133,7 @@ def run_benchmarks(
                     "error": f"{type(exc).__name__}: {exc}",
                 }
             )
-            if write_report:
+            if write_report and not _history_report_exists_for_progress(repo_root=root, progress=progress_payload):
                 failed_report = _failed_benchmark_report(
                     repo_root=root,
                     report_id=report_id,
@@ -8811,11 +9152,18 @@ def run_benchmarks(
                     tree_identity=initial_tree_identity,
                     error=exc,
                 )
+                history_path = history_report_path(repo_root=root, report_id=report_id)
                 odylith_context_cache.write_json_if_changed(
                     repo_root=root,
-                    path=history_report_path(repo_root=root, report_id=report_id),
+                    path=history_path,
                     payload=failed_report,
-                    lock_key=str(history_report_path(repo_root=root, report_id=report_id)),
+                    lock_key=str(history_path),
+                )
+                progress_payload.update(
+                    {
+                        "history_report_path": str(history_path),
+                        "history_report_written": True,
+                    }
                 )
             _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
             raise
@@ -8824,6 +9172,7 @@ def run_benchmarks(
             _cleanup_stale_benchmark_state(
                 repo_root=root,
                 clear_progress=not sharded_run,
+                allow_destructive_runtime_cleanup=not sharded_run,
             )
 
 

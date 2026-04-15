@@ -76,20 +76,24 @@ def test_load_backlog_detail_uses_cached_runtime_projection_rows(monkeypatch, tm
     second = store.load_backlog_detail(repo_root=repo_root, workstream_id="B-999", runtime_mode="local")
 
     assert first == second
-    assert first == {
+    assert first["idea_id"] == "B-999"
+    assert first["idea_file"] == "odylith/radar/source/ideas/2026-03/b-999-fast-path.md"
+    assert first["title"] == "Fast path"
+    assert first["metadata"] == {
         "idea_id": "B-999",
-        "idea_file": "odylith/radar/source/ideas/2026-03/b-999-fast-path.md",
-        "metadata": {
-            "idea_id": "B-999",
-            "title": "Fast path",
-            "promoted_to_plan": "odylith/technical-plans/b-999-plan.md",
-        },
-        "sections": {
-            "Context": "Runtime-backed workstream detail.",
-        },
-        "search_body": idea_path.read_text(encoding="utf-8"),
+        "title": "Fast path",
         "promoted_to_plan": "odylith/technical-plans/b-999-plan.md",
     }
+    assert first["sections"] == {
+        "Context": "Runtime-backed workstream detail.",
+    }
+    assert first["search_body"] == idea_path.read_text(encoding="utf-8")
+    assert first["promoted_to_plan"] == "odylith/technical-plans/b-999-plan.md"
+    assert first["problem"] == ""
+    assert first["customer"] == ""
+    assert first["opportunity"] == ""
+    assert first["founder_pov"] == ""
+    assert first["success_metrics"] == ""
     assert calls == {"execute": 1, "close": 1}
 
 
@@ -234,6 +238,7 @@ def test_load_backlog_detail_falls_back_to_markdown_specs_when_runtime_not_ready
     assert detail is not None
     assert detail["idea_file"] == "odylith/radar/source/ideas/2026-03/b-010-fallback.md"
     assert detail["promoted_to_plan"] == "odylith/technical-plans/b-010-plan.md"
+    assert detail["title"] == "Fallback detail"
     assert detail["metadata"]["title"] == "Fallback detail"
     assert detail["sections"] == {"Summary": "Fallback markdown parsing still works."}
 

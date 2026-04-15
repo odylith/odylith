@@ -34,10 +34,26 @@ standup-level summary should be.
 - Compass is both a live stream and a derived runtime snapshot surface.
 - `odylith/compass/runtime/agent-stream.v1.jsonl` is the canonical
   append-oriented local event truth for the surface.
+- Conversation-observation lifecycle events
+  (`intervention_teaser`, `intervention_card`, `capture_proposed`,
+  `capture_applied`, `capture_declined`) live in that same canonical stream;
+  Compass derives pending proposal state from those events instead of keeping
+  a second proposal ledger.
+- That pending-proposal read model is UX-bearing, not just a counter. It must
+  preserve prompt-rooted context plus rich proposal display payloads and status
+  so downstream shells and future surfaces can render the same delightful
+  proposal preview without reconstructing it from terse event summaries.
 - `odylith/compass/runtime/codex-stream.v1.jsonl` remains a legacy-compatible
-  input while checked-in and bundled surfaces migrate.
+  local input during stream migration, but it is not shipped in the install
+  bundle.
 - Everything else in `odylith/compass/runtime/` is derived from that stream and
   linked governance sources.
+- The shipped install bundle may carry the Compass shell plus scoped runtime
+  guidance files such as `AGENTS.md` and `CLAUDE.md`, but it must not carry
+  repo-local Compass runtime state such as `agent-stream.v1.jsonl`,
+  `codex-stream.v1.jsonl`, `current.v1.*`, `refresh-state.v1.json`, or
+  `runtime/history/`. The Compass renderer must remove stale bundle mirrors for
+  those files when it refreshes the shell bundle.
 - The standup brief must stay truthful when the live narrator is unavailable.
   Compass uses provider narration first, exact same-packet replay second, and
   an explicit unavailable state otherwise.
@@ -247,6 +263,7 @@ The runtime builder shapes:
 - product-repo self-host posture
 - Tribunal or operator readout slices
 - standup brief inputs and narration substrates
+- intervention and proposal pending-state read models derived from the stream
 
 ### 5. Write snapshots and history
 `refresh_runtime_artifacts(...)` writes current snapshot files, keeps a 15-day
@@ -560,6 +577,15 @@ or component definitions.
 ## What To Change Together
 - New event kind:
   update log/update/watch flows, runtime event ranking, and shell rendering.
+- New intervention or proposal lifecycle event:
+  update stream append helpers, pending-proposal derivation, runtime payload
+  fields, and Compass dashboard rendering together instead of forking a second
+  proposal state store.
+- New intervention lifecycle field such as prompt context, rich markdown, or
+  proposal status:
+  update the stream schema, pending-proposal derivation, runtime payload, and
+  any downstream render consumers together so Compass does not regress back to
+  self-referential or lossy proposal previews.
 - New runtime snapshot field:
   update current snapshot JSON, history serialization, and shell payload
   consumption together.
@@ -657,3 +683,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Elevated no-stock-framing Compass voice to a standing product invariant and required cache revalidation before warmed briefs can replay, so human standup tone survives refresh, reuse, and future narrator changes. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Locked `Release Targets` back to the operator-approved stacked format and prohibited shared shell CSS from reintroducing side-by-side or auto-fit release boards without explicit operator authorization. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Hardened workstream progress truth so Compass counts only execution-relevant checklist sections, shows checklist-only state for active implementation lanes with zero checked execution tasks, and stops narrating those rows as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068); Bug: `CB-087`)
+- 2026-04-14: Added intervention and proposal audit events plus derived pending proposal state so Compass can show the `Odylith Observation` / `Odylith Proposal` lifecycle without inventing a second source of truth. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-14: Hardened Compass pending proposal state so it preserves prompt-rooted context, proposal status, and rich proposal markdown from the intervention lifecycle events instead of collapsing the UX into terse pending-summary strings. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))

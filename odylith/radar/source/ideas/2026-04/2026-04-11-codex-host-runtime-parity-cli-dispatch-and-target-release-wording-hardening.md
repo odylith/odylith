@@ -63,21 +63,22 @@ superseded_by:
 ## Problem
 The first Codex parity slice (`B-087`) shipped the project-root assets,
 install contract, and truthful docs for `.codex/` plus `.agents/skills/`, but
-the actual Codex host behavior still lives in standalone project-hook Python
+the actual Codex host behavior still lived in standalone project-hook Python
 files under `.codex/hooks/`. Claude already moved its host surfaces into
 first-class runtime modules under `src/odylith/runtime/surfaces/` with a thin
-`odylith claude ...` dispatcher, while Codex still relies on external scripts
-that duplicate helper logic and are invisible to the product runtime taxonomy.
+`odylith claude ...` dispatcher, while Codex still relied on external scripts
+that duplicated helper logic and were invisible to the product runtime
+taxonomy.
 
-At the same time, release wording remains easy to misread on active surfaces:
+At the same time, release wording remained easy to misread on active surfaces:
 the repo's governed contract uses explicit `current` and `next` aliases for
-release-planning selectors, but some human-facing copy still risks conflating
-the `current` alias with "latest shipped GA". That ambiguity is unacceptable in
-the `v0.1.11` release lane because Codex parity work is being actively rebound
-and tracked there.
+release-planning selectors, but some human-facing copy still risked conflating
+the `current` alias with "latest shipped GA".
 
 ## Customer
-Odylith maintainers and operators who need this capability to exist as governed product truth.
+Odylith maintainers working in Codex who need the host lane to be as
+CLI-backed, capability-aware, and release-legible as the Claude lane before
+`v0.1.11` ships.
 
 ## Opportunity
 Bake the supported Codex host behavior into first-class Odylith runtime
@@ -87,19 +88,14 @@ surfaces to say `active target release` versus `latest shipped release` where
 that distinction matters to operators.
 
 ## Proposed Solution
-- add `src/odylith/runtime/surfaces/codex_host_*.py` modules for the currently
-  supported Codex host behaviors: session-start grounding, prompt anchor
-  context, destructive Bash guard, post-edit checkpoint, and stop-summary
-  logging
-- add a thin `odylith codex` dispatcher in `src/odylith/cli.py` that delegates
-  to those modules without inlining host logic into the already red-zone CLI
-- rewire `.codex/hooks.json` to call the CLI commands directly and remove the
-  standalone `.codex/hooks/*.py` implementation lane
-- add focused Codex host runtime tests and update project-asset tests to pin
-  the new CLI-backed hook contract
-- clarify touched guidance, runbook, and UI copy so human-facing release
-  wording distinguishes the active target release from the latest shipped
-  release without renaming the governed `current` / `next` alias contract
+- add `src/odylith/runtime/surfaces/codex_host_*.py` modules for the supported
+  Codex host behaviors
+- add a thin `odylith codex` dispatcher in `src/odylith/cli.py`
+- rewire `.codex/hooks.json` to call the CLI directly and remove the standalone
+  `.codex/hooks/*.py` implementation lane
+- add focused Codex host runtime tests and update the project-asset contract
+- clarify touched guidance, runbook, and UI copy so release wording
+  distinguishes the active target release from the latest shipped release
 
 ## Scope
 - bake the supported Codex host hook behaviors into first-class runtime modules
@@ -151,9 +147,9 @@ that distinction matters to operators.
 - update touched wording and validate the combined slice
 
 ## Why Now
-The asset/install parity slice already landed, the user explicitly wants Codex
-parity inside the active `v0.1.11` target release, and the remaining gap is
-now architectural rather than speculative.
+The asset/install parity slice already landed, the user explicitly wanted Codex
+parity inside the active `v0.1.11` target release, and the remaining gap was
+architectural rather than speculative.
 
 ## Product View
 Codex parity in `v0.1.11` is only credible if the runtime host layer matches
@@ -162,15 +158,21 @@ stops implying that `current` means "latest shipped GA".
 
 ## Impacted Components
 - `odylith`
+- `release`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- add a thin `odylith codex ...` dispatcher and a first-class Codex
+  compatibility inspection command
 
 ## Migration/Compatibility
-- No migration impact recorded yet.
+- checked-in `.codex/hooks.json` moves to the CLI-backed contract and the
+  effective consumer `.codex/config.toml` is derived from the local Codex
+  capability snapshot
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- add focused unit coverage for the baked Codex host runtime modules, project
+  asset contract, and touched release wording surfaces
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- which touched active surfaces still need `active target release` wording once
+  the host-runtime parity work lands?

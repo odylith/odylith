@@ -59,56 +59,100 @@ supersedes:
 superseded_by: 
 
 ## Problem
-Odylith needs an explicit workstream for Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface instead of leaving the slice implicit.
+Claude already exposes a richer native host surface than Codex, but too much of
+that lane still lived in standalone `.claude/hooks/*.py` scripts and static
+project-asset assumptions instead of the first-class Odylith runtime. That left
+Claude less dynamically introspected and less uniformly CLI-backed than the new
+Codex parity work, even though Claude is supposed to be the richer first-class
+host.
 
 ## Customer
-Odylith maintainers and operators who need this capability to exist as governed product truth.
+Odylith maintainers running Claude Code who need the Claude lane to preserve its
+richer native capabilities while still following the same CLI-backed,
+capability-aware product contract as the Codex lane.
 
 ## Opportunity
-Bound Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface as a queued workstream so implementation can attach to one clear source record.
+Mirror the Codex capability-layer pattern into Claude, bake the remaining Claude
+hook scripts into first-class runtime modules, and make install/routing consume
+a real Claude capability snapshot instead of a static project-asset guess.
 
 ## Proposed Solution
-Create the workstream for Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface and refine the exact implementation plan during execution.
+- add a Claude capability layer and `odylith claude compatibility` CLI surface
+- migrate the shared Claude hook helpers into the runtime package
+- bake the remaining Claude host hooks into `src/odylith/runtime/surfaces/`
+  modules routed through `odylith claude ...`
+- derive effective `.claude/settings.json` hook and permission state at install
+  time
+- document the Claude host contract and add focused proof coverage
 
 ## Scope
-- Define and land the bounded work for Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface.
-- Keep the first implementation wave narrow and test-backed.
+- Claude capability inspection and effective-settings derivation
+- baked runtime modules for the remaining Claude host hooks
+- thin CLI dispatch, project-asset rewiring, expanded slash commands, and
+  focused tests
+- the touched Claude host guidance and bundle mirrors
 
 ## Non-Goals
-- Do not widen this queued workstream into unrelated product cleanup.
+- do not regress the richer Claude-native primitives that already work
+- do not change Codex behavior in the process
+- do not widen into MCP or benchmark proof work beyond the Claude host lane
 
 ## Risks
-- The title may need refinement once the implementation owner confirms the exact boundary.
+- the settings flip can break Claude hook execution if the CLI-backed commands
+  and permissions drift
+- `cli.py` is already in the red zone, so dispatcher growth has to stay thin
+- copying the Codex capability model too literally could erase real Claude/Codex
+  asymmetries instead of documenting them
 
 ## Dependencies
-- No explicit dependency recorded yet; confirm related workstreams before implementation starts.
+- `B-083`, `B-084`, and `B-085` define the existing Claude host lane and thin
+  dispatcher pattern
+- `B-087` and `B-088` define the Codex capability-aware parity shape this slice
+  mirrors
 
 ## Success Metrics
-- The workstream is specific enough to guide implementation and validation without further backlog surgery.
+- the remaining live Claude hook scripts disappear in favor of first-class
+  runtime modules and CLI dispatch
+- install writes a deterministic capability-derived `.claude/settings.json`
+- routing and compatibility reporting consume a real Claude capability snapshot
+- focused Claude host and install tests stay green
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- run focused Claude capability, host-runtime, install, and CLI dispatch tests
+- run the strongest local Claude host proof available for the rewired settings
+  contract
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- land the capability layer and baked runtime modules
+- flip `.claude/settings.json` to the CLI-backed contract
+- remove the old standalone hook scripts once the new path is proven
 
 ## Why Now
-This slice is active enough that it should exist as explicit backlog truth now.
+Codex parity is now capability-aware and CLI-backed. Claude has to meet the
+same standard without losing the richer native host surface that makes it worth
+supporting.
 
 ## Product View
-If the team is already acting as if this work exists, the backlog should say so explicitly.
+Claude should feel like the richer first-class Odylith host, not a parallel
+script lane hanging off checked-in project assets.
 
 ## Impacted Components
 - `odylith`
+- `dashboard`
+- `release`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- add `odylith claude compatibility` and expand the CLI-backed Claude host
+  command surface
 
 ## Migration/Compatibility
-- No migration impact recorded yet.
+- live and bundled `.claude/settings.json` move to the CLI-backed hook contract
+  and the effective settings snapshot becomes capability-derived
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- add focused coverage for Claude capability inspection, host-runtime modules,
+  install-time effective settings, and CLI dispatch
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- which permissions and slash-command additions are required to keep the
+  rewired Claude host lane both safe and friction-free?

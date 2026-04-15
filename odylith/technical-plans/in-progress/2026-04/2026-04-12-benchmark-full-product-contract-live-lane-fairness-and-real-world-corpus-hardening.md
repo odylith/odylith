@@ -51,6 +51,7 @@ Boundary Conditions:
 Related Bugs:
 - [CB-106](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-benchmark-live-preflight-evidence-is-only-injected-for-odylith-on-without-a-declared-comparison-contract.md)
 - [CB-107](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md)
+- [CB-113](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-15-benchmark-sharded-proof-can-lose-final-shard-artifacts-and-authoritative-active-.md)
 
 ## Learnings
 - [x] A benchmark can be technically isolated and still tell the wrong story if
@@ -70,6 +71,9 @@ Related Bugs:
       Odylith-only preflight basis is explicit, bounded, and inspectable.
 - [x] Keep packet-only diagnostic `benchmark.packet_fixture` usage explicit,
       whitelisted, and confined to declared packet/runtime-summary seams.
+- [x] Make shard progress the durable benchmark recovery journal until a
+      matching history report exists, and synthesize failed shard reports from
+      orphaned progress or stale active-run rows instead of losing proof state.
 - [x] Expand the implementation corpus to at least `60` implementation
       scenarios with at least `35` write-plus-validator scenarios and at least
       `12` correctness-critical scenarios.

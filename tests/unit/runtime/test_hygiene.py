@@ -159,6 +159,25 @@ RUNTIME_CHATTER_FRAGMENTS = (
     "The retained Odylith packet",
     "recent Odylith ",
 )
+INTERVENTION_CONTRACT_BUNDLE_EXPECTATIONS: tuple[tuple[str, bool], ...] = (
+    ("odylith/agents-guidelines/CODEX_HOST_CONTRACT.md", True),
+    ("odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md", True),
+    ("odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md", True),
+    ("odylith/registry/source/components/compass/CURRENT_SPEC.md", True),
+    ("odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md", True),
+    ("odylith/registry/source/components/execution-governance/CURRENT_SPEC.md", True),
+    ("odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md", True),
+    ("odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md", True),
+    ("odylith/registry/source/components/proof-state/CURRENT_SPEC.md", True),
+    (
+        "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+        False,
+    ),
+    (
+        "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+        False,
+    ),
+)
 
 
 def test_public_tree_contains_no_legacy_contract_leaks() -> None:
@@ -243,6 +262,19 @@ def test_bundle_does_not_ship_public_live_governance_records_into_consumer_truth
     assert not (bundle / "compass" / "runtime" / "current.v1.json").exists()
     assert not (bundle / "compass" / "runtime" / "current.v1.js").exists()
     assert not (bundle / "compass" / "runtime" / "history").exists()
+
+
+def test_intervention_contract_bundle_assets_stay_synced_or_explicitly_excluded() -> None:
+    bundle_root = ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith"
+    for source_relative, should_ship in INTERVENTION_CONTRACT_BUNDLE_EXPECTATIONS:
+        source_path = ROOT / source_relative
+        bundle_path = bundle_root / Path(source_relative).relative_to("odylith")
+        assert source_path.is_file(), f"source file missing: {source_relative}"
+        if should_ship:
+            assert bundle_path.is_file(), f"bundle mirror missing: {bundle_path.relative_to(ROOT)}"
+            assert bundle_path.read_text(encoding="utf-8") == source_path.read_text(encoding="utf-8")
+            continue
+        assert not bundle_path.exists(), f"live governance record should stay excluded: {bundle_path.relative_to(ROOT)}"
 
 
 def test_readme_operator_instructions_link_stays_present() -> None:

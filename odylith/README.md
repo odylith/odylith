@@ -176,7 +176,7 @@ Here are some starter prompt inspirations:
 - Delete: "Delete developer note [N###]."
 
 For the full set of things the agent understands, see
-[Odylith Operator Instructions](../docs/OPERATOR_INSTRUCTIONS.md). The Cheatsheet
+[Operator Instructions](../docs/OPERATOR_INSTRUCTIONS.md). The Cheatsheet
 drawer in `odylith/index.html` has copyable prompts for every operation.
 
 The shell refreshes itself as Odylith updates local surfaces.

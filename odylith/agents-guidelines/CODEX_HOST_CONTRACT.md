@@ -102,6 +102,11 @@
   teaser sentence only; stop-summary or post-bash may upgrade that into a full
   `**Odylith Observation**`; governed writes stay inside one confirmation-gated
   `Odylith Proposal`.
+- When prompt submit earns a teaser, Codex should surface that sentence as the
+  visible `systemMessage` beat and keep the fuller continuity payload
+  discreet in `hookSpecificOutput.additionalContext` alongside any anchor
+  summary. Prompt-time context should feel like one gentle interjection, not a
+  visible dump of narrowing scaffolding.
 - Post-bash checkpoint is the primary visible intervention lane. When the
   recovered bundle earns an Observation or Proposal, Codex should surface that
   live beat through a visible hook `systemMessage` and also duplicate the full

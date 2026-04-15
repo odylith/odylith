@@ -556,7 +556,7 @@ def test_render_compass_dashboard_writes_source_truth_snapshot_and_shell_href(tm
     assert "source_truth_href" in payload_js
 
 
-def test_render_compass_dashboard_syncs_runtime_history_bundle_mirror(tmp_path: Path, monkeypatch) -> None:
+def test_render_compass_dashboard_does_not_ship_runtime_state_bundle_mirror(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     (repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith").mkdir(parents=True, exist_ok=True)
     output_path = repo_root / "odylith" / "compass" / "compass.html"
@@ -603,13 +603,9 @@ def test_render_compass_dashboard_syncs_runtime_history_bundle_mirror(tmp_path: 
 
     assert rc == 0
     mirror_root = repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "compass" / "runtime"
-    assert (mirror_root / "current.v1.json").read_text(encoding="utf-8") == '{"runtime":"json"}\n'
-    assert (mirror_root / "current.v1.js").read_text(encoding="utf-8") == "window.__ODYLITH_COMPASS_RUNTIME__ = {\"runtime\":\"js\"};\n"
-    assert (mirror_root / "history" / daily_path.name).read_text(encoding="utf-8") == '{"day":"today"}\n'
-    assert (mirror_root / "history" / "index.v1.json").read_text(encoding="utf-8") == '{"dates":["2026-04-14"]}\n'
-    assert (mirror_root / "history" / "embedded.v1.js").read_text(encoding="utf-8") == "window.__ODYLITH_COMPASS_HISTORY__ = {\"dates\":[\"2026-04-14\"]};\n"
-    assert not stale_archive_bundle.exists()
-    assert not stale_archive_bundle.parent.exists()
+    assert not (mirror_root / "current.v1.json").exists()
+    assert not (mirror_root / "current.v1.js").exists()
+    assert not (mirror_root / "history").exists()
 
 
 def test_refresh_runtime_artifacts_reuses_matching_payload(tmp_path: Path, monkeypatch) -> None:

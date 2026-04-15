@@ -135,19 +135,19 @@ def _seed_registry_repo(root: Path) -> None:
             "workstream_merged_from:\n\n"
             "supersedes:\n\n"
             "superseded_by:\n\n"
-            "## Problem\nBody\n\n"
-            "## Customer\nBody\n\n"
-            "## Opportunity\nBody\n\n"
+            "## Problem\nComponent registry fixtures need meaningful Radar detail for validation.\n\n"
+            "## Customer\nMaintainers depend on these fixtures to model real registry governance.\n\n"
+            "## Opportunity\nMeaningful fixture prose keeps component validation aligned with Radar truth.\n\n"
             "## Proposed Solution\nBody\n\n"
             "## Scope\nBody\n\n"
             "## Non-Goals\nBody\n\n"
             "## Risks\nBody\n\n"
             "## Dependencies\nBody\n\n"
-            "## Success Metrics\nBody\n\n"
+            "## Success Metrics\n- Registry fixtures validate without placeholder detail.\n- Component mapping remains testable.\n\n"
             "## Validation\nBody\n\n"
             "## Rollout\nBody\n\n"
             "## Why Now\nBody\n\n"
-            "## Product View\nBody\n\n"
+            "## Product View\nThe registry intelligence path should reject weak ideas without breaking valid fixtures.\n\n"
             "## Impacted Components\nBody\n\n"
             "## Interface Changes\nBody\n\n"
             "## Migration/Compatibility\nBody\n\n"
@@ -184,6 +184,40 @@ def test_build_component_registry_report_reuses_active_sync_session(
 
     assert first.components.keys() == second.components.keys()
     assert build_calls == 1
+
+
+def test_component_index_fingerprint_tracks_radar_idea_contract_version(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_registry_repo(tmp_path)
+    repo_root = tmp_path.resolve()
+    manifest = repo_root / "odylith" / "registry" / "source" / "component_registry.v1.json"
+    catalog = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    ideas = repo_root / "odylith" / "radar" / "source" / "ideas"
+
+    assert registry.backlog_contract.IDEA_SPEC_CACHE_VERSION in registry._RADAR_IDEA_CONTRACT_VERSION  # noqa: SLF001
+    _cache_path, baseline = registry._cached_component_index_payload(  # noqa: SLF001
+        repo_root=repo_root,
+        manifest_path=manifest,
+        catalog_path=catalog,
+        ideas_root=ideas,
+        include_idea_candidates=False,
+    )
+    monkeypatch.setattr(
+        registry,
+        "_RADAR_IDEA_CONTRACT_VERSION",
+        f"{registry._RADAR_IDEA_CONTRACT_VERSION}:next",  # noqa: SLF001
+    )
+    _cache_path, changed = registry._cached_component_index_payload(  # noqa: SLF001
+        repo_root=repo_root,
+        manifest_path=manifest,
+        catalog_path=catalog,
+        ideas_root=ideas,
+        include_idea_candidates=False,
+    )
+
+    assert changed != baseline
 
 
 def test_match_by_artifact_uses_nested_path_prefixes_and_spec_refs() -> None:

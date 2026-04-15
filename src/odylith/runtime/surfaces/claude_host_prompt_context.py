@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.surfaces import claude_host_shared
 
@@ -128,6 +129,29 @@ def render_prompt_context(
     return "\n\n".join(part for part in parts if part).strip()
 
 
+def render_prompt_system_message(
+    *,
+    repo_root: Path | str = ".",
+    prompt: str,
+    session_id: str = "",
+    conversation_bundle_override: Mapping[str, Any] | None = None,
+    intervention_bundle_override: Mapping[str, Any] | None = None,
+) -> str:
+    bundle = _prompt_conversation_bundle(
+        repo_root=repo_root,
+        prompt=prompt,
+        session_id=session_id,
+        bundle_override=conversation_bundle_override,
+        intervention_bundle_override=intervention_bundle_override,
+    )
+    return conversation_surface.render_live_text(
+        bundle,
+        markdown=False,
+        include_proposal=False,
+        prefer_ambient_over_teaser=True,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude prompt-context",
@@ -156,13 +180,26 @@ def main(argv: list[str] | None = None) -> int:
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
-    if summary:
+    system_message = render_prompt_system_message(
+        repo_root=repo_root,
+        prompt=prompt,
+        session_id=session_id,
+        conversation_bundle_override=bundle,
+    )
+    if summary or system_message:
         conversation_surface.append_intervention_events(
             repo_root=Path(repo_root).expanduser().resolve(),
             bundle=bundle,
             include_proposal=False,
         )
-        sys.stdout.write(summary + "\n")
+        sys.stdout.write(
+            json.dumps(
+                host_surface_runtime.claude_prompt_payload(
+                    additional_context=summary,
+                    system_message=system_message,
+                )
+            )
+        )
     return 0
 
 

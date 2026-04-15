@@ -3825,11 +3825,13 @@ def test_run_benchmarks_shards_persist_failed_history_report_on_keyboard_interru
 
 
 def test_benchmark_interrupt_guard_raises_custom_interrupt_and_restores_handlers(monkeypatch) -> None:  # noqa: ANN001
+    sighup = getattr(signal, "SIGHUP", None)
     previous_handlers = {
         signal.SIGTERM: object(),
         signal.SIGINT: object(),
-        getattr(signal, "SIGHUP", signal.SIGTERM): object(),
     }
+    if sighup is not None:
+        previous_handlers[sighup] = object()
     installed: dict[int, object] = {}
     calls: list[tuple[str, int, object]] = []
 
@@ -3851,6 +3853,8 @@ def test_benchmark_interrupt_guard_raises_custom_interrupt_and_restores_handlers
 
     with pytest.raises(runner.BenchmarkRunInterrupted, match="received SIGTERM"):
         with runner._benchmark_interrupt_guard():  # noqa: SLF001
+            if sighup is not None:
+                assert installed[sighup] == signal.SIG_IGN
             installed[signal.SIGTERM](signal.SIGTERM, None)
 
     restored = [row for row in calls if row[2] in previous_handlers.values()]
@@ -6728,6 +6732,29 @@ def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
     assert analysis_bundle.exists()
 
 
+def test_cleanup_stale_benchmark_state_sharded_startup_preserves_unowned_runtime(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    temp_root = tmp_path / ".odylith" / "runtime" / "odylith-benchmark-temp"
+    codex_dir = temp_root / "odylith-benchmark-codex-sibling"
+    codex_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [codex_dir])
+
+    cleanup = runner._cleanup_stale_benchmark_state(  # noqa: SLF001
+        repo_root=tmp_path,
+        clear_progress=False,
+        allow_destructive_runtime_cleanup=False,
+    )
+
+    assert cleanup["progress_cleanup"]["active_runtime_present"] is True
+    assert cleanup["process_cleanup"]["skipped_due_to_unowned_sharded_runtime"] is True
+    assert cleanup["temp_directory_cleanup"]["skipped_due_to_unowned_sharded_runtime"] is True
+    assert codex_dir.exists()
+
+
 def test_cleanup_benchmark_worktrees_removes_detached_clone_workspace(tmp_path: Path) -> None:
     clone_parent = runner.odylith_benchmark_isolation.benchmark_workspace_parent(  # noqa: SLF001
         repo_root=tmp_path,
@@ -6779,6 +6806,36 @@ def test_sync_active_run_progress_keeps_failed_progress_out_of_active_runs(tmp_p
     )
     stored_progress = json.loads(progress_path.read_text(encoding="utf-8"))
     assert stored_progress["status"] == "failed"
+
+
+def test_clear_active_run_progress_preserves_progress_when_history_report_is_missing(tmp_path: Path) -> None:
+    payload = {
+        "report_id": "report-preserve",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:01:00Z",
+        "status": "running",
+        "phase": "executing_scenarios",
+        "shard_index": 1,
+        "shard_count": 4,
+        "owning_pid": 55555,
+    }
+
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+    runner._clear_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-preserve",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=4,
+        owning_pid=55555,
+    )
+    assert progress_path.exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
 
 
 def test_sync_active_run_progress_recovers_running_shards_when_shared_ledger_is_missing(
@@ -6897,6 +6954,94 @@ def test_load_benchmark_progress_recovers_from_progress_files_when_active_run_le
     assert progress["completed_scenarios"] == 4
     assert progress["completed_results"] == 12
     assert progress["current_scenario_id"] == "case-b"
+
+
+def test_prune_stale_benchmark_progress_synthesizes_failed_report_for_orphaned_progress(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scenario = {
+        "scenario_id": "case-a",
+        "kind": "packet",
+        "label": "Case A",
+        "summary": "A",
+        "family": "validation_heavy_fix",
+        "priority": "high",
+        "changed_paths": ["scripts/a.py"],
+        "workstream": "",
+        "required_paths": ["scripts/a.py"],
+        "validation_commands": [],
+        "correctness_critical": False,
+        "expect": {"within_budget": True},
+    }
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: [dict(scenario)])
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: False)
+    monkeypatch.setattr(runner, "_utc_now", lambda: "2026-04-15T01:00:00Z")
+
+    payload = {
+        "report_id": "report-orphaned",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:10:00Z",
+        "status": "running",
+        "phase": "executing_scenarios",
+        "modes": ["odylith_on", "raw_agent_baseline"],
+        "cache_profiles": ["warm", "cold"],
+        "primary_cache_profile": "warm",
+        "selection_strategy": "manual_selection",
+        "selection": {
+            "case_ids": ["case-a"],
+            "scenario_ids": ["case-a"],
+            "family_filters": [],
+            "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+            "profile_default_narrowing": "",
+            "selection_strategy": "manual_selection",
+            "shard_count": 1,
+            "shard_index": 1,
+            "default_modes_applied": True,
+            "default_cache_profiles_applied": True,
+            "limit": 0,
+            "full_corpus_selected": False,
+            "available_scenario_count": 1,
+            "cache_profiles": ["warm", "cold"],
+        },
+        "shard_index": 1,
+        "shard_count": 1,
+        "scenario_count": 1,
+        "total_results": 4,
+        "completed_cache_profiles": 0,
+        "completed_scenarios": 0,
+        "completed_results": 0,
+        "current_cache_profile": "warm",
+        "current_mode": "odylith_on",
+        "current_scenario_id": "case-a",
+        "latest_eligible": False,
+        "owning_pid": 42424,
+    }
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-orphaned",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=1,
+        owning_pid=42424,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    cleanup = runner._prune_stale_benchmark_progress(repo_root=tmp_path, clear_shared_progress=False)  # noqa: SLF001
+
+    report_path = runner.history_report_path(repo_root=tmp_path, report_id="report-orphaned")
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert cleanup["synthesized_failed_report_count"] == 1
+    assert report["status"] == "failed"
+    assert report["acceptance"]["status"] == "failed"
+    assert not progress_path.exists()
 
 
 def test_prune_stale_benchmark_progress_removes_failed_active_run_entries(

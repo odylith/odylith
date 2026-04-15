@@ -53,6 +53,29 @@ _REQUIRED_SECTIONS: tuple[str, ...] = (
     "Test Strategy",
     "Open Questions",
 )
+_CORE_DETAIL_SECTION_TITLES: tuple[str, ...] = (
+    "Problem",
+    "Customer",
+    "Opportunity",
+    "Product View",
+    "Success Metrics",
+)
+IDEA_SPEC_CACHE_VERSION = "v2-section-bodies"
+_PLACEHOLDER_LIKE_TOKENS: frozenset[str] = frozenset(
+    {
+        "details",
+        "details.",
+        "tbd",
+        "tbd.",
+        "todo",
+        "todo.",
+        "n/a",
+        "na",
+        "none",
+        "-",
+    }
+)
+_MIN_CORE_DETAIL_WORDS = 6
 
 _VALID_PRIORITIES: set[str] = {"P0", "P1", "P2", "P3"}
 _VALID_SIZING: dict[str, int] = {"XS": 1, "S": 2, "M": 3, "L": 5, "XL": 8}
@@ -140,6 +163,7 @@ class IdeaSpec:
     path: Path
     metadata: dict[str, str]
     sections: set[str]
+    section_bodies: dict[str, str]
 
     @property
     def idea_id(self) -> str:
@@ -263,6 +287,7 @@ def _idea_spec_payload(spec: IdeaSpec) -> dict[str, Any]:
     return {
         "metadata": dict(spec.metadata),
         "sections": sorted(spec.sections),
+        "section_bodies": dict(spec.section_bodies),
     }
 
 
@@ -275,7 +300,17 @@ def _idea_spec_from_payload(*, path: Path, payload: Mapping[str, Any]) -> IdeaSp
         for token in sections_raw
         if str(token).strip()
     }
-    return IdeaSpec(path=path, metadata=metadata, sections=sections)
+    section_bodies_raw = payload.get("section_bodies", {})
+    section_bodies = (
+        {
+            str(key).strip(): str(value).strip()
+            for key, value in section_bodies_raw.items()
+            if str(key).strip()
+        }
+        if isinstance(section_bodies_raw, Mapping)
+        else {}
+    )
+    return IdeaSpec(path=path, metadata=metadata, sections=sections, section_bodies=section_bodies)
 
 
 def _idea_spec_signature_token(signature: Mapping[str, Any]) -> str:
@@ -287,6 +322,70 @@ def _idea_spec_signature_token(signature: Mapping[str, Any]) -> str:
             str(int(signature.get("mtime_ns", 0) or 0)),
         )
     )
+
+
+def default_section_boilerplate(title: str) -> dict[str, str]:
+    plain_title = str(title).strip()
+    return {
+        "Problem": f"Odylith needs an explicit workstream for {plain_title} instead of leaving the slice implicit.",
+        "Customer": "Odylith maintainers and operators who need this capability to exist as governed product truth.",
+        "Opportunity": f"Bound {plain_title} as a queued workstream so implementation can attach to one clear source record.",
+        "Proposed Solution": f"Create the workstream for {plain_title} and refine the exact implementation plan during execution.",
+        "Scope": f"- Define and land the bounded work for {plain_title}.\n- Keep the first implementation wave narrow and test-backed.",
+        "Non-Goals": "- Do not widen this queued workstream into unrelated product cleanup.",
+        "Risks": "- The title may need refinement once the implementation owner confirms the exact boundary.",
+        "Dependencies": "- No explicit dependency recorded yet; confirm related workstreams before implementation starts.",
+        "Success Metrics": "- The workstream is specific enough to guide implementation and validation without further backlog surgery.",
+        "Validation": "- Run focused validation for the touched paths once implementation begins.",
+        "Rollout": "- Queue now, then bind a technical plan when the implementation wave starts.",
+        "Why Now": "This slice is active enough that it should exist as explicit backlog truth now.",
+        "Product View": "If the team is already acting as if this work exists, the backlog should say so explicitly.",
+        "Impacted Components": "- `odylith`",
+        "Interface Changes": "- None decided yet; record interface changes once implementation is scoped.",
+        "Migration/Compatibility": "- No migration impact recorded yet.",
+        "Test Strategy": "- Add targeted regression coverage when implementation begins.",
+        "Open Questions": "- Which existing workstreams or component specs should this attach to first?",
+    }
+
+
+def _normalize_section_body_text(value: str) -> str:
+    return "\n".join(line.rstrip() for line in str(value or "").strip().splitlines()).strip()
+
+
+def _is_placeholder_like_section_body(value: str) -> bool:
+    token = _normalize_section_body_text(value).casefold()
+    return token in _PLACEHOLDER_LIKE_TOKENS
+
+
+def _meaningful_word_count(value: str) -> int:
+    return len(re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _normalize_section_body_text(value)))
+
+
+def core_detail_section_errors(
+    *,
+    title: str,
+    sections: Mapping[str, str],
+    path: Path,
+) -> list[str]:
+    errors: list[str] = []
+    defaults = default_section_boilerplate(title)
+    for section in _CORE_DETAIL_SECTION_TITLES:
+        body = _normalize_section_body_text(str(sections.get(section, "")).strip())
+        if not body:
+            errors.append(f"{path}: core detail section `## {section}` must be non-empty")
+            continue
+        if _is_placeholder_like_section_body(body):
+            errors.append(f"{path}: core detail section `## {section}` uses placeholder-like text")
+            continue
+        if _meaningful_word_count(body) < _MIN_CORE_DETAIL_WORDS:
+            errors.append(
+                f"{path}: core detail section `## {section}` must contain at least "
+                f"{_MIN_CORE_DETAIL_WORDS} meaningful words"
+            )
+            continue
+        if body == _normalize_section_body_text(defaults.get(section, "")):
+            errors.append(f"{path}: core detail section `## {section}` still uses backlog-create boilerplate")
+    return errors
 
 
 def _parse_idea_spec_uncached(
@@ -303,16 +402,20 @@ def _parse_idea_spec_uncached(
             key=_repo_relative_cache_key(repo_root=resolved_repo_root, target=target),
         )
         cached = odylith_context_cache.read_json_object(cache_file)
+        cached_spec = cached.get("spec")
         if (
-            cached.get("version") == "v1"
+            cached.get("version") == IDEA_SPEC_CACHE_VERSION
             and cached.get("signature") == signature
-            and isinstance(cached.get("spec"), Mapping)
+            and isinstance(cached_spec, Mapping)
+            and isinstance(cached_spec.get("section_bodies"), Mapping)
         ):
-            return _idea_spec_from_payload(path=target, payload=cached.get("spec", {}))
+            return _idea_spec_from_payload(path=target, payload=cached_spec)
 
     metadata: dict[str, str] = {}
     sections: set[str] = set()
+    section_bodies: dict[str, list[str]] = {}
     in_metadata = True
+    current_section: str | None = None
 
     for raw_line in target.read_text(encoding="utf-8").splitlines():
         match = _SECTION_RE.match(raw_line)
@@ -322,9 +425,13 @@ def _parse_idea_spec_uncached(
             if section_title == "Founder POV":
                 section_title = "Product View"
             sections.add(section_title)
+            current_section = section_title
+            section_bodies.setdefault(section_title, [])
             continue
 
         if not in_metadata:
+            if current_section is not None:
+                section_bodies.setdefault(current_section, []).append(raw_line)
             continue
 
         line = raw_line.strip()
@@ -335,13 +442,21 @@ def _parse_idea_spec_uncached(
         key, value = line.split(":", 1)
         metadata[key.strip()] = value.strip()
 
-    spec = IdeaSpec(path=target, metadata=metadata, sections=sections)
+    spec = IdeaSpec(
+        path=target,
+        metadata=metadata,
+        sections=sections,
+        section_bodies={
+            key: _normalize_section_body_text("\n".join(lines))
+            for key, lines in section_bodies.items()
+        },
+    )
     if resolved_repo_root is not None:
         odylith_context_cache.write_json_if_changed(
             repo_root=resolved_repo_root,
             path=cache_file,
             payload={
-                "version": "v1",
+                "version": IDEA_SPEC_CACHE_VERSION,
                 "signature": signature,
                 "spec": _idea_spec_payload(spec),
             },
@@ -1131,6 +1246,13 @@ def _validate_idea_specs_uncached(
         for section in _REQUIRED_SECTIONS:
             if section not in spec.sections:
                 errors.append(f"{path}: missing required section `## {section}`")
+        errors.extend(
+            core_detail_section_errors(
+                title=str(spec.metadata.get("title", "")).strip(),
+                sections=spec.section_bodies,
+                path=path,
+            )
+        )
 
         errors.extend(
             backlog_title_contract.validate_workstream_title(

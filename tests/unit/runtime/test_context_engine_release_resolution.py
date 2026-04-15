@@ -228,7 +228,7 @@ def test_load_release_projection_reads_live_release_source_even_when_traceabilit
             "workstream_merged_from:\n\n"
             "supersedes:\n\n"
             "superseded_by:\n\n"
-            "## Problem\nDetails.\n"
+            "## Problem\nGrounded fixture coverage for problem in this synthetic workstream.\n"
         ),
         encoding="utf-8",
     )

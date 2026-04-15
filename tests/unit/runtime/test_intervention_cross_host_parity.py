@@ -76,6 +76,60 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
     assert codex_text == claude_text
 
 
+def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(monkeypatch, capsys) -> None:
+    intervention = {
+        "candidate": {
+            "stage": "teaser",
+            "teaser_text": (
+                "Odylith can already see governed truth starting to crystallize here. "
+                "One more corroborating signal and it can turn that into a proposal."
+            ),
+        }
+    }
+    bundle = {"intervention_bundle": intervention}
+
+    monkeypatch.setattr(
+        codex_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: bundle,
+    )
+    monkeypatch.setattr(
+        claude_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: bundle,
+    )
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "prompt": "Design a conversation observation engine with governed proposal flow.",
+                    "session_id": "prompt-parity-1",
+                }
+            )
+        ),
+    )
+    assert cli.main(["codex", "prompt-context", "--repo-root", "."]) == 0
+    codex_payload = json.loads(capsys.readouterr().out)
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "prompt": "Design a conversation observation engine with governed proposal flow.",
+                    "session_id": "prompt-parity-1",
+                }
+            )
+        ),
+    )
+    assert cli.main(["claude", "prompt-context", "--repo-root", "."]) == 0
+    claude_payload = json.loads(capsys.readouterr().out)
+
+    assert codex_payload["hookSpecificOutput"]["additionalContext"] == claude_payload["hookSpecificOutput"]["additionalContext"]
+    assert codex_payload["systemMessage"] == claude_payload["systemMessage"]
+
+
 def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
     monkeypatch,
     tmp_path: Path,

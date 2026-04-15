@@ -59,56 +59,97 @@ supersedes:
 superseded_by: 
 
 ## Problem
-Odylith needs an explicit workstream for Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors instead of leaving the slice implicit.
+Twenty-seven unit tests were red after the recent orchestrator, benchmark, and
+governance refactor wave. Most of the failures were contract drift in the tests
+themselves, but the cluster could not simply be waved away because the hygiene
+failures had the shape of a real product regression: bundle mirrors were
+shipping source-truth backlog and plan files into consumer truth roots.
 
 ## Customer
-Odylith maintainers and operators who need this capability to exist as governed product truth.
+Maintainers trying to keep the release lane honest when large refactors move the
+runtime contract faster than the tests, and operators who need the unit suite
+to distinguish real regressions from stale assertions.
 
 ## Opportunity
-Bound Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors as a queued workstream so implementation can attach to one clear source record.
+Bring the pre-existing failure clusters back to green with bounded test-side
+updates, close the one real product leak in the bundle mirror contract, and
+leave a documented trail for the CLI and governance gaps discovered during the
+catch-up.
 
 ## Proposed Solution
-Create the workstream for Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors and refine the exact implementation plan during execution.
+- triage the hygiene failures first and ship the minimum product fix if they
+  prove a real consumer-lane leak
+- update the orchestrator, benchmark, governance, and dashboard tests to the
+  live contracts without deleting intent
+- keep the slice bounded to the failing clusters instead of widening into a
+  broader refactor
 
 ## Scope
-- Define and land the bounded work for Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors.
-- Keep the first implementation wave narrow and test-backed.
+- the 27 failing tests across hygiene, orchestrator/router profile inference,
+  benchmark dispatch, governance auto-promote, benchmark runner delegation, and
+  tooling-dashboard compass refresh
+- the minimum product-side fix required for a real public-tree bundle leak
+- the governing sync and validation follow-through after the test catch-up
 
 ## Non-Goals
-- Do not widen this queued workstream into unrelated product cleanup.
+- do not rewrite the orchestrator/router runtime contracts just to satisfy old
+  tests
+- do not skip or delete failing tests instead of proving their current intent
+- do not widen into unrelated benchmark or governance redesign
 
 ## Risks
-- The title may need refinement once the implementation owner confirms the exact boundary.
+- treating all 27 failures as test drift would miss the one real product
+  regression in the bundle mirror contract
+- widening beyond the observed failure clusters would turn a bounded catch-up
+  slice into an unprovable cleanup wave
 
 ## Dependencies
-- No explicit dependency recorded yet; confirm related workstreams before implementation starts.
+- `B-089` and the surrounding refactor wave created the contract movement that
+  the failing tests had to catch up with
+- the sync/reconcile governance lane is part of the closeout because the slice
+  touched source-truth and bundle-mirror behavior
 
 ## Success Metrics
-- The workstream is specific enough to guide implementation and validation without further backlog surgery.
+- the 27 observed failures return to green without hiding a real regression
+- the consumer bundle mirror stops shipping `radar/source/ideas/` and
+  `technical-plans/in-progress/` into truth roots
+- the final full unit sweep stays green
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- run the focused failing clusters first, then rerun the full unit suite
+- run the affected sync/governance validation after the product-side leak fix
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- land the bounded test catch-up and leak fix
+- rerun the focused and full unit proof
+- refresh the governed surfaces touched by the product-side fix
 
 ## Why Now
-This slice is active enough that it should exist as explicit backlog truth now.
+The release lane cannot tell real regressions from stale tests if the suite
+stays red after the refactor wave, and one of the failures was a genuine
+consumer-facing contract leak.
 
 ## Product View
-If the team is already acting as if this work exists, the backlog should say so explicitly.
+Tests are only valuable if they are current enough to catch real product drift
+without crying wolf on every refactor.
 
 ## Impacted Components
 - `odylith`
+- `dashboard`
+- `release`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- no deliberate public interface change; the only product-side correction is
+  the bundle-mirror exclude contract for consumer truth roots
 
 ## Migration/Compatibility
-- No migration impact recorded yet.
+- consumer repos stop receiving the leaked source-truth mirror files; existing
+  governed source records stay authoritative
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- rerun each pre-existing failure cluster directly, then rerun the full unit
+  suite as the release-proof closeout
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- should the plan-row insertion gap in `reconcile-plan-workstream-binding`
+  become its own follow-on workstream now that this slice proved it live?

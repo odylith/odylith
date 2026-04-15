@@ -96,8 +96,10 @@ def test_main_runs_context_command_for_first_anchor(monkeypatch, tmp_path: Path,
 
     assert exit_code == 0
     assert captured == [["context", "--repo-root", ".", "B-088"]]
-    out = capsys.readouterr().out
-    assert "Odylith anchor B-088: primary target src/foo.py." in out
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "Odylith anchor B-088: primary target src/foo.py." in payload["hookSpecificOutput"]["additionalContext"]
+    assert "systemMessage" not in payload
 
 
 def test_main_surfaces_a_teaser_when_launcher_missing_but_prompt_signal_is_real(
@@ -112,10 +114,26 @@ def test_main_surfaces_a_teaser_when_launcher_missing_but_prompt_signal_is_real(
         "sys.stdin",
         io.StringIO(json.dumps({"prompt": "Continue work on B-088"})),
     )
+    monkeypatch.setattr(
+        claude_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "teaser",
+                    "teaser_text": (
+                        "Odylith can already see governed truth starting to crystallize here. "
+                        "One more corroborating signal and it can turn that into a proposal."
+                    ),
+                }
+            }
+        },
+    )
 
     exit_code = claude_host_prompt_context.main(["--repo-root", str(project)])
 
     assert exit_code == 0
-    out = capsys.readouterr().out
-    assert out.startswith("Odylith can already")
-    assert "turn that into a proposal." in out
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith can already")
+    assert payload["systemMessage"] == payload["hookSpecificOutput"]["additionalContext"]

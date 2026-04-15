@@ -19,3 +19,10 @@ Use before any substantive fix, debug loop, or governed closeout slice that migh
 - Search the related workstream, components, diagrams, and validation obligations alongside the bug history so you can decide whether to update an existing bug, reopen it, or capture a genuinely new failure mode.
 - Carry related bug ids or explicit `no related bug found` evidence into the active plan or handoff.
 - If the slice already has a named failure mode or repeated-debug loop, escalate into `casebook-bug-capture` in the same turn instead of deferring durable bug memory.
+- Before invoking `casebook-bug-capture`, gather the minimum intake evidence the
+  backend now requires: `component`, `reproducibility`, `impact`,
+  `environment`, `detected by`, `failure signature`, `trigger path`,
+  `ownership`, `blast radius`, `SLO/SLA impact`, `data risk`,
+  `security/compliance`, and `invariant violated`.
+- If that evidence is still missing, keep the slice in investigation mode
+  instead of creating a new bug record with partial or placeholder truth.

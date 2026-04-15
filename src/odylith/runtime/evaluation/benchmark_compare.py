@@ -120,13 +120,19 @@ def _resolve_candidate_summary(*, repo_root: Path) -> tuple[dict[str, Any] | Non
         )
         stale_summary["current_tree_identity_match"] = False
         stale_summary["stale_runtime_report"] = True
-        tracked_summary = load_tracked_latest_summary(repo_root=repo_root)
-        if tracked_summary:
-            return dict(tracked_summary), "tracked-latest-summary"
-        return stale_summary, "latest-runtime-report"
+        return stale_summary, "latest-runtime-report-stale"
     tracked_summary = load_tracked_latest_summary(repo_root=repo_root)
     if tracked_summary:
-        return dict(tracked_summary), "tracked-latest-summary"
+        summary = dict(tracked_summary)
+        tracked_report_id = str(summary.get("report_id") or "").strip()
+        summary.setdefault("current_tree_identity_match", False)
+        summary["tracked_summary_only"] = True
+        summary["tracked_summary_backing_report_present"] = bool(
+            tracked_report_id and runner.history_report_path(repo_root=repo_root, report_id=tracked_report_id).is_file()
+        )
+        if tracked_report_id and not bool(summary.get("tracked_summary_backing_report_present")):
+            summary["tracked_summary_backing_report_missing"] = True
+        return summary, "tracked-latest-summary"
     return None, "missing-latest"
 
 
@@ -242,6 +248,44 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
             blocking=True,
         )
     candidate_version = str(candidate_summary.get("product_version", "")).strip()
+    current_tree_identity_match = bool(
+        candidate_summary.get(
+            "current_tree_identity_match",
+            candidate_source == "latest-runtime-report",
+        )
+    )
+    if candidate_source != "latest-runtime-report" or not current_tree_identity_match:
+        notes = [
+            "No current-tree authoritative proof candidate is available for benchmark compare.",
+            f"Candidate source `{candidate_source}` is not a current-head proof report.",
+            "Record a fresh current-tree proof report before treating compare as a release gate.",
+        ]
+        if bool(candidate_summary.get("tracked_summary_backing_report_missing")):
+            notes.append(
+                "Tracked benchmark publication summary points at a missing runtime report artifact and is not safe benchmark authority."
+            )
+        notes = tuple(notes)
+        if override is not None:
+            return _override_unavailable(
+                override=override,
+                baseline_source=candidate_source,
+                candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
+                candidate_product_version=candidate_version or source_version,
+                summary={"candidate": candidate_summary, "baseline": {}},
+                notes=notes,
+            )
+        return BenchmarkComparison(
+            status="unavailable",
+            candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
+            candidate_product_version=candidate_version,
+            baseline_report_id="",
+            baseline_product_version="",
+            baseline_source=candidate_source,
+            summary={"candidate": candidate_summary, "baseline": {}},
+            deltas={},
+            notes=notes,
+            blocking=True,
+        )
     if source_version and candidate_version and candidate_version != source_version:
         if override is not None:
             return _override_unavailable(

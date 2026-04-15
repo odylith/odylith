@@ -70,6 +70,17 @@ def test_codex_post_tool_payload_uses_additional_context_and_system_message() ->
     assert payload["systemMessage"] == "Odylith governance refresh completed."
 
 
+def test_codex_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
+    payload = host_surface_runtime.codex_prompt_payload(
+        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith can already see governed truth taking shape here.",
+        system_message="Odylith can already see governed truth taking shape here.",
+    )
+
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["systemMessage"] == "Odylith can already see governed truth taking shape here."
+
+
 def test_claude_post_tool_payload_uses_additional_context_and_system_message() -> None:
     payload = host_surface_runtime.claude_post_tool_payload(
         developer_context="**Odylith Observation:** The signal is real.",
@@ -78,6 +89,17 @@ def test_claude_post_tool_payload_uses_additional_context_and_system_message() -
 
     assert payload["additionalContext"] == "**Odylith Observation:** The signal is real."
     assert payload["systemMessage"] == "Odylith governance refresh completed."
+
+
+def test_claude_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
+    payload = host_surface_runtime.claude_prompt_payload(
+        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith can already see governed truth taking shape here.",
+        system_message="Odylith can already see governed truth taking shape here.",
+    )
+
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["systemMessage"] == "Odylith can already see governed truth taking shape here."
 
 
 def test_stop_payload_is_empty_without_message() -> None:

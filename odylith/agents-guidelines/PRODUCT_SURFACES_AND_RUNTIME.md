@@ -104,6 +104,10 @@
 - Missing launcher-backed anchor resolution is not permission to silence a
   real prompt-submit teaser. Degraded context narrowing may remove the anchor
   summary, but the earned intervention beat should still survive.
+- Prompt-submit teaser surfacing is two-lane on purpose:
+  - a visible one-line teaser for the user
+  - discreet continuity context carrying the teaser plus any anchor summary
+    for the next model turn
 - If the user cannot tell in a breath why Odylith stepped in, or if the
   Proposal turns into a mini report, the UX has failed.
 - Multiline Observation and Proposal markdown is part of the shipped product

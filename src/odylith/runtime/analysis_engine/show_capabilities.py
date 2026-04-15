@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 import subprocess
 import sys
 from collections import Counter
@@ -331,6 +332,26 @@ def _path_to_component(file_path: str, components: list[ComponentSuggestion]) ->
 # Output formatting
 # ---------------------------------------------------------------------------
 
+def _backlog_detail_payload(ws: WorkstreamSuggestion) -> dict[str, str]:
+    return {
+        "problem": ws.description,
+        "customer": "Maintainers and operators deciding whether this repo slice needs governed follow-up.",
+        "opportunity": f"Turn {ws.title} into tracked Radar truth with explicit validation and ownership.",
+        "product-view": "Odylith show should only create backlog records that are immediately usable, not title-only placeholders.",
+        "success-metrics": (
+            f"- Radar contains a grounded workstream for {ws.title}.\n"
+            "- A maintainer can bind or decline the workstream without rewriting its core narrative."
+        ),
+    }
+
+
+def _backlog_create_command(ws: WorkstreamSuggestion) -> str:
+    args = ["odylith", "backlog", "create", "--title", ws.title]
+    for key, value in _backlog_detail_payload(ws).items():
+        args.extend([f"--{key}", value])
+    return " ".join(shlex.quote(item) for item in args)
+
+
 def format_text(result: ShowResult) -> str:
     """Render as clean, scannable Odylith output. Every line earns its place."""
     lines: list[str] = []
@@ -379,7 +400,7 @@ def format_text(result: ShowResult) -> str:
         for ws in result.workstreams:
             lines.append(f"- **{ws.title}**")
             lines.append(f"  {ws.description}")
-            lines.append(f'  `odylith backlog create --title "{ws.title}"`')
+            lines.append(f"  `{_backlog_create_command(ws)}`")
         lines.append("")
 
     # --- Diagrams ---
@@ -402,7 +423,7 @@ def format_text(result: ShowResult) -> str:
             sev = f" [{issue.severity}]" if issue.severity != "medium" else ""
             lines.append(f"- **{issue.title}**{sev}")
             lines.append(f"  {issue.detail}")
-            lines.append(f'  `odylith bug capture "{issue.title}"`')
+            lines.append("  Gather grounded failure evidence first, then run `odylith bug capture --help`.")
         lines.append("")
 
     # --- Footer ---
@@ -510,8 +531,10 @@ def _apply_all(*, repo_root: Path, result: ShowResult) -> int:
     created, errors = [], []
     for ws in result.workstreams:
         try:
-            r = subprocess.run(["odylith", "backlog", "create", "--repo-root", str(repo_root), "--title", ws.title],
-                               capture_output=True, text=True, cwd=str(repo_root), timeout=30)
+            command = ["odylith", "backlog", "create", "--repo-root", str(repo_root), "--title", ws.title]
+            for key, value in _backlog_detail_payload(ws).items():
+                command.extend([f"--{key}", value])
+            r = subprocess.run(command, capture_output=True, text=True, cwd=str(repo_root), timeout=30)
             (created if r.returncode == 0 else errors).append(f"Workstream: {ws.title}")
         except Exception as exc:
             errors.append(f"Workstream '{ws.title}': {exc}")

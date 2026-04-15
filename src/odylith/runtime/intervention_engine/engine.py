@@ -9,6 +9,7 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance import bug_authoring
 from odylith.runtime.governance import workstream_inference
 from odylith.runtime.intervention_engine.contract import CaptureAction
 from odylith.runtime.intervention_engine.contract import CaptureBundle
@@ -714,6 +715,38 @@ def _entry_field(entry: Any, field: str) -> Any:
     return getattr(entry, field, None)
 
 
+def _radar_create_payload(*, observation: ObservationEnvelope, title: str) -> dict[str, str]:
+    prompt_surface = _joined_prompt_surface(observation)
+    prompt_excerpt = _normalize_string(observation.prompt_excerpt)
+    changed_paths = [path for path in _normalize_string_list(observation.changed_paths)[:3] if path]
+    path_clause = f" Touched paths include {', '.join(changed_paths)}." if changed_paths else ""
+    problem_seed = prompt_excerpt or prompt_surface or title
+    return {
+        "title": title,
+        "problem": (
+            f"The active conversation is asking Odylith to govern {title}, but no existing Radar "
+            f"workstream anchors that slice yet. Prompt evidence: {problem_seed}.{path_clause}"
+        ),
+        "customer": (
+            "Maintainers and coding agents who need the live decision, touched paths, "
+            "and follow-on validation to survive beyond this one chat turn."
+        ),
+        "opportunity": (
+            f"Capture {title} as explicit Radar truth while the prompt and file evidence are still warm, "
+            "so implementation can bind to one governed record instead of reconstructing intent later."
+        ),
+        "product_view": (
+            "A proposal-applied Radar workstream must be useful immediately: it should explain why "
+            "the work exists, who needs it, and how a later maintainer can prove it."
+        ),
+        "success_metrics": (
+            f"- Radar creates a non-placeholder workstream for {title}.\n"
+            "- The record includes grounded problem, customer, opportunity, product view, and success metrics.\n"
+            "- A follow-on technical plan can bind to the workstream without rewriting its core detail."
+        ),
+    }
+
+
 def _matching_component_by_title_or_id(*, lookup: Mapping[str, Any], title: str, target_id: str) -> str:
     normalized_target = _normalize_string(target_id)
     if normalized_target in lookup.get("components", {}):
@@ -787,7 +820,7 @@ def _proposal_actions(
                 rationale="There is no existing workstream anchor for this governed slice yet, and the conversation has enough signal to make the workstream explicit.",
                 apply_supported=True,
                 cli_command="odylith backlog create",
-                payload={"title": title},
+                payload=_radar_create_payload(observation=observation, title=title),
             )
         )
 
@@ -873,6 +906,21 @@ def _proposal_actions(
             )
         )
     elif bool(signal_profile.get("has_bug_hints")):
+        casebook_payload = {"title": title, "component": matched_component_id}
+        missing_capture_fields = bug_authoring.missing_capture_requirements(
+            title=title,
+            component=matched_component_id,
+            payload=casebook_payload,
+        )
+        capture_rationale = (
+            "The conversation is describing failure memory or regression risk that is not yet preserved in Casebook."
+        )
+        if missing_capture_fields:
+            capture_rationale = (
+                "The conversation is describing failure memory or regression risk, but Odylith does not yet have enough "
+                "grounded bug-capture evidence to create the Casebook record automatically."
+            )
+            casebook_payload["missing_capture_fields"] = missing_capture_fields
         actions.append(
             CaptureAction(
                 surface="casebook",
@@ -880,10 +928,10 @@ def _proposal_actions(
                 target_kind="bug",
                 target_id="",
                 title=title,
-                rationale="The conversation is describing failure memory or regression risk that is not yet preserved in Casebook.",
-                apply_supported=True,
+                rationale=capture_rationale,
+                apply_supported=not missing_capture_fields,
                 cli_command="odylith bug capture",
-                payload={"title": title, "component": matched_component_id},
+                payload=casebook_payload,
             )
         )
     return actions

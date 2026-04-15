@@ -9,6 +9,21 @@ from odylith.runtime.governance import component_authoring
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 
+def _grounded_backlog_args() -> list[str]:
+    return [
+        "--problem",
+        "Radar needs a real grounded workstream record.",
+        "--customer",
+        "Operators reviewing Radar detail before implementation begins.",
+        "--opportunity",
+        "Create the backlog item without generic boilerplate.",
+        "--product-view",
+        "The backlog should look like governed product truth on first render.",
+        "--success-metrics",
+        "- The record is grounded.\n- Radar refresh picks it up.",
+    ]
+
+
 def _seed_backlog_repo(root: Path) -> None:
     idea_dir = root / "odylith" / "radar" / "source" / "ideas" / "2026-04"
     idea_dir.mkdir(parents=True, exist_ok=True)
@@ -114,6 +129,7 @@ def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch) -> 
             str(tmp_path),
             "--title",
             "Fast Radar visibility lane",
+            *_grounded_backlog_args(),
         ]
     )
 

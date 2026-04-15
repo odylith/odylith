@@ -656,7 +656,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         and not report["fields_filled"]
         and not report["conflicts_skipped"]
         and not report["fields_unresolved"]
-        and not report["warnings"]
     ):
         # Keep the previous persisted report stable when a rerun produces no
         # new autofix activity. This preserves the last meaningful report

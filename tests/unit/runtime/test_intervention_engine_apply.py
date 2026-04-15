@@ -59,7 +59,7 @@ def test_apply_rejects_stale_bundle_after_terminal_event(tmp_path: Path) -> None
             host_family="claude",
             turn_phase="post_edit_checkpoint",
             session_id="apply-2",
-            prompt_excerpt="Capture governance bug memory for this regression lane.",
+            prompt_excerpt="Create the governed workstream and registry component for this runtime slice.",
             changed_paths=["src/odylith/runtime/intervention_engine/engine.py"],
         ),
     )
@@ -90,28 +90,37 @@ def test_apply_supported_bundle_is_all_or_nothing_and_emits_capture_applied(
             host_family="codex",
             turn_phase="post_bash_checkpoint",
             session_id="apply-3",
-            prompt_excerpt="Capture governance bug memory for this regression lane.",
+            prompt_excerpt="Create the governed workstream and registry component for this runtime slice.",
             changed_paths=["src/odylith/runtime/intervention_engine/apply.py"],
         ),
     )
 
     monkeypatch.setattr(apply, "_apply_radar_create", lambda **_kwargs: {"idea_id": "B-900"})
     monkeypatch.setattr(apply, "_apply_registry_create", lambda **_kwargs: {"component_id": "regression-lane"})
-    monkeypatch.setattr(apply, "_apply_casebook_create", lambda **_kwargs: {"bug_id": "CB-900"})
 
     result = apply.apply_proposal_bundle(repo_root=tmp_path, payload=bundle)
     events = stream_state.load_recent_intervention_events(repo_root=tmp_path, session_id="apply-3")
 
     assert result["status"] == "applied"
-    assert [row["surface"] for row in result["applied"]] == ["radar", "registry", "casebook"]
+    assert [row["surface"] for row in result["applied"]] == ["radar", "registry"]
     assert result["skipped"] == []
     assert events[-1]["kind"] == "capture_applied"
     assert events[-1]["summary"] == "Odylith Proposal applied."
     assert "Odylith Proposal:" in events[-1]["display_markdown"]
-    assert events[-1]["prompt_excerpt"] == "Capture governance bug memory for this regression lane."
+    assert events[-1]["prompt_excerpt"] == "Create the governed workstream and registry component for this runtime slice."
     assert events[-1]["host_family"] == "codex"
     assert events[-1]["moment_kind"] == bundle["candidate"]["moment"]["kind"]
     assert events[-1]["semantic_signature"] == bundle["proposal"]["semantic_signature"]
+
+
+def test_radar_apply_requires_grounded_workstream_detail(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    with pytest.raises(ValueError, match="Radar create requires grounded workstream detail"):
+        apply._apply_radar_create(  # noqa: SLF001
+            repo_root=tmp_path,
+            action={"payload": {"title": "Missing Detail Workstream"}},
+        )
 
 
 def test_decline_preserves_prompt_context_in_terminal_event(tmp_path: Path) -> None:
@@ -149,7 +158,7 @@ def test_apply_can_recover_latest_event_by_key_when_payload_session_is_missing(
             host_family="codex",
             turn_phase="post_bash_checkpoint",
             session_id="apply-5",
-            prompt_excerpt="Capture governance bug memory for this regression lane.",
+            prompt_excerpt="Create the governed workstream and registry component for this runtime slice.",
             changed_paths=["src/odylith/runtime/intervention_engine/apply.py"],
         ),
     )
@@ -172,8 +181,27 @@ def test_apply_can_recover_latest_event_by_key_when_payload_session_is_missing(
 
     monkeypatch.setattr(apply, "_apply_radar_create", lambda **_kwargs: {"idea_id": "B-901"})
     monkeypatch.setattr(apply, "_apply_registry_create", lambda **_kwargs: {"component_id": "regression-lane"})
-    monkeypatch.setattr(apply, "_apply_casebook_create", lambda **_kwargs: {"bug_id": "CB-901"})
 
     result = apply.apply_proposal_bundle(repo_root=tmp_path, payload=payload)
 
     assert result["status"] == "applied"
+
+
+def test_casebook_create_bundle_stays_preview_only_without_grounded_bug_capture_evidence(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    bundle = engine.build_intervention_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="codex",
+            turn_phase="post_bash_checkpoint",
+            session_id="apply-6",
+            prompt_excerpt="Capture governance bug memory for this regression lane.",
+            changed_paths=["src/odylith/runtime/intervention_engine/apply.py"],
+        ),
+    )
+
+    casebook_action = next(row for row in bundle["proposal"]["actions"] if row["surface"] == "casebook")
+
+    assert bundle["proposal"]["apply_supported"] is False
+    assert casebook_action["apply_supported"] is False
+    assert casebook_action["payload"]["missing_capture_fields"]

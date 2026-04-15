@@ -58,7 +58,7 @@ and chatter can consume without rebuilding divergent summaries.
 - `src/odylith/runtime/surfaces/render_registry_dashboard.py`
 - `src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py`
 - `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`
-- `src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py`
+- `src/odylith/runtime/intervention_engine/delivery_runtime.py`
 
 ## Snapshot Contract
 Delivery snapshots may include:

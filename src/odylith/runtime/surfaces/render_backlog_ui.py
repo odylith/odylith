@@ -82,22 +82,10 @@ _BACKLOG_DETAIL_SHARD_SIZE = 48
 _BACKLOG_DOCUMENT_SHARD_SIZE = 32
 _BACKLOG_SUMMARY_HEAVY_FIELDS = frozenset(
     {
-        "problem",
-        "customer",
-        "opportunity",
-        "founder_pov",
-        "success_metrics",
-        "impacted_parts",
         "idea_file",
-        "idea_href",
         "idea_ui_file",
-        "idea_ui_href",
-        "promoted_to_plan",
         "promoted_to_plan_file",
-        "promoted_to_plan_href",
         "promoted_to_plan_ui_file",
-        "promoted_to_plan_ui_href",
-        "registry_components",
     }
 )
 _TRACEABILITY_INDEX_EDGE_TYPES = frozenset(

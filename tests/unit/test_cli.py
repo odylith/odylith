@@ -45,6 +45,25 @@ def _write_casebook_bug(
     )
 
 
+def _bug_capture_kwargs(**overrides: object) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "reproducibility": "High",
+        "impact": "Maintainers can publish low-evidence bug truth into Casebook.",
+        "environment": "Odylith product repo maintainer mode on branch 2026/freedom/v0.1.11.",
+        "detected_by": "Maintainer review of the rendered Casebook detail after `odylith bug capture`.",
+        "failure_signature": "A newly captured bug renders literal placeholder intake fields instead of grounded evidence.",
+        "trigger_path": "`odylith bug capture --title ...` with only the legacy required flags.",
+        "ownership": "casebook bug-authoring contract",
+        "blast_radius": "Casebook bug truth, shared agent guidance, and automated casebook-create paths.",
+        "slo_sla_impact": "Maintainer release-proof confidence drops because Casebook truth is visibly ungrounded.",
+        "data_risk": "Low product-data risk, high governed-memory trust risk.",
+        "security_compliance": "None directly.",
+        "invariant_violated": "A newly captured bug must not publish placeholder evidence as authoritative Casebook truth.",
+    }
+    payload.update(overrides)
+    return payload
+
+
 def test_bug_capture_help_forwards_backend_flags(capsys) -> None:
     with pytest.raises(SystemExit) as excinfo:
         cli.main(["bug", "capture", "--help"])
@@ -55,6 +74,11 @@ def test_bug_capture_help_forwards_backend_flags(capsys) -> None:
     assert "--title" in output
     assert "--component" in output
     assert "--severity" in output
+    assert "--reproducibility" in output
+    assert "--impact" in output
+    assert "--failure-signature" in output
+    assert "--trigger-path" in output
+    assert "--detected-by" in output
     assert "--dry-run" in output
     assert "--json" in output
 
@@ -80,6 +104,11 @@ def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
     assert excinfo.value.code == 0
     assert "usage: odylith backlog create" in output
     assert "--title" in output
+    assert "--problem" in output
+    assert "--customer" in output
+    assert "--opportunity" in output
+    assert "--product-view" in output
+    assert "--success-metrics" in output
     assert "--priority" in output
     assert "--dry-run" in output
     assert "--json" in output
@@ -219,8 +248,10 @@ def test_bug_capture_rebuilds_multiline_casebook_index_from_source(tmp_path: Pat
         title="Fresh Casebook bug capture stays out of multiline rows",
         component="compass",
         severity="P1",
+        **_bug_capture_kwargs(),
     )
     index_text = (bug_root / "INDEX.md").read_text(encoding="utf-8")
+    created_text = created.bug_path.read_text(encoding="utf-8")
 
     existing_row = (
         "| CB-101 | 2026-04-12 | Existing open bug | P1 | "
@@ -232,6 +263,7 @@ def test_bug_capture_rebuilds_multiline_casebook_index_from_source(tmp_path: Pat
     assert existing_row in index_text
     assert "`src/odylith/runtime/governance/sync_workstream_artifacts.py`,\n| CB-102 |" not in index_text
     assert "## Closed Bugs" in index_text
+    assert "TBD" not in created_text
     assert refresh_calls == [tmp_path]
 
 
@@ -244,6 +276,72 @@ def test_bug_capture_raises_when_casebook_refresh_fails(tmp_path: Path, monkeypa
             title="Refresh failure should not hide stale Casebook state",
             component="casebook",
             severity="P1",
+            **_bug_capture_kwargs(),
+        )
+
+
+def test_bug_capture_rejects_missing_grounded_evidence(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="missing grounded capture fields: --impact"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Low-evidence bug capture should fail closed",
+            component="casebook",
+            severity="P1",
+            **_bug_capture_kwargs(impact=""),
+        )
+
+
+def test_bug_capture_rejects_placeholder_values(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="placeholder-like values are not allowed"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Placeholder values must not pass bug capture",
+            component="casebook",
+            severity="P1",
+            **_bug_capture_kwargs(failure_signature="TBD"),
+        )
+
+
+def test_bug_capture_from_payload_accepts_single_string_references(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        bug_authoring,
+        "_refresh_casebook_surface",
+        lambda *, repo_root: 0,
+    )
+
+    created = bug_authoring.capture_bug_from_payload(
+        repo_root=tmp_path,
+        title="Single-string reference payloads stay intact",
+        component="casebook",
+        severity="P1",
+        payload={
+            **_bug_capture_kwargs(),
+            "code_references": "src/odylith/runtime/governance/bug_authoring.py",
+            "runbook_references": "docs/runbooks/casebook-bug-capture.md",
+        },
+    )
+
+    created_text = created.bug_path.read_text(encoding="utf-8")
+    assert "- Code References: - src/odylith/runtime/governance/bug_authoring.py" in created_text
+    assert "- Runbook References: - docs/runbooks/casebook-bug-capture.md" in created_text
+    assert "- Code References: - s\n- r\n- c" not in created_text
+
+
+def test_bug_capture_from_payload_rejects_non_scalar_grounded_fields(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="`failure_signature` must be a single grounded string value"):
+        bug_authoring.capture_bug_from_payload(
+            repo_root=tmp_path,
+            title="List-valued scalar evidence must fail closed",
+            component="casebook",
+            severity="P1",
+            payload={
+                **_bug_capture_kwargs(),
+                "failure_signature": ["wrong", "shape"],
+            },
+            dry_run=True,
         )
 
 

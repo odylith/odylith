@@ -44,9 +44,16 @@ standup-level summary should be.
   so downstream shells and future surfaces can render the same delightful
   proposal preview without reconstructing it from terse event summaries.
 - `odylith/compass/runtime/codex-stream.v1.jsonl` remains a legacy-compatible
-  input while checked-in and bundled surfaces migrate.
+  local input during stream migration, but it is not shipped in the install
+  bundle.
 - Everything else in `odylith/compass/runtime/` is derived from that stream and
   linked governance sources.
+- The shipped install bundle may carry the Compass shell plus scoped runtime
+  guidance files such as `AGENTS.md` and `CLAUDE.md`, but it must not carry
+  repo-local Compass runtime state such as `agent-stream.v1.jsonl`,
+  `codex-stream.v1.jsonl`, `current.v1.*`, `refresh-state.v1.json`, or
+  `runtime/history/`. The Compass renderer must remove stale bundle mirrors for
+  those files when it refreshes the shell bundle.
 - The standup brief must stay truthful when the live narrator is unavailable.
   Compass uses provider narration first, exact same-packet replay second, and
   an explicit unavailable state otherwise.

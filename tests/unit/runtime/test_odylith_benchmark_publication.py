@@ -90,6 +90,21 @@ def test_render_live_snapshot_markdown_uses_full_product_contract() -> None:
     assert "Current attention families:" in rendered
 
 
+def test_render_live_snapshot_markdown_flags_stale_current_tree_report() -> None:
+    report = _report(
+        profile="proof",
+        claim="full_product_assistance_vs_raw_agent",
+        status="hold",
+        report_id="proof-stale",
+    )
+    report["published_summary"]["current_tree_identity_match"] = False
+
+    rendered = publication.render_live_snapshot_markdown(report)
+
+    assert "This report does not match the current repo tree and is not current-head proof." in rendered
+    assert "The selected report is stale relative to the current repo tree." in rendered
+
+
 def test_render_benchmark_tables_markdown_uses_current_tables() -> None:
     live_report = _report(
         profile="proof",
@@ -154,3 +169,43 @@ def test_write_publication_artifacts_is_content_addressed(tmp_path: Path) -> Non
         diagnostic_report=diagnostic_report,
     )
     assert second_changed == []
+
+
+def test_publication_main_refuses_explicit_stale_report(monkeypatch, tmp_path: Path) -> None:
+    live_report = _report(
+        profile="proof",
+        claim="full_product_assistance_vs_raw_agent",
+        status="provisional_pass",
+        report_id="proof-stale",
+    )
+    diagnostic_report = _report(
+        profile="diagnostic",
+        claim="internal_packet_prompt_diagnostic",
+        status="provisional_pass",
+        report_id="diag-current",
+    )
+    live_path = tmp_path / "live.json"
+    diagnostic_path = tmp_path / "diagnostic.json"
+    live_path.write_text(json.dumps(live_report), encoding="utf-8")
+    diagnostic_path.write_text(json.dumps(diagnostic_report), encoding="utf-8")
+    monkeypatch.setattr(
+        publication.odylith_benchmark_runner,
+        "benchmark_report_matches_current_tree",
+        lambda **kwargs: False,
+    )
+
+    try:
+        publication.main(
+            [
+                "--repo-root",
+                str(tmp_path),
+                "--live-report",
+                str(live_path),
+                "--diagnostic-report",
+                str(diagnostic_path),
+            ]
+        )
+    except ValueError as exc:
+        assert "does not match the current repo tree identity" in str(exc)
+    else:
+        raise AssertionError("expected stale explicit benchmark report publication to fail")

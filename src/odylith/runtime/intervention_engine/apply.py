@@ -23,6 +23,24 @@ def _mapping(value: Any) -> dict[str, Any]:
     return dict(value) if isinstance(value, Mapping) else {}
 
 
+def _required_text_payload(payload: Mapping[str, Any], *, keys: Sequence[str], surface: str) -> dict[str, str]:
+    values: dict[str, str] = {}
+    missing: list[str] = []
+    for key in keys:
+        token = _normalize_string(payload.get(key))
+        if not token:
+            missing.append(key)
+            continue
+        values[key] = token
+    if missing:
+        missing_flags = ", ".join(f"`{item}`" for item in missing)
+        raise ValueError(
+            f"{surface} create requires grounded workstream detail before apply; "
+            f"missing fields: {missing_flags}"
+        )
+    return values
+
+
 def _payload_text(args_payload: str) -> str:
     if _normalize_string(args_payload):
         return str(args_payload)
@@ -81,11 +99,22 @@ def _next_diagram_id(catalog_path: Path) -> str:
 
 
 def _apply_radar_create(*, repo_root: Path, action: Mapping[str, Any]) -> dict[str, Any]:
-    title = _normalize_string(_mapping(action.get("payload")).get("title")) or _normalize_string(action.get("title")) or "Governed Observation"
+    payload = _mapping(action.get("payload"))
+    title = _normalize_string(payload.get("title")) or _normalize_string(action.get("title")) or "Governed Observation"
+    detail = _required_text_payload(
+        payload,
+        keys=("problem", "customer", "opportunity", "product_view", "success_metrics"),
+        surface="Radar",
+    )
     args = SimpleNamespace(
         repo_root=str(repo_root),
         backlog_index="odylith/radar/source/INDEX.md",
         ideas_root="odylith/radar/source/ideas",
+        problem=detail["problem"],
+        customer=detail["customer"],
+        opportunity=detail["opportunity"],
+        product_view=detail["product_view"],
+        success_metrics=detail["success_metrics"],
         priority="P1",
         commercial_value=3,
         product_impact=4,
@@ -138,11 +167,25 @@ def _apply_registry_create(*, repo_root: Path, action: Mapping[str, Any]) -> dic
 
 def _apply_casebook_create(*, repo_root: Path, action: Mapping[str, Any]) -> dict[str, Any]:
     payload = _mapping(action.get("payload"))
-    return bug_authoring.capture_bug(
+    title = _normalize_string(payload.get("title")) or _normalize_string(action.get("title")) or "Governed Observation"
+    component = _normalize_string(payload.get("component"))
+    missing = bug_authoring.missing_capture_requirements(
+        title=title,
+        component=component,
+        payload=payload,
+    )
+    if missing:
+        missing_flags = ", ".join(f"`{item}`" for item in missing)
+        raise ValueError(
+            "Casebook create requires grounded bug-capture evidence before apply; "
+            f"missing or placeholder fields: {missing_flags}"
+        )
+    return bug_authoring.capture_bug_from_payload(
         repo_root=repo_root,
-        title=_normalize_string(payload.get("title")) or _normalize_string(action.get("title")) or "Governed Observation",
-        component=_normalize_string(payload.get("component")),
+        title=title,
+        component=component,
         severity="P2",
+        payload=payload,
         dry_run=False,
     ).as_dict()
 

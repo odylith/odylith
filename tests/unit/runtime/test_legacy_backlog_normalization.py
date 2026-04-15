@@ -28,7 +28,10 @@ _SECTIONS = (
 
 
 def _idea_text(*, idea_id: str, title: str, founder_override: str) -> str:
-    body_sections = "\n\n".join([f"## {section}\nDetails." for section in _SECTIONS])
+    body_sections = "\n\n".join(
+        f"## {section}\nGrounded fixture coverage for {section.lower()} in this synthetic workstream."
+        for section in _SECTIONS
+    )
     return (
         "status: queued\n\n"
         f"idea_id: {idea_id}\n\n"

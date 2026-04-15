@@ -559,6 +559,73 @@ def test_render_backlog_ui_uses_shared_workstream_button_contract_for_workstream
     ) in html
 
 
+def test_render_backlog_ui_routes_topology_diagram_ids_through_shared_identifier_chip_contract() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert "class=\"chip chip-link entity-id-chip chip-topology-diagram\"" in html
+
+
+def test_backlog_summary_entry_keeps_fail_closed_detail_fields() -> None:
+    summary = render_backlog_ui._build_backlog_summary_entry(
+        {
+            "idea_id": "B-073",
+            "title": "Runtime detail shape",
+            "problem": "Runtime detail rows must expose renderer-ready problem text.",
+            "customer": "Operators opening Radar detail for a populated workstream.",
+            "opportunity": "Keep static summary data useful when runtime detail is unavailable.",
+            "founder_pov": "Radar should never collapse populated source truth into hollow detail.",
+            "success_metrics": "- B-073 renders its workstream details.\n- Fallback detail remains populated.",
+            "impacted_parts": "radar, context-engine",
+            "idea_file": "odylith/radar/source/ideas/2026-04/b-073.md",
+            "idea_href": "source/ideas/2026-04/b-073.md",
+            "idea_ui_file": "odylith/radar/radar.html",
+            "idea_ui_href": "radar.html?view=spec&workstream=B-073",
+            "promoted_to_plan": "odylith/technical-plans/in-progress/b-073.md",
+            "promoted_to_plan_file": "odylith/technical-plans/in-progress/b-073.md",
+            "promoted_to_plan_href": "technical-plans/in-progress/b-073.md",
+            "promoted_to_plan_ui_file": "odylith/radar/radar.html",
+            "promoted_to_plan_ui_href": "radar.html?view=plan&workstream=B-073",
+            "registry_components": [{"component_id": "radar", "name": "Radar"}],
+        }
+    )
+
+    assert summary["problem"] == "Runtime detail rows must expose renderer-ready problem text."
+    assert summary["customer"] == "Operators opening Radar detail for a populated workstream."
+    assert summary["opportunity"] == "Keep static summary data useful when runtime detail is unavailable."
+    assert summary["founder_pov"] == "Radar should never collapse populated source truth into hollow detail."
+    assert "- B-073 renders its workstream details." in str(summary["success_metrics"])
+    assert summary["impacted_parts"] == "radar, context-engine"
+    assert summary["idea_href"] == "source/ideas/2026-04/b-073.md"
+    assert summary["idea_ui_href"] == "radar.html?view=spec&workstream=B-073"
+    assert summary["promoted_to_plan"] == "odylith/technical-plans/in-progress/b-073.md"
+    assert summary["promoted_to_plan_href"] == "technical-plans/in-progress/b-073.md"
+    assert summary["promoted_to_plan_ui_href"] == "radar.html?view=plan&workstream=B-073"
+    assert summary["registry_components"] == [{"component_id": "radar", "name": "Radar"}]
+    assert "idea_file" not in summary
+    assert "idea_ui_file" not in summary
+    assert "promoted_to_plan_file" not in summary
+    assert "promoted_to_plan_ui_file" not in summary
+
+
+def test_render_backlog_ui_right_aligns_age_and_exec_row_chips() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert ".row-meta {" in html
+    assert ".row-chips-end {" in html
+    assert '<div class="row-meta">' in html
+    assert '<div class="row-chips row-chips-end">' in html
+    assert '<span class="chip">Age ${escapeHtml(ageLabel)}</span>' in html
+    assert '<span class="chip">Exec ${escapeHtml(executionDays)}</span>' in html
+
+
+def test_render_backlog_ui_moves_status_and_release_labels_into_right_aligned_footer_row() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert 'const footerChips = `${waveChips}${typeChips}${stageChip}${executionChip}${releaseChip}`;' in html
+    assert '<div class="row-foot">' in html
+    assert '${footerChips ? `<div class="row-chips row-chips-end">${footerChips}</div>` : ""}' in html
+
+
 def test_render_backlog_ui_topology_board_does_not_render_selected_focus_strip() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 

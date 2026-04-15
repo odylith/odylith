@@ -153,6 +153,14 @@ def test_changed_paths_and_prompt_upgrade_to_card_and_rendered_proposal(tmp_path
     assert 'To apply, say "apply this proposal".' in bundle["proposal"]["markdown_text"]
     assert "Confirm:" not in bundle["proposal"]["markdown_text"]
     assert "\n- Radar:" in bundle["proposal"]["markdown_text"]
+    radar_action = next(row for row in bundle["proposal"]["actions"] if row["surface"] == "radar")
+    assert radar_action["apply_supported"] is True
+    assert radar_action["payload"]["title"]
+    assert radar_action["payload"]["problem"]
+    assert radar_action["payload"]["customer"]
+    assert radar_action["payload"]["opportunity"]
+    assert radar_action["payload"]["product_view"]
+    assert radar_action["payload"]["success_metrics"]
     assert "One clean governed bundle is ready to review" not in bundle["proposal"]["markdown_text"]
 
 

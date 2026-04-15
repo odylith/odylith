@@ -53,7 +53,10 @@ def _status_sentence(summary: Mapping[str, Any]) -> str:
     status = str(summary.get("status", "")).strip() or "unknown"
     report_id = str(summary.get("report_id", "")).strip() or "-"
     generated_utc = str(summary.get("generated_utc", "")).strip() or "-"
-    return f"Current report: `{report_id}` from `{generated_utc}` with status `{status}`."
+    sentence = f"Current report: `{report_id}` from `{generated_utc}` with status `{status}`."
+    if summary.get("current_tree_identity_match") is False:
+        sentence += " This report does not match the current repo tree and is not current-head proof."
+    return sentence
 
 
 def _profile_sentence(summary: Mapping[str, Any]) -> str:
@@ -134,6 +137,15 @@ def _status_block(summary: Mapping[str, Any]) -> list[str]:
         if isinstance(summary.get("weak_families"), list) and str(token).strip()
     ]
     lines = ["## Publication Read", ""]
+    if summary.get("current_tree_identity_match") is False:
+        lines.extend(
+            [
+                "The selected report is stale relative to the current repo tree.",
+                "- current-tree identity match: `False`",
+                "- publication should be refreshed from a fresh current-head proof report before making release claims",
+                "",
+            ]
+        )
     if hard_gate_failures:
         lines.append("There are hard-gate blockers on this report.")
         lines.extend(f"- {label}" for label in hard_gate_failures)
@@ -405,10 +417,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     live_report = _load_report(live_report_path)
     diagnostic_report = _load_report(diagnostic_report_path)
-    if not args.live_report:
-        _validate_selected_report(repo_root=repo_root, path=live_report_path, report=live_report)
-    if not args.diagnostic_report:
-        _validate_selected_report(repo_root=repo_root, path=diagnostic_report_path, report=diagnostic_report)
+    _validate_selected_report(repo_root=repo_root, path=live_report_path, report=live_report)
+    _validate_selected_report(repo_root=repo_root, path=diagnostic_report_path, report=diagnostic_report)
     changed = write_publication_artifacts(
         repo_root=repo_root,
         live_report=live_report,

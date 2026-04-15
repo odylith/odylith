@@ -127,10 +127,56 @@ _HANDLER_CASES = [
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
     },
     {
+        "path": ("compass", "refresh"),
+        "argv": lambda root: ["compass", "refresh", f"--repo-root={root}", "--status"],
+        "handler": "_cmd_compass_refresh",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "compass_command", "") == "refresh"
+        and bool(getattr(args, "status", False)),
+    },
+    {
+        "path": ("compass", "deep-refresh"),
+        "argv": lambda root: ["compass", "deep-refresh", f"--repo-root={root}", "--force-brief"],
+        "handler": "_cmd_compass_deep_refresh",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "compass_command", "") == "deep-refresh"
+        and bool(getattr(args, "force_brief", False)),
+    },
+    {
+        "path": ("atlas", "refresh"),
+        "argv": lambda root: ["atlas", "refresh", f"--repo-root={root}", "--dry-run"],
+        "handler": "_cmd_atlas_refresh",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and bool(getattr(args, "dry_run", False)),
+    },
+    {
         "path": ("backlog", "create"),
         "argv": lambda root: ["backlog", "create", f"--repo-root={root}"],
         "handler": "_cmd_backlog",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root) and getattr(args, "backlog_command", "") == "create",
+    },
+    {
+        "path": ("show",),
+        "argv": lambda root: ["show", f"--repo-root={root}", "--json"],
+        "handler": "_cmd_show",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and list(getattr(args, "forwarded", [])) == ["--json"],
+    },
+    {
+        "path": ("component", "register"),
+        "argv": lambda root: ["component", "register", f"--repo-root={root}", "--id", "registry-refresh"],
+        "handler": "_cmd_component",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "component_command", "") == "register"
+        and list(getattr(args, "forwarded", [])) == ["--id", "registry-refresh"],
+    },
+    {
+        "path": ("bug", "capture"),
+        "argv": lambda root: ["bug", "capture", f"--repo-root={root}", "--title", "Fixture bug"],
+        "handler": "_cmd_bug",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "bug_command", "") == "capture"
+        and list(getattr(args, "forwarded", [])) == ["--title", "Fixture bug"],
     },
     {
         "path": ("release", "list"),
@@ -251,6 +297,8 @@ for governance_command in (
     "version-truth",
     "validate-guidance-portability",
     "validate-plan-traceability",
+    "intervention-preview",
+    "capture-apply",
 ):
     _HANDLER_CASES.append(
         {
@@ -344,6 +392,25 @@ for claude_command in (
     )
 
 
+_OWNED_SURFACE_REFRESH_CASES = [
+    {
+        "path": ("radar", "refresh"),
+        "argv": lambda root: ["radar", "refresh", f"--repo-root={root}", "--dry-run"],
+        "surface": "radar",
+    },
+    {
+        "path": ("registry", "refresh"),
+        "argv": lambda root: ["registry", "refresh", f"--repo-root={root}", "--dry-run"],
+        "surface": "registry",
+    },
+    {
+        "path": ("casebook", "refresh"),
+        "argv": lambda root: ["casebook", "refresh", f"--repo-root={root}", "--dry-run"],
+        "surface": "casebook",
+    },
+]
+
+
 @pytest.mark.parametrize("case", _HANDLER_CASES, ids=lambda case: " ".join(case["path"]))
 def test_cli_handler_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str, object]) -> None:
     captured: dict[str, object] = {}
@@ -359,6 +426,27 @@ def test_cli_handler_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str
     assert rc == 91
     assert "args" in captured
     assert case["check"](captured["args"], tmp_path)
+
+
+@pytest.mark.parametrize("case", _OWNED_SURFACE_REFRESH_CASES, ids=lambda case: " ".join(case["path"]))
+def test_cli_owned_surface_refresh_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str, object]) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_owned_refresh(args: argparse.Namespace, *, surface: str) -> int:
+        captured["args"] = args
+        captured["surface"] = surface
+        return 94
+
+    monkeypatch.setattr(cli, "_cmd_owned_surface_refresh", fake_owned_refresh)
+
+    rc = cli.main(case["argv"](tmp_path))
+
+    assert rc == 94
+    assert "args" in captured
+    assert captured["surface"] == case["surface"]
+    args = captured["args"]
+    assert getattr(args, "repo_root", "") == str(tmp_path)
+    assert bool(getattr(args, "dry_run", False))
 
 
 _SHORTCUT_CASES = [
@@ -581,6 +669,7 @@ def test_cli_dispatch_matrix_covers_every_parser_leaf() -> None:
     parser = cli.build_parser()
     leaf_paths = _parser_leaf_paths(parser)
     covered_paths = {tuple(case["path"]) for case in _HANDLER_CASES}
+    covered_paths.update(tuple(case["path"]) for case in _OWNED_SURFACE_REFRESH_CASES)
     covered_paths.update(tuple(case["path"]) for case in _SHORTCUT_CASES)
     covered_paths.update(tuple(case["path"]) for case in _DOWNSTREAM_ARGV_CASES)
 
