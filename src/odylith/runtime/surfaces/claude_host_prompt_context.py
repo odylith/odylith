@@ -21,6 +21,8 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.surfaces import claude_host_shared
 
 
@@ -60,27 +62,70 @@ def _context_summary(output: str, ref: str) -> str:
     return f"Odylith anchor {ref}: context resolved."
 
 
+def _prompt_conversation_bundle(
+    *,
+    repo_root: Path | str,
+    prompt: str,
+    session_id: str = "",
+    bundle_override: Mapping[str, Any] | None = None,
+    intervention_bundle_override: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    if isinstance(bundle_override, Mapping):
+        return dict(bundle_override)
+    observation = intervention_surface_runtime.observation_envelope(
+        host_family="claude",
+        turn_phase="prompt_submit",
+        session_id=session_id,
+        prompt_excerpt=prompt,
+    )
+    if isinstance(intervention_bundle_override, Mapping):
+        return {"intervention_bundle": dict(intervention_bundle_override)}
+    return conversation_surface.build_conversation_bundle(
+        repo_root=Path(repo_root).expanduser().resolve(),
+        observation=observation,
+    )
+
+
 def render_prompt_context(
     *,
     repo_root: Path | str = ".",
     prompt: str,
+    session_id: str = "",
     context_output_override: str | None = None,
+    conversation_bundle_override: Mapping[str, Any] | None = None,
+    intervention_bundle_override: Mapping[str, Any] | None = None,
 ) -> str:
     """Pure renderer used by the live hook and by tests."""
     refs = list(dict.fromkeys(_ANCHOR_RE.findall(str(prompt or ""))))
-    if not refs:
-        return ""
-    ref = refs[0]
-    if context_output_override is not None:
-        return _context_summary(context_output_override, ref)
-    completed = claude_host_shared.run_odylith(
-        project_dir=repo_root,
-        args=["context", "--repo-root", ".", ref],
-        timeout=20,
+    bundle = _prompt_conversation_bundle(
+        repo_root=repo_root,
+        prompt=prompt,
+        session_id=session_id,
+        bundle_override=conversation_bundle_override,
+        intervention_bundle_override=intervention_bundle_override,
     )
-    if completed is None:
-        return ""
-    return _context_summary(completed.stdout or "", ref)
+    live_text = conversation_surface.render_live_text(
+        bundle,
+        markdown=False,
+        include_proposal=False,
+        prefer_ambient_over_teaser=True,
+    )
+    parts: list[str] = []
+    if refs:
+        ref = refs[0]
+        if context_output_override is not None:
+            parts.append(_context_summary(context_output_override, ref))
+        else:
+            completed = claude_host_shared.run_odylith(
+                project_dir=repo_root,
+                args=["context", "--repo-root", ".", ref],
+                timeout=20,
+            )
+            if completed is not None:
+                parts.append(_context_summary(completed.stdout or "", ref))
+    if live_text:
+        parts.append(live_text)
+    return "\n\n".join(part for part in parts if part).strip()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -96,13 +141,27 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(list(argv or sys.argv[1:]))
     repo_root = claude_host_shared.resolve_repo_root(args.repo_root)
-    if not claude_host_shared.project_launcher(repo_root).is_file():
-        return 0
     raw = args.payload if args.payload else None
     payload = claude_host_shared.load_payload(raw)
     prompt = str(payload.get("prompt", "")).strip()
-    summary = render_prompt_context(repo_root=repo_root, prompt=prompt)
+    session_id = claude_host_shared.hook_session_id(payload)
+    bundle = _prompt_conversation_bundle(
+        repo_root=repo_root,
+        prompt=prompt,
+        session_id=session_id,
+    )
+    summary = render_prompt_context(
+        repo_root=repo_root,
+        prompt=prompt,
+        session_id=session_id,
+        conversation_bundle_override=bundle,
+    )
     if summary:
+        conversation_surface.append_intervention_events(
+            repo_root=Path(repo_root).expanduser().resolve(),
+            bundle=bundle,
+            include_proposal=False,
+        )
         sys.stdout.write(summary + "\n")
     return 0
 

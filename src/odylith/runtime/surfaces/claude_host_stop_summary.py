@@ -16,10 +16,124 @@ payload never breaks Claude Code's stop dispatch.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
+from typing import Any
+from typing import Mapping
 
+from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import conversation_runtime
+from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
+from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 from odylith.runtime.surfaces import claude_host_shared
+
+
+def _stop_intervention_bundle(
+    *,
+    repo_root: Path,
+    payload: Mapping[str, Any],
+    bundle_override: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    if isinstance(bundle_override, Mapping):
+        return dict(bundle_override)
+    summary = claude_host_shared.meaningful_stop_summary(
+        str(payload.get("last_assistant_message", ""))
+    )
+    if not summary:
+        return {}
+    session_id = claude_host_shared.hook_session_id(payload)
+    prompt_excerpt = intervention_surface_runtime.recent_session_prompt_excerpt(
+        repo_root=repo_root,
+        session_id=session_id,
+    )
+    changed_paths = intervention_surface_runtime.recent_session_changed_paths(
+        repo_root=repo_root,
+        session_id=session_id,
+    )
+    workstreams = intervention_surface_runtime.recent_session_ids(
+        repo_root=repo_root,
+        session_id=session_id,
+        field="workstreams",
+    )
+    components = intervention_surface_runtime.recent_session_ids(
+        repo_root=repo_root,
+        session_id=session_id,
+        field="components",
+    )
+    grounded = bool(prompt_excerpt or summary or changed_paths or workstreams or components)
+    request = orchestrator.OrchestrationRequest(
+        prompt=prompt_excerpt or summary,
+        candidate_paths=changed_paths,
+        workstreams=workstreams,
+        components=components,
+        needs_write=bool(changed_paths),
+        evidence_cone_grounded=grounded,
+        latency_sensitive=True,
+        task_kind="governance_closeout",
+        phase="closeout",
+        session_id=session_id,
+        context_signals={"host_family": "claude"},
+    )
+    decision = orchestrator.OrchestrationDecision(
+        mode="local_only",
+        decision_id=f"stop-summary-{session_id or 'claude'}",
+        delegate=False,
+        parallel_safety="local_only",
+        task_family="governance_closeout",
+        confidence=2,
+        rationale="Claude stop-summary surface",
+        refusal_stage="",
+        manual_review_recommended=False,
+        merge_owner="main_thread",
+    )
+    return conversation_runtime.compose_conversation_bundle(
+        request=request,
+        decision=decision,
+        adoption={
+            "grounded": grounded,
+            "route_ready": grounded,
+            "grounded_delegate": False,
+            "requires_widening": False,
+            "narrowing_required": False,
+        },
+        repo_root=repo_root,
+        final_changed_paths=changed_paths,
+        changed_path_source="session_event_history" if changed_paths else "",
+        turn_phase="stop_summary",
+        assistant_summary=summary,
+    )
+
+
+def render_stop_summary(
+    *,
+    repo_root: Path,
+    payload: Mapping[str, Any],
+    conversation_bundle_override: Mapping[str, Any] | None = None,
+) -> str:
+    bundle = _stop_intervention_bundle(
+        repo_root=repo_root,
+        payload=payload,
+        bundle_override=conversation_bundle_override,
+    )
+    if not bundle:
+        return ""
+    parts: list[str] = []
+    live_text = conversation_surface.render_live_text(
+        bundle,
+        markdown=True,
+        include_proposal=False,
+    )
+    closeout_text = conversation_surface.render_closeout_text(
+        bundle,
+        markdown=True,
+    )
+    for part in (live_text, closeout_text):
+        token = str(part or "").strip()
+        if token and token not in parts:
+            parts.append(token)
+    return "\n\n".join(parts).strip()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -50,6 +164,20 @@ def main(argv: list[str] | None = None) -> int:
         summary=summary,
         workstreams=workstreams,
     )
+    bundle = _stop_intervention_bundle(repo_root=repo_root, payload=payload)
+    rendered = render_stop_summary(
+        repo_root=repo_root,
+        payload=payload,
+        conversation_bundle_override=bundle,
+    )
+    if bundle:
+        conversation_surface.append_intervention_events(
+            repo_root=repo_root,
+            bundle=bundle,
+            include_proposal=False,
+        )
+    if rendered:
+        sys.stdout.write(json.dumps(host_surface_runtime.stop_payload(system_message=rendered)))
     return 0
 
 

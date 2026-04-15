@@ -14,6 +14,7 @@ from odylith.runtime.surfaces import dashboard_template_runtime
 from odylith.runtime.surfaces import tooling_dashboard_cheatsheet_presenter
 from odylith.runtime.surfaces import tooling_dashboard_execution_governance_presenter
 from odylith.runtime.surfaces import tooling_dashboard_release_presenter
+from odylith.runtime.surfaces import tooling_dashboard_system_status_presenter
 from odylith.runtime.surfaces import tooling_dashboard_template_context
 from odylith.runtime.surfaces import tooling_dashboard_welcome_presenter
 
@@ -1088,7 +1089,9 @@ def _telemetry_index_rows_html(
 
 
 def build_odylith_drawer_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
-    """Build a compact structured Odylith drawer contract for shell chart hydration."""
+    """Telemetry drawer removed from the shell contract."""
+
+    return {}
 
     odylith_switch = _odylith_switch(payload)
     if odylith_switch and not bool(odylith_switch.get("enabled", True)):
@@ -2314,6 +2317,8 @@ def _render_odylith_chart_fallback_for_drawer(chart_key: str, drawer_payload: Ma
 
 
 def _render_curated_system_status_html(drawer_payload: Mapping[str, Any]) -> str:
+    return ""
+
     if str(drawer_payload.get("status", "")).strip() == "disabled":
         note = str(drawer_payload.get("note", "")).strip() or "Odylith runtime telemetry is not available for this comparison run."
         return (
@@ -2797,9 +2802,16 @@ def build_template_context(payload: Mapping[str, Any]) -> tooling_dashboard_temp
 
     maintainer_notes_html = _render_maintainer_notes_html(_coerce_maintainer_notes(payload) or _default_maintainer_notes())
     cheatsheet_html = tooling_dashboard_cheatsheet_presenter.render_agent_cheatsheet_html(payload)
+    system_status_html = tooling_dashboard_system_status_presenter.render_system_status_html(
+        payload,
+        odylith_switch=_odylith_switch(payload),
+        build_drawer_payload=lambda _payload: {},
+        render_curated_system_status_html=lambda _payload: "",
+    )
     return tooling_dashboard_template_context.build_template_context(
         payload,
         welcome_html=_render_welcome_state_html(payload),
+        system_status_html=system_status_html,
         maintainer_notes_html=maintainer_notes_html,
         cheatsheet_html=cheatsheet_html,
     )

@@ -18,7 +18,8 @@ odylith radar refresh --repo-root .
 odylith registry refresh --repo-root .
 odylith casebook refresh --repo-root .
 odylith atlas refresh --repo-root . --atlas-sync
-odylith compass refresh --repo-root . --wait
+odylith compass refresh --repo-root .
+odylith compass deep-refresh --repo-root .
 odylith compass log --repo-root . --kind decision --summary "<summary>"
 odylith compass update --repo-root . --statement "<current execution state>"
 ```

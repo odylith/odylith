@@ -75,7 +75,8 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "odylith registry refresh" in block
     assert "odylith casebook refresh" in block
     assert "odylith atlas refresh" in block
-    assert "odylith compass refresh --wait" in block
+    assert "odylith compass refresh" in block
+    assert "odylith compass deep-refresh" in block
     assert "missing-shim, or fallback-path details implicit" in block
     assert "Keep the default operating lane shared across Codex and Claude Code" in block
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in block
@@ -115,6 +116,8 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "Odylith grounding:" not in block
     assert "Odylith didn't return immediately" not in block
     assert "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`." not in block
+    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in block
+    assert "Stop is the fallback closeout lane, not the primary intervention moment." in block
 
 
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
@@ -126,6 +129,7 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "pinned dogfood is the default proof posture and detached `source-local` is the explicit dev posture" in block
     assert "Keep the default operating lane shared across Codex and Claude Code" in block
     assert "rerender only the owned surface" in block
+    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in block
 
 
 def test_managed_block_matches_repo_root_product_scope_truth() -> None:

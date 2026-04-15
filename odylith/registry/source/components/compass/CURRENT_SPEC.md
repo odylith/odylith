@@ -34,6 +34,15 @@ standup-level summary should be.
 - Compass is both a live stream and a derived runtime snapshot surface.
 - `odylith/compass/runtime/agent-stream.v1.jsonl` is the canonical
   append-oriented local event truth for the surface.
+- Conversation-observation lifecycle events
+  (`intervention_teaser`, `intervention_card`, `capture_proposed`,
+  `capture_applied`, `capture_declined`) live in that same canonical stream;
+  Compass derives pending proposal state from those events instead of keeping
+  a second proposal ledger.
+- That pending-proposal read model is UX-bearing, not just a counter. It must
+  preserve prompt-rooted context plus rich proposal display payloads and status
+  so downstream shells and future surfaces can render the same delightful
+  proposal preview without reconstructing it from terse event summaries.
 - `odylith/compass/runtime/codex-stream.v1.jsonl` remains a legacy-compatible
   input while checked-in and bundled surfaces migrate.
 - Everything else in `odylith/compass/runtime/` is derived from that stream and
@@ -247,6 +256,7 @@ The runtime builder shapes:
 - product-repo self-host posture
 - Tribunal or operator readout slices
 - standup brief inputs and narration substrates
+- intervention and proposal pending-state read models derived from the stream
 
 ### 5. Write snapshots and history
 `refresh_runtime_artifacts(...)` writes current snapshot files, keeps a 15-day
@@ -480,13 +490,14 @@ churn does not drown out meaningful implementation evidence.
   checkpoint summary, or primary narrative infers an anchor workstream, the
   visible chip row must include that workstream and order it first before
   broader linked scope pills are trimmed for space.
-- Minute-scale `full strict live refresh` is retired. Compass does not expose,
-  document, or promise a second deep-refresh mode anymore because the product
-  could not make that contract truthful, cheap, and fast at once. The public
-  Compass command surface is just `odylith compass refresh` now. If an agent
-  or operator asks for a "full" Compass refresh in prose, route that intent to
-  `odylith compass refresh --repo-root . --wait` instead of inventing a second
-  noun, flag, or stricter acceptance bar.
+- Minute-scale `full strict live refresh` is retired. Compass keeps one
+  shell-safe refresh profile and exposes two operator verbs over that same
+  bounded lane: `odylith compass refresh` for the quick cache-first rerender,
+  and `odylith compass deep-refresh` for the same rerender plus standup-brief
+  settlement. If an agent or operator asks for a "full" Compass refresh in
+  prose, route that intent to `odylith compass deep-refresh --repo-root .`
+  instead of inventing another profile, noun, flag, or stricter acceptance
+  bar.
 - When live provider narration is needed for Compass briefs or similar
   refresh-time brief enrichment, detect the active local host and stay on the
   bounded structured local ladder with `medium` reasoning only. On Codex that means
@@ -559,6 +570,15 @@ or component definitions.
 ## What To Change Together
 - New event kind:
   update log/update/watch flows, runtime event ranking, and shell rendering.
+- New intervention or proposal lifecycle event:
+  update stream append helpers, pending-proposal derivation, runtime payload
+  fields, and Compass dashboard rendering together instead of forking a second
+  proposal state store.
+- New intervention lifecycle field such as prompt context, rich markdown, or
+  proposal status:
+  update the stream schema, pending-proposal derivation, runtime payload, and
+  any downstream render consumers together so Compass does not regress back to
+  self-referential or lossy proposal previews.
 - New runtime snapshot field:
   update current snapshot JSON, history serialization, and shell payload
   consumption together.
@@ -603,7 +623,8 @@ or component definitions.
 ## Validation Playbook
 ### Compass
 - `odylith compass refresh --repo-root . --status`
-- `odylith compass refresh --repo-root . --wait`
+- `odylith compass refresh --repo-root .`
+- `odylith compass deep-refresh --repo-root .`
 - `odylith compass update --repo-root . --help`
 - `odylith compass restore-history --repo-root . --help`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_compass_dashboard_base.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_compass_standup_brief_narrator.py`
@@ -655,3 +676,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Elevated no-stock-framing Compass voice to a standing product invariant and required cache revalidation before warmed briefs can replay, so human standup tone survives refresh, reuse, and future narrator changes. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Locked `Release Targets` back to the operator-approved stacked format and prohibited shared shell CSS from reintroducing side-by-side or auto-fit release boards without explicit operator authorization. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Hardened workstream progress truth so Compass counts only execution-relevant checklist sections, shows checklist-only state for active implementation lanes with zero checked execution tasks, and stops narrating those rows as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068); Bug: `CB-087`)
+- 2026-04-14: Added intervention and proposal audit events plus derived pending proposal state so Compass can show the `Odylith Observation` / `Odylith Proposal` lifecycle without inventing a second source of truth. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-14: Hardened Compass pending proposal state so it preserves prompt-rooted context, proposal status, and rich proposal markdown from the intervention lifecycle events instead of collapsing the UX into terse pending-summary strings. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))

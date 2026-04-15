@@ -13,7 +13,9 @@ to refresh governed Odylith surfaces for the current changed slice.
    `./.odylith/bin/odylith radar refresh --repo-root .`,
    `./.odylith/bin/odylith registry refresh --repo-root .`,
    `./.odylith/bin/odylith casebook refresh --repo-root .`,
-   `./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync`, or
-   `./.odylith/bin/odylith compass refresh --repo-root . --wait`.
+   `./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync`,
+   `./.odylith/bin/odylith compass refresh --repo-root .`, or
+   `./.odylith/bin/odylith compass deep-refresh --repo-root .` when the
+   rerender also needs standup-brief settlement.
 4. Report what refreshed, what still needs manual follow-through, and whether
    generated bundle mirrors also changed.

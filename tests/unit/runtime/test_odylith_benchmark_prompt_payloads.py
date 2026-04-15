@@ -755,6 +755,76 @@ def test_merge_heavy_change_keeps_changed_docs_in_focus_payload(tmp_path: Path) 
     ]
 
 
+def test_cross_file_feature_strict_slice_keeps_all_bounded_skill_anchors(tmp_path: Path) -> None:
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=tmp_path,
+        scenario={
+            "family": "cross_file_feature",
+            "changed_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+            ],
+            "required_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+            ],
+        },
+        prompt_payload={
+            "context_packet": {
+                "anchors": {
+                    "explicit_paths": [
+                        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+                    ]
+                }
+            }
+        },
+        packet_source="governance_slice",
+        changed_paths=[
+            "odylith/skills/odylith-subagent-router/SKILL.md",
+            "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+        ],
+        full_payload={},
+    )
+
+    assert payload["strict_boundary"] is True
+    assert set(payload["context_packet"]["anchors"]["explicit_paths"]) == {
+        "odylith/skills/odylith-subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+    }
+    assert any("narrow anchored orchestration slices" in hint for hint in payload["boundary_hints"])
+
+
+def test_validation_heavy_fix_strict_slice_keeps_boundary_hints(tmp_path: Path) -> None:
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=tmp_path,
+        scenario={
+            "family": "validation_heavy_fix",
+            "changed_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/runtime/SUBAGENT_OPERATIONS.md",
+            ],
+            "required_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/runtime/SUBAGENT_OPERATIONS.md",
+            ],
+        },
+        prompt_payload={},
+        packet_source="governance_slice",
+        changed_paths=[
+            "odylith/skills/odylith-subagent-router/SKILL.md",
+            "odylith/runtime/SUBAGENT_OPERATIONS.md",
+        ],
+        full_payload={},
+    )
+
+    assert payload["strict_boundary"] is True
+    assert payload["context_packet"]["anchors"]["explicit_paths"] == [
+        "odylith/skills/odylith-subagent-router/SKILL.md",
+        "odylith/runtime/SUBAGENT_OPERATIONS.md",
+    ]
+    assert any("keep writable changes on the listed runtime and test anchors" in hint for hint in payload["boundary_hints"])
+
+
 def test_component_governance_adds_catalog_sync_boundary_hint(tmp_path: Path) -> None:
     payload = prompt_payloads.supplement_live_prompt_payload(
         repo_root=tmp_path,

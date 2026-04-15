@@ -85,3 +85,162 @@ def test_main_skips_active_stop_hook_payload(monkeypatch, tmp_path: Path) -> Non
 
     assert exit_code == 0
     assert called == []
+
+
+def test_stop_intervention_bundle_uses_recent_prompt_excerpt_not_intervention_summary(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    claude_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="capture_proposed",
+        summary="Odylith Proposal pending.",
+        session_id="claude-stop-1",
+        host_family="claude",
+        intervention_key="iv-claude-stop-1",
+        turn_phase="post_edit_checkpoint",
+        prompt_excerpt="Capture the governed truth from this design conversation.",
+        display_markdown="**Odylith Proposal**",
+    )
+    seen: dict[str, object] = {}
+
+    def _fake_compose_conversation_bundle(**kwargs):  # noqa: ANN001
+        request = kwargs["request"]
+        seen["repo_root"] = kwargs["repo_root"]
+        seen["prompt"] = request.prompt
+        seen["candidate_paths"] = list(request.candidate_paths)
+        seen["session_id"] = request.session_id
+        return {
+            "intervention_bundle": {"ok": True},
+            "closeout_bundle": {"markdown_text": "**Odylith Assist:** kept this grounded."},
+        }
+
+    monkeypatch.setattr(
+        claude_host_stop_summary.conversation_runtime,
+        "compose_conversation_bundle",
+        _fake_compose_conversation_bundle,
+    )
+
+    bundle = claude_host_stop_summary._stop_intervention_bundle(
+        repo_root=tmp_path,
+        payload={
+            "session_id": "claude-stop-1",
+            "last_assistant_message": (
+                "Implemented the stop-summary memory regression fix for B-096 and "
+                "validated the focused runtime hook tests."
+            ),
+        },
+    )
+
+    assert bundle["intervention_bundle"] == {"ok": True}
+    assert seen["prompt"] == (
+        "Capture the governed truth from this design conversation."
+    )
+    assert seen["session_id"] == "claude-stop-1"
+
+
+def test_stop_intervention_bundle_recovers_recent_changed_paths(monkeypatch, tmp_path: Path) -> None:
+    claude_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Observation rendered.",
+        session_id="claude-stop-2",
+        host_family="claude",
+        intervention_key="iv-claude-stop-2",
+        turn_phase="post_edit_checkpoint",
+        prompt_excerpt="Capture the governed truth from this engine session.",
+        artifacts=["src/odylith/runtime/intervention_engine/voice.py"],
+        display_markdown="**Odylith Observation:**",
+    )
+    seen: dict[str, object] = {}
+
+    def _fake_compose_conversation_bundle(**kwargs):  # noqa: ANN001
+        request = kwargs["request"]
+        seen["candidate_paths"] = list(request.candidate_paths)
+        return {"intervention_bundle": {"ok": True}, "closeout_bundle": {}}
+
+    monkeypatch.setattr(
+        claude_host_stop_summary.conversation_runtime,
+        "compose_conversation_bundle",
+        _fake_compose_conversation_bundle,
+    )
+
+    claude_host_stop_summary._stop_intervention_bundle(
+        repo_root=tmp_path,
+        payload={
+            "session_id": "claude-stop-2",
+            "last_assistant_message": (
+                "Implemented the stop-summary changed-path recovery fix for B-096 and "
+                "validated the focused runtime hook tests."
+            ),
+        },
+    )
+
+    assert seen["candidate_paths"] == ["src/odylith/runtime/intervention_engine/voice.py"]
+
+
+def test_render_stop_summary_combines_observation_and_assist(tmp_path: Path) -> None:
+    rendered = claude_host_stop_summary.render_stop_summary(
+        repo_root=tmp_path,
+        payload={"last_assistant_message": "Implemented the engine slice.", "session_id": "claude-stop-3"},
+        conversation_bundle_override={
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "card",
+                    "suppressed_reason": "",
+                    "markdown_text": "**Odylith Observation:** The signal is real.",
+                    "plain_text": "Odylith Observation: The signal is real.",
+                },
+                "proposal": {"eligible": False, "suppressed_reason": ""},
+            },
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept this grounded.",
+                "plain_text": "Odylith Assist: kept this grounded.",
+            },
+        },
+    )
+
+    assert rendered == (
+        "**Odylith Observation:** The signal is real.\n\n"
+        "**Odylith Assist:** kept this grounded."
+    )
+
+
+def test_main_emits_system_message_for_visible_stop_surface(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        claude_host_stop_summary.claude_host_shared,
+        "run_compass_log",
+        lambda **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "session_id": "claude-stop-main",
+                    "last_assistant_message": (
+                        "Implemented the stop-summary visible surface fix for B-096 and "
+                        "validated the focused runtime hook tests."
+                    ),
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        claude_host_stop_summary,
+        "render_stop_summary",
+        lambda **kwargs: "**Odylith Assist:** kept this grounded.",
+    )
+    monkeypatch.setattr(
+        claude_host_stop_summary,
+        "_stop_intervention_bundle",
+        lambda **kwargs: {},
+    )
+    buffer = io.StringIO()
+    monkeypatch.setattr("sys.stdout", buffer)
+
+    exit_code = claude_host_stop_summary.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(buffer.getvalue())
+    assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."

@@ -15,15 +15,27 @@ from typing import Any, Mapping, Sequence
 _DISABLED_TIMEOUT_TOKENS = frozenset({"0", "off", "none", "disabled", "disable", "infinite", "inf", "unbounded"})
 _PROCESS_GROUP_TERMINATION_GRACE_SECONDS = 0.2
 _PROCESS_CAPTURE_POLL_SECONDS = 0.05
-_DEFAULT_LIVE_TIMEOUT_SECONDS = 1200.0
+_DEFAULT_LIVE_TIMEOUT_SECONDS = 300.0
+_PROFILE_DEFAULT_LIVE_TIMEOUT_SECONDS = {
+    "proof": 240.0,
+    "quick": 180.0,
+}
 _MIN_TIMEOUT_SECONDS = 30.0
 _MISSING = object()
 
 
-def _default_live_timeout_policy(scenario: Mapping[str, Any] | None) -> tuple[float | None, str]:
+def _default_live_timeout_policy(
+    scenario: Mapping[str, Any] | None,
+    *,
+    benchmark_profile: str = "",
+) -> tuple[float | None, str]:
     scenario_timeout_seconds = _scenario_live_timeout_seconds(scenario)
     if scenario_timeout_seconds is not None:
         return scenario_timeout_seconds, "scenario_timeout"
+    profile_token = str(benchmark_profile or "").strip().lower()
+    profile_default = _PROFILE_DEFAULT_LIVE_TIMEOUT_SECONDS.get(profile_token)
+    if profile_default is not None:
+        return profile_default, f"{profile_token}_default_live_timeout"
     return _DEFAULT_LIVE_TIMEOUT_SECONDS, "default_live_timeout"
 
 
@@ -51,6 +63,7 @@ def _scenario_live_timeout_seconds(scenario: Mapping[str, Any] | None) -> float 
 def _resolved_live_timeout_budget(
     *,
     scenario: Mapping[str, Any] | None,
+    benchmark_profile: str = "",
     environ: Mapping[str, str] | None = None,
 ) -> tuple[float | None, str]:
     env = dict(os.environ if environ is None else environ)
@@ -59,7 +72,7 @@ def _resolved_live_timeout_budget(
         return None, "env_disabled"
     if env_override is not _MISSING:
         return max(_MIN_TIMEOUT_SECONDS, float(env_override)), "env_override"
-    return _default_live_timeout_policy(scenario)
+    return _default_live_timeout_policy(scenario, benchmark_profile=benchmark_profile)
 
 
 def _validator_timeout_seconds(*, environ: Mapping[str, str] | None = None) -> float | None:

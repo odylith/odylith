@@ -140,7 +140,7 @@ def _governance_requires_architecture_audit(
         "odylith/atlas/",
     )
     high_risk_paths = {
-        "agents-guidelines/ARCHITECTURE.MD",
+        "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
         "agents-guidelines/INVARIANTS.MD",
     }
     return any(

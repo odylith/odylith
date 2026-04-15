@@ -120,7 +120,7 @@ def _status_command() -> str:
 
 
 def _wait_command(*, requested_runtime_mode: str) -> str:
-    argv = ["compass", "refresh", "--repo-root", ".", "--wait"]
+    argv = ["compass", "deep-refresh", "--repo-root", "."]
     runtime_mode = _normalize_runtime_mode(requested_runtime_mode)
     if runtime_mode != "auto":
         argv.extend(["--runtime-mode", runtime_mode])

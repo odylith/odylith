@@ -53,6 +53,82 @@
   - source-file discipline posture:
     - follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the canonical Odylith coding standards, including file-size discipline, refactor-first posture, documentation, reuse, robustness, and focused validation expectations
 
+## Observation And Proposal Contract
+- `**Odylith Observation**` and `Odylith Proposal` are shipped product
+  surfaces, not host-local flourishes. The same shared core must power them on
+  Codex and Claude.
+- The live mid-turn hot path for teaser, Observation, and Proposal belongs to
+  the intervention engine. `Odylith Chatter` owns the broader narration
+  posture and the final `Odylith Assist:` closeout instead of recomputing the
+  hook-time surface.
+- The lane may change what evidence is available or whether apply is allowed,
+  but it must not fork the labels, confirmation phrase, or overall markdown UX
+  across detached `source-local`, pinned dogfood, and consumer pinned-runtime
+  posture.
+- The shipped confirmation phrase is fixed:
+  `apply this proposal`
+- Render that phrase as a quiet trailing sentence such as
+  `To apply, say "apply this proposal".`
+  rather than as the loudest visual element in the block.
+- The shipped default voice is also fixed for this release: friendly,
+  delightful, soulful, insightful, simple, clear, accurate, precise, and
+  above all human. Future voice packs may tune the voice later, but current
+  runtime and guidance must not drift into templated or mechanical copy.
+- The shipped markdown shape matters too: Observation should look like
+  `Odylith Assist` and stay to one short labeled line. Proposal should look
+  like a short ruled block with one calm lead line beginning `Odylith Proposal:`,
+  a few bullets, and one quiet confirmation line.
+- The same intervention moment must keep one stable session-local identity
+  across prompt, stop, and edit/bash checkpoints. Do not let a later hook
+  make the same moment feel like a fresh branded interruption just because it
+  added changed-path or assistant-summary evidence.
+- Checkpoint hooks carry two surfaces on purpose:
+  - hidden developer context with the full Observation/Proposal/Assist bundle
+    for continuity into the next model turn
+  - a visible checkpoint beat for the user when Observation or Proposal is
+    actually earned
+- The primary visible intervention moment is the edit/bash checkpoint, not the
+  stop fallback. Stop may still recover a late Observation or a closeout
+  Assist line, but the product should not make users wait until stop to feel a
+  live intervention.
+- Success-only governance refresh receipts must not drown out an earned
+  Observation or Proposal. Keep routine success quiet when a stronger live beat
+  exists; surface refresh status only when it failed, skipped, or when no live
+  intervention was earned.
+- Rich reasoning signature and continuity identity are intentionally distinct.
+  Odylith may reason from more evidence as the moment matures, but the visible
+  thread should still feel like one evolving thought.
+- A later hook may suppress a duplicate Observation and still surface the
+  first eligible Proposal for that same moment. Do not require Proposal to
+  re-announce the already-earned Observation just to appear.
+- Missing launcher-backed anchor resolution is not permission to silence a
+  real prompt-submit teaser. Degraded context narrowing may remove the anchor
+  summary, but the earned intervention beat should still survive.
+- If the user cannot tell in a breath why Odylith stepped in, or if the
+  Proposal turns into a mini report, the UX has failed.
+- Multiline Observation and Proposal markdown is part of the shipped product
+  contract. Do not flatten those blocks into one-line summaries in stream
+  events, Compass payloads, host surfaces, or regression fixtures.
+- When showing those surfaces to humans in guidance, demos, or regression
+  discussion, prefer rendered Markdown or plain prose. Do not wrap the product
+  moment in fenced raw Markdown unless you are debugging the raw source text.
+- Demo copy must carry real governed meaning. Decorative filler lines are not
+  harmless polish; they blur the interjection and make the product feel fake.
+- Preview-only proposals stay unappliable until every action in the bundle has
+  a safe CLI-backed apply lane. Do not partially apply the supported subset of
+  a richer proposal and call the contract satisfied.
+- Preserve prompt memory across intervention lifecycle events and pending
+  proposal state. Later host hooks must reason from the original human prompt
+  when it exists, not from Odylith's own pending/applied summary strings.
+- Empty or missing hook session ids must fall back to a stable host-local
+  synthetic session token. Intervention runtime must never widen an empty
+  session id into cross-session prompt or changed-path bleed.
+- Observation and proposal reasoning must stay on the hot-path evidence cone:
+  prompt excerpts, assistant summaries, changed paths, packet summaries,
+  delivery snapshots, active governed refs, and existing local runtime or
+  governance state. No wide repo search is allowed just to make the output
+  sound smarter.
+
 ## Runtime, Write, And Validation Boundaries
 - Runtime boundary: the invoked Odylith executable decides which interpreter runs Odylith itself.
 - Write boundary: interpreter choice does not decide which repo files the agent may edit.

@@ -176,6 +176,15 @@ The benchmark itself must also stay representative:
   [Odylith Chatter](../../registry/source/components/odylith-chatter/CURRENT_SPEC.md)
   instead of restating the full branding rubric here. It is a summary aid, not
   the headline proof.
+- If a release note, benchmark writeup, or maintainer demo needs to show the
+  conversation-observation experience itself, preserve the shipped
+  `**Odylith Observation**` / `**Odylith Proposal**` labels, the fixed
+  confirmation text, and the human default voice. Do not benchmark or publish
+  a colder mechanical placeholder just because the lane is maintainer-facing.
+- Those maintainer-facing examples must also stay prompt-rooted. Do not stage
+  demo or benchmark artifacts that reconstruct the experience from terse
+  `Odylith Proposal pending.`-style summaries when the richer markdown and
+  human prompt context are available.
 
 ## Canonical Inputs
 - Machine-readable report:

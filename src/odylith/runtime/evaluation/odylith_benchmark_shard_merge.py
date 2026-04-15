@@ -9,6 +9,7 @@ contract as a serial run.
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -50,6 +51,37 @@ def _load_report(*, repo_root: Path, report_ref: str) -> dict[str, Any]:
     return dict(payload)
 
 
+def _report_identity(report: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "git_branch": str(report.get("git_branch", "")).strip(),
+        "git_commit": str(report.get("git_commit", "")).strip(),
+        "git_dirty": bool(report.get("git_dirty")),
+        "repo_dirty_paths": runner._dedupe_strings(  # noqa: SLF001
+            [
+                str(token).strip()
+                for token in report.get("repo_dirty_paths", [])
+                if isinstance(report.get("repo_dirty_paths"), list) and str(token).strip()
+            ]
+        ),
+        "corpus_fingerprint": str(report.get("corpus_fingerprint", "")).strip(),
+        "source_posture": str(report.get("source_posture", "")).strip(),
+    }
+
+
+def _selection_contract(report: Mapping[str, Any]) -> dict[str, Any]:
+    selection = _mapping(report.get("selection"))
+    return {
+        "benchmark_profile": str(selection.get("benchmark_profile", "")).strip(),
+        "case_ids": tuple(_list_of_strings(selection.get("case_ids"))),
+        "family_filters": tuple(_list_of_strings(selection.get("family_filters"))),
+        "limit": int(selection.get("limit", 0) or 0),
+        "profile_default_narrowing": str(selection.get("profile_default_narrowing", "")).strip(),
+        "default_modes_applied": bool(selection.get("default_modes_applied")),
+        "default_cache_profiles_applied": bool(selection.get("default_cache_profiles_applied")),
+        "cache_profiles": tuple(_list_of_strings(selection.get("cache_profiles"))),
+    }
+
+
 def _validate_shard_reports(
     *,
     repo_root: Path,
@@ -66,6 +98,8 @@ def _validate_shard_reports(
         if str(token).strip()
     ]
     cache_profiles = _list_of_strings(first.get("cache_profiles"))
+    identity = _report_identity(first)
+    selection_contract = _selection_contract(first)
     if not benchmark_profile or not comparison_contract or not modes or not cache_profiles:
         raise ValueError("Shard reports must carry benchmark profile, comparison contract, modes, and cache profiles.")
     shard_indices: set[int] = set()
@@ -99,6 +133,10 @@ def _validate_shard_reports(
         report_repo_root = Path(str(report.get("repo_root", "")).strip() or repo_root).resolve()
         if report_repo_root != repo_root.resolve():
             raise ValueError("Shard reports disagree on repo_root.")
+        if _report_identity(report) != identity:
+            raise ValueError("Shard reports disagree on repo identity or corpus fingerprint.")
+        if _selection_contract(report) != selection_contract:
+            raise ValueError("Shard reports disagree on selection contract.")
     expected_indices = set(range(1, shard_count + 1))
     if shard_indices != expected_indices:
         raise ValueError(
@@ -217,6 +255,7 @@ def merge_shard_reports(
         "version": runner.PROGRESS_VERSION,
         "report_id": report_id,
         "repo_root": str(root),
+        "owning_pid": os.getpid(),
         "benchmark_profile": benchmark_profile,
         "benchmark_profile_label": runner._benchmark_profile_label(benchmark_profile),  # noqa: SLF001
         "benchmark_profile_description": runner._benchmark_profile_description(benchmark_profile),  # noqa: SLF001
@@ -279,13 +318,7 @@ def merge_shard_reports(
             }
         )
         runner._write_progress(repo_root=root, payload=progress_payload)  # noqa: SLF001
-        latency_probes = runner._singleton_family_latency_probes(  # noqa: SLF001
-            repo_root=root,
-            scenarios=ordered_scenarios,
-            modes=modes,
-            cache_profiles=cache_profiles,
-            benchmark_profile=benchmark_profile,
-        )
+        latency_probes: dict[str, Any] = {}
         final_hygiene = runner._benchmark_runtime_hygiene_snapshot(repo_root=root)  # noqa: SLF001
         corpus_summary = runner._corpus_summary(scenarios=ordered_scenarios)  # noqa: SLF001
         corpus_composition = runner._corpus_composition(  # noqa: SLF001
@@ -439,7 +472,7 @@ def merge_shard_reports(
             grouped_summaries=published_packet_source_summaries,
             compare=runner._summary_comparison,  # noqa: SLF001
         )
-        adoption_proof = runner._run_live_adoption_proof(repo_root=root, scenarios=ordered_scenarios)  # noqa: SLF001
+        adoption_proof: dict[str, Any] = {}
         runtime_posture = runner._runtime_posture_summary(repo_root=root)  # noqa: SLF001
         if int(adoption_proof.get("sample_size", 0) or 0) > 0:
             runtime_posture["route_ready_rate"] = float(adoption_proof.get("route_ready_rate", 0.0) or 0.0)
@@ -499,6 +532,12 @@ def merge_shard_reports(
             candidate_mode=runner._ODYLITH_ON_MODE,  # noqa: SLF001
             latency_probes=latency_probes,
         )
+        snapshot_overlay_paths = runner._report_snapshot_overlay_paths(published_scenarios)  # noqa: SLF001
+        tree_identity = runner.benchmark_tree_identity(  # noqa: SLF001
+            repo_root=root,
+            selection=dict(progress_payload.get("selection", {})),
+            snapshot_paths=snapshot_overlay_paths,
+        )
         published_mode_table = runner._published_mode_table(  # noqa: SLF001
             mode_summaries=published_mode_summaries,
             mode_order=runner._PUBLIC_PUBLISHED_MODE_ORDER,  # noqa: SLF001
@@ -539,6 +578,19 @@ def merge_shard_reports(
             "selection_strategy": "full_corpus",
             "product_version": runner._product_version_from_pyproject(repo_root=root),  # noqa: SLF001
             "corpus_path": str(runner.store.optimization_evaluation_corpus_path(repo_root=root)),
+            "git_branch": str(tree_identity.get("git_branch", "")).strip(),
+            "git_commit": str(tree_identity.get("git_commit", "")).strip(),
+            "git_dirty": bool(tree_identity.get("git_dirty")),
+            "repo_dirty_paths": [
+                str(token).strip()
+                for token in tree_identity.get("repo_dirty_paths", [])
+                if isinstance(tree_identity.get("repo_dirty_paths"), list) and str(token).strip()
+            ],
+            "selection_fingerprint": str(tree_identity.get("selection_fingerprint", "")).strip(),
+            "corpus_fingerprint": str(tree_identity.get("corpus_fingerprint", "")).strip(),
+            "snapshot_overlay_fingerprint": str(tree_identity.get("snapshot_overlay_fingerprint", "")).strip(),
+            "snapshot_overlay_paths": snapshot_overlay_paths,
+            "source_posture": str(tree_identity.get("source_posture", "")).strip(),
             "scenario_count": len(primary_scenario_reports),
             "corpus_summary": corpus_summary,
             "corpus_composition": corpus_composition,
@@ -681,6 +733,8 @@ def merge_shard_reports(
         )
         runner._write_progress(repo_root=root, payload=progress_payload)  # noqa: SLF001
         raise
+    finally:
+        runner._clear_active_run_progress(repo_root=root, payload=progress_payload)  # noqa: SLF001
 
 
 def _build_parser() -> argparse.ArgumentParser:

@@ -127,7 +127,8 @@ See what happened, what matters now, and what's next.
 |---|---|
 | **"What's the standup brief?"** | Reads the latest narrated Compass brief — what changed, what matters, what's next. |
 | **"Show me what happened in the last 48 hours"** | Reads Compass timeline events in the 48h audit window. |
-| **"Refresh the Compass"** | Renders the full Compass surface and waits for brief settlement. `odylith compass refresh --wait` |
+| **"Refresh the Compass"** | Runs the quick cache-first Compass rerender. `odylith compass refresh` |
+| **"Deep-refresh the Compass"** | Runs the same Compass rerender and waits for standup-brief settlement. `odylith compass deep-refresh` |
 | **"Log this checkpoint"** | Appends a bounded execution note to the Compass timeline. `odylith compass log` |
 | **"I want the brief to focus on payments work"** | Narrows Compass brief scope to workstreams touching the payments component. |
 | **"Make the brief shorter"** | Adjusts narration to the compact voice contract — fewer details, same signal. |

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import errno
 import json
 import os
 from pathlib import Path
@@ -12,6 +13,66 @@ import time
 import pytest
 from odylith.runtime.evaluation import odylith_benchmark_live_execution as live_execution
 from odylith.runtime.reasoning import odylith_reasoning
+
+
+def test_temporary_benchmark_temp_dir_retries_enotempty_cleanup(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    calls: list[bool] = []
+    real_rmtree = shutil.rmtree
+
+    def _flaky_rmtree(path, *args, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(bool(kwargs.get("ignore_errors")))
+        if len(calls) == 1:
+            raise OSError(errno.ENOTEMPTY, "Directory not empty")
+        return real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(live_execution.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(live_execution.shutil, "rmtree", _flaky_rmtree)
+
+    with live_execution._temporary_benchmark_temp_dir(  # noqa: SLF001
+        repo_root=repo_root,
+        prefix="odylith-benchmark-temp-test-",
+    ) as temp_root:
+        stubborn_dir = temp_root / "sandbox" / "pycache" / "Users"
+        stubborn_dir.mkdir(parents=True, exist_ok=True)
+        (stubborn_dir / "artifact.pyc").write_text("bytecode", encoding="utf-8")
+        created = temp_root
+
+    assert not created.exists()
+    assert calls[0] is False
+    assert len(calls) >= 2
+
+
+def test_temporary_benchmark_temp_dir_swallows_persistent_cleanup_noise(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    calls: list[bool] = []
+
+    def _always_fail(path, *args, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(bool(kwargs.get("ignore_errors")))
+        if kwargs.get("ignore_errors"):
+            return None
+        raise OSError(errno.ENOTEMPTY, "Directory not empty")
+
+    monkeypatch.setattr(live_execution.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(live_execution.shutil, "rmtree", _always_fail)
+
+    with live_execution._temporary_benchmark_temp_dir(  # noqa: SLF001
+        repo_root=repo_root,
+        prefix="odylith-benchmark-temp-test-",
+    ) as temp_root:
+        (temp_root / "sandbox").mkdir(parents=True, exist_ok=True)
+        created = temp_root
+
+    assert calls[-1] is True
+    shutil.rmtree(created, ignore_errors=True)
 
 
 def test_resolved_live_execution_contract_prefers_env_over_repo_and_ignores_user_defaults(tmp_path: Path) -> None:
@@ -177,6 +238,20 @@ def test_default_live_timeout_policy_uses_default_guardrail_when_scenario_has_no
     assert timeout_seconds == live_execution._DEFAULT_LIVE_TIMEOUT_SECONDS  # noqa: SLF001
     assert timeout_policy == "default_live_timeout"
     assert live_execution._validator_timeout_seconds(environ={}) is None  # noqa: SLF001
+
+
+def test_default_live_timeout_policy_uses_proof_profile_guardrail_when_requested() -> None:
+    timeout_seconds, timeout_policy = live_execution._default_live_timeout_policy(  # noqa: SLF001
+        {
+            "needs_write": True,
+            "validation_commands": ["pytest -q"],
+            "correctness_critical": True,
+        },
+        benchmark_profile="proof",
+    )
+
+    assert timeout_seconds == 240.0
+    assert timeout_policy == "proof_default_live_timeout"
 
 
 def test_odylith_focus_lines_prioritize_selected_files_and_docs() -> None:
@@ -1182,6 +1257,46 @@ def test_validator_backed_completion_accepts_import_error_outside_allowed_slice(
     )
 
 
+def test_validator_backed_completion_accepts_import_error_outside_bounded_slice() -> None:
+    assert live_execution._validator_backed_completion_satisfied(  # noqa: SLF001
+        scenario={
+            "needs_write": True,
+            "changed_paths": [
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+            ],
+            "allow_noop_completion": True,
+        },
+        structured_output={
+            "status": "blocked",
+            "summary": "Updated the orchestrator skill guidance for the bounded slice.",
+            "validation_summary": "The focused validator passed, but an ImportError appears unrelated and remains outside this bounded slice.",
+            "notes": [
+                "The missing module appears unrelated to the edited skill and remains outside the bounded slice.",
+            ],
+        },
+        status="blocked",
+        candidate_write_paths=[
+            "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+        ],
+        validators_passed=True,
+        required_path_misses=[],
+    )
+
+
+def test_live_orchestration_summary_preserves_benchmark_session_namespace() -> None:
+    summary = live_execution._live_orchestration_summary(  # noqa: SLF001
+        mode="odylith_on",
+        packet_source="impact",
+        required_path_recall=1.0,
+        precision_metrics={},
+        benchmark_session_namespace="benchmark-report-s3-of-4-warm-case-odylith_on",
+    )
+
+    adoption = summary["odylith_adoption"]
+    assert adoption["session_namespace"] == "benchmark-report-s3-of-4-warm-case-odylith_on"
+    assert adoption["session_namespaced"] is True
+
+
 def test_focused_noop_validator_proxy_accepts_out_of_slice_workspace_drift() -> None:
     assert live_execution._focused_noop_validator_proxy_allowed(  # noqa: SLF001
         scenario={
@@ -2006,6 +2121,150 @@ def test_run_live_scenario_records_declared_preflight_evidence_and_observed_path
     assert result["live_execution"]["observed_path_sources"] == ["odylith_prompt_payload"]
 
 
+def test_run_live_scenario_short_circuits_validators_after_live_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "truth"
+    workspace_root.mkdir(parents=True, exist_ok=True)
+    truth_root.mkdir(parents=True, exist_ok=True)
+    captured: dict[str, object] = {}
+
+    @contextlib.contextmanager
+    def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
+        del repo_root, strip_paths, snapshot_paths
+        yield workspace_root, truth_root
+
+    @contextlib.contextmanager
+    def _fake_temporary_codex_home(*, execution_contract, environ=None):  # type: ignore[no-untyped-def]
+        del execution_contract, environ
+        yield tmp_path / "codex-home"
+
+    def _fake_run_subprocess_capture(*, command, cwd, env=None, input_text=None, timeout_seconds=None):  # type: ignore[no-untyped-def]
+        del command, cwd, env, input_text
+        captured["timeout_seconds"] = timeout_seconds
+        raise subprocess.TimeoutExpired(
+            cmd=["codex"],
+            timeout=float(timeout_seconds or 0.0),
+            output="partial stdout",
+            stderr="partial stderr",
+        )
+
+    def _fake_run_validators(**kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError(f"validators should not run after a live timeout: {kwargs}")
+
+    monkeypatch.setattr(live_execution, "_temporary_worktree", _fake_temporary_worktree)
+    monkeypatch.setattr(live_execution, "_temporary_codex_home", _fake_temporary_codex_home)
+    monkeypatch.setattr(live_execution, "_workspace_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_scenario_workspace_self_reference_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_sandbox_process_env", lambda **kwargs: {"PATH": "/usr/bin:/bin"})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_codex_exec_command",
+        lambda **kwargs: ["codex", "exec", "--skip-git-repo-check", "-C", str(workspace_root)],  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_agent_prompt", lambda **kwargs: "prompt")  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_subprocess_capture", _fake_run_subprocess_capture)
+    monkeypatch.setattr(live_execution, "_parse_json_lines", lambda stream_text: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_usage_from_events", lambda events: {})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_structured_output",
+        lambda output_path, stream_text='': {"status": "failed", "summary": "timed out", "changed_files": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_observed_path_details_from_events",
+        lambda **kwargs: {"paths": [], "sources": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_path_recall", lambda **kwargs: (1.0, []))  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_precision_metrics",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "observed_path_count": 0,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "hallucinated_surfaces": [],
+            "expected_write_path_count": 0,
+            "candidate_write_path_count": 0,
+            "candidate_write_paths": [],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "unnecessary_widening_paths": [],
+        },
+    )
+    monkeypatch.setattr(live_execution, "_candidate_write_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_meaningful_candidate_write_paths", lambda rows: rows)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_git_status_snapshot", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_state_delta_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_restore_workspace_validator_truth", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_apply_strip_paths", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_validators", _fake_run_validators)
+    monkeypatch.setattr(live_execution, "_validator_result_passed", lambda result: result.get("status") in {"passed", "not_applicable"})  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_successful_noop_precision_metrics", lambda **kwargs: kwargs["precision_metrics"])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_validator_backed_completion_satisfied", lambda **kwargs: False)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_write_expectation_satisfied", lambda **kwargs: True)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_estimated_initial_prompt_tokens", lambda prompt: 1)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_live_diagnostics,
+        "workspace_state_diff",
+        lambda **kwargs: {"workspace_root_exists": True, "differences": [], "difference_count": 0},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.4",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+        ),
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_resolved_live_execution_contract",
+        lambda **kwargs: {
+            "runner": "live_codex_cli",
+            "codex_bin": "codex",
+            "model": "gpt-5.4",
+            "reasoning_effort": "medium",
+        },
+    )
+
+    result = live_execution.run_live_scenario(
+        repo_root=repo_root,
+        scenario={
+            "prompt": "Fail closed when the live lane times out.",
+            "required_paths": [],
+            "validation_commands": ["PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_remediator.py"],
+            "needs_write": True,
+        },
+        mode="odylith_on",
+        benchmark_profile="proof",
+        packet_source="benchmark_packet",
+        prompt_payload={},
+        snapshot_paths=[],
+    )
+
+    assert captured["timeout_seconds"] == 240.0
+    assert result["validation_results"]["status"] == "failed"
+    assert result["validation_results"]["status_basis"] == "live_timeout_short_circuit"
+    assert result["live_execution"]["timed_out"] is True
+    assert result["live_execution"]["validator_execution_mode"] == "skipped_due_to_live_timeout"
+    assert result["live_execution"]["benchmark_profile"] == "proof"
+
+
 def test_run_live_scenario_preserves_carried_packet_summary_truth(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -2217,6 +2476,43 @@ def test_overlay_workspace_repo_snapshot_limits_dirty_overlay_to_allowed_paths(t
 
     assert (workspace_root / "keep.txt").read_text(encoding="utf-8") == "dirty keep\n"
     assert (workspace_root / "drop.txt").read_text(encoding="utf-8") == "base drop\n"
+
+
+def test_temporary_worktree_uses_real_detached_checkout_outside_repo_root(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.email", "bench@example.com"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Benchmark"], cwd=repo_root, check=True)
+    (repo_root / "README.md").write_text("repo\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+
+    with live_execution._temporary_worktree(  # noqa: SLF001
+        repo_root=repo_root,
+        strip_paths=[],
+        snapshot_paths=[],
+    ) as workspace_pair:
+        workspace_root, _ = workspace_pair
+        resolved_workspace_root = workspace_root.resolve()
+        assert resolved_workspace_root != repo_root.resolve()
+        assert repo_root.resolve() not in resolved_workspace_root.parents
+        assert (workspace_root / ".git").exists()
+        assert (workspace_root / "README.md").read_text(encoding="utf-8") == "repo\n"
+        top_level = subprocess.run(
+            ["git", "-C", str(workspace_root), "rev-parse", "--show-toplevel"],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        head_name = subprocess.run(
+            ["git", "-C", str(workspace_root), "rev-parse", "--abbrev-ref", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        assert Path(top_level).resolve() == resolved_workspace_root
+        assert head_name == "HEAD"
 
 
 def test_observed_paths_from_events_ignores_transitive_paths_in_file_content_output(tmp_path: Path) -> None:
@@ -2521,6 +2817,35 @@ def test_workspace_state_delta_paths_ignores_preexisting_workspace_noise(tmp_pat
     )
 
     assert changed_paths == ["tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"]
+
+
+def test_workspace_state_delta_paths_ignores_benchmark_strip_restore_paths(tmp_path: Path) -> None:
+    workspace_root = tmp_path / "workspace"
+    readme = workspace_root / "README.md"
+    readme.parent.mkdir(parents=True, exist_ok=True)
+    readme.write_text("dirty before\n", encoding="utf-8")
+
+    changed_paths = live_execution._workspace_state_delta_paths(  # noqa: SLF001
+        baseline={
+            "git_status_paths": ["README.md"],
+            "fingerprints": {
+                "README.md": live_execution._workspace_file_fingerprint(  # noqa: SLF001
+                    workspace_root=workspace_root,
+                    relative_path="README.md",
+                ),
+            },
+        },
+        workspace_root=workspace_root,
+        workspace_state={
+            "git_status_paths": [
+                "README.md",
+                "odylith/casebook/bugs/AGENTS.md",
+            ],
+        },
+        ignored_paths=["odylith/casebook/bugs/AGENTS.md"],
+    )
+
+    assert changed_paths == []
 
 
 def test_meaningful_candidate_write_paths_filters_benchmark_temp_and_env_noise() -> None:

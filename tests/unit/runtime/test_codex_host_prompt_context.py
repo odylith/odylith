@@ -18,6 +18,7 @@ def test_render_codex_prompt_context_uses_first_explicit_anchor(monkeypatch) -> 
 
     rendered = codex_host_prompt_context.render_codex_prompt_context(
         prompt="Check B-088 against CB-102 before touching D-030.",
+        conversation_bundle_override={},
     )
 
     assert rendered == "Odylith anchor B-088: primary target src/example.py."
@@ -26,6 +27,20 @@ def test_render_codex_prompt_context_uses_first_explicit_anchor(monkeypatch) -> 
 
 def test_render_codex_prompt_context_returns_empty_without_anchor() -> None:
     assert codex_host_prompt_context.render_codex_prompt_context(prompt="Explain the change.") == ""
+
+
+def test_render_codex_prompt_context_can_surface_a_teaser_without_anchor() -> None:
+    rendered = codex_host_prompt_context.render_codex_prompt_context(
+        prompt="Design a conversation observation engine with governed proposal flow.",
+        intervention_bundle_override={
+            "candidate": {
+                "stage": "teaser",
+                "teaser_text": "Odylith is noticing governed truth take shape here.",
+            }
+        },
+    )
+
+    assert rendered == "Odylith is noticing governed truth take shape here."
 
 
 def test_main_writes_user_prompt_hook_json(monkeypatch, capsys) -> None:
@@ -37,6 +52,11 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, capsys) -> None:
         codex_host_prompt_context.codex_host_shared,
         "context_summary",
         lambda **_: "Odylith anchor B-088: primary target src/odylith/cli.py.",
+    )
+    monkeypatch.setattr(
+        codex_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {},
     )
 
     exit_code = codex_host_prompt_context.main(["--repo-root", "."])

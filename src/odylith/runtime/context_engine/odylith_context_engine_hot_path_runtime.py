@@ -237,8 +237,14 @@ def _git_ref_snapshot(*, repo_root: Path) -> dict[str, str]:
     if cached is not None and now - cached[0] <= _PROCESS_GIT_REF_CACHE_TTL_SECONDS:
         return dict(cached[1])
     try:
-        completed = subprocess.run(
-            ["git", "-C", str(root), "rev-parse", "--abbrev-ref", "HEAD", "HEAD"],
+        branch_completed = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        head_completed = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
             capture_output=True,
             check=False,
             text=True,
@@ -247,9 +253,8 @@ def _git_ref_snapshot(*, repo_root: Path) -> dict[str, str]:
         snapshot = {"branch_name": "", "head_oid": ""}
         _PROCESS_GIT_REF_CACHE[cache_key] = (now, snapshot)
         return dict(snapshot)
-    lines = [str(token).strip() for token in str(completed.stdout or "").splitlines()]
-    branch_name = lines[0] if lines else ""
-    head_oid = lines[1] if len(lines) > 1 else ""
+    branch_name = str(branch_completed.stdout or "").strip()
+    head_oid = str(head_completed.stdout or "").strip()
     snapshot = {
         "branch_name": "" if branch_name == "HEAD" else branch_name,
         "head_oid": head_oid,

@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.surfaces import claude_host_shared
 
 
@@ -59,6 +60,19 @@ def load_payload(raw: str | None = None) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
+
+
+def hook_session_id(payload: Mapping[str, Any] | None) -> str:
+    if not isinstance(payload, Mapping):
+        return agent_runtime_contract.fallback_session_token("codex")
+    for key in ("session_id", "thread_id", "turn_id"):
+        token = str(payload.get(key) or "").strip()
+        if token:
+            return token
+    default = agent_runtime_contract.default_host_session_id()
+    if default:
+        return default
+    return agent_runtime_contract.fallback_session_token("codex")
 
 
 def command_from_hook_payload(payload: Mapping[str, Any] | None) -> str:

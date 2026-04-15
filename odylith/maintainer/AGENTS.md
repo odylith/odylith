@@ -137,6 +137,54 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   materially changes the next move, weave it into the update first and reserve
   explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels
   for rare high-signal moments.
+- Treat live teaser, `**Odylith Observation**`, and `Odylith Proposal` as the
+  intervention-engine fast path. Treat `Odylith Assist:` as the chatter-owned
+  closeout so maintainer hooks do not drift into one slow, tangled narration
+  stack.
+- The `**Odylith Observation**` and `**Odylith Proposal**` experience is a
+  maintainer-owned brand contract, not optional polish. Any maintainer change
+  touching the intervention engine, Chatter, Compass, or host hooks must
+  preserve the shipped labels, the one-confirmation proposal flow, and the
+  human-feeling markdown UX across detached `source-local`, pinned dogfood,
+  and the downstream consumer lane.
+- Preserve the shipped shape as well as the words: Observation should look
+  like `Odylith Assist`, which means one short labeled line. Proposal should
+  be a short ruled block with the heading, a couple of lines, a few bullets,
+  and the confirmation line.
+- Maintain one stable intervention identity across teaser, Observation, and
+  Proposal for the same session-local moment. Later hooks may add evidence or
+  surface the first eligible Proposal, but they must not make the same moment
+  feel like a fresh branded interruption.
+- For Codex and Claude checkpoint hooks, keep the full Observation,
+  Proposal, and Assist bundle in hidden developer context for continuity, but
+  surface the earned Observation/Proposal beat visibly at the hook moment.
+  Stop is the fallback closeout lane, not the primary intervention moment.
+- Make the interjection obvious immediately. Observation should tell the user
+  why Odylith is stepping in without making them parse a card full of
+  sections, and Proposal copy should sound like a crisp human recommendation
+  rather than branded filler.
+- Preserve the multiline markdown structure of Observation and Proposal blocks
+  end to end. If a maintainer change flattens those sections into single-line
+  summaries anywhere in the host or Compass path, treat that as a shipped UX
+  regression and fix it before closeout.
+- When maintainers show these surfaces to humans in docs, demos, reviews, or
+  discussion, render them as Markdown or describe them in prose. Do not
+  present them as fenced raw Markdown unless the task is specifically about
+  debugging raw markdown text.
+- Treat filler demo copy as a regression too. Mockups, screenshots, and sample
+  payloads should use concrete governed meaning, not placeholder flourish.
+- Treat templated or mechanical intervention copy as a product regression even
+  when the facts are technically correct. The default shipped voice must stay
+  friendly, delightful, soulful, insightful, simple, clear, accurate,
+  precise, and above all human until a later release lands explicit
+  voice-pack selection.
+- Preview-only proposals remain unappliable until every action in the bundle
+  has a safe CLI-backed apply lane. Maintainer changes must not reintroduce
+  partial bundle apply just because one surface already has a helper.
+- Preserve prompt memory across the full intervention lifecycle. Stop hooks,
+  post-edit checkpoints, post-bash checkpoints, apply, and decline events must
+  carry or recover the original prompt excerpt so later Odylith reasoning does
+  not collapse into self-referential proposal summaries.
 - At closeout, you may add at most one short `Odylith Assist:` line if it
   helps summarize what Odylith materially contributed. Prefer
   `**Odylith Assist:**` when Markdown formatting is available; otherwise use

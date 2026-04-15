@@ -932,10 +932,7 @@ def _assert_compass_program_box_does_not_highlight_active_inner_wave(  # noqa: A
 
     first_wave_card = section.locator(".execution-wave-card").first
     first_wave_card.wait_for(timeout=15000)
-    if first_wave_card.get_attribute("open") is None:
-        first_wave_card.locator("> summary").first.click()
-
-    style = section.evaluate(
+    initial_style = section.evaluate(
         """(node) => {
             const style = window.getComputedStyle(node);
             const openWaveCount = node.querySelectorAll(".execution-wave-card[open]").length;
@@ -947,9 +944,27 @@ def _assert_compass_program_box_does_not_highlight_active_inner_wave(  # noqa: A
         }"""
     )
 
-    assert style["openWaveCount"] >= 1
-    assert style["boxShadow"] == "none"
-    assert style["backgroundImage"] == "none"
+    assert initial_style["openWaveCount"] == 0
+    assert initial_style["boxShadow"] == "none"
+    assert initial_style["backgroundImage"] == "none"
+
+    first_wave_card.locator("> summary").first.click()
+
+    expanded_style = section.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            const openWaveCount = node.querySelectorAll(".execution-wave-card[open]").length;
+            return {
+              backgroundImage: style.backgroundImage,
+              boxShadow: style.boxShadow,
+              openWaveCount,
+            };
+        }"""
+    )
+
+    assert expanded_style["openWaveCount"] >= 1
+    assert expanded_style["boxShadow"] == "none"
+    assert expanded_style["backgroundImage"] == "none"
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

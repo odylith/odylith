@@ -10,16 +10,12 @@
         "src/odylith/runtime/context_engine/odylith_context_engine.py",
         "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
         "src/odylith/runtime/context_engine/odylith_context_cache.py",
-        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-        "agents-guidelines/TOOLING.MD",
-        "agents-guidelines/ARCHITECTURE.MD"
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md"
       ],
       "components": [
         "odylith-context-engine"
       ],
       "required_reads": [
-        "agents-guidelines/TOOLING.MD",
-        "agents-guidelines/ARCHITECTURE.MD",
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
         "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd"
       ],

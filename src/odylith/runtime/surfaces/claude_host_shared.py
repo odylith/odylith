@@ -24,6 +24,7 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.common import agent_runtime_contract
 
 _COMPASS_RUNTIME_RELATIVE = Path("odylith") / "compass" / "runtime" / "current.v1.json"
 _CLAUDE_CONFIG_DIR_ENV = "CLAUDE_CONFIG_DIR"
@@ -252,6 +253,18 @@ def detect_host_family() -> str:
     if os.environ.get("CODEX_HOME") or os.environ.get("CODEX_HOST_RUNTIME"):
         return "codex"
     return "unknown"
+
+
+def hook_session_id(payload: Mapping[str, Any] | None, *, host_family: str = "claude") -> str:
+    if isinstance(payload, Mapping):
+        for key in ("session_id", "thread_id", "turn_id"):
+            token = str(payload.get(key) or "").strip()
+            if token:
+                return token
+    default = agent_runtime_contract.default_host_session_id()
+    if default:
+        return default
+    return agent_runtime_contract.fallback_session_token(host_family)
 
 
 def utc_now_iso() -> str:

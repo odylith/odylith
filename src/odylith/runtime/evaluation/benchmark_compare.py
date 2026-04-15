@@ -108,11 +108,22 @@ def _eligible_release_report(report: Mapping[str, Any]) -> bool:
 
 def _resolve_candidate_summary(*, repo_root: Path) -> tuple[dict[str, Any] | None, str]:
     candidate_report = runner.load_latest_benchmark_report(repo_root=repo_root)
-    if candidate_report:
+    if candidate_report and runner.benchmark_report_matches_current_tree(repo_root=repo_root, report=candidate_report):
         return _summary_with_version(
             runner.compact_report_summary(candidate_report),
             product_version=_report_product_version(candidate_report),
         ), "latest-runtime-report"
+    if candidate_report:
+        stale_summary = _summary_with_version(
+            runner.compact_report_summary(candidate_report),
+            product_version=_report_product_version(candidate_report),
+        )
+        stale_summary["current_tree_identity_match"] = False
+        stale_summary["stale_runtime_report"] = True
+        tracked_summary = load_tracked_latest_summary(repo_root=repo_root)
+        if tracked_summary:
+            return dict(tracked_summary), "tracked-latest-summary"
+        return stale_summary, "latest-runtime-report"
     tracked_summary = load_tracked_latest_summary(repo_root=repo_root)
     if tracked_summary:
         return dict(tracked_summary), "tracked-latest-summary"

@@ -53,10 +53,42 @@ Scope: applies to Odylith paths under `odylith/`.
 - When you already know the exact workstream, component, path, or id, use `./.odylith/bin/odylith context --repo-root . <ref>` before raw repo search. Use `./.odylith/bin/odylith query --repo-root . "<terms>"` only after concrete anchors already exist. Keep `odylith context-engine ...` for advanced packet control.
 - Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, plan, bug, spec, component, and diagram upkeep. Treat repo-root `.agents/skills/` shims and `odylith/skills/` as specialist overlays rather than as the default path.
 - When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`, go straight to that CLI and keep any `.agents/skills` lookup, missing-shim, or fallback-path details implicit unless they change the next user-visible action.
-- For quick visibility after a narrow truth change, rerender only the owned surface: `odylith radar refresh`, `odylith registry refresh`, `odylith casebook refresh`, `odylith atlas refresh`, or bounded `odylith compass refresh --wait`. Keep `odylith sync` as the broader governance and correctness lane.
+- For quick visibility after a narrow truth change, rerender only the owned surface: `odylith radar refresh`, `odylith registry refresh`, `odylith casebook refresh`, `odylith atlas refresh`, or `odylith compass refresh`. Use `odylith compass deep-refresh` when you also want brief settlement. Keep `odylith sync` as the broader governance and correctness lane.
 - Keep the default operating lane shared across Codex and Claude Code: repo-root guidance, the repo-local launcher, truthful `odylith ... --help`, and the grounded governance workflow should mean the same thing on both hosts. Add host-specific tips only when the host exposes a real native capability that materially reduces hops.
 - In coding-agent commentary, keep startup, fallback, routing, and packet-selection internals implicit. Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight. If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history. Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates, and never prefix commentary with control-plane receipt labels. Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters.
 - Keep normal commentary task-first and human. Weave Odylith-grounded facts into ordinary updates when they change the next move, and reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels for rare high-signal moments. Pick the strongest one or stay quiet.
+- Treat live teaser, `**Odylith Observation**`, and `Odylith Proposal` as the
+  intervention-engine fast path. Treat `Odylith Assist:` as the chatter-owned
+  closeout. Do not collapse those two layers into one ad hoc narration path.
+- When the shared conversation-observation runtime earns a full
+  `**Odylith Observation**` or `**Odylith Proposal**`, preserve that exact
+  label contract and keep the markdown clear, warm, and human. Do not flatten
+  it into mechanical alert copy, alternate host-specific labels, or rigid
+  compliance prose.
+- Preserve the shipped shape too: Observation should look like
+  `Odylith Assist`, which means one short labeled line. Proposal should be a
+  short ruled block with the heading, a couple of lines, a few bullets, and
+  the confirmation line.
+- Keep one stable intervention identity across teaser, observation, and
+  proposal for the same session-local moment. Later hooks may add evidence or
+  surface the first eligible proposal, but they must not make the same moment
+  feel like a fresh branded interruption.
+- For Codex and Claude checkpoint hooks, keep the full Observation,
+  Proposal, and Assist bundle in hidden developer context for continuity, but
+  surface the earned Observation/Proposal beat visibly at the hook moment.
+  Stop is the fallback closeout lane, not the primary intervention moment.
+- If you need to show that UX to a human in-chat, prefer rendered Markdown or
+  plain prose. Do not wrap the product moment in fenced raw Markdown unless
+  the task is explicitly about debugging the raw source text.
+- Keep those Observation/Proposal moments rooted in the user's actual prompt
+  and evidence across teaser, observation, proposal, apply, and decline
+  phases. Do not let later hooks or derived surfaces fall back to Odylith's own
+  pending/applied summary strings as if they were conversation truth.
+- That observation/proposal voice is a product invariant across Codex,
+  Claude, maintainer `source-local`, pinned dogfood, and consumer lanes:
+  friendly, delightful, soulful, insightful, simple, clear, accurate,
+  precise, and above all human. Future voice packs may tune the voice later;
+  the shipped default brand voice is non-negotiable now.
 - At closeout, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance ids inline when they were actually changed, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real.
 - For live blocker lanes, never say `fixed`, `cleared`, or `resolved` without qualification unless the hosted proof moved past the prior failing phase. Force three checks first: same fingerprint as the last falsification or not, hosted frontier advanced or not, and whether the claim is code-only, preview-only, or live.
 - For substantive tasks, follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step; identify the active workstream, component, or packet; then move into repo scan, tests, and edits.

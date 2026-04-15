@@ -110,7 +110,14 @@ surface:
 ./.odylith/bin/odylith registry refresh --repo-root .
 ./.odylith/bin/odylith casebook refresh --repo-root .
 ./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync
-./.odylith/bin/odylith compass refresh --repo-root . --wait
+./.odylith/bin/odylith compass refresh --repo-root .
+```
+
+When you want the same Compass rerender to wait for standup-brief settlement,
+use:
+
+```bash
+./.odylith/bin/odylith compass deep-refresh --repo-root .
 ```
 
 Keep `odylith sync` as the broader governance and correctness lane when the
@@ -169,7 +176,7 @@ Here are some starter prompt inspirations:
 - Delete: "Delete developer note [N###]."
 
 For the full set of things the agent understands, see
-[Operator Instructions](../docs/OPERATOR_INSTRUCTIONS.md). The Cheatsheet
+[Odylith Operator Instructions](../docs/OPERATOR_INSTRUCTIONS.md). The Cheatsheet
 drawer in `odylith/index.html` has copyable prompts for every operation.
 
 The shell refreshes itself as Odylith updates local surfaces.

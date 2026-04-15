@@ -8,7 +8,7 @@ from pathlib import Path
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.consumer_profile import load_consumer_profile
 from odylith.runtime.context_engine import packet_quality_codec
-from odylith.runtime.orchestration import odylith_chatter_runtime
+from odylith.runtime.intervention_engine import conversation_runtime
 
 
 def _first_present(*values: Any) -> Any:
@@ -506,7 +506,7 @@ def _decision_odylith_adoption(
     summary["mode"] = _normalize_token(decision.mode)
     summary["manual_review_recommended"] = bool(decision.manual_review_recommended)
     summary["grounded_delegate"] = bool(summary.get("grounded") and decision.delegate)
-    conversation_bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    conversation_bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=decision,
         adoption=summary,

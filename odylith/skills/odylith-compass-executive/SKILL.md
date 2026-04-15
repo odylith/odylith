@@ -11,7 +11,8 @@ Use when you need Compass-driven executive or operator summaries over recent wor
 odylith compass log --repo-root . --kind decision --summary "<decision>"
 odylith compass log --repo-root . --kind implementation --summary "<implementation update>"
 odylith compass update --repo-root . --statement "<current execution state>"
-odylith compass refresh --repo-root . --wait
+odylith compass refresh --repo-root .
+odylith compass deep-refresh --repo-root .
 odylith sync --repo-root . --force
 ```
 

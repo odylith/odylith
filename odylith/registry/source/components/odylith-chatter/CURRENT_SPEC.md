@@ -1,8 +1,8 @@
 # Odylith Chatter
-Last updated: 2026-04-10
+Last updated: 2026-04-14
 
 
-Last updated (UTC): 2026-04-10
+Last updated (UTC): 2026-04-14
 
 ## Purpose
 Odylith Chatter is Odylith's cross-posture narration contract. It governs how
@@ -15,8 +15,9 @@ end-of-work outcomes instead of canned self-promotion.
 ### Odylith Chatter owns
 - Mid-task narration policy for consumer, maintainer, dogfood, and sim-facing
   guidance.
-- Ambient `Odylith Insight:`, `Odylith History:`, and `Odylith Risks:`
-  candidates plus their suppression and selection rules.
+- The broader narration policy around when Odylith should stay ambient,
+  task-first, and human instead of sounding like a control-plane receipt.
+- The closeout-side consumption contract for carried intervention payloads.
 - The final `Odylith Assist:` closeout contract, including the rule to link
   updated governance ids inline when they were actually changed, plus tone
   guardrails.
@@ -33,6 +34,13 @@ end-of-work outcomes instead of canned self-promotion.
 
 ### Odylith Chatter does not own
 - Grounding, routing, or orchestration decisions themselves.
+- Fact selection, dedupe, or proposal assembly for observation/proposal
+  moments; that belongs to
+  [Governance Intervention Engine](../governance-intervention-engine/CURRENT_SPEC.md).
+- The live mid-turn teaser, Observation, Proposal, and explicit intervention
+  surfacing path inside Codex and Claude hooks; that now belongs to
+  [Governance Intervention Engine](../governance-intervention-engine/CURRENT_SPEC.md)
+  so the hot path stays cheap and consistent.
 - Benchmark deltas or validation outcomes beyond how those facts may be named
   in the final closeout line.
 - Operator-facing CLI command semantics.
@@ -48,6 +56,20 @@ end-of-work outcomes instead of canned self-promotion.
   `surface_fast_lane`.
 - Ambient intelligence is the default UX: weave Odylith-grounded facts into
   ordinary commentary when they change the next move.
+- When the shared intervention engine escalates into teaser, Observation, or
+  Proposal, the markdown should still feel like Odylith speaking naturally,
+  not like a generic alert component with Odylith pasted into the title bar.
+- Chatter is no longer the hot path for those live mid-turn beats. That split
+  is deliberate: intervention owns the fast path, chatter owns the broader
+  narration posture and the final Assist closeout.
+- Continuity for teaser, Observation, and Proposal also belongs to the
+  intervention engine. Chatter should consume the carried payload, not invent
+  a second notion of whether the same moment is fresh, repeated, or ready to
+  upgrade.
+- Observation and proposal moments must stay rooted in the human conversation.
+  If a downstream surface starts narrating from Odylith's own pending/applied
+  summary strings instead of the original prompt and evidence, treat that as a
+  brand regression and fix the data path rather than polishing the copy.
 - The strongest ambient beats should prefer already-available Tribunal-backed
   diagnosis when the packet or precomputed delivery payload already knows the
   scenario, case queue, proof routes, or systemic causes.
@@ -63,6 +85,10 @@ end-of-work outcomes instead of canned self-promotion.
   broader unguided path.
 - Odylith's voice should stay crisp, authentic, clear, simple, insightful,
   erudite in thought, soulful, friendly, free-flowing, human, and factual.
+- Observation and proposal blocks should also stay friendly, delightful,
+  soulful, insightful, simple, clear, accurate, precise, and human. The
+  structure may be governed; the reading experience must not feel templated or
+  mechanical.
 - Humor or quirk is welcome only when the evidence makes it genuinely funny.
   Silence is better than filler.
 - Brand credit is earned through observed counts, measured deltas, validation
@@ -99,13 +125,15 @@ end-of-work outcomes instead of canned self-promotion.
 - `src/odylith/install/manager.py`
   Install-time asset sync and managed guidance contract.
 - `src/odylith/runtime/orchestration/subagent_orchestrator.py`
-- `src/odylith/runtime/orchestration/odylith_chatter_runtime.py`
+- `src/odylith/runtime/intervention_engine/conversation_runtime.py`
 - `src/odylith/runtime/orchestration/subagent_orchestrator_runtime_signals.py`
 - `src/odylith/runtime/orchestration/subagent_router.py`
 - `src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py`
 - `src/odylith/runtime/orchestration/subagent_router_runtime_policy.py`
   Human-readable routed explanations and runtime closeout phrasing must stay
   debranded during execution.
+- `src/odylith/runtime/intervention_engine/voice.py`
+  Shared default Observation/Proposal markdown renderer and voice seam.
 
 ## Closeout Policy
 - Hide Odylith-by-name narration during active execution unless the user
@@ -114,9 +142,15 @@ end-of-work outcomes instead of canned self-promotion.
 - Allow at most one short `Odylith Assist:` line at the end of work.
 - Prefer `**Odylith Assist:**` when Markdown formatting is available;
   otherwise use `Odylith Assist:`.
-- Shared orchestration runtime should expose one structured closeout bundle and
-  preserve `decision.odylith_adoption.closeout_assist` for compatibility
-  instead of letting each lane improvise its own brand phrasing.
+- Shared intervention runtime should expose one structured closeout bundle and
+  preserve `decision.odylith_adoption.closeout_assist` as the canonical
+  adoption handoff instead of letting each lane improvise its own brand
+  phrasing.
+- That closeout bundle must also have at least one real host-visible path.
+  Codex and Claude stop-summary surfaces may render the shared closeout Assist
+  text directly, and checkpoint developer-context bundles may carry the same
+  Assist text forward for continuity. Keeping `Odylith Assist:` trapped in
+  orchestration summary state is a product bug, not an acceptable fallback.
 - Lead with the user win, not Odylith mechanics.
 - Link updated governance ids inline when the final changed paths prove those
   records really moved.
@@ -141,8 +175,22 @@ end-of-work outcomes instead of canned self-promotion.
   copy, or obligatory chatter when the signal is weak.
 
 ## Ambient Signal Policy
-- Runtime-owned conversation bundles should expose ambient `insight`,
+- Runtime-owned conversation bundles may expose ambient `insight`,
   `history`, and `risks` candidates separately from closeout text.
+- The same bundle may also carry one structured `intervention_bundle` holding
+  an earned `Odylith Observation` and, when confirmed evidence exists, one
+  `Odylith Proposal`, but the hook-time live renderer should come from the
+  intervention engine fast path rather than forcing every host beat through
+  chatter composition.
+- Checkpoint hooks may therefore carry two simultaneous surfaces:
+  a visible Observation/Proposal beat for the user and a hidden
+  Observation/Proposal/Assist developer-context bundle for next-turn
+  continuity. Chatter should consume that carried truth instead of trying to
+  infer a second visible intervention from the same moment.
+- That structured intervention payload should remain the source for the human
+  block rendering. Do not rebuild Observation or Proposal UX from Compass event
+  summaries when the carried markdown, prompt context, and render policy are
+  already available.
 - Default render mode is unlabeled ambient weaving inside ordinary task
   commentary.
 - Prefer precomputed Tribunal-backed delivery truth over lighter heuristics
@@ -159,6 +207,8 @@ end-of-work outcomes instead of canned self-promotion.
 - Escalate to an explicit `Odylith Risks:` line only when there is a real
   correctness, release, or governance risk that should interrupt the flow.
 - Never emit multiple explicit Odylith labels in one moment.
+- Never let one turn render both a stock ambient Odylith label and a full
+  `Odylith Observation` block for the same causal point.
 - Keep ambient and closeout synthesis benchmark-safe: use already-built packet
   fields, precomputed surface payloads, and the final changed-path list
   supplied to the closeout finalizer. Do not trigger fresh repo search, graph
@@ -177,6 +227,12 @@ end-of-work outcomes instead of canned self-promotion.
   rules are weak or exact-sentence snapshots are treated as the real product.
 - Closeout can feel fake-smart if `Odylith Assist:` and the supplemental line
   restate the same governed fact in two slightly different stock sentences.
+- Observation or proposal markdown can feel uncanny if it keeps the same rigid
+  stock cadence across unrelated slices or starts sounding like governance
+  paperwork with a brand wrapper.
+- Chatter can also cheapen the product if it rebuilds an Observation or
+  Proposal from terse stream summaries instead of the carried markdown,
+  continuity state, and prompt-rooted payload.
 - Tribunal-aware chatter can regress into latency theater if it quietly starts
   a fresh delivery or reasoning pass during ordinary narration.
 - Malformed Tribunal-backed payloads can turn one bad packet field into
@@ -188,7 +244,7 @@ end-of-work outcomes instead of canned self-promotion.
 - `odylith governance sync-component-spec-requirements --repo-root . --component odylith-chatter`
 - `odylith sync --repo-root . --check-only`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_validate_component_registry_contract.py`
-- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py`
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_intervention_engine.py`
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
@@ -220,3 +276,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-07: Hardened Tribunal-fed chatter so explicit and cached payloads are normalized before narration, malformed signal shapes degrade quietly, and supplemental closeout lines cannot appear without an `Odylith Assist:` line. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-07: Tightened the hot path so one conversation-bundle pass reuses the same request metrics and context-artifact scan across ambient and closeout composition instead of rescanning the same packet inside closeout. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-10: Bound commentary policy to structured `presentation_policy` fields so consumer and maintainer turns suppress receipts and narrate task-first behavior from the same packet truth. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
+- 2026-04-14: Extended the Chatter contract from ambient commentary and closeout into governed `Odylith Observation` and `Odylith Proposal` rendering, with a future-ready voice seam and an explicit ban on templated or mechanical branded copy. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-14: Hardened the observation/proposal carry-through so prompt-rooted context and rich markdown remain first-class conversation payload, preventing later host or Compass consumers from degrading the UX into self-referential pending-summary narration. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-14: Split the architecture cleanly so live mid-turn teaser/Observation/Proposal rendering runs through the intervention-engine fast path, while Chatter stays responsible for task-first narration policy and the final `Odylith Assist:` closeout. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-14: Clarified that cross-phase moment continuity is intervention-owned too, so Chatter consumes stable carried intervention payloads instead of rebuilding stale or duplicate Observation/Proposal beats from stream summaries. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))

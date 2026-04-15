@@ -99,8 +99,56 @@
   Compass can stitch routed delegation evidence into the timeline.
 - `Stop` summary capture runs through
   `./.odylith/bin/odylith claude stop-summary --repo-root .`, which filters
-  trivial or question-shaped stop messages and only logs a Compass
-  `implementation` event when the message looks like a real action summary.
+  trivial or question-shaped stop messages, logs a Compass
+  `implementation` event when the message looks like a real action summary,
+  and may emit one visible stop surface carrying the earned Observation plus a
+  short `Odylith Assist:` line from the shared closeout bundle.
+- Claude `UserPromptSubmit`, `Stop`, and `PostToolUse` observation lanes all
+  route through the shared
+  `src/odylith/runtime/intervention_engine/` core. `UserPromptSubmit` may emit
+  one teaser sentence only; `Stop` or `PostToolUse` may upgrade that into a
+  full `**Odylith Observation**`; governed write suggestions stay inside one
+  confirmation-gated `Odylith Proposal`.
+- `PostToolUse` is the primary visible intervention lane. When the recovered
+  bundle earns an Observation or Proposal, Claude should surface that live
+  beat through a visible hook `systemMessage` and also carry the full
+  Observation/Proposal/Assist bundle through top-level `additionalContext` so
+  the next turn keeps the same continuity.
+- Success-only governance refresh receipts must stay quiet when an earned live
+  intervention exists. If refresh fails or is skipped, Claude may append that
+  failure-level status after the visible Observation/Proposal beat instead of
+  replacing it.
+- That live path is intervention-engine-owned on purpose. Do not route Claude
+  prompt, stop, or post-edit hooks through the heavier closeout chatter stack
+  just to render teaser/Observation/Proposal text.
+- `Stop` is the fallback closeout lane, not the primary delightful
+  intervention surface. Use it to recover a missed late Observation or a
+  shared `Odylith Assist:` closeout beat, not as the only place users can ever
+  see the intervention.
+- Empty or missing hook session ids must fall back to a stable host-local
+  synthetic session token. Claude must never bleed recent prompt or changed-path
+  memory from one session into another just because the payload omitted
+  `session_id`.
+- `UserPromptSubmit` should still surface a truthful teaser when the signal is
+  real even if launcher-backed anchor resolution is unavailable. Missing
+  launcher context may suppress the anchor summary, not the earned teaser
+  itself.
+- In Claude, the first Observation line must make the interjection explicit
+  and stay as short as `Odylith Assist`. Proposal should stay a short ruled
+  block, not a sectioned mini card. If the surface reads like filler or the
+  user cannot tell why Odylith stepped in, the host experience has failed even
+  when the underlying facts are correct.
+- The same conversation moment must keep one stable intervention identity
+  across `UserPromptSubmit`, `Stop`, and `PostToolUse`. Claude should feel
+  like one evolving intervention path, not a fresh branded interruption at
+  every hook boundary.
+- `PostToolUse` may surface the first eligible Proposal even when the matching
+  Observation was already shown earlier in the session. Do not force Claude to
+  repeat the same Observation block just to unlock Proposal copy.
+- Claude must not invent Claude-only labels, alternate confirmation text, or a
+  different narration temperature for those blocks. The Observation/Proposal
+  markdown contract is the same shared product surface Codex uses across
+  detached `source-local`, pinned dogfood, and consumer lanes.
 - Statusline rendering runs through the CLI-backed
   `./.odylith/bin/odylith claude statusline --repo-root .` command, called
   from `.claude/statusline.sh`.

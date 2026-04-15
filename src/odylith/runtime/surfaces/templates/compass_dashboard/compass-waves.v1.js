@@ -163,7 +163,7 @@
           hideProgramFocusTitle: true,
           hideProgramFocusPanel: true,
           boardWrapperClass: "",
-          sectionClassName: "execution-wave-section-flat",
+          sectionClassName: "execution-wave-section-program-card",
         },
       );
       };

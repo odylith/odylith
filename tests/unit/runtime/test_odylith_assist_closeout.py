@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from odylith.runtime.orchestration import odylith_chatter_delivery_runtime
-from odylith.runtime.orchestration import odylith_chatter_runtime
+from odylith.runtime.intervention_engine import delivery_runtime
+from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 
 
@@ -57,7 +57,7 @@ def test_closeout_assist_builds_shortest_safe_path_line_semantically() -> None:
         evidence_cone_grounded=True,
     )
 
-    assist = odylith_chatter_runtime.compose_closeout_assist(
+    assist = conversation_runtime.compose_closeout_assist(
         request=request,
         decision=_decision(),
         adoption={
@@ -91,7 +91,7 @@ def test_closeout_assist_includes_linked_updated_governance_artifacts() -> None:
         evidence_cone_grounded=True,
     )
 
-    assist = odylith_chatter_runtime.compose_closeout_assist(
+    assist = conversation_runtime.compose_closeout_assist(
         request=request,
         decision=_decision(),
         adoption={
@@ -137,7 +137,7 @@ def test_closeout_assist_suppresses_routing_receipts_for_task_first_fast_lane() 
         },
     )
 
-    assist = odylith_chatter_runtime.compose_closeout_assist(
+    assist = conversation_runtime.compose_closeout_assist(
         request=request,
         decision=_decision(mode="parallel_write", delegated_leaf_count=2),
         adoption={
@@ -162,7 +162,7 @@ def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> 
         prompt="Tighten the governed slice.",
         workstreams=["B-031"],
         components=["odylith-chatter"],
-        candidate_paths=["src/odylith/runtime/orchestration/odylith_chatter_runtime.py"],
+        candidate_paths=["src/odylith/runtime/intervention_engine/conversation_runtime.py"],
         needs_write=True,
         evidence_cone_grounded=True,
         context_signals={
@@ -175,7 +175,7 @@ def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> 
         },
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={
@@ -195,11 +195,13 @@ def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> 
 
     ambient = dict(bundle["ambient_signals"])
     closeout = dict(bundle["closeout_bundle"])
+    intervention = dict(bundle["intervention_bundle"])
 
     assert ambient["selected_signal"] == "risks"
     assert ambient["risks"]["eligible"] is True
     assert ambient["risks"]["render_hint"] == "explicit_label"
     assert "Odylith Risks:" in ambient["risks"]["markdown_text"]
+    assert intervention["render_policy"]["voice_contract"]["templated_or_mechanical_forbidden"] is True
     assert closeout["selected_supplemental"] == "risks"
     assert closeout["risks"]["render_hint"] == "supplemental_line"
     assert closeout["render_policy"]["max_lines"] == 2
@@ -215,7 +217,7 @@ def test_conversation_bundle_suppresses_history_when_no_strong_prior_exists() ->
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={
@@ -272,7 +274,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Pa
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -338,7 +340,7 @@ def test_conversation_bundle_does_not_lint_live_verified_claims(tmp_path: Path) 
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -383,7 +385,7 @@ def test_conversation_bundle_rewrites_unqualified_resolution_terms_in_closeout(
     )
 
     monkeypatch.setattr(
-        odylith_chatter_runtime,
+        conversation_runtime,
         "compose_closeout_assist",
         lambda **_kwargs: {
             "eligible": True,
@@ -409,7 +411,7 @@ def test_conversation_bundle_rewrites_unqualified_resolution_terms_in_closeout(
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -457,7 +459,7 @@ def test_delivery_signal_snapshot_preserves_scope_proof_state_resolution(tmp_pat
         },
     )
 
-    snapshot = odylith_chatter_delivery_runtime.delivery_signal_snapshot(tmp_path)
+    snapshot = delivery_runtime.delivery_signal_snapshot(tmp_path)
 
     assert snapshot["scopes_by_id"][("workstream", "B-062")]["proof_state_resolution"] == {
         "state": "ambiguous",
@@ -500,7 +502,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_insight_signal(tmp_path:
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -540,7 +542,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_history_signal(tmp_path:
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -556,7 +558,7 @@ def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artif
     tmp_path: Path,
 ) -> None:
     monkeypatch.setattr(
-        odylith_chatter_delivery_runtime,
+        delivery_runtime,
         "delivery_signal_snapshot",
         lambda repo_root: (_ for _ in ()).throw(AssertionError("explicit Tribunal signals should bypass cached artifact lookup")),
     )
@@ -585,7 +587,7 @@ def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artif
         },
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -612,7 +614,7 @@ def test_conversation_bundle_sanitizes_malformed_explicit_tribunal_payload() -> 
         },
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -655,7 +657,7 @@ def test_conversation_bundle_normalizes_string_latent_causes_from_delivery_artif
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -672,7 +674,7 @@ def test_conversation_bundle_skips_precomputed_tribunal_lookup_without_anchors(
     tmp_path: Path,
 ) -> None:
     monkeypatch.setattr(
-        odylith_chatter_delivery_runtime,
+        delivery_runtime,
         "delivery_signal_snapshot",
         lambda repo_root: (_ for _ in ()).throw(AssertionError("delivery artifact lookup should stay skipped")),
     )
@@ -683,7 +685,7 @@ def test_conversation_bundle_skips_precomputed_tribunal_lookup_without_anchors(
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -725,7 +727,7 @@ def test_closeout_supplemental_requires_assist_even_when_ambient_risk_is_real(tm
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": False, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -743,8 +745,8 @@ def test_conversation_bundle_reuses_metrics_and_context_scan_for_closeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     counts = {"metrics": 0, "context_rows": 0}
-    original_metrics = odylith_chatter_runtime._evidence_metrics
-    original_context_rows = odylith_chatter_runtime._context_artifact_rows
+    original_metrics = conversation_runtime._evidence_metrics
+    original_context_rows = conversation_runtime._context_artifact_rows
 
     def counting_metrics(*, request: object, decision: object, adoption: object) -> dict[str, object]:
         counts["metrics"] += 1
@@ -754,8 +756,8 @@ def test_conversation_bundle_reuses_metrics_and_context_scan_for_closeout(
         counts["context_rows"] += 1
         return original_context_rows(repo_root=repo_root, value=value)
 
-    monkeypatch.setattr(odylith_chatter_runtime, "_evidence_metrics", counting_metrics)
-    monkeypatch.setattr(odylith_chatter_runtime, "_context_artifact_rows", counting_context_rows)
+    monkeypatch.setattr(conversation_runtime, "_evidence_metrics", counting_metrics)
+    monkeypatch.setattr(conversation_runtime, "_context_artifact_rows", counting_context_rows)
     request = orchestrator.OrchestrationRequest(
         prompt="Tighten the chatter contract.",
         workstreams=["B-031"],
@@ -765,7 +767,7 @@ def test_conversation_bundle_reuses_metrics_and_context_scan_for_closeout(
         context_signals={"context_packet": {"selected_id": "B-031"}},
     )
 
-    odylith_chatter_runtime.compose_conversation_bundle(
+    conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -790,7 +792,7 @@ def test_conversation_bundle_suppresses_redundant_closeout_insight_when_assist_a
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={

@@ -444,6 +444,7 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert "function renderReleaseGroups(payload, state)" in releases_js
     assert "Release Targets" in releases_js
     assert "<h2>Programs</h2>" in waves_js
+    assert 'sectionClassName: "execution-wave-section-program-card"' in waves_js
     assert "Targeted Workstreams" in releases_js
     assert "Completed Workstreams" in releases_js
     assert 'group.status === "planned"' in releases_js

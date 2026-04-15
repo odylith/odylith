@@ -63,6 +63,8 @@ _GOVERNANCE_COMMAND_MODULES = {
     "sync-component-spec-requirements": "odylith.runtime.governance.sync_component_spec_requirements",
     "validate-guidance-portability": "odylith.runtime.governance.validate_guidance_portability",
     "validate-plan-traceability": "odylith.runtime.governance.validate_plan_traceability_contract",
+    "intervention-preview": "odylith.runtime.intervention_engine.cli",
+    "capture-apply": "odylith.runtime.intervention_engine.cli",
 }
 _VALIDATE_COMMAND_MODULES = {
     "backlog-contract": "odylith.runtime.governance.validate_backlog_contract",
@@ -1264,6 +1266,18 @@ def _cmd_governance(args: argparse.Namespace) -> int:
     forwarded = ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded)
     if args.governance_command == "version-truth":
         return _run_module_main(_VERSION_TRUTH_MODULE, [*forwarded, "check"])
+    if args.governance_command in {"intervention-preview", "capture-apply"}:
+        forwarded = ["--repo-root", str(Path(args.repo_root).expanduser().resolve())]
+        payload_json = str(getattr(args, "payload_json", "") or "").strip()
+        if payload_json:
+            forwarded.extend(["--payload-json", payload_json])
+        if bool(getattr(args, "decline", False)):
+            forwarded.append("--decline")
+        forwarded.extend(getattr(args, "forwarded", []))
+        return _run_module_main(
+            _GOVERNANCE_COMMAND_MODULES[args.governance_command],
+            [args.governance_command, *forwarded],
+        )
     return _run_module_main(_GOVERNANCE_COMMAND_MODULES[args.governance_command], forwarded)
 
 
@@ -1466,6 +1480,17 @@ def _cmd_compass_refresh(args: argparse.Namespace) -> int:
         forwarded.append("--wait")
     if bool(getattr(args, "status", False)):
         forwarded.append("--status")
+    forwarded.extend(["--runtime-mode", str(getattr(args, "runtime_mode", "auto"))])
+    if bool(getattr(args, "force_brief", False)):
+        forwarded.append("--force-brief")
+    return _run_module_main(_COMPASS_REFRESH_MODULE, forwarded)
+
+
+def _cmd_compass_deep_refresh(args: argparse.Namespace) -> int:
+    blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+    if blocked:
+        return blocked
+    forwarded = ["--repo-root", str(args.repo_root), "--wait"]
     forwarded.extend(["--runtime-mode", str(getattr(args, "runtime_mode", "auto"))])
     if bool(getattr(args, "force_brief", False)):
         forwarded.append("--force-brief")
@@ -1890,9 +1915,15 @@ def build_parser() -> argparse.ArgumentParser:
             "Validate maintained guidance for portable Python and pytest invocation patterns.",
         ),
         ("validate-plan-traceability", "Validate technical-plan traceability bindings."),
+        ("intervention-preview", "Build one Odylith Observation and Proposal bundle from an observation envelope."),
+        ("capture-apply", "Apply or decline one Odylith Proposal payload."),
     ):
         child_parser = governance_subparsers.add_parser(command, help=help_text)
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
+        if command in {"intervention-preview", "capture-apply"}:
+            child_parser.add_argument("--payload-json", default="", help="JSON payload for the observation or proposal.")
+        if command == "capture-apply":
+            child_parser.add_argument("--decline", action="store_true", help="Decline the proposal instead of applying it.")
         child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
     backlog = subparsers.add_parser("backlog", help="Create and maintain Radar backlog records.")
@@ -2030,7 +2061,7 @@ def build_parser() -> argparse.ArgumentParser:
     compass_log.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
     compass_refresh = compass_subparsers.add_parser(
         "refresh",
-        help="Refresh Compass runtime artifacts with status and wait support.",
+        help="Quickly rerender Compass runtime artifacts.",
     )
     compass_refresh.add_argument("--repo-root", default=".", help="Consumer repository root.")
     compass_refresh.add_argument(
@@ -2050,6 +2081,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Read the local Compass refresh state without mutating it.",
     )
     compass_refresh.add_argument(
+        "--force-brief",
+        action="store_true",
+        help="Force re-narration of the standup brief even if a recent successful brief exists.",
+    )
+    compass_deep_refresh = compass_subparsers.add_parser(
+        "deep-refresh",
+        help="Rerender Compass and wait for standup-brief settlement.",
+    )
+    compass_deep_refresh.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    compass_deep_refresh.add_argument(
+        "--runtime-mode",
+        choices=("auto", "standalone", "daemon"),
+        default="auto",
+        help="Resolve the Compass refresh runtime once up front.",
+    )
+    compass_deep_refresh.add_argument(
         "--force-brief",
         action="store_true",
         help="Force re-narration of the standup brief even if a recent successful brief exists.",
@@ -2329,7 +2376,7 @@ def main(argv: list[str] | None = None) -> int:
             if forwarded and str(forwarded[0]).strip() == "compare":
                 return _cmd_benchmark(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
             return _run_module_main(_CONTEXT_ENGINE_MODULE, ["--repo-root", repo_root, "benchmark", *forwarded])
-        if tokens[0] == "compass" and len(tokens) >= 2 and tokens[1] in {"log", "refresh", "update", "restore-history", "watch-transactions"}:
+        if tokens[0] == "compass" and len(tokens) >= 2 and tokens[1] in {"log", "refresh", "deep-refresh", "update", "restore-history", "watch-transactions"}:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             compass_command = tokens[1]
             if _help_requested(forwarded):
@@ -2343,6 +2390,8 @@ def main(argv: list[str] | None = None) -> int:
                 args = parser.parse_args(tokens)
                 if compass_command == "refresh":
                     return _cmd_compass_refresh(args)
+                if compass_command == "deep-refresh":
+                    return _cmd_compass_deep_refresh(args)
                 if compass_command == "update":
                     return _cmd_compass_update(args)
                 if compass_command == "restore-history":
@@ -2355,6 +2404,11 @@ def main(argv: list[str] | None = None) -> int:
                 refresh_args = refresh_parser.parse_args(tokens)
                 refresh_args.repo_root = repo_root
                 return _cmd_compass_refresh(refresh_args)
+            if compass_command == "deep-refresh":
+                refresh_parser = build_parser()
+                refresh_args = refresh_parser.parse_args(tokens)
+                refresh_args.repo_root = repo_root
+                return _cmd_compass_deep_refresh(refresh_args)
             if compass_command == "update":
                 return _cmd_compass_update(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
             if compass_command == "restore-history":
@@ -2499,6 +2553,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_compass_log(args)
     if args.command == "compass" and args.compass_command == "refresh":
         return _cmd_compass_refresh(args)
+    if args.command == "compass" and args.compass_command == "deep-refresh":
+        return _cmd_compass_deep_refresh(args)
     if args.command == "compass" and args.compass_command == "update":
         return _cmd_compass_update(args)
     if args.command == "compass" and args.compass_command == "restore-history":

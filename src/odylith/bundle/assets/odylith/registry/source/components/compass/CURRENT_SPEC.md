@@ -480,13 +480,14 @@ churn does not drown out meaningful implementation evidence.
   checkpoint summary, or primary narrative infers an anchor workstream, the
   visible chip row must include that workstream and order it first before
   broader linked scope pills are trimmed for space.
-- Minute-scale `full strict live refresh` is retired. Compass does not expose,
-  document, or promise a second deep-refresh mode anymore because the product
-  could not make that contract truthful, cheap, and fast at once. The public
-  Compass command surface is just `odylith compass refresh` now. If an agent
-  or operator asks for a "full" Compass refresh in prose, route that intent to
-  `odylith compass refresh --repo-root . --wait` instead of inventing a second
-  noun, flag, or stricter acceptance bar.
+- Minute-scale `full strict live refresh` is retired. Compass keeps one
+  shell-safe refresh profile and exposes two operator verbs over that same
+  bounded lane: `odylith compass refresh` for the quick cache-first rerender,
+  and `odylith compass deep-refresh` for the same rerender plus standup-brief
+  settlement. If an agent or operator asks for a "full" Compass refresh in
+  prose, route that intent to `odylith compass deep-refresh --repo-root .`
+  instead of inventing another profile, noun, flag, or stricter acceptance
+  bar.
 - When live provider narration is needed for Compass briefs or similar
   refresh-time brief enrichment, detect the active local host and stay on the
   bounded structured local ladder with `medium` reasoning only. On Codex that means
@@ -603,7 +604,8 @@ or component definitions.
 ## Validation Playbook
 ### Compass
 - `odylith compass refresh --repo-root . --status`
-- `odylith compass refresh --repo-root . --wait`
+- `odylith compass refresh --repo-root .`
+- `odylith compass deep-refresh --repo-root .`
 - `odylith compass update --repo-root . --help`
 - `odylith compass restore-history --repo-root . --help`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_compass_dashboard_base.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_compass_standup_brief_narrator.py`

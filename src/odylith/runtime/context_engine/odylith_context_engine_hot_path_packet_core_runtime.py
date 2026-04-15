@@ -1075,12 +1075,19 @@ def _compact_hot_path_fallback_scan(
 ) -> dict[str, Any]:
     if not bool(fallback_scan.get("performed")):
         return {}
+    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), Mapping) else {}
+    packet_state = str(context_packet.get("packet_state", "")).strip()
+    suppress_result_paths = bool(
+        packet_state in {"gated_ambiguous", "gated_broad_scope"}
+        or bool(route.get("narrowing_required"))
+        or not bool(route.get("route_ready"))
+    )
     compact_fallback = {
         "recommended": True,
         "reason": str(full_scan_reason or "").strip() or str(fallback_scan.get("reason", "")).strip(),
         "performed": True,
     }
-    if isinstance(fallback_scan.get("results"), list):
+    if not suppress_result_paths and isinstance(fallback_scan.get("results"), list):
         results = [
             {
                 key: value
@@ -1105,6 +1112,4 @@ def _compact_hot_path_fallback_scan(
                 break
         if deduped_results:
             compact_fallback["results"] = deduped_results
-    if not compact_fallback.get("results"):
-        return {}
     return compact_fallback

@@ -1,8 +1,8 @@
 # Execution Governance
-Last updated: 2026-04-13
+Last updated: 2026-04-14
 
 
-Last updated (UTC): 2026-04-13
+Last updated (UTC): 2026-04-14
 
 ## Purpose
 Execution Governance is Odylith's constraint-aware execution runtime. It
@@ -37,6 +37,9 @@ runtime profile; it must not redefine the shared execution policy surface.
   [Proof State](../proof-state/CURRENT_SPEC.md)
 - diagnosis of why the current posture exists; that belongs to
   [Tribunal](../tribunal/CURRENT_SPEC.md)
+- friendly observation/proposal rendering or governed write suggestion
+  assembly; that belongs to
+  [Governance Intervention Engine](../governance-intervention-engine/CURRENT_SPEC.md)
 - free-form execution or host transport by itself; callers still own actual
   tool invocation
 
@@ -46,6 +49,10 @@ runtime profile; it must not redefine the shared execution policy surface.
   move?"
 - Delivery Intelligence, Proof State, and Tribunal are evidence inputs to the
   execution-governance layer, not substitutes for it.
+- Governance Intervention Engine may consume execution-governance posture as an
+  admissibility and urgency signal, but it must not redefine the execution
+  contract or bypass deny/defer state just because a proposal would sound
+  helpful.
 - Router, Orchestrator, and Remediator may still shape delegated work, but
   they should route through execution-governance policy instead of bypassing
   admissibility.
@@ -247,6 +254,10 @@ program schema.
   claim-tier truth.
 - [Tribunal](../tribunal/CURRENT_SPEC.md) supplies diagnosis when the problem
   is why the posture exists.
+- [Governance Intervention Engine](../governance-intervention-engine/CURRENT_SPEC.md)
+  consumes execution-governance posture as one evidence source for whether a
+  corroborated `Odylith Observation` or `Odylith Proposal` is timely and safe
+  to surface.
 - [Subagent Router](../subagent-router/CURRENT_SPEC.md) and
   [Subagent Orchestrator](../subagent-orchestrator/CURRENT_SPEC.md) consume
   execution-governance policy instead of acting as the first policy boundary;
@@ -265,6 +276,10 @@ program schema.
 - If host-profile fields change, keep them aligned with the host-neutral
   contract established by cross-host runtime work; never smuggle Codex-only
   assumptions into the shared shape.
+- If admissibility or urgency summaries consumed by intervention rendering
+  change, update Governance Intervention Engine and its cross-host tests
+  together so observations and proposals stay truthful across Codex, Claude,
+  maintainer `source-local`, pinned dogfood, and consumer lanes.
 - If program/wave authoring semantics change, update the CLI sidecar and the
   canonical execution-wave contract together rather than forking behavior.
 
@@ -288,3 +303,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-11: Grew the execution profile ladder to a `(host_family, profile) -> (model, reasoning_effort)` map so Claude delegation resolves to haiku, sonnet, or opus while Codex tuples stay byte-identical, and flipped the host-capability contract to declare `supports_explicit_model_selection=True` for both validated host families. (Plan: [B-084](odylith/radar/radar.html?view=plan&workstream=B-084), Bug: [CB-103](odylith/casebook/casebook.html?view=bug&bug=CB-103))
 - 2026-04-12: Hardened the core engine with inline user-correction promotion, richer closure domains, typed pressure signals, sync-aware runtime provenance, and shared execution-event shaping so packet summaries, shell or Compass posture, and sync-backed surfaces all explain the same admissibility state. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072), Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-13: Optimized the execution engine for Claude Code with host-specific capability fields, Claude presentation defaults, context-pressure events, artifact-path lane guards, and two Claude-specific history-rule failure classes. Wired execution governance into all three delivery paths that previously bypassed it: the non-hot-path bootstrap compactor, the hot-path bootstrap delivery, and the context dossier delivery. 49 tests, 385 regression pass. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-14: Clarified Execution Governance as an intervention input rather than an intervention renderer: it now supplies shared admissibility and urgency posture to the new conversation-observation engine without owning the human voice or proposal UX. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))

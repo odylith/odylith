@@ -780,6 +780,126 @@ def _supplement_architecture_live_prompt_payload(
     return payload
 
 
+def _extend_boundary_hints_for_family(
+    *,
+    boundary_hints: list[str],
+    family: str,
+    scenario: Mapping[str, Any],
+) -> None:
+    if family == "docs_code_closeout":
+        boundary_hints.append(
+            "For docs closeout slices, keep writes on the listed README/docs surfaces and any explicit graph or source anchor. Do not widen into unrelated Registry specs, plans, Atlas, Casebook, or other documentation families unless a listed anchor or validator failure points there directly."
+        )
+    if family == "merge_heavy_change":
+        boundary_hints.append(
+            "For merge-heavy router or governed-doc slices, treat the listed router skill and governed operations docs as the whole writable boundary. If those anchors already agree and the focused validator passes, close successfully with no file changes."
+        )
+        boundary_hints.append(
+            "Unrelated Registry, Atlas, or other governance drift elsewhere in the repo is a follow-up note, not a blocker for this bounded closeout."
+        )
+    if family == "component_governance":
+        boundary_hints.append(
+            "For component-governance slices, keep the listed Registry entry, component spec, Mermaid source, and paired Atlas catalog or index artifacts synchronized as one bounded truth set."
+        )
+        boundary_hints.append(
+            "If the listed component-governance validators already pass on that bounded truth set, stop with no file changes instead of restating the contract through speculative Registry, Atlas, or benchmark-doc edits."
+        )
+        boundary_hints.append(
+            "Do not stop after updating only the component spec or Mermaid source when a listed catalog or index artifact still needs the matching change."
+        )
+        boundary_hints.append(
+            "If the required paths also list benchmark docs or maintainer guidance, treat those docs as part of the same bounded truth set when the focused validator still reports contract drift there; do not leave them as read-only support context."
+        )
+        boundary_hints.append(
+            "Benchmark runner helpers, graph generators, benchmark docs, and maintainer publication skills are out of scope on this family unless they are explicit required paths or a focused validator failure points there directly."
+        )
+        boundary_hints.append(
+            "Do not widen into `src/odylith/cli.py`, validator harness helpers, install or release runbooks, or broader benchmark publication infrastructure unless one of those exact files is an explicit required path or the focused validator failure cites it directly."
+        )
+    if family == "governed_surface_sync":
+        boundary_hints.append(
+            "For governed-surface sync slices, keep writes on the listed governance surface docs and the named Radar index only. If the focused sync validators already pass on that bounded slice, stop with no file changes instead of widening into store code, runtime helpers, or broader backlog cleanup."
+        )
+        boundary_hints.append(
+            "Treat unrelated Radar ideas, plan docs, Registry inventory, Atlas catalog artifacts, and broader governance maintenance drift as out of scope unless they are explicit required paths or a focused validator failure points there directly."
+        )
+    if family == "cross_surface_governance_sync":
+        boundary_hints.append(
+            "For cross-surface governance sync slices, keep writes on the listed sync engine and paired backlog, plan, Registry, and Atlas surfaces. If the focused sync validator passes on that bounded slice, do not escalate unrelated pre-existing repo drift into a blocked closeout."
+        )
+        boundary_hints.append(
+            "Treat rendered Radar or Compass HTML, backlog JS payloads, traceability JSON, and unrelated Radar idea notes as out of scope unless those exact files are explicit required paths or the focused sync validator points there directly."
+        )
+    if family == "validation_heavy_fix":
+        boundary_hints.append(
+            "For validation-heavy benchmark fixes, keep writable changes on the listed runtime and test anchors. Treat reviewer docs, Registry specs, and maintainer benchmark guidance as read-only references; do not edit README or benchmark docs unless they are explicit changed or required paths."
+        )
+        boundary_hints.append(
+            "Do not rewrite benchmark expectation literals or published delta assertions unless the focused runner check fails locally and the grounded runner logic still contradicts the raw-baseline contract."
+        )
+    if family == "release_publication":
+        boundary_hints.append(
+            "For benchmark publication slices, keep reads and edits on the listed benchmark contracts plus the runner/graphs anchors. Do not inspect adjacent benchmark helpers or secondary benchmark docs unless a listed anchor or validator failure points there directly, and do not rerun `odylith benchmark --repo-root .` during first-pass diagnosis."
+        )
+        boundary_hints.append(
+            "If the current copied artifacts and anchored publication docs already reflect the validated report, stop with no file changes instead of editing benchmark wording."
+        )
+        boundary_hints.append(
+            "Treat graph command output paths and generated SVGs as validator-produced outputs, not manual patch targets. Use repo-relative benchmark doc paths only, and map any absolute graph output back to the corresponding tracked docs/benchmarks target before editing."
+        )
+        boundary_hints.append(
+            "Unrelated dirty evaluation helpers under `src/odylith/runtime/evaluation/`, rendered shell pages, and generated proof SVGs are out of scope unless they are explicit required paths or a focused validator failure points there directly."
+        )
+    if family == "install_upgrade_runtime":
+        boundary_hints.append(
+            "For install/upgrade runtime slices, stay on the listed install manager, runtime, repair, release-contract anchors, and focused validators. If the grounded tree already passes those validators, stop with no file changes instead of widening into activation or policy wording."
+        )
+        boundary_hints.append(
+            "Do not inspect README, pyproject.toml, odylith/*.html shell surfaces, src/odylith/cli.py, or broader context-engine/orchestration helpers on install slices unless a focused install validator fails and points there directly."
+        )
+    if family == "daemon_security":
+        boundary_hints.append(
+            "For daemon/security slices, stay on the listed context-engine and repair anchors plus their focused tests. Do not widen into `src/odylith/cli.py` or adjacent runtime helpers unless a listed anchor or validator failure points there directly."
+        )
+        boundary_hints.append(
+            "Keep the named context-engine guidance and context-engine spec surfaces as the only supporting docs. Do not pull Registry inventory, benchmark publication docs, or unrelated governance records into daemon/security proof slices unless they are explicit required paths."
+        )
+        if bool((scenario or {}).get("allow_noop_completion")):
+            boundary_hints.append(
+                "If the grounded daemon lifecycle anchors and focused daemon validator already pass, stop with no file changes instead of rewriting auth-token persistence, socket transport, or shutdown flow."
+            )
+    if family == "compass_brief_freshness":
+        boundary_hints.append(
+            "For Compass freshness slices, keep the writable boundary on the listed Compass runtime, brief narrator, focused tests, and the named Compass/product runtime surfaces. Do not widen into install, repair, or context-engine docs unless a listed anchor or focused validator failure points there directly."
+        )
+        if bool((scenario or {}).get("allow_noop_completion")):
+            boundary_hints.append(
+                "If the listed Compass freshness validators already pass on that bounded runtime slice, stop with no file changes instead of speculative freshness or narration rewrites."
+            )
+    if family == "consumer_profile_compatibility":
+        boundary_hints.append(
+            "For consumer-profile compatibility slices, keep writes on the listed consumer profile code/tests plus the named AGENTS and component-spec surfaces. Do not widen into component inventory or broader Registry governance unless a listed anchor or focused validator failure points there directly."
+        )
+        if bool((scenario or {}).get("allow_noop_completion")):
+            boundary_hints.append(
+                "If the listed consumer-profile validator already passes on that bounded compatibility slice, stop with no file changes instead of rebinding truth roots or widening into broader Registry governance."
+            )
+    if family in {"cross_file_feature", "exact_anchor_recall", "explicit_workstream", "orchestration_feedback", "orchestration_intelligence"}:
+        boundary_hints.append(
+            "For narrow anchored orchestration slices, keep the boundary on the listed skills and named runtime anchor only. Do not widen into Registry specs, runbooks, Radar ideas, or unrelated orchestration helpers unless they are explicit required paths or a focused validator failure points there directly."
+        )
+        boundary_hints.append(
+            "If the listed anchors already satisfy the focused validator or expectation, stop with no file changes instead of adding adjacent support docs or governance cleanup."
+        )
+    if family == "agent_activation":
+        boundary_hints.append(
+            "For agent-activation slices, keep the boundary on the listed install activation anchors, consumer AGENTS surface, and focused install validators. If the grounded tree already passes those validators, stop with no file changes instead of rewriting install activation or AGENTS guidance wording."
+        )
+        boundary_hints.append(
+            "Do not inspect README, pyproject.toml, odylith/*.html shell surfaces, src/odylith/cli.py, or broader runtime routing helpers on agent-activation slices unless the focused install validator fails and points there directly."
+        )
+
+
 def supplement_live_prompt_payload(
     *,
     repo_root: Path,
@@ -792,6 +912,11 @@ def supplement_live_prompt_payload(
     payload = dict(prompt_payload or {})
     raw_payload = dict(full_payload or {})
     strict_bounded_slice = _strict_bounded_slice(scenario)
+    family = str(scenario.get("family", "")).strip()
+    scenario_required_paths = _scenario_required_paths_for_live_prompt(
+        scenario=scenario,
+        changed_paths=changed_paths,
+    )
     existing_docs = select_live_prompt_support_docs(
         docs=_normalized_string_list(payload.get("docs")),
         changed_paths=changed_paths,
@@ -809,6 +934,18 @@ def supplement_live_prompt_payload(
     if normalized_packet_source not in {"impact", "governance_slice"}:
         if strict_bounded_slice:
             payload = _strip_supporting_surface_hints(payload)
+            payload = _set_context_anchor_explicit_paths(
+                payload,
+                explicit_paths=_dedupe_strings([*changed_paths, *scenario_required_paths]),
+            )
+            boundary_hints = _normalized_string_list(payload.get("boundary_hints"))
+            _extend_boundary_hints_for_family(
+                boundary_hints=boundary_hints,
+                family=family,
+                scenario=scenario,
+            )
+            if boundary_hints:
+                payload["boundary_hints"] = _dedupe_strings(boundary_hints)
             payload["strict_boundary"] = True
             return payload
         if existing_docs:
@@ -816,13 +953,18 @@ def supplement_live_prompt_payload(
         return payload
     if strict_bounded_slice:
         payload = _strip_supporting_surface_hints(payload)
-        strict_doc_explicit_paths = [
-            token
-            for token in _dedupe_strings([str(token).strip() for token in changed_paths if str(token).strip()])
-            if not _looks_like_code_anchor(token) and not _skip_support_doc_candidate(token)
-        ]
-        if strict_doc_explicit_paths:
-            payload = _set_context_anchor_explicit_paths(payload, explicit_paths=strict_doc_explicit_paths)
+        payload = _set_context_anchor_explicit_paths(
+            payload,
+            explicit_paths=_dedupe_strings([*changed_paths, *scenario_required_paths]),
+        )
+        boundary_hints = _normalized_string_list(payload.get("boundary_hints"))
+        _extend_boundary_hints_for_family(
+            boundary_hints=boundary_hints,
+            family=family,
+            scenario=scenario,
+        )
+        if boundary_hints:
+            payload["boundary_hints"] = _dedupe_strings(boundary_hints)
         payload["strict_boundary"] = True
         return payload
 
@@ -853,12 +995,7 @@ def supplement_live_prompt_payload(
         for row in raw_payload.get("components", [])
         if isinstance(row, Mapping) and str(row.get("entity_id", "")).strip()
     ] if isinstance(raw_payload.get("components"), list) else []
-    family = str(scenario.get("family", "")).strip()
     scenario_component = str(scenario.get("component", "")).strip()
-    scenario_required_paths = _scenario_required_paths_for_live_prompt(
-        scenario=scenario,
-        changed_paths=changed_paths,
-    )
     strict_browser_slice = _strict_browser_slice(
         scenario_required_paths=scenario_required_paths,
         changed_paths=changed_paths,
@@ -1067,58 +1204,13 @@ def supplement_live_prompt_payload(
             if boundary_hints:
                 payload["boundary_hints"] = _dedupe_strings(boundary_hints)
             return payload
-    if family == "docs_code_closeout":
-        boundary_hints.append(
-            "For docs closeout slices, keep writes on the listed README/docs surfaces and any explicit graph or source anchor. Do not widen into unrelated Registry specs, plans, Atlas, Casebook, or other documentation families unless a listed anchor or validator failure points there directly."
-        )
-    if family == "merge_heavy_change":
-        boundary_hints.append(
-            "For merge-heavy router or governed-doc slices, treat the listed router skill and governed operations docs as the whole writable boundary. If those anchors already agree and the focused validator passes, close successfully with no file changes."
-        )
-        boundary_hints.append(
-            "Unrelated Registry, Atlas, or other governance drift elsewhere in the repo is a follow-up note, not a blocker for this bounded closeout."
-        )
-    if family == "component_governance":
-        boundary_hints.append(
-            "For component-governance slices, keep the listed Registry entry, component spec, Mermaid source, and paired Atlas catalog or index artifacts synchronized as one bounded truth set."
-        )
-        boundary_hints.append(
-            "If the listed component-governance validators already pass on that bounded truth set, stop with no file changes instead of restating the contract through speculative Registry, Atlas, or benchmark-doc edits."
-        )
-        boundary_hints.append(
-            "Do not stop after updating only the component spec or Mermaid source when a listed catalog or index artifact still needs the matching change."
-        )
-        boundary_hints.append(
-            "If the required paths also list benchmark docs or maintainer guidance, treat those docs as part of the same bounded truth set when the focused validator still reports contract drift there; do not leave them as read-only support context."
-        )
-        boundary_hints.append(
-            "Benchmark runner helpers, graph generators, benchmark docs, and maintainer publication skills are out of scope on this family unless they are explicit required paths or a focused validator failure points there directly."
-        )
-        boundary_hints.append(
-            "Do not widen into `src/odylith/cli.py`, validator harness helpers, install or release runbooks, or broader benchmark publication infrastructure unless one of those exact files is an explicit required path or the focused validator failure cites it directly."
-        )
     if family == "governed_surface_sync":
         support_docs = _dedupe_strings([*changed_support_docs, *required_support_docs, *support_docs])[:support_doc_limit]
-        boundary_hints.append(
-            "For governed-surface sync slices, keep writes on the listed governance surface docs and the named Radar index only. If the focused sync validators already pass on that bounded slice, stop with no file changes instead of widening into store code, runtime helpers, or broader backlog cleanup."
-        )
-        boundary_hints.append(
-            "Treat unrelated Radar ideas, plan docs, Registry inventory, Atlas catalog artifacts, and broader governance maintenance drift as out of scope unless they are explicit required paths or a focused validator failure points there directly."
-        )
-    if family == "cross_surface_governance_sync":
-        boundary_hints.append(
-            "For cross-surface governance sync slices, keep writes on the listed sync engine and paired backlog, plan, Registry, and Atlas surfaces. If the focused sync validator passes on that bounded slice, do not escalate unrelated pre-existing repo drift into a blocked closeout."
-        )
-        boundary_hints.append(
-            "Treat rendered Radar or Compass HTML, backlog JS payloads, traceability JSON, and unrelated Radar idea notes as out of scope unless those exact files are explicit required paths or the focused sync validator points there directly."
-        )
-    if family == "validation_heavy_fix":
-        boundary_hints.append(
-            "For validation-heavy benchmark fixes, keep writable changes on the listed runtime and test anchors. Treat reviewer docs, Registry specs, and maintainer benchmark guidance as read-only references; do not edit README or benchmark docs unless they are explicit changed or required paths."
-        )
-        boundary_hints.append(
-            "Do not rewrite benchmark expectation literals or published delta assertions unless the focused runner check fails locally and the grounded runner logic still contradicts the raw-baseline contract."
-        )
+    _extend_boundary_hints_for_family(
+        boundary_hints=boundary_hints,
+        family=family,
+        scenario=scenario,
+    )
     required_support_doc_boundary = {
         token
         for token in _normalized_string_list((scenario or {}).get("required_paths"))
@@ -1163,67 +1255,6 @@ def supplement_live_prompt_payload(
     elif family == "release_publication" and prioritized_changed_support_docs:
         explicit_required_docs = _dedupe_strings([*prioritized_changed_support_docs, *explicit_required_docs])
     payload = _set_context_anchor_explicit_paths(payload, explicit_paths=explicit_required_docs)
-    if family == "release_publication":
-        boundary_hints.append(
-            "For benchmark publication slices, keep reads and edits on the listed benchmark contracts plus the runner/graphs anchors. Do not inspect adjacent benchmark helpers or secondary benchmark docs unless a listed anchor or validator failure points there directly, and do not rerun `odylith benchmark --repo-root .` during first-pass diagnosis."
-        )
-        boundary_hints.append(
-            "If the current copied artifacts and anchored publication docs already reflect the validated report, stop with no file changes instead of editing benchmark wording."
-        )
-        boundary_hints.append(
-            "Treat graph command output paths and generated SVGs as validator-produced outputs, not manual patch targets. Use repo-relative benchmark doc paths only, and map any absolute graph output back to the corresponding tracked docs/benchmarks target before editing."
-        )
-        boundary_hints.append(
-            "Unrelated dirty evaluation helpers under `src/odylith/runtime/evaluation/`, rendered shell pages, and generated proof SVGs are out of scope unless they are explicit required paths or a focused validator failure points there directly."
-        )
-    if family == "install_upgrade_runtime":
-        boundary_hints.append(
-            "For install/upgrade runtime slices, stay on the listed install manager, runtime, repair, release-contract anchors, and focused validators. If the grounded tree already passes those validators, stop with no file changes instead of widening into activation or policy wording."
-        )
-        boundary_hints.append(
-            "Do not inspect README, pyproject.toml, odylith/*.html shell surfaces, src/odylith/cli.py, or broader context-engine/orchestration helpers on install slices unless a focused install validator fails and points there directly."
-        )
-    if family == "daemon_security":
-        boundary_hints.append(
-            "For daemon/security slices, stay on the listed context-engine and repair anchors plus their focused tests. Do not widen into `src/odylith/cli.py` or adjacent runtime helpers unless a listed anchor or validator failure points there directly."
-        )
-        boundary_hints.append(
-            "Keep the named context-engine guidance and context-engine spec surfaces as the only supporting docs. Do not pull Registry inventory, benchmark publication docs, or unrelated governance records into daemon/security proof slices unless they are explicit required paths."
-        )
-        if bool((scenario or {}).get("allow_noop_completion")):
-            boundary_hints.append(
-                "If the grounded daemon lifecycle anchors and focused daemon validator already pass, stop with no file changes instead of rewriting auth-token persistence, socket transport, or shutdown flow."
-            )
-    if family == "compass_brief_freshness":
-        boundary_hints.append(
-            "For Compass freshness slices, keep the writable boundary on the listed Compass runtime, brief narrator, focused tests, and the named Compass/product runtime surfaces. Do not widen into install, repair, or context-engine docs unless a listed anchor or focused validator failure points there directly."
-        )
-        if bool((scenario or {}).get("allow_noop_completion")):
-            boundary_hints.append(
-                "If the listed Compass freshness validators already pass on that bounded runtime slice, stop with no file changes instead of speculative freshness or narration rewrites."
-            )
-    if family == "consumer_profile_compatibility":
-        boundary_hints.append(
-            "For consumer-profile compatibility slices, keep writes on the listed consumer profile code/tests plus the named AGENTS and component-spec surfaces. Do not widen into component inventory or broader Registry governance unless a listed anchor or focused validator failure points there directly."
-        )
-        if bool((scenario or {}).get("allow_noop_completion")):
-            boundary_hints.append(
-                "If the listed consumer-profile validator already passes on that bounded compatibility slice, stop with no file changes instead of rebinding truth roots or widening into broader Registry governance."
-            )
-    if family in {"cross_file_feature", "exact_anchor_recall", "explicit_workstream", "orchestration_feedback", "orchestration_intelligence"}:
-        boundary_hints.append(
-            "For narrow anchored orchestration slices, keep the boundary on the listed skills and named runtime anchor only. Do not widen into Registry specs, runbooks, Radar ideas, or unrelated orchestration helpers unless they are explicit required paths or a focused validator failure points there directly."
-        )
-        boundary_hints.append(
-            "If the listed anchors already satisfy the focused validator or expectation, stop with no file changes instead of adding adjacent support docs or governance cleanup."
-        )
-    if family == "agent_activation":
-        boundary_hints.append(
-            "For agent-activation slices, keep the boundary on the listed install activation anchors, consumer AGENTS surface, and focused install validators. If the grounded tree already passes those validators, stop with no file changes instead of rewriting install activation or AGENTS guidance wording."
-        )
-        boundary_hints.append(
-            "Do not inspect README, pyproject.toml, odylith/*.html shell surfaces, src/odylith/cli.py, or broader runtime routing helpers on agent-activation slices unless the focused install validator fails and points there directly."
-        )
     if boundary_hints:
         payload["boundary_hints"] = _dedupe_strings(boundary_hints)
     return payload

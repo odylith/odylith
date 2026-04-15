@@ -17,7 +17,10 @@ import ast
 import concurrent.futures
 import contextlib
 import datetime as dt
+import errno
+import fcntl
 import hashlib
+import inspect
 import json
 import multiprocessing
 import os
@@ -29,6 +32,7 @@ import shutil
 import signal
 import statistics
 import subprocess
+import sys
 import tempfile
 import time
 import tomllib
@@ -36,6 +40,7 @@ from typing import Any, Iterator, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.evaluation import benchmark_group_summaries
+from odylith.runtime.evaluation import odylith_benchmark_isolation
 from odylith.runtime.evaluation import odylith_benchmark_context_engine
 from odylith.runtime.evaluation import odylith_benchmark_execution_governance
 from odylith.runtime.evaluation import odylith_benchmark_guardrails
@@ -55,6 +60,8 @@ REPORT_CONTRACT = "odylith_benchmark_report.v1"
 REPORT_VERSION = "v1"
 PROGRESS_CONTRACT = "odylith_benchmark_progress.v1"
 PROGRESS_VERSION = "v1"
+ACTIVE_RUNS_CONTRACT = "odylith_benchmark_active_runs.v1"
+ACTIVE_RUNS_VERSION = "v1"
 LIVE_COMPARISON_CONTRACT = "full_product_assistance_vs_raw_agent"
 LEGACY_LIVE_COMPARISON_CONTRACT = "live_end_to_end"
 DIAGNOSTIC_COMPARISON_CONTRACT = "internal_packet_prompt_diagnostic"
@@ -99,6 +106,8 @@ _MODE_ALIASES = {
 _VALID_MODES = frozenset((*DEFAULT_MODES, *DIAGNOSTIC_CONTROL_MODES, *_MODE_ALIASES.keys()))
 DEFAULT_CACHE_PROFILES: tuple[str, ...] = ("warm", "cold")
 _VALID_CACHE_PROFILES = frozenset({"warm", "cold"})
+_MIN_BENCHMARK_RUNTIME_FREE_BYTES = 256 * 1024 * 1024
+_RUNTIME_POSTURE_MANAGED_HELPER_ENV = "ODYLITH_BENCHMARK_RUNTIME_POSTURE_MANAGED_HELPER"
 _VALID_PACKET_SOURCES = frozenset({"adaptive", "impact", "governance_slice", "session_brief", "bootstrap_session"})
 _ANALYSIS_FAMILIES = frozenset({"analysis", "architecture", "broad_shared_scope"})
 _WRITE_FAMILIES = frozenset(
@@ -168,6 +177,7 @@ _SERIOUS_REQUIRED_FAMILIES = frozenset(
 )
 _REPORT_FILENAME = "latest.v1.json"
 _PROGRESS_FILENAME = "in-progress.v1.json"
+_ACTIVE_RUNS_FILENAME = "active-runs.v1.json"
 _BENCHMARK_WARM_CACHE_SECONDS = 30.0
 _BENCHMARK_ADOPTION_PROOF_SAMPLE_TIMEOUT_SECONDS = 60.0
 _BENCHMARK_ADOPTION_PROOF_TERMINATION_GRACE_SECONDS = 1.0
@@ -703,6 +713,437 @@ def progress_report_path(*, repo_root: Path) -> Path:
     return (benchmark_root(repo_root=repo_root) / _PROGRESS_FILENAME).resolve()
 
 
+def active_runs_path(*, repo_root: Path) -> Path:
+    return (benchmark_root(repo_root=repo_root) / _ACTIVE_RUNS_FILENAME).resolve()
+
+
+def _benchmark_runtime_lock_path(*, repo_root: Path, target: Path) -> Path:
+    token = hashlib.sha256(str(target.resolve()).encode("utf-8")).hexdigest()[:24]
+    return (benchmark_root(repo_root=repo_root) / ".locks" / f"{token}.lock").resolve()
+
+
+def _human_bytes_label(value: float) -> str:
+    amount = max(0.0, float(value or 0.0))
+    units = ("B", "KiB", "MiB", "GiB", "TiB")
+    index = 0
+    while amount >= 1024.0 and index < len(units) - 1:
+        amount /= 1024.0
+        index += 1
+    if index == 0:
+        return f"{int(amount)} {units[index]}"
+    return f"{amount:.1f} {units[index]}"
+
+
+def _benchmark_runtime_storage_status(*, repo_root: Path) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    target = benchmark_root(repo_root=root)
+    usage_root = target if target.exists() else root
+    usage = shutil.disk_usage(str(usage_root))
+    return {
+        "path": str(usage_root),
+        "free_bytes": int(usage.free),
+        "used_bytes": int(usage.used),
+        "total_bytes": int(usage.total),
+    }
+
+
+def _benchmark_runtime_storage_error(*, repo_root: Path) -> RuntimeError:
+    status = _benchmark_runtime_storage_status(repo_root=repo_root)
+    benchmark_path = benchmark_root(repo_root=Path(repo_root).resolve())
+    free_label = _human_bytes_label(status.get("free_bytes", 0))
+    minimum_label = _human_bytes_label(_MIN_BENCHMARK_RUNTIME_FREE_BYTES)
+    return RuntimeError(
+        "benchmark runtime free space is too low to create progress, lock, and disposable workspace artifacts: "
+        f"{free_label} available at `{status.get('path', '')}`; need at least {minimum_label}. "
+        f"Clear stale benchmark runtime history under `{benchmark_path}` or reclaim local cache/runtime space before rerunning."
+    )
+
+
+def _require_benchmark_runtime_space(*, repo_root: Path) -> dict[str, Any]:
+    status = _benchmark_runtime_storage_status(repo_root=repo_root)
+    if int(status.get("free_bytes", 0) or 0) < _MIN_BENCHMARK_RUNTIME_FREE_BYTES:
+        raise _benchmark_runtime_storage_error(repo_root=repo_root)
+    return status
+
+
+@contextlib.contextmanager
+def _benchmark_runtime_file_lock(*, repo_root: Path, target: Path) -> Iterator[Path]:
+    lock_path = _benchmark_runtime_lock_path(repo_root=repo_root, target=target)
+    try:
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        with lock_path.open("a+", encoding="utf-8") as handle:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield lock_path
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    except OSError as exc:
+        if exc.errno == errno.ENOSPC:
+            raise _benchmark_runtime_storage_error(repo_root=repo_root) from exc
+        raise
+
+
+def _benchmark_runtime_write_json_if_changed(
+    *,
+    repo_root: Path,
+    path: Path,
+    payload: Any,
+) -> bool:
+    target = Path(path).resolve()
+    rendered = json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    try:
+        with _benchmark_runtime_file_lock(repo_root=repo_root, target=target):
+            existing = None
+            if target.is_file():
+                with contextlib.suppress(OSError):
+                    existing = target.read_text(encoding="utf-8")
+            if existing == rendered:
+                return False
+            target.parent.mkdir(parents=True, exist_ok=True)
+            fd, temp_name = tempfile.mkstemp(prefix=f".{target.name}.", dir=str(target.parent))
+            temp_path = Path(temp_name)
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                    handle.write(rendered)
+                os.replace(temp_path, target)
+            finally:
+                if temp_path.exists():
+                    with contextlib.suppress(OSError):
+                        temp_path.unlink()
+            return True
+    except OSError as exc:
+        if exc.errno == errno.ENOSPC:
+            raise _benchmark_runtime_storage_error(repo_root=repo_root) from exc
+        raise
+
+
+def _benchmark_runtime_remove_file(*, repo_root: Path, path: Path) -> bool:
+    target = Path(path).resolve()
+    with _benchmark_runtime_file_lock(repo_root=repo_root, target=target):
+        if not target.exists():
+            return False
+        with contextlib.suppress(OSError):
+            target.unlink()
+        return not target.exists()
+
+
+def _active_run_token(value: Any, *, fallback: str) -> str:
+    token = re.sub(r"[^A-Za-z0-9._-]+", "-", str(value or "").strip()).strip("-.")
+    return token or fallback
+
+
+def _active_run_progress_path(
+    *,
+    repo_root: Path,
+    report_id: str,
+    benchmark_profile: str,
+    shard_index: int,
+    shard_count: int,
+    owning_pid: int,
+) -> Path:
+    filename = (
+        f"progress-{_active_run_token(report_id, fallback='benchmark')}"
+        f"-{_active_run_token(benchmark_profile, fallback='proof')}"
+        f"-s{max(1, int(shard_index)):02d}-of-{max(1, int(shard_count)):02d}"
+        f"-pid{max(0, int(owning_pid))}.v1.json"
+    )
+    return (benchmark_root(repo_root=repo_root) / filename).resolve()
+
+
+def _active_run_identity(progress: Mapping[str, Any]) -> tuple[str, str, int, int, int]:
+    return (
+        str(progress.get("report_id", "")).strip(),
+        _normalize_benchmark_profile(str(progress.get("benchmark_profile", "")).strip()),
+        max(1, int(progress.get("shard_index", 1) or 1)),
+        max(1, int(progress.get("shard_count", 1) or 1)),
+        max(0, int(progress.get("owning_pid", 0) or 0)),
+    )
+
+
+def _active_run_entry(*, repo_root: Path, progress: Mapping[str, Any]) -> dict[str, Any]:
+    report_id, benchmark_profile, shard_index, shard_count, owning_pid = _active_run_identity(progress)
+    progress_path = _active_run_progress_path(
+        repo_root=repo_root,
+        report_id=report_id,
+        benchmark_profile=benchmark_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+        owning_pid=owning_pid,
+    )
+    return {
+        "report_id": report_id,
+        "benchmark_profile": benchmark_profile,
+        "comparison_contract": str(progress.get("comparison_contract", "")).strip(),
+        "repo_root": str(Path(repo_root).resolve()),
+        "started_utc": str(progress.get("started_utc", "")).strip(),
+        "updated_utc": str(progress.get("updated_utc", "")).strip(),
+        "status": str(progress.get("status", "")).strip() or "running",
+        "shard_index": shard_index,
+        "shard_count": shard_count,
+        "owning_pid": owning_pid,
+        "progress_path": str(progress_path),
+    }
+
+
+def _load_active_runs(repo_root: Path) -> list[dict[str, Any]]:
+    payload = odylith_context_cache.read_json_object(active_runs_path(repo_root=repo_root))
+    rows = payload.get("runs") if isinstance(payload.get("runs"), list) else []
+    normalized_rows = [dict(row) for row in rows if isinstance(row, Mapping)]
+    if normalized_rows:
+        return normalized_rows
+    root = Path(repo_root).resolve()
+    benchmark_runtime_present = bool(
+        _benchmark_owned_codex_process_ids()
+        or _benchmark_temp_worktrees(repo_root=root)
+        or _benchmark_temp_directories(repo_root=root)
+    )
+    recovered: dict[tuple[str, str, int, int, int], dict[str, Any]] = {}
+    benchmark_dir = benchmark_root(repo_root=root)
+    if not benchmark_dir.is_dir():
+        return []
+    with contextlib.suppress(OSError):
+        for progress_path in sorted(benchmark_dir.glob("progress-*.json")):
+            payload = odylith_context_cache.read_json_object(progress_path)
+            if not isinstance(payload, Mapping):
+                continue
+            progress = dict(payload)
+            status = str(progress.get("status", "")).strip() or "running"
+            if status != "running":
+                continue
+            identity = _active_run_identity(progress)
+            owning_pid = identity[-1]
+            if owning_pid > 0:
+                if not _process_exists(owning_pid):
+                    continue
+            elif not benchmark_runtime_present:
+                continue
+            entry = _active_run_entry(repo_root=root, progress=progress)
+            entry["progress_path"] = str(progress_path.resolve())
+            recovered[identity] = entry
+    return sorted(
+        recovered.values(),
+        key=lambda row: (
+            str(row.get("updated_utc", "")).strip(),
+            str(row.get("report_id", "")).strip(),
+            int(row.get("shard_index", 1) or 1),
+        ),
+        reverse=True,
+    )
+
+
+def _write_active_runs(*, repo_root: Path, runs: Sequence[Mapping[str, Any]]) -> None:
+    path = active_runs_path(repo_root=repo_root)
+    normalized_runs = [
+        dict(row)
+        for row in runs
+        if isinstance(row, Mapping) and str(row.get("report_id", "")).strip()
+    ]
+    if not normalized_runs:
+        _benchmark_runtime_remove_file(repo_root=repo_root, path=path)
+        return
+    payload = {
+        "contract": ACTIVE_RUNS_CONTRACT,
+        "version": ACTIVE_RUNS_VERSION,
+        "repo_root": str(Path(repo_root).resolve()),
+        "updated_utc": _utc_now(),
+        "runs": normalized_runs,
+    }
+    _benchmark_runtime_write_json_if_changed(
+        repo_root=repo_root,
+        path=path,
+        payload=payload,
+    )
+
+
+def _sync_active_run_progress(
+    *,
+    repo_root: Path,
+    payload: Mapping[str, Any],
+) -> None:
+    root = Path(repo_root).resolve()
+    report_id, benchmark_profile, shard_index, shard_count, owning_pid = _active_run_identity(payload)
+    progress_path = _active_run_progress_path(
+        repo_root=root,
+        report_id=report_id,
+        benchmark_profile=benchmark_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+        owning_pid=owning_pid,
+    )
+    _benchmark_runtime_write_json_if_changed(
+        repo_root=root,
+        path=progress_path,
+        payload=dict(payload),
+    )
+    status = str(payload.get("status", "")).strip() or "running"
+    active_runs_file = active_runs_path(repo_root=root)
+    with odylith_context_cache.advisory_lock(repo_root=root, key=str(active_runs_file)):
+        runs = [
+            row
+            for row in _load_active_runs(root)
+            if (
+                str(row.get("report_id", "")).strip(),
+                _normalize_benchmark_profile(str(row.get("benchmark_profile", "")).strip()),
+                max(1, int(row.get("shard_index", 1) or 1)),
+                max(1, int(row.get("shard_count", 1) or 1)),
+                max(0, int(row.get("owning_pid", 0) or 0)),
+            )
+            != (report_id, benchmark_profile, shard_index, shard_count, owning_pid)
+        ]
+        if status == "running":
+            runs.append(_active_run_entry(repo_root=root, progress=payload))
+        runs.sort(
+            key=lambda row: (
+                str(row.get("updated_utc", "")).strip(),
+                str(row.get("report_id", "")).strip(),
+                int(row.get("shard_index", 1) or 1),
+            ),
+            reverse=True,
+        )
+        _write_active_runs(repo_root=root, runs=runs)
+
+
+def _clear_active_run_progress(
+    *,
+    repo_root: Path,
+    payload: Mapping[str, Any],
+) -> None:
+    root = Path(repo_root).resolve()
+    report_id, benchmark_profile, shard_index, shard_count, owning_pid = _active_run_identity(payload)
+    progress_path = _active_run_progress_path(
+        repo_root=root,
+        report_id=report_id,
+        benchmark_profile=benchmark_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+        owning_pid=owning_pid,
+    )
+    _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
+    active_runs_file = active_runs_path(repo_root=root)
+    with odylith_context_cache.advisory_lock(repo_root=root, key=str(active_runs_file)):
+        runs = [
+            row
+            for row in _load_active_runs(root)
+            if (
+                str(row.get("report_id", "")).strip(),
+                _normalize_benchmark_profile(str(row.get("benchmark_profile", "")).strip()),
+                max(1, int(row.get("shard_index", 1) or 1)),
+                max(1, int(row.get("shard_count", 1) or 1)),
+                max(0, int(row.get("owning_pid", 0) or 0)),
+            )
+            != (report_id, benchmark_profile, shard_index, shard_count, owning_pid)
+        ]
+        _write_active_runs(repo_root=root, runs=runs)
+
+
+def _fingerprint_json_payload(payload: Mapping[str, Any]) -> str:
+    return hashlib.sha256(json.dumps(dict(payload), sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
+
+
+def _call_with_supported_kwargs(function: Any, /, **kwargs: Any) -> Any:
+    try:
+        signature = inspect.signature(function)
+    except (TypeError, ValueError):
+        return function(**kwargs)
+    if any(parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in signature.parameters.values()):
+        return function(**kwargs)
+    supported = {
+        key: value
+        for key, value in kwargs.items()
+        if key in signature.parameters
+    }
+    return function(**supported)
+
+
+def _selection_fingerprint(selection: Mapping[str, Any]) -> str:
+    return _fingerprint_json_payload(selection)
+
+
+def _safe_resolve_path(path: Path) -> Path | None:
+    with contextlib.suppress(OSError, RuntimeError):
+        return Path(path).resolve()
+    return None
+
+
+def _snapshot_overlay_fingerprint(*, repo_root: Path, snapshot_paths: Sequence[str]) -> str:
+    normalized_paths = _dedupe_path_strings(snapshot_paths)
+    if not normalized_paths:
+        return ""
+    existing_paths = [
+        str(path)
+        for path in (
+            _safe_resolve_path(Path(repo_root).resolve() / token)
+            for token in normalized_paths
+        )
+        if path is not None and path.exists()
+    ]
+    if not existing_paths:
+        return ""
+    return odylith_context_cache.fingerprint_paths(existing_paths)
+
+
+def _benchmark_source_posture(*, repo_root: Path) -> str:
+    with contextlib.suppress(Exception):
+        from odylith.install.manager import version_status
+
+        status = version_status(repo_root=repo_root)
+        posture = str(getattr(status, "posture", "") or "").strip()
+        runtime_source = str(getattr(status, "runtime_source", "") or "").strip()
+        if posture and runtime_source:
+            return f"{posture}:{runtime_source}"
+        if posture:
+            return posture
+        if runtime_source:
+            return runtime_source
+    return "unknown"
+
+
+def benchmark_tree_identity(
+    *,
+    repo_root: Path,
+    selection: Mapping[str, Any],
+    snapshot_paths: Sequence[str] = (),
+) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    return {
+        "git_branch": str(store._git_branch_name(repo_root=root) or "").strip(),  # noqa: SLF001
+        "git_commit": str(store._git_head_oid(repo_root=root) or "").strip(),  # noqa: SLF001
+        "git_dirty": bool(_dirty_repo_paths(root)),
+        "repo_dirty_paths": _dirty_repo_paths(root),
+        "selection_fingerprint": _selection_fingerprint(selection),
+        "corpus_fingerprint": odylith_context_cache.fingerprint_paths(
+            [store.optimization_evaluation_corpus_path(repo_root=root)]
+        ),
+        "snapshot_overlay_fingerprint": _snapshot_overlay_fingerprint(repo_root=root, snapshot_paths=snapshot_paths),
+        "source_posture": _benchmark_source_posture(repo_root=root),
+    }
+
+
+def benchmark_report_matches_current_tree(*, repo_root: Path, report: Mapping[str, Any]) -> bool:
+    if not isinstance(report, Mapping):
+        return False
+    selection = dict(report.get("selection", {})) if isinstance(report.get("selection"), Mapping) else {}
+    snapshot_paths = (
+        [str(token).strip() for token in report.get("snapshot_overlay_paths", []) if str(token).strip()]
+        if isinstance(report.get("snapshot_overlay_paths"), list)
+        else []
+    )
+    current = benchmark_tree_identity(repo_root=repo_root, selection=selection, snapshot_paths=snapshot_paths)
+    for key in (
+        "git_branch",
+        "git_commit",
+        "git_dirty",
+        "repo_dirty_paths",
+        "selection_fingerprint",
+        "corpus_fingerprint",
+        "snapshot_overlay_fingerprint",
+        "source_posture",
+    ):
+        if report.get(key) != current.get(key):
+            return False
+    return True
+
+
 def load_latest_benchmark_report(*, repo_root: Path, benchmark_profile: str | None = None) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     path = latest_report_path(repo_root=root, benchmark_profile=benchmark_profile)
@@ -725,7 +1166,42 @@ def load_latest_benchmark_report(*, repo_root: Path, benchmark_profile: str | No
 
 
 def load_benchmark_progress(*, repo_root: Path) -> dict[str, Any]:
-    return odylith_context_cache.read_json_object(progress_report_path(repo_root=repo_root))
+    root = Path(repo_root).resolve()
+    _prune_stale_benchmark_progress(repo_root=root, clear_shared_progress=False)
+    active_entries = _load_active_runs(root)
+    if active_entries:
+        grouped_payloads: dict[str, list[dict[str, Any]]] = {}
+        for entry in active_entries:
+            progress_path = Path(str(entry.get("progress_path", "")).strip())
+            if not progress_path.is_file():
+                continue
+            payload = odylith_context_cache.read_json_object(progress_path)
+            if not payload:
+                continue
+            grouped_payloads.setdefault(str(payload.get("report_id", "")).strip(), []).append(payload)
+        if grouped_payloads:
+            selected_group = max(
+                grouped_payloads.values(),
+                key=lambda rows: max(str(row.get("updated_utc", "")).strip() for row in rows),
+            )
+            latest_payload = max(selected_group, key=lambda row: str(row.get("updated_utc", "")).strip())
+            return {
+                **dict(latest_payload),
+                "aggregate_source": "active_runs",
+                "active_shard_count": len(selected_group),
+                "active_shard_indices": sorted(
+                    {max(1, int(row.get("shard_index", 1) or 1)) for row in selected_group}
+                ),
+                "scenario_count": sum(int(row.get("scenario_count", 0) or 0) for row in selected_group),
+                "total_results": sum(int(row.get("total_results", 0) or 0) for row in selected_group),
+                "completed_cache_profiles": sum(int(row.get("completed_cache_profiles", 0) or 0) for row in selected_group),
+                "completed_scenarios": sum(int(row.get("completed_scenarios", 0) or 0) for row in selected_group),
+                "completed_results": sum(int(row.get("completed_results", 0) or 0) for row in selected_group),
+                "started_utc": min(str(row.get("started_utc", "")).strip() for row in selected_group),
+                "updated_utc": max(str(row.get("updated_utc", "")).strip() for row in selected_group),
+            }
+    shared_payload = odylith_context_cache.read_json_object(progress_report_path(repo_root=root))
+    return shared_payload if isinstance(shared_payload, Mapping) else {}
 
 
 def _benchmark_exception_text(exc: BaseException | str) -> str:
@@ -921,6 +1397,8 @@ def _is_benchmark_temp_worktree(path: Path) -> bool:
 
 
 def _benchmark_temp_worktrees(*, repo_root: Path) -> list[Path]:
+    rows: list[Path] = []
+    seen: set[Path] = set()
     with contextlib.suppress(OSError, subprocess.SubprocessError):
         completed = subprocess.run(
             ["git", "worktree", "list", "--porcelain"],
@@ -929,17 +1407,29 @@ def _benchmark_temp_worktrees(*, repo_root: Path) -> list[Path]:
             capture_output=True,
             check=False,
         )
-        if int(completed.returncode or 0) != 0:
-            return []
-        rows: list[Path] = []
-        for raw in str(completed.stdout or "").splitlines():
-            if not raw.startswith("worktree "):
-                continue
-            candidate = Path(raw.split(" ", 1)[1].strip())
-            if _is_benchmark_temp_worktree(candidate):
-                rows.append(candidate.resolve())
-        return rows
-    return []
+        if int(completed.returncode or 0) == 0:
+            for raw in str(completed.stdout or "").splitlines():
+                if not raw.startswith("worktree "):
+                    continue
+                candidate = Path(raw.split(" ", 1)[1].strip()).resolve()
+                if candidate not in seen and _is_benchmark_temp_worktree(candidate):
+                    seen.add(candidate)
+                    rows.append(candidate)
+    clone_parent = odylith_benchmark_isolation.benchmark_workspace_parent(
+        repo_root=Path(repo_root).resolve(),
+        create=False,
+    )
+    if clone_parent.is_dir():
+        with contextlib.suppress(OSError):
+            for child in clone_parent.iterdir():
+                if not child.is_dir() or not child.name.startswith(_BENCHMARK_LIVE_WORKTREE_MARKER):
+                    continue
+                resolved = child.resolve()
+                if resolved in seen:
+                    continue
+                seen.add(resolved)
+                rows.append(resolved)
+    return sorted(rows)
 
 
 def _cleanup_benchmark_worktrees(*, repo_root: Path) -> dict[str, Any]:
@@ -947,6 +1437,15 @@ def _cleanup_benchmark_worktrees(*, repo_root: Path) -> dict[str, Any]:
     removed: list[str] = []
     failed: list[str] = []
     for worktree in _benchmark_temp_worktrees(repo_root=root):
+        detached_clone_workspace = (worktree / "workspace" / ".git").resolve()
+        if detached_clone_workspace.exists():
+            with contextlib.suppress(OSError):
+                shutil.rmtree(worktree)
+            if not worktree.exists():
+                removed.append(str(worktree))
+            else:
+                failed.append(str(worktree))
+            continue
         completed = subprocess.run(
             ["git", "worktree", "remove", "--force", str(worktree)],
             cwd=str(root),
@@ -973,33 +1472,23 @@ def _cleanup_benchmark_worktrees(*, repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _benchmark_temp_directory_roots() -> list[Path]:
-    rows: list[Path] = []
-    candidates = [
-        tempfile.gettempdir(),
-        os.environ.get("TMPDIR", ""),
-        os.environ.get("TMP", ""),
-        os.environ.get("TEMP", ""),
-        os.environ.get("TEMPDIR", ""),
-    ]
-    seen: set[Path] = set()
-    for raw in candidates:
-        token = str(raw or "").strip()
-        if not token:
-            continue
-        with contextlib.suppress(OSError, RuntimeError):
-            candidate = Path(token).expanduser().resolve()
-            if candidate in seen:
-                continue
-            seen.add(candidate)
-            rows.append(candidate)
-    return rows
+def _benchmark_runtime_temp_root(*, repo_root: Path) -> Path:
+    return (
+        Path(repo_root).resolve()
+        / ".odylith"
+        / "runtime"
+        / "odylith-benchmark-temp"
+    ).resolve()
 
 
-def _benchmark_temp_directories() -> list[Path]:
+def _benchmark_temp_directory_roots(*, repo_root: Path) -> list[Path]:
+    return [_benchmark_runtime_temp_root(repo_root=repo_root)]
+
+
+def _benchmark_temp_directories(*, repo_root: Path) -> list[Path]:
     rows: list[Path] = []
     seen: set[Path] = set()
-    for root in _benchmark_temp_directory_roots():
+    for root in _benchmark_temp_directory_roots(repo_root=repo_root):
         if not root.is_dir():
             continue
         with contextlib.suppress(OSError):
@@ -1016,10 +1505,68 @@ def _benchmark_temp_directories() -> list[Path]:
     return sorted(rows)
 
 
-def _cleanup_benchmark_temp_directories() -> dict[str, Any]:
+def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: bool) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    active_runs_file = active_runs_path(repo_root=root)
+    with odylith_context_cache.advisory_lock(repo_root=root, key=str(active_runs_file)):
+        active_entries = _load_active_runs(root)
+        active_runtime_present = bool(
+            _benchmark_owned_codex_process_ids()
+            or _benchmark_temp_worktrees(repo_root=root)
+            or _benchmark_temp_directories(repo_root=root)
+        )
+        stale_entries: list[dict[str, Any]] = []
+        retained_entries: list[dict[str, Any]] = []
+        for entry in active_entries:
+            status = str(entry.get("status", "")).strip() or "running"
+            owning_pid = max(0, int(entry.get("owning_pid", 0) or 0))
+            progress_path = Path(str(entry.get("progress_path", "")).strip())
+            if status != "running":
+                stale_entries.append(entry)
+                continue
+            if progress_path and not progress_path.exists():
+                stale_entries.append(entry)
+                continue
+            if owning_pid > 0 and _process_exists(owning_pid):
+                retained_entries.append(entry)
+                continue
+            if owning_pid <= 0 and active_runtime_present:
+                retained_entries.append(entry)
+                continue
+            stale_entries.append(entry)
+        if stale_entries:
+            for entry in stale_entries:
+                progress_path = Path(str(entry.get("progress_path", "")).strip())
+                _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
+            _write_active_runs(repo_root=root, runs=retained_entries)
+    shared_progress_path = progress_report_path(repo_root=root)
+    stale_shared_progress_cleared = False
+    shared_payload = odylith_context_cache.read_json_object(shared_progress_path)
+    shared_pid = max(0, int(shared_payload.get("owning_pid", 0) or 0)) if isinstance(shared_payload, Mapping) else 0
+    shared_running = bool(isinstance(shared_payload, Mapping) and str(shared_payload.get("status", "")).strip() == "running")
+    shared_stale = bool(
+        clear_shared_progress
+        or (shared_running and shared_pid > 0 and not _process_exists(shared_pid) and not active_runtime_present)
+        or (shared_running and shared_pid <= 0 and not active_runtime_present)
+    )
+    if shared_stale and shared_progress_path.exists():
+        with odylith_context_cache.advisory_lock(repo_root=root, key=str(shared_progress_path)):
+            if shared_progress_path.exists():
+                shared_progress_path.unlink()
+                stale_shared_progress_cleared = True
+    return {
+        "removed_active_run_count": len(stale_entries),
+        "removed_active_runs": stale_entries,
+        "stale_shared_progress_cleared": stale_shared_progress_cleared,
+        "active_run_count": len(retained_entries),
+        "active_runtime_present": active_runtime_present,
+    }
+
+
+def _cleanup_benchmark_temp_directories(*, repo_root: Path) -> dict[str, Any]:
     removed: list[str] = []
     failed: list[str] = []
-    for directory in _benchmark_temp_directories():
+    for directory in _benchmark_temp_directories(repo_root=repo_root):
         with contextlib.suppress(OSError):
             shutil.rmtree(directory)
             removed.append(str(directory))
@@ -1035,44 +1582,107 @@ def _cleanup_benchmark_temp_directories() -> dict[str, Any]:
 
 def _cleanup_stale_benchmark_state(*, repo_root: Path, clear_progress: bool) -> dict[str, Any]:
     root = Path(repo_root).resolve()
-    progress_path = progress_report_path(repo_root=root)
-    stale_progress_cleared = False
-    if clear_progress and progress_path.exists():
-        with contextlib.suppress(OSError):
-            progress_path.unlink()
-            stale_progress_cleared = True
+    progress_cleanup = _prune_stale_benchmark_progress(repo_root=root, clear_shared_progress=clear_progress)
+    if int(progress_cleanup.get("active_run_count", 0) or 0) > 0:
+        return {
+            "stale_progress_cleared": bool(progress_cleanup.get("stale_shared_progress_cleared")),
+            "progress_cleanup": progress_cleanup,
+            "process_cleanup": {
+                "requested_pid_count": 0,
+                "terminated_pid_count": 0,
+                "forced_pid_count": 0,
+                "remaining_pid_count": 0,
+                "terminated_pids": [],
+                "forced_pids": [],
+                "remaining_pids": [],
+                "skipped_due_to_active_runs": True,
+            },
+            "worktree_cleanup": {
+                "removed_worktree_count": 0,
+                "failed_worktree_count": 0,
+                "removed_worktrees": [],
+                "failed_worktrees": [],
+                "skipped_due_to_active_runs": True,
+            },
+            "temp_directory_cleanup": {
+                "removed_temp_directory_count": 0,
+                "failed_temp_directory_count": 0,
+                "removed_temp_directories": [],
+                "failed_temp_directories": [],
+                "skipped_due_to_active_runs": True,
+            },
+        }
     process_cleanup = _terminate_processes(pids=_benchmark_owned_codex_process_ids())
     worktree_cleanup = _cleanup_benchmark_worktrees(repo_root=root)
-    temp_directory_cleanup = _cleanup_benchmark_temp_directories()
+    temp_directory_cleanup = _cleanup_benchmark_temp_directories(repo_root=root)
     return {
-        "stale_progress_cleared": stale_progress_cleared,
+        "stale_progress_cleared": bool(progress_cleanup.get("stale_shared_progress_cleared")),
+        "progress_cleanup": progress_cleanup,
         "process_cleanup": process_cleanup,
         "worktree_cleanup": worktree_cleanup,
         "temp_directory_cleanup": temp_directory_cleanup,
     }
 
 
-def _benchmark_runtime_hygiene_snapshot(*, repo_root: Path) -> dict[str, Any]:
+def _benchmark_runtime_hygiene_snapshot(
+    *,
+    repo_root: Path,
+    ignore_progress: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     owned_process_ids = _benchmark_owned_codex_process_ids()
     temp_worktrees = [str(path) for path in _benchmark_temp_worktrees(repo_root=root)]
+    temp_directories = [str(path) for path in _benchmark_temp_directories(repo_root=root)]
+    active_runs = _load_active_runs(root)
+    ignored_active_run_count = 0
+    if isinstance(ignore_progress, Mapping):
+        ignored_identity = _active_run_identity(ignore_progress)
+        filtered_active_runs: list[dict[str, Any]] = []
+        for entry in active_runs:
+            entry_identity = (
+                str(entry.get("report_id", "")).strip(),
+                _normalize_benchmark_profile(str(entry.get("benchmark_profile", "")).strip()),
+                max(1, int(entry.get("shard_index", 1) or 1)),
+                max(1, int(entry.get("shard_count", 1) or 1)),
+                max(0, int(entry.get("owning_pid", 0) or 0)),
+            )
+            if entry_identity == ignored_identity:
+                ignored_active_run_count += 1
+                continue
+            filtered_active_runs.append(entry)
+        active_runs = filtered_active_runs
     return {
         "owned_codex_process_count": len(owned_process_ids),
         "owned_codex_process_ids": owned_process_ids,
         "temp_worktree_count": len(temp_worktrees),
         "temp_worktrees": temp_worktrees,
+        "temp_directory_count": len(temp_directories),
+        "temp_directories": temp_directories,
+        "active_run_count": len(active_runs),
+        "ignored_active_run_count": ignored_active_run_count,
     }
 
 
-def _enforce_diagnostic_runtime_hygiene(*, repo_root: Path) -> dict[str, Any]:
-    hygiene = _benchmark_runtime_hygiene_snapshot(repo_root=repo_root)
-    if not hygiene["owned_codex_process_count"] and not hygiene["temp_worktree_count"]:
+def _enforce_diagnostic_runtime_hygiene(
+    *,
+    repo_root: Path,
+    ignore_progress: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    hygiene = _benchmark_runtime_hygiene_snapshot(repo_root=repo_root, ignore_progress=ignore_progress)
+    if (
+        not hygiene["owned_codex_process_count"]
+        and not hygiene["temp_worktree_count"]
+        and not hygiene["temp_directory_count"]
+        and not hygiene["active_run_count"]
+    ):
         return hygiene
     cleanup = _cleanup_stale_benchmark_state(repo_root=repo_root, clear_progress=False)
     raise RuntimeError(
         "diagnostic benchmark contamination detected: "
         f"owned_codex_process_count={hygiene['owned_codex_process_count']} "
         f"temp_worktree_count={hygiene['temp_worktree_count']} "
+        f"temp_directory_count={hygiene['temp_directory_count']} "
+        f"active_run_count={hygiene['active_run_count']} "
         f"cleanup={json.dumps(cleanup, sort_keys=True)}"
     )
 
@@ -1179,6 +1789,16 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         "report_id": str(report.get("report_id", "")).strip(),
         "benchmark_profile": _normalize_benchmark_profile(str(report.get("benchmark_profile", "")).strip()),
         "benchmark_profile_label": _benchmark_profile_label(str(report.get("benchmark_profile", "")).strip()),
+        "git_branch": str(report.get("git_branch", "")).strip(),
+        "git_commit": str(report.get("git_commit", "")).strip(),
+        "git_dirty": bool(report.get("git_dirty")),
+        "source_posture": str(report.get("source_posture", "")).strip(),
+        "current_tree_identity_match": benchmark_report_matches_current_tree(
+            repo_root=Path(str(report.get("repo_root", "")).strip() or "."),
+            report=report,
+        )
+        if str(report.get("repo_root", "")).strip()
+        else False,
         "selection_strategy": str(report.get("selection_strategy", "")).strip()
         or str(selection.get("selection_strategy", "")).strip()
         or "manual_selection",
@@ -1881,15 +2501,47 @@ def _packet_source_for_scenario(scenario: Mapping[str, Any]) -> str:
     return "impact"
 
 
+def _benchmark_session_namespace(
+    *,
+    scenario: Mapping[str, Any],
+    mode: str,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
+) -> str:
+    normalized_mode = _normalize_mode(mode)
+    return (
+        f"benchmark-{_active_run_token(report_id, fallback='report')}"
+        f"-s{max(1, int(shard_index))}-of-{max(1, int(shard_count))}"
+        f"-{_active_run_token(cache_profile, fallback='warm')}"
+        f"-{_active_run_token(str(scenario.get('scenario_id', '')).strip(), fallback='scenario')}"
+        f"-{_active_run_token(normalized_mode, fallback='mode')}"
+    )
+
+
 def _build_packet_payload(
     *,
     repo_root: Path,
     scenario: Mapping[str, Any],
     mode: str,
     existing_paths: Sequence[str],
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> tuple[str, dict[str, Any], dict[str, Any]]:
     normalized_mode = _normalize_mode(mode)
     requested_source = _packet_source_for_scenario(scenario)
+    benchmark_session_id = _benchmark_session_namespace(
+        scenario=scenario,
+        mode=normalized_mode,
+        report_id=report_id,
+        cache_profile=cache_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+    )
+    claimed_paths = list(existing_paths)
     if not _mode_uses_odylith(normalized_mode):
         stage = "repo_scan_baseline" if _is_repo_scan_baseline_mode(normalized_mode) else "raw_agent_baseline"
         return (
@@ -1910,6 +2562,10 @@ def _build_packet_payload(
                 changed_paths=existing_paths,
                 workstream=str(scenario.get("workstream", "")).strip(),
                 component=str(scenario.get("component", "")).strip(),
+                use_working_tree=False,
+                working_tree_scope="session",
+                session_id=benchmark_session_id,
+                claimed_paths=[],
                 runtime_mode="local",
                 delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
                 family_hint=str(scenario.get("family", "")).strip(),
@@ -1935,11 +2591,12 @@ def _build_packet_payload(
                 use_working_tree=False,
                 working_tree_scope="session",
                 runtime_mode="local",
-                session_id=f"benchmark-{str(scenario.get('scenario_id', '')).strip()}-{normalized_mode}",
+                session_id=benchmark_session_id,
                 workstream=str(scenario.get("workstream", "")).strip(),
                 intent=str(scenario.get("intent", "")).strip(),
                 delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
                 family_hint=str(scenario.get("family", "")).strip(),
+                claimed_paths=claimed_paths,
                 validation_command_hints=[
                     str(token).strip()
                     for token in scenario.get("validation_commands", [])
@@ -1963,11 +2620,12 @@ def _build_packet_payload(
                 use_working_tree=False,
                 working_tree_scope="session",
                 runtime_mode="local",
-                session_id=f"benchmark-{str(scenario.get('scenario_id', '')).strip()}-{normalized_mode}",
+                session_id=benchmark_session_id,
                 workstream=str(scenario.get("workstream", "")).strip(),
                 intent=str(scenario.get("intent", "")).strip(),
                 delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
                 family_hint=str(scenario.get("family", "")).strip(),
+                claimed_paths=claimed_paths,
                 validation_command_hints=[
                     str(token).strip()
                     for token in scenario.get("validation_commands", [])
@@ -1988,6 +2646,9 @@ def _build_packet_payload(
             adaptive = store.build_adaptive_coding_packet(
                 repo_root=repo_root,
                 changed_paths=existing_paths,
+                working_tree_scope="session",
+                session_id=benchmark_session_id,
+                claimed_paths=claimed_paths,
                 runtime_mode="local",
                 intent=str(scenario.get("intent", "")).strip(),
                 family_hint=str(scenario.get("family", "")).strip(),
@@ -2746,6 +3407,10 @@ def _packet_result(
     repo_root: Path,
     scenario: Mapping[str, Any],
     mode: str,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> dict[str, Any]:
     normalized_mode = _normalize_mode(mode)
     changed_paths = [str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()]
@@ -2757,6 +3422,10 @@ def _packet_result(
         scenario=scenario,
         mode=mode,
         existing_paths=existing_paths,
+        report_id=report_id,
+        cache_profile=cache_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
     )
     payload = _apply_packet_fixture(payload=payload, scenario=scenario, packet_source=packet_source)
     duration_ms = round((time.perf_counter() - started_at) * 1000.0, 3)
@@ -3905,6 +4574,10 @@ def _prepare_live_scenario_request(
     scenario: Mapping[str, Any],
     mode: str,
     benchmark_profile: str,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> dict[str, Any]:
     normalized_mode = _normalize_mode(mode)
     if not _is_live_public_mode(normalized_mode):
@@ -3949,6 +4622,10 @@ def _prepare_live_scenario_request(
             scenario=scenario,
             mode=normalized_mode,
             existing_paths=existing_paths,
+            report_id=report_id,
+            cache_profile=cache_profile,
+            shard_index=shard_index,
+            shard_count=shard_count,
         )
         payload = _apply_packet_fixture(payload=payload, scenario=scenario, packet_source=packet_source)
         prompt_keys = set(_PROMPT_PAYLOAD_KEYS)
@@ -3968,6 +4645,14 @@ def _prepare_live_scenario_request(
         "scenario": dict(scenario),
         "mode": normalized_mode,
         "benchmark_profile": _normalize_benchmark_profile(benchmark_profile),
+        "benchmark_session_namespace": _benchmark_session_namespace(
+            scenario=scenario,
+            mode=normalized_mode,
+            report_id=report_id,
+            cache_profile=cache_profile,
+            shard_index=shard_index,
+            shard_count=shard_count,
+        ),
         "packet_source": packet_source,
         "prompt_payload": prompt_payload,
         "packet_summary": (
@@ -3986,6 +4671,8 @@ def _run_prepared_live_scenario(prepared_request: Mapping[str, Any]) -> dict[str
         repo_root=Path(prepared_request.get("repo_root", ".")),
         scenario=dict(prepared_request.get("scenario", {})),
         mode=str(prepared_request.get("mode", "")).strip(),
+        benchmark_profile=benchmark_profile,
+        benchmark_session_namespace=str(prepared_request.get("benchmark_session_namespace", "")).strip(),
         packet_source=str(prepared_request.get("packet_source", "")).strip() or "raw_codex_cli",
         prompt_payload=dict(prepared_request.get("prompt_payload", {}))
         if isinstance(prepared_request.get("prompt_payload"), Mapping)
@@ -4023,12 +4710,38 @@ def _run_prepared_live_scenario(prepared_request: Mapping[str, Any]) -> dict[str
     return result
 
 
+def _result_snapshot_overlay_paths(result: Mapping[str, Any]) -> list[str]:
+    live_execution = dict(result.get("live_execution", {})) if isinstance(result.get("live_execution"), Mapping) else {}
+    return [
+        str(token).strip()
+        for token in live_execution.get("effective_snapshot_paths", [])
+        if isinstance(live_execution.get("effective_snapshot_paths"), list) and str(token).strip()
+    ]
+
+
+def _report_snapshot_overlay_paths(scenario_reports: Sequence[Mapping[str, Any]]) -> list[str]:
+    return _dedupe_strings(
+        [
+            token
+            for scenario_report in scenario_reports
+            if isinstance(scenario_report, Mapping)
+            for result in scenario_report.get("results", [])
+            if isinstance(scenario_report.get("results"), list) and isinstance(result, Mapping)
+            for token in _result_snapshot_overlay_paths(result)
+        ]
+    )
+
+
 def _run_live_scenario_batch(
     *,
     repo_root: Path,
     scenario: Mapping[str, Any],
     modes: Sequence[str],
     benchmark_profile: str,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> dict[str, dict[str, Any]]:
     live_modes = [_normalize_mode(str(token).strip()) for token in modes if _is_live_public_mode(str(token).strip())]
     ordered_live_modes = list(dict.fromkeys(live_modes))
@@ -4042,6 +4755,10 @@ def _run_live_scenario_batch(
                 scenario=scenario,
                 mode=mode,
                 benchmark_profile=benchmark_profile,
+                report_id=report_id,
+                cache_profile=cache_profile,
+                shard_index=shard_index,
+                shard_count=shard_count,
             )
         except Exception as exc:
             results[mode] = _scenario_exception_result(
@@ -4128,6 +4845,10 @@ def _run_scenario_mode(
     scenario: Mapping[str, Any],
     mode: str,
     benchmark_profile: str = BENCHMARK_PROFILE_PROOF,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> dict[str, Any]:
     normalized_mode = _normalize_mode(mode)
     if (
@@ -4140,11 +4861,23 @@ def _run_scenario_mode(
             scenario=scenario,
             mode=normalized_mode,
             benchmark_profile=benchmark_profile,
+            report_id=report_id,
+            cache_profile=cache_profile,
+            shard_index=shard_index,
+            shard_count=shard_count,
         )
         return _run_prepared_live_scenario(prepared_request)
     if str(scenario.get("kind", "")).strip() == "architecture":
         return _architecture_result(repo_root=repo_root, scenario=scenario, mode=mode)
-    return _packet_result(repo_root=repo_root, scenario=scenario, mode=mode)
+    return _packet_result(
+        repo_root=repo_root,
+        scenario=scenario,
+        mode=mode,
+        report_id=report_id,
+        cache_profile=cache_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+    )
 
 
 def _median(values: Sequence[float]) -> float:
@@ -4888,7 +5621,7 @@ def _runtime_posture_summary(*, repo_root: Path) -> dict[str, Any]:
     indexed_entities = int(entity_counts.get("indexed_entity_count", 0) or 0)
     evidence_documents = int(entity_counts.get("evidence_documents", 0) or 0)
     memory_backed_retrieval_ready = bool(local_backend_status.get("ready")) and storage == "lance_local_columnar" and sparse_recall == "tantivy_sparse_recall" and indexed_entities > 0 and evidence_documents > 0
-    return {
+    payload = {
         "memory_standardization_state": str(backend_transition.get("status", "")).strip(),
         "memory_backend_actual": {
             "storage": storage,
@@ -4930,6 +5663,24 @@ def _runtime_posture_summary(*, repo_root: Path) -> dict[str, Any]:
         "architecture_coverage_rate": float(architecture.get("coverage_rate", 0.0) or 0.0),
         "architecture_satisfaction_rate": float(architecture.get("satisfaction_rate", 0.0) or 0.0),
     }
+    if payload["memory_backed_retrieval_ready"]:
+        return payload
+    managed_payload = _managed_runtime_posture_summary(repo_root=repo_root)
+    if not managed_payload:
+        return payload
+    managed_actual_backend = (
+        dict(managed_payload.get("memory_backend_actual", {}))
+        if isinstance(managed_payload.get("memory_backend_actual"), Mapping)
+        else {}
+    )
+    if (
+        bool(managed_payload.get("memory_backed_retrieval_ready"))
+        and bool(managed_payload.get("memory_local_backend_ready"))
+        and str(managed_actual_backend.get("storage", "")).strip() == "lance_local_columnar"
+        and str(managed_actual_backend.get("sparse_recall", "")).strip() == "tantivy_sparse_recall"
+    ):
+        return managed_payload
+    return payload
 
 
 def _run_live_adoption_proof(
@@ -5036,6 +5787,69 @@ def _run_live_adoption_proof(
             source="benchmark_live_adoption_proof",
         )
     return payload
+
+
+def _runtime_posture_python_candidates(*, repo_root: Path) -> list[Path]:
+    root = Path(repo_root).resolve()
+    rows = [
+        root / ".odylith" / "runtime" / "current" / "bin" / "python",
+        root / ".venv" / "bin" / "python",
+    ]
+    deduped: list[Path] = []
+    seen: set[str] = set()
+    for candidate in rows:
+        token = str(candidate.resolve()) if candidate.exists() else str(candidate)
+        if token in seen:
+            continue
+        seen.add(token)
+        deduped.append(candidate)
+    return deduped
+
+
+def _managed_runtime_posture_summary(*, repo_root: Path) -> dict[str, Any] | None:
+    if os.environ.get(_RUNTIME_POSTURE_MANAGED_HELPER_ENV) == "1":
+        return None
+    root = Path(repo_root).resolve()
+    current_python = Path(sys.executable).resolve()
+    script = (
+        "import json\n"
+        "from pathlib import Path\n"
+        "from odylith.runtime.evaluation import odylith_benchmark_runner as runner\n"
+        f"print(json.dumps(runner._runtime_posture_summary(repo_root=Path({str(root)!r})), sort_keys=True))\n"
+    )
+    for candidate in _runtime_posture_python_candidates(repo_root=root):
+        if not candidate.is_file():
+            continue
+        with contextlib.suppress(OSError):
+            if candidate.resolve() == current_python:
+                continue
+        env = os.environ.copy()
+        existing_pythonpath = str(env.get("PYTHONPATH", "")).strip()
+        env["PYTHONPATH"] = os.pathsep.join(
+            token
+            for token in [str((root / "src").resolve()), existing_pythonpath]
+            if token
+        )
+        env[_RUNTIME_POSTURE_MANAGED_HELPER_ENV] = "1"
+        completed = subprocess.run(  # noqa: S603
+            [str(candidate), "-c", script],
+            cwd=root,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        if completed.returncode != 0:
+            continue
+        output = str(completed.stdout or "").strip().splitlines()
+        if not output:
+            continue
+        with contextlib.suppress(json.JSONDecodeError):
+            payload = json.loads(output[-1])
+            if isinstance(payload, Mapping):
+                return dict(payload)
+    return None
 
 
 def _prime_benchmark_runtime_cache(*, repo_root: Path) -> None:
@@ -5147,12 +5961,17 @@ def _write_progress(
     *,
     repo_root: Path,
     payload: Mapping[str, Any],
+    write_shared: bool = True,
 ) -> None:
+    root = Path(repo_root).resolve()
+    _sync_active_run_progress(repo_root=root, payload=payload)
+    if not write_shared:
+        return
     odylith_context_cache.write_json_if_changed(
-        repo_root=repo_root,
-        path=progress_report_path(repo_root=repo_root),
+        repo_root=root,
+        path=progress_report_path(repo_root=root),
         payload=dict(payload),
-        lock_key=str(progress_report_path(repo_root=repo_root)),
+        lock_key=str(progress_report_path(repo_root=root)),
     )
 
 
@@ -5179,6 +5998,7 @@ def _failed_benchmark_report(
     latest_eligible: bool,
     startup_hygiene: Mapping[str, Any],
     corpus_contract: Mapping[str, Any],
+    tree_identity: Mapping[str, Any],
     error: BaseException | str,
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
@@ -5219,6 +6039,21 @@ def _failed_benchmark_report(
         "cache_profiles": list(cache_profiles),
         "primary_cache_profile": str(primary_cache_profile).strip() or "warm",
         "selection_strategy": str(selection_strategy).strip() or "manual_selection",
+        "product_version": _product_version_from_pyproject(repo_root=root),
+        "corpus_path": str(store.optimization_evaluation_corpus_path(repo_root=root)),
+        "git_branch": str(tree_identity.get("git_branch", "")).strip(),
+        "git_commit": str(tree_identity.get("git_commit", "")).strip(),
+        "git_dirty": bool(tree_identity.get("git_dirty")),
+        "repo_dirty_paths": [
+            str(token).strip()
+            for token in tree_identity.get("repo_dirty_paths", [])
+            if isinstance(tree_identity.get("repo_dirty_paths"), list) and str(token).strip()
+        ],
+        "selection_fingerprint": str(tree_identity.get("selection_fingerprint", "")).strip(),
+        "corpus_fingerprint": str(tree_identity.get("corpus_fingerprint", "")).strip(),
+        "snapshot_overlay_fingerprint": str(tree_identity.get("snapshot_overlay_fingerprint", "")).strip(),
+        "snapshot_overlay_paths": [],
+        "source_posture": str(tree_identity.get("source_posture", "")).strip(),
         "scenario_count": len(scenarios),
         "selection": dict(progress_payload.get("selection", {}))
         if isinstance(progress_payload.get("selection"), Mapping)
@@ -7348,11 +8183,13 @@ def run_benchmarks(
             repo_root=root,
             clear_progress=not sharded_run,
         )
+        benchmark_runtime_storage = _require_benchmark_runtime_space(repo_root=root)
         progress_payload: dict[str, Any] = {
             "contract": PROGRESS_CONTRACT,
             "version": PROGRESS_VERSION,
             "report_id": report_id,
             "repo_root": str(root),
+            "owning_pid": os.getpid(),
             "benchmark_profile": normalized_profile,
             "benchmark_profile_label": _benchmark_profile_label(normalized_profile),
             "benchmark_profile_description": _benchmark_profile_description(normalized_profile),
@@ -7392,9 +8229,13 @@ def run_benchmarks(
                 "available_scenario_count": len(all_scenarios),
                 "cache_profiles": list(normalized_cache_profiles),
             },
+            "benchmark_runtime_storage": dict(benchmark_runtime_storage),
         }
-        if not sharded_run:
-            _write_progress(repo_root=root, payload=progress_payload)
+        initial_tree_identity = benchmark_tree_identity(
+            repo_root=root,
+            selection=dict(progress_payload.get("selection", {})),
+        )
+        _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
         try:
             cache_profile_reports: dict[str, list[dict[str, Any]]] = {}
             cache_profile_mode_rows: dict[str, dict[str, list[dict[str, Any]]]] = {}
@@ -7442,8 +8283,7 @@ def run_benchmarks(
                                 "completed_results": completed_results,
                             }
                         )
-                        if not sharded_run:
-                            _write_progress(repo_root=root, payload=progress_payload)
+                        _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
                         normalized_mode = _normalize_mode(mode)
                         if normalized_mode in live_batch_modes:
                             if not live_batch_executed:
@@ -7452,6 +8292,10 @@ def run_benchmarks(
                                     scenario=scenario,
                                     modes=live_batch_modes,
                                     benchmark_profile=normalized_profile,
+                                    report_id=report_id,
+                                    cache_profile=cache_profile,
+                                    shard_index=normalized_shard_index,
+                                    shard_count=normalized_shard_count,
                                 )
                                 live_batch_executed = True
                             result = dict(live_batch_results.get(normalized_mode, {}))
@@ -7463,13 +8307,27 @@ def run_benchmarks(
                             if str(scenario.get("kind", "")).strip() == "architecture":
                                 result = _architecture_result(repo_root=root, scenario=scenario, mode=mode)
                             else:
-                                result = _packet_result(repo_root=root, scenario=scenario, mode=mode)
+                                result = _call_with_supported_kwargs(
+                                    _packet_result,
+                                    repo_root=root,
+                                    scenario=scenario,
+                                    mode=mode,
+                                    report_id=report_id,
+                                    cache_profile=cache_profile,
+                                    shard_index=normalized_shard_index,
+                                    shard_count=normalized_shard_count,
+                                )
                         else:
-                            result = _run_scenario_mode(
+                            result = _call_with_supported_kwargs(
+                                _run_scenario_mode,
                                 repo_root=root,
                                 scenario=scenario,
                                 mode=mode,
                                 benchmark_profile=normalized_profile,
+                                report_id=report_id,
+                                cache_profile=cache_profile,
+                                shard_index=normalized_shard_index,
+                                shard_count=normalized_shard_count,
                             )
                         result["cache_profile"] = cache_profile
                         result["scenario_family"] = str(scenario.get("family", "")).strip()
@@ -7494,8 +8352,7 @@ def run_benchmarks(
                             "completed_results": completed_results,
                         }
                     )
-                    if not sharded_run:
-                        _write_progress(repo_root=root, payload=progress_payload)
+                    _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
                 cache_profile_reports[cache_profile] = scenario_reports
                 cache_profile_mode_rows[cache_profile] = mode_rows
             progress_payload.update(
@@ -7510,8 +8367,7 @@ def run_benchmarks(
                     "completed_results": completed_results,
                 }
             )
-            if not sharded_run:
-                _write_progress(repo_root=root, payload=progress_payload)
+            _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
             latency_probes = (
                 {}
                 if sharded_run
@@ -7526,7 +8382,7 @@ def run_benchmarks(
             final_hygiene = (
                 {}
                 if sharded_run
-                else _enforce_diagnostic_runtime_hygiene(repo_root=root)
+                else _enforce_diagnostic_runtime_hygiene(repo_root=root, ignore_progress=progress_payload)
                 if normalized_profile == BENCHMARK_PROFILE_DIAGNOSTIC
                 else _benchmark_runtime_hygiene_snapshot(repo_root=root)
             )
@@ -7736,6 +8592,12 @@ def run_benchmarks(
                     if isinstance(result, Mapping) and str(result.get("preflight_evidence_result_status", "")).strip()
                 }
             )
+            snapshot_overlay_paths = _report_snapshot_overlay_paths(published_scenarios)
+            tree_identity = benchmark_tree_identity(
+                repo_root=root,
+                selection=dict(progress_payload.get("selection", {})),
+                snapshot_paths=snapshot_overlay_paths,
+            )
             robustness_summary = (
                 {}
                 if sharded_run
@@ -7785,6 +8647,19 @@ def run_benchmarks(
                 "selection_strategy": selection_strategy,
                 "product_version": _product_version_from_pyproject(repo_root=root),
                 "corpus_path": str(store.optimization_evaluation_corpus_path(repo_root=root)),
+                "git_branch": str(tree_identity.get("git_branch", "")).strip(),
+                "git_commit": str(tree_identity.get("git_commit", "")).strip(),
+                "git_dirty": bool(tree_identity.get("git_dirty")),
+                "repo_dirty_paths": [
+                    str(token).strip()
+                    for token in tree_identity.get("repo_dirty_paths", [])
+                    if isinstance(tree_identity.get("repo_dirty_paths"), list) and str(token).strip()
+                ],
+                "selection_fingerprint": str(tree_identity.get("selection_fingerprint", "")).strip(),
+                "corpus_fingerprint": str(tree_identity.get("corpus_fingerprint", "")).strip(),
+                "snapshot_overlay_fingerprint": str(tree_identity.get("snapshot_overlay_fingerprint", "")).strip(),
+                "snapshot_overlay_paths": snapshot_overlay_paths,
+                "source_posture": str(tree_identity.get("source_posture", "")).strip(),
                 "scenario_count": len(primary_scenario_reports),
                 "corpus_summary": corpus_summary,
                 "corpus_composition": corpus_composition,
@@ -7869,8 +8744,7 @@ def run_benchmarks(
                         "phase": "persisting_report",
                     }
                 )
-                if not sharded_run:
-                    _write_progress(repo_root=root, payload=progress_payload)
+                _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
                 latest_path = latest_report_path(repo_root=root)
                 profile_latest_path = latest_report_path(
                     repo_root=root,
@@ -7906,8 +8780,8 @@ def run_benchmarks(
                     "phase": "final_cleanup",
                 }
             )
+            _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
             if not sharded_run:
-                _write_progress(repo_root=root, payload=progress_payload)
                 _clear_progress(repo_root=root)
             return report
         except BaseException as exc:
@@ -7934,6 +8808,7 @@ def run_benchmarks(
                     latest_eligible=latest_eligible,
                     startup_hygiene=startup_hygiene,
                     corpus_contract=corpus_contract,
+                    tree_identity=initial_tree_identity,
                     error=exc,
                 )
                 odylith_context_cache.write_json_if_changed(
@@ -7942,10 +8817,10 @@ def run_benchmarks(
                     payload=failed_report,
                     lock_key=str(history_report_path(repo_root=root, report_id=report_id)),
                 )
-            if not sharded_run:
-                _write_progress(repo_root=root, payload=progress_payload)
+            _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
             raise
         finally:
+            _clear_active_run_progress(repo_root=root, payload=progress_payload)
             _cleanup_stale_benchmark_state(
                 repo_root=root,
                 clear_progress=not sharded_run,

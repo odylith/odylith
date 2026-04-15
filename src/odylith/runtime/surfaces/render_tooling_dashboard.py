@@ -20,7 +20,6 @@ from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.product_assets import resolve_product_path
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
-from odylith.runtime.evaluation import benchmark_compare
 from odylith.runtime.governance import agent_governance_intelligence
 from odylith.runtime.governance import workstream_inference as ws_inference
 from odylith.runtime.surfaces import brand_assets
@@ -446,11 +445,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     main_brand_payload = brand_assets.tooling_shell_brand_payload(repo_root=repo_root, output_path=output_path)
     self_host_payload = _build_self_host_payload(repo_root=repo_root)
     shell_source_payload = _build_shell_source_payload(repo_root=repo_root)
-    benchmark_story = (
-        benchmark_compare.build_benchmark_story(repo_root=repo_root)
-        if str(self_host_payload.get("repo_role", "")).strip() == "product_repo"
-        else {}
-    )
     shell_payload = odylith_context_engine_store.load_delivery_surface_payload(
         repo_root=repo_root,
         surface="shell",
@@ -464,7 +458,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         welcome_state=shell_onboarding.build_welcome_state(repo_root=repo_root),
         release_spotlight=release_spotlight,
         version_story=version_story,
-        benchmark_story=benchmark_story,
         shell_source_payload=shell_source_payload,
         self_host_payload=self_host_payload,
         brand_payload=main_brand_payload,
@@ -475,6 +468,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
     )
     runtime_payload = dict(build_result.runtime_payload)
+    runtime_payload.pop("benchmark_story", None)
+    runtime_payload.pop("odylith_drawer", None)
+    runtime_payload.pop("odylith_drawer_history", None)
     runtime_payload["live_refresh"] = _build_live_refresh_payload(
         repo_root=repo_root,
         output_path=output_path,
@@ -488,7 +484,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     if bool(runtime_payload["live_refresh"].get("enabled")):
         odylith_context_engine_store.ensure_state_js_probe_asset(repo_root=repo_root)
     _prune_release_note_pages(output_path=output_path)
-    runtime_payload["odylith_drawer"] = tooling_dashboard_shell_presenter.build_odylith_drawer_payload(runtime_payload)
     runtime_payload["generated_utc"] = stable_generated_utc.resolve_for_js_assignment_file(
         output_path=bundle_paths.payload_js_path,
         global_name="__ODYLITH_TOOLING_DATA__",

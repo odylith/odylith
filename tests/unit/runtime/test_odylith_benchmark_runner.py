@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import collections
 import contextlib
 import json
 import os
@@ -858,12 +859,16 @@ def test_run_live_scenario_batch_executes_public_pair_once_with_matched_pair_met
         repo_root: Path,
         scenario: dict[str, object],
         mode: str,
+        benchmark_profile: str,
+        benchmark_session_namespace: str = "",
         packet_source: str,
         prompt_payload: dict[str, object] | None = None,
         packet_summary: dict[str, object] | None = None,
         snapshot_paths: list[str] | None = None,
     ) -> dict[str, object]:
         del repo_root, packet_source
+        assert benchmark_profile == runner.BENCHMARK_PROFILE_PROOF
+        assert benchmark_session_namespace
         with lock:
             entered_modes.append(mode)
             if len(entered_modes) == 2:
@@ -2419,6 +2424,73 @@ def test_runtime_posture_summary_reports_memory_and_remote_posture(monkeypatch, 
     assert posture["remote_retrieval_enabled"] is False
 
 
+def test_runtime_posture_summary_prefers_managed_runtime_when_host_python_lacks_memory_backend(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(runner.store, "load_runtime_optimization_snapshot", lambda *, repo_root: {"quality_posture": {}})
+    monkeypatch.setattr(runner.store, "load_runtime_evaluation_snapshot", lambda *, repo_root: {"architecture": {}})
+    monkeypatch.setattr(
+        runner.store,
+        "load_runtime_memory_snapshot",
+        lambda *, repo_root, optimization_snapshot=None, evaluation_snapshot=None: {
+            "backend_transition": {
+                "status": "pending_target_swap",
+                "actual_local_backend": {
+                    "storage": "compiler_projection_snapshot",
+                    "sparse_recall": "repo_scan_fallback",
+                },
+                "target_local_backend": {
+                    "storage": "lance_local_columnar",
+                    "sparse_recall": "tantivy_sparse_recall",
+                },
+                "local_backend_status": {"ready": False},
+                "signature": {"projection_scope": "reasoning"},
+            },
+            "entity_counts": {"indexed_entity_count": 120, "evidence_documents": 145},
+        },
+    )
+    managed_posture = {
+        "memory_standardization_state": "standardized",
+        "memory_backend_actual": {
+            "storage": "lance_local_columnar",
+            "sparse_recall": "tantivy_sparse_recall",
+        },
+        "memory_backend_target": {
+            "storage": "lance_local_columnar",
+            "sparse_recall": "tantivy_sparse_recall",
+        },
+        "memory_backed_retrieval_ready": True,
+        "memory_local_backend_ready": True,
+        "memory_projection_scope": "reasoning",
+        "memory_indexed_entity_count": 120,
+        "memory_evidence_document_count": 145,
+        "remote_retrieval_enabled": False,
+        "remote_retrieval_configured": False,
+        "remote_retrieval_mode": "disabled",
+        "remote_retrieval_provider": "vespa_http",
+        "remote_retrieval_status": "disabled",
+        "repo_scan_degraded_fallback_rate": 0.0,
+        "repo_scan_degraded_reason_distribution": {},
+        "governance_runtime_first_usage_rate": 1.0,
+        "governance_runtime_first_fallback_rate": 0.0,
+        "governance_runtime_first_fallback_reason_distribution": {},
+        "route_ready_rate": 1.0,
+        "native_spawn_ready_rate": 1.0,
+        "architecture_covered_case_count": 0,
+        "architecture_satisfied_case_count": 0,
+        "architecture_coverage_rate": 0.0,
+        "architecture_satisfaction_rate": 0.0,
+    }
+    monkeypatch.setattr(runner, "_managed_runtime_posture_summary", lambda *, repo_root: dict(managed_posture))
+
+    posture = runner._runtime_posture_summary(repo_root=tmp_path)  # noqa: SLF001
+
+    assert posture["memory_backed_retrieval_ready"] is True
+    assert posture["memory_local_backend_ready"] is True
+    assert posture["memory_backend_actual"] == managed_posture["memory_backend_actual"]
+
+
 def test_run_benchmarks_records_cache_profile_summaries_without_overwriting_latest(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
@@ -3552,10 +3624,9 @@ def test_run_benchmarks_shards_do_not_touch_shared_progress_or_profile_latest(
         shard_index=2,
     )
 
-    progress_payload = json.loads(progress_path.read_text(encoding="utf-8"))
     profile_latest_payload = json.loads(profile_latest_path.read_text(encoding="utf-8"))
     assert report["latest_eligible"] is False
-    assert progress_payload["report_id"] == "shared-progress"
+    assert not progress_path.exists()
     assert profile_latest_payload["report_id"] == "existing-proof"
     assert runner.history_report_path(repo_root=tmp_path, report_id=report["report_id"]).is_file()
 
@@ -3657,7 +3728,8 @@ def test_run_benchmarks_shards_use_shard_specific_lock_key(
 
     runner.run_benchmarks(repo_root=tmp_path, shard_count=3, shard_index=2, write_report=False)
 
-    assert seen_lock_keys == ["odylith-benchmark-runner:proof:2-of-3"]
+    assert seen_lock_keys[0] == "odylith-benchmark-runner:proof:2-of-3"
+    assert seen_lock_keys.count("odylith-benchmark-runner:proof:2-of-3") == 1
 
 
 def test_run_benchmarks_shards_persist_failed_history_report_on_exception(
@@ -4005,6 +4077,9 @@ def test_diagnostic_profile_keeps_public_pair_packet_only(
         },
     )
     monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
 
     def _fake_packet_result(*, repo_root: Path, scenario: dict[str, object], mode: str) -> dict[str, object]:
         packet_calls.append(mode)
@@ -5236,7 +5311,10 @@ def test_execution_governance_runtime_surface_packet_fixture_keeps_phase_truth()
     assert packet["execution_governance_mode"] == "verify"
     assert packet["execution_governance_current_phase"] == "verify"
     assert packet["execution_governance_closure"] == "incomplete"
+    assert packet["execution_governance_next_move"] == "verify.selected_matrix"
     assert packet["execution_governance_resume_token"] == "resume:governance_slice"
+    assert packet["execution_governance_validation_archetype"] == "verify"
+    assert packet["execution_governance_authoritative_lane"] == "context_engine.governance_slice.authoritative"
 
 
 def test_execution_governance_governance_slice_ambiguity_uses_narrowing_lane() -> None:
@@ -6430,6 +6508,7 @@ def test_run_scenario_mode_passes_selected_docs_to_live_prompt_payload(monkeypat
     )
 
     assert result["status"] == "completed"
+    assert captured["benchmark_profile"] == runner.BENCHMARK_PROFILE_PROOF
     assert captured["packet_source"] == "impact"
     prompt_payload = captured["prompt_payload"]
     assert isinstance(prompt_payload, dict)
@@ -6497,6 +6576,7 @@ def test_prepare_live_scenario_request_preserves_execution_governance_packet_sum
     assert packet_summary["execution_governance_present"] is True
     assert packet_summary["execution_governance_mode"] == "verify"
     assert packet_summary["execution_governance_current_phase"] == "verify"
+    assert packet_summary["execution_governance_next_move"] == "verify.selected_matrix"
     assert packet_summary["execution_governance_resume_token"] == "resume:governance_slice"
 
 
@@ -6623,7 +6703,7 @@ def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    temp_root = tmp_path / "temp-root"
+    temp_root = tmp_path / ".odylith" / "runtime" / "odylith-benchmark-temp"
     temp_root.mkdir(parents=True, exist_ok=True)
     live_dir = temp_root / "odylith-benchmark-live-example"
     codex_dir = temp_root / "odylith-benchmark-codex-example"
@@ -6631,9 +6711,6 @@ def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
     analysis_bundle = temp_root / "odylith-benchmark-20260403T000000Z"
     for path in (live_dir, codex_dir, codex_home_dir, analysis_bundle):
         path.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setattr(tempfile, "gettempdir", lambda: str(temp_root))
-    for env_var in ("TMPDIR", "TMP", "TEMP", "TEMPDIR"):
-        monkeypatch.setenv(env_var, str(temp_root))
     monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
     monkeypatch.setattr(
         runner,
@@ -6649,6 +6726,378 @@ def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
     assert not codex_dir.exists()
     assert not codex_home_dir.exists()
     assert analysis_bundle.exists()
+
+
+def test_cleanup_benchmark_worktrees_removes_detached_clone_workspace(tmp_path: Path) -> None:
+    clone_parent = runner.odylith_benchmark_isolation.benchmark_workspace_parent(  # noqa: SLF001
+        repo_root=tmp_path,
+        create=True,
+    )
+    live_dir = clone_parent / "odylith-benchmark-live-example"
+    (live_dir / "workspace" / ".git").mkdir(parents=True, exist_ok=True)
+    (live_dir / "workspace" / "README.md").write_text("repo\n", encoding="utf-8")
+
+    cleanup = runner._cleanup_benchmark_worktrees(repo_root=tmp_path)  # noqa: SLF001
+
+    assert cleanup["removed_worktree_count"] == 1
+    assert str(live_dir.resolve()) in cleanup["removed_worktrees"]
+    assert not live_dir.exists()
+
+
+def test_sync_active_run_progress_keeps_failed_progress_out_of_active_runs(tmp_path: Path) -> None:
+    payload = {
+        "report_id": "report-1",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:00:00Z",
+        "status": "running",
+        "shard_index": 2,
+        "shard_count": 4,
+        "owning_pid": 99999,
+    }
+
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+
+    active_runs_payload = json.loads(runner.active_runs_path(repo_root=tmp_path).read_text(encoding="utf-8"))  # noqa: SLF001
+    assert len(active_runs_payload["runs"]) == 1
+
+    failed_payload = dict(payload)
+    failed_payload["status"] = "failed"
+    failed_payload["updated_utc"] = "2026-04-15T00:01:00Z"
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=failed_payload)  # noqa: SLF001
+
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-1",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=2,
+        shard_count=4,
+        owning_pid=99999,
+    )
+    stored_progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    assert stored_progress["status"] == "failed"
+
+
+def test_sync_active_run_progress_recovers_running_shards_when_shared_ledger_is_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    shard_one = {
+        "report_id": "report-recover-1",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:00:00Z",
+        "status": "running",
+        "shard_index": 1,
+        "shard_count": 2,
+        "owning_pid": 12345,
+    }
+    shard_one_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-recover-1",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=2,
+        owning_pid=12345,
+    )
+    shard_one_path.parent.mkdir(parents=True, exist_ok=True)
+    shard_one_path.write_text(json.dumps(shard_one, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: pid in {12345, 67890})
+
+    shard_two = {
+        "report_id": "report-recover-2",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:05Z",
+        "updated_utc": "2026-04-15T00:00:05Z",
+        "status": "running",
+        "shard_index": 2,
+        "shard_count": 2,
+        "owning_pid": 67890,
+    }
+
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=shard_two)  # noqa: SLF001
+
+    active_runs_payload = json.loads(runner.active_runs_path(repo_root=tmp_path).read_text(encoding="utf-8"))  # noqa: SLF001
+    assert {row["report_id"] for row in active_runs_payload["runs"]} == {"report-recover-1", "report-recover-2"}
+
+
+def test_load_benchmark_progress_recovers_from_progress_files_when_active_run_ledger_is_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payloads = [
+        {
+            "report_id": "report-progress",
+            "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+            "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+            "repo_root": str(tmp_path.resolve()),
+            "started_utc": "2026-04-15T00:00:00Z",
+            "updated_utc": "2026-04-15T00:00:00Z",
+            "status": "running",
+            "phase": "executing_scenarios",
+            "shard_index": 1,
+            "shard_count": 2,
+            "scenario_count": 5,
+            "total_results": 20,
+            "completed_cache_profiles": 0,
+            "completed_scenarios": 1,
+            "completed_results": 2,
+            "owning_pid": 11111,
+        },
+        {
+            "report_id": "report-progress",
+            "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+            "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+            "repo_root": str(tmp_path.resolve()),
+            "started_utc": "2026-04-15T00:00:01Z",
+            "updated_utc": "2026-04-15T00:00:02Z",
+            "status": "running",
+            "phase": "executing_scenarios",
+            "shard_index": 2,
+            "shard_count": 2,
+            "scenario_count": 6,
+            "total_results": 24,
+            "completed_cache_profiles": 1,
+            "completed_scenarios": 3,
+            "completed_results": 10,
+            "current_scenario_id": "case-b",
+            "owning_pid": 22222,
+        },
+    ]
+    for payload in payloads:
+        progress_path = runner._active_run_progress_path(  # noqa: SLF001
+            repo_root=tmp_path,
+            report_id=str(payload["report_id"]),
+            benchmark_profile=str(payload["benchmark_profile"]),
+            shard_index=int(payload["shard_index"]),
+            shard_count=int(payload["shard_count"]),
+            owning_pid=int(payload["owning_pid"]),
+        )
+        progress_path.parent.mkdir(parents=True, exist_ok=True)
+        progress_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: pid in {11111, 22222})
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
+
+    progress = runner.load_benchmark_progress(repo_root=tmp_path)
+
+    assert progress["aggregate_source"] == "active_runs"
+    assert progress["active_shard_count"] == 2
+    assert progress["active_shard_indices"] == [1, 2]
+    assert progress["scenario_count"] == 11
+    assert progress["total_results"] == 44
+    assert progress["completed_scenarios"] == 4
+    assert progress["completed_results"] == 12
+    assert progress["current_scenario_id"] == "case-b"
+
+
+def test_prune_stale_benchmark_progress_removes_failed_active_run_entries(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-2",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=4,
+        owning_pid=12345,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text("{}", encoding="utf-8")
+    runner._write_active_runs(  # noqa: SLF001
+        repo_root=tmp_path,
+        runs=[
+            {
+                "report_id": "report-2",
+                "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+                "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+                "repo_root": str(tmp_path.resolve()),
+                "started_utc": "2026-04-15T00:00:00Z",
+                "updated_utc": "2026-04-15T00:01:00Z",
+                "status": "failed",
+                "shard_index": 1,
+                "shard_count": 4,
+                "owning_pid": 12345,
+                "progress_path": str(progress_path),
+            }
+        ],
+    )
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
+
+    cleanup = runner._prune_stale_benchmark_progress(repo_root=tmp_path, clear_shared_progress=False)  # noqa: SLF001
+
+    assert cleanup["removed_active_run_count"] == 1
+    assert not progress_path.exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+
+
+def test_prune_stale_benchmark_progress_removes_dead_pid_even_when_other_runtime_artifacts_exist(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-dead",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=4,
+        owning_pid=54321,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text("{}", encoding="utf-8")
+    runner._write_active_runs(  # noqa: SLF001
+        repo_root=tmp_path,
+        runs=[
+            {
+                "report_id": "report-dead",
+                "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+                "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+                "repo_root": str(tmp_path.resolve()),
+                "started_utc": "2026-04-15T00:00:00Z",
+                "updated_utc": "2026-04-15T00:01:00Z",
+                "status": "running",
+                "shard_index": 1,
+                "shard_count": 4,
+                "owning_pid": 54321,
+                "progress_path": str(progress_path),
+            }
+        ],
+    )
+    unrelated_temp_dir = tmp_path / ".odylith" / "runtime" / "odylith-benchmark-temp" / "odylith-benchmark-codex-other"
+    unrelated_temp_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [unrelated_temp_dir])
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: False)
+
+    cleanup = runner._prune_stale_benchmark_progress(repo_root=tmp_path, clear_shared_progress=False)  # noqa: SLF001
+
+    assert cleanup["removed_active_run_count"] == 1
+    assert cleanup["active_runtime_present"] is True
+    assert not progress_path.exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+
+
+def test_run_benchmarks_fails_closed_when_benchmark_runtime_free_space_is_too_low(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    DiskUsage = collections.namedtuple("DiskUsage", ["total", "used", "free"])
+    _write_corpus(
+        tmp_path,
+        {
+            "version": "v1",
+            "program": {},
+            "cases": [
+                {
+                    "case_id": "case-a",
+                    "label": "Case A",
+                    "family": "validation_heavy_fix",
+                    "priority": "high",
+                    "benchmark": {
+                        "prompt": "Work case-a.",
+                        "paths": ["src/case_a.py"],
+                        "required_paths": ["src/case_a.py"],
+                        "validation_commands": [],
+                        "needs_write": True,
+                    },
+                    "match": {"paths_any": ["src/case_a.py"]},
+                    "expect": {"within_budget": True},
+                }
+            ],
+            "architecture_cases": [],
+        },
+    )
+    monkeypatch.setattr(runner, "_cleanup_stale_benchmark_state", lambda **_: {})
+    monkeypatch.setattr(
+        runner.shutil,
+        "disk_usage",
+        lambda path: DiskUsage(
+            total=1024 * 1024 * 1024,
+            used=1024 * 1024 * 768,
+            free=runner._MIN_BENCHMARK_RUNTIME_FREE_BYTES - 1,  # noqa: SLF001
+        ),
+    )
+    monkeypatch.setattr(
+        runner,
+        "_write_progress",
+        lambda **_: (_ for _ in ()).throw(AssertionError("progress should not be written when storage preflight fails")),
+    )
+
+    with pytest.raises(RuntimeError, match="benchmark runtime free space is too low"):
+        runner.run_benchmarks(
+            repo_root=tmp_path,
+            benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+            write_report=False,
+        )
+
+
+def test_benchmark_tree_identity_records_real_head_oid(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.email", "bench@example.com"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Benchmark"], cwd=repo_root, check=True)
+    (repo_root / "README.md").write_text("repo\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+
+    expected_branch = (
+        subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "--abbrev-ref", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        .stdout.strip()
+    )
+    expected_commit = (
+        subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        .stdout.strip()
+    )
+
+    store._PROCESS_GIT_REF_CACHE.clear()  # noqa: SLF001
+    identity = runner.benchmark_tree_identity(repo_root=repo_root, selection={})
+    assert identity["git_branch"] == expected_branch
+    assert identity["git_commit"] == expected_commit
+    assert identity["git_commit"] != identity["git_branch"]
+
+
+def test_benchmark_tree_identity_fingerprints_existing_snapshot_overlay_paths(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.email", "bench@example.com"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Benchmark"], cwd=repo_root, check=True)
+    (repo_root / "README.md").write_text("repo\n", encoding="utf-8")
+    (repo_root / "docs").mkdir(parents=True, exist_ok=True)
+    (repo_root / "docs" / "bench.md").write_text("bench\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md", "docs/bench.md"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+
+    identity = runner.benchmark_tree_identity(
+        repo_root=repo_root,
+        selection={},
+        snapshot_paths=["docs/bench.md", "missing.md"],
+    )
+
+    assert identity["snapshot_overlay_fingerprint"]
 
 
 def test_architecture_result_uses_compact_dossier_for_benchmark_payload() -> None:
@@ -6971,6 +7420,49 @@ def test_governed_surface_sync_hot_path_skips_dead_miss_recovery() -> None:
     assert retrieval_plan.get("miss_recovery") is None
 
 
+def test_broad_scope_hot_path_keeps_fallback_recommendation_without_result_paths() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "context-engine-broad-scope-fail-closed")
+
+    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        existing_paths=scenario["changed_paths"],
+    )
+    observed_paths = runner._observed_packet_paths(payload)  # noqa: SLF001
+
+    assert packet_source == "impact"
+    assert payload["fallback_scan"] == {
+        "recommended": True,
+        "reason": "adaptive_full_scan_fallback",
+        "performed": True,
+    }
+    assert "docs/WHY_ODYLITH_CHANGES_OUTCOMES.md" not in observed_paths
+    assert "odylith/technical-plans/CLAUDE.md" not in observed_paths
+
+
+def test_ambiguous_session_brief_keeps_fallback_recommendation_without_bug_result_paths() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "compass-refresh-queued-state-recovery")
+
+    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        existing_paths=scenario["changed_paths"],
+    )
+    observed_paths = runner._observed_packet_paths(payload)  # noqa: SLF001
+
+    assert packet_source == "session_brief"
+    assert payload["fallback_scan"] == {
+        "recommended": True,
+        "reason": "adaptive_full_scan_fallback",
+        "performed": True,
+    }
+    assert not any(path.startswith("odylith/casebook/bugs/") for path in observed_paths)
+
+
 def test_safe_governance_hot_path_skips_runtime_warmup_when_projection_snapshot_is_present(monkeypatch) -> None:  # noqa: ANN001
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "consumer-install-upgrade-runtime-contract")
@@ -7219,7 +7711,7 @@ def test_packet_level_architecture_audit_keeps_doc_only_slice_grounded() -> None
             "fanout": "no_fanout",
             "risk_tier": "moderate",
         },
-        "contract_touchpoint_count": 4,
+        "contract_touchpoint_count": 2,
         "validation_obligation_count": 2,
     }
 

@@ -129,6 +129,8 @@ def test_execution_wave_runtime_helpers_expose_shared_renderer() -> None:
     assert "execution-wave-body-grid-members" in runtime
     assert "const waveProgress = executionWaveWaveProgress(wave, options);" in runtime
     assert 'const progressChip = waveProgress.percent ? `${waveProgress.percent} progress` : "";' in runtime
+    assert 'const openAttr = "";' in runtime
+    assert "Boolean(wave.default_open)" not in runtime
     assert '${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}' in runtime
     assert '${showProgramFocusTitle ? `<div class="execution-wave-focus-title">${escapeHtml(programLabel)}</div>` : ""}' in runtime
     assert '{ label: "Depends On", contentHtml: dependsOnHtml }' in runtime

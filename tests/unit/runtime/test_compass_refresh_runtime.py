@@ -270,7 +270,7 @@ def test_foreground_timeout_records_failure_without_retry(
     state = result["state"]
     assert state["terminal_reason"] == "timeout"
     assert state["status"] == "failed"
-    assert state["next_command"] == "odylith compass refresh --repo-root . --wait"
+    assert state["next_command"] == "odylith compass deep-refresh --repo-root ."
     assert captured["failed_payload"] == {
         "repo_root": tmp_path.resolve(),
         "requested_profile": "shell-safe",

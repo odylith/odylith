@@ -22,7 +22,12 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
+from typing import Mapping
 
+from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.surfaces import claude_host_shared
 
 
@@ -92,6 +97,30 @@ def refresh_governance(*, project_dir: Path | str, path_token: str) -> dict[str,
     return {"systemMessage": f"Odylith governance refresh failed after editing {path_token}: {detail}"}
 
 
+def _post_edit_bundle(
+    *,
+    project_dir: Path,
+    path_token: str,
+    session_id: str = "",
+    bundle_override: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    if isinstance(bundle_override, Mapping):
+        return dict(bundle_override)
+    if not _normalize_string(path_token):
+        return {}
+    return host_surface_runtime.compose_host_conversation_bundle(
+        repo_root=project_dir,
+        host_family="claude",
+        turn_phase="post_edit_checkpoint",
+        session_id=session_id,
+        changed_paths=[path_token],
+    )
+
+
+def _normalize_string(value: Any) -> str:
+    return " ".join(str(value or "").split()).strip()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude post-edit-checkpoint",
@@ -108,11 +137,39 @@ def main(argv: list[str] | None = None) -> int:
     raw = args.payload if args.payload else None
     payload = claude_host_shared.load_payload(raw)
     path_token = edited_path(payload=payload, project_dir=repo_root)
-    if not should_refresh(path_token):
-        return 0
-    result = refresh_governance(project_dir=repo_root, path_token=path_token)
-    if result:
-        sys.stdout.write(json.dumps(result))
+    session_id = claude_host_shared.hook_session_id(payload)
+    governance_result = refresh_governance(project_dir=repo_root, path_token=path_token) if should_refresh(path_token) else {}
+    bundle = _post_edit_bundle(
+        project_dir=repo_root,
+        path_token=path_token,
+        session_id=session_id,
+    )
+    developer_context = host_surface_runtime.render_developer_context(
+        bundle,
+        markdown=True,
+        include_proposal=True,
+        include_closeout=True,
+    ) if bundle else ""
+    live_intervention = host_surface_runtime.render_visible_live_intervention(
+        bundle,
+        markdown=True,
+        include_proposal=True,
+    ) if bundle else ""
+    if bundle and developer_context:
+        conversation_surface.append_intervention_events(
+            repo_root=repo_root,
+            bundle=bundle,
+            include_proposal=True,
+        )
+    payload_out = host_surface_runtime.claude_post_tool_payload(
+        developer_context=developer_context,
+        system_message=host_surface_runtime.compose_checkpoint_system_message(
+            live_intervention=live_intervention,
+            governance_status=_normalize_string(governance_result.get("systemMessage")),
+        ),
+    )
+    if payload_out:
+        sys.stdout.write(json.dumps(payload_out))
     return 0
 
 

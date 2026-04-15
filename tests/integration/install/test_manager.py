@@ -636,6 +636,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in guidance_text
     assert "never prefix commentary with control-plane receipt labels" in guidance_text
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in guidance_text
+    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in guidance_text
+    assert "Stop is the fallback closeout lane, not the primary intervention moment." in guidance_text
     assert "literal commands" not in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
@@ -669,7 +671,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "./.odylith/bin/odylith registry refresh --repo-root ." in guidance_text
     assert "./.odylith/bin/odylith casebook refresh --repo-root ." in guidance_text
     assert "./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync" in guidance_text
-    assert "./.odylith/bin/odylith compass refresh --repo-root . --wait" in guidance_text
+    assert "./.odylith/bin/odylith compass refresh --repo-root ." in guidance_text
+    assert "./.odylith/bin/odylith compass deep-refresh --repo-root ." in guidance_text
     assert "./.odylith/bin/odylith codex compatibility --repo-root ." in guidance_text
     assert "Keep `.agents/skills` lookup, missing-shim, and fallback-source details implicit" in guidance_text
     assert "## Specialist Skills" in guidance_text
@@ -688,6 +691,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in root_agents
     assert "never prefix commentary with control-plane receipt labels" in root_agents
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in root_agents
+    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in root_agents
+    assert "Stop is the fallback closeout lane, not the primary intervention moment." in root_agents
     assert "literal commands" not in root_agents
     assert "Keep normal commentary task-first and human." in root_agents
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents
@@ -711,7 +716,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "odylith registry refresh" in root_agents
     assert "odylith casebook refresh" in root_agents
     assert "odylith atlas refresh" in root_agents
-    assert "odylith compass refresh --wait" in root_agents
+    assert "odylith compass refresh" in root_agents
+    assert "odylith compass deep-refresh" in root_agents
     assert "Queued backlog items" in root_agents
     assert "do not pick it up automatically" in root_agents
     assert "If the slice expands beyond one truthful record, use child workstreams or execution waves" in root_agents
@@ -812,7 +818,8 @@ def test_bundle_surfaces_ship_stable_product_bundle_assets() -> None:
     assert isinstance(tooling_payload["components"], dict)
     assert isinstance(tooling_payload["diagrams"], dict)
     assert isinstance(tooling_payload["maintainer_notes"], list)
-    assert isinstance(tooling_payload["odylith_drawer"], dict)
+    assert "odylith_drawer" not in tooling_payload
+    assert "benchmark_story" not in tooling_payload
     assert str(tooling_payload["shell_repo_label"]).strip()
     assert isinstance(tooling_payload["shell_version_label"], str)
     assert isinstance(tooling_payload["welcome_state"], dict)
@@ -1402,7 +1409,8 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "./.odylith/bin/odylith registry refresh --repo-root ." in guidance_text
     assert "./.odylith/bin/odylith casebook refresh --repo-root ." in guidance_text
     assert "./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync" in guidance_text
-    assert "./.odylith/bin/odylith compass refresh --repo-root . --wait" in guidance_text
+    assert "./.odylith/bin/odylith compass refresh --repo-root ." in guidance_text
+    assert "./.odylith/bin/odylith compass deep-refresh --repo-root ." in guidance_text
     assert "./.odylith/bin/odylith codex compatibility --repo-root ." in guidance_text
     assert "## Specialist Skills" in guidance_text
     assert (repo_root / "odylith" / "radar" / "source" / "CLAUDE.md").is_file()

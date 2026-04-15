@@ -18,24 +18,19 @@ def test_render_system_status_html_renders_ablation_notice() -> None:
 
 
 def test_render_system_status_html_prefers_existing_drawer_payload() -> None:
-    captured: dict[str, object] = {}
-
-    def _render_curated(payload):  # noqa: ANN001
-        captured["payload"] = dict(payload)
-        return "<section>drawer</section>"
-
     html = presenter.render_system_status_html(
         {"odylith_drawer": {"status": "ready", "headline": "Current"}},
         odylith_switch={},
-        build_drawer_payload=lambda payload: {"status": "rebuilt"},
-        render_curated_system_status_html=_render_curated,
+        build_drawer_payload=lambda payload: (_ for _ in ()).throw(AssertionError("telemetry drawer should stay suppressed")),
+        render_curated_system_status_html=lambda payload: (_ for _ in ()).throw(
+            AssertionError("system-status telemetry should stay suppressed")
+        ),
     )
 
-    assert html == "<section>drawer</section>"
-    assert captured["payload"] == {"status": "ready", "headline": "Current"}
+    assert html == ""
 
 
-def test_render_system_status_html_includes_benchmark_story_strip() -> None:
+def test_render_system_status_html_suppresses_benchmark_story_strip() -> None:
     html = presenter.render_system_status_html(
         {
             "benchmark_story": {
@@ -59,12 +54,10 @@ def test_render_system_status_html_includes_benchmark_story_strip() -> None:
             "odylith_drawer": {"status": "ready", "headline": "Current"},
         },
         odylith_switch={},
-        build_drawer_payload=lambda payload: {"status": "rebuilt"},
-        render_curated_system_status_html=lambda payload: "<section>drawer</section>",
+        build_drawer_payload=lambda payload: (_ for _ in ()).throw(AssertionError("benchmark telemetry should stay suppressed")),
+        render_curated_system_status_html=lambda payload: (_ for _ in ()).throw(
+            AssertionError("curated telemetry drawer should stay suppressed")
+        ),
     )
 
-    assert "Maintainer Benchmark Lane" in html
-    assert "Benchmark compare raised release warnings." in html
-    assert "Prompt tokens" in html
-    assert "Current" in html
-    assert html.endswith("<section>drawer</section>")
+    assert html == ""

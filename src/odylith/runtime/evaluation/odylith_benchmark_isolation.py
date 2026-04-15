@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import contextlib
+import hashlib
 import os
 from pathlib import Path
 import shutil
 import subprocess
-from typing import Mapping, Sequence
+import tempfile
+from typing import Iterator, Mapping, Sequence
 
 from odylith.runtime.reasoning import odylith_reasoning
 
@@ -90,6 +93,72 @@ def _normalized_allowed_paths(values: Sequence[str]) -> set[str]:
             token = token[2:]
         rows.add(Path(token).as_posix().rstrip("/"))
     return rows
+
+
+def apply_workspace_strip_paths(*, workspace_root: Path, strip_paths: Sequence[Path]) -> None:
+    for relative_path in strip_paths:
+        path = (workspace_root / relative_path).resolve()
+        if not path.exists():
+            continue
+        if path.is_dir():
+            shutil.rmtree(path)
+            continue
+        path.unlink()
+
+
+def benchmark_workspace_parent(*, repo_root: Path, create: bool = True) -> Path:
+    resolved_repo_root = Path(repo_root).resolve()
+    root = (
+        resolved_repo_root.parent
+        / ".odylith-benchmark-worktrees"
+        / f"{resolved_repo_root.name}-{hashlib.sha256(str(resolved_repo_root).encode('utf-8')).hexdigest()[:12]}"
+    ).resolve()
+    if create:
+        root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+@contextlib.contextmanager
+def temporary_workspace_checkout(
+    repo_root: Path,
+    *,
+    strip_paths: Sequence[Path],
+    snapshot_paths: Sequence[str],
+) -> Iterator[tuple[Path, Path]]:
+    root = Path(repo_root).resolve()
+    with tempfile.TemporaryDirectory(
+        prefix="odylith-benchmark-live-",
+        dir=str(benchmark_workspace_parent(repo_root=root, create=True)),
+    ) as tmp_dir:
+        workspace_root = (Path(tmp_dir) / "workspace").resolve()
+        validator_truth_root = (Path(tmp_dir) / "validator-truth").resolve()
+        subprocess.run(
+            ["git", "clone", "--quiet", "--local", "--no-checkout", str(root), str(workspace_root)],
+            cwd=str(root),
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(workspace_root), "checkout", "--quiet", "--detach", "HEAD"],
+            cwd=str(root),
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        overlay_workspace_repo_snapshot(
+            repo_root=root,
+            workspace_root=workspace_root,
+            allowed_paths=snapshot_paths,
+        )
+        provision_workspace_odylith_root(repo_root=root, workspace_root=workspace_root)
+        capture_workspace_validator_truth(
+            workspace_root=workspace_root,
+            truth_root=validator_truth_root,
+            strip_paths=strip_paths,
+        )
+        apply_workspace_strip_paths(workspace_root=workspace_root, strip_paths=strip_paths)
+        yield workspace_root, validator_truth_root
 
 
 _BENCHMARK_SELF_REFERENCE_ALLOWED_FAMILIES = frozenset(

@@ -372,6 +372,13 @@ def _default_report_path(repo_root: Path, filename: str) -> Path:
     return (Path(repo_root).resolve() / ".odylith/runtime/odylith-benchmarks" / filename).resolve()
 
 
+def _validate_selected_report(*, repo_root: Path, path: Path, report: Mapping[str, Any]) -> None:
+    if not odylith_benchmark_runner.benchmark_report_matches_current_tree(repo_root=repo_root, report=report):
+        raise ValueError(
+            f"benchmark publication refused `{path}` because it does not match the current repo tree identity"
+        )
+
+
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Refresh benchmark publication markdown and latest-summary JSON from selected reports."
@@ -398,6 +405,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     live_report = _load_report(live_report_path)
     diagnostic_report = _load_report(diagnostic_report_path)
+    if not args.live_report:
+        _validate_selected_report(repo_root=repo_root, path=live_report_path, report=live_report)
+    if not args.diagnostic_report:
+        _validate_selected_report(repo_root=repo_root, path=diagnostic_report_path, report=diagnostic_report)
     changed = write_publication_artifacts(
         repo_root=repo_root,
         live_report=live_report,

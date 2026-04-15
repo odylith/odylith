@@ -181,10 +181,10 @@
       "benchmark": {
         "prompt": "Ground the slice explicitly to the Wave 3 workstream and keep the resulting packet compact and routeable.",
         "paths": [
-          "odylith/skills/subagent-orchestrator/SKILL.md"
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
         ],
         "required_paths": [
-          "odylith/skills/subagent-orchestrator/SKILL.md"
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
         ],
         "workstream": "B-001",
         "validation_commands": [
@@ -245,11 +245,11 @@
       "benchmark": {
         "prompt": "Keep orchestration and evaluation-ledger slices visible and grounded so delegation control is measurable, not guessed.",
         "paths": [
-          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
           "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
         ],
         "required_paths": [
-          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
           "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
         ],
         "workstream": "B-001",
@@ -260,7 +260,7 @@
       },
       "match": {
         "paths_any": [
-          "odylith/skills/subagent-orchestrator/SKILL.md"
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
         ]
       },
       "expect": {
@@ -316,10 +316,10 @@
       "benchmark": {
         "prompt": "Use the exact workstream anchor and keep the retained packet dense, grounded, and route-ready.",
         "paths": [
-          "odylith/skills/subagent-router/SKILL.md"
+          "odylith/skills/odylith-subagent-router/SKILL.md"
         ],
         "required_paths": [
-          "odylith/skills/subagent-router/SKILL.md"
+          "odylith/skills/odylith-subagent-router/SKILL.md"
         ],
         "workstream": "B-001",
         "validation_commands": [
@@ -328,7 +328,7 @@
       },
       "match": {
         "paths_any": [
-          "odylith/skills/subagent-router/SKILL.md"
+          "odylith/skills/odylith-subagent-router/SKILL.md"
         ],
         "workstream": "B-001"
       },
@@ -452,8 +452,8 @@
           "compact"
         ],
         "within_budget": true,
-        "route_ready": true,
-        "native_spawn_ready": true,
+        "route_ready": false,
+        "native_spawn_ready": false,
         "selection_state": [
           "explicit"
         ],
@@ -987,12 +987,12 @@
       "benchmark": {
         "prompt": "Work a cross-file router and orchestrator feature slice without flooding context or overspending fanout.",
         "paths": [
-          "odylith/skills/subagent-router/SKILL.md",
-          "odylith/skills/subagent-orchestrator/SKILL.md"
+          "odylith/skills/odylith-subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
         ],
         "required_paths": [
-          "odylith/skills/subagent-router/SKILL.md",
-          "odylith/skills/subagent-orchestrator/SKILL.md"
+          "odylith/skills/odylith-subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
         ],
         "workstream": "B-001",
         "validation_commands": [
@@ -1002,8 +1002,8 @@
       },
       "match": {
         "paths_all": [
-          "odylith/skills/subagent-router/SKILL.md",
-          "odylith/skills/subagent-orchestrator/SKILL.md"
+          "odylith/skills/odylith-subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
         ]
       },
       "expect": {
@@ -1028,15 +1028,15 @@
       "benchmark": {
         "prompt": "Fix a validation-heavy router slice and justify deeper reasoning only when the packet is grounded enough to earn it.",
         "paths": [
-          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-router/SKILL.md",
           "odylith/runtime/SUBAGENT_OPERATIONS.md"
         ],
         "required_paths": [
-          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-router/SKILL.md",
           "odylith/runtime/SUBAGENT_OPERATIONS.md"
         ],
         "critical_paths": [
-          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-router/SKILL.md",
           "odylith/runtime/SUBAGENT_OPERATIONS.md"
         ],
         "workstream": "B-001",
@@ -1068,16 +1068,16 @@
       "benchmark": {
         "prompt": "Handle a merge-heavy router plus governed-doc slice without underestimating coordination or validation pressure.",
         "paths": [
-          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-router/SKILL.md",
           "odylith/runtime/SUBAGENT_OPERATIONS.md",
           "odylith/runtime/SUBAGENT_OPERATIONS.md"
         ],
         "required_paths": [
-          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-router/SKILL.md",
           "odylith/runtime/SUBAGENT_OPERATIONS.md"
         ],
         "critical_paths": [
-          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-router/SKILL.md",
           "odylith/runtime/SUBAGENT_OPERATIONS.md"
         ],
         "workstream": "B-001",
@@ -1090,7 +1090,7 @@
       },
       "match": {
         "paths_all": [
-          "odylith/skills/subagent-router/SKILL.md",
+          "odylith/skills/odylith-subagent-router/SKILL.md",
           "odylith/runtime/SUBAGENT_OPERATIONS.md"
         ]
       },
@@ -1190,11 +1190,11 @@
       "benchmark": {
         "prompt": "Preserve the closed-loop orchestration advisory posture through routing, leaf shaping, and local evaluation evidence.",
         "paths": [
-          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
           "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
         ],
         "required_paths": [
-          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
           "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
         ],
         "workstream": "B-001",
@@ -1205,7 +1205,7 @@
       },
       "match": {
         "paths_any": [
-          "odylith/skills/subagent-orchestrator/SKILL.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
           "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
         ]
       },
@@ -1637,7 +1637,8 @@
           "tests/integration/install/test_manager.py",
           "odylith/AGENTS.md",
           "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-          "odylith/skills/subagent-orchestrator/SKILL.md"
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+          "odylith/CLAUDE.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/install/test_agents.py tests/integration/install/test_manager.py"
@@ -1966,7 +1967,8 @@
           "src/odylith/cli.py",
           "tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py",
           "tests/unit/runtime/test_render_tooling_dashboard.py",
-          "odylith/index.html"
+          "odylith/index.html",
+          "odylith/compass/compass.html"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q --basetemp=./.tmp-pytest-browser-contract -o cache_dir=./.tmp-pytest-cache-browser-contract tests/unit/runtime/test_shell_onboarding.py::test_build_release_spotlight_for_recent_consumer_upgrade tests/unit/runtime/test_shell_onboarding.py::test_build_release_spotlight_ignores_first_install_with_stale_payload tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popup tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_upgrade_recovery_pill_expires_after_ten_minutes_even_without_rerender tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_install_renders_a_browser_valid_first_run_launchpad tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_install_adopt_latest_renders_a_browser_valid_incremental_upgrade_note"
@@ -2096,7 +2098,8 @@
           "src/odylith/install/state.py",
           "tests/unit/runtime/test_odylith_control_state.py",
           "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-          "odylith/registry/source/components/dashboard/CURRENT_SPEC.md"
+          "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_control_state.py"
@@ -2189,7 +2192,8 @@
           "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
           "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
           "docs/benchmarks/FAMILIES_AND_EVALS.md",
-          "tests/unit/runtime/test_odylith_benchmark_graphs.py"
+          "tests/unit/runtime/test_odylith_benchmark_graphs.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py"
@@ -2236,7 +2240,9 @@
           "src/odylith/runtime/surfaces/render_compass_dashboard.py",
           "tests/unit/runtime/test_compass_current_workstreams_runtime.py",
           "tests/unit/runtime/test_render_compass_dashboard.py",
-          "tests/integration/runtime/test_surface_browser_smoke.py"
+          "tests/integration/runtime/test_surface_browser_smoke.py",
+          "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md"
         ],
         "critical_paths": [
           "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
@@ -2333,7 +2339,8 @@
           "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
           "src/odylith/runtime/reasoning/remediator.py",
           "tests/unit/runtime/test_subagent_reasoning_ladder.py",
-          "tests/unit/runtime/test_remediator.py"
+          "tests/unit/runtime/test_remediator.py",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
         ],
         "critical_paths": [
           "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
@@ -2442,7 +2449,8 @@
           "src/odylith/runtime/evaluation/odylith_benchmark_live_diagnostics.py",
           "src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py",
           "tests/unit/runtime/test_odylith_benchmark_live_execution.py",
-          "tests/unit/runtime/test_odylith_benchmark_live_diagnostics.py"
+          "tests/unit/runtime/test_odylith_benchmark_live_diagnostics.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_live_diagnostics.py"
@@ -2525,7 +2533,10 @@
         ],
         "required_paths": [
           "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
-          "tests/unit/runtime/test_odylith_benchmark_runner.py"
+          "tests/unit/runtime/test_odylith_benchmark_runner.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "docs/benchmarks/REVIEWER_GUIDE.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md"
         ],
         "critical_paths": [
           "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
@@ -2619,7 +2630,8 @@
           "src/odylith/runtime/execution_engine/history_rules.py",
           "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
           "tests/unit/runtime/test_execution_governance.py",
-          "tests/unit/runtime/test_subagent_reasoning_ladder.py"
+          "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
         ],
         "critical_paths": [
           "src/odylith/runtime/execution_engine/policy.py",
@@ -2668,7 +2680,8 @@
           "src/odylith/runtime/execution_engine/validation.py",
           "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
           "tests/unit/runtime/test_execution_governance.py",
-          "tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py"
+          "tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
         ],
         "critical_paths": [
           "src/odylith/runtime/execution_engine/receipts.py",
@@ -2774,7 +2787,8 @@
           "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
           "tests/unit/runtime/test_odylith_runtime_surface_summary.py",
           "tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py",
-          "tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py"
+          "tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py"
@@ -2816,7 +2830,8 @@
           "src/odylith/runtime/execution_engine/resource_closure.py",
           "src/odylith/runtime/execution_engine/policy.py",
           "src/odylith/runtime/execution_engine/validation.py",
-          "tests/unit/runtime/test_execution_governance.py"
+          "tests/unit/runtime/test_execution_governance.py",
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
         ],
         "critical_paths": [
           "src/odylith/runtime/execution_engine/resource_closure.py",
@@ -2975,7 +2990,8 @@
           "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
           "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
           "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-          "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd"
+          "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd",
+          "docs/specs/odylith-repo-integration-contract.md"
         ]
       },
       "match": {

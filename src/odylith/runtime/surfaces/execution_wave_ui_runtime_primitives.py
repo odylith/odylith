@@ -908,8 +908,7 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     const sequenceChip = `${sequenceCount} of ${totalWaveCount}`;
     const waveProgress = executionWaveWaveProgress(wave, options);
     const progressChip = waveProgress.percent ? `${waveProgress.percent} progress` : "";
-    const openByDefault = Boolean(wave.default_open) || isSelectedMember;
-    const openAttr = openByDefault ? " open" : "";
+    const openAttr = "";
     const selectedNote = isSelectedMember ? String(selectedNoteBuilder(selectedWorkstream, contextMeta) || "").trim() : "";
     const supportBlocks = [];
     if (gatePreview) {

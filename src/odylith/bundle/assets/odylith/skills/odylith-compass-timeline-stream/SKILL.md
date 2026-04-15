@@ -11,7 +11,8 @@ Use when logging bounded Compass timeline events for decisions, implementation u
 odylith compass log --repo-root . --kind decision --summary "<decision>"
 odylith compass log --repo-root . --kind implementation --summary "<implementation update>"
 odylith compass update --repo-root . --statement "<current execution state>"
-odylith compass refresh --repo-root . --wait
+odylith compass refresh --repo-root .
+odylith compass deep-refresh --repo-root .
 ```
 
 ## Rules

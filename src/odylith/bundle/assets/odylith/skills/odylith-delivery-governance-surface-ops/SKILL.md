@@ -30,7 +30,7 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 - run Casebook preflight and capture named failures or repeat-debug loops in the same turn
 - keep Compass updates intent-first and carry forward constraints plus validation obligations
 - treat Compass voice as governed truth: plainspoken grounded maintainer narration in ordinary words, with no stock framing, house phrases, queue-label restatement, repeated window leads, generic priority wrappers, rhetorical benchmark challenges, stagey metaphor, or canned current/next/why/timing scaffolding in Compass-facing summaries or updates
-- keep Compass cheap too: the one bounded Compass refresh should stay deterministic and provider-light, timeline audit inputs should be reused instead of recomputed through model calls, and if a user asks for a "full" Compass refresh the correct command is still `odylith compass refresh --repo-root . --wait`; do not add a Compass-specific `full` flag or second mode
+- keep Compass cheap too: `odylith compass refresh --repo-root .` is the quick cache-first rerender, `odylith compass deep-refresh --repo-root .` is the settled rerender, timeline audit inputs should be reused instead of recomputed through model calls, and future work must not reintroduce a second refresh profile or expensive truth mode
 - for briefs, follow `LLM writes, local code thinks`:
   - build deterministic narration substrates locally
   - rank and budget winner facts before provider input
@@ -78,7 +78,8 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 ./.odylith/bin/odylith registry refresh --repo-root .
 ./.odylith/bin/odylith casebook refresh --repo-root .
 ./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync
-./.odylith/bin/odylith compass refresh --repo-root . --wait
+./.odylith/bin/odylith compass refresh --repo-root .
+./.odylith/bin/odylith compass deep-refresh --repo-root .
 ./.odylith/bin/odylith sync --repo-root . --force --impact-mode full --check-clean
 ./.odylith/bin/odylith sync --repo-root . --debug-cache
 ./.odylith/bin/odylith sync --repo-root . --check-only --check-clean --runtime-mode standalone

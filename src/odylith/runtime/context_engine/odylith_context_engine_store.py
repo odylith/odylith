@@ -385,7 +385,7 @@ _ENGINEERING_CORE_PATHS: tuple[tuple[str, str], ...] = (
     ("ownership", "agents-guidelines/DATA_OWNERSHIP.MD"),
 )
 _SECTION_NOTE_SOURCES: tuple[tuple[str, str], ...] = (
-    ("architecture", "agents-guidelines/ARCHITECTURE.MD"),
+    ("architecture", "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md"),
     ("deployment", "agents-guidelines/DEPLOYMENT.MD"),
     ("observability", "agents-guidelines/OBSERVABILITY.MD"),
     ("pitfall", "agents-guidelines/PITFALLS.md"),
@@ -394,7 +394,7 @@ _SECTION_NOTE_SOURCES: tuple[tuple[str, str], ...] = (
     ("schema_change", "agents-guidelines/SCHEMA_CHANGE_CHECKLIST.MD"),
     ("contract_evolution", "agents-guidelines/CONTRACT_EVOLUTION.MD"),
     ("testing", "agents-guidelines/TESTING.MD"),
-    ("tooling_policy", "agents-guidelines/TOOLING.MD"),
+    ("tooling_policy", "odylith/agents-guidelines/CLI_FIRST_POLICY.md"),
     ("workflow", "agents-guidelines/WORKFLOW.md"),
     ("entrypoint", "agents-guidelines/ENTRYPOINTS.MD"),
     ("service_guidance", "agents-guidelines/SERVICES.md"),

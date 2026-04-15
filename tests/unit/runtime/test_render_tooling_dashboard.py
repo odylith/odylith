@@ -301,7 +301,11 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "For umbrella workstream B-021, create a 3-wave execution program." in html
     assert "odylith program next B-021 --repo-root ." in html
     assert "Refresh the full dashboard" in html
+    assert "Refresh Compass now" in html
+    assert "Deep-refresh Compass" in html
     assert "Keep Compass warm" in html
+    assert "odylith compass refresh --repo-root ." in html
+    assert "odylith compass deep-refresh --repo-root ." in html
     assert "Run the change-driven watcher so Compass refreshes only when repo truth actually moves." in html
     assert "odylith compass watch-transactions --repo-root ." in html
     assert "Add a developer note" in html
@@ -448,21 +452,19 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
-    monkeypatch.setattr(
-        renderer.benchmark_compare,
-        "build_benchmark_story",
-        lambda **kwargs: {"show": True, "headline": "Benchmark compare versus last shipped release", "summary": "pass"},
-    )
-
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "v0.1.0" in html
     assert ">odylith<" in html
+    assert "Telemetry Snapshot" not in html
+    assert "Maintainer Benchmark Lane" not in html
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert '"self_host"' in payload_js
-    assert '"benchmark_story"' in payload_js
+    assert '"benchmark_story"' not in payload_js
+    assert '"odylith_drawer"' not in payload_js
+    assert '"odylith_drawer_history"' not in payload_js
     assert '"repo_role": "product_repo"' in payload_js
     assert '"posture": "pinned_release"' in payload_js
     assert '"runtime_source": "pinned_runtime"' in payload_js
@@ -653,12 +655,6 @@ def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_pat
         "collect_git_changed_paths",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("product repo live refresh should stay benchmark-frozen")),
     )
-    monkeypatch.setattr(
-        renderer.benchmark_compare,
-        "build_benchmark_story",
-        lambda **kwargs: {},
-    )
-
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
@@ -677,12 +673,6 @@ def test_render_tooling_dashboard_shows_detached_product_repo_version_readout(tm
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
-    monkeypatch.setattr(
-        renderer.benchmark_compare,
-        "build_benchmark_story",
-        lambda **kwargs: {},
-    )
-
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
@@ -707,12 +697,6 @@ def test_render_tooling_dashboard_enables_balanced_live_refresh_for_detached_sou
         "collect_git_changed_paths",
         lambda **kwargs: ["src/odylith/runtime/surfaces/render_tooling_dashboard.py"],
     )
-    monkeypatch.setattr(
-        renderer.benchmark_compare,
-        "build_benchmark_story",
-        lambda **kwargs: {},
-    )
-
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0

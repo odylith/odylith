@@ -19,6 +19,7 @@ def test_render_prompt_context_resolves_first_anchor_via_override() -> None:
     rendered = claude_host_prompt_context.render_prompt_context(
         prompt="Continue work on B-083 and CB-104",
         context_output_override="Anchor resolved.\n" + json.dumps(payload),
+        conversation_bundle_override={},
     )
 
     assert "Odylith anchor B-083" in rendered
@@ -33,11 +34,26 @@ def test_render_prompt_context_returns_empty_when_no_anchor_present() -> None:
     assert rendered == ""
 
 
+def test_render_prompt_context_can_surface_a_teaser_without_anchor() -> None:
+    rendered = claude_host_prompt_context.render_prompt_context(
+        prompt="Design a conversation observation engine with governed proposal flow.",
+        intervention_bundle_override={
+            "candidate": {
+                "stage": "teaser",
+                "teaser_text": "Odylith is noticing governed truth take shape here.",
+            }
+        },
+    )
+
+    assert rendered == "Odylith is noticing governed truth take shape here."
+
+
 def test_render_prompt_context_falls_back_to_relevant_docs_when_no_targets() -> None:
     payload = {"relevant_docs": ["odylith/CLAUDE.md"]}
     rendered = claude_host_prompt_context.render_prompt_context(
         prompt="Resolve CB-104",
         context_output_override=json.dumps(payload),
+        conversation_bundle_override={},
     )
     assert "Odylith anchor CB-104" in rendered
     assert "relevant doc odylith/CLAUDE.md" in rendered
@@ -67,6 +83,11 @@ def test_main_runs_context_command_for_first_anchor(monkeypatch, tmp_path: Path,
         _fake_run_odylith,
     )
     monkeypatch.setattr(
+        claude_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {},
+    )
+    monkeypatch.setattr(
         "sys.stdin",
         io.StringIO(json.dumps({"prompt": "Continue work on B-088"})),
     )
@@ -79,7 +100,11 @@ def test_main_runs_context_command_for_first_anchor(monkeypatch, tmp_path: Path,
     assert "Odylith anchor B-088: primary target src/foo.py." in out
 
 
-def test_main_no_op_when_launcher_missing(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_main_surfaces_a_teaser_when_launcher_missing_but_prompt_signal_is_real(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
     project = tmp_path / "repo"
     project.mkdir()
 
@@ -91,4 +116,6 @@ def test_main_no_op_when_launcher_missing(monkeypatch, tmp_path: Path, capsys) -
     exit_code = claude_host_prompt_context.main(["--repo-root", str(project)])
 
     assert exit_code == 0
-    assert capsys.readouterr().out == ""
+    out = capsys.readouterr().out
+    assert out.startswith("Odylith can already")
+    assert "turn that into a proposal." in out

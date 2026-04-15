@@ -1,0 +1,139 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import surface_runtime
+
+
+def test_recent_session_helpers_do_not_bleed_without_session_id(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_teaser",
+        summary="Observation forming.",
+        session_id="known-session",
+        host_family="codex",
+        intervention_key="iv-known",
+        turn_phase="prompt_submit",
+        prompt_excerpt="Keep the prompt memory specific.",
+        artifacts=["src/example.py"],
+        workstreams=["B-096"],
+        components=["governance-intervention-engine"],
+    )
+
+    assert surface_runtime.recent_session_prompt_excerpt(repo_root=tmp_path, session_id="") == ""
+    assert surface_runtime.recent_session_changed_paths(repo_root=tmp_path, session_id="") == []
+    assert surface_runtime.recent_session_ids(repo_root=tmp_path, session_id="", field="workstreams") == []
+
+
+def test_compose_host_conversation_bundle_recovers_recent_checkpoint_context(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Observation rendered.",
+        session_id="checkpoint-1",
+        host_family="codex",
+        intervention_key="iv-checkpoint-1",
+        turn_phase="post_bash_checkpoint",
+        prompt_excerpt="Keep interventions visible before the final answer.",
+        artifacts=["src/odylith/runtime/intervention_engine/voice.py"],
+        workstreams=["B-096"],
+        components=["governance-intervention-engine"],
+        display_markdown="**Odylith Observation:** The signal is real.",
+    )
+
+    bundle = host_surface_runtime.compose_host_conversation_bundle(
+        repo_root=tmp_path,
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="checkpoint-1",
+    )
+
+    assist = dict(bundle["closeout_bundle"]["assist"])
+    assert bundle["intervention_bundle"]
+    assert assist["eligible"] is True
+    assert "1 candidate path" in assist["markdown_text"]
+
+
+def test_codex_post_tool_payload_uses_additional_context_and_system_message() -> None:
+    payload = host_surface_runtime.codex_post_tool_payload(
+        developer_context="**Odylith Observation:** The signal is real.\n\n**Odylith Assist:** kept this grounded.",
+        system_message="Odylith governance refresh completed.",
+    )
+
+    assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
+    assert payload["hookSpecificOutput"]["additionalContext"] == (
+        "**Odylith Observation:** The signal is real.\n\n"
+        "**Odylith Assist:** kept this grounded."
+    )
+    assert payload["systemMessage"] == "Odylith governance refresh completed."
+
+
+def test_claude_post_tool_payload_uses_additional_context_and_system_message() -> None:
+    payload = host_surface_runtime.claude_post_tool_payload(
+        developer_context="**Odylith Observation:** The signal is real.",
+        system_message="Odylith governance refresh completed.",
+    )
+
+    assert payload["additionalContext"] == "**Odylith Observation:** The signal is real."
+    assert payload["systemMessage"] == "Odylith governance refresh completed."
+
+
+def test_stop_payload_is_empty_without_message() -> None:
+    assert host_surface_runtime.stop_payload(system_message="") == {}
+
+
+def test_normalized_session_id_falls_back_when_host_payload_is_missing() -> None:
+    token = host_surface_runtime.normalized_session_id("", host_family="codex")
+    assert token
+    assert isinstance(token, str)
+    json.dumps({"session_id": token})
+
+
+def test_render_visible_live_intervention_excludes_closeout_text() -> None:
+    rendered = host_surface_runtime.render_visible_live_intervention(
+        {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "card",
+                    "markdown_text": "**Odylith Observation:** The signal is real.",
+                    "plain_text": "Odylith Observation: The signal is real.",
+                },
+                "proposal": {
+                    "eligible": True,
+                    "markdown_text": '-----\nOdylith Proposal: Keep this grounded.\n\nTo apply, say "apply this proposal".\n-----',
+                    "plain_text": 'Odylith Proposal: Keep this grounded. To apply, say "apply this proposal".',
+                },
+            },
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept this grounded.",
+                "plain_text": "Odylith Assist: kept this grounded.",
+            },
+        },
+        markdown=True,
+        include_proposal=True,
+    )
+
+    assert "**Odylith Observation:** The signal is real." in rendered
+    assert "Odylith Proposal:" in rendered
+    assert "Odylith Assist:" not in rendered
+
+
+def test_compose_checkpoint_system_message_prefers_live_intervention_over_success_status() -> None:
+    message = host_surface_runtime.compose_checkpoint_system_message(
+        live_intervention="**Odylith Observation:** The signal is real.",
+        governance_status="Odylith governance refresh completed.",
+    )
+
+    assert message == "**Odylith Observation:** The signal is real."
+
+
+def test_compose_checkpoint_system_message_keeps_failure_status_with_live_intervention() -> None:
+    message = host_surface_runtime.compose_checkpoint_system_message(
+        live_intervention="**Odylith Observation:** The signal is real.",
+        governance_status="Odylith governance refresh failed after editing foo.md: exit code 2",
+    )
+
+    assert message.startswith("**Odylith Observation:** The signal is real.")
+    assert "failed after editing foo.md" in message

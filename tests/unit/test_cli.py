@@ -147,6 +147,27 @@ def test_atlas_install_autosync_hook_help_forwards_backend_flags(capsys) -> None
     assert "--force" in output
 
 
+def test_governance_intervention_preview_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["governance", "intervention-preview", "--repo-root", ".", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith governance intervention-preview" in output
+    assert "--payload-json" in output
+
+
+def test_governance_capture_apply_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["governance", "capture-apply", "--repo-root", ".", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith governance capture-apply" in output
+    assert "--payload-json" in output
+    assert "--decline" in output
+
+
 def test_bug_capture_rebuilds_multiline_casebook_index_from_source(tmp_path: Path, monkeypatch) -> None:
     bug_root = tmp_path / "odylith" / "casebook" / "bugs"
     existing_bug = bug_root / "2026-04-12-existing-open-bug.md"
@@ -1573,6 +1594,34 @@ def test_compass_refresh_dispatch_accepts_structured_flags(monkeypatch, tmp_path
             "--runtime-mode",
             "standalone",
             "--wait",
+        ]
+    )
+    assert rc == 28
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "--wait",
+        "--runtime-mode",
+        "standalone",
+    ]
+
+
+def test_compass_deep_refresh_dispatch_implies_wait(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 28
+
+    monkeypatch.setattr(cli.compass_refresh_runtime, "main", fake_main)
+    rc = cli.main(
+        [
+            "compass",
+            "deep-refresh",
+            "--repo-root",
+            str(tmp_path),
+            "--runtime-mode",
+            "standalone",
         ]
     )
     assert rc == 28

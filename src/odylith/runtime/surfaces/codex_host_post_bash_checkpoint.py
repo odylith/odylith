@@ -33,7 +33,12 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
+from typing import Mapping
 
+from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_shared
 
@@ -592,6 +597,24 @@ def refresh_governance(*, project_dir: Path | str, paths: list[str]) -> dict[str
     }
 
 
+def _post_bash_bundle(
+    *,
+    project_dir: Path,
+    command: str,
+    session_id: str = "",
+) -> dict[str, Any]:
+    changed_paths = inferred_command_paths(project_dir=project_dir, command=command)
+    if not changed_paths:
+        return {}
+    return host_surface_runtime.compose_host_conversation_bundle(
+        repo_root=project_dir,
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id=session_id,
+        changed_paths=changed_paths,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith codex post-bash-checkpoint",
@@ -601,6 +624,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(list(argv or sys.argv[1:]))
     payload = codex_host_shared.load_payload()
     command = codex_host_shared.command_from_hook_payload(payload)
+    session_id = codex_host_shared.hook_session_id(payload)
     if not should_checkpoint(command):
         return 0
 
@@ -618,9 +642,38 @@ def main(argv: list[str] | None = None) -> int:
     # edit surfaces would need their own hook.
     project_dir = claude_host_shared.resolve_repo_root(args.repo_root)
     changed = command_scoped_governed_paths(project_dir=project_dir, command=command)
-    message = refresh_governance(project_dir=project_dir, paths=changed)
-    if message:
-        sys.stdout.write(json.dumps(message))
+    governance_message = refresh_governance(project_dir=project_dir, paths=changed)
+    bundle = _post_bash_bundle(
+        project_dir=project_dir,
+        command=command,
+        session_id=session_id,
+    )
+    developer_context = host_surface_runtime.render_developer_context(
+        bundle,
+        markdown=True,
+        include_proposal=True,
+        include_closeout=True,
+    ) if bundle else ""
+    live_intervention = host_surface_runtime.render_visible_live_intervention(
+        bundle,
+        markdown=True,
+        include_proposal=True,
+    ) if bundle else ""
+    if bundle and developer_context:
+        conversation_surface.append_intervention_events(
+            repo_root=project_dir,
+            bundle=bundle,
+            include_proposal=True,
+        )
+    payload_out = host_surface_runtime.codex_post_tool_payload(
+        developer_context=developer_context,
+        system_message=host_surface_runtime.compose_checkpoint_system_message(
+            live_intervention=live_intervention,
+            governance_status=(governance_message or {}).get("systemMessage", ""),
+        ),
+    )
+    if payload_out:
+        sys.stdout.write(json.dumps(payload_out))
     return 0
 
 

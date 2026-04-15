@@ -263,6 +263,104 @@ PATCH"""
     assert paths == ["odylith/casebook/bugs/2026-04-14-example.md"]
 
 
+def test_post_bash_bundle_uses_recent_prompt_excerpt_not_intervention_summary(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    codex_host_post_bash_checkpoint.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="capture_proposed",
+        summary="Odylith Proposal pending.",
+        session_id="bash-1",
+        host_family="codex",
+        intervention_key="iv-bash-1",
+        turn_phase="post_edit_checkpoint",
+        prompt_excerpt="Preserve the human prompt across bash checkpoints.",
+        display_markdown="**Odylith Proposal**",
+    )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "inferred_command_paths",
+        lambda *, project_dir, command: ["src/odylith/runtime/intervention_engine/engine.py"],
+    )
+
+    bundle = codex_host_post_bash_checkpoint._post_bash_bundle(
+        project_dir=tmp_path,
+        command="apply_patch <<'PATCH'\n*** Begin Patch\n*** Update File: src/odylith/runtime/intervention_engine/engine.py\n@@\n-old\n+new\n*** End Patch\nPATCH",
+        session_id="bash-1",
+    )
+
+    assert bundle["observation"]["prompt_excerpt"] == "Preserve the human prompt across bash checkpoints."
+
+
+def test_main_routes_checkpoint_context_through_additional_context(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint.codex_host_shared,
+        "load_payload",
+        lambda: {
+            "tool_input": {
+                "command": "apply_patch <<'PATCH'\n*** Begin Patch\n*** Update File: src/main.py\n@@\n-old\n+new\n*** End Patch\nPATCH"
+            },
+            "session_id": "bash-main",
+        },
+    )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "should_checkpoint",
+        lambda command: True,
+    )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint.codex_host_shared,
+        "run_odylith",
+        lambda **kwargs: None,
+    )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "command_scoped_governed_paths",
+        lambda **kwargs: [],
+    )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "_post_bash_bundle",
+        lambda **kwargs: {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "card",
+                    "suppressed_reason": "",
+                    "markdown_text": "**Odylith Observation:** The signal is real.",
+                    "plain_text": "Odylith Observation: The signal is real.",
+                },
+                "proposal": {
+                    "eligible": True,
+                    "suppressed_reason": "",
+                    "markdown_text": 'Odylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\nTo apply, say "apply this proposal".',
+                    "plain_text": "Odylith Proposal: one clean governed bundle.",
+                },
+            },
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept this grounded.",
+                "plain_text": "Odylith Assist: kept this grounded.",
+            },
+        },
+    )
+
+    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
+    assert "**Odylith Observation:** The signal is real." in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith Proposal:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Assist:** kept this grounded." in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Observation:** The signal is real." in payload["systemMessage"]
+    assert "Odylith Proposal:" in payload["systemMessage"]
+    assert "Odylith Assist:" not in payload["systemMessage"]
+
+
 def test_command_scoped_governed_paths_skips_repo_wide_dirty_files_when_command_lacks_exact_target(
     monkeypatch, tmp_path: Path
 ) -> None:

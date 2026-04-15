@@ -195,7 +195,9 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert '<article class="card execution-waves-card"><h2>Programs</h2><div id="execution-waves" class="muted"></div></article>' in waves_js
     assert "const hideProgramFocusPanel = Boolean(options.hideProgramFocusPanel);" in shared_js
     assert 'hideProgramFocusPanel: true,' in waves_js
+    assert 'sectionClassName: "execution-wave-section-program-card"' in waves_js
     assert 'sectionClassName: "execution-wave-section-flat"' in waves_js
+    assert waves_js.count('sectionClassName: "execution-wave-section-flat"') == 1
     assert 'if (value === null || value === undefined || value === "") return null;' in waves_js
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in waves_js
     assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}' in releases_js
@@ -335,8 +337,10 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert ".digest-link,\n    .brief-inline-link {" in base_css
     assert ".execution-wave-program-stack-release .execution-wave-section-title {" in execution_wave_css
     assert ".execution-wave-section.execution-wave-section-flat {" in execution_wave_css
+    assert ".execution-wave-section.execution-wave-section-program-card {" in execution_wave_css
     assert "border: 0;" in execution_wave_css
     assert "background: none;" in execution_wave_css
+    assert "box-shadow: 0 10px 28px rgba(37, 99, 235, 0.06);" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-section {" in execution_wave_css
     assert "border-color: #dbe9df;" in execution_wave_css
     assert "background: linear-gradient(180deg, #fbfdfa 0%, #ffffff 100%);" in execution_wave_css

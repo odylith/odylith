@@ -119,13 +119,9 @@ TOPOLOGY_DOMAIN_RULES: tuple[dict[str, Any], ...] = (
             "src/odylith/runtime/context_engine/odylith_context_cache.py",
             "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
             "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-            "agents-guidelines/TOOLING.MD",
-            "agents-guidelines/ARCHITECTURE.MD",
         ),
         "components": ("odylith-context-engine",),
         "required_reads": (
-            "agents-guidelines/TOOLING.MD",
-            "agents-guidelines/ARCHITECTURE.MD",
             "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
             "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd",
         ),

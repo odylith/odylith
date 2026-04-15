@@ -25,7 +25,9 @@ affordance explicit instead of silently widening the benchmark story.
 from __future__ import annotations
 
 import contextlib
+import errno
 import hashlib
+import inspect
 import json
 import os
 from pathlib import Path
@@ -35,7 +37,7 @@ import subprocess
 import tempfile
 import time
 import tomllib
-from typing import Any, Iterator, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_isolation
@@ -103,6 +105,11 @@ _default_live_timeout_policy = odylith_benchmark_live_process._default_live_time
 _resolved_live_timeout_budget = odylith_benchmark_live_process._resolved_live_timeout_budget
 _run_subprocess_capture = odylith_benchmark_live_process._run_subprocess_capture
 _validator_timeout_seconds = odylith_benchmark_live_process._validator_timeout_seconds
+_temporary_worktree = odylith_benchmark_isolation.temporary_workspace_checkout
+_apply_strip_paths = odylith_benchmark_isolation.apply_workspace_strip_paths
+_BENCHMARK_TEMP_CLEANUP_RETRYABLE_ERRNOS = frozenset({errno.ENOTEMPTY, errno.EBUSY, errno.EPERM})
+_BENCHMARK_TEMP_CLEANUP_RETRY_COUNT = 4
+_BENCHMARK_TEMP_CLEANUP_RETRY_DELAY_SECONDS = 0.05
 
 
 def _dedupe_strings(rows: Sequence[str]) -> list[str]:
@@ -115,6 +122,19 @@ def _dedupe_strings(rows: Sequence[str]) -> list[str]:
         seen.add(token)
         ordered.append(token)
     return ordered
+
+
+def _call_with_supported_kwargs(function: Any, /, **kwargs: Any) -> Any:
+    try:
+        supported = inspect.signature(function)
+    except (TypeError, ValueError):
+        return function(**kwargs)
+    accepted = {
+        key: value
+        for key, value in kwargs.items()
+        if key in supported.parameters
+    }
+    return function(**accepted)
 
 
 def _existing_file_paths(*, workspace_root: Path, paths: Sequence[str]) -> list[str]:
@@ -229,6 +249,7 @@ def _minimal_codex_config_text(*, execution_contract: Mapping[str, str]) -> str:
 def _temporary_codex_home(
     *,
     execution_contract: Mapping[str, str],
+    repo_root: Path,
     environ: Mapping[str, str] | None = None,
 ) -> Iterator[Path]:
     env = dict(os.environ if environ is None else environ)
@@ -237,8 +258,10 @@ def _temporary_codex_home(
         raise RuntimeError(
             "Codex CLI auth is unavailable at `~/.codex/auth.json`; cannot run live benchmark scenarios."
         )
-    with tempfile.TemporaryDirectory(prefix="odylith-benchmark-codex-home-") as temp_dir:
-        home_root = Path(temp_dir).resolve()
+    with _temporary_benchmark_temp_dir(
+        repo_root=repo_root,
+        prefix="odylith-benchmark-codex-home-",
+    ) as home_root:
         codex_home = (home_root / ".codex").resolve()
         codex_home.mkdir(parents=True, exist_ok=True)
         shutil.copy2(auth_source, codex_home / "auth.json")
@@ -609,25 +632,31 @@ def _workspace_state_delta_paths(
     baseline: Mapping[str, Any],
     workspace_root: Path,
     workspace_state: Mapping[str, Any],
+    ignored_paths: Sequence[str] = (),
 ) -> list[str]:
-    before_paths = {
-        str(token).strip()
-        for token in baseline.get("git_status_paths", [])
+    ignored = {
+        str(token).strip().replace("\\", "/")
+        for token in ignored_paths
         if str(token).strip()
+    }
+    before_paths = {
+        str(token).strip().replace("\\", "/")
+        for token in baseline.get("git_status_paths", [])
+        if str(token).strip() and str(token).strip().replace("\\", "/") not in ignored
     }
     before_fingerprints = (
         {
-            str(key).strip(): str(value).strip()
+            str(key).strip().replace("\\", "/"): str(value).strip()
             for key, value in baseline.get("fingerprints", {}).items()
-            if str(key).strip()
+            if str(key).strip() and str(key).strip().replace("\\", "/") not in ignored
         }
         if isinstance(baseline.get("fingerprints"), Mapping)
         else {}
     )
     after_paths = {
-        str(token).strip()
+        str(token).strip().replace("\\", "/")
         for token in workspace_state.get("git_status_paths", [])
-        if str(token).strip()
+        if str(token).strip() and str(token).strip().replace("\\", "/") not in ignored
     }
     changed = set(after_paths.difference(before_paths))
     for token in before_paths:
@@ -846,6 +875,20 @@ def _validator_result_passed(result: Mapping[str, Any]) -> bool:
     return str(result.get("status", "")).strip() in {"passed", "not_applicable"}
 
 
+def _validator_short_circuit_result(*, status_basis: str, reason: str) -> dict[str, Any]:
+    return {
+        "status": "failed",
+        "status_basis": str(status_basis).strip() or "validator_short_circuit",
+        "reason": str(reason).strip() or "validator_short_circuit",
+        "duration_ms": 0.0,
+        "results": [],
+        "passed_count": 0,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "timeout_count": 0,
+    }
+
+
 def _focused_checks_cover_validation_commands(*, scenario: Mapping[str, Any]) -> bool:
     focused_checks = _dedupe_strings(
         [str(token).strip() for token in scenario.get("focused_local_checks", []) if str(token).strip()]
@@ -1024,9 +1067,12 @@ def _validator_backed_completion_satisfied(
         out_of_slice_markers = (
             "outside the edited slice",
             "outside the slice",
+            "outside this bounded slice",
+            "outside the bounded slice",
             "outside the grounded slice",
             "outside the allowed slice",
             "outside the approved files",
+            "appears unrelated",
             "left untouched",
             "unrelated modifications",
             "unrelated worktree changes",
@@ -1219,10 +1265,12 @@ def _live_orchestration_summary(
     packet_source: str,
     required_path_recall: float,
     precision_metrics: Mapping[str, Any],
+    benchmark_session_namespace: str = "",
 ) -> dict[str, Any]:
     normalized_mode = _normalize_mode(mode)
     packet_present = normalized_mode == "odylith_on"
     requires_widening = float(precision_metrics.get("unnecessary_widening_rate", 0.0) or 0.0) > 0.0
+    session_namespace = str(benchmark_session_namespace or "").strip()
     return {
         "native_mode": "live_codex_cli",
         "mode": "live_codex_cli",
@@ -1240,7 +1288,8 @@ def _live_orchestration_summary(
             "grounded": bool(required_path_recall > 0.0 or packet_present),
             "grounded_delegate": False,
             "workspace_daemon_reused": False,
-            "session_namespaced": False,
+            "session_namespace": session_namespace,
+            "session_namespaced": bool(session_namespace),
             "mixed_local_fallback": False,
             "grounding_source": packet_source if packet_present else "none",
             "operation": "live_codex_cli",
@@ -1261,17 +1310,6 @@ _scenario_workspace_self_reference_strip_paths = (
 _workspace_strip_paths = odylith_benchmark_isolation.workspace_strip_paths
 
 
-def _apply_strip_paths(*, workspace_root: Path, strip_paths: Sequence[Path]) -> None:
-    for relative_path in strip_paths:
-        path = (workspace_root / relative_path).resolve()
-        if not path.exists():
-            continue
-        if path.is_dir():
-            shutil.rmtree(path)
-            continue
-        path.unlink()
-
-
 def _live_workspace_preserve_paths(
     *,
     explicit_task_paths: Sequence[str],
@@ -1285,46 +1323,46 @@ def _live_workspace_preserve_paths(
     )
 
 
-@contextlib.contextmanager
-def _temporary_worktree(
-    repo_root: Path,
-    *,
-    strip_paths: Sequence[Path],
-    snapshot_paths: Sequence[str],
-) -> Iterator[tuple[Path, Path]]:
-    root = Path(repo_root).resolve()
-    with tempfile.TemporaryDirectory(prefix="odylith-benchmark-live-") as tmp_dir:
-        workspace_root = (Path(tmp_dir) / "workspace").resolve()
-        validator_truth_root = (Path(tmp_dir) / "validator-truth").resolve()
-        subprocess.run(
-            ["git", "worktree", "add", "--detach", "--quiet", str(workspace_root), "HEAD"],
-            cwd=str(root),
-            text=True,
-            capture_output=True,
-            check=True,
-        )
+def _benchmark_temp_root(*, repo_root: Path) -> Path:
+    root = (Path(repo_root).resolve() / ".odylith" / "runtime" / "odylith-benchmark-temp").resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def _cleanup_benchmark_temp_dir(path: Path) -> None:
+    target = Path(path)
+    last_error: OSError | None = None
+    for attempt in range(_BENCHMARK_TEMP_CLEANUP_RETRY_COUNT + 1):
         try:
-            _overlay_workspace_repo_snapshot(
-                repo_root=root,
-                workspace_root=workspace_root,
-                allowed_paths=snapshot_paths,
-            )
-            _provision_workspace_odylith_root(repo_root=root, workspace_root=workspace_root)
-            _capture_workspace_validator_truth(
-                workspace_root=workspace_root,
-                truth_root=validator_truth_root,
-                strip_paths=strip_paths,
-            )
-            _apply_strip_paths(workspace_root=workspace_root, strip_paths=strip_paths)
-            yield workspace_root, validator_truth_root
-        finally:
-            subprocess.run(
-                ["git", "worktree", "remove", "--force", str(workspace_root)],
-                cwd=str(root),
-                text=True,
-                capture_output=True,
-                check=False,
-            )
+            shutil.rmtree(target)
+            return
+        except FileNotFoundError:
+            return
+        except OSError as exc:
+            last_error = exc
+            if exc.errno not in _BENCHMARK_TEMP_CLEANUP_RETRYABLE_ERRNOS:
+                break
+            if attempt >= _BENCHMARK_TEMP_CLEANUP_RETRY_COUNT:
+                break
+            time.sleep(_BENCHMARK_TEMP_CLEANUP_RETRY_DELAY_SECONDS)
+    if last_error is None:
+        return
+    with contextlib.suppress(OSError, FileNotFoundError):
+        shutil.rmtree(target, ignore_errors=True)
+
+
+@contextlib.contextmanager
+def _temporary_benchmark_temp_dir(
+    *,
+    repo_root: Path,
+    prefix: str,
+) -> Iterator[Path]:
+    temp_root = _benchmark_temp_root(repo_root=repo_root)
+    temp_dir = Path(tempfile.mkdtemp(prefix=prefix, dir=str(temp_root))).resolve()
+    try:
+        yield temp_dir
+    finally:
+        _cleanup_benchmark_temp_dir(temp_dir)
 
 
 def run_live_scenario(
@@ -1332,6 +1370,8 @@ def run_live_scenario(
     repo_root: Path,
     scenario: Mapping[str, Any],
     mode: str,
+    benchmark_profile: str = "",
+    benchmark_session_namespace: str = "",
     packet_source: str,
     prompt_payload: Mapping[str, Any] | None = None,
     packet_summary: Mapping[str, Any] | None = None,
@@ -1346,7 +1386,11 @@ def run_live_scenario(
     resolved_codex_bin = str(execution_contract.get("codex_bin", "")).strip()
     reasoning_effort = str(execution_contract.get("reasoning_effort", "")).strip().lower() or "high"
     resolved_model = str(execution_contract.get("model", "")).strip()
-    live_timeout_seconds, live_timeout_policy = _resolved_live_timeout_budget(scenario=scenario)
+    normalized_benchmark_profile = str(benchmark_profile or "").strip().lower()
+    live_timeout_seconds, live_timeout_policy = _resolved_live_timeout_budget(
+        scenario=scenario,
+        benchmark_profile=normalized_benchmark_profile,
+    )
     explicit_task_paths = [
         *[str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()],
         *[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
@@ -1367,13 +1411,15 @@ def run_live_scenario(
         repo_root=repo_root,
         strip_paths=strip_paths,
         snapshot_paths=effective_snapshot_paths,
-    ) as workspace_pair, _temporary_codex_home(
-        execution_contract=execution_contract
-    ) as codex_home_root, tempfile.TemporaryDirectory(
-        prefix="odylith-benchmark-codex-"
-    ) as temp_dir:
+    ) as workspace_pair, _call_with_supported_kwargs(
+        _temporary_codex_home,
+        execution_contract=execution_contract,
+        repo_root=resolved_repo_root,
+    ) as codex_home_root, _temporary_benchmark_temp_dir(
+        repo_root=resolved_repo_root,
+        prefix="odylith-benchmark-codex-",
+    ) as temp_root:
         workspace_root, validator_truth_root = workspace_pair
-        temp_root = Path(temp_dir)
         sandbox_root = (temp_root / "sandbox").resolve()
         schema_path = temp_root / "schema.json"
         output_path = temp_root / "result.json"
@@ -1436,7 +1482,10 @@ def run_live_scenario(
                 commands=focused_check_commands,
                 environ=command_env,
             )
-            _apply_strip_paths(workspace_root=workspace_root, strip_paths=strip_paths)
+            _apply_strip_paths(
+                workspace_root=workspace_root,
+                strip_paths=strip_paths,
+            )
             focused_check_result_lines = odylith_benchmark_live_diagnostics.focused_local_check_result_lines(
                 result=focused_check_result
             )
@@ -1449,6 +1498,7 @@ def run_live_scenario(
             prompt_payload=prompt_payload_rows,
             validation_commands=sandbox_validation_commands,
         )
+        live_timed_out = False
         try:
             completed = _run_subprocess_capture(
                 command=command,
@@ -1459,6 +1509,7 @@ def run_live_scenario(
             )
             stderr_tail = str(completed.stderr or "")[-4000:]
         except subprocess.TimeoutExpired as exc:
+            live_timed_out = True
             completed = subprocess.CompletedProcess(
                 args=command,
                 returncode=124,
@@ -1559,6 +1610,7 @@ def run_live_scenario(
                     baseline=workspace_status_baseline,
                     workspace_root=workspace_root,
                     workspace_state=workspace_state_post_codex,
+                    ignored_paths=strip_paths,
                 ),
             ]
         )
@@ -1571,23 +1623,30 @@ def run_live_scenario(
             else [],
             candidate_write_paths=candidate_write_paths,
         )
-        _restore_workspace_validator_truth(
-            truth_root=validator_truth_root,
-            workspace_root=workspace_root,
-            strip_paths=strip_paths,
-        )
-        workspace_state_pre_validator = odylith_benchmark_live_diagnostics.workspace_state_diff(
-            repo_root=resolved_repo_root,
-            workspace_root=workspace_root,
-            tracked_paths=failure_tracked_paths,
-        )
-        validator_result = _run_validators(
-            workspace_root=workspace_root,
-            commands=sandbox_validation_commands,
-            environ=command_env,
-        )
+        if live_timed_out:
+            workspace_state_pre_validator = dict(workspace_state_post_codex)
+            validator_result = _validator_short_circuit_result(
+                status_basis="live_timeout_short_circuit",
+                reason="skipped_due_to_live_timeout",
+            )
+        else:
+            _restore_workspace_validator_truth(
+                truth_root=validator_truth_root,
+                workspace_root=workspace_root,
+                strip_paths=strip_paths,
+            )
+            workspace_state_pre_validator = odylith_benchmark_live_diagnostics.workspace_state_diff(
+                repo_root=resolved_repo_root,
+                workspace_root=workspace_root,
+                tracked_paths=failure_tracked_paths,
+            )
+            validator_result = _run_validators(
+                workspace_root=workspace_root,
+                commands=sandbox_validation_commands,
+                environ=command_env,
+            )
         effective_validator_result = dict(validator_result)
-        if _focused_noop_validator_proxy_allowed(
+        if not live_timed_out and _focused_noop_validator_proxy_allowed(
             scenario=scenario,
             structured_output=structured_output,
             candidate_write_paths=candidate_write_paths,
@@ -1664,9 +1723,11 @@ def run_live_scenario(
             "codex_bin": resolved_codex_bin,
             "model": resolved_model,
             "reasoning_effort": reasoning_effort,
+            "benchmark_profile": normalized_benchmark_profile,
             "sandbox": sandbox,
             "timeout_seconds": live_timeout_seconds,
             "timeout_policy": live_timeout_policy,
+            "timed_out": live_timed_out,
             "latency_measurement_basis": "validated_task_cycle",
             "isolated_codex_home": True,
             "workspace_odylith_isolated": True,
@@ -1678,12 +1739,14 @@ def run_live_scenario(
             "mcp_disabled": True,
             "multi_agent_disabled": True,
             "repo_guidance_removed": ["AGENTS.md", "CLAUDE.md", ".cursor/", ".windsurf/", ".codex/"],
+            "effective_snapshot_paths": list(effective_snapshot_paths),
             "focused_local_checks": focused_check_result,
             "preflight_evidence_mode": preflight_evidence_mode,
             "preflight_evidence_commands": preflight_evidence_commands,
             "preflight_evidence_result_status": str(focused_check_result.get("status", "")).strip()
             or "not_applicable",
             "observed_path_sources": observed_path_sources,
+            "validator_execution_mode": "skipped_due_to_live_timeout" if live_timed_out else "executed",
         }
         if status != "completed" or not validators_passed:
             live_execution_payload["failure_artifacts"] = {
@@ -1787,6 +1850,7 @@ def run_live_scenario(
                 packet_source=packet_source,
                 required_path_recall=required_path_recall,
                 precision_metrics=precision_metrics,
+                benchmark_session_namespace=benchmark_session_namespace,
             ),
             "timing_trace": timing_trace,
             "live_execution": live_execution_payload,

@@ -8,8 +8,9 @@ from typing import Sequence
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import operator_readout
 from odylith.runtime.governance import proof_state
-from odylith.runtime.orchestration import chatter_claim_runtime
-from odylith.runtime.orchestration import odylith_chatter_delivery_runtime
+from odylith.runtime.intervention_engine import claim_runtime
+from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import delivery_runtime
 from odylith.runtime.surfaces import dashboard_shell_links
 
 
@@ -1194,6 +1195,8 @@ def compose_conversation_bundle(
     repo_root: Path | None = None,
     final_changed_paths: Sequence[str] | None = None,
     changed_path_source: str = "",
+    turn_phase: str = "",
+    assistant_summary: str = "",
 ) -> dict[str, Any]:
     context_payload = _request_context_payload(request)
     metrics = _evidence_metrics(request=request, decision=decision, adoption=adoption)
@@ -1208,14 +1211,14 @@ def compose_conversation_bundle(
         repo_root=repo_root,
         anchor_artifacts=anchor_artifacts,
     )
-    tribunal_context = odylith_chatter_delivery_runtime.tribunal_context(
+    tribunal_context = delivery_runtime.tribunal_context(
         context_payload=context_payload,
         repo_root=repo_root,
         anchor_artifacts=anchor_artifacts,
     )
     claim_guard = _claim_guard_from_tribunal_context(tribunal_context)
     claim_lint = proof_state.build_claim_lint(claim_guard)
-    risks = chatter_claim_runtime.enforce_payload(
+    risks = claim_runtime.enforce_payload(
         _compose_risk_signal(
             request=request,
             metrics=metrics,
@@ -1227,7 +1230,7 @@ def compose_conversation_bundle(
         claim_lint=claim_lint,
         surface="chatter_risks",
     )
-    insight = chatter_claim_runtime.enforce_payload(
+    insight = claim_runtime.enforce_payload(
         _compose_insight_signal(
             metrics=metrics,
             anchor_artifacts=anchor_artifacts,
@@ -1237,7 +1240,7 @@ def compose_conversation_bundle(
         claim_lint=claim_lint,
         surface="chatter_insight",
     )
-    history = chatter_claim_runtime.enforce_payload(
+    history = claim_runtime.enforce_payload(
         _compose_history_signal(
             metrics=metrics,
             history_refs=history_refs,
@@ -1254,7 +1257,7 @@ def compose_conversation_bundle(
         if payload["eligible"] and payload["render_hint"] == "explicit_label":
             selected_signal = key
             break
-    assist = chatter_claim_runtime.enforce_payload(
+    assist = claim_runtime.enforce_payload(
         compose_closeout_assist(
             request=request,
             decision=decision,
@@ -1298,12 +1301,48 @@ def compose_conversation_bundle(
     if selected_supplemental:
         closeout_markdown_lines.append(closeout_signals[selected_supplemental]["markdown_text"])
         closeout_plain_lines.append(closeout_signals[selected_supplemental]["plain_text"])
-    claim_enforcement = chatter_claim_runtime.build_claim_enforcement_summary(
+    claim_enforcement = claim_runtime.build_claim_enforcement_summary(
         claim_lint=claim_lint,
         ambient_payloads={"risks": risks, "insight": insight, "history": history},
         assist_payload=assist,
         supplemental_payload=closeout_signals.get(selected_supplemental, {}) if selected_supplemental else {},
     )
+    intervention_bundle: dict[str, Any] = {}
+    if repo_root is not None:
+        effective_turn_phase = _normalize_token(turn_phase) or ("post_edit_checkpoint" if final_changed_paths else "prompt_submit")
+        packet_summary = {}
+        if getattr(request, "workstreams", None):
+            packet_summary["workstreams"] = list(getattr(request, "workstreams", []))
+        if getattr(request, "components", None):
+            packet_summary["components"] = list(getattr(request, "components", []))
+        if isinstance(getattr(request, "context_signals", {}), Mapping):
+            context_packet = request.context_signals.get("context_packet")
+            if isinstance(context_packet, Mapping):
+                for key in ("bugs", "diagrams", "workstreams", "components"):
+                    value = context_packet.get(key)
+                    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+                        packet_summary[key] = [str(item).strip() for item in value if str(item).strip()]
+        live_bundle = conversation_surface.build_conversation_bundle(
+            repo_root=Path(repo_root).expanduser().resolve(),
+            observation={
+                "host_family": (
+                    str(getattr(request, "context_signals", {}).get("host_family", "")).strip()
+                    if isinstance(getattr(request, "context_signals", {}), Mapping)
+                    else ""
+                ),
+                "turn_phase": effective_turn_phase,
+                "session_id": str(getattr(request, "session_id", "")).strip(),
+                "prompt_excerpt": str(getattr(request, "prompt", "")).strip(),
+                "assistant_summary": _normalize_string(assistant_summary)
+                or str(closeout_signals.get(selected_supplemental, {}).get("plain_text", "")).strip(),
+                "changed_paths": list(final_changed_paths or getattr(request, "candidate_paths", [])[:4]),
+                "workstreams": getattr(request, "workstreams", []),
+                "components": getattr(request, "components", []),
+                "packet_summary": packet_summary,
+                "delivery_snapshot": context_payload if isinstance(context_payload, Mapping) else {},
+            },
+        )
+        intervention_bundle = dict(live_bundle.get("intervention_bundle", {}))
 
     return {
         "ambient_signals": {
@@ -1350,4 +1389,5 @@ def compose_conversation_bundle(
                 "surface_fast_lane": bool(metrics.get("surface_fast_lane")),
             },
         },
+        "intervention_bundle": intervention_bundle,
     }

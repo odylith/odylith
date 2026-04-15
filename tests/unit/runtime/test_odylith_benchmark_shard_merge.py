@@ -132,12 +132,23 @@ def _write_history_report(
     shard_index: int,
     shard_count: int,
     case_ids: list[str],
+    selection_fingerprint: str = "selection-a",
+    snapshot_overlay_fingerprint: str = "snapshot-a",
+    family_filters: list[str] | None = None,
 ) -> None:
     report = {
         "report_id": report_id,
         "repo_root": str(tmp_path),
         "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
         "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "git_branch": "2026/freedom/v0.1.11",
+        "git_commit": "abc123",
+        "git_dirty": True,
+        "repo_dirty_paths": ["src/example.py"],
+        "selection_fingerprint": selection_fingerprint,
+        "corpus_fingerprint": "corpus-a",
+        "snapshot_overlay_fingerprint": snapshot_overlay_fingerprint,
+        "source_posture": "detached_source_local:source_checkout",
         "modes": list(runner.DEFAULT_MODES),
         "cache_profiles": list(runner.DEFAULT_CACHE_PROFILES),
         "primary_cache_profile": "warm",
@@ -145,6 +156,14 @@ def _write_history_report(
             "shard_count": shard_count,
             "shard_index": shard_index,
             "full_corpus_selected": False,
+            "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+            "case_ids": [],
+            "family_filters": list(family_filters or []),
+            "limit": 0,
+            "profile_default_narrowing": "",
+            "default_modes_applied": True,
+            "default_cache_profiles_applied": True,
+            "cache_profiles": list(runner.DEFAULT_CACHE_PROFILES),
         },
         "cache_profile_scenarios": {
             "warm": [_scenario_report(case_id, "warm") for case_id in case_ids],
@@ -301,3 +320,62 @@ def test_merge_shard_reports_rejects_duplicate_scenario_ids(
             report_refs=["shard-a", "shard-b"],
             write_report=False,
         )
+
+
+def test_merge_shard_reports_rejects_identity_mismatch_on_selection_or_snapshot(
+    tmp_path: Path,
+) -> None:
+    _write_corpus(tmp_path, ["case-a", "case-b"])
+    _write_history_report(
+        tmp_path,
+        report_id="shard-a",
+        shard_index=1,
+        shard_count=2,
+        case_ids=["case-a"],
+        selection_fingerprint="selection-a",
+        snapshot_overlay_fingerprint="snapshot-a",
+    )
+    _write_history_report(
+        tmp_path,
+        report_id="shard-b",
+        shard_index=2,
+        shard_count=2,
+        case_ids=["case-b"],
+        family_filters=["validation_heavy_fix"],
+        snapshot_overlay_fingerprint="snapshot-a",
+    )
+
+    with pytest.raises(ValueError, match="selection contract"):
+        shard_merge.merge_shard_reports(
+            repo_root=tmp_path,
+            report_refs=["shard-a", "shard-b"],
+            write_report=False,
+        )
+
+
+def test_merge_shard_reports_does_not_rerun_latency_probes_or_adoption_proof(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _write_corpus(tmp_path, ["case-a", "case-b"])
+    _write_history_report(tmp_path, report_id="shard-a", shard_index=1, shard_count=2, case_ids=["case-a"])
+    _write_history_report(tmp_path, report_id="shard-b", shard_index=2, shard_count=2, case_ids=["case-b"])
+    _stub_merge_helpers(monkeypatch)
+    monkeypatch.setattr(
+        shard_merge.runner,
+        "_singleton_family_latency_probes",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("merge should not rerun latency probes")),
+    )
+    monkeypatch.setattr(
+        shard_merge.runner,
+        "_run_live_adoption_proof",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("merge should not rerun adoption proof")),
+    )
+
+    report = shard_merge.merge_shard_reports(
+        repo_root=tmp_path,
+        report_refs=["shard-a", "shard-b"],
+        write_report=False,
+    )
+
+    assert report["latest_eligible"] is True

@@ -28,6 +28,10 @@
   padding: 14px 0 0;
 }
 
+.execution-wave-section.execution-wave-section-program-card {
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.06);
+}
+
 .execution-wave-program-stack-release .execution-wave-section {
   border-color: #dbe9df;
   background: linear-gradient(180deg, #fbfdfa 0%, #ffffff 100%);

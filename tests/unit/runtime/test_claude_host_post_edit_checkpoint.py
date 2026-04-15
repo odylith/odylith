@@ -100,4 +100,82 @@ def test_main_skips_non_governed_edits_silently(monkeypatch, tmp_path: Path, cap
 
     assert exit_code == 0
     assert called == []
-    assert capsys.readouterr().out == ""
+    payload = json.loads(capsys.readouterr().out)
+    assert "additionalContext" in payload
+    assert "Odylith Assist:" in payload["additionalContext"]
+
+
+def test_main_emits_observation_and_proposal_for_correlated_edit(monkeypatch, tmp_path: Path, capsys) -> None:
+    project = tmp_path / "repo"
+    (project / "src").mkdir(parents=True)
+    target = project / "src" / "main.py"
+    target.write_text("# stub\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        claude_host_post_edit_checkpoint,
+        "_post_edit_bundle",
+        lambda **kwargs: {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "card",
+                    "key": "iv-demo",
+                    "suppressed_reason": "",
+                    "markdown_text": "**Odylith Observation:** The truth is warm.",
+                    "plain_text": "Odylith Observation: The truth is warm.",
+                    "headline": "The truth is warm.",
+                },
+                "proposal": {
+                    "key": "iv-demo",
+                    "eligible": True,
+                    "suppressed_reason": "",
+                    "markdown_text": 'Odylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\nTo apply, say "apply this proposal".',
+                    "plain_text": "Odylith Proposal",
+                    "confirmation_text": "apply this proposal",
+                    "action_surfaces": ["radar", "registry"],
+                },
+            },
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept this grounded.",
+                "plain_text": "Odylith Assist: kept this grounded.",
+            },
+        },
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"tool_input": {"file_path": str(target)}, "session_id": "session-9"})),
+    )
+
+    exit_code = claude_host_post_edit_checkpoint.main(["--repo-root", str(project)])
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert "**Odylith Observation:**" in payload["additionalContext"]
+    assert "Odylith Proposal:" in payload["additionalContext"]
+    assert "**Odylith Assist:** kept this grounded." in payload["additionalContext"]
+    assert "**Odylith Observation:**" in payload["systemMessage"]
+    assert "Odylith Proposal:" in payload["systemMessage"]
+    assert "Odylith Assist:" not in payload["systemMessage"]
+
+
+def test_post_edit_bundle_uses_recent_prompt_excerpt_not_intervention_summary(tmp_path: Path) -> None:
+    claude_host_post_edit_checkpoint.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="capture_proposed",
+        summary="Odylith Proposal pending.",
+        session_id="edit-1",
+        host_family="claude",
+        intervention_key="iv-edit-1",
+        turn_phase="post_edit_checkpoint",
+        prompt_excerpt="Preserve the human prompt across Claude post-edit checkpoints.",
+        display_markdown="**Odylith Proposal**",
+    )
+
+    bundle = claude_host_post_edit_checkpoint._post_edit_bundle(
+        project_dir=tmp_path,
+        path_token="src/main.py",
+        session_id="edit-1",
+    )
+
+    assert bundle["observation"]["prompt_excerpt"] == (
+        "Preserve the human prompt across Claude post-edit checkpoints."
+    )

@@ -1,0 +1,53 @@
+%% Reviewed 2026-04-14 for B-096 to show how one shared cross-host engine turns conversation evidence into humane observations, confirmation-gated proposals, and Compass-audited governed writes across dev, dogfood, and consumer lanes.
+flowchart LR
+    User["Live conversation turn<br/>prompt + assistant summary + edit or bash checkpoint"] --> Hosts
+    Packet["Grounded packet + delivery truth<br/>packet summary + active refs + lane context"] --> Envelope
+    History["Governed source truth<br/>Radar + Registry + Atlas + Casebook"] --> Core
+    Stream["Compass stream history<br/>dedupe + pending proposal lifecycle"] --> Core
+    Exec["Execution Governance<br/>admissibility + urgency input"] --> Core
+
+    subgraph Hosts["Host adapters"]
+        Codex["Codex hooks<br/>prompt context + stop summary + post-bash checkpoint"]
+        Claude["Claude hooks<br/>prompt context + stop summary + post-edit checkpoint"]
+    end
+
+    Codex --> Envelope["ObservationEnvelope<br/>host_family + session_id + turn_phase<br/>prompt_excerpt + assistant_summary<br/>changed_paths + packet_summary<br/>delivery_snapshot + active_target_refs"]
+    Claude --> Envelope
+
+    Envelope --> Core["Governance Intervention Engine<br/>fact selection + corroboration + dedupe<br/>proposal assembly + voice seam"]
+
+    subgraph Facts["Fact classes"]
+        HistoryFact["history"]
+        GovernanceTruth["governance_truth"]
+        Invariant["invariant"]
+        Topology["topology"]
+        Opportunity["capture_opportunity"]
+    end
+
+    Core --> HistoryFact
+    Core --> GovernanceTruth
+    Core --> Invariant
+    Core --> Topology
+    Core --> Opportunity
+
+    Core --> Teaser["Teaser only<br/>one sentence on prompt submit when one strong signal exists"]
+    Core --> Observation["**Odylith Observation**<br/>Why now<br/>What Odylith knows<br/>Why it matters<br/>Recommended next move"]
+    Core --> Proposal["**Odylith Proposal**<br/>flat per-surface actions<br/>one confirmation for the whole bundle"]
+    Core --> Events["Compass lifecycle events<br/>intervention_teaser<br/>intervention_card<br/>capture_proposed<br/>capture_applied<br/>capture_declined"]
+
+    Observation --> Chatter["Odylith Chatter<br/>friendly + delightful + soulful<br/>simple + clear + accurate + human"]
+    Proposal --> Chatter
+    Chatter --> CodexOut["Codex-facing markdown"]
+    Chatter --> ClaudeOut["Claude-facing markdown"]
+
+    Proposal --> Confirm{"User confirms<br/>apply this proposal"}
+    Confirm -->|yes| Apply["CLI-first apply<br/>Radar + Registry + Atlas + Casebook<br/>only where a safe helper exists"]
+    Confirm -->|no| Decline["Decline only<br/>no governed write"]
+
+    Apply --> Refresh["Selective owned-surface refresh<br/>Radar / Registry / Atlas / Compass"]
+    Apply --> Events
+    Decline --> Events
+    Events --> Pending["Compass pending proposal state<br/>derived from stream, no second truth store"]
+
+    Voice["Voice seam<br/>default brand voice today<br/>voice-pack ready later"] --> Chatter
+    Pending --> Lanes["Same product contract across lanes<br/>detached source-local + pinned dogfood + consumer pinned-runtime"]

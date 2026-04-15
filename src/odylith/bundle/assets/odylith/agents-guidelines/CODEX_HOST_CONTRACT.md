@@ -96,6 +96,21 @@
   edit-like Bash commands include `apply_patch`. It is *not* universal
   host-edit parity: if Codex ever grows a native non-Bash edit hook, a
   separate Codex hook module would be needed to cover that surface.
+- Codex prompt-context, post-bash checkpoint, and stop-summary all route
+  through the shared intervention engine. Prompt submit may emit one teaser
+  sentence only; post-bash is the primary visible Observation/Proposal lane;
+  stop is the fallback closeout lane.
+- When a post-bash checkpoint earns an Observation or Proposal, surface that
+  live beat visibly through `systemMessage` and also duplicate the full
+  Observation/Proposal/Assist bundle into
+  `hookSpecificOutput.additionalContext` so the next turn keeps continuity.
+- Success-only governance refresh receipts must stay quiet when an earned live
+  intervention exists. If refresh fails or is skipped, Codex may append that
+  failure-level status after the visible Observation/Proposal beat instead of
+  replacing it.
+- Empty or missing hook session ids must fall back to a stable host-local
+  synthetic token. Codex must never bleed prompt or changed-path memory across
+  sessions because a payload omitted `session_id`.
 - Codex does not have project-scoped slash commands, so Odylith uses
   `.agents/skills/` command-skills instead of trying to fake a
   `.codex/commands/` surface.

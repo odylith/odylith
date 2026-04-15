@@ -1,6 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-12
+Last updated (UTC): 2026-04-14
 
 ## Active Plans
 
@@ -29,6 +29,7 @@ Last updated (UTC): 2026-04-12
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md` | In progress | 2026-04-12 | 2026-04-12 | `B-091` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md` | In progress | 2026-04-12 | 2026-04-12 | `B-092` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md` | In progress | 2026-04-12 | 2026-04-12 | `B-093` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-14 | `B-096` |
 
 ## Parked Plans
 

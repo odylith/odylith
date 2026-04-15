@@ -9,6 +9,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import proof_state as proof_state_runtime
+from odylith.runtime.intervention_engine import stream_state as intervention_stream_state
 from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
 from odylith.runtime.surfaces import compass_governance_source_runtime
 from odylith.runtime.surfaces import compass_refresh_contract
@@ -1712,6 +1713,11 @@ def _build_runtime_payload(
         ),
         "self_host": self_host,
         "governance": governance_summary,
+        "interventions": {
+            "pending_proposals": intervention_stream_state.pending_proposal_state(
+                repo_root=repo_root,
+            ),
+        },
         "workstream_catalog": all_ws_payloads,
         "current_workstreams_by_window": {
             "24h": current_workstreams_by_window["24h"],

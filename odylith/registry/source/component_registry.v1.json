@@ -21,17 +21,17 @@
         "odylith/radar/source/INDEX.md",
         "odylith/technical-plans/INDEX.md"
       ],
-  "workstreams": [
-    "B-001",
-    "B-004",
-    "B-005",
-    "B-031",
-    "B-058",
-    "B-059",
-    "B-062",
-    "B-063",
-    "B-072"
-  ],
+      "workstreams": [
+        "B-001",
+        "B-004",
+        "B-005",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-062",
+        "B-063",
+        "B-072"
+      ],
       "diagrams": [
         "D-001",
         "D-002",
@@ -132,11 +132,11 @@
         "src/odylith/runtime/governance/sync_workstream_artifacts.py",
         "odylith/radar/source"
       ],
-  "workstreams": [
-    "B-001",
-    "B-059",
-    "B-063"
-  ],
+      "workstreams": [
+        "B-001",
+        "B-059",
+        "B-063"
+      ],
       "diagrams": [
         "D-001",
         "D-004",
@@ -167,11 +167,11 @@
         "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
         "odylith/atlas/source/catalog/diagrams.v1.json"
       ],
-  "workstreams": [
-    "B-001",
-    "B-059",
-    "B-063"
-  ],
+      "workstreams": [
+        "B-001",
+        "B-059",
+        "B-063"
+      ],
       "diagrams": [
         "D-001",
         "D-002",
@@ -346,21 +346,21 @@
         "bin/release-preflight",
         "bin/release-dispatch",
         "bin/dogfood-activate",
-    "bin/consumer-rehearsal",
-    "bin/ga-gate",
-    "bin/_odylith.sh",
-    "src/odylith/runtime/governance/release_planning_authoring.py",
-    "src/odylith/runtime/governance/release_planning_contract.py",
-    "src/odylith/runtime/governance/release_planning_view_model.py",
-    "src/odylith/runtime/governance/validate_self_host_posture.py",
-    "odylith/radar/source/releases",
-    "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-    "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md"
-  ],
-  "workstreams": [
-    "B-005",
-    "B-063"
-  ],
+        "bin/consumer-rehearsal",
+        "bin/ga-gate",
+        "bin/_odylith.sh",
+        "src/odylith/runtime/governance/release_planning_authoring.py",
+        "src/odylith/runtime/governance/release_planning_contract.py",
+        "src/odylith/runtime/governance/release_planning_view_model.py",
+        "src/odylith/runtime/governance/validate_self_host_posture.py",
+        "odylith/radar/source/releases",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md"
+      ],
+      "workstreams": [
+        "B-005",
+        "B-063"
+      ],
       "diagrams": [
         "D-022"
       ],
@@ -426,13 +426,13 @@
       ],
       "workstreams": [
         "B-001",
-    "B-008",
-    "B-009",
-    "B-010",
-    "B-058",
-    "B-059",
-    "B-063"
-  ],
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-058",
+        "B-059",
+        "B-063"
+      ],
       "diagrams": [
         "D-002",
         "D-004",
@@ -960,6 +960,36 @@
       "sources": [
         "manifest"
       ],
+      "product_layer": "intelligence"
+    },
+    {
+      "component_id": "governance-intervention-engine",
+      "name": "Governance Intervention Engine",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "conversation-observation-engine",
+        "governed-proposal-engine"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/intervention_engine"
+      ],
+      "workstreams": [
+        "B-096"
+      ],
+      "diagrams": [
+        "D-038"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Shared conversation-observation runtime that turns live Codex and Claude evidence into corroborated Odylith observations, confirmation-gated governed proposals, and CLI-first apply flows.",
+      "why_tracked": "Keeps the observation and proposal product contract explicit so cross-host UX, voice, audit events, and governed writes do not drift into host-local heuristics.",
+      "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "subcomponents": [],
       "product_layer": "intelligence"
     }
   ]

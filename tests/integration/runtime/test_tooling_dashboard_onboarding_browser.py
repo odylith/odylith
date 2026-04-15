@@ -359,6 +359,9 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
         assert response is not None and response.ok
 
+        assert page.locator("text=Telemetry Snapshot").count() == 0
+        assert page.locator("text=Maintainer Benchmark Lane").count() == 0
+
         _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
         page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
         page.locator(".cheatsheet-card-title", has_text="Create a Radar backlog item").wait_for(timeout=15000)
@@ -376,6 +379,17 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         writes = _clipboard_writes(page)
         assert writes
         assert writes[-1] == 'Create a developer note titled "Compass refresh drift".'
+
+        search.fill("deep refresh")
+        page.locator(".cheatsheet-card-title", has_text="Deep-refresh Compass").wait_for(timeout=15000)
+        assert page.locator(".cheatsheet-card", has_text="Add a developer note").first.is_hidden()
+
+        deep_refresh_card = page.locator(".cheatsheet-card", has_text="Deep-refresh Compass").first
+        _click_visible(deep_refresh_card.locator("button", has_text="Copy CLI"))
+        page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
+        writes = _clipboard_writes(page)
+        assert writes
+        assert writes[-1] == "odylith compass deep-refresh --repo-root ."
 
         search.fill("watch-transactions")
         page.locator(".cheatsheet-card-title", has_text="Keep Compass warm").wait_for(timeout=15000)

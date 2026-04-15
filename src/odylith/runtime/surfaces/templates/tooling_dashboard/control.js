@@ -197,9 +197,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const odylithFallbackMarkup = new WeakMap();
 
     function readOdylithDrawerPayload() {
-      return payload && typeof payload === "object" && payload.odylith_drawer && typeof payload.odylith_drawer === "object"
-        ? payload.odylith_drawer
-        : null;
+      return null;
     }
 
     function syncRecoveryDock() {
@@ -1539,71 +1537,11 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     }
 
     function initializeOdylithCharts(force = false) {
-      const chartElements = Array.from(document.querySelectorAll(".odylith-chart-canvas"));
-      if (!chartElements.length) return;
-      chartElements.forEach((element) => captureOdylithFallback(element));
-      const drawer = readOdylithDrawerPayload();
-      const fingerprint = odylithChartFingerprint(drawer);
-      const allEnhanced = chartElements.length > 0 && chartElements.every((element) => element.dataset.odylithChartState === "enhanced");
-      if (!force && odylithChartState.hydrated && allEnhanced && odylithChartState.lastFingerprint === fingerprint) {
-        return;
-      }
-      clearOdylithCharts();
-      odylithChartState.lastFingerprint = fingerprint;
-      if (!drawer || drawer.status === "disabled") {
-        chartElements.forEach((element) => ensureOdylithChartPlaceholder(element, "Odylith is disabled for this comparison run."));
-        return;
-      }
-      if (!window.echarts || typeof window.echarts.init !== "function") {
-        chartElements.forEach((element) => restoreOdylithFallback(element));
-        if (!odylithChartState.retryTimer) {
-          odylithChartState.retryTimer = window.setTimeout(() => {
-            odylithChartState.retryTimer = 0;
-            initializeOdylithCharts(force);
-          }, 450);
-        }
-        return;
-      }
-      const chartOptions = {
-        "control-story": buildControlStoryOption(drawer),
-        "execution-flow": buildExecutionFlowOption(drawer),
-        "signal-envelope": buildSignalEnvelopeOption(drawer),
-        "control-calibration": buildControlCalibrationOption(drawer),
-      };
-      let enhancedCount = 0;
-      chartElements.forEach((element) => {
-        const chartKey = String(element.dataset.odylithChart || "").trim();
-        const option = chartOptions[chartKey];
-        if (!option) {
-          restoreOdylithFallback(element);
-          return;
-        }
-        const fallbackMarkup = odylithFallbackMarkup.get(element) || element.innerHTML || "";
-        try {
-          element.innerHTML = "";
-          const chart = window.echarts.init(element, null, { renderer: "svg" });
-          chart.setOption(option, true);
-          element.dataset.odylithChartState = "enhanced";
-          odylithChartState.instances.push(chart);
-          enhancedCount += 1;
-        } catch (_error) {
-          if (fallbackMarkup) {
-            element.innerHTML = fallbackMarkup;
-          }
-          element.dataset.odylithChartState = "fallback";
-        }
-      });
-      odylithChartState.hydrated = enhancedCount === chartElements.length && chartElements.length > 0;
+      return;
     }
 
     function resizeOdylithCharts() {
-      odylithChartState.instances.forEach((chart) => {
-        try {
-          chart.resize();
-        } catch (_error) {
-          // no-op
-        }
-      });
+      return;
     }
 
     function canonicalizeDiagramToken(value) {
