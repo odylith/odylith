@@ -94,7 +94,6 @@ def build_runtime_payload(
     *,
     repo_root: Path,
     surface_paths: ToolingDashboardSurfacePaths,
-    shell_payload: Mapping[str, Any],
     welcome_state: Mapping[str, Any],
     release_spotlight: Mapping[str, Any],
     version_story: Mapping[str, Any],
@@ -107,12 +106,15 @@ def build_runtime_payload(
     version_story_payload = dict(version_story)
 
     runtime_payload: dict[str, Any] = {
-        **dict(shell_payload),
         "radar_href": _versioned_surface_href(output_path=surface_paths.output_path, target=surface_paths.radar_path),
         "atlas_href": _versioned_surface_href(output_path=surface_paths.output_path, target=surface_paths.atlas_path),
         "compass_href": _versioned_surface_href(output_path=surface_paths.output_path, target=surface_paths.compass_path),
         "registry_href": _versioned_surface_href(output_path=surface_paths.output_path, target=surface_paths.registry_path),
         "casebook_href": _versioned_surface_href(output_path=surface_paths.output_path, target=surface_paths.casebook_path),
+        "case_queue": [],
+        "components": {},
+        "diagrams": {},
+        "workstreams": {},
         "welcome_state": dict(welcome_state),
         "release_spotlight": spotlight_payload,
         "version_story": version_story_payload,

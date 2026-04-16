@@ -16,6 +16,7 @@ odylith sync --repo-root . --force
 odylith sync --repo-root . --check-only --check-clean
 odylith radar refresh --repo-root .
 odylith registry refresh --repo-root .
+odylith casebook validate --repo-root .
 odylith casebook refresh --repo-root .
 odylith atlas refresh --repo-root . --atlas-sync
 odylith compass refresh --repo-root .
@@ -62,6 +63,10 @@ single-surface truth edits flows through `odylith radar refresh`,
 `odylith registry refresh`, `odylith casebook refresh`, or
 `odylith atlas refresh --atlas-sync`. Keep `dashboard refresh` for explicit
 multi-surface shell rerenders rather than one owned surface.
+
+Casebook also exposes `odylith casebook validate --repo-root .` for source-only
+checks. Casebook refresh must fail closed before rewriting generated artifacts
+when bug markdown violates the source contract.
 
 ## Concrete Surface Examples
 

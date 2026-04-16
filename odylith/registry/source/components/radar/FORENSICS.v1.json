@@ -31,12 +31,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 27,
-    "mapped_workstream_evidence_count": 7,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 9,
+    "explicit_event_count": 43,
+    "mapped_workstream_evidence_count": 15,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 27
+    "timeline_event_count": 44
   },
   "name": "Radar",
   "path_prefixes": [
@@ -46,6 +46,363 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "README.md"
+      ],
+      "confidence": "high",
+      "event_index": 233,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-005.",
+      "ts_iso": "2026-04-16T01:31:39Z",
+      "workstreams": [
+        "B-005",
+        "B-020",
+        "B-022",
+        "B-038"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md",
+        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-15-radar-backlog-detail-fail-closed-completeness-and-authoring-hardening.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 271,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md, odylith/radar/source/ideas/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md +4 more",
+      "ts_iso": "2026-04-15T18:51:06-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 177,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-15T06:58:39Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 176,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-15T06:58:39Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 174,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-15T06:57:32Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 173,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-15T06:57:32Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 169,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-15T06:55:30Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 168,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-15T06:55:30Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 161,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see the shape of governed truth here: radar already has a governed slice for B-088. One more corroborating signal and it can turn that into a concrete proposal.",
+      "ts_iso": "2026-04-15T00:24:33Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 157,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can feel governed truth taking shape here: radar already has a governed slice for B-088. One more corroborating signal and it can turn that into a concrete proposal.",
+      "ts_iso": "2026-04-15T00:04:11Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 156,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is noticing governed truth take shape here: radar already has a governed slice for B-088. One more corroborating signal and it can turn that into a concrete proposal.",
+      "ts_iso": "2026-04-14T23:49:56Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 155,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is noticing governed truth take shape here: radar already has a governed slice for B-088. One more corroborating signal and it can turn that into a concrete proposal.",
+      "ts_iso": "2026-04-14T23:49:19Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 154,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is noticing governed truth take shape here: radar already has a governed slice for B-088. One more corroborating signal and it can turn that into a concrete proposal.",
+      "ts_iso": "2026-04-14T23:46:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 153,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is noticing governed truth take shape here: radar already has a governed slice for B-088. One more corroborating signal and it can turn that into a concrete proposal.",
+      "ts_iso": "2026-04-14T23:46:15Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 152,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is noticing governed truth take shape here: radar already has a governed slice for B-001. One more corroborating signal and it can turn that into a concrete proposal.",
+      "ts_iso": "2026-04-14T23:45:10Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 158,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Dashboard refresh passed \u2014 all three surfaces (toolingshell, radar, compass) in 17.3s.",
+      "ts_iso": "2026-04-14T17:15:44-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md"
+      ],
+      "confidence": "high",
+      "event_index": 151,
+      "explicit_components": [
+        "odylith",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "Plan binding: advanced B-096 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "ts_iso": "2026-04-14T16:35:29-07:00",
+      "workstreams": [
+        "B-096"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "medium",
@@ -117,8 +474,10 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "dashboard",
         "odylith",
-        "radar"
+        "radar",
+        "release"
       ],
       "meaningful": false,
       "summary": "Phase advanced: Planning -> Implementation (Live)",
@@ -144,8 +503,10 @@
       "kind": "decision",
       "mapped_components": [
         "benchmark",
+        "dashboard",
         "odylith",
         "radar",
+        "release",
         "subagent-orchestrator"
       ],
       "meaningful": false,
@@ -169,8 +530,10 @@
       ],
       "kind": "decision",
       "mapped_components": [
+        "dashboard",
         "odylith",
-        "radar"
+        "radar",
+        "release"
       ],
       "meaningful": false,
       "summary": "Plan binding: advanced B-089 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",

@@ -5,13 +5,22 @@
       {
         "hooks": [
           {
-            "async": true,
             "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude post-edit-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 180,
             "type": "command"
           }
         ],
         "matcher": "Write|Edit|MultiEdit"
+      },
+      {
+        "hooks": [
+          {
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude post-bash-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 180,
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
       }
     ],
     "PreCompact": [
@@ -87,6 +96,11 @@
         "hooks": [
           {
             "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude prompt-context --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 30,
+            "type": "command"
+          },
+          {
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude prompt-teaser --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30,
             "type": "command"
           }

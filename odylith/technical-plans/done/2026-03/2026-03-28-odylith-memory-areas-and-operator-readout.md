@@ -7,8 +7,8 @@ Updated: 2026-03-28
 Backlog: B-008
 
 Goal: Make Odylith expose its real memory areas and gaps through the runtime
-memory snapshot, context-engine status output, and shared shell telemetry
-drawer.
+memory snapshot, context-engine status output, and non-telemetry operator
+readouts.
 
 Assumptions:
 - Odylith remains local-first and repo-truth-first.
@@ -26,8 +26,8 @@ the status output lines, and the shell drawer readout without affecting stored
 repo truth or runtime backends.
 
 Boundary Conditions:
-- Scope includes `memory_snapshot.v1`, runtime status output, shell telemetry
-  rendering, and Context Engine source-spec updates.
+- Scope includes `memory_snapshot.v1`, runtime status output, non-telemetry
+  diagnostic readouts, and Context Engine source-spec updates.
 - Scope excludes durable decision memory, workspace/actor identity memory,
   contradiction persistence, and hosted augmentation.
 
@@ -42,7 +42,8 @@ Related Bugs:
 ## Success Criteria
 - [x] `memory_snapshot.v1` includes named memory areas with state, summary, counts, and gaps.
 - [x] `odylith context-engine status` prints memory-area counts and headline.
-- [x] The shared shell telemetry drawer renders a dedicated memory-area section.
+- [x] Runtime and diagnostic readouts expose a dedicated memory-area section
+      without requiring dashboard shell telemetry UI.
 - [x] Tests cover snapshot, status, and shell rendering for the new contract.
 
 ## Non-Goals
@@ -99,7 +100,7 @@ Related Bugs:
 - [x] Keep deeper collaboration-memory work deferred to later governed slices.
 
 ## Dependencies/Preconditions
-- [x] Existing Context Engine memory snapshot and shell telemetry contracts already exist.
+- [x] Existing Context Engine memory snapshot contracts already exist.
 - [x] No bug remediation or release workflow change is required for this slice.
 
 ## Edge Cases
@@ -113,5 +114,6 @@ Related Bugs:
 ## Current Outcome
 - Odylith now exposes named memory areas, not just backend implementation detail.
 - Runtime status tells operators what memory is strong, cold, or still planned.
-- The shell telemetry drawer shows the same posture as a product-facing card.
+- Memory posture remains available through runtime/diagnostic readouts; dashboard
+  product surfaces must not render it as shell telemetry chrome.
 - The install package no longer forces the whole install stack to import eagerly during runtime-memory test collection.

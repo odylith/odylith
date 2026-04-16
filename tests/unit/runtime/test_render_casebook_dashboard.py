@@ -6,10 +6,14 @@ import time
 from odylith.runtime.surfaces import render_casebook_dashboard as renderer
 
 
+def _write_minimal_casebook_bug(path: Path, *, title: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(f"# {title}\n\n- Reproducibility: High\n", encoding="utf-8")
+
+
 def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-01-example-bug.md"
-    bug_path.parent.mkdir(parents=True, exist_ok=True)
-    bug_path.write_text("# Example bug\n", encoding="utf-8")
+    _write_minimal_casebook_bug(bug_path, title="Example bug")
 
     monkeypatch.setattr(
         renderer.odylith_context_engine_store,
@@ -152,8 +156,7 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
 
 def test_casebook_payload_dedupes_overlapping_proof_links_from_evidence_refs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-01-example-bug.md"
-    bug_path.parent.mkdir(parents=True, exist_ok=True)
-    bug_path.write_text("# Example bug\n", encoding="utf-8")
+    _write_minimal_casebook_bug(bug_path, title="Example bug")
 
     monkeypatch.setattr(
         renderer.odylith_context_engine_store,
@@ -214,8 +217,7 @@ def test_casebook_payload_dedupes_overlapping_proof_links_from_evidence_refs(tmp
 
 def test_casebook_payload_preserves_proof_state_contract_fields(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-08-proof-state.md"
-    bug_path.parent.mkdir(parents=True, exist_ok=True)
-    bug_path.write_text("# Proof state bug\n", encoding="utf-8")
+    _write_minimal_casebook_bug(bug_path, title="Proof state bug")
 
     monkeypatch.setattr(
         renderer.odylith_context_engine_store,
@@ -298,8 +300,7 @@ def test_casebook_payload_preserves_proof_state_contract_fields(tmp_path: Path, 
 
 def test_render_casebook_dashboard_emits_proof_control_panel_contract(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-08-proof-state.md"
-    bug_path.parent.mkdir(parents=True, exist_ok=True)
-    bug_path.write_text("# Proof state bug\n", encoding="utf-8")
+    _write_minimal_casebook_bug(bug_path, title="Proof state bug")
 
     monkeypatch.setattr(
         renderer.odylith_context_engine_store,
@@ -397,8 +398,7 @@ def test_render_casebook_dashboard_skips_noop_writes_when_bundle_is_unchanged(
     monkeypatch,  # noqa: ANN001
 ) -> None:
     bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-01-example-bug.md"
-    bug_path.parent.mkdir(parents=True, exist_ok=True)
-    bug_path.write_text("# Example bug\n", encoding="utf-8")
+    _write_minimal_casebook_bug(bug_path, title="Example bug")
 
     monkeypatch.setattr(
         renderer.odylith_context_engine_store,
@@ -466,8 +466,7 @@ def test_render_casebook_dashboard_skips_cached_rebuild_before_payload_builder(
     monkeypatch,  # noqa: ANN001
 ) -> None:
     bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-01-example-bug.md"
-    bug_path.parent.mkdir(parents=True, exist_ok=True)
-    bug_path.write_text("# Example bug\n", encoding="utf-8")
+    _write_minimal_casebook_bug(bug_path, title="Example bug")
 
     monkeypatch.setattr(
         renderer.odylith_context_engine_store,

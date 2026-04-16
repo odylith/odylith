@@ -26,9 +26,14 @@ def _make_snapshot(
     supports_subagent_hooks: bool = True,
     supports_pre_compact_hook: bool = True,
     supports_statusline_command: bool = True,
+    supports_prompt_context_hook: bool = True,
+    supports_prompt_teaser_hook: bool = True,
+    supports_post_edit_checkpoint_hook: bool = True,
+    supports_post_bash_checkpoint_hook: bool = True,
+    supports_stop_summary_hook: bool = True,
     supports_post_tool_matchers: bool = True,
     supports_slash_commands: bool = True,
-    overall_posture: str = "baseline_safe_live_proven",
+    overall_posture: str = "baseline_safe_assistant_visible_ready",
     baseline_ready: bool = True,
 ) -> claude_cli_capabilities.ClaudeCliCapabilitySnapshot:
     return claude_cli_capabilities.ClaudeCliCapabilitySnapshot(
@@ -52,6 +57,11 @@ def _make_snapshot(
         supports_subagent_hooks=supports_subagent_hooks,
         supports_pre_compact_hook=supports_pre_compact_hook,
         supports_statusline_command=supports_statusline_command,
+        supports_prompt_context_hook=supports_prompt_context_hook,
+        supports_prompt_teaser_hook=supports_prompt_teaser_hook,
+        supports_post_edit_checkpoint_hook=supports_post_edit_checkpoint_hook,
+        supports_post_bash_checkpoint_hook=supports_post_bash_checkpoint_hook,
+        supports_stop_summary_hook=supports_stop_summary_hook,
         supports_post_tool_matchers=supports_post_tool_matchers,
         supports_slash_commands=supports_slash_commands,
         future_version_policy="capability_based_no_max_pin",
@@ -68,11 +78,18 @@ def test_render_claude_compatibility_includes_capability_truth(tmp_path: Path) -
     assert "Claude CLI: claude 1.0.30" in rendered
     assert "Trusted project required for `.claude/` activation: no" in rendered
     assert "PreToolUse / PostToolUse hooks wired: yes" in rendered
+    assert "UserPromptSubmit prompt-context hook wired: yes" in rendered
+    assert "UserPromptSubmit prompt-teaser hook wired: yes" in rendered
+    assert "PostToolUse post-edit-checkpoint hook wired for Write/Edit/MultiEdit: yes" in rendered
+    assert "PostToolUse post-bash-checkpoint hook wired for Bash: yes" in rendered
+    assert "Stop stop-summary hook wired: yes" in rendered
     assert "PreCompact hook wired: yes" in rendered
     assert "Statusline command wired: yes" in rendered
     assert "Subagent lifecycle hooks wired: yes" in rendered
     assert "Project slash commands present: yes" in rendered
-    assert "Overall posture: baseline_safe_live_proven" in rendered
+    assert "Assistant-render fallback for chat-visible UX: yes" in rendered
+    assert "Overall posture: baseline_safe_assistant_visible_ready" in rendered
+    assert "may not hot-reload changed project settings" in rendered
 
 
 def test_render_claude_compatibility_degrades_to_baseline_safe_when_claude_missing(tmp_path: Path) -> None:
@@ -84,6 +101,11 @@ def test_render_claude_compatibility_degrades_to_baseline_safe_when_claude_missi
         supports_subagent_hooks=False,
         supports_pre_compact_hook=False,
         supports_statusline_command=False,
+        supports_prompt_context_hook=False,
+        supports_prompt_teaser_hook=False,
+        supports_post_edit_checkpoint_hook=False,
+        supports_post_bash_checkpoint_hook=False,
+        supports_stop_summary_hook=False,
         supports_post_tool_matchers=False,
         overall_posture="baseline_safe",
     )
@@ -91,6 +113,8 @@ def test_render_claude_compatibility_degrades_to_baseline_safe_when_claude_missi
 
     assert "Claude CLI: not detected on PATH" in rendered
     assert "PreToolUse / PostToolUse hooks wired: no" in rendered
+    assert "UserPromptSubmit prompt-context hook wired: no" in rendered
+    assert "UserPromptSubmit prompt-teaser hook wired: no" in rendered
     assert "Overall posture: baseline_safe" in rendered
 
 
@@ -108,7 +132,7 @@ def test_main_emits_human_readable_report_when_baseline_ready(monkeypatch, tmp_p
     assert exit_code == 0
     captured = capsys.readouterr().out
     assert "Claude Code compatibility report" in captured
-    assert "Overall posture: baseline_safe_live_proven" in captured
+    assert "Overall posture: baseline_safe_assistant_visible_ready" in captured
 
 
 def test_main_emits_json_payload_with_notes(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -127,7 +151,7 @@ def test_main_emits_json_payload_with_notes(monkeypatch, tmp_path: Path, capsys)
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["claude_version"] == "1.0.30"
-    assert payload["overall_posture"] == "baseline_safe_live_proven"
+    assert payload["overall_posture"] == "baseline_safe_assistant_visible_ready"
     assert payload["trusted_project_required"] is False
     assert isinstance(payload["notes"], list)
     assert any("first-class project surfaces" in note for note in payload["notes"])

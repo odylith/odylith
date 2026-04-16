@@ -104,10 +104,40 @@
 - Missing launcher-backed anchor resolution is not permission to silence a
   real prompt-submit teaser. Degraded context narrowing may remove the anchor
   summary, but the earned intervention beat should still survive.
-- Prompt-submit teaser surfacing is two-lane on purpose:
-  - a visible one-line teaser for the user
-  - discreet continuity context carrying the teaser plus any anchor summary
-    for the next model turn
+- Prompt-submit teaser surfacing must follow the host's actual transcript
+  contract, not just the structured payload shape. On Claude Code, an earned
+  teaser prints from a dedicated `prompt-teaser` hook as a best-effort stdout
+  source; anchor context and assistant-render fallback stay in the separate
+  `prompt-context` JSON `additionalContext` hook. On Codex, the earned teaser
+  stays in hook `systemMessage` plus `hookSpecificOutput.additionalContext`,
+  with the same assistant-render fallback for chat visibility.
+- Hook output generation is not chat visibility. The shipped contract is:
+  hooks produce structured evidence and model/developer context; hosts may
+  render hook `systemMessage` or stdout when they support it; if not, the
+  assistant-render fallback must speak the exact Odylith Markdown in the next
+  visible assistant message.
+- Codex activation proof is three-part: hook feature enabled, the three
+  Odylith hooks wired in `.codex/hooks.json`, and assistant-render fallback
+  available in the payload. `codex debug prompt-input` proves AGENTS model
+  context, not chat-visible intervention UX; `codex exec --json` is not a
+  substitute for a rendered assistant message either.
+- Codex checkpoint proof must match the current host schema. Today Codex
+  `PostToolUse` exposes Bash only, so `.codex/hooks.json` matches `Bash`.
+  Native desktop write payloads such as `apply_patch`, `exec_command`, and
+  `unified_exec` remain parser-supported for manual/test fallback but are not
+  automatic hook coverage until Codex exposes those tool names to hooks.
+- Claude checkpoint proof must include both direct edit tools and Bash writes.
+  `post-edit-checkpoint` covers `Write|Edit|MultiEdit`; `post-bash-checkpoint`
+  covers `Bash` so shell edits, inline write scripts, and patch-style Bash
+  payloads do not disappear into hidden context until Stop.
+- `odylith codex visible-intervention` and `odylith claude
+  visible-intervention` are the shared manual escape hatches when a host keeps
+  hook output hidden. They render plain Markdown, not JSON, and agents should
+  show that output directly instead of rewriting it.
+- `Odylith Assist` may recover at Stop from concrete validation proof in the
+  assistant summary when changed paths are unavailable. That proof path is
+  intentionally narrow: it can say the proof stayed tight, but it must not
+  claim artifact updates without changed-path or governed-target evidence.
 - If the user cannot tell in a breath why Odylith stepped in, or if the
   Proposal turns into a mini report, the UX has failed.
 - Multiline Observation and Proposal markdown is part of the shipped product
@@ -152,6 +182,14 @@
   - local `file:` opening must keep working without a web server
 - Radar, Atlas, Compass, Registry, and Odylith are shell-owned child surfaces: direct opens should canonicalize back into `odylith/index.html` with the relevant tab/scope state preserved.
 - Prefer diagram-pinned Atlas routes when available so cross-surface links land on reviewed Mermaid context instead of a generic workstream view.
+- Product dashboard shells must never render internal telemetry as product UI.
+  Do not add or restore shell telemetry drawers, status presenters, cockpit
+  grids, recorder tapes, chart canvases, ECharts hydration, `Telemetry
+  Snapshot` slabs, or legacy `odylith_drawer` render paths. Telemetry and spend
+  evidence may stay in runtime artifacts or explicit diagnostics, but the
+  top-level shell must not load, embed, or render internal delivery,
+  evaluation, optimization, or memory snapshots. Browser tests must prove those
+  strings, selectors, scripts, and snapshot payload keys are absent.
 - Canonical generated roots are:
   - `odylith/radar/`
   - `odylith/atlas/`
@@ -164,6 +202,8 @@
 ## Refresh And Runtime Posture
 - Odylith refresh defaults to `on-demand`, not a mandatory background daemon and not part of the normal hot path for every local coding loop.
 - In consumer repos, the shell may show passive runtime-freshness warnings before commit time by reading existing local runtime state only; that notice must never start sync, never start background work, and never silently rewrite tracked `odylith/` truth.
+- Passive freshness warnings must stay narrow and failure-oriented. They are not
+  permission to reintroduce broad telemetry/status cockpit chrome in the shell.
 - In consumer repos, autonomous Odylith fixes must not run `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, or `odylith dashboard refresh`; those mutate `odylith/` or `.odylith/` and belong to operator- or maintainer-authorized recovery flows.
 - In the Odylith product repo, keep the shell frozen for benchmark and proof posture: no passive live-refresh probe, no hidden dashboard heating, and no benchmark-lane-only convenience behavior.
 - Plain `odylith sync --repo-root .` is the fast selective upkeep path.

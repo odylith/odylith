@@ -27,6 +27,7 @@ def _report_notes(report: ClaudeCompatibilityReport) -> list[str]:
         "Core Odylith support on Claude Code is the repo-root CLAUDE.md/AGENTS.md contract plus `./.odylith/bin/odylith`.",
         "Repo-scoped `.claude/` settings, hooks, slash commands, subagents, and skills are first-class project surfaces and ship with the install.",
         "Claude Code project assets do not require a trusted-project approval gate; checked-in `.claude/settings.json` activates immediately.",
+        "Existing Claude sessions may not hot-reload changed project settings, guidance, or source-local runtime code; restart the session or render `odylith claude visible-intervention` directly before claiming another open chat is visibly active.",
         "Version compatibility is capability-based and does not pin a maximum Claude CLI version.",
     ]
     if report.claude_available and report.claude_version:
@@ -41,6 +42,16 @@ def _report_notes(report: ClaudeCompatibilityReport) -> list[str]:
         notes.append("Project hook events (`PreToolUse` / `PostToolUse`) are wired in `.claude/settings.json`.")
     else:
         notes.append("Project hook events (`PreToolUse` / `PostToolUse`) are not yet wired in `.claude/settings.json`.")
+    if report.supports_prompt_context_hook and report.supports_prompt_teaser_hook:
+        notes.append(
+            "Claude `UserPromptSubmit` is split correctly: `prompt-context` feeds discreet model context and `prompt-teaser` provides the same teaser text as a best-effort stdout source."
+        )
+    elif report.supports_prompt_context_hook:
+        notes.append("Claude `UserPromptSubmit` has discreet prompt context but is missing the best-effort `prompt-teaser` hook.")
+    elif report.supports_prompt_teaser_hook:
+        notes.append("Claude `UserPromptSubmit` has the best-effort teaser hook but is missing the discreet `prompt-context` continuity hook.")
+    else:
+        notes.append("Claude `UserPromptSubmit` prompt context and teaser hooks are not yet wired.")
     if report.supports_subagent_hooks:
         notes.append("Subagent lifecycle hooks (`SubagentStart` / `SubagentStop`) are wired for Claude project subagents.")
     else:
@@ -53,10 +64,26 @@ def _report_notes(report: ClaudeCompatibilityReport) -> list[str]:
         notes.append("`statusLine.command` is wired in `.claude/settings.json`.")
     else:
         notes.append("`statusLine.command` is not yet wired; the Odylith CLI statusline renderer is available but not attached.")
-    if report.supports_post_tool_matchers:
-        notes.append("`PostToolUse` hooks declare a non-wildcard matcher (e.g. `Write|Edit|MultiEdit`).")
+    if (
+        report.supports_post_edit_checkpoint_hook
+        and report.supports_post_bash_checkpoint_hook
+        and report.supports_stop_summary_hook
+    ):
+        notes.append(
+            "Claude intervention hooks are wired for direct edits, Bash edits, and Stop closeout sources."
+        )
+        notes.append(
+            "Chat visibility is completed by the assistant-render fallback inside `additionalContext` and the Stop one-shot continuation guard; hook stdout or `systemMessage` alone is not treated as visible-chat proof."
+        )
     else:
-        notes.append("`PostToolUse` hooks do not declare a non-wildcard matcher; selective post-edit refresh is not yet active.")
+        missing = []
+        if not report.supports_post_edit_checkpoint_hook:
+            missing.append("PostToolUse post-edit-checkpoint with Write/Edit/MultiEdit matcher coverage")
+        if not report.supports_post_bash_checkpoint_hook:
+            missing.append("PostToolUse post-bash-checkpoint with Bash matcher coverage")
+        if not report.supports_stop_summary_hook:
+            missing.append("Stop stop-summary")
+        notes.append("Claude intervention hook wiring is incomplete: missing " + ", ".join(missing) + ".")
     if report.supports_slash_commands:
         notes.append("Project slash commands are present under `.claude/commands/`.")
     else:
@@ -80,6 +107,12 @@ def render_claude_compatibility(report: ClaudeCompatibilityReport) -> str:
         f"Project skills: {'present' if report.project_skills_present else 'missing'}",
         f"Trusted project required for `.claude/` activation: {'yes' if report.trusted_project_required else 'no'}",
         f"PreToolUse / PostToolUse hooks wired: {'yes' if report.supports_project_hooks else 'no'}",
+        f"UserPromptSubmit prompt-context hook wired: {'yes' if report.supports_prompt_context_hook else 'no'}",
+        f"UserPromptSubmit prompt-teaser hook wired: {'yes' if report.supports_prompt_teaser_hook else 'no'}",
+        f"PostToolUse post-edit-checkpoint hook wired for Write/Edit/MultiEdit: {'yes' if report.supports_post_edit_checkpoint_hook else 'no'}",
+        f"PostToolUse post-bash-checkpoint hook wired for Bash: {'yes' if report.supports_post_bash_checkpoint_hook else 'no'}",
+        f"Stop stop-summary hook wired: {'yes' if report.supports_stop_summary_hook else 'no'}",
+        "Assistant-render fallback for chat-visible UX: yes",
         f"PostToolUse non-wildcard matcher present: {'yes' if report.supports_post_tool_matchers else 'no'}",
         f"Subagent lifecycle hooks wired: {'yes' if report.supports_subagent_hooks else 'no'}",
         f"PreCompact hook wired: {'yes' if report.supports_pre_compact_hook else 'no'}",

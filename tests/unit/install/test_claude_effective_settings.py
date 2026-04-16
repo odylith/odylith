@@ -38,6 +38,22 @@ def test_write_effective_claude_project_settings_writes_byte_stable_json(tmp_pat
     assert "SubagentStop" in payload["hooks"]
     assert payload["hooks"]["PreToolUse"][0]["matcher"] == "Bash"
     assert payload["hooks"]["PostToolUse"][0]["matcher"] == "Write|Edit|MultiEdit"
+    assert payload["hooks"]["PostToolUse"][1]["matcher"] == "Bash"
+    prompt_hooks = payload["hooks"]["UserPromptSubmit"][0]["hooks"]
+    assert [hook["command"] for hook in prompt_hooks] == [
+        '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"',
+        '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"',
+    ]
+    post_edit_hook = payload["hooks"]["PostToolUse"][0]["hooks"][0]
+    post_bash_hook = payload["hooks"]["PostToolUse"][1]["hooks"][0]
+    subagent_stop_hook = payload["hooks"]["SubagentStop"][0]["hooks"][0]
+    assert "async" not in post_edit_hook
+    assert "async" not in post_bash_hook
+    assert post_bash_hook["command"] == (
+        '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude post-bash-checkpoint '
+        '--repo-root "$CLAUDE_PROJECT_DIR"'
+    )
+    assert subagent_stop_hook["async"] is True
     allowlist = payload["permissions"]["allow"]
     for required in (
         "Bash(./.odylith/bin/odylith claude:*)",

@@ -18,7 +18,7 @@ from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 _PAYLOAD_GLOBAL_BOOTSTRAP = 'const payload = window["__ODYLITH_TOOLING_DATA__"] || {};'
 _INLINE_JSON_BOOTSTRAP = 'const payload = JSON.parse(document.getElementById("toolingDashboardData").textContent);'
 _FROZEN_HEADER_TEMPLATE_SHA256 = "3955d604fde8797cba2101e88561e219a386228d67f7d2ec7690cd6ee71d1532"
-_FROZEN_HEADER_STYLE_SHA256 = "e707ffbe06ac51f66feaef225af8af0a2a5db93af3b0aaac4822c8b784d44c34"
+_FROZEN_HEADER_STYLE_SHA256 = "dbb919356e53e9911c9f0d1475429691c7c363954cca572b8b87842aa9f3a080"
 
 
 def _template_asset_path(filename: str) -> Path:
@@ -148,7 +148,7 @@ def _tooling_shell_shared_typography_css() -> str:
                 subtitle_line_height=1.5,
             ),
             dashboard_ui_primitives.operator_readout_host_heading_css(
-                selector=".brief-drawer-title, .system-status-hero-kicker, .telemetry-section-title",
+                selector=".brief-drawer-title",
                 color="#27445e",
                 size_px=11,
                 letter_spacing_em=0.07,
@@ -158,75 +158,6 @@ def _tooling_shell_shared_typography_css() -> str:
                 color="#51647f",
                 size_px=12,
                 line_height=1.35,
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".system-status-hero-title",
-                color="#0b1324",
-                size_px=16,
-                line_height=1.25,
-                letter_spacing_em=-0.01,
-            ),
-            dashboard_ui_primitives.content_copy_css(
-                selectors=(
-                    ".system-status-hero-note",
-                    ".system-status-copy",
-                    ".telemetry-bullet-list",
-                    ".telemetry-empty",
-                ),
-                size_px=14,
-                line_height=1.55,
-                color="#27445e",
-            ),
-            dashboard_ui_primitives.governance_kpi_label_value_css(
-                label_selector=".system-status-label, .telemetry-stat-label",
-                value_selector=".system-status-value, .telemetry-stat-value",
-                label_color="var(--ink-muted, #64748b)",
-                label_weight=400,
-                label_size_px=11,
-                label_line_height=1.15,
-                label_letter_spacing_em=0.06,
-                value_color="var(--ink, #0b1324)",
-                value_margin="4px 0 0",
-                value_size_px=18,
-                value_line_height=1.05,
-                value_letter_spacing_em=-0.01,
-            ),
-            dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".telemetry-snapshot-label, .telemetry-meter-label, .telemetry-distribution-label, .telemetry-index-label",
-                color="#475569",
-                size_px=10,
-                line_height=1.2,
-                letter_spacing_em=0.07,
-                weight=700,
-            ),
-            dashboard_ui_primitives.value_emphasis_typography_css(
-                selector=".telemetry-meter-value, .telemetry-snapshot-primary, .telemetry-index-count",
-                color="#16324f",
-                size_px=13,
-                line_height=1.3,
-                weight=700,
-            ),
-            dashboard_ui_primitives.supporting_copy_typography_css(
-                selector=".telemetry-snapshot-secondary, .telemetry-stat-note, .telemetry-index-updated",
-                color="#64748b",
-                size_px=11,
-                line_height=1.35,
-                weight=500,
-            ),
-            dashboard_ui_primitives.label_badge_typography_css(
-                selector=".system-status-meta, .system-status-hero-chip, .telemetry-capability",
-                color="#334155",
-                size_px=10,
-                line_height=1.0,
-                letter_spacing_em=0.04,
-                weight=700,
-            ),
-            dashboard_ui_primitives.mono_identifier_typography_css(
-                selector=".telemetry-stat-value-mono",
-                color="#16324f",
-                size_px=12,
-                line_height=1.25,
-                weight=700,
             ),
             dashboard_ui_primitives.surface_identifier_link_css(
                 selector=".operator-readout .operator-readout-copy a.brief-inline-link",

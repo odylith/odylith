@@ -129,11 +129,15 @@ _EXECUTION_HINTS: tuple[str, ...] = (
     "refactor",
 )
 _GOVERNED_PATH_HINTS: tuple[str, ...] = (
+    ".claude/",
+    ".codex/",
+    "odylith/agents-guidelines/",
     "odylith/registry/",
     "odylith/radar/",
     "odylith/atlas/",
     "odylith/casebook/",
     "src/odylith/runtime/intervention_engine/",
+    "src/odylith/runtime/surfaces/",
 )
 
 

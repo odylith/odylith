@@ -114,6 +114,10 @@
           "AGENTS.md",
           "odylith/AGENTS.md"
         ],
+        "supporting_paths": [
+          ".agents/skills/odylith-session-brief/SKILL.md",
+          "odylith/skills/odylith-session-brief/SKILL.md"
+        ],
         "acceptance_criteria": [
           "Keep the session brief fail-closed for shared-only guidance edits.",
           "Do not reintroduce broad routing scaffolding into Codex-visible delivery."
@@ -150,6 +154,10 @@
         ],
         "required_paths": [
           "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+        ],
+        "supporting_paths": [
+          ".agents/skills/odylith-session-brief/SKILL.md",
+          "odylith/skills/odylith-session-brief/SKILL.md"
         ],
         "acceptance_criteria": [
           "Stay grounded on the exact runtime path.",
@@ -189,7 +197,8 @@
         "workstream": "B-001",
         "validation_commands": [
           "odylith subagent-orchestrator --repo-root . --help"
-        ]
+        ],
+        "needs_write": false
       },
       "match": {
         "workstream": "B-001"
@@ -218,6 +227,10 @@
         "required_paths": [
           "odylith/index.html",
           "odylith/surfaces/GOVERNANCE_SURFACES.md"
+        ],
+        "supporting_paths": [
+          ".agents/skills/odylith-start/SKILL.md",
+          "odylith/skills/odylith-start/SKILL.md"
         ],
         "validation_commands": [
           "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
@@ -994,6 +1007,18 @@
           "odylith/skills/odylith-subagent-router/SKILL.md",
           "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
         ],
+        "supporting_paths": [
+          "src/odylith/runtime/orchestration/subagent_router.py",
+          "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+          "src/odylith/runtime/orchestration/subagent_orchestrator_odylith_runtime.py",
+          "src/odylith/runtime/governance/delivery_intelligence_engine.py"
+        ],
+        "expected_write_paths": [
+          "src/odylith/runtime/orchestration/subagent_router.py",
+          "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+          "src/odylith/runtime/orchestration/subagent_orchestrator_odylith_runtime.py",
+          "src/odylith/runtime/governance/delivery_intelligence_engine.py"
+        ],
         "workstream": "B-001",
         "validation_commands": [
           "odylith subagent-router --repo-root . --help",
@@ -1452,6 +1477,14 @@
           "odylith atlas render --repo-root . --check-only",
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_validate_component_registry_contract.py tests/unit/runtime/test_render_mermaid_catalog.py"
         ],
+        "expected_write_paths": [
+          "odylith/registry/source/component_registry.v1.json",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
+          "odylith/atlas/source/catalog/diagrams.v1.json",
+          "tests/unit/runtime/test_validate_component_registry_contract.py",
+          "tests/unit/runtime/test_render_mermaid_catalog.py"
+        ],
         "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-020",
@@ -1495,6 +1528,11 @@
           "odylith/casebook/bugs/2026-04-08-live-proof-lanes-do-not-pin-the-primary-blocker-frontier-or-falsification-memory.md",
           "tests/unit/runtime/test_proof_state_runtime.py",
           "tests/unit/runtime/test_tooling_context_packet_builder.py"
+        ],
+        "supporting_paths": [
+          ".agents/skills/odylith-start/SKILL.md",
+          "odylith/skills/odylith-start/SKILL.md",
+          "src/odylith/runtime/context_engine/tooling_context_packet_builder.py"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_proof_state_runtime.py tests/unit/runtime/test_tooling_context_packet_builder.py"
@@ -2881,6 +2919,16 @@
         ],
         "critical_paths": [
           "src/odylith/runtime/surfaces/codex_host_bash_guard.py",
+          "tests/unit/runtime/test_codex_host_bash_guard.py"
+        ],
+        "supporting_paths": [
+          "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+          "src/odylith/runtime/surfaces/codex_host_shared.py"
+        ],
+        "expected_write_paths": [
+          "src/odylith/runtime/surfaces/codex_host_bash_guard.py",
+          "src/odylith/runtime/surfaces/codex_host_shared.py",
           "tests/unit/runtime/test_codex_host_bash_guard.py"
         ],
         "validation_commands": [

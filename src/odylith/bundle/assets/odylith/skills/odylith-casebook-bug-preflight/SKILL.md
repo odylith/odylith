@@ -24,5 +24,11 @@ Use before any substantive fix, debug loop, or governed closeout slice that migh
   `environment`, `detected by`, `failure signature`, `trigger path`,
   `ownership`, `blast radius`, `SLO/SLA impact`, `data risk`,
   `security/compliance`, and `invariant violated`.
+- Keep `reproducibility` to one compact token such as `High`, `Medium`, `Low`,
+  `Always`, `Intermittent`, or `Consistent`. Put repro commands and evidence in
+  `trigger path`, `failure signature`, `environment`, or `description`.
+- Run `odylith casebook validate --repo-root .` when checking source truth
+  without rendering; `odylith casebook refresh` is expected to stop before
+  generated writes when source validation fails.
 - If that evidence is still missing, keep the slice in investigation mode
   instead of creating a new bug record with partial or placeholder truth.

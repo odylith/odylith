@@ -48,6 +48,34 @@ def _normalize_string_list(value: Any) -> list[str]:
     return rows
 
 
+def _summary_validation_signals(summary: str, *, turn_phase: str) -> list[str]:
+    """Recover bounded closeout proof when Stop hooks do not carry tool paths."""
+
+    if _normalize_string(turn_phase) != "stop_summary":
+        return []
+    text = _normalize_string(summary)
+    lowered = text.casefold()
+    if not lowered:
+        return []
+    markers = (
+        " passed",
+        "validation passed",
+        "validator passed",
+        "validators passed",
+        "contract passed",
+        "tests passed",
+        "test passed",
+        "pytest",
+    )
+    if not any(marker in lowered for marker in markers):
+        return []
+    return [text[:160]]
+
+
+def _mapping(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
+
+
 def normalized_session_id(value: Any, *, host_family: str = "") -> str:
     token = _normalize_string(value)
     if token:
@@ -97,12 +125,14 @@ def compose_host_conversation_bundle(
         field="components",
     )
     summary = _normalize_string(assistant_summary)
+    validation_signals = _summary_validation_signals(summary, turn_phase=normalized_turn_phase)
     grounded = bool(summary or resolved_prompt or resolved_changed_paths or resolved_workstreams or resolved_components)
     request = orchestrator.OrchestrationRequest(
         prompt=resolved_prompt or summary,
         candidate_paths=resolved_changed_paths,
         workstreams=resolved_workstreams,
         components=resolved_components,
+        validation_commands=validation_signals,
         needs_write=bool(resolved_changed_paths),
         evidence_cone_grounded=grounded,
         latency_sensitive=True,
@@ -211,14 +241,95 @@ def compose_checkpoint_system_message(
     return governance
 
 
+_VISIBLE_DELIVERY_BEGIN = "<odylith-visible-markdown>"
+_VISIBLE_DELIVERY_END = "</odylith-visible-markdown>"
+_VISIBLE_DELIVERY_LABELS: tuple[str, ...] = (
+    "Odylith Observation",
+    "Odylith Proposal",
+    "Odylith Assist",
+    "Odylith Insight",
+    "Odylith History",
+    "Odylith Risks",
+)
+
+
+def assistant_visible_fallback_context(visible_text: str) -> str:
+    """Return model-context instructions that make hook output fail-visible.
+
+    Host hook `systemMessage` support is useful but not a reliable chat-render
+    guarantee across Codex Desktop, Codex CLI, and Claude Code builds. This
+    context keeps the structured hook payload intact while telling the next
+    assistant turn exactly what to speak if the host kept the hook message
+    hidden.
+    """
+
+    visible = _normalize_block_string(visible_text)
+    if not visible:
+        return ""
+    return "\n".join(
+        [
+            "Odylith visible delivery fallback:",
+            (
+                "If the user has not already seen the Odylith text below in this turn, "
+                "render it in your next visible assistant message as normal Markdown. "
+                "Do not wrap it in a code fence, do not mention hook internals, and do "
+                "not repeat it if it is already visible."
+            ),
+            "",
+            _VISIBLE_DELIVERY_BEGIN,
+            visible,
+            _VISIBLE_DELIVERY_END,
+        ]
+    ).strip()
+
+
+def visible_delivery_already_present(*, last_assistant_message: str, visible_text: str) -> bool:
+    last = _normalize_block_string(last_assistant_message)
+    visible = _normalize_block_string(visible_text)
+    if not last or not visible:
+        return False
+    if visible in last:
+        return True
+    return any(label in last for label in _VISIBLE_DELIVERY_LABELS)
+
+
+def stop_visible_delivery_reason(visible_text: str) -> str:
+    visible = _normalize_block_string(visible_text)
+    if not visible:
+        return ""
+    return "\n\n".join(
+        [
+            (
+                "Before ending, render the Odylith closeout below in the next visible "
+                "assistant message if it is not already visible. Keep it as normal "
+                "Markdown, do not wrap it in a code fence, and do not mention hook internals."
+            ),
+            visible,
+        ]
+    ).strip()
+
+
+def _developer_context_with_visible_fallback(*, developer_context: str, visible_text: str) -> str:
+    context = _normalize_block_string(developer_context)
+    fallback = assistant_visible_fallback_context(visible_text)
+    if not fallback:
+        return context
+    if not context:
+        return fallback
+    return f"{fallback}\n\nOdylith developer continuity:\n{context}".strip()
+
+
 def codex_post_tool_payload(
     *,
     developer_context: str = "",
     system_message: str = "",
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {}
-    context = _normalize_block_string(developer_context)
     message = _normalize_block_string(system_message)
+    context = _developer_context_with_visible_fallback(
+        developer_context=developer_context,
+        visible_text=message,
+    )
     if context:
         payload["hookSpecificOutput"] = {
             "hookEventName": "PostToolUse",
@@ -235,8 +346,11 @@ def codex_prompt_payload(
     system_message: str = "",
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {}
-    context = _normalize_block_string(additional_context)
     message = _normalize_block_string(system_message)
+    context = _developer_context_with_visible_fallback(
+        developer_context=additional_context,
+        visible_text=message,
+    )
     if context:
         payload["hookSpecificOutput"] = {
             "hookEventName": "UserPromptSubmit",
@@ -247,9 +361,17 @@ def codex_prompt_payload(
     return payload
 
 
-def stop_payload(*, system_message: str = "") -> dict[str, Any]:
+def stop_payload(*, system_message: str = "", block_for_visible_delivery: bool = False) -> dict[str, Any]:
     message = _normalize_block_string(system_message)
-    return {"systemMessage": message} if message else {}
+    if not message:
+        return {}
+    payload: dict[str, Any] = {"systemMessage": message}
+    if block_for_visible_delivery:
+        reason = stop_visible_delivery_reason(message)
+        if reason:
+            payload["decision"] = "block"
+            payload["reason"] = reason
+    return payload
 
 
 def claude_post_tool_payload(
@@ -258,8 +380,11 @@ def claude_post_tool_payload(
     system_message: str = "",
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {}
-    context = _normalize_block_string(developer_context)
     message = _normalize_block_string(system_message)
+    context = _developer_context_with_visible_fallback(
+        developer_context=developer_context,
+        visible_text=message,
+    )
     if context:
         payload["additionalContext"] = context
     if message:
@@ -272,14 +397,44 @@ def claude_prompt_payload(
     additional_context: str = "",
     system_message: str = "",
 ) -> dict[str, Any]:
+    """Return Claude UserPromptSubmit JSON for discreet model context only.
+
+    Claude Code renders plain stdout in the transcript for UserPromptSubmit.
+    The structured `additionalContext` lane is intentionally discreet, so live
+    teaser text must be printed by the prompt hook itself instead of routed
+    through this JSON helper.
+    """
+
     payload: dict[str, Any] = {}
-    context = _normalize_block_string(additional_context)
-    message = _normalize_block_string(system_message)
+    context = _developer_context_with_visible_fallback(
+        developer_context=additional_context,
+        visible_text=system_message,
+    )
     if context:
         payload["hookSpecificOutput"] = {
             "hookEventName": "UserPromptSubmit",
             "additionalContext": context,
         }
-    if message:
-        payload["systemMessage"] = message
     return payload
+
+
+def chat_visible_text(
+    payload: Mapping[str, Any],
+    *,
+    host_family: str,
+    turn_phase: str,
+    plain_stdout: str = "",
+) -> str:
+    """Return the text Odylith expects the user to see.
+
+    Hosts may keep hook `systemMessage` hidden. In that case the matching
+    assistant-visible fallback context tells the next assistant turn to render
+    this same text. Claude `UserPromptSubmit` can also use plain stdout from
+    the dedicated teaser hook when the host exposes it.
+    """
+
+    normalized_host = _normalize_string(host_family).lower()
+    normalized_phase = _normalize_string(turn_phase).lower()
+    if normalized_host == "claude" and normalized_phase in {"prompt_submit", "userpromptsubmit"}:
+        return _normalize_block_string(plain_stdout)
+    return _normalize_block_string(_mapping(payload).get("systemMessage"))

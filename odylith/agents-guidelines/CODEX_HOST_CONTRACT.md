@@ -52,6 +52,19 @@
   build as the same frozen capability set.
 - If you want to know whether those optional Codex project-asset optimizations
   are actually live, run `./.odylith/bin/odylith codex compatibility --repo-root .`.
+- `baseline_safe_assistant_visible_ready` is intentionally stricter than
+  "Codex can read AGENTS." It requires the local Codex feature registry to
+  report `features.codex_hooks = true`, `.codex/hooks.json` to wire
+  `UserPromptSubmit`, Bash `PostToolUse`, and `Stop` to the Odylith CLI hook
+  commands, the live prompt-input probe to show repo-root guidance, and the
+  assistant-render fallback to be available for chat-visible delivery.
+  `codex debug prompt-input` proves model-visible repo guidance only; it does
+  not prove the user saw any intervention in chat.
+- `codex exec --json` is useful smoke coverage for the CLI command lane, but
+  its event stream is not the UX transcript and must not be used as the sole
+  proof that hook `systemMessage` intervention beats reached the user. Treat
+  direct `odylith codex ...` hook payloads as structured-output
+  proof and a rendered assistant message as the visibility proof.
 - Session-start grounding runs through the CLI-backed
   `./.odylith/bin/odylith codex session-start-ground --repo-root .` hook
   command, which summarizes the active Odylith slice into hook-added developer
@@ -63,20 +76,26 @@
   Bash hook command
   (`./.odylith/bin/odylith codex bash-guard --repo-root .`) and denies a
   narrow destructive subset.
-- Edit-like Bash checkpointing runs through the CLI-backed
+- Edit-like Codex checkpointing runs through the CLI-backed
   `./.odylith/bin/odylith codex post-bash-checkpoint --repo-root .` hook
-  command so the project-root `.codex/` layer stays declarative.
-- The Bash checkpoint does two things, in order: first it runs
+  command so the project-root `.codex/` layer stays declarative. The
+  current Codex hook schema exposes Bash `PostToolUse`; native desktop
+  developer tools such as `apply_patch`, `exec_command`, or `unified_exec`
+  are parsed by the runtime for manual/test fallback but must not be claimed
+  as automatically hook-dispatched until the host exposes those tool names in
+  the hook input schema.
+- The checkpoint does two things, in order: first it runs
   `./.odylith/bin/odylith start --repo-root .` to keep the session
-  grounded; then, if the edit-like Bash command (``apply_patch``, ``sed
-  -i``, ``cp``, ``mv``, ``tee``, ``cat >``, etc.) actually touched any
+  grounded; then, if the edit-like Bash tool call (Bash `apply_patch`,
+  ``sed -i``, ``cp``, ``mv``, ``tee``, ``cat >``,
+  inline `python -c` / `node -e`, etc.) actually touched any
   repo-relative path under the Odylith governed source-of-truth
   subtrees (``odylith/radar/source/``, ``odylith/technical-plans/``,
   ``odylith/casebook/bugs/``, ``odylith/registry/source/``,
   ``odylith/atlas/source/``), it runs
   `./.odylith/bin/odylith sync --impact-mode selective <paths>` so the
   derived dashboards stay aligned. The changed-path set is inferred from
-  the current Bash command itself, then intersected with the current
+  the current tool payload itself, then intersected with the current
   dirty governed path set so the hook does not widen refresh to
   unrelated repo dirtiness. If the command does not expose an exact
   governed target, the checkpoint skips selective refresh instead of
@@ -88,40 +107,50 @@
   redirection tails cannot widen the target set, and explicit inline
   `python -c` / `node -e` file-write one-liners may refresh only when the
   hook can recover an exact governed path literal from the current command.
-- The Bash checkpoint never blocks the command: sync failures exit the
-  hook with code 0 and emit a fail-soft `systemMessage` describing the
-  failure so the operator can recover manually.
-- This is **Bash-checkpoint parity** with Claude's `post-edit-checkpoint`
-  lane — it covers the primary Codex governed-edit workflow, whose
-  edit-like Bash commands include `apply_patch`. It is *not* universal
-  host-edit parity: if Codex ever grows a native non-Bash edit hook, a
-  separate Codex hook module would be needed to cover that surface.
+- The checkpoint never blocks the tool call: sync failures exit the hook with
+  code 0 and emit a fail-soft `systemMessage` plus assistant-visible fallback
+  context describing the failure so the operator can recover manually.
+- This is **checkpoint parity** with Claude's direct-edit and Bash checkpoint
+  lanes for hookable Bash edits. Native desktop write payloads remain
+  supported by the parser and `visible-intervention` fallback command, but
+  they are not automatic hook coverage until Codex exposes those tools to
+  `PostToolUse`.
 - Codex prompt-context, stop-summary, and post-bash checkpoint lanes all feed
   the same shared conversation-observation core in
   `src/odylith/runtime/intervention_engine/`. Prompt submit may emit one
   teaser sentence only; stop-summary or post-bash may upgrade that into a full
   `**Odylith Observation**`; governed writes stay inside one confirmation-gated
   `Odylith Proposal`.
-- When prompt submit earns a teaser, Codex should surface that sentence as the
-  visible `systemMessage` beat and keep the fuller continuity payload
-  discreet in `hookSpecificOutput.additionalContext` alongside any anchor
-  summary. Prompt-time context should feel like one gentle interjection, not a
-  visible dump of narrowing scaffolding.
-- Post-bash checkpoint is the primary visible intervention lane. When the
-  recovered bundle earns an Observation or Proposal, Codex should surface that
-  live beat through a visible hook `systemMessage` and also duplicate the full
-  Observation/Proposal/Assist bundle into
-  `hookSpecificOutput.additionalContext` so the next turn inherits continuity
-  without forcing the user to wait for stop.
+- When prompt submit earns a teaser, Codex should carry that sentence in the
+  hook `systemMessage` and also place an assistant-render fallback in
+  `hookSpecificOutput.additionalContext`. Prompt-time context should feel like
+  one gentle interjection, not a visible dump of narrowing scaffolding.
+- Post-bash checkpoint is the primary intervention source lane. When the
+  recovered bundle earns an Observation or Proposal, Codex should emit that
+  live beat in hook `systemMessage` and duplicate the full
+  Observation/Proposal/Assist bundle plus the assistant-render fallback into
+  `hookSpecificOutput.additionalContext`. If the host keeps hook output
+  hidden, the next assistant message must render the fallback Markdown instead
+  of silently dropping the product moment.
 - Success-only governance refresh receipts must stay quiet when an earned live
   intervention exists. If refresh fails or is skipped, Codex may append that
   failure-level status after the visible Observation/Proposal beat instead of
   replacing it.
 - Stop-summary is the fallback closeout lane, not the primary delightful
   intervention surface. When the recovered stop bundle carries a real closeout
-  delta or a missed late Observation, Codex may emit one visible stop
-  `systemMessage` containing that recovered beat and one short
-  `Odylith Assist:` line rather than burying both in summary state.
+  delta or a missed late Observation, Codex emits one stop `systemMessage`
+  carrying that recovered beat and one short `Odylith Assist:` line. If that
+  exact Odylith text is not already visible in the last assistant message, the
+  Stop hook may block once with a continuation reason so the assistant speaks
+  it before ending. The `stop_hook_active` guard prevents loops.
+- Stop-summary Assist may render from concrete validation proof in the
+  assistant summary even when the host did not expose changed paths. That
+  fallback is bounded to validation/pass signals and must not invent updated
+  artifacts.
+- `./.odylith/bin/odylith codex visible-intervention --repo-root .` is the
+  manual low-latency escape hatch for Codex Desktop or any Codex build that
+  keeps hook output hidden. It prints the exact Markdown the assistant should
+  show; do not rewrite the copy by hand.
 - That live path is intervention-engine-owned on purpose. Do not route Codex
   prompt or checkpoint hooks through the heavier closeout chatter stack just
   to render teaser/Observation/Proposal text.
@@ -182,10 +211,11 @@
 - In human-facing release copy, prefer `active target release` for the live
   planning lane and `latest shipped release` for the last GA version. Keep
   `current` and `next` for selector and alias semantics.
-- Local evidence on 2026-04-11 shows `codex-cli 0.119.0-alpha.28` already
-  exposes `features.codex_hooks` and can render `codex debug prompt-input`
-  successfully in this repo, so Odylith does not need a strict `0.120.0+`
-  floor for the baseline-safe lane.
+- Local evidence on 2026-04-16 shows `codex-cli 0.119.0-alpha.28` exposes
+  `features.codex_hooks`, reads the repo-root AGENTS contract through
+  `codex debug prompt-input`, and has the three Odylith intervention hooks
+  wired in `.codex/hooks.json`; those are separate checks, and all must remain
+  green before claiming live-proven Codex intervention posture.
 
 ## Native-Blocked And Deferred
 - No `PreCompact` hook equivalent.

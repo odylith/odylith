@@ -22,6 +22,7 @@ def _write_casebook_bug(
     created: str,
     severity: str,
     components: str,
+    reproducibility: str = "High",
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -34,6 +35,8 @@ def _write_casebook_bug(
                 f"- Created: {created}",
                 "",
                 f"- Severity: {severity}",
+                "",
+                f"- Reproducibility: {reproducibility}",
                 "",
                 f"- Components Affected: {components}",
                 "",
@@ -300,6 +303,38 @@ def test_bug_capture_rejects_placeholder_values(tmp_path: Path) -> None:
             severity="P1",
             **_bug_capture_kwargs(failure_signature="TBD"),
         )
+
+
+def test_bug_capture_rejects_sentence_reproducibility(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="`--reproducibility` must be one compact token"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Reproducibility must stay compact",
+            component="casebook",
+            severity="P1",
+            **_bug_capture_kwargs(
+                reproducibility=(
+                    "High; render odylith/index.html and the telemetry shell block "
+                    "appears above dashboard tabs."
+                ),
+            ),
+        )
+
+
+def test_checked_in_casebook_reproducibility_fields_are_compact() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    offenders: list[str] = []
+    for path in sorted((repo_root / "odylith" / "casebook" / "bugs").rglob("*.md")):
+        if path.name in {"AGENTS.md", "CLAUDE.md", "INDEX.md"}:
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.startswith("- Reproducibility:"):
+                continue
+            value = line.split(":", 1)[1].strip()
+            if not bug_authoring._reproducibility_token_is_valid(value):  # noqa: SLF001
+                offenders.append(f"{path.relative_to(repo_root)}: {value}")
+            break
+    assert offenders == []
 
 
 def test_bug_capture_from_payload_accepts_single_string_references(

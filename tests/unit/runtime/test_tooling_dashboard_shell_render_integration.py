@@ -19,7 +19,7 @@ def _seed_shell_fixture(repo_root: Path) -> None:
     )
 
 
-def test_render_tooling_dashboard_includes_latest_governed_packet_card(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_does_not_include_status_packet_card(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_shell_fixture(tmp_path)
     monkeypatch.setattr(
         renderer.odylith_context_engine_store,
@@ -52,9 +52,11 @@ def test_render_tooling_dashboard_includes_latest_governed_packet_card(tmp_path:
 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
-    assert "Latest Governed Packet" in html
-    assert "recover.current_blocker" in html
-    assert "waiting approval" in html
-    assert "explore.broad_reset" in html
-    assert "render_compass_dashboard" in html
-    assert "resume:B-072" in html
+    payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
+    assert "Latest Governed Packet" not in html
+    assert "recover.current_blocker" not in html
+    assert "waiting approval" not in html
+    assert "explore.broad_reset" not in html
+    assert "render_compass_dashboard" not in html
+    assert "resume:B-072" not in html
+    assert "optimization_snapshot" not in payload_js

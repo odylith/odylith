@@ -36,6 +36,7 @@ from odylith.runtime.common.consumer_profile import surface_root_path, truth_roo
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
 from odylith.runtime.governance import surface_refresh_fingerprint_dag
@@ -1170,6 +1171,28 @@ def _casebook_index_refresh_step(*, repo_root: Path, next_command_on_failure: st
     )
 
 
+def _casebook_source_validation_command() -> str:
+    return display_command("casebook", "validate", "--repo-root", ".")
+
+
+def _casebook_source_validation_action(*, repo_root: Path) -> int:
+    result = casebook_source_validation.validate_casebook_sources(repo_root=repo_root)
+    if result.passed:
+        return 0
+    casebook_source_validation.print_casebook_source_validation_report(result)
+    return 2
+
+
+def _casebook_source_validation_step(*, repo_root: Path, label: str) -> ExecutionStep:
+    return _execution_step(
+        label,
+        surface="casebook",
+        paths=("odylith/casebook/bugs/",),
+        action=lambda: _casebook_source_validation_action(repo_root=repo_root),
+        next_command_on_failure=_casebook_source_validation_command(),
+    )
+
+
 def _casebook_render_step(
     *,
     repo_root: Path,
@@ -1345,6 +1368,12 @@ def _dashboard_surface_steps(
         )
         return steps
     if surface == "casebook":
+        steps.append(
+            _casebook_source_validation_step(
+                repo_root=repo_root,
+                label="Validate Casebook bug source before index or render writes.",
+            )
+        )
         steps.append(
             _casebook_index_refresh_step(
                 repo_root=repo_root,
@@ -1714,6 +1743,17 @@ def _run_surface_worker(
             atlas_sync=atlas_sync if surface == "atlas" else False,
             outputs=outputs,
         )
+        if cache_hit and surface == "casebook":
+            validation_rc = _casebook_source_validation_action(repo_root=repo_root)
+            if validation_rc != 0:
+                return capture.getvalue(), {
+                    "surface": surface,
+                    "status": "failed",
+                    "rc": validation_rc,
+                    "next_command": _casebook_source_validation_command(),
+                    "failed_step": "Validate Casebook bug source before fingerprint reuse.",
+                    "fallback_used": False,
+                }
         if cache_hit:
             print(
                 f"- {surface} step 1/1: Reuse the current rendered surface because its input and output fingerprints are unchanged."
@@ -2238,6 +2278,12 @@ def build_sync_execution_plan(
         ]
     )
     if bool(getattr(impact, "casebook", False)):
+        steps.append(
+            _casebook_source_validation_step(
+                repo_root=repo_root,
+                label="Validate Casebook bug source before index or render writes.",
+            )
+        )
         steps.append(
             _execution_step(
                 "Refresh the Casebook bug index before any shell-facing renders consume it.",

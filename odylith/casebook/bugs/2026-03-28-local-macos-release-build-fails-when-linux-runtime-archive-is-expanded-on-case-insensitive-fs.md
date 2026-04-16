@@ -6,7 +6,7 @@
 
 - Severity: P1
 
-- Reproducibility: Always on affected maintainer filesystems
+- Reproducibility: Always
 
 - Type: Product
 

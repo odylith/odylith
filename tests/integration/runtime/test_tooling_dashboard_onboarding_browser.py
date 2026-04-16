@@ -234,6 +234,37 @@ def _block_storage(page, *, block_local: bool, block_session: bool) -> None:  # 
         page.add_init_script("\n".join(snippets))
 
 
+def _assert_shell_telemetry_absent(page) -> None:  # noqa: ANN001
+    body_text = page.evaluate("() => document.body ? document.body.innerText : ''")
+    payload_text = page.evaluate("() => JSON.stringify(window.__ODYLITH_TOOLING_DATA__ || {})")
+    for forbidden in (
+        "Telemetry Snapshot",
+        "Telemetry runtime status",
+        "Telemetry recorder tape",
+        "Recorder Tape",
+        "Backend Footprint",
+        "Control Calibration",
+    ):
+        assert forbidden not in body_text
+        assert forbidden not in payload_text
+    for forbidden_payload_key in (
+        "memory_snapshot",
+        "optimization_snapshot",
+        "evaluation_snapshot",
+        "odylith_drawer",
+        "odylith_drawer_history",
+    ):
+        assert forbidden_payload_key not in payload_text
+    for selector in (
+        ".system-status-shell",
+        ".telemetry-stat-grid",
+        ".odylith-recorder-shell",
+        ".odylith-chart-canvas",
+        "script[src*='echarts']",
+    ):
+        assert page.locator(selector).count() == 0
+
+
 def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popup(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     repo_root = tmp_path / "consumer-repo"
     repo_root.mkdir()
@@ -319,6 +350,31 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         _click_visible(page.locator("#welcomeReopen"))
         welcome.wait_for(timeout=15000)
         assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
+
+        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_shell_never_renders_internal_telemetry_status_across_tabs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "consumer-no-shell-telemetry"
+    repo_root.mkdir()
+    _seed_consumer_repo(repo_root, existing_truth=True)
+    _render_shell_with_payload(
+        repo_root,
+        monkeypatch,
+        {
+            "odylith_drawer": {"headline": "Telemetry Snapshot"},
+            "odylith_drawer_history": {"rows": [{"state": "leaked"}]},
+            "telemetry": {"runtime": {"status": "should stay internal"}},
+        },
+    )
+
+    with _repo_browser_context(repo_root) as (base_url, context):
+        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+        for tab in ("radar", "registry", "casebook", "atlas", "compass"):
+            response = page.goto(f"{base_url}/odylith/index.html?tab={tab}", wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            _wait_for_shell_tab(page, tab)
+            _assert_shell_telemetry_absent(page)
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -578,7 +634,7 @@ def test_incremental_upgrade_suppresses_starter_guide_until_the_user_reopens_it(
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_shell_latest_governed_packet_card_surfaces_execution_pressure(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_shell_delivery_payload_does_not_render_status_summary_cards(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     repo_root = tmp_path / "consumer-governance-card"
     repo_root.mkdir()
     _seed_consumer_repo(repo_root, existing_truth=True)
@@ -627,14 +683,15 @@ def test_shell_latest_governed_packet_card_surfaces_execution_pressure(tmp_path:
         assert response is not None and response.ok
 
         _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
-        page.locator(".odylith-summary-card", has_text="Latest Governed Packet").wait_for(timeout=15000)
-        packet_card = page.locator(".odylith-summary-card", has_text="Latest Governed Packet").first
-        assert packet_card.locator("text=Serial host execution").count() == 1
-        assert packet_card.locator("text=recover.current_blocker").count() == 1
-        assert packet_card.locator("text=waiting approval").count() == 1
-        assert packet_card.locator("text=explore.broad_reset").count() == 1
-        assert packet_card.locator("text=render_compass_dashboard").count() == 1
-        assert packet_card.locator("text=resume:B-072").count() == 1
+        page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
+        assert page.locator(".odylith-summary-card", has_text="Latest Governed Packet").count() == 0
+        assert page.locator("text=Serial host execution").count() == 0
+        assert page.locator("text=recover.current_blocker").count() == 0
+        assert page.locator("text=waiting approval").count() == 0
+        assert page.locator("text=explore.broad_reset").count() == 0
+        assert page.locator("text=render_compass_dashboard").count() == 0
+        assert page.locator("text=resume:B-072").count() == 0
+        _assert_shell_telemetry_absent(page)
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

@@ -404,6 +404,20 @@ def _workstreams_for_paths(*, changed_paths: Sequence[str], ws_index: Mapping[st
     return workstream_inference.map_paths_to_workstreams(changed_paths, ws_index)
 
 
+def _component_workstreams(*, component_ids: Sequence[str], components: Mapping[str, Any]) -> list[str]:
+    rows: list[str] = []
+    seen: set[str] = set()
+    for component_id in component_ids:
+        entry = components.get(component_id)
+        raw_workstreams = entry.get("workstreams") if isinstance(entry, Mapping) else getattr(entry, "workstreams", ())
+        for token in _normalize_string_list(raw_workstreams):
+            if token in seen:
+                continue
+            seen.add(token)
+            rows.append(token)
+    return rows
+
+
 def _repo_lookup(
     *,
     repo_root: Path,
@@ -441,6 +455,7 @@ def _repo_lookup(
         if ref.get("kind") == "component" and _normalize_string(ref.get("id"))
     }
     component_ids.update(_path_components(changed_paths=observation.changed_paths, components=components))
+    workstream_ids.update(_component_workstreams(component_ids=sorted(component_ids), components=components))
     return {
         "components": components,
         "alias_lookup": alias_lookup,

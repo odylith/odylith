@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 39,
-    "mapped_workstream_evidence_count": 9,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 40,
+    "mapped_workstream_evidence_count": 10,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 7,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 39
+    "timeline_event_count": 41
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -52,6 +52,55 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "README.md"
+      ],
+      "confidence": "high",
+      "event_index": 233,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-005.",
+      "ts_iso": "2026-04-16T01:31:39Z",
+      "workstreams": [
+        "B-005",
+        "B-020",
+        "B-022",
+        "B-038"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 270,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+      "ts_iso": "2026-04-15T17:18:28-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "medium",

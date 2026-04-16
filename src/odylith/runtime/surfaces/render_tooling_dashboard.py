@@ -445,16 +445,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     main_brand_payload = brand_assets.tooling_shell_brand_payload(repo_root=repo_root, output_path=output_path)
     self_host_payload = _build_self_host_payload(repo_root=repo_root)
     shell_source_payload = _build_shell_source_payload(repo_root=repo_root)
-    shell_payload = odylith_context_engine_store.load_delivery_surface_payload(
-        repo_root=repo_root,
-        surface="shell",
-        runtime_mode=args.runtime_mode,
-        include_shell_snapshots=True,
-    )
     build_result = tooling_dashboard_runtime_builder.build_runtime_payload(
         repo_root=repo_root,
         surface_paths=surface_paths,
-        shell_payload=dict(shell_payload) if isinstance(shell_payload, dict) else {},
         welcome_state=shell_onboarding.build_welcome_state(repo_root=repo_root),
         release_spotlight=release_spotlight,
         version_story=version_story,
@@ -468,9 +461,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
     )
     runtime_payload = dict(build_result.runtime_payload)
-    runtime_payload.pop("benchmark_story", None)
-    runtime_payload.pop("odylith_drawer", None)
-    runtime_payload.pop("odylith_drawer_history", None)
     runtime_payload["live_refresh"] = _build_live_refresh_payload(
         repo_root=repo_root,
         output_path=output_path,

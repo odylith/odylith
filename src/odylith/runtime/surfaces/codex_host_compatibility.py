@@ -21,6 +21,7 @@ def _report_notes(report: CodexCompatibilityReport) -> list[str]:
         "Core Odylith support on Codex is the repo-root AGENTS.md contract plus `./.odylith/bin/odylith`.",
         "Repo-scoped `.codex/` and `.agents/skills/` surfaces are best-effort enhancements and must not be required for core operation.",
         "Trusted-project approval is required before `.codex/hooks.json` and `.codex/agents/*.toml` activate in Codex.",
+        "Existing Codex sessions may not hot-reload changed hooks, guidance, or source-local runtime code; restart the session or render `odylith codex visible-intervention` directly before claiming another open chat is visibly active.",
         "Version compatibility is capability-based and does not pin a maximum Codex version.",
     ]
     if report.codex_available and report.codex_version:
@@ -34,8 +35,30 @@ def _report_notes(report: CodexCompatibilityReport) -> list[str]:
         )
     else:
         notes.append("Local feature registry did not expose a trusted `codex_hooks` capability signal.")
+    if (
+        report.supports_user_prompt_submit_hook
+        and report.supports_post_bash_checkpoint_hook
+        and report.supports_stop_summary_hook
+    ):
+        notes.append(
+            "Codex intervention hooks are wired for prompt teaser, Bash checkpoint Observation/Proposal, and Stop closeout sources."
+        )
+        notes.append(
+            "Chat visibility is completed by the assistant-render fallback inside `additionalContext`; hook `systemMessage` alone is not treated as a visible-chat proof."
+        )
+    else:
+        missing = []
+        if not report.supports_user_prompt_submit_hook:
+            missing.append("UserPromptSubmit prompt-context")
+        if not report.supports_post_bash_checkpoint_hook:
+            missing.append("PostToolUse post-bash-checkpoint with Bash matcher coverage")
+        if not report.supports_stop_summary_hook:
+            missing.append("Stop stop-summary")
+        notes.append("Codex intervention hook wiring is incomplete: missing " + ", ".join(missing) + ".")
     if report.prompt_input_probe_passed and report.repo_guidance_detected:
-        notes.append("A live `codex debug prompt-input` probe succeeded and included the repo-root AGENTS contract.")
+        notes.append(
+            "A live `codex debug prompt-input` probe succeeded and included the repo-root AGENTS contract; hook wiring above is the separate visibility proof for intervention output."
+        )
     elif report.prompt_input_probe_passed:
         notes.append("A live `codex debug prompt-input` probe succeeded, but the repo-root AGENTS token was not detected verbatim.")
     elif report.prompt_input_probe_supported:
@@ -69,6 +92,10 @@ def render_codex_compatibility(report: CodexCompatibilityReport) -> str:
         f"Skill shims: {'present' if report.codex_skill_shims_present else 'missing'}",
         f"Trusted project required for `.codex/` activation: {'yes' if report.trusted_project_required else 'no'}",
         f"Hooks feature: {hooks_label}",
+        f"UserPromptSubmit prompt-context hook wired: {'yes' if report.supports_user_prompt_submit_hook else 'no'}",
+        f"PostToolUse post-bash-checkpoint hook wired for Bash: {'yes' if report.supports_post_bash_checkpoint_hook else 'no'}",
+        f"Stop stop-summary hook wired: {'yes' if report.supports_stop_summary_hook else 'no'}",
+        "Assistant-render fallback for chat-visible UX: yes",
         f"Live prompt-input probe: {probe_label}",
         f"Version policy: {report.future_version_policy}",
         f"Overall posture: {report.overall_posture}",

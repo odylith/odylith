@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-14
+Updated: 2026-04-16
 
 Backlog: B-025
 
@@ -72,7 +72,13 @@ Related Bugs:
 - [2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md)
 - [2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md)
 - [2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md)
+- [2026-04-16-dashboard-shell-telemetry-cockpit-leaked-into-product-render.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-16-dashboard-shell-telemetry-cockpit-leaked-into-product-render.md)
 - no related Casebook-specific bug record exists yet for detail-view field repetition or header-collapse regressions; keep the failure mode visible in this plan and handoff until it is formalized
+- April 16 follow-on: the live CB-120 screenshot exposed bad source truth in
+      `Reproducibility`; all Casebook records now keep that field to one compact
+      token, and shared Casebook source validation now stops capture, index
+      refresh, dashboard refresh, and direct renderer execution before
+      sentence-style values can publish generated artifacts.
 
 ## Context/Problem Statement
 - [x] Compass can reuse stale runtime snapshots for rolling 24h/48h windows.
@@ -161,6 +167,10 @@ Related Bugs:
       underfilled by collapsing the rendered audit to the selected `audit_day`
       even when the prior local day still contained populated in-window
       activity.
+- [x] The shared dashboard shell rendered internal telemetry cockpit/status UI
+      above child surfaces, including `Telemetry Snapshot`, recorder tape,
+      chart DOM, and ECharts hydration. CB-120 now fixes that as a product
+      invariant breach, not as polish.
 - [ ] Compass is still below release bar after the maintained-global narration
       follow-on. The bounded hot exact-reuse lane now measures `0.3s`
       internal (`0.73s` wall), the rebuilt cold shell-safe lane measures
@@ -360,6 +370,10 @@ Related Bugs:
       planning as separate operator workflows with explicit examples instead
       of blurring ship targeting and umbrella execution into one planning
       concept.
+- [x] Dashboard shell telemetry/status/cockpit code is deleted from the product
+      shell. Internal telemetry may remain in runtime diagnostics, but it must
+      not render as shell DOM, drawers, recorder tapes, charts, ECharts
+      hydration, or product guidance.
 - [ ] Benchmark proof remains green after the fix.
 
 ## Non-Goals
@@ -392,7 +406,13 @@ Related Bugs:
 - [x] [source_bundle_mirror.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/source_bundle_mirror.py)
 - [x] [dashboard_surface_bundle.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/dashboard_surface_bundle.py)
 - [x] [tooling_dashboard_runtime_builder.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_runtime_builder.py)
-- [ ] [tooling_dashboard_shell_presenter.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py)
+- [x] [tooling_dashboard_shell_presenter.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py)
+- [x] [tooling_dashboard_template_context.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_template_context.py)
+- [x] [tooling_dashboard_frontend_contract.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/tooling_dashboard_frontend_contract.py)
+- [x] [templates/tooling_dashboard/page.html.j2](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/templates/tooling_dashboard/page.html.j2)
+- [x] [templates/tooling_dashboard/control.js](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js)
+- [x] [templates/tooling_dashboard/style.css](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/templates/tooling_dashboard/style.css)
+- [x] [test_tooling_dashboard_onboarding_browser.py](/Users/freedom/code/odylith/tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py)
 - [ ] [surface_projection_fingerprint.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/surface_projection_fingerprint.py)
 - [x] [test_compass_dashboard_runtime.py](/Users/freedom/code/odylith/tests/unit/runtime/test_compass_dashboard_runtime.py)
 - [x] [test_render_compass_dashboard.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_compass_dashboard.py)
@@ -454,6 +474,12 @@ Related Bugs:
   - [ ] Mitigation: prefer runtime-backed refresh and explicit stale-state
     signaling; reserve tracked-truth mutation for explicit sync and commit-time
     repair.
+- [x] Risk: internal telemetry or diagnostic spend evidence regrows into
+      dashboard product UI.
+  - [x] Mitigation: delete the shell telemetry/status presenter path, strip the
+        CSS/JS/template hooks, codify the ban in Dashboard governance and
+        skills, and prove with headless Chromium that hostile legacy telemetry
+        payload keys do not render across tabs.
 
 ## Validation/Test Plan
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/install/test_agents.py`
@@ -497,6 +523,9 @@ Related Bugs:
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py -k 'casebook or radar'`
 - [ ] `odylith benchmark --repo-root .`
 - [x] `git diff --check`
+- [x] `python -m playwright install chromium`
+- [x] `pytest tests/unit/runtime/test_render_tooling_dashboard.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py tests/unit/runtime/test_tooling_dashboard_runtime_builder.py tests/unit/runtime/test_tooling_dashboard_template_context.py -q`
+- [x] `pytest tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_never_renders_internal_telemetry_status_across_tabs -q`
 
 ## Rollout/Communication
 - [ ] Note the Casebook regression explicitly so future Compass or shell
@@ -636,6 +665,11 @@ Related Bugs:
       as stacked fact cards instead of one non-wrapping strip, and the
       browser/unit proof now attacks the live bug header under long-title
       multi-source records.
+- [x] April 16 Casebook source-truth follow-on keeps `Reproducibility` as a
+      compact classifier (`High`, `Medium`, `Low`, `Always`, `Intermittent`, or
+      `Consistent`) across existing records, capture validation, refresh
+      validation, skills, and component guidance so summary fact cards never
+      inherit repro prose.
 - [x] April 7 QA follow-on expands browser proof from correctness-only into
       compact-width and repetition-aware UX proof so the live shell catches
       noisy detail bands before release, including desktop and compact
@@ -723,6 +757,11 @@ Related Bugs:
       Compass refresh too: if Compass already carries the failed-refresh
       warning inside the frame, the shell must not add a second wrapper banner
       above it, and browser proof now watches that exact regression directly.
+- [x] April 16 telemetry-removal follow-on closes CB-120: the dashboard shell no
+      longer has a telemetry/status presenter, no longer ships ECharts or
+      telemetry recorder/chart CSS, and Playwright injects legacy telemetry
+      payload keys while proving Radar, Registry, Casebook, Atlas, and Compass
+      render without those strings or selectors.
 - [x] April 7 Compass closeout follow-on reconciles the remaining open Compass
       claims with code-level proof: global changed-packet cache recovery stays
       disabled, self-host/install posture remains part of the standup-brief

@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import sync_casebook_bug_index
 
@@ -29,6 +30,7 @@ _PLACEHOLDER_RE = re.compile(
     re.IGNORECASE,
 )
 _CAPTURE_CONTRACT = "fail_closed_minimum_evidence_v1"
+_REPRODUCIBILITY_HELP = casebook_source_validation.REPRODUCIBILITY_HELP
 _REQUIRED_FIELD_SPECS: tuple[tuple[str, str], ...] = (
     ("reproducibility", "Reproducibility"),
     ("impact", "Impact"),
@@ -172,6 +174,14 @@ def _field_looks_placeholder(value: str) -> bool:
     return _PLACEHOLDER_RE.fullmatch(token) is not None
 
 
+def _normalize_reproducibility_token(value: str | Sequence[str] | None) -> str:
+    return casebook_source_validation.normalize_reproducibility_token(value)
+
+
+def _reproducibility_token_is_valid(value: str | Sequence[str] | None) -> bool:
+    return casebook_source_validation.reproducibility_token_is_valid(value)
+
+
 def missing_capture_requirements(
     *,
     title: str,
@@ -190,6 +200,8 @@ def missing_capture_requirements(
         except ValueError:
             value = ""
         if not value or _field_looks_placeholder(value):
+            rows.append(arg_name)
+        elif arg_name == "reproducibility" and not _reproducibility_token_is_valid(value):
             rows.append(arg_name)
     return rows
 
@@ -239,6 +251,17 @@ def _validate_capture_inputs(
             continue
         if _field_looks_placeholder(value):
             placeholder_flags.append(f"--{arg_name.replace('_', '-')}")
+            continue
+        if arg_name == "reproducibility":
+            if not _reproducibility_token_is_valid(value):
+                errors.append(
+                    "`--reproducibility` must be "
+                    + _REPRODUCIBILITY_HELP
+                    + "; put repro steps in `--trigger-path`, `--failure-signature`, "
+                    "or `--environment`"
+                )
+                continue
+            cleaned_required[arg_name] = _normalize_reproducibility_token(value)
             continue
         cleaned_required[arg_name] = value
 
@@ -470,6 +493,14 @@ def capture_bug(
     )
 
     if not dry_run:
+        validation = casebook_source_validation.validate_casebook_sources(repo_root=repo_root)
+        if not validation.passed:
+            first_issue = validation.issues[0]
+            raise RuntimeError(
+                "Casebook source validation failed before bug capture; "
+                f"{first_issue.render(repo_root=validation.repo_root)}. "
+                "Run `odylith casebook validate --repo-root .` before writing new Casebook truth."
+            )
         bugs_dir.mkdir(parents=True, exist_ok=True)
         bug_path.write_text(bug_text, encoding="utf-8")
         sync_casebook_bug_index.sync_casebook_bug_index(
@@ -563,7 +594,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--component", required=True, help="Affected component ID or boundary.")
     parser.add_argument("--severity", default="P2", help="Severity (P0-P5, default P2).")
     parser.add_argument("--type", dest="bug_type", default="Product", help="Bug type label.")
-    parser.add_argument("--reproducibility", required=True, help="How consistently the bug reproduces.")
+    parser.add_argument(
+        "--reproducibility",
+        required=True,
+        help=f"How consistently the bug reproduces; use {_REPRODUCIBILITY_HELP}.",
+    )
     parser.add_argument("--impact", required=True, help="User or operator impact of the failure.")
     parser.add_argument("--environment", required=True, help="Environment or posture where the bug was observed.")
     parser.add_argument("--detected-by", required=True, help="How the bug was detected.")

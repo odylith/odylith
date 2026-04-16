@@ -50,8 +50,9 @@
   `./.odylith/bin/odylith claude <command> --repo-root "$CLAUDE_PROJECT_DIR"`.
 - Repo-scoped statusline command under `.claude/statusline.sh` plus the
   CLI-backed `./.odylith/bin/odylith claude statusline ...` renderer.
-- `PostToolUse` matchers on `Write|Edit|MultiEdit` and `PreToolUse` matchers
-  on `Bash`, both consumed by the baked Claude host modules.
+- `PostToolUse` matchers on `Write|Edit|MultiEdit` and `Bash`, plus
+  `PreToolUse` matchers on `Bash`, all consumed by the baked Claude host
+  modules.
 
 ## Supported Through Odylith CLI Bakes
 - The checked-in `.claude/` layer is a first-class enhancement for the Claude
@@ -73,6 +74,11 @@
 - User-prompt context can narrow explicit `B-###`, `CB-###`, or `D-###`
   references through the CLI-backed
   `./.odylith/bin/odylith claude prompt-context --repo-root .` hook command.
+- User-prompt teaser visibility runs through the paired
+  `./.odylith/bin/odylith claude prompt-teaser --repo-root .` hook command,
+  which prints only the earned one-line teaser as a best-effort stdout source.
+  Chat visibility still depends on either host display or the assistant-render
+  fallback carried by prompt context.
 - Destructive Bash blocking runs through a repo-managed Claude `PreToolUse`
   Bash hook command
   (`./.odylith/bin/odylith claude bash-guard --repo-root .`) and denies a
@@ -84,10 +90,15 @@
   command, matched against `Write|Edit|MultiEdit`, so the project-root
   `.claude/` layer stays declarative and the governance refresh runs through
   `odylith sync --impact-mode selective <path>`.
+- Bash checkpointing runs through the CLI-backed
+  `./.odylith/bin/odylith claude post-bash-checkpoint --repo-root .` hook
+  command, matched against `Bash`, so shell edits, inline write scripts, and
+  patch-style Bash payloads can surface the same visible Observation/Proposal
+  beat as direct Claude edits and Codex checkpoints.
 - Claude's governed-refresh precision comes from the exact edited path in the
-  `PostToolUse` payload itself, so this lane does not depend on Bash-command
-  target inference and remains the authoritative exact-path parity target for
-  Codex's narrower Bash checkpoint contract.
+  direct edit `PostToolUse` payload itself; Bash-command target inference is a
+  separate parity lane and must stay command-scoped so it never widens refresh
+  to unrelated dirty files.
 - `PreCompact` snapshotting runs through
   `./.odylith/bin/odylith claude pre-compact-snapshot --repo-root .`, which
   writes the active Odylith slice into Claude's project auto-memory
@@ -101,24 +112,33 @@
   `./.odylith/bin/odylith claude stop-summary --repo-root .`, which filters
   trivial or question-shaped stop messages, logs a Compass
   `implementation` event when the message looks like a real action summary,
-  and may emit one visible stop surface carrying the earned Observation plus a
-  short `Odylith Assist:` line from the shared closeout bundle.
-- Claude `UserPromptSubmit`, `Stop`, and `PostToolUse` observation lanes all
-  route through the shared
+  and may emit one stop surface carrying the earned Observation plus a short
+  `Odylith Assist:` line from the shared closeout bundle. If that exact
+  Odylith text is not already visible in the last assistant message, the Stop
+  hook may block once with a continuation reason so the assistant speaks it
+  before ending. The `stop_hook_active` guard prevents loops.
+- Claude `UserPromptSubmit`, `Stop`, direct-edit `PostToolUse`, and Bash
+  `PostToolUse` observation lanes all route through the shared
   `src/odylith/runtime/intervention_engine/` core. `UserPromptSubmit` may emit
   one teaser sentence only; `Stop` or `PostToolUse` may upgrade that into a
   full `**Odylith Observation**`; governed write suggestions stay inside one
   confirmation-gated `Odylith Proposal`.
-- When `UserPromptSubmit` earns a teaser, Claude should surface that sentence
-  as the visible `systemMessage` beat and keep the fuller continuity payload
-  discreet inside `hookSpecificOutput.additionalContext` so anchor context and
-  teaser continuity survive without turning the prompt hook into visible
-  scaffolding spam.
-- `PostToolUse` is the primary visible intervention lane. When the recovered
-  bundle earns an Observation or Proposal, Claude should surface that live
-  beat through a visible hook `systemMessage` and also carry the full
-  Observation/Proposal/Assist bundle through top-level `additionalContext` so
-  the next turn keeps the same continuity.
+- Claude splits `UserPromptSubmit` into two hook commands on purpose:
+  `prompt-context` returns discreet JSON `hookSpecificOutput.additionalContext`
+  for anchor context and continuity, while `prompt-teaser` prints an earned
+  teaser as plain stdout when the host exposes it. JSON additional context is
+  discreet model context and now carries an assistant-render fallback so the
+  next assistant message can speak the teaser if the host hides hook output.
+- `PostToolUse` is the primary intervention source lane. When the recovered
+  bundle earns an Observation or Proposal, Claude should emit that live beat
+  through hook `systemMessage` and carry the full Observation/Proposal/Assist
+  bundle plus assistant-render fallback through top-level `additionalContext`.
+  If the host keeps hook output hidden, the next assistant message must render
+  the fallback Markdown instead of silently dropping the product moment.
+- Do not run the primary `PostToolUse` edit checkpoint asynchronously. Async
+  hooks are useful for background telemetry, but they deliver output on a later
+  turn and can suppress completion notices in normal Claude Code sessions; the
+  Observation/Proposal lane is a live UX surface, so it stays synchronous.
 - Success-only governance refresh receipts must stay quiet when an earned live
   intervention exists. If refresh fails or is skipped, Claude may append that
   failure-level status after the visible Observation/Proposal beat instead of
@@ -130,6 +150,14 @@
   intervention surface. Use it to recover a missed late Observation or a
   shared `Odylith Assist:` closeout beat, not as the only place users can ever
   see the intervention.
+- Stop-summary Assist may render from concrete validation proof in the
+  assistant summary even when the hook payload did not expose changed paths.
+  That fallback is bounded to validation/pass signals and must not invent
+  updated artifacts.
+- `./.odylith/bin/odylith claude visible-intervention --repo-root .` is the
+  manual low-latency escape hatch for Claude Code sessions that keep hook
+  output hidden. It prints the exact Markdown the assistant should show; do
+  not rewrite the copy by hand.
 - Empty or missing hook session ids must fall back to a stable host-local
   synthetic session token. Claude must never bleed recent prompt or changed-path
   memory from one session into another just because the payload omitted
@@ -206,8 +234,8 @@
 - The `Stop` hook lets Odylith capture meaningful end-of-turn assistant
   summaries into Compass without polling or post-hoc inference.
 - `PostToolUse` matchers on `Write|Edit|MultiEdit` give Odylith a precise
-  edit-trigger that Codex's `PostToolUse` Bash-only checkpoint cannot
-  replicate.
+  direct-edit trigger, while the paired `Bash` post-bash checkpoint gives
+  Claude parity for shell edits without hiding the live beat until Stop.
 - The Claude statusline command lets Odylith render a live, capability-aware
   status line; Codex has no comparable API.
 - Claude project subagents under `.claude/agents/*.md` are part of the
@@ -249,5 +277,6 @@
   `./.odylith/bin/odylith claude compatibility --repo-root .` and treat the
   printed posture (`baseline_safe`, `baseline_safe_with_project_assets`,
   `baseline_safe_with_local_claude_cli`, or
-  `baseline_safe_live_proven`) as authoritative over older Compass, shell,
-  or release-history context for Claude host capability questions.
+  `baseline_safe_assistant_visible_ready`) as authoritative over older
+  Compass, shell, or release-history context for Claude host capability
+  questions.

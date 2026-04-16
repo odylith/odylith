@@ -53,6 +53,15 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                         "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude post-edit-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"',
                                     }
                                 ],
+                            },
+                            {
+                                "matcher": "Bash",
+                                "hooks": [
+                                    {
+                                        "type": "command",
+                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude post-bash-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"',
+                                    }
+                                ],
                             }
                         ],
                         "PreCompact": [
@@ -85,6 +94,30 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 ]
                             }
                         ],
+                        "Stop": [
+                            {
+                                "hooks": [
+                                    {
+                                        "type": "command",
+                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude stop-summary --repo-root "$CLAUDE_PROJECT_DIR"',
+                                    }
+                                ]
+                            }
+                        ],
+                        "UserPromptSubmit": [
+                            {
+                                "hooks": [
+                                    {
+                                        "type": "command",
+                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"',
+                                    },
+                                    {
+                                        "type": "command",
+                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"',
+                                    },
+                                ]
+                            }
+                        ],
                     },
                 },
                 indent=2,
@@ -101,7 +134,7 @@ def test_parse_claude_version_handles_release_and_prerelease_tokens() -> None:
     assert claude_cli_capabilities.parse_claude_version("") == ""
 
 
-def test_inspect_claude_cli_capabilities_marks_baseline_safe_live_proven(monkeypatch, tmp_path: Path) -> None:
+def test_inspect_claude_cli_capabilities_marks_baseline_safe_assistant_visible_ready(monkeypatch, tmp_path: Path) -> None:
     _seed_repo(tmp_path, with_settings=True)
 
     def _fake_run(*, repo_root: Path, claude_bin: str, args: list[str], timeout: int = 10):
@@ -126,11 +159,16 @@ def test_inspect_claude_cli_capabilities_marks_baseline_safe_live_proven(monkeyp
     assert snapshot.supports_subagent_hooks is True
     assert snapshot.supports_pre_compact_hook is True
     assert snapshot.supports_statusline_command is True
+    assert snapshot.supports_prompt_context_hook is True
+    assert snapshot.supports_prompt_teaser_hook is True
+    assert snapshot.supports_post_edit_checkpoint_hook is True
+    assert snapshot.supports_post_bash_checkpoint_hook is True
+    assert snapshot.supports_stop_summary_hook is True
     assert snapshot.supports_post_tool_matchers is True
     assert snapshot.supports_slash_commands is True
     assert snapshot.trusted_project_required is False
     assert snapshot.project_assets_mode == "first_class_project_surface"
-    assert snapshot.overall_posture == "baseline_safe_live_proven"
+    assert snapshot.overall_posture == "baseline_safe_assistant_visible_ready"
 
 
 def test_inspect_claude_cli_capabilities_stays_baseline_safe_when_claude_is_missing(monkeypatch, tmp_path: Path) -> None:
@@ -152,6 +190,30 @@ def test_inspect_claude_cli_capabilities_stays_baseline_safe_when_claude_is_miss
     assert snapshot.overall_posture == "baseline_safe"
 
 
+def test_inspect_claude_cli_capabilities_marks_assistant_visible_ready_without_local_cli(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path, with_settings=True)
+
+    monkeypatch.setattr(claude_cli_capabilities, "_run_claude_command", lambda **_: None)
+    claude_cli_capabilities.clear_claude_cli_capability_cache()
+
+    snapshot = claude_cli_capabilities.inspect_claude_cli_capabilities(
+        repo_root=tmp_path,
+        probe_version=True,
+    )
+
+    assert snapshot.claude_available is False
+    assert snapshot.project_settings_present is True
+    assert snapshot.supports_prompt_context_hook is True
+    assert snapshot.supports_prompt_teaser_hook is True
+    assert snapshot.supports_post_edit_checkpoint_hook is True
+    assert snapshot.supports_post_bash_checkpoint_hook is True
+    assert snapshot.supports_stop_summary_hook is True
+    assert snapshot.overall_posture == "baseline_safe_assistant_visible_ready"
+
+
 def test_render_effective_claude_project_settings_is_byte_stable_and_idempotent(tmp_path: Path) -> None:
     _seed_repo(tmp_path, with_settings=False)
     claude_cli_capabilities.clear_claude_cli_capability_cache()
@@ -165,6 +227,10 @@ def test_render_effective_claude_project_settings_is_byte_stable_and_idempotent(
     assert payload["statusLine"]["type"] == "command"
     assert payload["hooks"]["PreToolUse"][0]["matcher"] == "Bash"
     assert payload["hooks"]["PostToolUse"][0]["matcher"] == "Write|Edit|MultiEdit"
+    assert payload["hooks"]["PostToolUse"][1]["matcher"] == "Bash"
+    assert payload["hooks"]["PostToolUse"][1]["hooks"][0]["command"].endswith(
+        "claude post-bash-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\""
+    )
     assert payload["hooks"]["PreCompact"][0]["hooks"][0]["command"].endswith(
         "claude pre-compact-snapshot --repo-root \"$CLAUDE_PROJECT_DIR\" --quiet"
     )
@@ -172,6 +238,40 @@ def test_render_effective_claude_project_settings_is_byte_stable_and_idempotent(
     assert "Bash(./.odylith/bin/odylith claude:*)" in allow
     assert "Bash(./.odylith/bin/odylith codex:*)" in allow
     assert len(allow) == 15
+
+
+def test_inspect_claude_cli_capabilities_rejects_missing_bash_checkpoint_for_live_proof(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path, with_settings=True)
+    settings_path = tmp_path / ".claude" / "settings.json"
+    payload = json.loads(settings_path.read_text(encoding="utf-8"))
+    payload["hooks"]["PostToolUse"] = [
+        row
+        for row in payload["hooks"]["PostToolUse"]
+        if "post-bash-checkpoint" not in row["hooks"][0]["command"]
+    ]
+    settings_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    def _fake_run(*, repo_root: Path, claude_bin: str, args: list[str], timeout: int = 10):
+        del repo_root, claude_bin, timeout
+        if args == ["--version"]:
+            return subprocess.CompletedProcess(args, 0, stdout="claude 1.0.30\n", stderr="")
+        raise AssertionError(args)
+
+    monkeypatch.setattr(claude_cli_capabilities, "_run_claude_command", _fake_run)
+    claude_cli_capabilities.clear_claude_cli_capability_cache()
+
+    snapshot = claude_cli_capabilities.inspect_claude_cli_capabilities(
+        repo_root=tmp_path,
+        probe_version=True,
+    )
+
+    assert snapshot.supports_post_edit_checkpoint_hook is True
+    assert snapshot.supports_post_bash_checkpoint_hook is False
+    assert snapshot.supports_stop_summary_hook is True
+    assert snapshot.overall_posture == "baseline_safe_with_local_claude_cli"
 
 
 def test_write_effective_claude_project_settings_writes_then_round_trips(tmp_path: Path) -> None:

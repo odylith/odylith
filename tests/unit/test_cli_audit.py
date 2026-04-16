@@ -357,6 +357,7 @@ for codex_command in (
     "prompt-context",
     "session-start-ground",
     "stop-summary",
+    "visible-intervention",
 ):
     _HANDLER_CASES.append(
         {
@@ -372,14 +373,17 @@ for codex_command in (
 for claude_command in (
     "bash-guard",
     "compatibility",
+    "post-bash-checkpoint",
     "post-edit-checkpoint",
     "pre-compact-snapshot",
     "prompt-context",
+    "prompt-teaser",
     "session-start",
     "statusline",
     "stop-summary",
     "subagent-start",
     "subagent-stop",
+    "visible-intervention",
 ):
     _HANDLER_CASES.append(
         {
@@ -527,6 +531,20 @@ _DOWNSTREAM_ARGV_CASES = [
         "path": ("validate", "backlog-contract"),
         "argv": lambda root: ["validate", "backlog-contract", f"--repo-root={root}"],
         "target_obj": cli.validate_backlog_contract,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
+        "path": ("casebook", "validate"),
+        "argv": lambda root: ["casebook", "validate", f"--repo-root={root}", "--json"],
+        "target_obj": cli.casebook_source_validation,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root), "--json"],
+    },
+    {
+        "path": ("validate", "casebook-source"),
+        "argv": lambda root: ["validate", "casebook-source", f"--repo-root={root}"],
+        "target_obj": cli.casebook_source_validation,
         "target_attr": "main",
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },

@@ -458,13 +458,21 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "v0.1.0" in html
     assert ">odylith<" in html
-    assert "Telemetry Snapshot" in html
+    assert "Telemetry Snapshot" not in html
+    assert "Telemetry runtime status" not in html
+    assert "system-status-shell" not in html
+    assert "odylith-recorder-shell" not in html
+    assert "odylith-chart-canvas" not in html
+    assert "echarts" not in html
     assert "Maintainer Benchmark Lane" not in html
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert '"self_host"' in payload_js
     assert '"benchmark_story"' not in payload_js
     assert '"odylith_drawer"' not in payload_js
     assert '"odylith_drawer_history"' not in payload_js
+    assert '"memory_snapshot"' not in payload_js
+    assert '"optimization_snapshot"' not in payload_js
+    assert '"evaluation_snapshot"' not in payload_js
     assert '"repo_role": "product_repo"' in payload_js
     assert '"posture": "pinned_release"' in payload_js
     assert '"runtime_source": "pinned_runtime"' in payload_js
@@ -1163,7 +1171,7 @@ def test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install
     assert not rendered_notes_root.exists()
 
 
-def test_render_tooling_dashboard_includes_memory_area_readout(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_does_not_embed_internal_status_snapshots(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
         renderer.odylith_context_engine_store,
@@ -1254,11 +1262,14 @@ def test_render_tooling_dashboard_includes_memory_area_readout(tmp_path: Path, m
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert "tooling-payload.v1.js?v=" in html
     assert "tooling-app.v1.js?v=" in html
-    assert "memory_areas" in payload_js
-    assert "Repo truth" in payload_js
-    assert "Decision memory" in payload_js
-    assert "Onboarding memory" in payload_js
-    assert "judgment_memory" in payload_js
+    assert "memory_snapshot" not in payload_js
+    assert "memory_areas" not in payload_js
+    assert "optimization_snapshot" not in payload_js
+    assert "evaluation_snapshot" not in payload_js
+    assert "Repo truth" not in payload_js
+    assert "Decision memory" not in payload_js
+    assert "Onboarding memory" not in payload_js
+    assert "judgment_memory" not in payload_js
 
 
 def test_render_tooling_dashboard_skips_noop_writes_when_bundle_is_unchanged(

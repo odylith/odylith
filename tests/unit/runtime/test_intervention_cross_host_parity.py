@@ -6,7 +6,9 @@ from pathlib import Path
 
 from odylith import cli
 from odylith.runtime.surfaces import claude_host_post_edit_checkpoint
+from odylith.runtime.surfaces import claude_host_post_bash_checkpoint
 from odylith.runtime.surfaces import claude_host_prompt_context
+from odylith.runtime.surfaces import claude_host_prompt_teaser
 from odylith.runtime.surfaces import claude_host_stop_summary
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 from odylith.runtime.surfaces import codex_host_prompt_context
@@ -98,6 +100,11 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(monkeypa
         "build_conversation_bundle",
         lambda **_: bundle,
     )
+    monkeypatch.setattr(
+        claude_host_prompt_teaser.claude_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: bundle,
+    )
 
     monkeypatch.setattr(
         "sys.stdin",
@@ -123,11 +130,13 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(monkeypa
             )
         ),
     )
-    assert cli.main(["claude", "prompt-context", "--repo-root", "."]) == 0
-    claude_payload = json.loads(capsys.readouterr().out)
+    assert cli.main(["claude", "prompt-teaser", "--repo-root", "."]) == 0
+    claude_visible_text = capsys.readouterr().out
 
-    assert codex_payload["hookSpecificOutput"]["additionalContext"] == claude_payload["hookSpecificOutput"]["additionalContext"]
-    assert codex_payload["systemMessage"] == claude_payload["systemMessage"]
+    assert codex_payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
+    assert claude_visible_text in codex_payload["hookSpecificOutput"]["additionalContext"]
+    assert codex_payload["systemMessage"] == claude_visible_text
+    assert not claude_visible_text.lstrip().startswith("{")
 
 
 def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
@@ -196,6 +205,42 @@ def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
 
     assert codex_payload["hookSpecificOutput"]["additionalContext"] == claude_payload["additionalContext"]
     assert codex_payload["systemMessage"] == claude_payload["systemMessage"]
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "tool_name": "Bash",
+                    "tool_input": {
+                        "command": "apply_patch <<'PATCH'\n*** Begin Patch\n*** Update File: src/main.py\n@@\n-old\n+new\n*** End Patch\nPATCH"
+                    },
+                    "session_id": "checkpoint-parity-1",
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        claude_host_post_bash_checkpoint.claude_host_shared,
+        "run_odylith",
+        lambda **kwargs: None,
+    )
+    monkeypatch.setattr(
+        claude_host_post_bash_checkpoint,
+        "command_scoped_governed_paths",
+        lambda **kwargs: [],
+    )
+    monkeypatch.setattr(
+        claude_host_post_bash_checkpoint,
+        "_post_bash_bundle",
+        lambda **kwargs: bundle,
+    )
+
+    assert cli.main(["claude", "post-bash-checkpoint", "--repo-root", str(tmp_path)]) == 0
+    claude_bash_payload = json.loads(capsys.readouterr().out)
+
+    assert codex_payload["hookSpecificOutput"]["additionalContext"] == claude_bash_payload["additionalContext"]
+    assert codex_payload["systemMessage"] == claude_bash_payload["systemMessage"]
 
 
 def test_cross_host_stop_rendering_stays_consistent_for_same_bundle(tmp_path: Path) -> None:

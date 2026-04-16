@@ -40,6 +40,13 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 - record brief wallet/latency truth as telemetry, not folklore. Skip
   provider calls when the winning story did not change, and let capacity or
   budget failures slow the retry lane instead of hammering the same packet.
+- keep telemetry internal. Do not render telemetry/status/cockpit UI into the
+  dashboard shell: no telemetry drawer, status presenter, recorder tape, chart
+  canvas, ECharts dependency, `Telemetry Snapshot` slab, or legacy
+  `odylith_drawer` product path. Do not load internal delivery, evaluation,
+  optimization, or memory snapshots into the top-level shell payload. If a
+  slice touches dashboard shell status, add or run headless browser proof that
+  those strings, selectors, scripts, and snapshot payload keys are absent.
 - use Delivery Intelligence's shared Scope Signal Ladder when deciding what
   deserves default visibility, promotion, or expensive compute:
   - `R0 suppressed_noise`
@@ -76,6 +83,7 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 ./.odylith/bin/odylith dashboard refresh --repo-root .
 ./.odylith/bin/odylith radar refresh --repo-root .
 ./.odylith/bin/odylith registry refresh --repo-root .
+./.odylith/bin/odylith casebook validate --repo-root .
 ./.odylith/bin/odylith casebook refresh --repo-root .
 ./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync
 ./.odylith/bin/odylith compass refresh --repo-root .
@@ -162,6 +170,10 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
   `Live Blocker`, `Fingerprint`, `Frontier`, `Evidence tier`,
   `Truthful claim`, and commit-hash deployment details belong in deeper
   diagnostics, not the default Registry detail surface.
+- Do not render internal telemetry or diagnostic spend evidence as default
+  dashboard shell chrome. Runtime telemetry belongs in artifacts, logs, or
+  explicit diagnostics; product shells must stay free of telemetry drawers,
+  cockpit panels, recorder tapes, and chart hydrators.
 - If a surface owns source-generated shell assets, keep one canonical loader
   or generator path, refresh live and bundled mirrors together, and do not
   keep a static fork of generated shared CSS when shared plus thin overrides

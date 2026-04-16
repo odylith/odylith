@@ -510,3 +510,85 @@ def test_reconcile_finished_binding_creates_successor_and_rebinds_plan(tmp_path:
     assert "| planning |" in backlog_text
     assert "](odylith/radar/source/ideas/" in backlog_text
     assert "](/" not in backlog_text
+
+
+def test_reconcile_finished_binding_skips_deleted_stale_active_plan_row(tmp_path: Path) -> None:
+    _seed_component_registry(tmp_path, feature_history_workstream="B-300")
+    ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-03"
+    ideas_root.mkdir(parents=True, exist_ok=True)
+    done_plan_rel = "odylith/technical-plans/done/2026-03/2026-03-01-complete.md"
+    done_plan_path = tmp_path / done_plan_rel
+    done_plan_path.parent.mkdir(parents=True, exist_ok=True)
+    done_plan_path.write_text("Status: Done\n", encoding="utf-8")
+
+    finished_idea = ideas_root / "2026-03-01-finished-governance.md"
+    finished_idea.write_text(
+        _idea_text(
+            idea_id="B-300",
+            title="Finished Governance",
+            date="2026-03-01",
+            status="finished",
+            promoted_to_plan=done_plan_rel,
+        ),
+        encoding="utf-8",
+    )
+    stale_plan_rel = "odylith/technical-plans/in-progress/2026-03-03-stale-successor-plan.md"
+    plan_index_path = _write_plan_index(tmp_path, backlog_id="B-300", plan_rel=stale_plan_rel)
+    (tmp_path / stale_plan_rel).unlink()
+    backlog_row = f"| - | B-300 | Finished Governance | P1 | 100 | 4 | 4 | 4 | M | Medium | finished | [idea]({_repo_rel(tmp_path, finished_idea)}) |"
+    backlog_index_path = _write_backlog_index(tmp_path, row=backlog_row, section="finished")
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+
+    decisions, successors = reconcile.reconcile_plan_workstream_binding(
+        repo_root=tmp_path,
+        plan_index_path=plan_index_path,
+        backlog_index_path=backlog_index_path,
+        ideas_root=tmp_path / "odylith" / "radar" / "source" / "ideas",
+        stream_path=stream_path,
+        changed_paths=(stale_plan_rel,),
+        author="test",
+        source="test",
+    )
+
+    assert successors == []
+    assert any(row.action == "stale_active_plan_binding" for row in decisions)
+    assert not any(path.name.endswith("successor-execution-continuation.md") for path in ideas_root.iterdir())
+    assert "workstream_reopened_by: B-301" not in finished_idea.read_text(encoding="utf-8")
+
+
+def test_reconcile_finished_binding_skips_terminal_plan_file(tmp_path: Path) -> None:
+    _seed_component_registry(tmp_path, feature_history_workstream="B-300")
+    ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-03"
+    ideas_root.mkdir(parents=True, exist_ok=True)
+    finished_idea = ideas_root / "2026-03-01-finished-governance.md"
+    plan_rel = "odylith/technical-plans/in-progress/2026-03-03-terminal-plan.md"
+    finished_idea.write_text(
+        _idea_text(
+            idea_id="B-300",
+            title="Finished Governance",
+            date="2026-03-01",
+            status="finished",
+            promoted_to_plan=plan_rel,
+        ),
+        encoding="utf-8",
+    )
+    plan_index_path = _write_plan_index(tmp_path, backlog_id="B-300", plan_rel=plan_rel)
+    (tmp_path / plan_rel).write_text("Status: Done\n", encoding="utf-8")
+    backlog_row = f"| - | B-300 | Finished Governance | P1 | 100 | 4 | 4 | 4 | M | Medium | finished | [idea]({_repo_rel(tmp_path, finished_idea)}) |"
+    backlog_index_path = _write_backlog_index(tmp_path, row=backlog_row, section="finished")
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+
+    decisions, successors = reconcile.reconcile_plan_workstream_binding(
+        repo_root=tmp_path,
+        plan_index_path=plan_index_path,
+        backlog_index_path=backlog_index_path,
+        ideas_root=tmp_path / "odylith" / "radar" / "source" / "ideas",
+        stream_path=stream_path,
+        changed_paths=(plan_rel,),
+        author="test",
+        source="test",
+    )
+
+    assert successors == []
+    assert any(row.action == "stale_active_plan_binding" for row in decisions)
+    assert not any(path.name.endswith("successor-execution-continuation.md") for path in ideas_root.iterdir())

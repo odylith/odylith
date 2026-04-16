@@ -44,6 +44,7 @@ _EDIT_LIKE_RE = re.compile(
     r"apply_patch|cp|mv|touch|mkdir|sed\s+-i|perl\s+-0pi|tee|cat\s+>|python3?\s+-c|node\s+-e"
     r")\b"
 )
+_PATCH_START_RE = re.compile(r"^\s*\*\*\* Begin Patch\b", re.MULTILINE)
 
 
 resolve_repo_root = claude_host_shared.resolve_repo_root
@@ -75,14 +76,43 @@ def hook_session_id(payload: Mapping[str, Any] | None) -> str:
     return agent_runtime_contract.fallback_session_token("codex")
 
 
+def _mapping_payload(value: Any) -> Mapping[str, Any]:
+    if isinstance(value, Mapping):
+        return value
+    if not isinstance(value, str):
+        return {}
+    token = value.strip()
+    if not token.startswith("{"):
+        return {}
+    try:
+        parsed = json.loads(token)
+    except json.JSONDecodeError:
+        return {}
+    return parsed if isinstance(parsed, Mapping) else {}
+
+
 def command_from_hook_payload(payload: Mapping[str, Any] | None) -> str:
     if not isinstance(payload, Mapping):
         return ""
-    tool_input = payload.get("tool_input")
-    if isinstance(tool_input, Mapping):
-        command = str(tool_input.get("command") or payload.get("command") or "").strip()
+    tool_name = str(
+        payload.get("tool_name")
+        or payload.get("toolName")
+        or payload.get("name")
+        or ""
+    ).strip()
+    for tool_input in (
+        _mapping_payload(payload.get("tool_input")),
+        _mapping_payload(payload.get("arguments")),
+    ):
+        command = str(tool_input.get("command") or tool_input.get("cmd") or payload.get("command") or "").strip()
         if command:
             return command
+        patch = str(tool_input.get("patch") or tool_input.get("input") or "").strip()
+        if patch and (tool_name == "apply_patch" or _PATCH_START_RE.search(patch)):
+            return f"apply_patch <<'PATCH'\n{patch}\nPATCH"
+    patch = str(payload.get("patch") or payload.get("input") or "").strip()
+    if patch and (tool_name == "apply_patch" or _PATCH_START_RE.search(patch)):
+        return f"apply_patch <<'PATCH'\n{patch}\nPATCH"
     return str(payload.get("command") or "").strip()
 
 

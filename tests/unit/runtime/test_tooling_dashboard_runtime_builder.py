@@ -45,7 +45,6 @@ def test_build_runtime_payload_preserves_release_note_urls_and_surface_hrefs(tmp
     result = builder.build_runtime_payload(
         repo_root=tmp_path,
         surface_paths=paths,
-        shell_payload={"window_title": "Odylith"},
         welcome_state={"show": True},
         release_spotlight={
             "show": True,
@@ -75,6 +74,10 @@ def test_build_runtime_payload_preserves_release_note_urls_and_surface_hrefs(tmp
     )
     assert "benchmark_story" not in result.runtime_payload
     assert result.runtime_payload["shell_version_label"] == "v1.2.3"
+    assert result.runtime_payload["case_queue"] == []
+    assert result.runtime_payload["components"] == {}
+    assert result.runtime_payload["diagrams"] == {}
+    assert result.runtime_payload["workstreams"] == {}
 
 
 def test_build_runtime_payload_uses_version_story_when_popup_payload_is_absent(tmp_path: Path) -> None:
@@ -100,7 +103,6 @@ def test_build_runtime_payload_uses_version_story_when_popup_payload_is_absent(t
     result = builder.build_runtime_payload(
         repo_root=tmp_path,
         surface_paths=paths,
-        shell_payload={},
         welcome_state={"show": False},
         release_spotlight={},
         version_story={
@@ -146,7 +148,6 @@ def test_build_runtime_payload_uses_product_name_for_public_product_repo(tmp_pat
     result = builder.build_runtime_payload(
         repo_root=tmp_path,
         surface_paths=paths,
-        shell_payload={},
         welcome_state={},
         release_spotlight={},
         version_story={},

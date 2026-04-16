@@ -235,6 +235,12 @@ has published `scope_signal`.
 This prevents generated dashboard churn from being mistaken for implementation
 progress.
 
+`reconcile_plan_workstream_binding.py` must only create successor workstreams
+for a finished backlog item when the touched plan is still a real, readable
+in-progress plan. Deleted stale index rows and plan files that already declare
+a terminal status are skipped with an explicit `stale_active_plan_binding`
+decision instead of minting a new `B-###` continuation.
+
 ## Intent Behind Radar
 Radar exists so a developer or operator can answer:
 - what Odylith believes the active work is
@@ -296,7 +302,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
-- 2026-04-15: Hardened Radar detail and authoring so runtime backlog detail exposes renderer-ready workstream fields, summary payloads retain fail-closed fallback detail, `odylith backlog create` requires grounded core detail, and backlog validation rejects placeholder or boilerplate Problem/Customer/Opportunity/Product View/Success Metrics sections. (Plan: [B-098](odylith/radar/radar.html?view=plan&workstream=B-098))
+- 2026-04-15: Hardened Radar detail and authoring so runtime backlog detail exposes renderer-ready workstream fields, summary payloads retain fail-closed fallback detail, `odylith backlog create` requires grounded core detail, backlog validation rejects placeholder or boilerplate Problem/Customer/Opportunity/Product View/Success Metrics sections, and stale finished-workstream plan bindings cannot mint accidental successor backlogs. (Plan: [B-098](odylith/radar/radar.html?view=plan&workstream=B-098))
 - 2026-04-09: Switched Radar default operational ordering onto Delivery Intelligence's shared Scope Signal Ladder while keeping the underlying backlog exhaustive. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
 - 2026-03-26: Created the first Odylith-owned Radar source tree so the public repo can maintain its own ranked product backlog instead of borrowing a consumer backlog as authority. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Curated default workstream warnings to stay operator-facing while keeping info-level autofix conflicts in shared diagnostics artifacts for maintainers. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

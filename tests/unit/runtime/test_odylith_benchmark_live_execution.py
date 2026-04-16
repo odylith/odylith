@@ -1189,6 +1189,48 @@ def test_write_expectation_satisfied_accepts_validator_backed_noop_completion() 
     )
 
 
+def test_write_expectation_satisfied_uses_explicit_expected_write_paths() -> None:
+    scenario = {
+        "needs_write": True,
+        "changed_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
+        "expected_write_paths": ["src/odylith/runtime/orchestration/subagent_router.py"],
+    }
+
+    assert live_execution._write_expectation_satisfied(  # noqa: SLF001
+        scenario=scenario,
+        candidate_write_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        validators_passed=False,
+    )
+    assert not live_execution._write_expectation_satisfied(  # noqa: SLF001
+        scenario=scenario,
+        candidate_write_paths=[],
+        validators_passed=True,
+    )
+
+
+def test_live_codex_sandbox_defaults_to_workspace_write_for_analysis_cache_hygiene() -> None:
+    assert live_execution._live_codex_sandbox({"needs_write": False}) == "workspace-write"  # noqa: SLF001
+    assert live_execution._live_codex_sandbox({"live_sandbox": "read-only"}) == "read-only"  # noqa: SLF001
+
+
+def test_live_precision_metrics_count_supporting_paths_as_relevant_not_hidden_truth() -> None:
+    metrics = live_execution._precision_metrics(  # noqa: SLF001
+        required_paths=["src/odylith/runtime/surfaces/codex_host_bash_guard.py"],
+        supporting_paths=["odylith/agents-guidelines/CODEX_HOST_CONTRACT.md"],
+        observed_paths=[
+            "src/odylith/runtime/surfaces/codex_host_bash_guard.py",
+            "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+            "docs/benchmarks/README.md",
+        ],
+        expected_write_paths=["src/odylith/runtime/surfaces/codex_host_bash_guard.py"],
+        candidate_write_paths=["src/odylith/runtime/surfaces/codex_host_bash_guard.py"],
+    )
+
+    assert metrics["required_path_precision_basis"] == "required_plus_supporting_paths"
+    assert metrics["supporting_path_hits"] == ["odylith/agents-guidelines/CODEX_HOST_CONTRACT.md"]
+    assert metrics["hallucinated_surfaces"] == ["docs/benchmarks/README.md"]
+
+
 def test_successful_noop_precision_metrics_zeroes_expected_writes_for_valid_noop() -> None:
     metrics = live_execution._successful_noop_precision_metrics(  # noqa: SLF001
         scenario={

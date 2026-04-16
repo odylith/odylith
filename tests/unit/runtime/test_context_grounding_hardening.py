@@ -183,7 +183,6 @@ def test_session_scope_caps_dirty_paths_to_high_signal_subset(tmp_path: Path, mo
             "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
             "src/odylith/runtime/surfaces/tooling_dashboard_runtime_builder.py",
             "src/odylith/runtime/surfaces/tooling_dashboard_release_presenter.py",
-            "src/odylith/runtime/surfaces/tooling_dashboard_system_status_presenter.py",
             "src/odylith/runtime/surfaces/tooling_dashboard_welcome_presenter.py",
             "src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js",
             "src/odylith/runtime/surfaces/templates/tooling_dashboard/style.css",

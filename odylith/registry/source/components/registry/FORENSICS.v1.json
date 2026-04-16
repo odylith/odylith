@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 16,
-    "mapped_workstream_evidence_count": 2,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 3,
+    "explicit_event_count": 20,
+    "mapped_workstream_evidence_count": 6,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 16
+    "timeline_event_count": 21
   },
   "name": "Registry",
   "path_prefixes": [
@@ -47,6 +47,133 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "README.md"
+      ],
+      "confidence": "high",
+      "event_index": 233,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-005.",
+      "ts_iso": "2026-04-16T01:31:39Z",
+      "workstreams": [
+        "B-005",
+        "B-020",
+        "B-022",
+        "B-038"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/component_registry.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 272,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
+      "ts_iso": "2026-04-15T18:51:59-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 177,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-15T06:58:39Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 174,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-15T06:57:32Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 169,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-15T06:55:30Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "medium",

@@ -16,6 +16,7 @@ def _write_bug(path: Path, *, status: str, created: str, severity: str, componen
             f"- Status: {status}",
             f"- Created: {created}",
             f"- Severity: {severity}",
+            "- Reproducibility: High",
             f"- Components Affected: {components}",
             "",
             "- Description: Example bug.",

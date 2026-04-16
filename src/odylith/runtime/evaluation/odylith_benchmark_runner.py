@@ -1388,12 +1388,9 @@ def _scenario_exception_result(
 ) -> dict[str, Any]:
     normalized_mode = _normalize_mode(mode)
     required_paths = [str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()]
+    supporting_paths = _scenario_supporting_paths(scenario)
     critical_paths = [str(token).strip() for token in scenario.get("critical_paths", []) if str(token).strip()]
-    expected_write_paths = (
-        [str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()]
-        if bool(scenario.get("needs_write"))
-        else []
-    )
+    expected_write_paths = _scenario_expected_write_paths(scenario)
     command_count = len([str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()])
     error_text = _benchmark_exception_text(error)
     resolved_packet_source = (
@@ -1429,7 +1426,10 @@ def _scenario_exception_result(
         "observed_paths": [],
         "observed_path_sources": [],
         "observed_path_count": 0,
-        "required_path_precision": 1.0 if not required_paths else 0.0,
+        "supporting_path_count": len(supporting_paths),
+        "supporting_path_hits": [],
+        "required_path_precision_basis": "required_plus_supporting_paths" if supporting_paths else "required_paths",
+        "required_path_precision": 1.0 if not required_paths and not supporting_paths else 0.0,
         "hallucinated_surface_count": 0,
         "hallucinated_surface_rate": 0.0,
         "hallucinated_surfaces": [],
@@ -1822,13 +1822,23 @@ def _cleanup_stale_benchmark_state(
     repo_root: Path,
     clear_progress: bool,
     allow_destructive_runtime_cleanup: bool = True,
+    ignore_progress: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     progress_cleanup = _prune_stale_benchmark_progress(repo_root=root, clear_shared_progress=clear_progress)
-    if int(progress_cleanup.get("active_run_count", 0) or 0) > 0:
+    blocking_active_run_count = int(progress_cleanup.get("active_run_count", 0) or 0)
+    if isinstance(ignore_progress, Mapping):
+        blocking_active_run_count = int(
+            _benchmark_runtime_hygiene_snapshot(repo_root=root, ignore_progress=ignore_progress).get(
+                "active_run_count",
+                blocking_active_run_count,
+            )
+            or 0
+        )
+    if blocking_active_run_count > 0:
         return {
             "stale_progress_cleared": bool(progress_cleanup.get("stale_shared_progress_cleared")),
-            "progress_cleanup": progress_cleanup,
+            "progress_cleanup": {**progress_cleanup, "blocking_active_run_count": blocking_active_run_count},
             "process_cleanup": {
                 "requested_pid_count": 0,
                 "terminated_pid_count": 0,
@@ -1947,7 +1957,11 @@ def _enforce_diagnostic_runtime_hygiene(
         and not hygiene["active_run_count"]
     ):
         return hygiene
-    cleanup = _cleanup_stale_benchmark_state(repo_root=repo_root, clear_progress=False)
+    cleanup = _cleanup_stale_benchmark_state(
+        repo_root=repo_root,
+        clear_progress=False,
+        ignore_progress=ignore_progress,
+    )
     raise RuntimeError(
         "diagnostic benchmark contamination detected: "
         f"owned_codex_process_count={hygiene['owned_codex_process_count']} "
@@ -2598,6 +2612,16 @@ def _scenario_from_case(*, case: Mapping[str, Any], architecture: bool) -> dict[
         if isinstance(benchmark_spec.get("validation_commands"), list)
         else []
     )
+    explicit_expected_write_paths = (
+        _dedupe_strings(benchmark_spec.get("expected_write_paths", []))
+        if isinstance(benchmark_spec.get("expected_write_paths"), list)
+        else []
+    )
+    supporting_paths = (
+        _dedupe_strings(benchmark_spec.get("supporting_paths", []))
+        if isinstance(benchmark_spec.get("supporting_paths"), list)
+        else []
+    )
     focused_local_checks = (
         _dedupe_strings(benchmark_spec.get("focused_local_checks", []))
         if isinstance(benchmark_spec.get("focused_local_checks"), list)
@@ -2620,6 +2644,9 @@ def _scenario_from_case(*, case: Mapping[str, Any], architecture: bool) -> dict[
             *changed_paths,
         ]
     )
+    expected_write_paths = explicit_expected_write_paths if needs_write else []
+    if needs_write and not expected_write_paths:
+        expected_write_paths = list(changed_paths)
     critical_paths = _dedupe_strings(
         [
             *(
@@ -2663,6 +2690,8 @@ def _scenario_from_case(*, case: Mapping[str, Any], architecture: bool) -> dict[
         "validation_commands": validation_commands,
         "focused_local_checks": focused_local_checks,
         "required_paths": required_paths,
+        "supporting_paths": supporting_paths,
+        "expected_write_paths": expected_write_paths,
         "critical_paths": critical_paths,
         "needs_write": needs_write,
         "allow_noop_completion": allow_noop_completion,
@@ -3546,6 +3575,12 @@ def _terminate_process_group(*, pid: int) -> None:
     time.sleep(_BENCHMARK_ADOPTION_PROOF_TERMINATION_GRACE_SECONDS)
 
 
+def _spawn_safe_main_module_available() -> bool:
+    main_module = sys.modules.get("__main__")
+    main_file = str(getattr(main_module, "__file__", "") or "").strip()
+    return bool(main_file and Path(main_file).is_file())
+
+
 def _bounded_orchestration_summary(
     *,
     request_payload: Mapping[str, Any],
@@ -3558,7 +3593,7 @@ def _bounded_orchestration_summary(
         if timeout_seconds is None
         else max(0.0, float(timeout_seconds))
     )
-    if timeout <= 0:
+    if timeout <= 0 or not _spawn_safe_main_module_available():
         return _safe_orchestration_summary(
             request_payload=request_payload,
             repo_root=repo_root,
@@ -3684,25 +3719,55 @@ def _path_recall(
     return round((len(required) - len(misses)) / max(1, len(required)), 3), misses
 
 
+def _scenario_supporting_paths(scenario: Mapping[str, Any]) -> list[str]:
+    raw_paths = scenario.get("supporting_paths", [])
+    if not isinstance(raw_paths, list):
+        return []
+    return _dedupe_strings([str(token).strip() for token in raw_paths if str(token).strip()])
+
+
+def _scenario_expected_write_paths(scenario: Mapping[str, Any]) -> list[str]:
+    if not bool(scenario.get("needs_write")):
+        return []
+    raw_expected = scenario.get("expected_write_paths", [])
+    explicit = _dedupe_strings(
+        [str(token).strip() for token in raw_expected if str(token).strip()]
+        if isinstance(raw_expected, list)
+        else []
+    )
+    if explicit:
+        return explicit
+    raw_changed = scenario.get("changed_paths", [])
+    if not isinstance(raw_changed, list):
+        return []
+    return _dedupe_strings(
+        [str(token).strip() for token in raw_changed if str(token).strip()]
+    )
+
+
 def _precision_metrics(
     *,
     required_paths: Sequence[str],
+    supporting_paths: Sequence[str] = (),
     observed_paths: Sequence[str],
     expected_write_paths: Sequence[str],
     candidate_write_paths: Sequence[str],
 ) -> dict[str, Any]:
     required = {str(token).strip() for token in required_paths if str(token).strip()}
+    supporting = {str(token).strip() for token in supporting_paths if str(token).strip()}
+    relevant = required.union(supporting)
     observed = {str(token).strip() for token in observed_paths if str(token).strip()}
     expected_write = {str(token).strip() for token in expected_write_paths if str(token).strip()}
     candidate_write = {str(token).strip() for token in candidate_write_paths if str(token).strip()}
 
-    observed_required = sorted(required.intersection(observed))
-    hallucinated_surfaces = sorted(observed.difference(required))
+    observed_supporting = sorted(supporting.intersection(observed))
+    observed_relevant = sorted(relevant.intersection(observed))
+    hallucinated_surfaces = sorted(observed.difference(relevant))
     required_path_precision = (
-        round(len(observed_required) / max(1, len(observed)), 3)
+        round(len(observed_relevant) / max(1, len(observed)), 3)
         if observed
         else 1.0
-        if not required
+        if not relevant
         else 0.0
     )
     hallucinated_surface_rate = (
@@ -3728,6 +3793,9 @@ def _precision_metrics(
 
     return {
         "observed_path_count": len(observed),
+        "supporting_path_count": len(supporting),
+        "supporting_path_hits": observed_supporting[:12],
+        "required_path_precision_basis": "required_plus_supporting_paths" if supporting else "required_paths",
         "required_path_precision": required_path_precision,
         "hallucinated_surface_count": len(hallucinated_surfaces),
         "hallucinated_surface_rate": hallucinated_surface_rate,
@@ -3856,7 +3924,7 @@ def _packet_result(
             mode=normalized_mode,
         )
     )
-    expected_write_paths = changed_paths if bool(scenario.get("needs_write")) else []
+    expected_write_paths = _scenario_expected_write_paths(scenario)
     candidate_write_paths = (
         _dedupe_strings(orchestration_payload.get("candidate_paths", []))
         if bool(scenario.get("needs_write")) and isinstance(orchestration_payload.get("candidate_paths"), list)
@@ -3864,6 +3932,7 @@ def _packet_result(
     )
     precision_metrics = _precision_metrics(
         required_paths=[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
+        supporting_paths=_scenario_supporting_paths(scenario),
         observed_paths=observed_paths,
         expected_write_paths=expected_write_paths,
         candidate_write_paths=candidate_write_paths,
@@ -4004,6 +4073,7 @@ def _architecture_result(
         )
         precision_metrics = _precision_metrics(
             required_paths=[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
+            supporting_paths=_scenario_supporting_paths(scenario),
             observed_paths=observed_paths,
             expected_write_paths=[],
             candidate_write_paths=[],
@@ -4092,6 +4162,7 @@ def _architecture_result(
         )
         precision_metrics = _precision_metrics(
             required_paths=[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
+            supporting_paths=_scenario_supporting_paths(scenario),
             observed_paths=observed_paths,
             expected_write_paths=[],
             candidate_write_paths=[],
@@ -4238,6 +4309,7 @@ def _architecture_result(
     )
     precision_metrics = _precision_metrics(
         required_paths=[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
+        supporting_paths=_scenario_supporting_paths(scenario),
         observed_paths=observed_paths,
         expected_write_paths=[],
         candidate_write_paths=[],
@@ -8697,16 +8769,17 @@ def run_benchmarks(
                 }
             )
             _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
+            post_run_probe_eligible = bool(not sharded_run and selection_strategy == "full_corpus")
             latency_probes = (
-                {}
-                if sharded_run
-                else _singleton_family_latency_probes(
+                _singleton_family_latency_probes(
                     repo_root=root,
                     scenarios=scenarios,
                     modes=normalized_modes,
                     cache_profiles=normalized_cache_profiles,
                     benchmark_profile=normalized_profile,
                 )
+                if post_run_probe_eligible
+                else {}
             )
             final_hygiene = (
                 {}
@@ -8866,7 +8939,11 @@ def run_benchmarks(
                 grouped_summaries=published_packet_source_summaries,
                 compare=_summary_comparison,
             )
-            adoption_proof = {} if sharded_run else _run_live_adoption_proof(repo_root=root, scenarios=scenarios)
+            adoption_proof = (
+                _run_live_adoption_proof(repo_root=root, scenarios=scenarios)
+                if post_run_probe_eligible
+                else {}
+            )
             runtime_posture = {} if sharded_run else _runtime_posture_summary(repo_root=root)
             if not sharded_run and int(adoption_proof.get("sample_size", 0) or 0) > 0:
                 runtime_posture["route_ready_rate"] = float(adoption_proof.get("route_ready_rate", 0.0) or 0.0)

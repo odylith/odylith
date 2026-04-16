@@ -28,7 +28,14 @@ def _seed_repo(root: Path) -> None:
     (root / "odylith" / "casebook" / "bugs").mkdir(parents=True, exist_ok=True)
 
 
-def _seed_registry_component(root: Path, *, component_id: str, label: str, workstream_id: str) -> None:
+def _seed_registry_component(
+    root: Path,
+    *,
+    component_id: str,
+    label: str,
+    workstream_id: str,
+    path_prefixes: list[str] | None = None,
+) -> None:
     spec_path = root / "odylith" / "registry" / "source" / "components" / component_id / "CURRENT_SPEC.md"
     spec_path.parent.mkdir(parents=True, exist_ok=True)
     spec_path.write_text(
@@ -59,7 +66,7 @@ def _seed_registry_component(root: Path, *, component_id: str, label: str, works
             "what_it_is": f"{label} owned runtime boundary.",
             "why_tracked": f"{label} is already part of the governed runtime surface.",
             "aliases": [component_id],
-            "path_prefixes": ["src/odylith/runtime"],
+            "path_prefixes": path_prefixes or ["src/odylith/runtime"],
             "workstreams": [workstream_id],
             "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
         }
@@ -162,6 +169,32 @@ def test_changed_paths_and_prompt_upgrade_to_card_and_rendered_proposal(tmp_path
     assert radar_action["payload"]["product_view"]
     assert radar_action["payload"]["success_metrics"]
     assert "One clean governed bundle is ready to review" not in bundle["proposal"]["markdown_text"]
+
+
+def test_host_guidance_changed_path_keeps_component_and_workstream_refs(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    _seed_registry_component(
+        tmp_path,
+        component_id="governance-intervention-engine",
+        label="Governance Intervention Engine",
+        workstream_id="B-096",
+        path_prefixes=["odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"],
+    )
+
+    bundle = engine.build_intervention_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="claude",
+            turn_phase="post_edit_checkpoint",
+            session_id="session-host-guidance",
+            prompt_excerpt="Can we capture this governance intervention work as an Odylith Proposal?",
+            changed_paths=["odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"],
+        ),
+    )
+
+    refs = bundle["observation"]["active_target_refs"]
+    assert {"kind": "component", "id": "governance-intervention-engine", "path": "", "label": "governance-intervention-engine"} in refs
+    assert {"kind": "workstream", "id": "B-096", "path": "", "label": "B-096"} in refs
 
 
 def test_cross_host_core_keeps_observation_and_proposal_content_consistent(tmp_path: Path) -> None:

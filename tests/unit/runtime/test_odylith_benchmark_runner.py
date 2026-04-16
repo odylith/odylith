@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import threading
 import tempfile
 
@@ -55,6 +56,8 @@ def test_load_benchmark_scenarios_preserves_benchmark_metadata(tmp_path: Path) -
                         "packet_source": "bootstrap_session",
                         "paths": ["src/odylith/runtime/orchestration/subagent_router.py"],
                         "required_paths": ["src/odylith/runtime/orchestration/subagent_router.py", "tests/unit/runtime/test_subagent_router.py"],
+                        "supporting_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
+                        "expected_write_paths": ["src/odylith/runtime/orchestration/subagent_router.py"],
                         "critical_paths": ["src/odylith/runtime/orchestration/subagent_router.py", "tests/unit/runtime/test_subagent_router.py"],
                         "validation_commands": ["PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q tests/unit/runtime/test_subagent_router.py"],
                         "focused_local_checks": ["Run the router unit test first."],
@@ -93,6 +96,8 @@ def test_load_benchmark_scenarios_preserves_benchmark_metadata(tmp_path: Path) -
 
     packet = next(row for row in scenarios if row["scenario_id"] == "critical-router-fix")
     assert packet["required_paths"] == ["src/odylith/runtime/orchestration/subagent_router.py", "tests/unit/runtime/test_subagent_router.py"]
+    assert packet["supporting_paths"] == ["odylith/skills/odylith-subagent-router/SKILL.md"]
+    assert packet["expected_write_paths"] == ["src/odylith/runtime/orchestration/subagent_router.py"]
     assert packet["critical_paths"] == ["src/odylith/runtime/orchestration/subagent_router.py", "tests/unit/runtime/test_subagent_router.py"]
     assert packet["packet_source"] == "bootstrap_session"
     assert packet["validation_commands"] == ["PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q tests/unit/runtime/test_subagent_router.py"]
@@ -182,6 +187,31 @@ def test_load_benchmark_scenarios_accepts_canonical_scenario_keys(tmp_path: Path
     assert {row["scenario_id"] for row in scenarios} == {"canonical-scenario", "canonical-architecture"}
     packet = next(row for row in scenarios if row["scenario_id"] == "canonical-scenario")
     assert packet["needs_write"] is True
+
+
+def test_precision_metrics_treat_supporting_paths_as_relevant_without_changing_required_recall() -> None:
+    metrics = runner._precision_metrics(  # noqa: SLF001
+        required_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        supporting_paths=["odylith/skills/odylith-subagent-router/SKILL.md"],
+        observed_paths=[
+            "src/odylith/runtime/orchestration/subagent_router.py",
+            "odylith/skills/odylith-subagent-router/SKILL.md",
+            "README.md",
+        ],
+        expected_write_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        candidate_write_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+    )
+
+    assert metrics["required_path_precision_basis"] == "required_plus_supporting_paths"
+    assert metrics["supporting_path_hits"] == ["odylith/skills/odylith-subagent-router/SKILL.md"]
+    assert metrics["required_path_precision"] == 0.667
+    assert metrics["hallucinated_surfaces"] == ["README.md"]
+    recall, misses = runner._path_recall(  # noqa: SLF001
+        required_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        observed_paths=["odylith/skills/odylith-subagent-router/SKILL.md"],
+    )
+    assert recall == 0.0
+    assert misses == ["src/odylith/runtime/orchestration/subagent_router.py"]
 
 
 def test_packet_source_for_scenario_prefers_lightest_safe_lane() -> None:
@@ -3953,6 +3983,92 @@ def test_run_benchmarks_shards_skip_merge_only_post_run_metrics(
     assert report["final_hygiene"] == {}
 
 
+def test_run_benchmarks_manual_selection_skips_extra_post_run_probe_fanout(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _write_corpus(
+        tmp_path,
+        {
+            "version": "v1",
+            "program": {},
+            "scenarios": [
+                {
+                    "case_id": "case-a",
+                    "label": "Case A",
+                    "family": "validation_heavy_fix",
+                    "priority": "high",
+                    "benchmark": {
+                        "paths": ["scripts/a.py"],
+                        "required_paths": ["scripts/a.py"],
+                        "needs_write": True,
+                    },
+                    "expect": {"within_budget": True},
+                }
+            ],
+            "architecture_scenarios": [],
+        },
+    )
+    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(runner, "_singleton_family_latency_probes", lambda **_: (_ for _ in ()).throw(AssertionError("skip latency probes")))
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda **_: (_ for _ in ()).throw(AssertionError("skip adoption proof")))
+    monkeypatch.setattr(runner, "_runtime_posture_summary", lambda **_: {"route_ready_rate": 1.0, "native_spawn_ready_rate": 1.0})
+    monkeypatch.setattr(runner, "_robustness_summary", lambda **_: {})
+    monkeypatch.setattr(
+        runner,
+        "_benchmark_runtime_hygiene_snapshot",
+        lambda **_: {
+            "owned_codex_process_count": 0,
+            "temp_worktree_count": 0,
+            "temp_directory_count": 0,
+            "active_run_count": 0,
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **kwargs: {
+            "kind": "packet",
+            "mode": kwargs["mode"],
+            "packet_source": "impact",
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": ["scripts/a.py"],
+            "observed_path_count": 1,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "expected_write_path_count": 1,
+            "candidate_write_path_count": 1,
+            "candidate_write_paths": ["scripts/a.py"],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "effective_estimated_tokens": 10,
+            "total_payload_estimated_tokens": 10,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    report = runner.run_benchmarks(
+        repo_root=tmp_path,
+        benchmark_profile=runner.BENCHMARK_PROFILE_DIAGNOSTIC,
+        case_ids=["case-a"],
+        write_report=False,
+    )
+
+    assert report["selection_strategy"] == "manual_selection"
+    assert report["singleton_family_latency_probes"] == {}
+    assert report["adoption_proof"] == {}
+
+
 def test_run_benchmarks_shards_skip_live_batch_pairing(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
@@ -6689,10 +6805,10 @@ def test_enforce_diagnostic_runtime_hygiene_fails_closed_on_contamination(
 ) -> None:
     monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [1234])
     monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [Path("/tmp/odylith-benchmark-live-test/workspace")])
-    cleanup_calls: list[tuple[Path, bool]] = []
+    cleanup_calls: list[tuple[Path, bool, object]] = []
 
-    def _fake_cleanup(*, repo_root: Path, clear_progress: bool) -> dict[str, object]:
-        cleanup_calls.append((repo_root, clear_progress))
+    def _fake_cleanup(*, repo_root: Path, clear_progress: bool, ignore_progress=None) -> dict[str, object]:  # type: ignore[no-untyped-def]
+        cleanup_calls.append((repo_root, clear_progress, ignore_progress))
         return {"process_cleanup": {"terminated_pid_count": 1}, "worktree_cleanup": {"removed_worktree_count": 1}}
 
     monkeypatch.setattr(runner, "_cleanup_stale_benchmark_state", _fake_cleanup)
@@ -6700,7 +6816,33 @@ def test_enforce_diagnostic_runtime_hygiene_fails_closed_on_contamination(
     with pytest.raises(RuntimeError, match="diagnostic benchmark contamination detected"):
         runner._enforce_diagnostic_runtime_hygiene(repo_root=REPO_ROOT)  # noqa: SLF001
 
-    assert cleanup_calls == [(REPO_ROOT, False)]
+    assert cleanup_calls == [(REPO_ROOT, False, None)]
+
+
+def test_bounded_orchestration_summary_uses_inline_fallback_when_spawn_main_is_not_importable(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(sys.modules["__main__"], "__file__", "<stdin>", raising=False)
+    monkeypatch.setattr(
+        runner,
+        "_safe_orchestration_summary",
+        lambda **kwargs: {"fallback": True, "mode": kwargs["mode"]},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        runner.multiprocessing,
+        "get_context",
+        lambda _method: (_ for _ in ()).throw(AssertionError("spawn should not be used")),
+    )
+
+    summary = runner._bounded_orchestration_summary(  # noqa: SLF001
+        request_payload={},
+        repo_root=tmp_path,
+        mode="odylith_on",
+        timeout_seconds=1.0,
+    )
+
+    assert summary == {"fallback": True, "mode": "odylith_on"}
 
 
 def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
@@ -6730,6 +6872,56 @@ def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
     assert not codex_dir.exists()
     assert not codex_home_dir.exists()
     assert analysis_bundle.exists()
+
+
+def test_cleanup_stale_benchmark_state_can_ignore_current_active_run_for_final_hygiene(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    temp_root = tmp_path / ".odylith" / "runtime" / "odylith-benchmark-temp"
+    codex_dir = temp_root / "odylith-benchmark-codex-current"
+    codex_dir.mkdir(parents=True, exist_ok=True)
+    progress_payload = {
+        "report_id": "report-current",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_DIAGNOSTIC,
+        "status": "running",
+        "shard_index": 1,
+        "shard_count": 1,
+        "owning_pid": 4242,
+        "repo_root": str(tmp_path.resolve()),
+    }
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-current",
+        benchmark_profile=runner.BENCHMARK_PROFILE_DIAGNOSTIC,
+        shard_index=1,
+        shard_count=1,
+        owning_pid=4242,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text(json.dumps(progress_payload, indent=2) + "\n", encoding="utf-8")
+    runner._write_active_runs(  # noqa: SLF001
+        repo_root=tmp_path,
+        runs=[{**progress_payload, "progress_path": str(progress_path)}],
+    )
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: True)
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(
+        runner,
+        "_cleanup_benchmark_worktrees",
+        lambda *, repo_root: {"removed_worktree_count": 0, "failed_worktree_count": 0},
+    )
+
+    cleanup = runner._cleanup_stale_benchmark_state(  # noqa: SLF001
+        repo_root=tmp_path,
+        clear_progress=False,
+        ignore_progress=progress_payload,
+    )
+
+    assert cleanup["progress_cleanup"]["active_run_count"] == 1
+    assert cleanup["temp_directory_cleanup"]["removed_temp_directory_count"] == 1
+    assert not codex_dir.exists()
 
 
 def test_cleanup_stale_benchmark_state_sharded_startup_preserves_unowned_runtime(

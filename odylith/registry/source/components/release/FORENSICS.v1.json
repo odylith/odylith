@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 19,
-    "mapped_workstream_evidence_count": 4,
+    "explicit_event_count": 26,
+    "mapped_workstream_evidence_count": 11,
     "recent_path_match_count": 0,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 19
+    "timeline_event_count": 26
   },
   "name": "Release",
   "path_prefixes": [
@@ -44,6 +44,179 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "README.md"
+      ],
+      "confidence": "high",
+      "event_index": 233,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-005.",
+      "ts_iso": "2026-04-16T01:31:39Z",
+      "workstreams": [
+        "B-005",
+        "B-020",
+        "B-022",
+        "B-038"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 76,
+      "explicit_components": [],
+      "kind": "subagent_stop",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "",
+      "ts_iso": "2026-04-11T23:55:04Z",
+      "workstreams": [
+        "B-089"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 82,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "B-090 is closed.",
+      "ts_iso": "2026-04-11T19:44:39-07:00",
+      "workstreams": [
+        "B-090"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
+      ],
+      "confidence": "high",
+      "event_index": 80,
+      "explicit_components": [
+        "odylith",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Phase advanced: Planning -> Implementation (Live)",
+      "ts_iso": "2026-04-11T18:56:51-07:00",
+      "workstreams": [
+        "B-090"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
+      ],
+      "confidence": "high",
+      "event_index": 79,
+      "explicit_components": [
+        "benchmark",
+        "odylith",
+        "radar",
+        "subagent-orchestrator"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "benchmark",
+        "dashboard",
+        "odylith",
+        "radar",
+        "release",
+        "subagent-orchestrator"
+      ],
+      "meaningful": false,
+      "summary": "Plan binding: advanced B-090 from queued to planning for odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+      "ts_iso": "2026-04-11T18:56:48-07:00",
+      "workstreams": [
+        "B-090"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 77,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "B-089 has landed on 2026/freedom/v0.1.11 as the planned two-commit pair, working tree clean: 9402f5d \u2014 Mirror Codex host parity into Claude with baked CLI dispatchers (56 files:...",
+      "ts_iso": "2026-04-11T17:40:14-07:00",
+      "workstreams": [
+        "B-089"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
+      ],
+      "confidence": "high",
+      "event_index": 75,
+      "explicit_components": [
+        "odylith",
+        "radar"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Plan binding: advanced B-089 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+      "ts_iso": "2026-04-11T16:42:33-07:00",
+      "workstreams": [
+        "B-089"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -644,6 +817,9 @@
     "B-048",
     "B-060",
     "B-066",
-    "B-065"
+    "B-065",
+    "B-089",
+    "B-088",
+    "B-090"
   ]
 }

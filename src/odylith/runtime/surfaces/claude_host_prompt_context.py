@@ -186,12 +186,7 @@ def main(argv: list[str] | None = None) -> int:
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
-    if summary or system_message:
-        conversation_surface.append_intervention_events(
-            repo_root=Path(repo_root).expanduser().resolve(),
-            bundle=bundle,
-            include_proposal=False,
-        )
+    if summary:
         sys.stdout.write(
             json.dumps(
                 host_surface_runtime.claude_prompt_payload(

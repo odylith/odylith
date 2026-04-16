@@ -849,25 +849,62 @@ def _path_recall(
     return round((len(required) - len(misses)) / max(1, len(required)), 3), misses
 
 
+def _scenario_supporting_paths(scenario: Mapping[str, Any]) -> list[str]:
+    raw_paths = scenario.get("supporting_paths", [])
+    if not isinstance(raw_paths, list):
+        return []
+    return _dedupe_strings([str(token).strip() for token in raw_paths if str(token).strip()])
+
+
+def _scenario_expected_write_paths(scenario: Mapping[str, Any]) -> list[str]:
+    if not bool(scenario.get("needs_write")):
+        return []
+    raw_expected = scenario.get("expected_write_paths", [])
+    explicit_paths = _dedupe_strings(
+        [str(token).strip() for token in raw_expected if str(token).strip()]
+        if isinstance(raw_expected, list)
+        else []
+    )
+    if explicit_paths:
+        return explicit_paths
+    raw_changed = scenario.get("changed_paths", [])
+    if not isinstance(raw_changed, list):
+        return []
+    return _dedupe_strings([str(token).strip() for token in raw_changed if str(token).strip()])
+
+
+def _live_codex_sandbox(scenario: Mapping[str, Any]) -> str:
+    requested = str(scenario.get("live_sandbox", "")).strip()
+    if requested in {"read-only", "workspace-write"}:
+        return requested
+    # Live agents need writable temp/cache space even for analysis-only scenarios.
+    # Unexpected repo edits are still measured through candidate_write_paths.
+    return "workspace-write"
+
+
 def _precision_metrics(
     *,
     required_paths: Sequence[str],
+    supporting_paths: Sequence[str] = (),
     observed_paths: Sequence[str],
     expected_write_paths: Sequence[str],
     candidate_write_paths: Sequence[str],
 ) -> dict[str, Any]:
     required = {str(token).strip() for token in required_paths if str(token).strip()}
+    supporting = {str(token).strip() for token in supporting_paths if str(token).strip()}
+    relevant = required.union(supporting)
     observed = {str(token).strip() for token in observed_paths if str(token).strip()}
     expected_write = {str(token).strip() for token in expected_write_paths if str(token).strip()}
     candidate_write = {str(token).strip() for token in candidate_write_paths if str(token).strip()}
 
-    observed_required = sorted(required.intersection(observed))
-    hallucinated_surfaces = sorted(observed.difference(required))
+    observed_supporting = sorted(supporting.intersection(observed))
+    observed_relevant = sorted(relevant.intersection(observed))
+    hallucinated_surfaces = sorted(observed.difference(relevant))
     required_path_precision = (
-        round(len(observed_required) / max(1, len(observed)), 3)
+        round(len(observed_relevant) / max(1, len(observed)), 3)
         if observed
         else 1.0
-        if not required
+        if not relevant
         else 0.0
     )
     hallucinated_surface_rate = (
@@ -893,6 +930,9 @@ def _precision_metrics(
 
     return {
         "observed_path_count": len(observed),
+        "supporting_path_count": len(supporting),
+        "supporting_path_hits": observed_supporting,
+        "required_path_precision_basis": "required_plus_supporting_paths" if supporting else "required_paths",
         "required_path_precision": required_path_precision,
         "hallucinated_surface_count": len(hallucinated_surfaces),
         "hallucinated_surface_rate": hallucinated_surface_rate,
@@ -1024,7 +1064,8 @@ def _write_expectation_satisfied(
     candidate_write_paths: Sequence[str],
     validators_passed: bool,
 ) -> bool:
-    if not bool(scenario.get("needs_write")) or not bool(scenario.get("changed_paths")):
+    expected_write_paths = _scenario_expected_write_paths(scenario)
+    if not expected_write_paths:
         return True
     if any(str(token).strip() for token in candidate_write_paths):
         return True
@@ -1474,7 +1515,7 @@ def run_live_scenario(
             schema_path=schema_path,
             output_path=output_path,
         )
-        sandbox = "workspace-write" if bool(scenario.get("needs_write")) else "read-only"
+        sandbox = _live_codex_sandbox(scenario)
         command[command.index("--skip-git-repo-check")] = "--sandbox"
         command.insert(command.index("--sandbox") + 1, sandbox)
         command.insert(command.index("--sandbox") + 2, "--skip-git-repo-check")
@@ -1622,12 +1663,13 @@ def run_live_scenario(
             structured_output=structured_output,
         )
         candidate_write_paths = _meaningful_candidate_write_paths(candidate_write_paths)
+        expected_write_paths = _scenario_expected_write_paths(scenario)
+        supporting_paths = _scenario_supporting_paths(scenario)
         precision_metrics = _precision_metrics(
             required_paths=required_paths,
+            supporting_paths=supporting_paths,
             observed_paths=observed_paths,
-            expected_write_paths=[str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()]
-            if bool(scenario.get("needs_write"))
-            else [],
+            expected_write_paths=expected_write_paths,
             candidate_write_paths=candidate_write_paths,
         )
         failure_tracked_paths = odylith_benchmark_live_diagnostics.failure_artifact_paths(
@@ -1657,10 +1699,9 @@ def run_live_scenario(
         candidate_write_paths = _meaningful_candidate_write_paths(candidate_write_paths)
         precision_metrics = _precision_metrics(
             required_paths=required_paths,
+            supporting_paths=supporting_paths,
             observed_paths=observed_paths,
-            expected_write_paths=[str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()]
-            if bool(scenario.get("needs_write"))
-            else [],
+            expected_write_paths=expected_write_paths,
             candidate_write_paths=candidate_write_paths,
         )
         if live_timed_out:

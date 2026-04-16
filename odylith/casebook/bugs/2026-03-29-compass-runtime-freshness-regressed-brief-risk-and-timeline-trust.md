@@ -6,7 +6,7 @@
 
 - Severity: P1
 
-- Reproducibility: Intermittent but user-visible
+- Reproducibility: Intermittent
 
 - Type: Product
 

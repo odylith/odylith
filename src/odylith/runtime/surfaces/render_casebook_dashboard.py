@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
@@ -2320,6 +2321,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).resolve()
     output_path = _resolve(repo_root, str(args.output))
+    validation = casebook_source_validation.validate_casebook_sources(repo_root=repo_root)
+    if not validation.passed:
+        casebook_source_validation.print_casebook_source_validation_report(validation)
+        return 2
     skip_rebuild, input_fingerprint, cached_metadata, bundle_paths, _output_paths = (
         generated_surface_refresh_guards.should_skip_surface_rebuild(
             repo_root=repo_root,

@@ -36,6 +36,7 @@ def _write_casebook_bug(
         f"# {title}",
         "",
         f"- Bug ID: {bug_id}",
+        "- Reproducibility: High",
         f"- Linked Workstream: {workstream}",
     ]
     if include_proof_fields:

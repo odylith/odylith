@@ -91,10 +91,14 @@ sections are grounded.
   title-only boilerplate creation
 - extend backlog validation to reject default-generated core sections and
   retrofill the existing offending records
+- make plan/workstream reconciliation skip stale finished-workstream bindings
+  when the supposed active plan is missing or already terminal, so cleanup
+  drift cannot create a successor backlog by accident
 
 ## Scope
 - Radar backlog-detail runtime contract and UI fallback behavior
 - backlog authoring and backlog-contract validation for core-detail sections
+- plan/workstream reconciliation guardrails for finished workstream successors
 - shared backlog-create guidance and Radar authoring policy
 - retrofill for the backlog records that still match the generic core-detail
   boilerplate
@@ -128,10 +132,14 @@ sections are grounded.
   still carries generic core-detail boilerplate
 - no existing backlog record remains in the product repo with default-generated
   core-detail sections
+- stale active-plan rows do not mint successor workstreams after a workstream
+  has already been closed
 
 ## Validation
 - run focused unit tests for backlog authoring, backlog-contract validation,
   context-engine backlog detail loading, and Radar rendering
+- run focused reconciliation tests for stale active-plan rows and terminal plan
+  files
 - run `./.odylith/bin/odylith validate backlog-contract --repo-root .`
 - refresh Radar and verify the generated detail surface picks up the new
   contract

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 from dataclasses import asdict
@@ -26,6 +27,7 @@ _PROJECT_DOC_FALLBACK_FILENAMES: tuple[str, ...] = ("CLAUDE.md",)
 _PROJECT_DOC_MAX_BYTES = 65536
 _AGENTS_MAX_THREADS = 6
 _AGENTS_MAX_DEPTH = 1
+_CODEX_CHECKPOINT_MATCHER_TOKENS: tuple[str, ...] = ("Bash",)
 
 
 @dataclass(frozen=True)
@@ -45,6 +47,9 @@ class CodexCliCapabilitySnapshot:
     trusted_project_required: bool
     hooks_feature_known: bool
     hooks_feature_enabled: bool | None
+    supports_user_prompt_submit_hook: bool
+    supports_post_bash_checkpoint_hook: bool
+    supports_stop_summary_hook: bool
     prompt_input_probe_supported: bool
     prompt_input_probe_passed: bool
     repo_guidance_detected: bool
@@ -124,6 +129,62 @@ def _unsupported_probe(completed: subprocess.CompletedProcess[str] | None) -> bo
     return any(token in combined for token in _UNSUPPORTED_TOKENS)
 
 
+def _load_codex_hooks(repo_root: Path) -> dict[str, Any]:
+    path = repo_root / ".codex" / "hooks.json"
+    if not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _matcher_tokens(value: Any) -> set[str]:
+    matcher = str(value or "").strip()
+    if not matcher:
+        return set()
+    return {token.strip() for token in re.split(r"[|,\s]+", matcher) if token.strip()}
+
+
+def _matcher_covers(value: Any, required_tokens: tuple[str, ...]) -> bool:
+    if not required_tokens:
+        return True
+    matcher = str(value or "").strip()
+    if matcher in {"*", ".*"}:
+        return True
+    tokens = _matcher_tokens(matcher)
+    return all(token in tokens for token in required_tokens)
+
+
+def _hook_command_present(
+    payload: dict[str, Any],
+    event_name: str,
+    command_token: str,
+    *,
+    required_matcher_tokens: tuple[str, ...] = (),
+) -> bool:
+    bucket = payload.get(event_name)
+    if not isinstance(bucket, list):
+        return False
+    needle = str(command_token or "").strip()
+    if not needle:
+        return False
+    for group in bucket:
+        if not isinstance(group, dict):
+            continue
+        hooks = group.get("hooks")
+        if not isinstance(hooks, list):
+            continue
+        for hook in hooks:
+            if not isinstance(hook, dict):
+                continue
+            command = str(hook.get("command") or "")
+            if needle in command and _matcher_covers(group.get("matcher"), required_matcher_tokens):
+                return True
+    return False
+
+
 @lru_cache(maxsize=32)
 def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) -> CodexCliCapabilitySnapshot:
     resolved_root = _resolve_repo_root(repo_root)
@@ -136,6 +197,23 @@ def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) ->
     )
     codex_skill_shims_present = any((resolved_root / ".agents" / "skills").rglob("SKILL.md"))
     baseline_ready = launcher_present and repo_agents_present
+    hooks_payload = _load_codex_hooks(resolved_root)
+    supports_user_prompt_submit_hook = _hook_command_present(
+        hooks_payload,
+        "UserPromptSubmit",
+        "codex prompt-context",
+    )
+    supports_post_bash_checkpoint_hook = _hook_command_present(
+        hooks_payload,
+        "PostToolUse",
+        "codex post-bash-checkpoint",
+        required_matcher_tokens=_CODEX_CHECKPOINT_MATCHER_TOKENS,
+    )
+    supports_stop_summary_hook = _hook_command_present(
+        hooks_payload,
+        "Stop",
+        "codex stop-summary",
+    )
 
     version_run = _run_codex_command(repo_root=resolved_root, codex_bin=codex_bin, args=["--version"])
     codex_available = version_run is not None and version_run.returncode == 0
@@ -163,13 +241,20 @@ def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) ->
             if prompt_input_probe_passed and probe_token:
                 repo_guidance_detected = probe_token in str(prompt_run.stdout or "")
 
+    intervention_hooks_wired = (
+        hooks_feature_enabled is True
+        and supports_user_prompt_submit_hook
+        and supports_post_bash_checkpoint_hook
+        and supports_stop_summary_hook
+    )
+
     overall_posture = "baseline_incomplete"
     if baseline_ready:
         overall_posture = "baseline_safe"
         if codex_available:
             overall_posture = "baseline_safe_with_best_effort_project_assets"
-        if prompt_input_probe_passed and repo_guidance_detected:
-            overall_posture = "baseline_safe_live_proven"
+        if intervention_hooks_wired:
+            overall_posture = "baseline_safe_assistant_visible_ready"
 
     return CodexCliCapabilitySnapshot(
         repo_root=str(resolved_root),
@@ -187,6 +272,9 @@ def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) ->
         trusted_project_required=True,
         hooks_feature_known=hooks_feature_known,
         hooks_feature_enabled=hooks_feature_enabled,
+        supports_user_prompt_submit_hook=supports_user_prompt_submit_hook,
+        supports_post_bash_checkpoint_hook=supports_post_bash_checkpoint_hook,
+        supports_stop_summary_hook=supports_stop_summary_hook,
         prompt_input_probe_supported=prompt_input_probe_supported,
         prompt_input_probe_passed=prompt_input_probe_passed,
         repo_guidance_detected=repo_guidance_detected,

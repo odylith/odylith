@@ -1,8 +1,8 @@
 # Governance Intervention Engine
-Last updated: 2026-04-14
+Last updated: 2026-04-16
 
 
-Last updated (UTC): 2026-04-14
+Last updated (UTC): 2026-04-16
 
 ## Purpose
 Governance Intervention Engine is Odylith's shared conversation-observation
@@ -123,6 +123,12 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - `src/odylith/runtime/intervention_engine/cli.py`
   Thin `odylith governance intervention-preview` and
   `odylith governance capture-apply` entrypoints.
+- `src/odylith/runtime/common/claude_cli_capabilities.py` and selected
+  `src/odylith/runtime/surfaces/claude_host_*` /
+  `src/odylith/runtime/surfaces/codex_host_*` hook adapters
+  Host activation seams that must preserve the shared engine's visible
+  Observation/Proposal contract while using each host's real transcript
+  surface.
 
 ### Core public types
 - `ObservationEnvelope`
@@ -171,10 +177,23 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - Prompt hooks must not suppress that teaser just because anchor resolution or
   launcher-backed context narrowing is unavailable. Missing anchor context is a
   degraded add-on, not permission to silence a real governed signal.
-- In shipped Codex and Claude prompt hooks, the visible user beat should be
-  that teaser sentence through hook `systemMessage`, while the fuller
-  continuity payload keeps the teaser plus any anchor summary in prompt-hook
-  additional context.
+- In shipped prompt hooks, the visible user beat must use the host-visible
+  channel or the assistant-render fallback, not merely any structured payload
+  field. Codex carries the teaser through hook `systemMessage` plus
+  `hookSpecificOutput.additionalContext` with fallback instructions. Claude
+  splits prompt handling: `prompt-context` returns discreet JSON
+  `hookSpecificOutput.additionalContext` with fallback instructions, while
+  `prompt-teaser` prints the earned teaser as a best-effort stdout source when
+  the host exposes it.
+- Codex live-ready posture must not be inferred from `codex debug
+  prompt-input` alone. That probe proves repo guidance reaches model context.
+  The intervention engine requires `features.codex_hooks = true`,
+  `.codex/hooks.json` wiring for prompt, Bash checkpoint, and stop hooks,
+  direct `odylith codex ...` hook payload smoke, and assistant-render fallback
+  proof before claiming the UX can be visible to the user. Current Codex
+  `PostToolUse` schema exposes `Bash` only; native desktop write payloads
+  remain parser-supported for tests and manual fallback but are not automatic
+  hook coverage until the host exposes them.
 - `stop_summary`
   May upgrade to a full `Odylith Observation` when corroboration exists, even
   when proposal readiness is still too low to surface `Odylith Proposal` yet.
@@ -183,17 +202,40 @@ through the heavier closeout chatter stack just to speak one truthful line.
   missed late Observation and may pair that with a shared closeout Assist line
   when the closeout-side bundle is eligible.
 - `post_edit_checkpoint` and `post_bash_checkpoint`
-  Are the primary visible intervention lanes. They may upgrade an earned
+  are the primary visible intervention lanes. They may upgrade an earned
   observation into a proposal by attaching concrete changed-path evidence and
   governed targets, and should surface the earned Observation/Proposal beat
-  visibly at the hook moment instead of trapping it in hidden context only.
+  visibly at the hook moment when the host supports it, or through the
+  assistant-render fallback when the host keeps hook output hidden. On Codex,
+  `post_bash_checkpoint` is the CLI name for the hookable Bash checkpoint
+  surface; native desktop patch/exec payloads are manual/test fallback inputs,
+  not automatic hook coverage. On Claude, direct edits and Bash writes are
+  separate hook commands but must render the same shared intervention bundle
+  shape.
+- Claude `post_edit_checkpoint` and `post_bash_checkpoint` must stay
+  synchronous. Async post-tool hooks can delay output to a later turn and
+  suppress completion notices in normal Claude Code sessions, which breaks
+  the live Observation/Proposal UX.
 - Host payload builders intentionally carry two surfaces at once:
   - hidden developer context (`additionalContext` or
     `hookSpecificOutput.additionalContext`) with the full
-    Observation/Proposal/Assist bundle for model continuity
-  - visible hook `systemMessage` with the earned Observation/Proposal beat and
-    only failure-level governance status when that status materially changes
-    the next move
+    Observation/Proposal/Assist bundle for model continuity plus
+    assistant-render fallback instructions for chat visibility
+  - hook `systemMessage` with the earned Observation/Proposal beat and only
+    failure-level governance status when that status materially changes the
+    next move; this is useful host context but is not alone considered proof
+    that the user saw the beat
+- `odylith codex visible-intervention` and `odylith claude
+  visible-intervention` render plain Markdown fallback output for the assistant
+  to show directly when host hook display is unproven or hidden.
+- Stop-summary hooks may block once with a continuation reason when a real
+  Observation or `Odylith Assist:` closeout was generated but is not already
+  visible in the last assistant message. The `stop_hook_active` guard prevents
+  loops.
+- Stop-summary Assist may use concrete validation/pass signals from the
+  assistant summary when changed paths are unavailable. This recovery path is
+  proof-only: it may say the proof stayed tight, but it must not claim
+  artifact updates without changed-path or governed-target evidence.
 - Success-only governance refresh receipts must not displace an earned visible
   intervention. If a checkpoint already has a real Observation or Proposal,
   the visible surface should stay on that beat and keep routine refresh
@@ -365,7 +407,7 @@ parallel payload schemas.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_engine_apply.py tests/unit/runtime/test_intervention_engine_performance.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_conversation_surface.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_prompt_context.py`
-- `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_claude_host_post_edit_checkpoint.py`
+- `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_claude_host_post_edit_checkpoint.py tests/unit/runtime/test_claude_host_post_bash_checkpoint.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_stop_summary.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py`
 

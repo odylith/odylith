@@ -115,7 +115,17 @@ def host_capabilities(
             {
                 "codex_cli_available": snapshot.codex_available,
                 "codex_cli_version": snapshot.codex_version,
-                "supports_project_hooks": bool(snapshot.hooks_feature_enabled),
+                "supports_project_hooks": bool(
+                    snapshot.hooks_feature_enabled
+                    and snapshot.supports_user_prompt_submit_hook
+                    and snapshot.supports_post_bash_checkpoint_hook
+                    and snapshot.supports_stop_summary_hook
+                ),
+                "supports_prompt_context_hook": snapshot.supports_user_prompt_submit_hook,
+                "supports_post_bash_checkpoint_hook": snapshot.supports_post_bash_checkpoint_hook,
+                "supports_stop_summary_hook": snapshot.supports_stop_summary_hook,
+                "supports_assistant_visible_intervention_fallback": True,
+                "supports_chat_visible_hook_delivery": False,
                 "trusted_project_required": snapshot.trusted_project_required,
                 "project_assets_mode": snapshot.project_assets_mode,
                 "compatibility_posture": snapshot.overall_posture,
@@ -143,7 +153,21 @@ def host_capabilities(
             {
                 "claude_cli_available": snapshot.claude_available,
                 "claude_cli_version": snapshot.claude_version,
-                "supports_project_hooks": snapshot.supports_project_hooks,
+                "supports_project_hooks": bool(
+                    snapshot.supports_project_hooks
+                    and snapshot.supports_prompt_context_hook
+                    and snapshot.supports_prompt_teaser_hook
+                    and snapshot.supports_post_edit_checkpoint_hook
+                    and snapshot.supports_post_bash_checkpoint_hook
+                    and snapshot.supports_stop_summary_hook
+                ),
+                "supports_prompt_context_hook": snapshot.supports_prompt_context_hook,
+                "supports_prompt_teaser_hook": snapshot.supports_prompt_teaser_hook,
+                "supports_post_edit_checkpoint_hook": snapshot.supports_post_edit_checkpoint_hook,
+                "supports_post_bash_checkpoint_hook": snapshot.supports_post_bash_checkpoint_hook,
+                "supports_stop_summary_hook": snapshot.supports_stop_summary_hook,
+                "supports_assistant_visible_intervention_fallback": True,
+                "supports_chat_visible_hook_delivery": False,
                 "supports_subagent_hooks": snapshot.supports_subagent_hooks,
                 "supports_pre_compact_hook": snapshot.supports_pre_compact_hook,
                 "supports_statusline_command": snapshot.supports_statusline_command,

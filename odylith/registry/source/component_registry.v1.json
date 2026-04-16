@@ -973,7 +973,24 @@
         "governed-proposal-engine"
       ],
       "path_prefixes": [
-        "src/odylith/runtime/intervention_engine"
+        ".claude/settings.json",
+        ".codex/hooks.json",
+        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+        "odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md",
+        "src/odylith/bundle/assets/project-root/.claude/settings.json",
+        "src/odylith/bundle/assets/project-root/.codex/hooks.json",
+        "src/odylith/runtime/common/claude_cli_capabilities.py",
+        "src/odylith/runtime/common/codex_cli_capabilities.py",
+        "src/odylith/runtime/intervention_engine",
+        "src/odylith/runtime/surfaces/claude_host_post_edit_checkpoint.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_teaser.py",
+        "src/odylith/runtime/surfaces/claude_host_stop_summary.py",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
       ],
       "workstreams": [
         "B-096"

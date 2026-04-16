@@ -14,8 +14,14 @@ Use when capturing a new Casebook bug record or updating an open bug with fresh 
   `failure signature`, `trigger path`, `ownership`, `blast radius`,
   `SLO/SLA impact`, `data risk`, `security/compliance`, and the
   `invariant violated`.
+- Pass `reproducibility` as one compact token such as `High`, `Medium`, `Low`,
+  `Always`, `Intermittent`, or `Consistent`; never put commands, screenshots,
+  proof shard ids, or prose in that field.
 - If those fields are not yet grounded, keep investigating or update an
   existing bug later. Do not publish a low-evidence placeholder bug record.
+- If Casebook source truth has been hand-edited or looks suspect, run
+  `odylith casebook validate --repo-root .`; Casebook refresh must fail closed
+  on invalid bug markdown before publishing generated surfaces.
 - Keep the bug narrative factual and reproduction-oriented.
 - Link the affected workstream, components, tests, and artifacts explicitly.
 - Link the affected diagrams, validation obligations, and next guardrails or preflight checks whenever they are known.
@@ -39,6 +45,7 @@ Use when capturing a new Casebook bug record or updating an open bug with fresh 
   --data-risk "<data risk posture>" \
   --security-compliance "<security/compliance posture>" \
   --invariant-violated "<broken invariant>"
+./.odylith/bin/odylith casebook validate --repo-root .
 ./.odylith/bin/odylith compass log --repo-root . --kind implementation --summary "<bug capture update>"
 ./.odylith/bin/odylith sync --repo-root . --force
 ```

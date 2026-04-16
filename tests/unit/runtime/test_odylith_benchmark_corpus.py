@@ -25,6 +25,23 @@ def test_public_and_bundle_benchmark_corpus_stay_aligned() -> None:
     assert _load(PUBLIC_CORPUS) == _load(BUNDLE_CORPUS)
 
 
+def test_benchmark_corpus_declares_supporting_paths_and_write_targets_separately() -> None:
+    scenarios = {str(row.get("scenario_id", "")).strip(): row for row in _load_normalized()}
+
+    cross_file = scenarios["cross-file-feature-budget-discipline"]
+    assert "odylith/skills/odylith-subagent-router/SKILL.md" in cross_file["required_paths"]
+    assert "src/odylith/runtime/orchestration/subagent_router.py" in cross_file["supporting_paths"]
+    assert "src/odylith/runtime/orchestration/subagent_router.py" in cross_file["expected_write_paths"]
+    assert "odylith/skills/odylith-subagent-router/SKILL.md" not in cross_file["expected_write_paths"]
+
+    wave3 = scenarios["wave3-explicit-workstream"]
+    assert wave3["needs_write"] is False
+    assert wave3["expected_write_paths"] == []
+
+    benchmark_component = scenarios["benchmark-component-governance-truth"]
+    assert "odylith/atlas/source/catalog/diagrams.v1.json" in benchmark_component["expected_write_paths"]
+
+
 def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
     corpus = _load(PUBLIC_CORPUS)
     assert isinstance(corpus.get("scenarios"), list)

@@ -244,3 +244,49 @@ def test_main_emits_system_message_for_visible_stop_surface(monkeypatch, tmp_pat
     assert exit_code == 0
     payload = json.loads(buffer.getvalue())
     assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."
+    assert payload["decision"] == "block"
+    assert "**Odylith Assist:** kept this grounded." in payload["reason"]
+
+
+def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        claude_host_stop_summary.claude_host_shared,
+        "run_compass_log",
+        lambda **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "session_id": "claude-stop-main-visible",
+                    "last_assistant_message": (
+                        "Implemented the stop-summary visible surface fix for B-096.\n\n"
+                        "**Odylith Assist:** kept this grounded."
+                    ),
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        claude_host_stop_summary,
+        "render_stop_summary",
+        lambda **kwargs: "**Odylith Assist:** kept this grounded.",
+    )
+    monkeypatch.setattr(
+        claude_host_stop_summary,
+        "_stop_intervention_bundle",
+        lambda **kwargs: {},
+    )
+    buffer = io.StringIO()
+    monkeypatch.setattr("sys.stdout", buffer)
+
+    exit_code = claude_host_stop_summary.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(buffer.getvalue())
+    assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."
+    assert "decision" not in payload

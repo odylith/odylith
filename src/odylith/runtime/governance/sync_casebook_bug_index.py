@@ -9,6 +9,7 @@ from typing import Iterable, Sequence
 
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, normalize_casebook_bug_id, resolve_casebook_bug_id
 from odylith.runtime.common.consumer_profile import truth_root_path
+from odylith.runtime.governance import casebook_source_validation
 
 
 _BUG_METADATA_LINE_RE = re.compile(r"^-?\s*([A-Za-z0-9/() _.-]+):\s*(.*)$")
@@ -269,6 +270,14 @@ def sync_casebook_bug_index(*, repo_root: Path, migrate_bug_ids: bool = True) ->
     bug_root.mkdir(parents=True, exist_ok=True)
     if migrate_bug_ids:
         migrate_casebook_bug_ids(repo_root=root)
+    validation = casebook_source_validation.validate_casebook_sources(repo_root=root)
+    if not validation.passed:
+        first_issue = validation.issues[0]
+        raise ValueError(
+            "Casebook source validation failed before index refresh; "
+            f"{first_issue.render(repo_root=validation.repo_root)}. "
+            "Run `odylith casebook validate --repo-root .`."
+        )
     index_path = bug_root / "INDEX.md"
     rendered = render_bug_index(repo_root=root)
     if not index_path.is_file() or index_path.read_text(encoding="utf-8") != rendered:
@@ -278,10 +287,16 @@ def sync_casebook_bug_index(*, repo_root: Path, migrate_bug_ids: bool = True) ->
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
-    sync_casebook_bug_index(
-        repo_root=Path(args.repo_root).resolve(),
-        migrate_bug_ids=bool(args.migrate_bug_ids),
-    )
+    repo_root = Path(args.repo_root).resolve()
+    try:
+        sync_casebook_bug_index(
+            repo_root=repo_root,
+            migrate_bug_ids=bool(args.migrate_bug_ids),
+        )
+    except ValueError:
+        result = casebook_source_validation.validate_casebook_sources(repo_root=repo_root)
+        casebook_source_validation.print_casebook_source_validation_report(result)
+        return 2
     return 0
 
 

@@ -42,6 +42,10 @@
 - Codex project assets only activate when the repo is trusted by Codex, so a
   healthy install can still require an explicit trust step in the host before
   `.codex/hooks.json` and `.codex/agents/*.toml` take effect.
+- A session that was already open before `.codex/hooks.json`,
+  `.codex/config.toml`, or `.claude/settings.json` changed may need a fresh
+  host session before visible hook output appears. Treat direct CLI hook smoke
+  as runtime proof and a fresh host transcript as UX proof.
 - After install or upgrade, use
   `./.odylith/bin/odylith codex compatibility --repo-root .` to inspect the
   local Codex capability posture instead of assuming one exact CLI version is

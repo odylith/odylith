@@ -40,6 +40,8 @@ _BASELINE_CONTRACT = "CLAUDE.md + ./.odylith/bin/odylith"
 _PROJECT_ASSETS_MODE = "first_class_project_surface"
 _FUTURE_VERSION_POLICY = "capability_based_no_max_pin"
 _DEFAULT_CLAUDE_BIN = "claude"
+_CLAUDE_POST_EDIT_MATCHER_TOKENS: tuple[str, ...] = ("Write", "Edit", "MultiEdit")
+_CLAUDE_POST_BASH_MATCHER_TOKENS: tuple[str, ...] = ("Bash",)
 
 
 @dataclass(frozen=True)
@@ -64,6 +66,11 @@ class ClaudeCliCapabilitySnapshot:
     supports_subagent_hooks: bool
     supports_pre_compact_hook: bool
     supports_statusline_command: bool
+    supports_prompt_context_hook: bool
+    supports_prompt_teaser_hook: bool
+    supports_post_edit_checkpoint_hook: bool
+    supports_post_bash_checkpoint_hook: bool
+    supports_stop_summary_hook: bool
     supports_post_tool_matchers: bool
     supports_slash_commands: bool
     future_version_policy: str
@@ -140,6 +147,54 @@ def _hook_event_present(payload: dict[str, Any], event_name: str) -> bool:
     return bool(bucket)
 
 
+def _matcher_tokens(value: Any) -> set[str]:
+    matcher = str(value or "").strip()
+    if not matcher:
+        return set()
+    return {token.strip() for token in re.split(r"[|,\s]+", matcher) if token.strip()}
+
+
+def _matcher_covers(value: Any, required_tokens: tuple[str, ...]) -> bool:
+    if not required_tokens:
+        return True
+    matcher = str(value or "").strip()
+    if matcher in {"*", ".*"}:
+        return True
+    tokens = _matcher_tokens(matcher)
+    return all(token in tokens for token in required_tokens)
+
+
+def _hook_command_present(
+    payload: dict[str, Any],
+    event_name: str,
+    command_token: str,
+    *,
+    required_matcher_tokens: tuple[str, ...] = (),
+) -> bool:
+    hooks = payload.get("hooks") if isinstance(payload, dict) else None
+    if not isinstance(hooks, dict):
+        return False
+    bucket = hooks.get(event_name)
+    if not isinstance(bucket, list):
+        return False
+    needle = str(command_token or "").strip()
+    if not needle:
+        return False
+    for entry in bucket:
+        if not isinstance(entry, dict):
+            continue
+        commands = entry.get("hooks")
+        if not isinstance(commands, list):
+            continue
+        for command_entry in commands:
+            if not isinstance(command_entry, dict):
+                continue
+            command = str(command_entry.get("command") or "")
+            if needle in command and _matcher_covers(entry.get("matcher"), required_matcher_tokens):
+                return True
+    return False
+
+
 @lru_cache(maxsize=32)
 def _inspect_cached(repo_root: str, claude_bin: str, probe_version: bool) -> ClaudeCliCapabilitySnapshot:
     resolved_root = _resolve_repo_root(repo_root)
@@ -179,6 +234,33 @@ def _inspect_cached(repo_root: str, claude_bin: str, probe_version: bool) -> Cla
     supports_statusline_command = isinstance(settings_payload.get("statusLine"), dict) and bool(
         str((settings_payload.get("statusLine") or {}).get("command", "")).strip()
     )
+    supports_prompt_context_hook = _hook_command_present(
+        settings_payload,
+        "UserPromptSubmit",
+        "claude prompt-context",
+    )
+    supports_prompt_teaser_hook = _hook_command_present(
+        settings_payload,
+        "UserPromptSubmit",
+        "claude prompt-teaser",
+    )
+    supports_post_edit_checkpoint_hook = _hook_command_present(
+        settings_payload,
+        "PostToolUse",
+        "claude post-edit-checkpoint",
+        required_matcher_tokens=_CLAUDE_POST_EDIT_MATCHER_TOKENS,
+    )
+    supports_post_bash_checkpoint_hook = _hook_command_present(
+        settings_payload,
+        "PostToolUse",
+        "claude post-bash-checkpoint",
+        required_matcher_tokens=_CLAUDE_POST_BASH_MATCHER_TOKENS,
+    )
+    supports_stop_summary_hook = _hook_command_present(
+        settings_payload,
+        "Stop",
+        "claude stop-summary",
+    )
     supports_post_tool_matchers = False
     if isinstance(settings_payload.get("hooks"), dict):
         post_tool = settings_payload["hooks"].get("PostToolUse")
@@ -193,14 +275,21 @@ def _inspect_cached(repo_root: str, claude_bin: str, probe_version: bool) -> Cla
     supports_slash_commands = project_commands_present
 
     overall_posture = "baseline_incomplete"
+    live_intervention_hooks_wired = (
+        supports_prompt_context_hook
+        and supports_prompt_teaser_hook
+        and supports_post_edit_checkpoint_hook
+        and supports_post_bash_checkpoint_hook
+        and supports_stop_summary_hook
+    )
     if baseline_ready:
         overall_posture = "baseline_safe"
         if project_settings_present:
             overall_posture = "baseline_safe_with_project_assets"
         if claude_available:
             overall_posture = "baseline_safe_with_local_claude_cli"
-        if claude_available and project_settings_present:
-            overall_posture = "baseline_safe_live_proven"
+        if project_settings_present and live_intervention_hooks_wired:
+            overall_posture = "baseline_safe_assistant_visible_ready"
 
     return ClaudeCliCapabilitySnapshot(
         repo_root=str(resolved_root),
@@ -223,6 +312,11 @@ def _inspect_cached(repo_root: str, claude_bin: str, probe_version: bool) -> Cla
         supports_subagent_hooks=supports_subagent_hooks,
         supports_pre_compact_hook=supports_pre_compact_hook,
         supports_statusline_command=supports_statusline_command,
+        supports_prompt_context_hook=supports_prompt_context_hook,
+        supports_prompt_teaser_hook=supports_prompt_teaser_hook,
+        supports_post_edit_checkpoint_hook=supports_post_edit_checkpoint_hook,
+        supports_post_bash_checkpoint_hook=supports_post_bash_checkpoint_hook,
+        supports_stop_summary_hook=supports_stop_summary_hook,
         supports_post_tool_matchers=supports_post_tool_matchers,
         supports_slash_commands=supports_slash_commands,
         future_version_policy=_FUTURE_VERSION_POLICY,
@@ -315,6 +409,11 @@ def _baked_hooks_block() -> dict[str, Any]:
                         "type": "command",
                         "command": _baked_hook_command("prompt-context"),
                         "timeout": 30,
+                    },
+                    {
+                        "type": "command",
+                        "command": _baked_hook_command("prompt-teaser"),
+                        "timeout": 30,
                     }
                 ]
             }
@@ -338,7 +437,16 @@ def _baked_hooks_block() -> dict[str, Any]:
                     {
                         "type": "command",
                         "command": _baked_hook_command("post-edit-checkpoint"),
-                        "async": True,
+                        "timeout": 180,
+                    }
+                ],
+            },
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": _baked_hook_command("post-bash-checkpoint"),
                         "timeout": 180,
                     }
                 ],

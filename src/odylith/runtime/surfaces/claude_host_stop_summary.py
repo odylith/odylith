@@ -177,7 +177,17 @@ def main(argv: list[str] | None = None) -> int:
             include_proposal=False,
         )
     if rendered:
-        sys.stdout.write(json.dumps(host_surface_runtime.stop_payload(system_message=rendered)))
+        sys.stdout.write(
+            json.dumps(
+                host_surface_runtime.stop_payload(
+                    system_message=rendered,
+                    block_for_visible_delivery=not host_surface_runtime.visible_delivery_already_present(
+                        last_assistant_message=str(payload.get("last_assistant_message", "")),
+                        visible_text=rendered,
+                    ),
+                )
+            )
+        )
     return 0
 
 

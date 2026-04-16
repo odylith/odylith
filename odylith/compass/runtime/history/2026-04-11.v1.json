@@ -19807,7 +19807,7 @@
       "why": {
         "problem": "Odylith could describe its local backend, compiler bundle, and evaluation posture, but it still did not tell an operator which memory areas actually exist today, which ones are only partial, and which ones are still missing. That made the product\u2019s memory story feel more complex than it really is.",
         "customer": "- Primary: Odylith operators and maintainers trying to understand what memory Odylith really has on a fresh install or active repo. - Secondary: future Odylith contributors who need one explicit memory posture contract instead of scattered backend-specific terminology.",
-        "proposed_solution": "Add a first-class `memory_areas.v1` section to the runtime memory snapshot, surface it in `odylith context-engine status`, and render it in the shared shell telemetry drawer as a concise operator readout.",
+        "proposed_solution": "Add a first-class `memory_areas.v1` section to the runtime memory snapshot and surface it in `odylith context-engine status` plus non-telemetry operator readouts.",
         "opportunity": "By turning memory posture into named areas, Odylith can expose its real current strengths and gaps without pretending that planned collaboration and durable judgment memory already exist.",
         "why_now": "Odylith\u2019s install and shell experience improved, which made the remaining memory-story ambiguity more obvious. This is the right time to make the memory contract legible before deeper collaboration-memory work lands.",
         "founder_pov": "If Odylith has real memory power, it should show that power plainly and admit the missing areas just as plainly."
@@ -40606,7 +40606,7 @@
       "why": {
         "problem": "Odylith could describe its local backend, compiler bundle, and evaluation posture, but it still did not tell an operator which memory areas actually exist today, which ones are only partial, and which ones are still missing. That made the product\u2019s memory story feel more complex than it really is.",
         "customer": "- Primary: Odylith operators and maintainers trying to understand what memory Odylith really has on a fresh install or active repo. - Secondary: future Odylith contributors who need one explicit memory posture contract instead of scattered backend-specific terminology.",
-        "proposed_solution": "Add a first-class `memory_areas.v1` section to the runtime memory snapshot, surface it in `odylith context-engine status`, and render it in the shared shell telemetry drawer as a concise operator readout.",
+        "proposed_solution": "Add a first-class `memory_areas.v1` section to the runtime memory snapshot and surface it in `odylith context-engine status` plus non-telemetry operator readouts.",
         "opportunity": "By turning memory posture into named areas, Odylith can expose its real current strengths and gaps without pretending that planned collaboration and durable judgment memory already exist.",
         "why_now": "Odylith\u2019s install and shell experience improved, which made the remaining memory-story ambiguity more obvious. This is the right time to make the memory contract legible before deeper collaboration-memory work lands.",
         "founder_pov": "If Odylith has real memory power, it should show that power plainly and admit the missing areas just as plainly."

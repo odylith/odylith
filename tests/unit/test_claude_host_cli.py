@@ -43,6 +43,26 @@ def test_claude_host_cli_dispatches_post_edit_checkpoint(monkeypatch) -> None:
     ]
 
 
+def test_claude_host_cli_dispatches_post_bash_checkpoint(monkeypatch) -> None:
+    seen: list[tuple[str, list[str]]] = []
+
+    monkeypatch.setattr(
+        cli,
+        "_run_module_main",
+        lambda module_name, argv: seen.append((module_name, list(argv))) or 0,
+    )
+
+    exit_code = cli.main(["claude", "post-bash-checkpoint", "--repo-root", "/tmp/repo"])
+
+    assert exit_code == 0
+    assert seen == [
+        (
+            "odylith.runtime.surfaces.claude_host_post_bash_checkpoint",
+            ["--repo-root", "/tmp/repo"],
+        )
+    ]
+
+
 def test_claude_host_cli_dispatches_session_start(monkeypatch) -> None:
     seen: list[tuple[str, list[str]]] = []
     monkeypatch.setattr(
@@ -133,6 +153,25 @@ def test_claude_host_cli_dispatches_prompt_context(monkeypatch) -> None:
     assert seen == [
         (
             "odylith.runtime.surfaces.claude_host_prompt_context",
+            ["--repo-root", "/tmp/repo"],
+        )
+    ]
+
+
+def test_claude_host_cli_dispatches_prompt_teaser(monkeypatch) -> None:
+    seen: list[tuple[str, list[str]]] = []
+    monkeypatch.setattr(
+        cli,
+        "_run_module_main",
+        lambda module_name, argv: seen.append((module_name, list(argv))) or 0,
+    )
+
+    exit_code = cli.main(["claude", "prompt-teaser", "--repo-root", "/tmp/repo"])
+
+    assert exit_code == 0
+    assert seen == [
+        (
+            "odylith.runtime.surfaces.claude_host_prompt_teaser",
             ["--repo-root", "/tmp/repo"],
         )
     ]

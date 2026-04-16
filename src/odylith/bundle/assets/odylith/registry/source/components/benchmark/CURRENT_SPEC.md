@@ -439,6 +439,17 @@ with the families that look and feel most like normal coding-agent work.
   contracts or runbooks before generic guidance surfaces. Generic files such
   as `AGENTS.md`, `agents-guidelines/*`, or skills are valid support docs only
   when they are also the most relevant truthful read for the slice.
+- Corpus path semantics must keep grounding recall, supporting evidence, and
+  write-surface precision separate. `required_paths` remain the recall target;
+  `supporting_paths` are legitimate prompt-visible or command-visible evidence
+  that may count as relevant for precision but never satisfy required-path
+  recall; `expected_write_paths` are the only authoritative write-target set
+  when present, so broad `changed_paths` anchors cannot silently become write
+  expectations.
+- Manual or case-selected live benchmark runs must execute only the selected
+  comparison rows plus required validators. Singleton latency probes and live
+  adoption samples are full-corpus publication probes, not hidden fanout for
+  focused repro or developer smoke runs.
 - Live proof completion recovery must prefer `result.json` but fall back to a
   schema-valid final `agent_message` from the host JSON event stream before
   declaring `missing_schema_output`.

@@ -12,6 +12,7 @@ to refresh governed Odylith surfaces for the current changed slice.
    use the owned-surface command for the touched slice:
    `./.odylith/bin/odylith radar refresh --repo-root .`,
    `./.odylith/bin/odylith registry refresh --repo-root .`,
+   `./.odylith/bin/odylith casebook validate --repo-root .`,
    `./.odylith/bin/odylith casebook refresh --repo-root .`,
    `./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync`,
    `./.odylith/bin/odylith compass refresh --repo-root .`, or

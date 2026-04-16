@@ -2,6 +2,8 @@
 
 This command is intentionally conservative and deterministic:
 - scope is limited to touched/new active plans,
+- stale active-index rows whose in-progress plan file no longer exists are
+  skipped instead of creating successor workstreams,
 - queued links are promoted to planning and moved into execution table,
 - already-active links repair execution-table placement when drift leaves them in
   the ranked backlog,
@@ -35,6 +37,8 @@ _EXECUTION_SECTION_TITLES = (
     "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress` or an active parent wave)",
     "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)",
 )
+_TERMINAL_PLAN_STATUSES = {"done", "complete", "completed", "archived", "cancelled", "canceled"}
+_PLAN_STATUS_RE = re.compile(r"(?im)^\s*Status:\s*(?P<status>.+?)\s*$")
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -70,6 +74,34 @@ def _replace_metadata_value(text: str, *, key: str, value: str) -> str:
     if count == 0:
         raise ValueError(f"missing metadata key `{key}`")
     return updated
+
+
+def _active_plan_block_reason(*, repo_root: Path, plan_path: str) -> str:
+    """Return why an active plan-index row is not safe to reconcile."""
+
+    normalized = str(plan_path or "").strip()
+    if not normalized.startswith("odylith/technical-plans/in-progress/"):
+        return "Plan index row is not an in-progress plan path."
+
+    resolved = (repo_root / normalized).resolve()
+    try:
+        resolved.relative_to(repo_root.resolve())
+    except ValueError:
+        return "Plan index row points outside the repository."
+    if not resolved.is_file():
+        return "Plan index still references an in-progress plan file that is no longer present."
+
+    try:
+        text = resolved.read_text(encoding="utf-8")
+    except OSError:
+        return "Plan file could not be read for lifecycle confirmation."
+    status_match = _PLAN_STATUS_RE.search(text)
+    if status_match is None:
+        return ""
+    status = " ".join(status_match.group("status").strip().lower().split())
+    if status in _TERMINAL_PLAN_STATUSES:
+        return f"Plan file is terminal (`{status}`), so active binding reconciliation must not create successor work."
+    return ""
 
 
 def _split_ids(raw: str) -> list[str]:
@@ -734,6 +766,19 @@ def reconcile_plan_workstream_binding(
                     backlog_after=backlog_before,
                     action="missing_workstream",
                     details="Referenced workstream was not found in backlog ideas.",
+                )
+            )
+            continue
+
+        plan_block_reason = _active_plan_block_reason(repo_root=repo_root, plan_path=plan_path)
+        if plan_block_reason:
+            decisions.append(
+                governance.PlanBindingDecision(
+                    plan_path=plan_path,
+                    backlog_before=spec.idea_id,
+                    backlog_after=spec.idea_id,
+                    action="stale_active_plan_binding",
+                    details=plan_block_reason,
                 )
             )
             continue

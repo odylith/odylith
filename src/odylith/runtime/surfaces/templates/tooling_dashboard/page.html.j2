@@ -40,7 +40,6 @@
 
     <section class="viewport" aria-live="polite">
 {% if welcome_html %}{{ welcome_html | safe }}{% endif %}
-{% if system_status_html %}{{ system_status_html | safe }}{% endif %}
       <div id="shellRecoveryDock" class="shell-recovery-dock" hidden aria-live="polite">
         <button id="welcomeReopen" type="button" class="shell-recovery-button" hidden aria-hidden="true">Starter Guide</button>
         <button id="upgradeReopen" type="button" class="shell-recovery-button shell-recovery-button-upgrade" hidden aria-hidden="true"></button>
@@ -95,7 +94,6 @@
     </section>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
   <script id="toolingDashboardData" type="application/json">{{ payload_json | safe }}</script>
   <script>
 {{ control_script | safe }}

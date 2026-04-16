@@ -14,7 +14,7 @@ product_impact: 5
 
 market_value: 4
 
-impacted_parts: judgment memory snapshot contract, workspace and actor memory posture, contradiction and outcome persistence, shell telemetry, CLI runtime readouts, benchmark proof, and the memory backend component boundary
+impacted_parts: judgment memory snapshot contract, workspace and actor memory posture, contradiction and outcome persistence, runtime diagnostics, CLI runtime readouts, benchmark proof, and the memory backend component boundary
 
 sizing: L
 
@@ -165,7 +165,8 @@ or disproved its decisions.
 - `memory_snapshot.v1` gains a `judgment_memory` section
 - `.odylith/runtime/odylith-memory/odylith-judgment-memory.v1.json` becomes a
   durable local runtime artifact
-- the shared shell telemetry drawer renders a dedicated judgment-memory readout
+- runtime and diagnostic readouts expose judgment-memory posture without
+  reintroducing dashboard shell telemetry UI
 - the local memory backend becomes a first-class Registry component
 
 ## Migration/Compatibility

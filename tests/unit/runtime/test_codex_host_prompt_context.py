@@ -94,5 +94,6 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, capsys) -> 
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith can already")
-    assert payload["systemMessage"] == payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
+    assert "Odylith can already" in payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["systemMessage"].startswith("Odylith can already")

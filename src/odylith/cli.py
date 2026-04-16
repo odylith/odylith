@@ -55,6 +55,7 @@ _COMPASS_WATCH_TRANSACTIONS_MODULE = "odylith.runtime.surfaces.watch_prompt_tran
 _COMPASS_RESTORE_HISTORY_MODULE = "odylith.runtime.surfaces.restore_compass_history"
 _SUBAGENT_ROUTER_MODULE = "odylith.runtime.orchestration.subagent_router"
 _SUBAGENT_ORCHESTRATOR_MODULE = "odylith.runtime.orchestration.subagent_orchestrator"
+_CASEBOOK_SOURCE_VALIDATION_MODULE = "odylith.runtime.governance.casebook_source_validation"
 _GOVERNANCE_COMMAND_MODULES = {
     "normalize-plan-risk-mitigation": "odylith.runtime.governance.normalize_plan_risk_mitigation",
     "backfill-workstream-traceability": "odylith.runtime.governance.backfill_workstream_traceability",
@@ -68,6 +69,7 @@ _GOVERNANCE_COMMAND_MODULES = {
 }
 _VALIDATE_COMMAND_MODULES = {
     "backlog-contract": "odylith.runtime.governance.validate_backlog_contract",
+    "casebook-source": _CASEBOOK_SOURCE_VALIDATION_MODULE,
     "component-registry": "odylith.runtime.governance.validate_component_registry_contract",
     "component-registry-contract": "odylith.runtime.governance.validate_component_registry_contract",
     "guidance-portability": "odylith.runtime.governance.validate_guidance_portability",
@@ -90,8 +92,11 @@ _CLAUDE_HOST_COMMAND_MODULES = {
     "session-start": "odylith.runtime.surfaces.claude_host_session_brief",
     "subagent-start": "odylith.runtime.surfaces.claude_host_subagent_start",
     "prompt-context": "odylith.runtime.surfaces.claude_host_prompt_context",
+    "prompt-teaser": "odylith.runtime.surfaces.claude_host_prompt_teaser",
     "bash-guard": "odylith.runtime.surfaces.claude_host_bash_guard",
     "post-edit-checkpoint": "odylith.runtime.surfaces.claude_host_post_edit_checkpoint",
+    "post-bash-checkpoint": "odylith.runtime.surfaces.claude_host_post_bash_checkpoint",
+    "visible-intervention": "odylith.runtime.surfaces.claude_host_visible_intervention",
     "subagent-stop": "odylith.runtime.surfaces.claude_host_subagent_stop",
     "stop-summary": "odylith.runtime.surfaces.claude_host_stop_summary",
 }
@@ -100,6 +105,7 @@ _CODEX_HOST_COMMAND_MODULES = {
     "prompt-context": "odylith.runtime.surfaces.codex_host_prompt_context",
     "bash-guard": "odylith.runtime.surfaces.codex_host_bash_guard",
     "post-bash-checkpoint": "odylith.runtime.surfaces.codex_host_post_bash_checkpoint",
+    "visible-intervention": "odylith.runtime.surfaces.codex_host_visible_intervention",
     "stop-summary": "odylith.runtime.surfaces.codex_host_stop_summary",
     "compatibility": "odylith.runtime.surfaces.codex_host_compatibility",
 }
@@ -200,6 +206,7 @@ validate_plan_risk_mitigation_contract = _register_lazy_module(
 )
 validate_self_host_posture = _register_lazy_module("odylith.runtime.governance.validate_self_host_posture")
 validate_plan_workstream_binding = _register_lazy_module("odylith.runtime.governance.validate_plan_workstream_binding")
+casebook_source_validation = _register_lazy_module(_CASEBOOK_SOURCE_VALIDATION_MODULE)
 maintainer_lane_status = _register_lazy_module(_MAINTAINER_LANE_STATUS_MODULE)
 odylith_context_engine = _register_lazy_module(_CONTEXT_ENGINE_MODULE)
 benchmark_compare = _register_lazy_module(_BENCHMARK_COMPARE_MODULE)
@@ -1259,6 +1266,16 @@ def _cmd_owned_surface_refresh(args: argparse.Namespace, *, surface: str) -> int
     )
 
 
+def _cmd_casebook_validate(args: argparse.Namespace) -> int:
+    forwarded: list[str] = []
+    if bool(getattr(args, "as_json", False)):
+        forwarded.append("--json")
+    return _run_module_main(
+        _CASEBOOK_SOURCE_VALIDATION_MODULE,
+        ensure_repo_root_args(repo_root=args.repo_root, argv=forwarded),
+    )
+
+
 def _cmd_governance(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
@@ -2027,11 +2044,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Refresh the Casebook surface only.",
     )
     _configure_surface_refresh_parser(casebook_refresh)
+    casebook_validate = casebook_subparsers.add_parser(
+        "validate",
+        help="Validate Casebook markdown source records before rendering.",
+    )
+    casebook_validate.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    casebook_validate.add_argument("--json", action="store_true", dest="as_json", help="Render the validation result as JSON.")
 
     validate = subparsers.add_parser("validate", help="Run Odylith governance and contract validators.")
     validate_subparsers = validate.add_subparsers(dest="validate_command", required=True)
     for command, help_text in (
         ("backlog-contract", "Validate Radar backlog and plan linkage contracts."),
+        ("casebook-source", "Validate Casebook markdown source records before rendering."),
         ("component-registry", "Validate Registry component inventory contracts."),
         ("component-registry-contract", "Validate Registry component inventory contracts."),
         ("guidance-portability", "Validate maintained guidance for portable Python and pytest invocation patterns."),
@@ -2190,9 +2214,12 @@ def build_parser() -> argparse.ArgumentParser:
     for command, help_text in (
         ("session-start", "Render the Odylith-grounded Claude SessionStart hook output."),
         ("subagent-start", "Render the Odylith-grounded Claude SubagentStart hook output."),
-        ("prompt-context", "Render the Odylith-grounded Claude UserPromptSubmit hook output."),
+        ("prompt-context", "Render discreet Odylith Claude UserPromptSubmit context."),
+        ("prompt-teaser", "Render best-effort Odylith Claude UserPromptSubmit teaser output."),
         ("bash-guard", "Evaluate the Odylith destructive-command guard for Claude Bash hooks."),
         ("post-edit-checkpoint", "Refresh Odylith governance dashboards after a Claude Write/Edit/MultiEdit tool call."),
+        ("post-bash-checkpoint", "Nudge Odylith checkpointing after edit-like Claude Bash tool calls."),
+        ("visible-intervention", "Render chat-visible Odylith Markdown when Claude hook display is hidden."),
         ("subagent-stop", "Append a Compass agent-stream event for a Claude SubagentStop hook payload."),
         ("stop-summary", "Log meaningful Claude stop summaries to Compass."),
     ):
@@ -2208,7 +2235,8 @@ def build_parser() -> argparse.ArgumentParser:
         ("session-start-ground", "Render the Odylith-grounded Codex SessionStart hook output."),
         ("prompt-context", "Render the Odylith-grounded Codex UserPromptSubmit hook output."),
         ("bash-guard", "Evaluate the Odylith destructive-command guard for Codex Bash hooks."),
-        ("post-bash-checkpoint", "Nudge Odylith checkpointing after edit-like Codex Bash commands."),
+        ("post-bash-checkpoint", "Nudge Odylith checkpointing after edit-like Codex tool calls."),
+        ("visible-intervention", "Render chat-visible Odylith Markdown when Codex hook display is hidden."),
         ("stop-summary", "Log meaningful Codex stop summaries to Compass."),
         ("compatibility", "Inspect the local Codex compatibility posture for Odylith."),
     ):
@@ -2326,6 +2354,16 @@ def main(argv: list[str] | None = None) -> int:
                     atlas=False,
                 ),
                 surface=surface,
+            )
+        if tokens[0] == "casebook" and len(tokens) >= 2 and tokens[1] == "validate":
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            if _help_requested(forwarded):
+                parser = build_parser()
+                args = parser.parse_args(tokens)
+                return _cmd_casebook_validate(args)
+            return _run_module_main(
+                _CASEBOOK_SOURCE_VALIDATION_MODULE,
+                ensure_repo_root_args(repo_root=repo_root, argv=forwarded),
             )
         if tokens[0] == "release" and len(tokens) >= 2:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
@@ -2533,6 +2571,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_bug(args)
     if args.command == "casebook" and args.casebook_command == "refresh":
         return _cmd_owned_surface_refresh(args, surface="casebook")
+    if args.command == "casebook" and args.casebook_command == "validate":
+        return _cmd_casebook_validate(args)
     if args.command == "backlog":
         return _cmd_backlog(args)
     if args.command == "release":

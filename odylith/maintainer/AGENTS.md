@@ -157,8 +157,16 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   feel like a fresh branded interruption.
 - For Codex and Claude checkpoint hooks, keep the full Observation,
   Proposal, and Assist bundle in hidden developer context for continuity, but
-  surface the earned Observation/Proposal beat visibly at the hook moment.
-  Stop is the fallback closeout lane, not the primary intervention moment.
+  surface the earned Observation/Proposal beat visibly at the hook moment when
+  the host renders hook output. If the host keeps hook output hidden, render
+  the assistant-visible fallback Markdown in chat instead of claiming the
+  engine is active. Stop is the fallback closeout lane, not the primary
+  intervention moment.
+- Hook `systemMessage` or `additionalContext` generation is not proof of
+  chat-visible UX. The user-visible contract is satisfied only by rendered
+  chat text or by a host channel that is proven visible in the active session.
+  When in doubt, run `odylith codex visible-intervention` or `odylith claude
+  visible-intervention` and show that Markdown directly.
 - Make the interjection obvious immediately. Observation should tell the user
   why Odylith is stepping in without making them parse a card full of
   sections, and Proposal copy should sound like a crisp human recommendation

@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
+from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 
 
@@ -41,6 +42,48 @@ def test_post_bash_checkpoint_runs_start_for_edit_like_commands(monkeypatch) -> 
     assert calls == [("/tmp/repo", ["start", "--repo-root", "."], 20)]
 
 
+def test_post_bash_checkpoint_runs_start_for_native_apply_patch_payload(monkeypatch) -> None:
+    calls: list[tuple[str, list[str], int]] = []
+    observed_commands: list[str] = []
+    patch = (
+        "*** Begin Patch\n"
+        "*** Update File: src/odylith/runtime/intervention_engine/host_surface_runtime.py\n"
+        "@@\n"
+        "-old\n"
+        "+new\n"
+        "*** End Patch\n"
+    )
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"tool_name": "apply_patch", "tool_input": {"patch": patch}})),
+    )
+
+    def _fake_run_odylith(*, project_dir, args, timeout=20):
+        calls.append((str(project_dir), args, timeout))
+        return None
+
+    def _fake_command_scoped_governed_paths(*, project_dir, command):
+        del project_dir
+        observed_commands.append(command)
+        return []
+
+    monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "command_scoped_governed_paths",
+        _fake_command_scoped_governed_paths,
+    )
+
+    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", "/tmp/repo"])
+
+    assert exit_code == 0
+    assert calls == [("/tmp/repo", ["start", "--repo-root", "."], 20)]
+    assert observed_commands
+    assert observed_commands[0].startswith("apply_patch <<'PATCH'")
+    assert "src/odylith/runtime/intervention_engine/host_surface_runtime.py" in observed_commands[0]
+
+
 def test_post_bash_checkpoint_skips_non_edit_like_commands(monkeypatch) -> None:
     calls: list[tuple[str, list[str], int]] = []
 
@@ -55,6 +98,21 @@ def test_post_bash_checkpoint_skips_non_edit_like_commands(monkeypatch) -> None:
 
     assert exit_code == 0
     assert calls == []
+
+
+def test_codex_command_from_hook_payload_supports_exec_command_cmd() -> None:
+    payload = {"tool_name": "exec_command", "tool_input": {"cmd": "python3 -c 'open(\"src/foo.py\", \"w\").write(\"x\")'"}}
+
+    assert codex_host_shared.command_from_hook_payload(payload) == payload["tool_input"]["cmd"]
+
+
+def test_codex_command_from_hook_payload_supports_arguments_json() -> None:
+    payload = {
+        "tool_name": "exec_command",
+        "arguments": json.dumps({"cmd": "python3 -c 'open(\"src/foo.py\", \"w\").write(\"x\")'"}),
+    }
+
+    assert codex_host_shared.command_from_hook_payload(payload) == json.loads(payload["arguments"])["cmd"]
 
 
 def test_post_bash_checkpoint_runs_selective_sync_when_governed_paths_change(

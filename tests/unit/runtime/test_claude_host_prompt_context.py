@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 from odylith.runtime.surfaces import claude_host_prompt_context
+from odylith.runtime.surfaces import claude_host_prompt_teaser
 
 
 def test_render_prompt_context_resolves_first_anchor_via_override() -> None:
@@ -102,7 +103,7 @@ def test_main_runs_context_command_for_first_anchor(monkeypatch, tmp_path: Path,
     assert "systemMessage" not in payload
 
 
-def test_main_surfaces_a_teaser_when_launcher_missing_but_prompt_signal_is_real(
+def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -135,5 +136,42 @@ def test_main_surfaces_a_teaser_when_launcher_missing_but_prompt_signal_is_real(
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith can already")
-    assert payload["systemMessage"] == payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
+    assert "Odylith can already" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "systemMessage" not in payload
+
+
+def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    project = tmp_path / "repo"
+    project.mkdir()
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "Continue work on B-088"})),
+    )
+    monkeypatch.setattr(
+        claude_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "teaser",
+                    "teaser_text": (
+                        "Odylith can already see governed truth starting to crystallize here. "
+                        "One more corroborating signal and it can turn that into a proposal."
+                    ),
+                }
+            }
+        },
+    )
+
+    exit_code = claude_host_prompt_teaser.main(["--repo-root", str(project)])
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert output.startswith("Odylith can already")
+    assert not output.lstrip().startswith("{")

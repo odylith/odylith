@@ -1,7 +1,7 @@
-"""Codex PostToolUse Bash checkpoint for edit-like shell commands.
+"""Codex PostToolUse checkpoint for edit-like Codex tool calls.
 
-When Codex finishes an edit-like Bash command (``apply_patch``, ``cp``,
-``mv``, ``sed -i``, etc. — see
+When Codex finishes an edit-like Bash command or native patch tool call
+(``apply_patch``, ``cp``, ``mv``, ``sed -i``, etc. -- see
 ``codex_host_shared.edit_like_bash``), this hook nudges Odylith in two
 narrow steps:
 
@@ -14,13 +14,14 @@ narrow steps:
 
 The second step is Bash-checkpoint parity with Claude's
 ``post-edit-checkpoint`` hook
-(``claude_host_post_edit_checkpoint.refresh_governance``). It is
-*not* a universal host-edit parity: any future non-Bash edit surface
-in Codex would need its own hook module.
+(``claude_host_post_edit_checkpoint.refresh_governance``). Current Codex hook
+schemas expose ``PostToolUse`` for ``Bash`` only; native desktop/app tool
+payloads can still be parsed by this module in tests or manual fallback
+commands, but they are not claimed as automatically hook-dispatched.
 
-The hook never blocks the bash command. It always exits 0; on failure
-it emits a fail-soft ``systemMessage`` describing what went wrong so
-the operator can recover manually if needed.
+The hook never blocks the tool call. It always exits 0; on failure
+it emits a fail-soft ``systemMessage`` and assistant-visible fallback context
+describing what went wrong so the operator can recover manually if needed.
 """
 
 from __future__ import annotations

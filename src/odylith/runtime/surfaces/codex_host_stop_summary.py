@@ -143,6 +143,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo-root", default=".", help="Repository root for launcher resolution.")
     args = parser.parse_args(list(argv or []))
     payload = codex_host_shared.load_payload()
+    if bool(payload.get("stop_hook_active")):
+        return 0
     message = str(payload.get("last_assistant_message", ""))
     session_id = codex_host_shared.hook_session_id(payload)
     log_codex_stop_summary(args.repo_root, message=message)
@@ -164,7 +166,17 @@ def main(argv: list[str] | None = None) -> int:
             include_proposal=False,
         )
     if rendered:
-        sys.stdout.write(json.dumps(host_surface_runtime.stop_payload(system_message=rendered)))
+        sys.stdout.write(
+            json.dumps(
+                host_surface_runtime.stop_payload(
+                    system_message=rendered,
+                    block_for_visible_delivery=not host_surface_runtime.visible_delivery_already_present(
+                        last_assistant_message=message,
+                        visible_text=rendered,
+                    ),
+                )
+            )
+        )
     return 0
 
 
