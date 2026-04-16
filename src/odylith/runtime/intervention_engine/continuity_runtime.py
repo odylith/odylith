@@ -39,13 +39,21 @@ def _mapping(value: Any) -> dict[str, Any]:
 
 def _event_stage(event: Mapping[str, Any]) -> str:
     kind = _normalize_string(event.get("kind")).lower()
-    if kind == "intervention_teaser":
+    if kind in {"intervention_teaser", "ambient_signal"}:
         return "teaser"
     if kind == "intervention_card":
         return "card"
     if kind in {"capture_proposed", "capture_applied", "capture_declined"}:
         return "proposal"
     return "silent"
+
+
+def _event_has_proven_visible_delivery(event: Mapping[str, Any]) -> bool:
+    status = _normalize_string(event.get("delivery_status")).lower().replace("-", "_").replace(" ", "_")
+    channel = _normalize_string(event.get("delivery_channel")).lower().replace("-", "_").replace(" ", "_")
+    if status in {"best_effort_visible", "manual_visible", "stop_continuation_ready"}:
+        return True
+    return channel in {"manual_visible_command", "stdout_teaser", "stop_one_shot_guard"}
 
 
 def moment_continuity_snapshot(
@@ -88,7 +96,7 @@ def moment_continuity_snapshot(
     matching = key_matches if key_matches else signature_matches
     latest = matching[-1] if matching else {}
     latest_kind = _normalize_string(latest.get("kind")).lower()
-    seen_teaser = any(_normalize_string(row.get("kind")).lower() == "intervention_teaser" for row in matching)
+    seen_teaser = any(_normalize_string(row.get("kind")).lower() in {"intervention_teaser", "ambient_signal"} for row in matching)
     seen_card = any(_normalize_string(row.get("kind")).lower() == "intervention_card" for row in matching)
     latest_moment_kind = _normalize_string(latest.get("moment_kind")).lower()
     latest_stage = _event_stage(latest)
@@ -116,6 +124,9 @@ def moment_continuity_snapshot(
         "latest_display_markdown": _normalize_string(latest.get("display_markdown")),
         "latest_display_plain": _normalize_string(latest.get("display_plain")),
         "latest_turn_phase": _normalize_string(latest.get("turn_phase")).lower(),
+        "latest_delivery_channel": _normalize_string(latest.get("delivery_channel")).lower(),
+        "latest_delivery_status": _normalize_string(latest.get("delivery_status")).lower(),
+        "latest_proven_visible_delivery": _event_has_proven_visible_delivery(latest),
     }
     _CONTINUITY_CACHE[cache_key] = payload
     return dict(payload)

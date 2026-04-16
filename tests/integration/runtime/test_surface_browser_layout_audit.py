@@ -999,10 +999,8 @@ def _assert_compass_program_focus_does_not_repeat_outer_program_chip(  # noqa: A
         }""")
     outer_program_chip = section.locator(".execution-wave-section-summary .wave-chip-program").first
     outer_program_chip.wait_for(timeout=15000)
-    focus = section.locator(".execution-wave-focus").first
-    focus.wait_for(timeout=15000)
 
-    assert focus.locator(".wave-chip-program").count() == 0
+    assert section.locator(".execution-wave-focus").count() == 0
     assert outer_program_chip.count() == 1
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

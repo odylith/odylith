@@ -38,10 +38,10 @@
     "empty_reasons": [],
     "explicit_event_count": 48,
     "mapped_workstream_evidence_count": 12,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 49
+    "timeline_event_count": 48
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -83,22 +83,6 @@
         "B-022",
         "B-038"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 384,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "dashboard"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-15T22:59:23-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

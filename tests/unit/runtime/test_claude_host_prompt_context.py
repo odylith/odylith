@@ -5,6 +5,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import claude_host_prompt_context
 from odylith.runtime.surfaces import claude_host_prompt_teaser
 
@@ -46,7 +47,7 @@ def test_render_prompt_context_can_surface_a_teaser_without_anchor() -> None:
         },
     )
 
-    assert rendered == "Odylith is noticing governed truth take shape here."
+    assert rendered == surface_runtime.wrap_live_text("Odylith is noticing governed truth take shape here.")
 
 
 def test_render_prompt_context_falls_back_to_relevant_docs_when_no_targets() -> None:
@@ -173,5 +174,6 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
 
     assert exit_code == 0
     output = capsys.readouterr().out
-    assert output.startswith("Odylith can already")
+    assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\nOdylith can already")
+    assert output.rstrip().endswith(surface_runtime.LIVE_BOUNDARY)
     assert not output.lstrip().startswith("{")

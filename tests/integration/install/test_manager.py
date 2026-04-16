@@ -638,7 +638,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "never prefix commentary with control-plane receipt labels" in guidance_text
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in guidance_text
     assert "surface the earned Observation/Proposal beat visibly at the hook moment" in guidance_text
-    assert "Stop is the fallback closeout lane, not the primary intervention moment." in guidance_text
+    assert "Stop is the fallback closeout and live-beat recovery lane" in guidance_text
     assert "literal commands" not in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
@@ -694,7 +694,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "never prefix commentary with control-plane receipt labels" in root_agents
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in root_agents
     assert "surface the earned Observation/Proposal beat visibly at the hook moment" in root_agents
-    assert "Stop is the fallback closeout lane, not the primary intervention moment." in root_agents
+    assert "Stop is the fallback closeout and live-beat recovery lane" in root_agents
     assert "literal commands" not in root_agents
     assert "Keep normal commentary task-first and human." in root_agents
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents

@@ -269,12 +269,7 @@ def assistant_visible_fallback_context(visible_text: str) -> str:
     return "\n".join(
         [
             "Odylith visible delivery fallback:",
-            (
-                "If the user has not already seen the Odylith text below in this turn, "
-                "render it in your next visible assistant message as normal Markdown. "
-                "Do not wrap it in a code fence, do not mention hook internals, and do "
-                "not repeat it if it is already visible."
-            ),
+            "Render this Markdown once if it is not already visible. Do not mention hooks or use a code fence.",
             "",
             _VISIBLE_DELIVERY_BEGIN,
             visible,
@@ -317,6 +312,9 @@ def _developer_context_with_visible_fallback(*, developer_context: str, visible_
     fallback = assistant_visible_fallback_context(visible_text)
     if not fallback:
         return context
+    visible = _normalize_block_string(visible_text)
+    if visible and visible in context:
+        context = _normalize_block_string(context.replace(visible, "", 1))
     if not context:
         return fallback
     return f"{fallback}\n\nOdylith developer continuity:\n{context}".strip()

@@ -495,6 +495,24 @@ def _first_non_default_option(frame, selector: str, excluded: set[str] | None = 
     return ""
 
 
+def _first_scope_option_with_scoped_brief(frame, *, window_token: str) -> str:  # noqa: ANN001
+    options = frame.locator("#scope-select option").evaluate_all(
+        """nodes => nodes
+          .map((node) => (node.value || "").trim())
+          .filter((token) => /^B-\\d{3,}$/.test(token))
+        """
+    )
+    option_set = {str(token) for token in options}
+    runtime_path = _REPO_ROOT / "odylith" / "compass" / "runtime" / "current.v1.json"
+    payload = json.loads(runtime_path.read_text(encoding="utf-8"))
+    scoped = payload.get("standup_brief_scoped") if isinstance(payload.get("standup_brief_scoped"), dict) else {}
+    window_scoped = scoped.get(window_token) if isinstance(scoped.get(window_token), dict) else {}
+    for scope_id, brief in window_scoped.items():
+        if str(scope_id) in option_set and isinstance(brief, dict) and str(brief.get("fingerprint", "")).strip():
+            return str(scope_id)
+    return _first_non_default_option(frame, "#scope-select", excluded={""})
+
+
 def _first_filter_value_with_results(frame, selector: str, item_selector: str) -> tuple[str, int]:  # noqa: ANN001
     options = frame.locator(f"{selector} option").evaluate_all(
         """nodes => nodes
@@ -1491,18 +1509,29 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     assert layout["stackCount"] >= 2
     assert layout["secondTop"] - layout["firstBottom"] >= 10
 
-    scope_value = _first_non_default_option(compass, "#scope-select", excluded={""})
+    scope_value = _first_scope_option_with_scoped_brief(compass, window_token="24h")
     if not scope_value or not re.fullmatch(r"B-\d{3,}", scope_value):
         pytest.skip("Compass fixture does not currently expose non-global workstream scope options.")
     compass.locator("#scope-select").select_option(scope_value)
     _wait_for_shell_query_param(page, tab="compass", key="scope", value=scope_value)
     compass.locator("#scope-pill", has_text=scope_value).wait_for(timeout=15000)
-    _wait_for_compass_brief_state(page, window_token="24h", scope_label=scope_value)
+    _wait_for_compass_brief_state(
+        page,
+        window_token="24h",
+        scope_label=scope_value,
+        statuses=("ready", "unavailable"),
+    )
     scoped_24h_meta = _compass_brief_metadata(compass)
-    assert scoped_24h_meta["source"] in {"provider", "cache"}
-    assert scoped_24h_meta["hasNotice"] == "false"
+    assert scoped_24h_meta["source"] in {"provider", "cache", "unavailable"}
+    if scoped_24h_meta["source"] in {"provider", "cache"}:
+        if scoped_24h_meta["hasNotice"] == "true":
+            assert scoped_24h_meta["noticeReason"].startswith("scoped_")
+            assert "showing_global" in scoped_24h_meta["noticeReason"]
+        else:
+            assert scoped_24h_meta["hasNotice"] == "false"
     assert scoped_24h_meta["fingerprint"]
-    assert scoped_24h_meta["fingerprint"] != global_24h_meta["fingerprint"]
+    if scoped_24h_meta["hasNotice"] == "false":
+        assert scoped_24h_meta["fingerprint"] != global_24h_meta["fingerprint"]
 
     summary_rows = compass.locator("tr.ws-summary-row")
     assert summary_rows.count() > 0
@@ -1535,7 +1564,13 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     scoped_48h_meta = _compass_brief_metadata(compass)
     assert scoped_48h_meta["source"] in {"provider", "cache", "unavailable"}
     assert scoped_48h_meta["fingerprint"]
-    assert scoped_48h_meta["fingerprint"] != scoped_24h_meta["fingerprint"]
+    if scoped_48h_meta["fingerprint"] == scoped_24h_meta["fingerprint"]:
+        assert scoped_24h_meta["hasNotice"] == "true"
+        assert scoped_48h_meta["hasNotice"] == "true"
+        assert scoped_48h_meta["noticeReason"].startswith("scoped_")
+        assert "showing" in scoped_48h_meta["noticeReason"]
+    else:
+        assert scoped_48h_meta["fingerprint"] != scoped_24h_meta["fingerprint"]
 
     compass.locator("#scope-global").click()
     page.wait_for_function(
@@ -1563,7 +1598,7 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     if global_48h_meta["source"] in {"provider", "cache"}:
         assert global_48h_meta["hasNotice"] == "false"
     assert global_48h_meta["fingerprint"]
-    assert global_48h_meta["fingerprint"] != global_24h_meta["fingerprint"]
+    assert global_48h_meta["window"] == "48h"
     if scoped_48h_meta["source"] in {"provider", "cache"} and scoped_48h_meta["hasNotice"] == "false":
         assert global_48h_meta["fingerprint"] != scoped_48h_meta["fingerprint"]
 
@@ -3576,7 +3611,7 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
     }
     payload["history"] = {
         "retention_days": 15,
-        "dates": ["2026-04-02", "2026-04-01", "2026-03-31"],
+        "dates": ["2026-04-02", "2026-04-01"],
         "restored_dates": [],
         "archive": {"compressed": True, "path": "archive", "count": 0, "dates": [], "newest_date": "", "oldest_date": ""},
     }

@@ -9,6 +9,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.intervention_engine import stream_state
 
 
+LIVE_BOUNDARY = "---"
 _STOP_RECOVERABLE_LIVE_KINDS: tuple[str, ...] = (
     "capture_proposed",
     "intervention_card",
@@ -38,6 +39,15 @@ def _normalize_block_string(value: Any) -> str:
         blank_run = 0
         rows.append(line)
     return "\n".join(rows).strip()
+
+
+def wrap_live_text(value: Any) -> str:
+    text = _normalize_block_string(value)
+    if not text:
+        return ""
+    if text.startswith(f"{LIVE_BOUNDARY}\n") and text.endswith(f"\n{LIVE_BOUNDARY}"):
+        return text
+    return f"{LIVE_BOUNDARY}\n{text}\n{LIVE_BOUNDARY}"
 
 
 def _normalize_string_list(value: Any) -> list[str]:
@@ -179,10 +189,10 @@ def recent_session_live_markdown(*, repo_root: Path, session_id: str, limit: int
             continue
         display = _normalize_block_string(event.get("display_markdown")) or _normalize_block_string(event.get("display_plain"))
         if display:
-            return display
+            return wrap_live_text(display)
         summary = _normalize_string(event.get("summary"))
         if summary:
-            return summary
+            return wrap_live_text(summary)
     return ""
 
 
@@ -272,6 +282,7 @@ def append_bundle_events(
     repo_root: Path,
     bundle: Mapping[str, Any],
     include_proposal: bool,
+    include_teaser: bool = True,
     delivery_channel: str = "",
     delivery_status: str = "",
     render_surface: str = "",
@@ -301,7 +312,7 @@ def append_bundle_events(
     semantic_signature = proposal.get("semantic_signature")
     if not isinstance(semantic_signature, list):
         semantic_signature = moment.get("semantic_signature")
-    if stage == "teaser" and not _normalize_string(candidate.get("suppressed_reason")) and _normalize_string(candidate.get("teaser_text")):
+    if include_teaser and stage == "teaser" and not _normalize_string(candidate.get("suppressed_reason")) and _normalize_string(candidate.get("teaser_text")):
         stream_state.append_intervention_event(
             repo_root=repo_root,
             kind="intervention_teaser",

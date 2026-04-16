@@ -14,10 +14,10 @@
     "empty_reasons": [],
     "explicit_event_count": 47,
     "mapped_workstream_evidence_count": 39,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 48
+    "timeline_event_count": 47
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -50,39 +50,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "AGENTS.md",
-        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
-        "odylith/AGENTS.md",
-        "odylith/README.md",
-        "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
-        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
-        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
-        "odylith/maintainer/AGENTS.md",
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
-        "odylith/skills/odylith-context-engine-operations/SKILL.md",
-        "odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md",
-        "odylith/skills/odylith-session-context/SKILL.md",
-        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
-        "odylith/skills/odylith-subagent-router/SKILL.md",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "src/odylith/install/agents.py",
-        "src/odylith/install/manager.py"
-      ],
-      "confidence": "high",
-      "event_index": 387,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith-chatter"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, docs/benchmarks/METRICS_AND_PRIORITIES.md +16 more",
-      "ts_iso": "2026-04-16T08:21:45-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "src/odylith/runtime/intervention_engine/engine.py"

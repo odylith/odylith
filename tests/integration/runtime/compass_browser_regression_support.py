@@ -72,6 +72,12 @@ def load_runtime_payload(fixture_root: Path) -> dict[str, object]:
 
 
 def write_runtime_payload(fixture_root: Path, payload: dict[str, object]) -> None:
+    current_rows = payload.get("current_workstreams", [])
+    if isinstance(current_rows, list):
+        payload["current_workstreams_by_window"] = {
+            "24h": list(current_rows),
+            "48h": list(current_rows),
+        }
     current_json_path, current_js_path, _source_truth_path = runtime_paths(fixture_root)
     current_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     current_js_path.write_text(

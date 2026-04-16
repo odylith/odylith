@@ -25,24 +25,92 @@ def _patch_no_governed_changes(monkeypatch) -> None:
     )
 
 
-def test_post_bash_checkpoint_runs_start_for_edit_like_commands(monkeypatch) -> None:
+def test_post_bash_checkpoint_runs_start_for_edit_like_commands(monkeypatch, tmp_path: Path) -> None:
     calls: list[tuple[str, list[str], int]] = []
 
     def _fake_run_odylith(*, project_dir, args, timeout=20):
         calls.append((str(project_dir), args, timeout))
         return None
 
-    _patch_stdin(monkeypatch, "apply_patch <<'PATCH'")
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "tool_input": {"command": "apply_patch <<'PATCH'"},
+                    "session_id": "codex-start-cold",
+                }
+            )
+        ),
+    )
     monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
     _patch_no_governed_changes(monkeypatch)
 
-    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", "/tmp/repo"])
+    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert calls == [("/tmp/repo", ["start", "--repo-root", "."], 20)]
+    assert calls == [(str(tmp_path), ["start", "--repo-root", "."], 20)]
 
 
-def test_post_bash_checkpoint_runs_start_for_native_apply_patch_payload(monkeypatch) -> None:
+def test_post_bash_checkpoint_skips_start_when_cache_is_warm(monkeypatch, tmp_path: Path) -> None:
+    calls: list[tuple[str, list[str], int]] = []
+    session_id = "codex-start-warm"
+
+    codex_host_post_bash_checkpoint.record_start_grounding_attempt(
+        project_dir=tmp_path,
+        session_id=session_id,
+        completed=subprocess.CompletedProcess(args=["odylith", "start"], returncode=1),
+        now_seconds=1000.0,
+    )
+    monkeypatch.setattr(codex_host_post_bash_checkpoint.time, "time", lambda: 1010.0)
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"tool_input": {"command": "apply_patch <<'PATCH'"}, "session_id": session_id})),
+    )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint.codex_host_shared,
+        "run_odylith",
+        lambda **kwargs: calls.append((str(kwargs["project_dir"]), kwargs["args"], kwargs["timeout"])),
+    )
+    _patch_no_governed_changes(monkeypatch)
+
+    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert calls == []
+
+
+def test_start_grounding_cache_collapses_process_fallback_sessions(tmp_path: Path) -> None:
+    codex_host_post_bash_checkpoint.record_start_grounding_attempt(
+        project_dir=tmp_path,
+        session_id="agent-111",
+        completed=subprocess.CompletedProcess(args=["odylith", "start"], returncode=1),
+        now_seconds=1000.0,
+    )
+
+    assert not codex_host_post_bash_checkpoint.should_run_start_grounding(
+        project_dir=tmp_path,
+        session_id="agent-222",
+        now_seconds=1010.0,
+    )
+
+
+def test_start_grounding_cache_expires(tmp_path: Path) -> None:
+    codex_host_post_bash_checkpoint.record_start_grounding_attempt(
+        project_dir=tmp_path,
+        session_id="codex-start-stale",
+        completed=subprocess.CompletedProcess(args=["odylith", "start"], returncode=0),
+        now_seconds=1000.0,
+    )
+
+    assert codex_host_post_bash_checkpoint.should_run_start_grounding(
+        project_dir=tmp_path,
+        session_id="codex-start-stale",
+        now_seconds=1000.0 + codex_host_post_bash_checkpoint._START_GROUND_CACHE_TTL_SECONDS + 1,
+    )
+
+
+def test_post_bash_checkpoint_runs_start_for_native_apply_patch_payload(monkeypatch, tmp_path: Path) -> None:
     calls: list[tuple[str, list[str], int]] = []
     observed_commands: list[str] = []
     patch = (
@@ -75,10 +143,10 @@ def test_post_bash_checkpoint_runs_start_for_native_apply_patch_payload(monkeypa
         _fake_command_scoped_governed_paths,
     )
 
-    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", "/tmp/repo"])
+    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert calls == [("/tmp/repo", ["start", "--repo-root", "."], 20)]
+    assert calls == [(str(tmp_path), ["start", "--repo-root", "."], 20)]
     assert observed_commands
     assert observed_commands[0].startswith("apply_patch <<'PATCH'")
     assert "src/odylith/runtime/intervention_engine/host_surface_runtime.py" in observed_commands[0]

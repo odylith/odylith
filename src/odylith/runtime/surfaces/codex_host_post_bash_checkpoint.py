@@ -5,8 +5,9 @@ When Codex finishes an edit-like Bash command or native patch tool call
 ``codex_host_shared.edit_like_bash``), this hook nudges Odylith in two
 narrow steps:
 
-1. Run ``odylith start --repo-root .`` so the session stays grounded in
-   the same way a fresh turn would be.
+1. Run ``odylith start --repo-root .`` through a short repo-local
+   cache so the session stays grounded without paying the launcher cost
+   after every edit.
 2. If the edit touched any repo-relative path under the Odylith
    governed source-of-truth subtrees, run
    ``odylith sync --impact-mode selective <paths>`` so the derived
@@ -33,6 +34,7 @@ import re
 import shlex
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 from typing import Mapping
@@ -69,6 +71,11 @@ _NODE_TWO_PATH_CALL_RE = re.compile(
     re.VERBOSE,
 )
 _SHELL_CONTROL_TOKENS: frozenset[str] = frozenset({"&&", "||", ";", "|", "&"})
+_START_GROUND_CACHE_RELATIVE = Path(
+    ".odylith/runtime/latency-cache/codex-post-bash-start.v1.json"
+)
+_START_GROUND_CACHE_TTL_SECONDS = 20 * 60
+_PROCESS_FALLBACK_SESSION_RE = re.compile(r"^agent-\d+$")
 
 
 def _is_shell_redirection_token(token: str) -> bool:
@@ -91,6 +98,111 @@ def _trim_shell_command_tokens(tokens: list[str]) -> list[str]:
 
 def should_checkpoint(command: str) -> bool:
     return codex_host_shared.edit_like_bash(command)
+
+
+def _start_ground_cache_path(*, project_dir: Path | str) -> Path:
+    return Path(project_dir).expanduser().resolve() / _START_GROUND_CACHE_RELATIVE
+
+
+def _start_ground_cache_key(session_id: str) -> str:
+    token = str(session_id or "").strip()
+    if not token or _PROCESS_FALLBACK_SESSION_RE.match(token):
+        return "codex-default"
+    return token
+
+
+def _load_start_ground_cache(*, project_dir: Path | str) -> dict[str, Any]:
+    path = _start_ground_cache_path(project_dir=project_dir)
+    if not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError):
+        return {}
+    return dict(payload) if isinstance(payload, Mapping) else {}
+
+
+def _write_start_ground_cache(*, project_dir: Path | str, payload: Mapping[str, Any]) -> None:
+    path = _start_ground_cache_path(project_dir=project_dir)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(dict(payload), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    except OSError:
+        return
+
+
+def should_run_start_grounding(
+    *,
+    project_dir: Path | str,
+    session_id: str,
+    now_seconds: float | None = None,
+    ttl_seconds: int = _START_GROUND_CACHE_TTL_SECONDS,
+) -> bool:
+    cache = _load_start_ground_cache(project_dir=project_dir)
+    sessions = cache.get("sessions")
+    if not isinstance(sessions, Mapping):
+        return True
+    record = sessions.get(_start_ground_cache_key(session_id))
+    if not isinstance(record, Mapping):
+        return True
+    try:
+        attempted_at = float(record.get("attempted_at_seconds"))
+    except (TypeError, ValueError):
+        return True
+    now = time.time() if now_seconds is None else float(now_seconds)
+    age_seconds = now - attempted_at
+    return not (0 <= age_seconds < max(1, int(ttl_seconds)))
+
+
+def record_start_grounding_attempt(
+    *,
+    project_dir: Path | str,
+    session_id: str,
+    completed: subprocess.CompletedProcess[str] | None,
+    now_seconds: float | None = None,
+) -> None:
+    cache = _load_start_ground_cache(project_dir=project_dir)
+    sessions = cache.get("sessions")
+    if not isinstance(sessions, dict):
+        sessions = {}
+    now = time.time() if now_seconds is None else float(now_seconds)
+    sessions[_start_ground_cache_key(session_id)] = {
+        "attempted_at_seconds": now,
+        "returncode": completed.returncode if completed is not None else None,
+        "status": (
+            "launcher_unavailable"
+            if completed is None
+            else "completed"
+            if completed.returncode == 0
+            else "failed"
+        ),
+    }
+    _write_start_ground_cache(
+        project_dir=project_dir,
+        payload={
+            "version": 1,
+            "ttl_seconds": _START_GROUND_CACHE_TTL_SECONDS,
+            "sessions": sessions,
+        },
+    )
+
+
+def run_start_grounding_if_due(*, project_dir: Path | str, session_id: str) -> None:
+    if not should_run_start_grounding(project_dir=project_dir, session_id=session_id):
+        return
+    completed = codex_host_shared.run_odylith(
+        project_dir=project_dir,
+        args=["start", "--repo-root", "."],
+        timeout=20,
+    )
+    record_start_grounding_attempt(
+        project_dir=project_dir,
+        session_id=session_id,
+        completed=completed,
+    )
 
 
 def dirty_governed_paths(*, project_dir: Path | str) -> list[str]:
@@ -629,19 +741,16 @@ def main(argv: list[str] | None = None) -> int:
     if not should_checkpoint(command):
         return 0
 
-    # Keep grounding as the baseline behavior for every edit-like Bash
-    # command, even if nothing governed changed.
-    codex_host_shared.run_odylith(
-        project_dir=args.repo_root,
-        args=["start", "--repo-root", "."],
-        timeout=20,
-    )
+    project_dir = claude_host_shared.resolve_repo_root(args.repo_root)
+
+    # Keep grounding in the edit-like checkpoint lane without paying the
+    # launcher/start cost for every hook process in the same active session.
+    run_start_grounding_if_due(project_dir=project_dir, session_id=session_id)
 
     # If the edit-like Bash command touched any governed source-of-truth
     # subtree, refresh the derived dashboards via selective sync. This
     # is Bash-checkpoint parity with Claude's post-edit lane; non-Bash
     # edit surfaces would need their own hook.
-    project_dir = claude_host_shared.resolve_repo_root(args.repo_root)
     changed = command_scoped_governed_paths(project_dir=project_dir, command=command)
     governance_message = refresh_governance(project_dir=project_dir, paths=changed)
     bundle = _post_bash_bundle(

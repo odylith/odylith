@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import surface_runtime
 
 
@@ -56,7 +57,7 @@ def test_recent_session_live_markdown_recovers_unseen_live_beats_only(tmp_path: 
     assert surface_runtime.recent_session_live_markdown(
         repo_root=tmp_path,
         session_id="known-session",
-    ) == "-----\nOdylith Proposal: keep this visible.\n-----"
+    ) == "---\n-----\nOdylith Proposal: keep this visible.\n-----\n---"
 
 
 def test_compose_host_conversation_bundle_recovers_recent_checkpoint_context(tmp_path: Path) -> None:
@@ -89,6 +90,34 @@ def test_compose_host_conversation_bundle_recovers_recent_checkpoint_context(tmp
     assert "[B-096](?tab=radar&workstream=B-096)" in assist["markdown_text"]
     assert "[governance-intervention-engine](?tab=registry&component=governance-intervention-engine)" in assist["markdown_text"]
     assert [row["id"] for row in assist["affected_contracts"]] == ["B-096", "governance-intervention-engine"]
+
+
+def test_host_conversation_bundle_uses_live_ambient_payload_for_post_tool_rendering(tmp_path: Path) -> None:
+    bundle = host_surface_runtime.compose_host_conversation_bundle(
+        repo_root=tmp_path,
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="host-ambient-1",
+        prompt_excerpt="Keep the governance record visible.",
+    )
+
+    rendered = host_surface_runtime.render_visible_live_intervention(
+        bundle,
+        markdown=True,
+        include_proposal=False,
+    )
+    events = conversation_surface.append_intervention_events(
+        repo_root=tmp_path,
+        bundle=bundle,
+        include_proposal=False,
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_post_tool_use",
+    )
+
+    assert bundle["live_ambient_signals"]["selected_signal"] == "insight"
+    assert rendered.startswith("---\n**Odylith Insight:**")
+    assert "ambient_signal" in events
 
 
 def test_codex_post_tool_payload_uses_additional_context_and_system_message() -> None:
@@ -224,6 +253,8 @@ def test_render_visible_live_intervention_excludes_closeout_text() -> None:
     assert "**Odylith Observation:** The signal is real." in rendered
     assert "Odylith Proposal:" in rendered
     assert "Odylith Assist:" not in rendered
+    assert rendered.startswith("---\n")
+    assert rendered.endswith("\n---")
 
 
 def test_codex_prompt_visible_text_comes_from_system_message_not_hidden_context() -> None:
@@ -294,6 +325,18 @@ def test_checkpoint_visible_text_includes_observation_and_proposal_but_keeps_ass
     assert "Odylith visible delivery fallback:" in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Assist:" in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Assist:" in claude_payload["additionalContext"]
+
+
+def test_visible_fallback_context_does_not_duplicate_live_text_when_continuity_matches() -> None:
+    visible = "---\n**Odylith Insight:** this stayed smaller than it first looked.\n---"
+    payload = host_surface_runtime.codex_post_tool_payload(
+        developer_context=visible,
+        system_message=visible,
+    )
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+
+    assert additional_context.count("**Odylith Insight:**") == 1
+    assert "Odylith developer continuity:" not in additional_context
 
 
 def test_stop_visible_text_can_include_assist_closeout() -> None:

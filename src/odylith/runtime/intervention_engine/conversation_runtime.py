@@ -1471,6 +1471,7 @@ def compose_conversation_bundle(
         supplemental_payload=closeout_signals.get(selected_supplemental, {}) if selected_supplemental else {},
     )
     intervention_bundle: dict[str, Any] = {}
+    live_ambient_signals: dict[str, Any] = {}
     if repo_root is not None:
         effective_turn_phase = _normalize_token(turn_phase) or ("post_edit_checkpoint" if final_changed_paths else "prompt_submit")
         packet_summary = {}
@@ -1506,8 +1507,10 @@ def compose_conversation_bundle(
             },
         )
         intervention_bundle = dict(live_bundle.get("intervention_bundle", {}))
+        live_ambient_signals = dict(live_bundle.get("ambient_signals", {}))
 
     return {
+        "live_ambient_signals": live_ambient_signals,
         "ambient_signals": {
             "insight": insight,
             "history": history,

@@ -10,7 +10,10 @@ from odylith.runtime.intervention_engine import voice
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
 
 
-_AMBIENT_SIGNAL_SCORE_FLOOR = 74
+_AMBIENT_SIGNAL_SCORE_FLOOR = 62
+_AMBIENT_DUPLICATE_SUPPRESSION_REASONS = frozenset({"duplicate_teaser", "duplicate_card"})
+_AMBIENT_PROVEN_VISIBLE_CHANNELS = frozenset({"manual_visible_command", "stdout_teaser", "stop_one_shot_guard"})
+_AMBIENT_PROVEN_VISIBLE_STATUSES = frozenset({"best_effort_visible", "manual_visible", "stop_continuation_ready"})
 
 
 def _normalize_string(value: Any) -> str:
@@ -110,6 +113,26 @@ def _signal_score(
     return max(0, min(100, int(moment.get("score") or 0)))
 
 
+def _continuity_payload(candidate: Mapping[str, Any]) -> dict[str, Any]:
+    moment = _mapping(candidate.get("moment"))
+    return _mapping(moment.get("continuity"))
+
+
+def _has_proven_visible_delivery(continuity: Mapping[str, Any]) -> bool:
+    if bool(continuity.get("latest_proven_visible_delivery")):
+        return True
+    channel = _normalize_token(continuity.get("latest_delivery_channel"))
+    status = _normalize_token(continuity.get("latest_delivery_status"))
+    return channel in _AMBIENT_PROVEN_VISIBLE_CHANNELS or status in _AMBIENT_PROVEN_VISIBLE_STATUSES
+
+
+def _hidden_duplicate_suppression(*, suppressed_reason: str, continuity: Mapping[str, Any]) -> bool:
+    return (
+        _normalize_token(suppressed_reason) in _AMBIENT_DUPLICATE_SUPPRESSION_REASONS
+        and not _has_proven_visible_delivery(continuity)
+    )
+
+
 def _ambient_payload(
     *,
     observation: ObservationEnvelope,
@@ -117,11 +140,23 @@ def _ambient_payload(
 ) -> dict[str, Any]:
     candidate = _mapping(intervention.get("candidate"))
     stage = _normalize_token(candidate.get("stage"))
+    suppressed_reason = _normalize_string(candidate.get("suppressed_reason"))
+    continuity = _continuity_payload(candidate)
+    hidden_duplicate = _hidden_duplicate_suppression(
+        suppressed_reason=suppressed_reason,
+        continuity=continuity,
+    )
     if _normalize_token(observation.turn_phase) in {"prompt_submit", "userpromptsubmit"}:
         return {}
-    if stage == "card":
+    if stage == "card" and not hidden_duplicate:
         return {}
-    if _normalize_string(candidate.get("suppressed_reason")):
+    if (
+        stage == "silent"
+        and _normalize_token(continuity.get("stage_floor")) == "card"
+        and _has_proven_visible_delivery(continuity)
+    ):
+        return {}
+    if suppressed_reason and not hidden_duplicate:
         return {}
     moment = _mapping(candidate.get("moment"))
     fact = _primary_fact(intervention)
@@ -203,7 +238,7 @@ def build_conversation_bundle(
 
 
 def _selected_ambient_payload(bundle: Mapping[str, Any]) -> dict[str, Any]:
-    ambient = _mapping(bundle.get("ambient_signals"))
+    ambient = _mapping(bundle.get("live_ambient_signals")) or _mapping(bundle.get("ambient_signals"))
     selected = _normalize_token(ambient.get("selected_signal"))
     payload = _mapping(ambient.get(selected))
     if not payload.get("eligible"):
@@ -227,15 +262,15 @@ def render_live_text(
         include_proposal=include_proposal,
     )
     if rendered:
-        return rendered
+        return surface_runtime.wrap_live_text(rendered)
     ambient_payload = _selected_ambient_payload(bundle)
     ambient_text = _normalize_string(ambient_payload.get("markdown_text" if markdown else "plain_text"))
     teaser_text = surface_runtime.teaser_text(intervention)
     if prefer_ambient_over_teaser and ambient_text:
-        return ambient_text
+        return surface_runtime.wrap_live_text(ambient_text)
     if teaser_text:
-        return teaser_text
-    return ambient_text
+        return surface_runtime.wrap_live_text(teaser_text)
+    return surface_runtime.wrap_live_text(ambient_text)
 
 
 def render_closeout_text(
@@ -260,12 +295,14 @@ def append_intervention_events(
 ) -> list[str]:
     events: list[str] = []
     intervention = _intervention_payload(bundle)
+    ambient = _selected_ambient_payload(bundle)
     if intervention:
         events.extend(
             surface_runtime.append_bundle_events(
                 repo_root=repo_root,
                 bundle=intervention,
                 include_proposal=include_proposal,
+                include_teaser=not bool(ambient),
                 delivery_channel=delivery_channel,
                 delivery_status=delivery_status,
                 render_surface=render_surface,
@@ -273,15 +310,17 @@ def append_intervention_events(
             )
         )
     observation = _mapping(bundle.get("observation"))
-    ambient = _selected_ambient_payload(bundle)
     if ambient and _normalize_string(ambient.get("markdown_text")):
+        candidate = _mapping(intervention.get("candidate"))
+        moment = _mapping(candidate.get("moment"))
+        semantic_signature = moment.get("semantic_signature")
         surface_runtime.stream_state.append_intervention_event(
             repo_root=repo_root,
             kind="ambient_signal",
             summary=_normalize_string(ambient.get("plain_text")) or "Odylith ambient signal.",
             session_id=_normalize_string(observation.get("session_id")),
             host_family=_normalize_string(observation.get("host_family")),
-            intervention_key=_normalize_string(ambient.get("source_kind")) or "ambient",
+            intervention_key=_normalize_string(candidate.get("key")) or _normalize_string(ambient.get("source_kind")) or "ambient",
             turn_phase=_normalize_string(observation.get("turn_phase")),
             artifacts=observation.get("changed_paths") if isinstance(observation.get("changed_paths"), list) else (),
             display_markdown=_normalize_block_string(ambient.get("markdown_text")),
@@ -289,7 +328,7 @@ def append_intervention_events(
             prompt_excerpt=_normalize_string(observation.get("prompt_excerpt")),
             assistant_summary=_normalize_string(observation.get("assistant_summary")),
             moment_kind=_normalize_string(ambient.get("source_kind")),
-            semantic_signature=("ambient", _normalize_string(ambient.get("source_kind"))),
+            semantic_signature=semantic_signature if isinstance(semantic_signature, list) else (),
             delivery_channel=delivery_channel,
             delivery_status=delivery_status,
             render_surface=render_surface,

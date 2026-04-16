@@ -12,10 +12,8 @@ from odylith.runtime.intervention_engine import stream_state
 _VISIBLE_STATUSES: frozenset[str] = frozenset(
     {
         "best_effort_visible",
-        "assistant_fallback_ready",
         "manual_visible",
         "stop_continuation_ready",
-        "system_message_ready",
     }
 )
 
@@ -147,7 +145,8 @@ def active_lane_matrix(*, host_family: str) -> list[dict[str, str]]:
         else "prompt-context fallback plus best-effort prompt-teaser stdout"
     )
     edit_visibility = (
-        "Bash checkpoint hook with assistant fallback"
+        "Bash checkpoint hook with cached grounding and assistant fallback; "
+        "native apply_patch depends on host dispatch or visible fallback"
         if host == "codex"
         else "Write/Edit/MultiEdit and Bash checkpoint hooks with assistant fallback"
     )

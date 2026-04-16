@@ -198,7 +198,9 @@ def test_render_codex_stop_summary_combines_observation_and_assist() -> None:
     )
 
     assert rendered == (
-        "**Odylith Observation:** The signal is real.\n\n"
+        "---\n"
+        "**Odylith Observation:** The signal is real.\n"
+        "---\n\n"
         "**Odylith Assist:** kept this grounded."
     )
 
@@ -237,7 +239,9 @@ def test_render_codex_stop_summary_replays_unseen_live_beat_through_stop_lane(tm
     )
 
     assert rendered == (
-        "**Odylith Observation:** This beat was computed earlier but still needs a visible lane.\n\n"
+        "---\n"
+        "**Odylith Observation:** This beat was computed earlier but still needs a visible lane.\n"
+        "---\n\n"
         "**Odylith Assist:** kept this grounded."
     )
 

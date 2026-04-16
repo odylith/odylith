@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import surface_runtime
 
 
@@ -47,8 +48,8 @@ def test_prompt_submit_live_surface_keeps_top_level_observation_and_teaser(tmp_p
         markdown=False,
         include_proposal=False,
     )
-    assert rendered.startswith("Odylith can already")
-    assert rendered.endswith("turn that into a proposal.")
+    assert rendered.startswith("---\nOdylith can already")
+    assert rendered.endswith("turn that into a proposal.\n---")
 
 
 def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> None:
@@ -84,8 +85,126 @@ def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> No
         prefer_ambient_over_teaser=False,
     )
 
-    assert rendered == "**Odylith Insight:** this is now grounded enough to keep visible."
-    assert old_order == "Odylith can already see governed truth taking shape here."
+    assert rendered == surface_runtime.wrap_live_text(
+        "**Odylith Insight:** this is now grounded enough to keep visible."
+    )
+    assert old_order == surface_runtime.wrap_live_text("Odylith can already see governed truth taking shape here.")
+
+
+def test_post_tool_teaser_emits_ambient_signal_event(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    bundle = conversation_surface.build_conversation_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="codex",
+            turn_phase="post_bash_checkpoint",
+            session_id="ambient-event-1",
+            prompt_excerpt="Keep the governance record visible.",
+        ),
+    )
+
+    rendered = conversation_surface.render_live_text(
+        bundle,
+        markdown=True,
+        include_proposal=False,
+    )
+    events = conversation_surface.append_intervention_events(
+        repo_root=tmp_path,
+        bundle=bundle,
+        include_proposal=False,
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_post_tool_use",
+    )
+    rows = stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+        session_id="ambient-event-1",
+    )
+
+    assert bundle["ambient_signals"]["selected_signal"] == "insight"
+    assert rendered.startswith("---\n**Odylith Insight:**")
+    assert "ambient_signal" in events
+    assert "intervention_teaser" not in events
+    ambient_rows = [row for row in rows if row["kind"] == "ambient_signal"]
+    assert len(ambient_rows) == 1
+    assert ambient_rows[0]["intervention_key"] == bundle["intervention_bundle"]["candidate"]["key"]
+    assert ambient_rows[0]["semantic_signature"] == bundle["intervention_bundle"]["candidate"]["moment"]["semantic_signature"]
+
+
+def test_hidden_duplicate_teaser_can_recover_as_ambient_signal(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    observation = surface_runtime.observation_envelope(
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="ambient-hidden-duplicate-1",
+        prompt_excerpt="Keep the governance record visible.",
+    )
+    first = conversation_surface.build_conversation_bundle(
+        repo_root=tmp_path,
+        observation=observation,
+    )
+    candidate = first["intervention_bundle"]["candidate"]
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_teaser",
+        summary="Hidden teaser was computed.",
+        session_id="ambient-hidden-duplicate-1",
+        host_family="codex",
+        intervention_key=candidate["key"],
+        turn_phase="post_bash_checkpoint",
+        semantic_signature=candidate["moment"]["semantic_signature"],
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    second = conversation_surface.build_conversation_bundle(
+        repo_root=tmp_path,
+        observation=observation,
+    )
+    rendered = conversation_surface.render_live_text(
+        second,
+        markdown=True,
+        include_proposal=False,
+    )
+
+    assert second["intervention_bundle"]["candidate"]["suppressed_reason"] == "duplicate_teaser"
+    assert second["ambient_signals"]["selected_signal"] == "insight"
+    assert rendered.startswith("---\n**Odylith Insight:**")
+
+
+def test_visible_duplicate_teaser_still_suppresses_ambient_signal(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    observation = surface_runtime.observation_envelope(
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="ambient-visible-duplicate-1",
+        prompt_excerpt="Keep the governance record visible.",
+    )
+    first = conversation_surface.build_conversation_bundle(
+        repo_root=tmp_path,
+        observation=observation,
+    )
+    candidate = first["intervention_bundle"]["candidate"]
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_teaser",
+        summary="Visible teaser was printed.",
+        session_id="ambient-visible-duplicate-1",
+        host_family="codex",
+        intervention_key=candidate["key"],
+        turn_phase="post_bash_checkpoint",
+        semantic_signature=candidate["moment"]["semantic_signature"],
+        delivery_channel="stdout_teaser",
+        delivery_status="best_effort_visible",
+    )
+
+    second = conversation_surface.build_conversation_bundle(
+        repo_root=tmp_path,
+        observation=observation,
+    )
+
+    assert second["intervention_bundle"]["candidate"]["suppressed_reason"] == "duplicate_teaser"
+    assert second["ambient_signals"]["selected_signal"] == ""
 
 
 def test_post_edit_live_surface_renders_observation_and_proposal(tmp_path: Path) -> None:
@@ -107,8 +226,9 @@ def test_post_edit_live_surface_renders_observation_and_proposal(tmp_path: Path)
         include_proposal=True,
     )
 
-    assert rendered.startswith("**Odylith Observation:** ")
+    assert rendered.startswith("---\n**Odylith Observation:** ")
     assert "\n\n-----\nOdylith Proposal: " in rendered
+    assert rendered.endswith("\n---")
 
 
 def test_live_surface_stays_silent_for_bare_changed_paths_without_governed_fact(tmp_path: Path) -> None:
@@ -152,8 +272,9 @@ def test_render_live_text_accepts_raw_intervention_bundle_for_host_overrides() -
         include_proposal=True,
     )
 
-    assert rendered.startswith("**Odylith Observation:** The signal is real.")
+    assert rendered.startswith("---\n**Odylith Observation:** The signal is real.")
     assert "Odylith Proposal:" in rendered
+    assert rendered.endswith("\n---")
 
 
 def test_render_closeout_text_reads_closeout_bundle() -> None:

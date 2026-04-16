@@ -324,7 +324,13 @@ _SENSITIVE_SINGLETON_FAMILY_LATENCY_MAX_SPREAD_MS = 8.0
 _PUBLISHED_PROFILE_LATENCY_TIE_TOLERANCE_MS = 0.4
 _PUBLISHED_PROFILE_PROMPT_TIE_TOLERANCE = 8.0
 _PUBLISHED_PROFILE_TOTAL_PAYLOAD_TIE_TOLERANCE = 16.0
-_QUICK_PROFILE_MAX_SCENARIOS = 16
+_QUICK_PROFILE_MAX_SCENARIOS = 4
+_QUICK_PROFILE_SENTINEL_CASE_IDS = (
+    "benchmark-live-comparison-contract-and-report-schema",
+    "execution-governance-contract-verify-closure-discipline",
+    "claude-bash-guard-destructive-command-blocking",
+    "context-engine-broad-scope-fail-closed",
+)
 _LIVE_MATCHED_PAIR_MAX_WORKERS = 2
 _SECONDARY_LATENCY_GUARDRAIL_MAX_DELTA_MS = 15.0
 _SECONDARY_ARCHITECTURE_LATENCY_GUARDRAIL_MAX_DELTA_MS = 15.0
@@ -423,7 +429,7 @@ _BENCHMARK_PROFILE_LABELS = {
 _BENCHMARK_PROFILE_DESCRIPTIONS = {
     BENCHMARK_PROFILE_QUICK: (
         "Fast inner-loop signal: Odylith ON versus raw Codex CLI, warm cache only, "
-        "and a representative family-smoke subset unless the operator narrows explicitly."
+        "and a bounded sentinel smoke subset unless the operator narrows explicitly."
     ),
     BENCHMARK_PROFILE_PROOF: (
         "Strict publication proof: the full benchmark corpus, warm and cold cache profiles, "
@@ -2535,6 +2541,33 @@ def _representative_family_smoke_scenarios(*, scenarios: Sequence[Mapping[str, A
     return [dict(row) for row in selected[:_QUICK_PROFILE_MAX_SCENARIOS]]
 
 
+def _quick_profile_smoke_scenarios(*, scenarios: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """Keep the default live smoke bounded while still covering current-head risk seams."""
+    by_id = {
+        str(row.get("scenario_id", "")).strip(): dict(row)
+        for row in scenarios
+        if str(row.get("scenario_id", "")).strip()
+    }
+    selected: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for scenario_id in _QUICK_PROFILE_SENTINEL_CASE_IDS:
+        row = by_id.get(scenario_id)
+        if row is None:
+            continue
+        selected.append(dict(row))
+        seen.add(scenario_id)
+    if len(selected) < _QUICK_PROFILE_MAX_SCENARIOS:
+        for row in _representative_family_smoke_scenarios(scenarios=scenarios):
+            scenario_id = str(row.get("scenario_id", "")).strip()
+            if not scenario_id or scenario_id in seen:
+                continue
+            selected.append(dict(row))
+            seen.add(scenario_id)
+            if len(selected) >= _QUICK_PROFILE_MAX_SCENARIOS:
+                break
+    return selected[:_QUICK_PROFILE_MAX_SCENARIOS]
+
+
 def _apply_scenario_shard(
     *,
     scenarios: Sequence[Mapping[str, Any]],
@@ -2767,8 +2800,8 @@ def _resolve_benchmark_scenario_selection(
         and int(limit) <= 0
         and normalized_shard_count <= 1
     ):
-        scenarios = _representative_family_smoke_scenarios(scenarios=base_scenarios)
-        profile_default_narrowing = "representative_family_smoke"
+        scenarios = _quick_profile_smoke_scenarios(scenarios=base_scenarios)
+        profile_default_narrowing = "quick_sentinel_smoke"
     else:
         scenarios = [dict(row) for row in base_scenarios]
     scenarios = _apply_scenario_shard(
@@ -3307,9 +3340,14 @@ def _orchestration_request_payload(
     correctness_critical = bool(scenario.get("correctness_critical")) and bool(recommended_commands)
     family = str(scenario.get("family", "")).strip()
     analysis_task = str(scenario.get("kind", "")).strip() == "architecture" or family in _ANALYSIS_FAMILIES or not bool(scenario.get("needs_write"))
+    scope_paths = _scenario_expected_write_paths(scenario) if bool(scenario.get("needs_write")) else [
+        str(token).strip()
+        for token in scenario.get("changed_paths", [])
+        if str(token).strip()
+    ]
     candidate_paths = _dedupe_strings(
         [
-            *(str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()),
+            *scope_paths,
             *_governance_candidate_paths(packet_payload),
         ]
     )

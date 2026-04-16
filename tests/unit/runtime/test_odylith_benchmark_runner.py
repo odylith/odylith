@@ -549,7 +549,7 @@ def test_run_benchmarks_emits_corpus_and_family_summaries(tmp_path: Path, monkey
     assert runner.history_report_path(repo_root=tmp_path, report_id=report["report_id"]).is_file()
 
 
-def test_run_benchmarks_quick_profile_defaults_to_representative_matched_pair(
+def test_run_benchmarks_quick_profile_defaults_to_bounded_sentinel_matched_pair(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
 ) -> None:
@@ -685,8 +685,8 @@ def test_run_benchmarks_quick_profile_defaults_to_representative_matched_pair(
     report = runner.run_benchmarks(repo_root=tmp_path, benchmark_profile=runner.BENCHMARK_PROFILE_QUICK, write_report=False)
 
     assert report["benchmark_profile"] == "quick"
-    assert report["selection_strategy"] == "representative_family_smoke"
-    assert report["selection"]["profile_default_narrowing"] == "representative_family_smoke"
+    assert report["selection_strategy"] == "quick_sentinel_smoke"
+    assert report["selection"]["profile_default_narrowing"] == "quick_sentinel_smoke"
     assert report["selection"]["default_modes_applied"] is True
     assert report["selection"]["default_cache_profiles_applied"] is True
     assert report["modes"] == ["odylith_on", "raw_agent_baseline"]
@@ -696,6 +696,20 @@ def test_run_benchmarks_quick_profile_defaults_to_representative_matched_pair(
     assert ("release-high", "odylith_on") not in seen_calls
     assert ("release-critical", "odylith_on") in seen_calls
     assert ("release-critical", "raw_agent_baseline") in seen_calls
+
+
+def test_quick_profile_default_is_bounded_current_head_sentinel_smoke() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    selection = runner._resolve_benchmark_scenario_selection(  # noqa: SLF001
+        all_scenarios=scenarios,
+        benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
+    )
+
+    selected_ids = [str(row.get("scenario_id", "")).strip() for row in selection["scenarios"]]
+
+    assert selection["selection_strategy"] == "quick_sentinel_smoke"
+    assert len(selected_ids) <= runner._QUICK_PROFILE_MAX_SCENARIOS  # noqa: SLF001
+    assert set(selected_ids) == set(runner._QUICK_PROFILE_SENTINEL_CASE_IDS)  # noqa: SLF001
 
 
 def test_run_benchmarks_supports_family_filtered_shards(
@@ -4471,6 +4485,34 @@ def test_orchestration_request_payload_adds_governance_closeout_candidate_paths(
     assert "odylith/casebook/bugs/2026-03-24-control-plane-read-scope-and-auth-escape-hatch-gap.md" in payload["candidate_paths"]
     assert "odylith/technical-plans/done/2026-03/example.md" in payload["candidate_paths"]
     assert "odylith/atlas/source/registry.mmd" in payload["candidate_paths"]
+
+
+def test_orchestration_request_payload_uses_expected_write_paths_for_action_scope() -> None:
+    payload = runner._orchestration_request_payload(  # noqa: SLF001
+        scenario={
+            "prompt": "Work the router/orchestrator implementation slice.",
+            "changed_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+            ],
+            "expected_write_paths": [
+                "src/odylith/runtime/orchestration/subagent_router.py",
+                "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+            ],
+            "validation_commands": ["odylith subagent-router --repo-root . --help"],
+            "family": "cross_file_feature",
+            "kind": "packet",
+            "needs_write": True,
+            "correctness_critical": False,
+            "workstream": "B-001",
+        },
+        packet_payload={},
+    )
+
+    assert payload["candidate_paths"] == [
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+    ]
 
 
 def test_mode_summary_aggregates_stage_latency_summary() -> None:

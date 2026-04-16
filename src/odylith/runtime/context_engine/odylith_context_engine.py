@@ -364,7 +364,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=tuple(odylith_benchmark_runner.BENCHMARK_PROFILES),
         default=odylith_benchmark_runner.DEFAULT_CLI_BENCHMARK_PROFILE,
         help=(
-            "Benchmark profile to run. `quick` is the default live matched-pair developer lane; "
+            "Benchmark profile to run. `quick` is the default bounded live matched-pair smoke lane; "
             "`proof` is the full-corpus live publication proof for `odylith_on` versus `odylith_off`; "
             "`diagnostic` isolates packet and prompt creation without running the live host pair."
         ),

@@ -252,7 +252,9 @@ def test_render_stop_summary_combines_observation_and_assist(tmp_path: Path) -> 
     )
 
     assert rendered == (
-        "**Odylith Observation:** The signal is real.\n\n"
+        "---\n"
+        "**Odylith Observation:** The signal is real.\n"
+        "---\n\n"
         "**Odylith Assist:** kept this grounded."
     )
 
@@ -293,7 +295,9 @@ def test_render_stop_summary_replays_unseen_live_beat_through_stop_lane(tmp_path
     )
 
     assert rendered == (
-        "**Odylith Insight:** this beat was computed earlier but still needs a visible lane.\n\n"
+        "---\n"
+        "**Odylith Insight:** this beat was computed earlier but still needs a visible lane.\n"
+        "---\n\n"
         "**Odylith Assist:** kept this grounded."
     )
 

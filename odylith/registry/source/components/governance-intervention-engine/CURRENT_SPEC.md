@@ -218,6 +218,12 @@ through the heavier closeout chatter stack just to speak one truthful line.
   not automatic hook coverage. On Claude, direct edits and Bash writes are
   separate hook commands but must render the same shared intervention bundle
   shape.
+- Codex `post_bash_checkpoint` grounding must use a repo-local latency cache
+  before invoking `odylith start --repo-root .`. A cold or stale cache may run
+  start once for the active session bucket; warm cache entries, including
+  failed or launcher-unavailable attempts, must skip repeated start calls
+  while still evaluating the command's changed paths, selective governance
+  refresh, and visible intervention bundle on every hook.
 - Claude `post_edit_checkpoint` and `post_bash_checkpoint` must stay
   synchronous. Async post-tool hooks can delay output to a later turn and
   suppress completion notices in normal Claude Code sessions, which breaks
@@ -231,14 +237,35 @@ through the heavier closeout chatter stack just to speak one truthful line.
     failure-level governance status when that status materially changes the
     next move; this is useful host context but is not alone considered proof
     that the user saw the beat
+- Host-composed conversation bundles must preserve the live-surface ambient
+  payload separately from closeout ambient/supplemental signals. `Odylith
+  Insight`, `Odylith History`, and `Odylith Risks` are live checkpoint beats;
+  they must not disappear because the closeout bundle also has an
+  `ambient_signals` object for Assist-side narration.
+- Assistant-visible fallback context must not duplicate the exact same visible
+  Markdown block into developer continuity. The fallback block carries the
+  user-facing text once; developer continuity should retain only additional
+  non-visible context such as Assist closeout state or anchor summaries. This
+  keeps hidden hook paths useful without turning invisible intervention
+  delivery into avoidable model-context token burn. The fallback instruction
+  itself should stay compact; the signal, not framework prose, deserves the
+  token budget.
 - `odylith codex visible-intervention` and `odylith claude
   visible-intervention` render plain Markdown fallback output for the assistant
   to show directly when host hook display is unproven or hidden.
 - `odylith codex intervention-status` and `odylith claude
-  intervention-status` report static host readiness, active UX lanes, recent
-  delivery-ledger events, pending proposal count, and a fast smoke command.
+  intervention-status` report static host readiness, a separate
+  `chat_visible_proof` status for the active session, active UX lanes, recent
+  proven-visible delivery-ledger events, pending proposal count, and a fast
+  smoke command.
   These commands are the cheap operator proof before claiming a session has
-  live Observation/Proposal/Ambient/Assist delivery.
+  live Observation/Proposal/Ambient/Assist delivery; `Activation: ready` alone
+  is static wiring, not session-visible proof.
+- `assistant_fallback_ready` and structured `systemMessage` generation are
+  hidden-ready hook states, not session-visible proof. The delivery ledger may
+  retain those events for Stop replay and continuity, but chat-visible proof
+  requires a proven visible channel such as manual visible Markdown,
+  best-effort stdout teaser, or Stop one-shot continuation.
 - Stop-summary hooks may block once with a continuation reason when a real
   Observation or `Odylith Assist:` closeout was generated but is not already
   visible in the last assistant message. The `stop_hook_active` guard prevents
@@ -260,6 +287,22 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - Stop-summary visibility dedupe must compare the labels in the generated
   visible text, not merely the existence of any prior Odylith label. A prior
   Observation is not proof that the current Assist closeout was already shown.
+- Ambient Highlight duplicate suppression must make the same distinction.
+  A prior teaser, card, or proposal that only reached `assistant_fallback_ready`
+  or another hidden-ready hook surface is not proof that the human saw the
+  beat. Ambient recovery may reuse that moment until a proven visible channel
+  such as `manual_visible_command`, `stdout_teaser`, or
+  `stop_one_shot_guard` has carried it.
+- Ambient Highlight eligibility shares the post-tool teaser floor: once a
+  post-edit or post-bash moment has a real governed fact and is teaser-worthy,
+  it should render as a concrete `Odylith Insight`, `Odylith History`, or
+  `Odylith Risks` line instead of disappearing behind a stricter ambient-only
+  score threshold.
+- When Ambient Highlight wins the visible live slot, it is the recorded live
+  beat for that moment. The runtime should not also append a generic teaser
+  event for the same candidate, and the ambient event must carry the same
+  intervention key and semantic signature so continuity and dedupe follow the
+  human-facing signal instead of a hidden precursor.
 - Success-only governance refresh receipts must not displace an earned visible
   intervention. If a checkpoint already has a real Observation or Proposal,
   the visible surface should stay on that beat and keep routine refresh
@@ -329,6 +372,11 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - Visible labels are fixed in this release:
   - `**Odylith Observation**`
   - `Odylith Proposal`
+- All live Odylith teaser, ambient, Observation, and Proposal output must be
+  visibly bounded by Markdown horizontal rules (`---`) before and after the
+  Odylith-owned text so operators can distinguish Odylith intervention copy
+  from host-agent narration. `Odylith Assist` is exempt because it remains the
+  final blended closeout paragraph.
 - Confirmation phrase is fixed in this release:
   - `apply this proposal`
 - The rendered confirmation cue must stay visually quiet.
@@ -385,11 +433,11 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - `odylith governance capture-apply`
   Apply or decline one confirmed `Odylith Proposal` payload.
 - `odylith codex intervention-status`
-  Report Codex static hook readiness plus the Compass-derived visible-delivery
-  ledger for the active session.
+  Report Codex static hook readiness, session `chat_visible_proof`, and the
+  Compass-derived visible-delivery ledger for the active session.
 - `odylith claude intervention-status`
-  Report Claude project-hook readiness plus the Compass-derived
-  visible-delivery ledger for the active session.
+  Report Claude project-hook readiness, session `chat_visible_proof`, and the
+  Compass-derived visible-delivery ledger for the active session.
 
 These commands are shared across Codex, Claude, maintainer `source-local`,
 pinned dogfood, and consumer pinned-runtime lanes. Host-specific wrappers may
@@ -473,7 +521,44 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Hardened the product contract so rich markdown survives the full host and Compass path, duplicate suppression keys stay causal rather than overly coarse, proposal apply is all-or-nothing for CLI-safe bundles, and warm-cache latency stays covered by focused regression tests. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Extended intervention lifecycle events to carry prompt memory and rich pending-proposal display payloads so later hooks keep reasoning from the human conversation and Compass can expose delightful proposal previews without rebuilding them downstream. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Split rich reasoning signature from stable continuity identity, added a cross-phase continuity runtime, and allowed first-time Proposal upgrades to surface without re-announcing a duplicate Observation. This made teaser, Observation, and Proposal feel like one evolving thought instead of three disconnected hook artifacts. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
-- 2026-04-16: Added a delivery ledger and host `intervention-status` commands so Codex and Claude can prove static readiness, active UX lanes, recent visible-ready delivery, pending proposal state, and manual fallback smoke without treating hook payload generation as chat visibility. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-16: Added a delivery ledger and host `intervention-status` commands so Codex and Claude can prove static readiness, active UX lanes, recent proven-visible delivery, pending proposal state, and manual fallback smoke without treating hook payload generation as chat visibility. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-16: Extended closeout Assist bundles with bounded affected-contract IDs so Codex and Claude can show the governed workstream, component, diagram, or bug contract involved even when the final visible beat is validation-only. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-16: Hardened live UX surfacing so Ambient Highlight is a distinct checkpoint/stop lane, ambient beats no longer lose to stale teasers after evidence matures, Stop can recover meaningful Assist from explicit visibility-feedback turns even when the final answer is short, and visible-delivery dedupe only suppresses exact generated labels. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-16: Routed unseen Ambient Highlight, Observation, and Proposal beats through the same Stop one-shot continuation path as Assist, so host-hidden checkpoint output no longer leaves the user seeing only `Odylith Assist`. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-16: Added explicit Markdown horizontal-rule boundaries around live
+  teaser, ambient, Observation, and Proposal output so Odylith-owned
+  intervention copy is visibly separated from host-agent narration, while
+  `Odylith Assist` remains blended as the final closeout line. (Plan:
+  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
+  `CB-121`)
+- 2026-04-16: Repaired Ambient Highlight reachability by lowering the live
+  ambient floor to the post-tool teaser floor and by allowing hidden-ready
+  duplicate teaser/card moments to recover as ambient lines until a proven
+  visible channel has carried the beat. (Plan:
+  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
+  `CB-121`)
+- 2026-04-16: Tightened delivery-ledger proof so `assistant_fallback_ready`
+  and structured hook context no longer count as chat-visible delivery; they
+  stay available for Stop replay without letting status or duplicate
+  suppression pretend the user already saw the beat. (Plan:
+  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
+  `CB-121`)
+- 2026-04-16: Fixed the host-composed live ambient path so checkpoint bundles
+  preserve `live_ambient_signals` and emit concrete Ambient Highlight events
+  instead of falling back to generic teasers. The same change removed duplicate
+  visible Markdown and shortened fallback instruction prose to lower
+  hidden-context token overhead. (Plan:
+  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
+  `CB-121`)
+- 2026-04-16: Made Ambient Highlight the single recorded live beat when it wins
+  the slot, carrying the candidate intervention key and semantic signature so
+  continuity dedupes the visible ambient signal instead of logging a generic
+  teaser plus ambient duplicate. (Plan:
+  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
+  `CB-121`)
+- 2026-04-16: Added cached Codex post-bash grounding so repeated edit-like
+  hooks no longer rerun slow or failing `odylith start` probes on every
+  command, while each hook still evaluates selective sync and live
+  intervention output. (Plan:
+  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
+  `CB-121`)

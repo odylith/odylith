@@ -136,6 +136,35 @@ def _static_readiness(*, repo_root: Path, host_family: str) -> dict[str, Any]:
     return _codex_static_readiness(repo_root)
 
 
+def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dict[str, Any]:
+    visible_count = int(ledger.get("visible_event_count") or 0)
+    latest = ledger.get("latest_visible_event") if isinstance(ledger.get("latest_visible_event"), Mapping) else {}
+    if visible_count > 0:
+        channel = _normalize_token(latest.get("delivery_channel")) or "unknown"
+        return {
+            "status": "proven_this_session",
+            "summary": f"{visible_count} proven-visible event(s) recorded for this session; latest via {channel}.",
+            "latest_delivery_channel": channel,
+            "visible_event_count": visible_count,
+        }
+    if static_ready:
+        return {
+            "status": "unproven_this_session",
+            "summary": (
+                "No proven-visible event is recorded for this session; the assistant must render the "
+                "visible-intervention fallback directly before claiming the UX is active."
+            ),
+            "latest_delivery_channel": "",
+            "visible_event_count": 0,
+        }
+    return {
+        "status": "degraded",
+        "summary": "Static readiness is degraded; do not claim live intervention visibility for this session.",
+        "latest_delivery_channel": "",
+        "visible_event_count": 0,
+    }
+
+
 def inspect_intervention_status(
     *,
     repo_root: Path | str = ".",
@@ -154,6 +183,10 @@ def inspect_intervention_status(
         limit=limit,
     )
     activation = "ready" if bool(readiness.get("ready")) else "degraded"
+    proof = _chat_visible_proof(
+        ledger=ledger,
+        static_ready=bool(readiness.get("ready")),
+    )
     pending = ledger.get("pending_proposal_state") if isinstance(ledger.get("pending_proposal_state"), Mapping) else {}
     return {
         "version": "v1",
@@ -165,6 +198,7 @@ def inspect_intervention_status(
         "chat_visibility_contract": (
             "Use hook output when the host visibly renders it; otherwise the assistant-render fallback must speak the same Markdown directly."
         ),
+        "chat_visible_proof": proof,
         "active_lanes": delivery_ledger.active_lane_matrix(host_family=host),
         "delivery_ledger": ledger,
         "pending_proposal_count": int(pending.get("pending_count") or 0),
@@ -187,6 +221,7 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
     readiness = report.get("static_readiness") if isinstance(report.get("static_readiness"), Mapping) else {}
     checks = readiness.get("checks") if isinstance(readiness.get("checks"), Mapping) else {}
     ledger = report.get("delivery_ledger") if isinstance(report.get("delivery_ledger"), Mapping) else {}
+    proof = report.get("chat_visible_proof") if isinstance(report.get("chat_visible_proof"), Mapping) else {}
     latest = ledger.get("latest_visible_event") if isinstance(ledger.get("latest_visible_event"), Mapping) else {}
     pending_count = int(report.get("pending_proposal_count") or 0)
     lines = [
@@ -195,6 +230,11 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
         f"Activation: {activation}",
         f"Session: `{_normalize_string(report.get('session_id')) or 'unknown'}`",
         f"Chat-visible contract: {_normalize_string(report.get('chat_visibility_contract'))}",
+        (
+            "Chat-visible proof: "
+            f"{_normalize_token(proof.get('status')) or 'unknown'} - "
+            f"{_normalize_string(proof.get('summary')) or 'no proof summary available.'}"
+        ),
     ]
     activation_note = _normalize_string(readiness.get("activation_note"))
     if activation_note:
@@ -225,7 +265,7 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
         lines.append("Last visible Odylith beat: none recorded for this session yet.")
     lines.append(
         f"Ledger: {int(ledger.get('event_count') or 0)} recent event(s), "
-        f"{int(ledger.get('visible_event_count') or 0)} visible-ready event(s), "
+        f"{int(ledger.get('visible_event_count') or 0)} proven-visible event(s), "
         f"{pending_count} pending proposal(s)."
     )
     lines.append(f"Fast smoke: `{_normalize_string(report.get('smoke_command'))}`")

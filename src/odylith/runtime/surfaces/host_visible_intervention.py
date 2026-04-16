@@ -10,6 +10,7 @@ from typing import Sequence
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import surface_runtime
 
 
 def _normalize_text(value: object) -> str:
@@ -31,6 +32,8 @@ def _operator_reports_visibility_failure(*, prompt: str, summary: str) -> bool:
         "no hook outputs",
         "hook output hidden",
         "hidden hook",
+        "only assist works",
+        "only assit works",
         "assist stopped",
         "assist is not",
         "intervention is not",
@@ -41,6 +44,15 @@ def _operator_reports_visibility_failure(*, prompt: str, summary: str) -> bool:
         "not showing",
     )
     if any(marker in text for marker in direct_markers):
+        return True
+    visibility_terms = ("visible", "visibility", "rendering", "showing", "chat output", "hook output")
+    odylith_terms = ("odylith", "intervention", "assist", "assit", "observation", "proposal", "hook")
+    uncertainty_terms = ("not sure", "unsure", "still not sure")
+    if (
+        any(marker in text for marker in uncertainty_terms)
+        and any(marker in text for marker in visibility_terms)
+        and any(marker in text for marker in odylith_terms)
+    ):
         return True
     if "not working" in text and any(token in text for token in ("odylith", "intervention", "assist", "hook", "chat", "ux")):
         return True
@@ -107,7 +119,9 @@ def render_visible_intervention(
             parts.append(token)
     rendered = "\n\n".join(parts).strip()
     if _operator_reports_visibility_failure(prompt=prompt, summary=summary) and "**Odylith Observation:**" not in rendered:
-        fallback = _operator_visibility_failure_observation(host_family=host_family)
+        fallback = surface_runtime.wrap_live_text(
+            _operator_visibility_failure_observation(host_family=host_family)
+        )
         if record_delivery:
             stream_state.append_intervention_event(
                 repo_root=Path(repo_root).expanduser().resolve(),
