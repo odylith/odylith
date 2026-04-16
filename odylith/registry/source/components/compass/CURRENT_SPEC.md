@@ -113,10 +113,10 @@ standup-level summary should be.
   read as separate sections before the inner cards begin.
 - Those two outer governance containers should also stay subtly tinted by
   family instead of reading as identical plain-white blocks: `Programs`
-  keeps the cool execution-governance tint and `Release Targets` keeps a
+  keeps the cool execution-engine tint and `Release Targets` keeps a
   distinct release-family tint.
 - Program cards and release cards should remain visually distinct in Compass.
-  Keep programs on the cool execution-governance tint and give `Release
+  Keep programs on the cool execution-engine tint and give `Release
   Targets` its own subtle release-family surface tint so execution structure
   and ship targeting are separable at a glance without changing the shared
   layout or typography contract.

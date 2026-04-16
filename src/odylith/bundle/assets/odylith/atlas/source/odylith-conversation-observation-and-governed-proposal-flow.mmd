@@ -4,7 +4,7 @@ flowchart LR
     Packet["Grounded packet + delivery truth<br/>packet summary + active refs + lane context"] --> Envelope
     History["Governed source truth<br/>Radar + Registry + Atlas + Casebook"] --> Core
     Stream["Compass stream history<br/>dedupe + pending proposal lifecycle"] --> Core
-    Exec["Execution Governance<br/>admissibility + urgency input"] --> Core
+    Exec["Execution Engine<br/>admissibility + urgency input"] --> Core
 
     subgraph Hosts["Host adapters"]
         Codex["Codex hooks<br/>prompt context + stop summary<br/>Bash post-tool checkpoint"]

@@ -422,6 +422,7 @@ initQuickTooltips();
             { reason: "scoped_brief_missing" },
           );
         }
+        if (globalBrief && String(globalBrief.status || "").trim() !== "ready") return globalBrief;
         if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;
         if (globalReady) return globalReady;
         if (scopedReady && (scopedReadySource === "provider" || scopedReadySource === "cache")) return scopedReady;

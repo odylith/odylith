@@ -54,6 +54,22 @@
   "timeline": [
     {
       "artifacts": [
+        "src/odylith/runtime/context_engine/odylith_context_engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 425,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/context_engine/odylith_context_engine.py",
+      "ts_iso": "2026-04-16T09:10:05-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
         "README.md"
       ],
       "confidence": "high",
@@ -84,24 +100,6 @@
         "B-022",
         "B-038"
       ]
-    },
-    {
-      "artifacts": [
-        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
-        "src/odylith/runtime/context_engine/session_bootstrap_payload_compactor.py",
-        "src/odylith/runtime/context_engine/tooling_context_quality.py"
-      ],
-      "confidence": "high",
-      "event_index": 339,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith-context-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py, src/odylith/runtime/context_engine/session_bootstrap_payload_compactor.py +1 more",
-      "ts_iso": "2026-04-15T22:56:55-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

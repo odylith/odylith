@@ -30,7 +30,7 @@ native-spawn host.
 - Repo grounding. It consumes bounded context signals rather than compiling
   them.
 - Spawning agents directly. It emits a decision contract for the caller.
-- Core admissibility policy. Execution Governance decides whether a next move
+- Core admissibility policy. Execution Engine decides whether a next move
   is allowed before routing chooses the best delegated profile, and the router
   must fail closed when the governed frontier says the truthful next move is
   re-anchor, local recovery, or waiting on an external dependency.
@@ -318,4 +318,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Registered the public router as an Odylith-owned product component with its own spec and governance linkage in the public repo. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-02: Fixed the public CLI wrapper so `odylith subagent-router --repo-root . --help` and verbed invocations preserve the documented verb-first contract instead of misrouting `--repo-root` ahead of the router subcommand. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
-- 2026-04-09: Clarified that Subagent Router selects delegated execution profiles only after Execution Governance has screened the next move for admissibility. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-09: Clarified that Subagent Router selects delegated execution profiles only after Execution Engine has screened the next move for admissibility. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

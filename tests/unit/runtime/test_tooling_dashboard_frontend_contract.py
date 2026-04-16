@@ -89,3 +89,7 @@ def test_tooling_shell_frontend_contract_loads_cheatsheet_modules() -> None:
     assert ".agent-cheatsheet-empty[hidden]" in style_css
     assert "initToolingShellCheatsheetDrawer" in control_js
     assert 'document.getElementById("agentCheatsheetResults")' in control_js
+    assert 'const CASEBOOK_SORT_DEFAULT = "newest";' in control_js
+    assert 'casebook: { bug: "", severity: "", status: "", sort: CASEBOOK_SORT_DEFAULT }' in control_js
+    assert 'if (sort !== CASEBOOK_SORT_DEFAULT) query.set("sort", sort);' in control_js
+    assert 'const sortToken = canonicalizeCasebookSortToken(raw.sort || "");' in control_js

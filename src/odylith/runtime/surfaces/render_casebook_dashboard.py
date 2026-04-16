@@ -511,7 +511,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     )
     sticky_filter_bar_css = dashboard_ui_primitives.sticky_filter_bar_css(
         container_selector=".filters-bar",
-        columns="repeat(3, minmax(0, 1fr))",
+        columns="repeat(4, minmax(0, 1fr))",
         field_selector=".filter-control",
         focus_selector=".filter-control:focus",
         top_px=10,
@@ -1180,7 +1180,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     __CASEBOOK_TOOLTIP_SURFACE__
     @media (max-width: 1180px) {{
       .filters-bar {{
-        grid-template-columns: minmax(0, 1fr) repeat(2, minmax(150px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }}
     }}
     @media (max-width: 1000px) {{
@@ -1256,6 +1256,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           <span class="control-label">Status</span>
           <select id="statusFilter" class="filter-control"></select>
         </label>
+        <label class="control" for="sortFilter">
+          <span class="control-label">Sort</span>
+          <select id="sortFilter" class="filter-control"></select>
+        </label>
       </div>
     </section>
 
@@ -1286,6 +1290,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     const searchInput = document.getElementById("searchInput");
     const severityFilter = document.getElementById("severityFilter");
     const statusFilter = document.getElementById("statusFilter");
+    const sortFilter = document.getElementById("sortFilter");
     const bugList = document.getElementById("bugList");
     const detailPane = document.getElementById("detailPane");
     const listMeta = document.getElementById("listMeta");
@@ -1295,6 +1300,15 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     const kpiLatestCase = document.getElementById("kpiLatestCase");
     let detailRenderToken = 0;
     const BUG_ID_COMPACT_RE = /^(?:CB)?-?(\\d{{1,}})$/i;
+    const SORT_DEFAULT = "newest";
+    const SORT_OPTIONS = [
+      {{ value: "newest", label: "Newest" }},
+      {{ value: "oldest", label: "Oldest" }},
+      {{ value: "bug-id", label: "Bug ID" }},
+      {{ value: "priority", label: "Priority" }},
+      {{ value: "status", label: "Status" }},
+    ];
+    const SORT_TOKENS = new Set(SORT_OPTIONS.map((option) => option.value));
     const HUMAN_SIGNAL_FIELDS = [
       "Failure Signature",
       "Trigger Path",
@@ -1388,6 +1402,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return String(value || "").trim().toLowerCase();
     }}
 
+    function canonicalizeSortToken(value) {{
+      const token = String(value || "").trim().toLowerCase();
+      return SORT_TOKENS.has(token) ? token : SORT_DEFAULT;
+    }}
+
     function normalizeSearchToken(value) {{
       return String(value || "")
         .toLowerCase()
@@ -1448,6 +1467,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         bug: canonicalizeBugToken(params.get("bug") || ""),
         severity: canonicalizeFilterToken(params.get("severity") || ""),
         status: canonicalizeFilterToken(params.get("status") || ""),
+        sort: canonicalizeSortToken(params.get("sort") || SORT_DEFAULT),
       }};
     }}
 
@@ -1456,6 +1476,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       if (state.bug) query.set("bug", state.bug);
       if (state.severity) query.set("severity", state.severity);
       if (state.status) query.set("status", state.status);
+      if (canonicalizeSortToken(state.sort) !== SORT_DEFAULT) query.set("sort", canonicalizeSortToken(state.sort));
       const suffix = query.toString() ? `?${{query.toString()}}` : "";
       const next = `${{window.location.pathname}}${{suffix}}`;
       if (next !== `${{window.location.pathname}}${{window.location.search}}`) {{
@@ -1468,6 +1489,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             bug: state.bug || "",
             severity: state.severity || "",
             status: state.status || "",
+            sort: canonicalizeSortToken(state.sort),
           }},
         }}, "*");
       }}
@@ -1481,6 +1503,13 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         );
       }}
       selectEl.innerHTML = rows.join("");
+    }}
+
+    function fillSortSelect(current) {{
+      const active = canonicalizeSortToken(current || SORT_DEFAULT);
+      sortFilter.innerHTML = SORT_OPTIONS.map((option) => (
+        `<option value="${{escapeHtml(option.value)}}"${{option.value === active ? " selected" : ""}}>${{escapeHtml(option.label)}}</option>`
+      )).join("");
     }}
 
     function renderRichText(text) {{
@@ -1642,7 +1671,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           const radarChips = includeWorkstreams ? renderActionChips(
             Array.isArray(item && item.workstream_links)
               ? item.workstream_links.map((row) => ({{
-                  label: `Radar ${{String(row && row.workstream || "").trim()}}`,
+                  label: String(row && row.workstream || "").trim(),
                   href: String(row && row.href || "").trim(),
                 }}))
               : []
@@ -1765,8 +1794,96 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return true;
     }}
 
+    function compareText(left, right) {{
+      return String(left || "").localeCompare(String(right || ""), undefined, {{ numeric: true, sensitivity: "base" }});
+    }}
+
+    function compareDateDesc(left, right) {{
+      return compareText(right && right.date, left && left.date);
+    }}
+
+    function compareDateAsc(left, right) {{
+      return compareText(left && left.date, right && right.date);
+    }}
+
+    function bugIdNumber(row) {{
+      const canonical = canonicalizeBugIdToken(row && row.bug_id);
+      const match = canonical.match(/^CB-(\\d+)$/);
+      return match ? Number(match[1]) : 0;
+    }}
+
+    function severityRank(row) {{
+      const token = String(row && (row.severity_token || row.severity) || "").trim().toLowerCase();
+      const match = token.match(/^p(\\d+)$/);
+      return match ? Number(match[1]) : 99;
+    }}
+
+    function statusRank(row) {{
+      const token = normalizeSearchToken(row && (row.status_token || row.status) || "");
+      const ranks = {{
+        open: 0,
+        blocked: 1,
+        inprogress: 2,
+        resolved: 3,
+        closed: 4,
+      }};
+      return Object.prototype.hasOwnProperty.call(ranks, token) ? ranks[token] : 50;
+    }}
+
+    function compareBugIdDesc(left, right) {{
+      return bugIdNumber(right) - bugIdNumber(left);
+    }}
+
+    function compareBugIdAsc(left, right) {{
+      return bugIdNumber(left) - bugIdNumber(right);
+    }}
+
+    function compareTitleAsc(left, right) {{
+      return compareText(left && left.title, right && right.title);
+    }}
+
+    function firstNonZero(...values) {{
+      return values.find((value) => Number(value) !== 0) || 0;
+    }}
+
+    function sortRows(rows, sortToken) {{
+      const token = canonicalizeSortToken(sortToken);
+      const sorted = [...rows];
+      sorted.sort((left, right) => {{
+        if (token === "oldest") {{
+          return firstNonZero(compareDateAsc(left, right), compareBugIdAsc(left, right), compareTitleAsc(left, right));
+        }}
+        if (token === "bug-id") {{
+          return firstNonZero(compareBugIdDesc(left, right), compareDateDesc(left, right), compareTitleAsc(left, right));
+        }}
+        if (token === "priority") {{
+          return firstNonZero(
+            severityRank(left) - severityRank(right),
+            statusRank(left) - statusRank(right),
+            compareDateDesc(left, right),
+            compareBugIdDesc(left, right),
+            compareTitleAsc(left, right)
+          );
+        }}
+        if (token === "status") {{
+          return firstNonZero(
+            statusRank(left) - statusRank(right),
+            compareDateDesc(left, right),
+            severityRank(left) - severityRank(right),
+            compareBugIdDesc(left, right),
+            compareTitleAsc(left, right)
+          );
+        }}
+        return firstNonZero(compareDateDesc(left, right), compareBugIdDesc(left, right), compareTitleAsc(left, right));
+      }});
+      return sorted;
+    }}
+
     function visibleRows(state, searchTerm) {{
-      return bugSummaries.filter((row) => matchesFilters(row, state) && matchesSearch(row, searchTerm));
+      return sortRows(
+        bugSummaries.filter((row) => matchesFilters(row, state) && matchesSearch(row, searchTerm)),
+        state.sort
+      );
     }}
 
     function renderKpis() {{
@@ -1844,7 +1961,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const workstreamLinks = Array.isArray(detail.workstream_links)
         ? detail.workstream_links
             .map((item) => ({{
-              label: "Radar " + String(item && item.workstream || "").trim(),
+              label: String(item && item.workstream || "").trim(),
               href: String(item && item.href || "").trim(),
             }}))
             .filter((item) => item.label.trim() && item.href)
@@ -2283,14 +2400,22 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       readState().status,
       "All statuses"
     );
+    fillSortSelect(readState().sort);
     renderKpis();
     searchInput.addEventListener("input", () => render());
     severityFilter.addEventListener("change", () => {{
-      writeState({{ ...readState(), severity: canonicalizeFilterToken(severityFilter.value || ""), bug: readState().bug }});
+      const state = readState();
+      writeState({{ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug }});
       render();
     }});
     statusFilter.addEventListener("change", () => {{
-      writeState({{ ...readState(), status: canonicalizeFilterToken(statusFilter.value || ""), bug: readState().bug }});
+      const state = readState();
+      writeState({{ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug }});
+      render();
+    }});
+    sortFilter.addEventListener("change", () => {{
+      const state = readState();
+      writeState({{ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug }});
       render();
     }});
     window.addEventListener("popstate", () => {{
@@ -2306,6 +2431,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         readState().status,
         "All statuses"
       );
+      fillSortSelect(readState().sort);
       render();
     }});
     render();
@@ -2398,6 +2524,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ("bug", ("bug",)),
                 ("severity", ("severity",)),
                 ("status", ("status",)),
+                ("sort", ("sort",)),
             ),
         ),
     )

@@ -10,7 +10,7 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
     const currentParams = new URLSearchParams(window.location.search || "");
     const nextParams = new URLSearchParams();
     nextParams.set("tab", "casebook");
-    const passthroughRules = [{"target":"bug","sources":["bug"]},{"target":"severity","sources":["severity"]},{"target":"status","sources":["status"]}];
+    const passthroughRules = [{"target":"bug","sources":["bug"]},{"target":"severity","sources":["severity"]},{"target":"status","sources":["status"]},{"target":"sort","sources":["sort"]}];
     for (const rule of passthroughRules) {
       if (!rule || !rule.target) continue;
       const sources = Array.isArray(rule.sources) && rule.sources.length ? rule.sources : [rule.target];
@@ -54,6 +54,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
     const searchInput = document.getElementById("searchInput");
     const severityFilter = document.getElementById("severityFilter");
     const statusFilter = document.getElementById("statusFilter");
+    const sortFilter = document.getElementById("sortFilter");
     const bugList = document.getElementById("bugList");
     const detailPane = document.getElementById("detailPane");
     const listMeta = document.getElementById("listMeta");
@@ -63,6 +64,15 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
     const kpiLatestCase = document.getElementById("kpiLatestCase");
     let detailRenderToken = 0;
     const BUG_ID_COMPACT_RE = /^(?:CB)?-?(\d{1,})$/i;
+    const SORT_DEFAULT = "newest";
+    const SORT_OPTIONS = [
+      { value: "newest", label: "Newest" },
+      { value: "oldest", label: "Oldest" },
+      { value: "bug-id", label: "Bug ID" },
+      { value: "priority", label: "Priority" },
+      { value: "status", label: "Status" },
+    ];
+    const SORT_TOKENS = new Set(SORT_OPTIONS.map((option) => option.value));
     const HUMAN_SIGNAL_FIELDS = [
       "Failure Signature",
       "Trigger Path",
@@ -156,6 +166,11 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       return String(value || "").trim().toLowerCase();
     }
 
+    function canonicalizeSortToken(value) {
+      const token = String(value || "").trim().toLowerCase();
+      return SORT_TOKENS.has(token) ? token : SORT_DEFAULT;
+    }
+
     function normalizeSearchToken(value) {
       return String(value || "")
         .toLowerCase()
@@ -216,6 +231,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         bug: canonicalizeBugToken(params.get("bug") || ""),
         severity: canonicalizeFilterToken(params.get("severity") || ""),
         status: canonicalizeFilterToken(params.get("status") || ""),
+        sort: canonicalizeSortToken(params.get("sort") || SORT_DEFAULT),
       };
     }
 
@@ -224,6 +240,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       if (state.bug) query.set("bug", state.bug);
       if (state.severity) query.set("severity", state.severity);
       if (state.status) query.set("status", state.status);
+      if (canonicalizeSortToken(state.sort) !== SORT_DEFAULT) query.set("sort", canonicalizeSortToken(state.sort));
       const suffix = query.toString() ? `?${query.toString()}` : "";
       const next = `${window.location.pathname}${suffix}`;
       if (next !== `${window.location.pathname}${window.location.search}`) {
@@ -236,6 +253,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
             bug: state.bug || "",
             severity: state.severity || "",
             status: state.status || "",
+            sort: canonicalizeSortToken(state.sort),
           },
         }, "*");
       }
@@ -249,6 +267,13 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         );
       }
       selectEl.innerHTML = rows.join("");
+    }
+
+    function fillSortSelect(current) {
+      const active = canonicalizeSortToken(current || SORT_DEFAULT);
+      sortFilter.innerHTML = SORT_OPTIONS.map((option) => (
+        `<option value="${escapeHtml(option.value)}"${option.value === active ? " selected" : ""}>${escapeHtml(option.label)}</option>`
+      )).join("");
     }
 
     function renderRichText(text) {
@@ -410,7 +435,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           const radarChips = includeWorkstreams ? renderActionChips(
             Array.isArray(item && item.workstream_links)
               ? item.workstream_links.map((row) => ({
-                  label: `Radar ${String(row && row.workstream || "").trim()}`,
+                  label: String(row && row.workstream || "").trim(),
                   href: String(row && row.href || "").trim(),
                 }))
               : []
@@ -533,8 +558,96 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       return true;
     }
 
+    function compareText(left, right) {
+      return String(left || "").localeCompare(String(right || ""), undefined, { numeric: true, sensitivity: "base" });
+    }
+
+    function compareDateDesc(left, right) {
+      return compareText(right && right.date, left && left.date);
+    }
+
+    function compareDateAsc(left, right) {
+      return compareText(left && left.date, right && right.date);
+    }
+
+    function bugIdNumber(row) {
+      const canonical = canonicalizeBugIdToken(row && row.bug_id);
+      const match = canonical.match(/^CB-(\d+)$/);
+      return match ? Number(match[1]) : 0;
+    }
+
+    function severityRank(row) {
+      const token = String(row && (row.severity_token || row.severity) || "").trim().toLowerCase();
+      const match = token.match(/^p(\d+)$/);
+      return match ? Number(match[1]) : 99;
+    }
+
+    function statusRank(row) {
+      const token = normalizeSearchToken(row && (row.status_token || row.status) || "");
+      const ranks = {
+        open: 0,
+        blocked: 1,
+        inprogress: 2,
+        resolved: 3,
+        closed: 4,
+      };
+      return Object.prototype.hasOwnProperty.call(ranks, token) ? ranks[token] : 50;
+    }
+
+    function compareBugIdDesc(left, right) {
+      return bugIdNumber(right) - bugIdNumber(left);
+    }
+
+    function compareBugIdAsc(left, right) {
+      return bugIdNumber(left) - bugIdNumber(right);
+    }
+
+    function compareTitleAsc(left, right) {
+      return compareText(left && left.title, right && right.title);
+    }
+
+    function firstNonZero(...values) {
+      return values.find((value) => Number(value) !== 0) || 0;
+    }
+
+    function sortRows(rows, sortToken) {
+      const token = canonicalizeSortToken(sortToken);
+      const sorted = [...rows];
+      sorted.sort((left, right) => {
+        if (token === "oldest") {
+          return firstNonZero(compareDateAsc(left, right), compareBugIdAsc(left, right), compareTitleAsc(left, right));
+        }
+        if (token === "bug-id") {
+          return firstNonZero(compareBugIdDesc(left, right), compareDateDesc(left, right), compareTitleAsc(left, right));
+        }
+        if (token === "priority") {
+          return firstNonZero(
+            severityRank(left) - severityRank(right),
+            statusRank(left) - statusRank(right),
+            compareDateDesc(left, right),
+            compareBugIdDesc(left, right),
+            compareTitleAsc(left, right)
+          );
+        }
+        if (token === "status") {
+          return firstNonZero(
+            statusRank(left) - statusRank(right),
+            compareDateDesc(left, right),
+            severityRank(left) - severityRank(right),
+            compareBugIdDesc(left, right),
+            compareTitleAsc(left, right)
+          );
+        }
+        return firstNonZero(compareDateDesc(left, right), compareBugIdDesc(left, right), compareTitleAsc(left, right));
+      });
+      return sorted;
+    }
+
     function visibleRows(state, searchTerm) {
-      return bugSummaries.filter((row) => matchesFilters(row, state) && matchesSearch(row, searchTerm));
+      return sortRows(
+        bugSummaries.filter((row) => matchesFilters(row, state) && matchesSearch(row, searchTerm)),
+        state.sort
+      );
     }
 
     function renderKpis() {
@@ -612,7 +725,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       const workstreamLinks = Array.isArray(detail.workstream_links)
         ? detail.workstream_links
             .map((item) => ({
-              label: "Radar " + String(item && item.workstream || "").trim(),
+              label: String(item && item.workstream || "").trim(),
               href: String(item && item.href || "").trim(),
             }))
             .filter((item) => item.label.trim() && item.href)
@@ -1051,14 +1164,22 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       readState().status,
       "All statuses"
     );
+    fillSortSelect(readState().sort);
     renderKpis();
     searchInput.addEventListener("input", () => render());
     severityFilter.addEventListener("change", () => {
-      writeState({ ...readState(), severity: canonicalizeFilterToken(severityFilter.value || ""), bug: readState().bug });
+      const state = readState();
+      writeState({ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug });
       render();
     });
     statusFilter.addEventListener("change", () => {
-      writeState({ ...readState(), status: canonicalizeFilterToken(statusFilter.value || ""), bug: readState().bug });
+      const state = readState();
+      writeState({ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug });
+      render();
+    });
+    sortFilter.addEventListener("change", () => {
+      const state = readState();
+      writeState({ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug });
       render();
     });
     window.addEventListener("popstate", () => {
@@ -1074,6 +1195,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         readState().status,
         "All statuses"
       );
+      fillSortSelect(readState().sort);
       render();
     });
     render();

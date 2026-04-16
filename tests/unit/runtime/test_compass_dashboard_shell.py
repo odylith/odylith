@@ -80,6 +80,7 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert 'is waiting on narration provider budget' in shared_js
     assert 'got a scoped provider reply, but the brief was not usable yet' in shared_js
     assert 'still needs its own ${requested} brief' in shared_js
+    assert 'if (globalBrief && String(globalBrief.status || "").trim() !== "ready") return globalBrief;' in shared_js
     assert 'if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;' in shared_js
     assert 'if (globalReady) return globalReady;' in shared_js
     assert 'if (hasScopedSelection && scopedBrief) {' in shared_js

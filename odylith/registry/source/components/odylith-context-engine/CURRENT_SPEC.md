@@ -29,7 +29,7 @@ claims, and optionally materializes faster local and remote retrieval layers.
 - Delegation routing policy itself. It only provides grounding and packet data
   that router/orchestrator logic can consume.
 - Admissibility or next-action control. It provides grounded truth and packets,
-  but [Execution Governance](../execution-governance/CURRENT_SPEC.md) decides
+  but [Execution Engine](../execution-engine/CURRENT_SPEC.md) decides
   which next move is admissible.
 
 ## Developer Mental Model
@@ -520,5 +520,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-05: Restored canonical benchmark guidance memory, passed family hints through packet finalization into retrieval, and documented the fail-closed boundedness contract that keeps weak-family proof slices deterministic across warm and cold cache posture. (Plan: [B-038](odylith/radar/radar.html?view=plan&workstream=B-038))
 - 2026-04-07: Promoted the hidden memory-substrate seams into governed sibling components so projection bundle, projection snapshot, remote retrieval, and packet contracts become explicit Registry truth instead of broad Context Engine footnotes. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
 - 2026-04-08: Added first-class release entities and selector resolution to the projection model so `context`, `query`, and governed read surfaces can resolve release ids, aliases, versions, tags, and unique exact names from one repo-local contract. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
-- 2026-04-09: Clarified the product boundary that Context Engine grounds repo truth and packets, while Execution Governance owns admissibility and next-action control. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-09: Clarified the product boundary that Context Engine grounds repo truth and packets, while Execution Engine owns admissibility and next-action control. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-10: Added structured turn-intake carry-through so session packets can preserve `turn_context`, lane-fenced target resolution, and presentation policy across consumer and maintainer lanes. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))

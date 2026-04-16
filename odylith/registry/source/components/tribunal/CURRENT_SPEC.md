@@ -25,7 +25,7 @@ plus one bounded correction packet per case.
 - Surface rendering. It produces structured payloads consumed elsewhere.
 - Live agent chatter. Chatter may consume precomputed Tribunal-backed payloads,
   but Tribunal must not be invoked on demand just to narrate a turn.
-- Next-action admissibility. Execution Governance consumes diagnosis as one
+- Next-action admissibility. Execution Engine consumes diagnosis as one
   evidence input, but Tribunal does not decide whether the intended command is
   procedurally allowed.
 
@@ -277,4 +277,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-26: Promoted Tribunal into Odylith's own product registry and component-spec set so diagnosis no longer depends on consumer-local product documentation. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Clarified and shipped the downstream contract that lets `odylith-chatter` consume precomputed Tribunal-backed case and systemic-brief truth without invoking live Tribunal during ordinary narration. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-08: Moved Tribunal fully out of `runtime/evaluation` into `src/odylith/runtime/reasoning/`, removed the legacy eval-path module, and hardened sync-owned Atlas and delivery-intelligence references plus regression guards so governed surfaces track the new package boundary without compatibility shims. (Plan: [B-061](odylith/radar/radar.html?view=plan&workstream=B-061))
-- 2026-04-09: Clarified the product boundary that Tribunal diagnoses why a posture exists, while Execution Governance decides whether the next move is admissible. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-09: Clarified the product boundary that Tribunal diagnoses why a posture exists, while Execution Engine decides whether the next move is admissible. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

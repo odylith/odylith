@@ -207,7 +207,7 @@ reviewer framing that explains how Odylith should be compared.
 - Keep Context Engine benchmark slices honest: packet-lane accuracy,
   selection-state accuracy, workstream accuracy, and ambiguity fail-closed
   behavior must stay at `1.0` whenever the sampled corpus includes those rows.
-- Keep execution-governance benchmark slices honest: execution-governance
+- Keep execution-engine benchmark slices honest: execution-governance
   presence, resume-token presence, outcome accuracy, mode accuracy, truthful
   next-move accuracy, closure accuracy, and authoritative-lane accuracy must
   stay at `1.0` whenever the sampled corpus includes those rows.

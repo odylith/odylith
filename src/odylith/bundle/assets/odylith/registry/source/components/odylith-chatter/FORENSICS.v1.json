@@ -14,10 +14,10 @@
     "empty_reasons": [],
     "explicit_event_count": 47,
     "mapped_workstream_evidence_count": 39,
-    "recent_path_match_count": 1,
-    "spec_history_event_count": 12,
+    "recent_path_match_count": 0,
+    "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 48
+    "timeline_event_count": 47
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -445,23 +445,6 @@
       "workstreams": [
         "B-096"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
-        "odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md"
-      ],
-      "confidence": "high",
-      "event_index": 338,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith-chatter"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/VALIDATION_AND_TESTING.md, odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md",
-      "ts_iso": "2026-04-15T22:58:58-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [

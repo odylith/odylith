@@ -38,7 +38,7 @@ diagnosis surfaces, and answer-time claim language.
 - Delivery Intelligence, Tribunal, Context Engine packets, Compass, shell,
   Registry, and chatter should all consume the same resolved lane rather than
   building separate proof summaries.
-- Execution Governance consumes the resolved proof-state lane as evidence for
+- Execution Engine consumes the resolved proof-state lane as evidence for
   admissibility and frontier posture; Proof State itself does not decide the
   next action.
 - When Proof State surfaces a live blocker, unsafe closeout, or falsified
@@ -132,7 +132,7 @@ When one lane resolves cleanly, `proof_state` is additive and must include:
   metadata when a bug owns the lane.
 - [Odylith Context Engine](../odylith-context-engine/CURRENT_SPEC.md) carries
   proof-state into grounded packets.
-- [Execution Governance](../execution-governance/CURRENT_SPEC.md) consumes the
+- [Execution Engine](../execution-engine/CURRENT_SPEC.md) consumes the
   resolved lane when screening actions and deriving the current execution
   frontier.
 - [Tribunal](../tribunal/CURRENT_SPEC.md) consumes proof-state for case reuse,
@@ -158,4 +158,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-04-09: Bound proof-state blocker posture into Delivery Intelligence's shared Scope Signal Ladder so live frontier or unsafe-closeout truth can outrank ordinary activity across Compass, Radar, Registry, Atlas, and shell consumers. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071))
 - 2026-04-08: Promoted the live-proof blocker frontier, falsification memory, and claim-tier contract into a first-class Registry component so delivery, diagnosis, packets, shell, Compass, Registry, and chatter can share one authoritative proof-state lane. (Plan: [B-062](odylith/radar/radar.html?view=plan&workstream=B-062))
-- 2026-04-09: Clarified that Proof State resolves blocker and claim-tier truth, while Execution Governance consumes that truth when deciding the next admissible move. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-09: Clarified that Proof State resolves blocker and claim-tier truth, while Execution Engine consumes that truth when deciding the next admissible move. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

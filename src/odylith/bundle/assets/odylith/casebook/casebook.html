@@ -160,7 +160,7 @@
   top: 10px;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   padding: 10px;
   background: rgba(255, 255, 255, 0.92);
@@ -878,7 +878,7 @@
 }
     @media (max-width: 1180px) {
       .filters-bar {
-        grid-template-columns: minmax(0, 1fr) repeat(2, minmax(150px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
     @media (max-width: 1000px) {
@@ -954,6 +954,10 @@
           <span class="control-label">Status</span>
           <select id="statusFilter" class="filter-control"></select>
         </label>
+        <label class="control" for="sortFilter">
+          <span class="control-label">Sort</span>
+          <select id="sortFilter" class="filter-control"></select>
+        </label>
       </div>
     </section>
 
@@ -989,7 +993,7 @@
     const currentParams = new URLSearchParams(window.location.search || "");
     const nextParams = new URLSearchParams();
     nextParams.set("tab", "casebook");
-    const passthroughRules = [{"target":"bug","sources":["bug"]},{"target":"severity","sources":["severity"]},{"target":"status","sources":["status"]}];
+    const passthroughRules = [{"target":"bug","sources":["bug"]},{"target":"severity","sources":["severity"]},{"target":"status","sources":["status"]},{"target":"sort","sources":["sort"]}];
     for (const rule of passthroughRules) {
       if (!rule || !rule.target) continue;
       const sources = Array.isArray(rule.sources) && rule.sources.length ? rule.sources : [rule.target];
@@ -1025,7 +1029,7 @@
   }
 })();
 </script>
-  <script id="casebookData" src="casebook-payload.v1.js?v=334072c846aa"></script>
-  <script src="casebook-app.v1.js?v=334072c846aa"></script>
+  <script id="casebookData" src="casebook-payload.v1.js?v=aa79320b75b9"></script>
+  <script src="casebook-app.v1.js?v=aa79320b75b9"></script>
 </body>
 </html>

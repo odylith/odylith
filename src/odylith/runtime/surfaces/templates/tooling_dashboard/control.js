@@ -748,12 +748,20 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       return "";
     }
 
+    const CASEBOOK_SORT_DEFAULT = "newest";
+    const CASEBOOK_SORT_TOKENS = new Set(["newest", "oldest", "bug-id", "priority", "status"]);
+
+    function canonicalizeCasebookSortToken(value) {
+      const token = String(value || "").trim().toLowerCase();
+      return CASEBOOK_SORT_TOKENS.has(token) ? token : CASEBOOK_SORT_DEFAULT;
+    }
+
     const tabStateMemory = {
       radar: { workstream: "", view: "" },
       atlas: { workstream: "", diagram: "" },
       compass: { workstream: "", window: "", date: "", audit_day: "" },
       registry: { component: "" },
-      casebook: { bug: "", severity: "", status: "" },
+      casebook: { bug: "", severity: "", status: "", sort: CASEBOOK_SORT_DEFAULT },
     };
 
     function sanitizeShellState(rawState) {
@@ -771,6 +779,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         bug: "",
         severity: "",
         status: "",
+        sort: CASEBOOK_SORT_DEFAULT,
         diagram: "",
         view: "",
         window: "",
@@ -805,6 +814,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       state.bug = String(rawState && rawState.bug ? rawState.bug : "").trim();
       state.severity = String(rawState && rawState.severity ? rawState.severity : "").trim().toLowerCase();
       state.status = String(rawState && rawState.status ? rawState.status : "").trim().toLowerCase();
+      state.sort = canonicalizeCasebookSortToken(rawState && rawState.sort ? rawState.sort : "");
       return state;
     }
 
@@ -840,6 +850,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         bug: state.bug,
         severity: state.severity,
         status: state.status,
+        sort: state.sort,
       };
       return state;
     }
@@ -875,6 +886,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       const bugToken = (params.get("bug") || "").trim();
       const severityToken = (params.get("severity") || "").trim().toLowerCase();
       const statusToken = (params.get("status") || "").trim().toLowerCase();
+      const sortToken = (params.get("sort") || "").trim().toLowerCase();
       // Compass prefers `scope`, but still accepts legacy `workstream` query links.
       const activeWorkstreamToken = tab === "compass"
         ? (normalizedScopeToken || normalizedWorkstreamToken)
@@ -886,6 +898,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         bug: bugToken,
         severity: severityToken,
         status: statusToken,
+        sort: sortToken,
         diagram: canonicalizeDiagramToken(params.get("diagram") || ""),
         view: (params.get("view") || "").trim(),
         window: (params.get("window") || "").trim().toLowerCase(),
@@ -966,6 +979,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
           bug: String(params.get("bug") || "").trim(),
           severity: String(params.get("severity") || "").trim().toLowerCase(),
           status: String(params.get("status") || "").trim().toLowerCase(),
+          sort: canonicalizeCasebookSortToken(params.get("sort") || ""),
         };
       } catch (_error) {
         return null;
@@ -1055,6 +1069,8 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       if (state.bug) query.set("bug", state.bug);
       if (state.severity) query.set("severity", state.severity);
       if (state.status) query.set("status", state.status);
+      const sort = canonicalizeCasebookSortToken(state.sort || "");
+      if (sort !== CASEBOOK_SORT_DEFAULT) query.set("sort", sort);
       return query;
     }
 
@@ -1079,6 +1095,8 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         if (state.bug) query.set("bug", state.bug);
         if (state.severity) query.set("severity", state.severity);
         if (state.status) query.set("status", state.status);
+        const sort = canonicalizeCasebookSortToken(state.sort || "");
+        if (sort !== CASEBOOK_SORT_DEFAULT) query.set("sort", sort);
       } else if (state.workstream) {
         query.set("workstream", state.workstream);
       }
@@ -1433,12 +1451,14 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         bug: frameState.bug || current.bug,
         severity: frameState.severity || current.severity,
         status: frameState.status || current.status,
+        sort: frameState.sort || current.sort,
       };
       if (
         next.tab === current.tab
         && next.bug === current.bug
         && next.severity === current.severity
         && next.status === current.status
+        && next.sort === current.sort
       ) {
         return;
       }
@@ -1519,12 +1539,14 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         const bugToken = String(raw.bug || "").trim();
         const severityToken = String(raw.severity || "").trim().toLowerCase();
         const statusToken = String(raw.status || "").trim().toLowerCase();
+        const sortToken = canonicalizeCasebookSortToken(raw.sort || "");
         const next = {
           ...current,
           tab: "casebook",
           bug: bugToken,
           severity: severityToken,
           status: statusToken,
+          sort: sortToken,
         };
         applyTab(next, { pushHistory: false, syncFrames: false });
         return;

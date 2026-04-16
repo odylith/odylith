@@ -24,7 +24,7 @@ and chatter can consume without rebuilding divergent summaries.
 - first-principles diagnosis; that belongs to [Tribunal](../tribunal/CURRENT_SPEC.md)
 - live proof-lane resolution policy; that belongs to [Proof State](../proof-state/CURRENT_SPEC.md)
 - next-action admissibility or hard execution gating; that belongs to
-  [Execution Governance](../execution-governance/CURRENT_SPEC.md)
+  [Execution Engine](../execution-engine/CURRENT_SPEC.md)
 - final surface rendering or visual design
 - mutating backlog, casebook, or component truth directly
 
@@ -38,7 +38,7 @@ and chatter can consume without rebuilding divergent summaries.
 - When proof-state is present, Delivery Intelligence should carry that lane
   forward faithfully rather than flattening it into generic "clearance"
   language.
-- Execution Governance may consume delivery snapshots as evidence input, but
+- Execution Engine may consume delivery snapshots as evidence input, but
   Delivery Intelligence must not silently become the product's action-policy
   owner just because it has good posture data.
 
@@ -127,7 +127,7 @@ all consume one escalation truth instead of re-deriving urgency locally.
   rows.
 - [Proof State](../proof-state/CURRENT_SPEC.md) sharpens live-blocker frontier,
   falsification memory, and claim-tier posture.
-- [Execution Governance](../execution-governance/CURRENT_SPEC.md) consumes the
+- [Execution Engine](../execution-engine/CURRENT_SPEC.md) consumes the
   shared posture, scope-signal ladder, and proof-aware delivery readout when
   deciding whether the next move is admissible.
 - [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md) consumes delivery
@@ -149,4 +149,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-04-08: Promoted Delivery Intelligence into first-class Registry truth so Tribunal-trigger, proof-state, shell, packet, and chatter consumers stop depending on an untracked scope-synthesis seam. (Plan: [B-062](odylith/radar/radar.html?view=plan&workstream=B-062))
 - 2026-04-09: Added the shared Scope Signal Ladder so Delivery Intelligence now owns one deterministic contract for scope visibility, promotion, and provider-neutral compute budgets across Compass, Radar, Registry, Atlas, and shell consumers. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071))
-- 2026-04-09: Clarified the boundary that Delivery Intelligence supplies shared posture and scope signals, while Execution Governance owns next-action admissibility and execution policy. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-09: Clarified the boundary that Delivery Intelligence supplies shared posture and scope signals, while Execution Engine owns next-action admissibility and execution policy. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

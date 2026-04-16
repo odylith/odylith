@@ -37,7 +37,7 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - Repo grounding, packet compilation, or retrieval widening; that belongs to
   [Odylith Context Engine](../odylith-context-engine/CURRENT_SPEC.md).
 - Admissibility or urgency policy by itself; that belongs to
-  [Execution Governance](../execution-governance/CURRENT_SPEC.md).
+  [Execution Engine](../execution-engine/CURRENT_SPEC.md).
 - Human narration policy outside observation and proposal blocks; that belongs
   to [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md), which stays the
   closeout and broader narration layer.
@@ -468,7 +468,7 @@ parallel payload schemas.
   bounded packet and anchor truth.
 - [Delivery Intelligence](../delivery-intelligence/CURRENT_SPEC.md) supplies
   posture and lane context through `delivery_snapshot`.
-- [Execution Governance](../execution-governance/CURRENT_SPEC.md) supplies
+- [Execution Engine](../execution-engine/CURRENT_SPEC.md) supplies
   admissibility and urgency signals without taking over voice or rendering.
 - [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md) renders the final
   closeout/persona layer and may consume the carried `intervention_bundle`
@@ -525,40 +525,9 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-16: Extended closeout Assist bundles with bounded affected-contract IDs so Codex and Claude can show the governed workstream, component, diagram, or bug contract involved even when the final visible beat is validation-only. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-16: Hardened live UX surfacing so Ambient Highlight is a distinct checkpoint/stop lane, ambient beats no longer lose to stale teasers after evidence matures, Stop can recover meaningful Assist from explicit visibility-feedback turns even when the final answer is short, and visible-delivery dedupe only suppresses exact generated labels. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-16: Routed unseen Ambient Highlight, Observation, and Proposal beats through the same Stop one-shot continuation path as Assist, so host-hidden checkpoint output no longer leaves the user seeing only `Odylith Assist`. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
-- 2026-04-16: Added explicit Markdown horizontal-rule boundaries around live
-  teaser, ambient, Observation, and Proposal output so Odylith-owned
-  intervention copy is visibly separated from host-agent narration, while
-  `Odylith Assist` remains blended as the final closeout line. (Plan:
-  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
-  `CB-121`)
-- 2026-04-16: Repaired Ambient Highlight reachability by lowering the live
-  ambient floor to the post-tool teaser floor and by allowing hidden-ready
-  duplicate teaser/card moments to recover as ambient lines until a proven
-  visible channel has carried the beat. (Plan:
-  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
-  `CB-121`)
-- 2026-04-16: Tightened delivery-ledger proof so `assistant_fallback_ready`
-  and structured hook context no longer count as chat-visible delivery; they
-  stay available for Stop replay without letting status or duplicate
-  suppression pretend the user already saw the beat. (Plan:
-  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
-  `CB-121`)
-- 2026-04-16: Fixed the host-composed live ambient path so checkpoint bundles
-  preserve `live_ambient_signals` and emit concrete Ambient Highlight events
-  instead of falling back to generic teasers. The same change removed duplicate
-  visible Markdown and shortened fallback instruction prose to lower
-  hidden-context token overhead. (Plan:
-  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
-  `CB-121`)
-- 2026-04-16: Made Ambient Highlight the single recorded live beat when it wins
-  the slot, carrying the candidate intervention key and semantic signature so
-  continuity dedupes the visible ambient signal instead of logging a generic
-  teaser plus ambient duplicate. (Plan:
-  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
-  `CB-121`)
-- 2026-04-16: Added cached Codex post-bash grounding so repeated edit-like
-  hooks no longer rerun slow or failing `odylith start` probes on every
-  command, while each hook still evaluates selective sync and live
-  intervention output. (Plan:
-  [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug:
-  `CB-121`)
+- 2026-04-16: Added explicit Markdown horizontal-rule boundaries around live teaser, ambient, Observation, and Proposal output so Odylith-owned intervention copy is visibly separated from host-agent narration, while `Odylith Assist` remains blended as the final closeout line. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-16: Repaired Ambient Highlight reachability by lowering the live ambient floor to the post-tool teaser floor and by allowing hidden-ready duplicate teaser/card moments to recover as ambient lines until a proven visible channel has carried the beat. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-16: Tightened delivery-ledger proof so `assistant_fallback_ready` and structured hook context no longer count as chat-visible delivery; they stay available for Stop replay without letting status or duplicate suppression pretend the user already saw the beat. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-16: Fixed the host-composed live ambient path so checkpoint bundles preserve `live_ambient_signals` and emit concrete Ambient Highlight events instead of falling back to generic teasers. The same change removed duplicate visible Markdown and shortened fallback instruction prose to lower hidden-context token overhead. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-16: Made Ambient Highlight the single recorded live beat when it wins the slot, carrying the candidate intervention key and semantic signature so continuity dedupes the visible ambient signal instead of logging a generic teaser plus ambient duplicate. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-16: Added cached Codex post-bash grounding so repeated edit-like hooks no longer rerun slow or failing `odylith start` probes on every command, while each hook still evaluates selective sync and live intervention output. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)

@@ -34,7 +34,7 @@ through Task-tool subagents and the checked-in `.claude/` project assets.
 - Grounding the repo from scratch. It expects bounded context or request
   signals.
 - Spawning agents itself. It emits the plan the live agent should execute.
-- Global admissibility policy. Execution Governance decides whether the next
+- Global admissibility policy. Execution Engine decides whether the next
   move is allowed before orchestration fan-out becomes relevant, and active
   governed verify or recover posture may force local or serial follow-through
   even when the slice would otherwise look parallel-safe.
@@ -197,7 +197,7 @@ Parallelism is intentionally conservative. The orchestrator requires:
 - bounded merge burden
 - no shared governance bottleneck that really belongs in the main thread
 
-Even with disjoint ownership, execution-governance posture can still force
+Even with disjoint ownership, execution-engine posture can still force
 serial or local work. Active wait states, re-anchor requirements,
 contradictions, unsafe closure, verify or recover critical-path posture, and
 host-serial constraints are all allowed to suppress fan-out before the
@@ -298,4 +298,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Registered the public orchestrator as an Odylith-owned product component with product-local governance and feature history. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-02: Fixed the public CLI wrapper so `odylith subagent-orchestrator --repo-root . --help` and verbed invocations preserve the documented verb-first contract instead of misrouting `--repo-root` ahead of the orchestrator subcommand. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
-- 2026-04-09: Clarified that orchestration planning follows Execution Governance admissibility instead of acting as the product's first action-policy boundary. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-09: Clarified that orchestration planning follows Execution Engine admissibility instead of acting as the product's first action-policy boundary. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

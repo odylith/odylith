@@ -76,7 +76,7 @@
         "odylith-chatter",
         "delivery-intelligence",
         "proof-state",
-        "execution-governance",
+        "execution-engine",
         "subagent-router",
         "subagent-orchestrator",
         "tribunal",
@@ -796,13 +796,16 @@
       "product_layer": "agent_execution"
     },
     {
-      "component_id": "execution-governance",
-      "name": "Execution Governance",
+      "component_id": "execution-engine",
+      "name": "Execution Engine",
       "kind": "runtime",
       "category": "governance_engine",
       "qualification": "curated",
       "aliases": [
+        "execution-engine-runtime",
+        "execution-policy-runtime",
         "execution-governance-engine",
+        "execution-governance",
         "admissibility-runtime"
       ],
       "path_prefixes": [
@@ -820,7 +823,7 @@
       "status": "active",
       "what_it_is": "Constraint-aware execution runtime that materializes task contracts, admissibility decisions, frontiers, closure, receipts, contradiction records, and host-aware execution hints before Odylith acts.",
       "why_tracked": "Owns the boundary that turns grounding into governed next-action control instead of soft prompt advice.",
-      "spec_ref": "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md",
+      "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
       "sources": [
         "manifest"
       ],

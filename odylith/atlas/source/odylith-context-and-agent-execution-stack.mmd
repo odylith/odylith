@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-09 for B-072 to make execution governance explicit and keep Context Engine grounding-only.
+%% Reviewed 2026-04-16 to make the Execution Engine boundary explicit and keep Context Engine grounding-only.
 flowchart LR
     CLI["odylith CLI + shell"] --> Context["Context Engine<br/>compiler + grounding packets"]
     Truth["Repo truth<br/>Radar + Plans + Casebook + Registry + Atlas"] --> Context
@@ -22,7 +22,7 @@ flowchart LR
     Contracts --> Delivery["Delivery Intelligence"]
     Contracts --> Proof["Proof State"]
     Delivery --> Tribunal["Tribunal"]
-    Delivery --> Exec["Execution Governance<br/>task contract + admissibility + frontier"]
+    Delivery --> Exec["Execution Engine<br/>task contract + admissibility + frontier"]
     Proof --> Exec
     Tribunal --> Exec
     Contracts --> Exec

@@ -18,10 +18,10 @@
     "empty_reasons": [],
     "explicit_event_count": 9,
     "mapped_workstream_evidence_count": 9,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 9
+    "timeline_event_count": 10
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -34,6 +34,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
+      ],
+      "confidence": "high",
+      "event_index": 423,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "benchmark"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+      "ts_iso": "2026-04-16T09:17:47-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "README.md"

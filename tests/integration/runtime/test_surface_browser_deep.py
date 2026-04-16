@@ -1071,18 +1071,21 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
             const search = node.querySelector('#searchInput').getBoundingClientRect();
             const severity = node.querySelector('#severityFilter').getBoundingClientRect();
             const status = node.querySelector('#statusFilter').getBoundingClientRect();
+            const sort = node.querySelector('#sortFilter').getBoundingClientRect();
             return {
               barLeft: bar.left,
               barRight: bar.right,
               searchWidth: search.width,
               severityWidth: severity.width,
               statusWidth: status.width,
-              rightSlack: bar.right - status.right,
+              sortWidth: sort.width,
+              rightSlack: bar.right - sort.right,
             };
         }"""
     )
     assert abs(filter_geometry["searchWidth"] - filter_geometry["severityWidth"]) <= 2
     assert abs(filter_geometry["severityWidth"] - filter_geometry["statusWidth"]) <= 2
+    assert abs(filter_geometry["statusWidth"] - filter_geometry["sortWidth"]) <= 2
     assert filter_geometry["rightSlack"] <= 16
 
     baseline_count = casebook.locator("button.bug-row").count()

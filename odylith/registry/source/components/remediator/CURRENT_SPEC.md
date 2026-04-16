@@ -20,7 +20,7 @@ scope, validation contract, rollback posture, and stale guards.
 - Diagnosing cases. That belongs to Tribunal.
 - Approving packets. Approval is an external policy decision.
 - Performing unrestricted semantic code edits directly.
-- Next-action admissibility. Execution Governance may screen a packet's
+- Next-action admissibility. Execution Engine may screen a packet's
   intended move before execution, but Remediator itself only compiles bounded
   correction plans.
 
@@ -114,7 +114,7 @@ Everything else fails closed to `manual`.
 - it refuses any packet whose `execution_mode` is not `deterministic`
 - it requires a non-empty `commands` list
 - each command must be a non-empty list of argv tokens
-- it refuses packets whose embedded execution-governance admissibility outcome
+- it refuses packets whose embedded execution-engine admissibility outcome
   is not `admit`
 - commands execute under `repo_root`
 - the result is a structured object with:
@@ -133,7 +133,7 @@ It does not perform approval checks. The caller must enforce those.
 - approval scope
 - touched paths
 - status
-- execution-governance outcome, mode, and authoritative lane
+- execution-engine outcome, mode, and authoritative lane
 
 This lets Compass and related surfaces show posture without embedding the entire
 packet body.
@@ -194,4 +194,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Promoted Remediator into Odylith's own product registry and component-spec set so bounded corrective guidance is documented and governed inside the public repo. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-08: Moved Remediator into the dedicated `src/odylith/runtime/reasoning/` package, removed the legacy eval-path module, and aligned the governed Atlas and delivery-intelligence path truth so sync and surface consumers no longer claim the deleted package shape. (Plan: [B-061](odylith/radar/radar.html?view=plan&workstream=B-061))
-- 2026-04-09: Clarified that Remediator compiles bounded correction packets, while Execution Governance owns whether the intended next move is admissible. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-09: Clarified that Remediator compiles bounded correction packets, while Execution Engine owns whether the intended next move is admissible. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

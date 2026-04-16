@@ -33,10 +33,10 @@
     "empty_reasons": [],
     "explicit_event_count": 57,
     "mapped_workstream_evidence_count": 29,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 58
+    "timeline_event_count": 57
   },
   "name": "Radar",
   "path_prefixes": [
@@ -426,26 +426,6 @@
         "B-022",
         "B-038"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
-        "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-external-benchmark-failure-taxonomy-slice-analytics-and-publication-discipline.md"
-      ],
-      "confidence": "high",
-      "event_index": 340,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "radar"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md, odylith/radar/source/ideas/2026-03/2026-03-28-odylith-memory-areas-and-operator-readout.md +3 more",
-      "ts_iso": "2026-04-15T23:08:09-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [

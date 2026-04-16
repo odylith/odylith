@@ -113,7 +113,7 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     app_js = (tmp_path / "odylith" / "casebook" / "casebook-app.v1.js").read_text(encoding="utf-8")
     assert "Failures, Impact, and Fix Context" in html
     assert "Track what broke, why it mattered, and what to do next from repo bug records and linked evidence." in html
-    assert "grid-template-columns: repeat(3, minmax(0, 1fr));" in html
+    assert "grid-template-columns: repeat(4, minmax(0, 1fr));" in html
     assert "minmax(220px, auto)" not in html
     assert "Repo Bug Knowledge View" not in html
     assert ".detail-section-agent {" in html
@@ -142,6 +142,14 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert app_js.index('<div class="summary-facts" role="list">${summaryFacts}</div>') < app_js.index("${summary}")
     assert "function normalizeSearchToken(value)" in app_js
     assert "function canonicalizeBugIdToken(value)" in app_js
+    assert 'const SORT_DEFAULT = "newest";' in app_js
+    assert 'const sortFilter = document.getElementById("sortFilter");' in app_js
+    assert "function canonicalizeSortToken(value)" in app_js
+    assert "function sortRows(rows, sortToken)" in app_js
+    assert "return firstNonZero(compareDateDesc(left, right), compareBugIdDesc(left, right), compareTitleAsc(left, right));" in app_js
+    assert 'if (canonicalizeSortToken(state.sort) !== SORT_DEFAULT) query.set("sort", canonicalizeSortToken(state.sort));' in app_js
+    assert 'label: `Radar ${String(row && row.workstream || "").trim()}`' not in app_js
+    assert 'label: "Radar " + String(item && item.workstream || "").trim()' not in app_js
     assert "function bugSearchText(row)" in app_js
     assert "function bugExactMatch(row, term)" in app_js
     assert "if (bugExactMatch(row, term)) return true;" in app_js

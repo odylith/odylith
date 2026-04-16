@@ -8,7 +8,7 @@
     "explicit_event_count": 35,
     "mapped_workstream_evidence_count": 35,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 5,
+    "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
     "timeline_event_count": 36
   },
@@ -35,6 +35,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 424,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "governance-intervention-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-16T10:16:50-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "src/odylith/runtime/intervention_engine/engine.py"
@@ -430,28 +446,6 @@
       "workstreams": [
         "B-096"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
-        "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
-        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
-        "src/odylith/runtime/intervention_engine/conversation_surface.py",
-        "src/odylith/runtime/intervention_engine/stream_state.py",
-        "src/odylith/runtime/intervention_engine/surface_runtime.py",
-        "src/odylith/runtime/intervention_engine/delivery_ledger.py"
-      ],
-      "confidence": "high",
-      "event_index": 337,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "governance-intervention-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md, odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md +5 more",
-      "ts_iso": "2026-04-15T23:10:37-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [
