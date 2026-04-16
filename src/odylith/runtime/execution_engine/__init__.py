@@ -1,4 +1,4 @@
-"""Execution-governance runtime contracts and helpers."""
+"""Execution Engine runtime contracts and helpers."""
 
 from odylith.runtime.execution_engine.contract import (
     AdmissibilityDecision,

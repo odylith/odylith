@@ -132,7 +132,7 @@ See what happened, what matters now, and what's next.
 | **"Log this checkpoint"** | Appends a bounded execution note to the Compass timeline. `odylith compass log` |
 | **"I want the brief to focus on payments work"** | Narrows Compass brief scope to workstreams touching the payments component. |
 | **"Make the brief shorter"** | Adjusts narration to the compact voice contract — fewer details, same signal. |
-| **"What's the execution state?"** | Reads the execution governance snapshot — admissibility outcome, frontier phase, active blocker, pressure signals. |
+| **"What's the execution state?"** | Reads the Execution Engine snapshot — admissibility outcome, frontier phase, active blocker, pressure signals. |
 | **"What changed recently?"** | Reads the Compass timeline events and transaction history from the runtime payload. |
 | **"Show me the execution timeline for B-073"** | Reads the workstream-scoped Compass timeline with all related events. |
 
@@ -193,7 +193,7 @@ every matching event.
 
 ---
 
-## Execution Governance (Invisible)
+## Execution Engine (Invisible)
 
 Every action the agent takes is screened by the execution engine. The operator
 never sees this directly, but it shapes every move.

@@ -528,14 +528,14 @@ def _compact_bootstrap_delivery_payload(payload: Mapping[str, Any]) -> dict[str,
     if recommended_tests:
         compact["recommended_tests"] = recommended_tests[:2]
     if isinstance(compact.get("context_packet"), Mapping):
-        _eg = runtime_surface_governance.compact_execution_governance_snapshot(
-            runtime_surface_governance.build_packet_execution_governance_snapshot(
+        _eg = runtime_surface_governance.compact_execution_engine_snapshot(
+            runtime_surface_governance.build_packet_execution_engine_snapshot(
                 payload=payload,
                 context_packet=compact.get("context_packet"),
             )
         )
         if _eg:
-            compact["context_packet"]["execution_governance"] = _eg
+            compact["context_packet"]["execution_engine"] = _eg
     return {
         key: value
         for key, value in compact.items()

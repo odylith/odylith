@@ -357,14 +357,14 @@ def _compact_bootstrap_or_brief_hot_path_delivery(
         if compact_fallback:
             compact["fallback_scan"] = compact_fallback
     if isinstance(compact.get("context_packet"), Mapping):
-        _eg = runtime_surface_governance.compact_execution_governance_snapshot(
-            runtime_surface_governance.build_packet_execution_governance_snapshot(
+        _eg = runtime_surface_governance.compact_execution_engine_snapshot(
+            runtime_surface_governance.build_packet_execution_engine_snapshot(
                 payload=payload,
                 context_packet=compact_context_packet,
             )
         )
         if _eg:
-            compact["context_packet"]["execution_governance"] = _eg
+            compact["context_packet"]["execution_engine"] = _eg
     return compact
 
 def _compact_governance_validation_bundle_for_hot_path(bundle: Mapping[str, Any]) -> dict[str, Any]:

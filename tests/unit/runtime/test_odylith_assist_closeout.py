@@ -219,9 +219,9 @@ def test_closeout_assist_suppresses_routing_receipts_for_task_first_fast_lane() 
         needs_write=True,
         evidence_cone_grounded=True,
         context_signals={
-            "execution_governance_commentary_mode": "task_first_minimal",
-            "execution_governance_suppress_routing_receipts": True,
-            "execution_governance_surface_fast_lane": True,
+            "execution_engine_commentary_mode": "task_first_minimal",
+            "execution_engine_suppress_routing_receipts": True,
+            "execution_engine_surface_fast_lane": True,
         },
     )
 
@@ -988,7 +988,7 @@ def test_orchestrator_threads_conversation_bundle_into_odylith_adoption(tmp_path
     assert bundle["closeout_bundle"]["render_policy"]["benchmark_safe"] is True
 
 
-def test_orchestrator_adoption_carries_execution_governance_targeting_and_presentation_policy(
+def test_orchestrator_adoption_carries_execution_engine_targeting_and_presentation_policy(
     tmp_path: Path,
 ) -> None:
     request = orchestrator.OrchestrationRequest(
@@ -1033,10 +1033,10 @@ def test_orchestrator_adoption_carries_execution_governance_targeting_and_presen
     decision = orchestrator.orchestrate_prompt(request, repo_root=tmp_path)
     adoption = dict(decision.odylith_adoption)
 
-    assert adoption["execution_governance_target_lane"] == "consumer"
-    assert adoption["execution_governance_has_writable_targets"] is True
-    assert adoption["execution_governance_requires_more_consumer_context"] is False
-    assert adoption["execution_governance_consumer_failover"] == ""
-    assert adoption["execution_governance_commentary_mode"] == "task_first_minimal"
-    assert adoption["execution_governance_suppress_routing_receipts"] is True
-    assert adoption["execution_governance_surface_fast_lane"] is True
+    assert adoption["execution_engine_target_lane"] == "consumer"
+    assert adoption["execution_engine_has_writable_targets"] is True
+    assert adoption["execution_engine_requires_more_consumer_context"] is False
+    assert adoption["execution_engine_consumer_failover"] == ""
+    assert adoption["execution_engine_commentary_mode"] == "task_first_minimal"
+    assert adoption["execution_engine_suppress_routing_receipts"] is True
+    assert adoption["execution_engine_surface_fast_lane"] is True

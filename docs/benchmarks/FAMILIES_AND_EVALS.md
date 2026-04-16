@@ -38,7 +38,7 @@ author sorts by token delta.
 | Docs + Code Closeout | 5 | `docs_code_closeout`, `governed_surface_sync`, `cross_surface_governance_sync` | Keeps code, docs, specs, and generated mirrors aligned. |
 | Governance / Release Integrity | 9 | `component_governance`, `destructive_scope_control`, `live_proof_discipline`, `release_publication` | Now includes destructive-scope and fail-closed benchmark safety, not only publication truth. |
 | Architecture Review | 5 | `architecture` | Keeps grounded design-review quality visible after direct implementation work. |
-| Grounding / Orchestration Control | 18 | `broad_shared_scope`, `context_engine_grounding`, `execution_governance`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains Odylith's mechanism without dominating the public story, while still holding Context Engine and execution-governance quality to exacting standards. |
+| Grounding / Orchestration Control | 18 | `broad_shared_scope`, `context_engine_grounding`, `execution_engine`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains Odylith's mechanism without dominating the public story, while still holding Context Engine and execution-engine quality to exacting standards. |
 
 ## Current Published Attention Areas
 
@@ -96,7 +96,7 @@ repo context.
 | `docs_code_closeout` | 2 | governed closeout where docs, specs, README, and code all have to agree |
 | `exact_anchor_recall` | 1 | dense grounded packets on exact workstream and path anchors |
 | `exact_path_ambiguity` | 2 | exact-path boundedness even when historical fanout is ambiguous |
-| `execution_governance` | 5 | execution-governance contract posture, truthful next-move carry-through, fail-closed recovery, and resume-token discipline |
+| `execution_engine` | 5 | execution-engine contract posture, truthful next-move carry-through, fail-closed recovery, and resume-token discipline |
 | `explicit_workstream` | 1 | explicit workstream grounding with compact route-ready packet shape |
 | `external_dependency_recovery` | 3 | semantic waits, resumability, and external-state carry-through into public surfaces |
 | `governed_surface_sync` | 1 | lifecycle closeout propagation across governed surfaces |
@@ -133,7 +133,7 @@ repo context.
 | `docs_code_closeout` | `docs-code-governed-closeout`, `benchmark-docs-and-readme-closeout` |
 | `exact_anchor_recall` | `exact-workstream-anchor-density` |
 | `exact_path_ambiguity` | `runtime-path-ambiguity`, `session-brief-runtime-path-ambiguity` |
-| `execution_governance` | `execution-governance-contract-verify-closure-discipline`, `execution-governance-runtime-surface-phase-carry-through`, `execution-governance-router-recovery-posture`, `execution-governance-broad-scope-recover-fail-closed`, `execution-governance-governance-slice-ambiguity-recovery` |
+| `execution_engine` | `execution-engine-contract-verify-closure-discipline`, `execution-engine-runtime-surface-phase-carry-through`, `execution-engine-router-recovery-posture`, `execution-engine-broad-scope-recover-fail-closed`, `execution-engine-governance-slice-ambiguity-recovery` |
 | `explicit_workstream` | `wave3-explicit-workstream` |
 | `external_dependency_recovery` | `github-actions-semantic-wait-and-resume-token-contract`, `live-preflight-evidence-disposable-workspace-contract`, `runtime-surface-wait-status-carry-through` |
 | `governed_surface_sync` | `closeout-surface-path-normalization` |
@@ -145,7 +145,7 @@ repo context.
 | `release_publication` | `release-benchmark-publication-proof`, `benchmark-raw-baseline-publication-contract` |
 | `retrieval_miss_recovery` | `wave4-runtime-sparse-miss-recovery` |
 | `runtime_state_integrity` | `product-runtime-state-js-companion-contract` |
-| `stateful_bug_recovery` | `benchmark-progress-checkpoint-and-resume-recovery`, `compass-refresh-queued-state-recovery`, `execution-governance-contradiction-reanchor-recovery` |
+| `stateful_bug_recovery` | `benchmark-progress-checkpoint-and-resume-recovery`, `compass-refresh-queued-state-recovery`, `execution-engine-contradiction-reanchor-recovery` |
 | `validation_heavy_fix` | `validation-heavy-router-fix`, `benchmark-raw-baseline-runner-gate` |
 
 ## Architecture Dossier Evals

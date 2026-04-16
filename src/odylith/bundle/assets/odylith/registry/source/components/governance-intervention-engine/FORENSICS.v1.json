@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 35,
-    "mapped_workstream_evidence_count": 35,
+    "explicit_event_count": 40,
+    "mapped_workstream_evidence_count": 36,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 9,
+    "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 36
+    "timeline_event_count": 41
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -37,18 +37,113 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md"
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
       ],
       "confidence": "high",
-      "event_index": 424,
+      "event_index": 534,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "atlas",
+        "governance-intervention-engine",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
+      "ts_iso": "2026-04-16T18:33:05Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
+      ],
+      "confidence": "high",
+      "event_index": 533,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "atlas",
+        "governance-intervention-engine",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
+      "ts_iso": "2026-04-16T18:32:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
+      ],
+      "confidence": "high",
+      "event_index": 532,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "atlas",
+        "governance-intervention-engine",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
+      "ts_iso": "2026-04-16T18:32:00Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 510,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "compass",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T18:24:09Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
+      ],
+      "confidence": "high",
+      "event_index": 509,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "atlas",
+        "governance-intervention-engine",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
+      "ts_iso": "2026-04-16T18:20:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/conversation_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 546,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "governance-intervention-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-16T10:16:50-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/intervention_engine/conversation_runtime.py",
+      "ts_iso": "2026-04-16T12:49:09-07:00",
       "workstreams": []
     },
     {
@@ -63,7 +158,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -87,7 +181,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -112,7 +205,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -137,7 +229,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -162,7 +253,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -187,7 +277,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -212,7 +301,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -237,7 +325,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -261,7 +348,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -286,7 +372,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -311,7 +396,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -335,7 +419,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -360,7 +443,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -385,7 +467,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -410,7 +491,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -435,7 +515,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -464,7 +543,6 @@
       "kind": "implementation",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -494,7 +572,6 @@
       "mapped_components": [
         "casebook",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -517,7 +594,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -541,7 +617,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -566,7 +641,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -591,7 +665,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -615,7 +688,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -640,7 +712,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -665,7 +736,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -689,7 +759,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -713,7 +782,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -737,7 +805,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -762,7 +829,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -787,7 +853,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -811,7 +876,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -835,7 +899,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -858,7 +921,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -881,7 +943,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -907,7 +968,6 @@
       "kind": "decision",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter",

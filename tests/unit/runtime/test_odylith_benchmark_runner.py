@@ -5352,7 +5352,7 @@ def test_proof_request_from_live_explicit_workstream_scenario_stays_orchestratio
 
 
 def test_live_validation_heavy_proof_slice_delegates_when_grounded(monkeypatch: pytest.MonkeyPatch) -> None:
-    # After the execution-governance critical-path guard landed, these
+    # After the execution-engine critical-path guard landed, these
     # scenarios stay local because the governance layer classifies them as
     # verify-mode critical paths. The test still proves the orchestrator
     # produces a valid summary from the live scenario corpus; the original
@@ -5379,7 +5379,7 @@ def test_live_validation_heavy_proof_slice_delegates_when_grounded(monkeypatch: 
 
     assert summary["delegate"] is False
     assert summary["mode"] == "local_only"
-    assert "execution-governance-critical-path" in summary.get("local_only_reasons", [])
+    assert "execution-engine-critical-path" in summary.get("local_only_reasons", [])
 
 
 def test_live_explicit_workstream_proof_slice_delegates_when_grounded(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -5406,7 +5406,7 @@ def test_live_explicit_workstream_proof_slice_delegates_when_grounded(monkeypatc
 
     assert summary["delegate"] is False
     assert summary["mode"] == "local_only"
-    assert "execution-governance-critical-path" in summary.get("local_only_reasons", [])
+    assert "execution-engine-critical-path" in summary.get("local_only_reasons", [])
 
 
 def test_live_explicit_workstream_packet_keeps_docs_bounded(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -5428,12 +5428,12 @@ def test_live_explicit_workstream_packet_keeps_docs_bounded(monkeypatch: pytest.
     assert payload.get("docs") in (None, [])
 
 
-def test_execution_governance_router_recovery_packet_fixture_drives_truthful_recover_posture() -> None:
+def test_execution_engine_router_recovery_packet_fixture_drives_truthful_recover_posture() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(
         row
         for row in scenarios
-        if row["scenario_id"] == "execution-governance-router-recovery-posture"
+        if row["scenario_id"] == "execution-engine-router-recovery-posture"
     )
 
     result = runner._packet_result(  # noqa: SLF001
@@ -5447,19 +5447,19 @@ def test_execution_governance_router_recovery_packet_fixture_drives_truthful_rec
     assert packet["packet_kind"] == "impact"
     assert packet["route_ready"] is False
     assert packet["native_spawn_ready"] is False
-    assert packet["execution_governance_mode"] == "recover"
-    assert packet["execution_governance_next_move"] == "recover.current_blocker"
-    assert packet["execution_governance_current_phase"] == "status synthesis"
-    assert packet["execution_governance_closure"] == "incomplete"
-    assert packet["execution_governance_validation_archetype"] == "recover"
+    assert packet["execution_engine_mode"] == "recover"
+    assert packet["execution_engine_next_move"] == "recover.current_blocker"
+    assert packet["execution_engine_current_phase"] == "status synthesis"
+    assert packet["execution_engine_closure"] == "incomplete"
+    assert packet["execution_engine_validation_archetype"] == "recover"
 
 
-def test_execution_governance_runtime_surface_packet_fixture_keeps_phase_truth() -> None:
+def test_execution_engine_runtime_surface_packet_fixture_keeps_phase_truth() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(
         row
         for row in scenarios
-        if row["scenario_id"] == "execution-governance-runtime-surface-phase-carry-through"
+        if row["scenario_id"] == "execution-engine-runtime-surface-phase-carry-through"
     )
 
     result = runner._packet_result(  # noqa: SLF001
@@ -5470,21 +5470,21 @@ def test_execution_governance_runtime_surface_packet_fixture_keeps_phase_truth()
 
     packet = dict(result["packet"])
     assert result["expectation_ok"] is True
-    assert packet["execution_governance_mode"] == "verify"
-    assert packet["execution_governance_current_phase"] == "verify"
-    assert packet["execution_governance_closure"] == "incomplete"
-    assert packet["execution_governance_next_move"] == "verify.selected_matrix"
-    assert packet["execution_governance_resume_token"] == "resume:governance_slice"
-    assert packet["execution_governance_validation_archetype"] == "verify"
-    assert packet["execution_governance_authoritative_lane"] == "context_engine.governance_slice.authoritative"
+    assert packet["execution_engine_mode"] == "verify"
+    assert packet["execution_engine_current_phase"] == "verify"
+    assert packet["execution_engine_closure"] == "incomplete"
+    assert packet["execution_engine_next_move"] == "verify.selected_matrix"
+    assert packet["execution_engine_resume_token"] == "resume:governance_slice"
+    assert packet["execution_engine_validation_archetype"] == "verify"
+    assert packet["execution_engine_authoritative_lane"] == "context_engine.governance_slice.authoritative"
 
 
-def test_execution_governance_governance_slice_ambiguity_uses_narrowing_lane() -> None:
+def test_execution_engine_governance_slice_ambiguity_uses_narrowing_lane() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(
         row
         for row in scenarios
-        if row["scenario_id"] == "execution-governance-governance-slice-ambiguity-recovery"
+        if row["scenario_id"] == "execution-engine-governance-slice-ambiguity-recovery"
     )
 
     result = runner._packet_result(  # noqa: SLF001
@@ -5497,7 +5497,7 @@ def test_execution_governance_governance_slice_ambiguity_uses_narrowing_lane() -
     assert result["expectation_ok"] is True
     assert packet["packet_kind"] == "governance_slice"
     assert packet["selection_state"] == "none"
-    assert packet["execution_governance_authoritative_lane"] == "context_engine.governance_slice.narrowing"
+    assert packet["execution_engine_authoritative_lane"] == "context_engine.governance_slice.narrowing"
 
 
 def test_live_corpus_workstream_ids_exist_in_repo_truth() -> None:
@@ -6242,7 +6242,7 @@ def test_comparison_contract_details_describe_full_product_live_pair() -> None:
 
     assert details["primary_claim"] == runner.LIVE_COMPARISON_CONTRACT
     assert "grounding_packet" in details["odylith_on_affordances"]
-    assert "execution_governance_posture_and_truthful_next_move" in details["odylith_on_affordances"]
+    assert "execution_engine_posture_and_truthful_next_move" in details["odylith_on_affordances"]
     assert "preflight_focused_check_results_when_executed_in_disposable_workspace" in details["odylith_on_affordances"]
     assert "raw_prompt_visible_repo_anchors_only" in details["raw_agent_affordances"]
 
@@ -6718,12 +6718,12 @@ def test_prepare_live_scenario_request_supplements_bounded_support_docs_for_impa
     assert "implementation_anchors" not in prompt_payload
 
 
-def test_prepare_live_scenario_request_preserves_execution_governance_packet_summary() -> None:
+def test_prepare_live_scenario_request_preserves_execution_engine_packet_summary() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(
         row
         for row in scenarios
-        if row["scenario_id"] == "execution-governance-runtime-surface-phase-carry-through"
+        if row["scenario_id"] == "execution-engine-runtime-surface-phase-carry-through"
     )
 
     prepared = runner._prepare_live_scenario_request(  # noqa: SLF001
@@ -6735,11 +6735,11 @@ def test_prepare_live_scenario_request_preserves_execution_governance_packet_sum
 
     packet_summary = dict(prepared["packet_summary"])
     assert packet_summary["packet_kind"] == "governance_slice"
-    assert packet_summary["execution_governance_present"] is True
-    assert packet_summary["execution_governance_mode"] == "verify"
-    assert packet_summary["execution_governance_current_phase"] == "verify"
-    assert packet_summary["execution_governance_next_move"] == "verify.selected_matrix"
-    assert packet_summary["execution_governance_resume_token"] == "resume:governance_slice"
+    assert packet_summary["execution_engine_present"] is True
+    assert packet_summary["execution_engine_mode"] == "verify"
+    assert packet_summary["execution_engine_current_phase"] == "verify"
+    assert packet_summary["execution_engine_next_move"] == "verify.selected_matrix"
+    assert packet_summary["execution_engine_resume_token"] == "resume:governance_slice"
 
 
 def test_prepare_live_scenario_request_adds_architecture_component_anchors() -> None:

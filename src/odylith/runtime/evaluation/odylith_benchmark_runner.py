@@ -42,7 +42,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import odylith_benchmark_isolation
 from odylith.runtime.evaluation import odylith_benchmark_context_engine
-from odylith.runtime.evaluation import odylith_benchmark_execution_governance
+from odylith.runtime.evaluation import odylith_benchmark_execution_engine
 from odylith.runtime.evaluation import odylith_benchmark_guardrails
 from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_live_execution
@@ -137,7 +137,7 @@ _GOVERNANCE_SLICE_FAMILIES = frozenset(
         "component_governance",
         "agent_activation",
         "cross_surface_governance_sync",
-        "execution_governance",
+        "execution_engine",
         "live_proof_discipline",
     }
 )
@@ -154,7 +154,7 @@ _MECHANISM_HEAVY_IMPLEMENTATION_FAMILIES = frozenset(
     {
         "broad_shared_scope",
         "context_engine_grounding",
-        "execution_governance",
+        "execution_engine",
         "exact_anchor_recall",
         "exact_path_ambiguity",
         "explicit_workstream",
@@ -260,7 +260,7 @@ _LOWER_BETTER_SUMMARY_FIELDS = frozenset(
         "unnecessary_widening_rate",
         *odylith_benchmark_proof_discipline.LOWER_BETTER_SUMMARY_FIELDS,
         *odylith_benchmark_context_engine.LOWER_BETTER_SUMMARY_FIELDS,
-        *odylith_benchmark_execution_governance.LOWER_BETTER_SUMMARY_FIELDS,
+        *odylith_benchmark_execution_engine.LOWER_BETTER_SUMMARY_FIELDS,
     }
 )
 _HIGHER_BETTER_SUMMARY_FIELDS = frozenset(
@@ -282,7 +282,7 @@ _HIGHER_BETTER_SUMMARY_FIELDS = frozenset(
         "write_surface_precision_rate",
         *odylith_benchmark_proof_discipline.HIGHER_BETTER_SUMMARY_FIELDS,
         *odylith_benchmark_context_engine.HIGHER_BETTER_SUMMARY_FIELDS,
-        *odylith_benchmark_execution_governance.HIGHER_BETTER_SUMMARY_FIELDS,
+        *odylith_benchmark_execution_engine.HIGHER_BETTER_SUMMARY_FIELDS,
     }
 )
 _LOWER_BETTER_RESULT_FIELDS = frozenset(
@@ -327,7 +327,7 @@ _PUBLISHED_PROFILE_TOTAL_PAYLOAD_TIE_TOLERANCE = 16.0
 _QUICK_PROFILE_MAX_SCENARIOS = 4
 _QUICK_PROFILE_SENTINEL_CASE_IDS = (
     "benchmark-live-comparison-contract-and-report-schema",
-    "execution-governance-contract-verify-closure-discipline",
+    "execution-engine-contract-verify-closure-discipline",
     "claude-bash-guard-destructive-command-blocking",
     "context-engine-broad-scope-fail-closed",
 )
@@ -385,22 +385,22 @@ _ACCEPTANCE_CHECK_LABELS = {
     "context_engine_workstream_accurate": "Context Engine benchmark slices resolved the wrong workstream anchor",
     "context_engine_ambiguity_fail_closed": "Context Engine benchmark slices do not stay fail-closed on ambiguous scope",
     "context_engine_session_namespaced": "Context Engine runtime-backed benchmark slices are not keeping sessions namespaced",
-    "execution_governance_present": "execution-governance benchmark slices are missing the execution-governance snapshot",
-    "execution_governance_resume_token_present": "execution-governance benchmark slices are missing resume-token coverage",
-    "execution_governance_outcome_accurate": "execution-governance benchmark slices resolved the wrong admissibility outcome",
-    "execution_governance_mode_accurate": "execution-governance benchmark slices resolved the wrong execution mode",
-    "execution_governance_next_move_accurate": "execution-governance benchmark slices resolved the wrong truthful next move",
-    "execution_governance_closure_accurate": "execution-governance benchmark slices resolved the wrong closure posture",
-    "execution_governance_wait_status_accurate": "execution-governance benchmark slices resolved the wrong semantic wait status",
-    "execution_governance_validation_accurate": "execution-governance benchmark slices resolved the wrong validation archetype",
-    "execution_governance_current_phase_accurate": "execution-governance benchmark slices resolved the wrong current phase",
-    "execution_governance_last_successful_phase_accurate": "execution-governance benchmark slices resolved the wrong last successful phase",
-    "execution_governance_authoritative_lane_accurate": "execution-governance benchmark slices resolved the wrong authoritative lane",
-    "execution_governance_target_lane_accurate": "execution-governance benchmark slices resolved the wrong target lane",
-    "execution_governance_resume_token_accurate": "execution-governance benchmark slices resolved the wrong resume token",
-    "execution_governance_host_family_accurate": "execution-governance benchmark slices resolved the wrong host family",
-    "execution_governance_model_family_accurate": "execution-governance benchmark slices resolved the wrong model family",
-    "execution_governance_reanchor_accurate": "execution-governance benchmark slices resolved the wrong re-anchor requirement",
+    "execution_engine_present": "execution-engine benchmark slices are missing the execution-engine snapshot",
+    "execution_engine_resume_token_present": "execution-engine benchmark slices are missing resume-token coverage",
+    "execution_engine_outcome_accurate": "execution-engine benchmark slices resolved the wrong admissibility outcome",
+    "execution_engine_mode_accurate": "execution-engine benchmark slices resolved the wrong execution mode",
+    "execution_engine_next_move_accurate": "execution-engine benchmark slices resolved the wrong truthful next move",
+    "execution_engine_closure_accurate": "execution-engine benchmark slices resolved the wrong closure posture",
+    "execution_engine_wait_status_accurate": "execution-engine benchmark slices resolved the wrong semantic wait status",
+    "execution_engine_validation_accurate": "execution-engine benchmark slices resolved the wrong validation archetype",
+    "execution_engine_current_phase_accurate": "execution-engine benchmark slices resolved the wrong current phase",
+    "execution_engine_last_successful_phase_accurate": "execution-engine benchmark slices resolved the wrong last successful phase",
+    "execution_engine_authoritative_lane_accurate": "execution-engine benchmark slices resolved the wrong authoritative lane",
+    "execution_engine_target_lane_accurate": "execution-engine benchmark slices resolved the wrong target lane",
+    "execution_engine_resume_token_accurate": "execution-engine benchmark slices resolved the wrong resume token",
+    "execution_engine_host_family_accurate": "execution-engine benchmark slices resolved the wrong host family",
+    "execution_engine_model_family_accurate": "execution-engine benchmark slices resolved the wrong model family",
+    "execution_engine_reanchor_accurate": "execution-engine benchmark slices resolved the wrong re-anchor requirement",
     "explicit_workstream_expectation_positive": "explicit workstream scenarios lost expectation coverage",
     "critical_metric_coverage_complete": "critical metric coverage is incomplete",
     "selected_cache_profiles_clear_gate": "selected cache profiles do not all clear the hard quality gate",
@@ -655,7 +655,7 @@ def _comparison_contract_details(comparison_contract: str) -> dict[str, Any]:
             "odylith_on_affordances": [
                 "grounding_packet",
                 "selected_docs_and_repo_anchors",
-                "execution_governance_posture_and_truthful_next_move",
+                "execution_engine_posture_and_truthful_next_move",
                 "scenario_declared_focused_local_checks",
                 "preflight_focused_check_results_when_executed_in_disposable_workspace",
                 "bounded_orchestration_and_recovery_policy",
@@ -2503,10 +2503,10 @@ def _apply_packet_fixture(
         merged = _deep_merge_mapping(merged, fixture)
     if not fixture and "packet_kind" not in merged:
         return merged
-    merged.pop("execution_governance", None)
+    merged.pop("execution_engine", None)
     context_packet = _mapping(merged.get("context_packet"))
     if context_packet:
-        context_packet.pop("execution_governance", None)
+        context_packet.pop("execution_engine", None)
         merged["context_packet"] = context_packet
     return merged
 
@@ -2897,7 +2897,7 @@ def _packet_source_for_scenario(scenario: Mapping[str, Any]) -> str:
     explicit_source = str(scenario.get("packet_source", "")).strip()
     if explicit_source in _VALID_PACKET_SOURCES:
         return explicit_source
-    family = str(scenario.get("family", "")).strip()
+    family = str(scenario.get("family", "")).strip().replace("-", "_")
     if family in _GOVERNANCE_SLICE_FAMILIES:
         return "governance_slice"
     return "impact"
@@ -5677,7 +5677,7 @@ def _mode_summary(*, mode: str, scenario_rows: Sequence[Mapping[str, Any]]) -> d
     }
     summary.update(odylith_benchmark_proof_discipline.summary_from_rows(scenario_rows))
     summary.update(odylith_benchmark_context_engine.summary_from_rows(scenario_rows))
-    summary.update(odylith_benchmark_execution_governance.summary_from_rows(scenario_rows))
+    summary.update(odylith_benchmark_execution_engine.summary_from_rows(scenario_rows))
     return summary
 
 
@@ -6728,7 +6728,7 @@ def _summary_comparison(
         )
     )
     comparison.update(
-        odylith_benchmark_execution_governance.comparison(
+        odylith_benchmark_execution_engine.comparison(
             candidate=candidate,
             baseline=baseline,
         )
@@ -7812,96 +7812,96 @@ def _acceptance(
             int(candidate.get("context_engine_runtime_backed_scenario_count", 0) or 0) == 0
             or float(candidate.get("context_engine_session_namespace_rate", 0.0) or 0.0) >= 1.0
         ),
-        "execution_governance_present": (
-            int(candidate.get("execution_governance_backed_scenario_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_present_rate", 0.0) or 0.0) >= 1.0
+        "execution_engine_present": (
+            int(candidate.get("execution_engine_backed_scenario_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_present_rate", 0.0) or 0.0) >= 1.0
         ),
-        "execution_governance_resume_token_present": (
-            int(candidate.get("execution_governance_backed_scenario_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_resume_token_present_rate", 0.0) or 0.0)
+        "execution_engine_resume_token_present": (
+            int(candidate.get("execution_engine_backed_scenario_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_resume_token_present_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_outcome_accurate": (
-            int(candidate.get("execution_governance_expected_outcome_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_outcome_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_outcome_accurate": (
+            int(candidate.get("execution_engine_expected_outcome_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_outcome_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_mode_accurate": (
-            int(candidate.get("execution_governance_expected_mode_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_mode_accuracy_rate", 0.0) or 0.0) >= 1.0
+        "execution_engine_mode_accurate": (
+            int(candidate.get("execution_engine_expected_mode_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_mode_accuracy_rate", 0.0) or 0.0) >= 1.0
         ),
-        "execution_governance_next_move_accurate": (
-            int(candidate.get("execution_governance_expected_next_move_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_next_move_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_next_move_accurate": (
+            int(candidate.get("execution_engine_expected_next_move_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_next_move_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_closure_accurate": (
-            int(candidate.get("execution_governance_expected_closure_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_closure_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_closure_accurate": (
+            int(candidate.get("execution_engine_expected_closure_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_closure_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_wait_status_accurate": (
-            int(candidate.get("execution_governance_expected_wait_status_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_wait_status_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_wait_status_accurate": (
+            int(candidate.get("execution_engine_expected_wait_status_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_wait_status_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_validation_accurate": (
-            int(candidate.get("execution_governance_expected_validation_archetype_count", 0) or 0)
+        "execution_engine_validation_accurate": (
+            int(candidate.get("execution_engine_expected_validation_archetype_count", 0) or 0)
             == 0
             or float(
-                candidate.get("execution_governance_validation_archetype_accuracy_rate", 0.0)
+                candidate.get("execution_engine_validation_archetype_accuracy_rate", 0.0)
                 or 0.0
             )
             >= 1.0
         ),
-        "execution_governance_current_phase_accurate": (
-            int(candidate.get("execution_governance_expected_current_phase_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_current_phase_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_current_phase_accurate": (
+            int(candidate.get("execution_engine_expected_current_phase_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_current_phase_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_last_successful_phase_accurate": (
-            int(candidate.get("execution_governance_expected_last_successful_phase_count", 0) or 0)
+        "execution_engine_last_successful_phase_accurate": (
+            int(candidate.get("execution_engine_expected_last_successful_phase_count", 0) or 0)
             == 0
             or float(
                 candidate.get(
-                    "execution_governance_last_successful_phase_accuracy_rate", 0.0
+                    "execution_engine_last_successful_phase_accuracy_rate", 0.0
                 )
                 or 0.0
             )
             >= 1.0
         ),
-        "execution_governance_authoritative_lane_accurate": (
-            int(candidate.get("execution_governance_expected_authoritative_lane_count", 0) or 0)
+        "execution_engine_authoritative_lane_accurate": (
+            int(candidate.get("execution_engine_expected_authoritative_lane_count", 0) or 0)
             == 0
             or float(
-                candidate.get("execution_governance_authoritative_lane_accuracy_rate", 0.0)
+                candidate.get("execution_engine_authoritative_lane_accuracy_rate", 0.0)
                 or 0.0
             )
             >= 1.0
         ),
-        "execution_governance_target_lane_accurate": (
-            int(candidate.get("execution_governance_expected_target_lane_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_target_lane_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_target_lane_accurate": (
+            int(candidate.get("execution_engine_expected_target_lane_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_target_lane_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_resume_token_accurate": (
-            int(candidate.get("execution_governance_expected_resume_token_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_resume_token_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_resume_token_accurate": (
+            int(candidate.get("execution_engine_expected_resume_token_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_resume_token_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_host_family_accurate": (
-            int(candidate.get("execution_governance_expected_host_family_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_host_family_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_host_family_accurate": (
+            int(candidate.get("execution_engine_expected_host_family_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_host_family_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_model_family_accurate": (
-            int(candidate.get("execution_governance_expected_model_family_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_model_family_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_model_family_accurate": (
+            int(candidate.get("execution_engine_expected_model_family_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_model_family_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
-        "execution_governance_reanchor_accurate": (
-            int(candidate.get("execution_governance_expected_reanchor_count", 0) or 0) == 0
-            or float(candidate.get("execution_governance_reanchor_accuracy_rate", 0.0) or 0.0)
+        "execution_engine_reanchor_accurate": (
+            int(candidate.get("execution_engine_expected_reanchor_count", 0) or 0) == 0
+            or float(candidate.get("execution_engine_reanchor_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
         "candidate_expectation_success_positive": (
@@ -8032,88 +8032,88 @@ def _acceptance(
                 and float(candidate_family.get("context_engine_session_namespace_rate", 0.0) or 0.0) < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_backed_scenario_count", 0) or 0) > 0
-                and float(candidate_family.get("execution_governance_present_rate", 0.0) or 0.0)
+                int(candidate_family.get("execution_engine_backed_scenario_count", 0) or 0) > 0
+                and float(candidate_family.get("execution_engine_present_rate", 0.0) or 0.0)
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_backed_scenario_count", 0) or 0) > 0
+                int(candidate_family.get("execution_engine_backed_scenario_count", 0) or 0) > 0
                 and float(
-                    candidate_family.get("execution_governance_resume_token_present_rate", 0.0)
+                    candidate_family.get("execution_engine_resume_token_present_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_outcome_count", 0) or 0) > 0
+                int(candidate_family.get("execution_engine_expected_outcome_count", 0) or 0) > 0
                 and float(
-                    candidate_family.get("execution_governance_outcome_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_outcome_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_mode_count", 0) or 0) > 0
-                and float(candidate_family.get("execution_governance_mode_accuracy_rate", 0.0) or 0.0)
+                int(candidate_family.get("execution_engine_expected_mode_count", 0) or 0) > 0
+                and float(candidate_family.get("execution_engine_mode_accuracy_rate", 0.0) or 0.0)
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_next_move_count", 0) or 0) > 0
+                int(candidate_family.get("execution_engine_expected_next_move_count", 0) or 0) > 0
                 and float(
-                    candidate_family.get("execution_governance_next_move_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_next_move_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_closure_count", 0) or 0) > 0
+                int(candidate_family.get("execution_engine_expected_closure_count", 0) or 0) > 0
                 and float(
-                    candidate_family.get("execution_governance_closure_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_closure_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_wait_status_count", 0) or 0)
+                int(candidate_family.get("execution_engine_expected_wait_status_count", 0) or 0)
                 > 0
                 and float(
-                    candidate_family.get("execution_governance_wait_status_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_wait_status_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
                 int(
-                    candidate_family.get("execution_governance_expected_validation_archetype_count", 0)
+                    candidate_family.get("execution_engine_expected_validation_archetype_count", 0)
                     or 0
                 )
                 > 0
                 and float(
                     candidate_family.get(
-                        "execution_governance_validation_archetype_accuracy_rate", 0.0
+                        "execution_engine_validation_archetype_accuracy_rate", 0.0
                     )
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_current_phase_count", 0) or 0)
+                int(candidate_family.get("execution_engine_expected_current_phase_count", 0) or 0)
                 > 0
                 and float(
-                    candidate_family.get("execution_governance_current_phase_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_current_phase_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
                 int(
-                    candidate_family.get("execution_governance_expected_last_successful_phase_count", 0)
+                    candidate_family.get("execution_engine_expected_last_successful_phase_count", 0)
                     or 0
                 )
                 > 0
                 and float(
                     candidate_family.get(
-                        "execution_governance_last_successful_phase_accuracy_rate", 0.0
+                        "execution_engine_last_successful_phase_accuracy_rate", 0.0
                     )
                     or 0.0
                 )
@@ -8121,59 +8121,59 @@ def _acceptance(
             )
             or (
                 int(
-                    candidate_family.get("execution_governance_expected_authoritative_lane_count", 0)
+                    candidate_family.get("execution_engine_expected_authoritative_lane_count", 0)
                     or 0
                 )
                 > 0
                 and float(
                     candidate_family.get(
-                        "execution_governance_authoritative_lane_accuracy_rate", 0.0
+                        "execution_engine_authoritative_lane_accuracy_rate", 0.0
                     )
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_target_lane_count", 0) or 0)
+                int(candidate_family.get("execution_engine_expected_target_lane_count", 0) or 0)
                 > 0
                 and float(
-                    candidate_family.get("execution_governance_target_lane_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_target_lane_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_resume_token_count", 0) or 0)
+                int(candidate_family.get("execution_engine_expected_resume_token_count", 0) or 0)
                 > 0
                 and float(
-                    candidate_family.get("execution_governance_resume_token_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_resume_token_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_host_family_count", 0) or 0)
+                int(candidate_family.get("execution_engine_expected_host_family_count", 0) or 0)
                 > 0
                 and float(
-                    candidate_family.get("execution_governance_host_family_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_host_family_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_model_family_count", 0) or 0)
+                int(candidate_family.get("execution_engine_expected_model_family_count", 0) or 0)
                 > 0
                 and float(
-                    candidate_family.get("execution_governance_model_family_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_model_family_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
             )
             or (
-                int(candidate_family.get("execution_governance_expected_reanchor_count", 0) or 0)
+                int(candidate_family.get("execution_engine_expected_reanchor_count", 0) or 0)
                 > 0
                 and float(
-                    candidate_family.get("execution_governance_reanchor_accuracy_rate", 0.0)
+                    candidate_family.get("execution_engine_reanchor_accuracy_rate", 0.0)
                     or 0.0
                 )
                 < 1.0
@@ -8262,69 +8262,69 @@ def _acceptance(
         notes.append(
             "Context Engine runtime-backed benchmark slices are not keeping session state namespaced consistently."
         )
-    if not hard_quality_checks["execution_governance_present"]:
+    if not hard_quality_checks["execution_engine_present"]:
         notes.append(
-            "Execution-governance benchmark slices are dropping the execution-governance snapshot on sampled packet rows."
+            "Execution Engine benchmark slices are dropping the execution-engine snapshot on sampled packet rows."
         )
-    if not hard_quality_checks["execution_governance_resume_token_present"]:
+    if not hard_quality_checks["execution_engine_resume_token_present"]:
         notes.append(
-            "Execution-governance benchmark slices are not carrying resumability through a resume token consistently."
+            "Execution Engine benchmark slices are not carrying resumability through a resume token consistently."
         )
-    if not hard_quality_checks["execution_governance_outcome_accurate"]:
+    if not hard_quality_checks["execution_engine_outcome_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong admissibility outcome on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong admissibility outcome on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_mode_accurate"]:
+    if not hard_quality_checks["execution_engine_mode_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong execution mode on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong execution mode on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_next_move_accurate"]:
+    if not hard_quality_checks["execution_engine_next_move_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong truthful next move on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong truthful next move on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_closure_accurate"]:
+    if not hard_quality_checks["execution_engine_closure_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong closure posture on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong closure posture on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_wait_status_accurate"]:
+    if not hard_quality_checks["execution_engine_wait_status_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong semantic wait state on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong semantic wait state on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_validation_accurate"]:
+    if not hard_quality_checks["execution_engine_validation_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong validation archetype on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong validation archetype on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_current_phase_accurate"]:
+    if not hard_quality_checks["execution_engine_current_phase_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong current phase on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong current phase on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_last_successful_phase_accurate"]:
+    if not hard_quality_checks["execution_engine_last_successful_phase_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong last successful phase on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong last successful phase on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_authoritative_lane_accurate"]:
+    if not hard_quality_checks["execution_engine_authoritative_lane_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong authoritative lane on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong authoritative lane on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_target_lane_accurate"]:
+    if not hard_quality_checks["execution_engine_target_lane_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong target lane on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong target lane on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_resume_token_accurate"]:
+    if not hard_quality_checks["execution_engine_resume_token_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong resume token on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong resume token on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_host_family_accurate"]:
+    if not hard_quality_checks["execution_engine_host_family_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong host family on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong host family on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_model_family_accurate"]:
+    if not hard_quality_checks["execution_engine_model_family_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong model family on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong model family on sampled execution rows."
         )
-    if not hard_quality_checks["execution_governance_reanchor_accurate"]:
+    if not hard_quality_checks["execution_engine_reanchor_accurate"]:
         notes.append(
-            "Execution-governance benchmark slices are resolving the wrong re-anchor requirement on sampled execution rows."
+            "Execution Engine benchmark slices are resolving the wrong re-anchor requirement on sampled execution rows."
         )
     if not _live_execution_contract_match(execution_contracts):
         notes.append("`odylith_on` and `odylith_off` did not run on the same Codex CLI model/reasoning contract.")

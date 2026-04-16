@@ -62,49 +62,49 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
                 "odylith_execution_selection_mode": "critical_accuracy",
                 "odylith_execution_delegate_preference": "delegate",
                 "odylith_execution_source": "odylith_runtime_packet",
-                "execution_governance_present": True,
-                "execution_governance_outcome": "admit",
-                "execution_governance_requires_reanchor": False,
-                "execution_governance_mode": "verify",
-                "execution_governance_next_move": "verify.selected_matrix",
-                "execution_governance_current_phase": "status_synthesis",
-                "execution_governance_last_successful_phase": "submit",
-                "execution_governance_blocker": "waiting for rollout evidence",
-                "execution_governance_closure": "incomplete",
-                "execution_governance_wait_status": "building",
-                "execution_governance_wait_detail": "deploying cell-01",
-                "execution_governance_resume_token": "resume:B-072",
-                "execution_governance_validation_archetype": "deploy",
-                "execution_governance_validation_minimum_pass_count": 6,
-                "execution_governance_validation_derived_from": ["mode:verify", "closure:incomplete"],
-                "execution_governance_contradiction_count": 0,
-                "execution_governance_history_rule_count": 2,
-                "execution_governance_history_rule_hits": [
+                "execution_engine_present": True,
+                "execution_engine_outcome": "admit",
+                "execution_engine_requires_reanchor": False,
+                "execution_engine_mode": "verify",
+                "execution_engine_next_move": "verify.selected_matrix",
+                "execution_engine_current_phase": "status_synthesis",
+                "execution_engine_last_successful_phase": "submit",
+                "execution_engine_blocker": "waiting for rollout evidence",
+                "execution_engine_closure": "incomplete",
+                "execution_engine_wait_status": "building",
+                "execution_engine_wait_detail": "deploying cell-01",
+                "execution_engine_resume_token": "resume:B-072",
+                "execution_engine_validation_archetype": "deploy",
+                "execution_engine_validation_minimum_pass_count": 6,
+                "execution_engine_validation_derived_from": ["mode:verify", "closure:incomplete"],
+                "execution_engine_contradiction_count": 0,
+                "execution_engine_history_rule_count": 2,
+                "execution_engine_history_rule_hits": [
                     "partial_scope_requires_closure",
                     "reanchor_triggered",
                 ],
-                "execution_governance_pressure_signals": [
+                "execution_engine_pressure_signals": [
                     "closure:incomplete",
                     "wait:building",
                 ],
-                "execution_governance_nearby_denial_actions": [
+                "execution_engine_nearby_denial_actions": [
                     "explore.broad_reset",
                     "delegate.parallel_workers",
                 ],
-                "execution_governance_authoritative_lane": "context_engine.governance_slice.authoritative",
-                "execution_governance_host_family": "codex",
-                "execution_governance_model_family": "",
-                "execution_governance_host_supports_native_spawn": True,
-                "execution_governance_target_lane": "consumer",
-                "execution_governance_candidate_target_count": 2,
-                "execution_governance_diagnostic_anchor_count": 2,
-                "execution_governance_has_writable_targets": False,
-                "execution_governance_requires_more_consumer_context": True,
-                "execution_governance_consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
-                "execution_governance_commentary_mode": "task_first_minimal",
-                "execution_governance_suppress_routing_receipts": True,
-                "execution_governance_surface_fast_lane": True,
-                "execution_governance_runtime_invalidated_by_step": "render_compass_dashboard",
+                "execution_engine_authoritative_lane": "context_engine.governance_slice.authoritative",
+                "execution_engine_host_family": "codex",
+                "execution_engine_model_family": "",
+                "execution_engine_host_supports_native_spawn": True,
+                "execution_engine_target_lane": "consumer",
+                "execution_engine_candidate_target_count": 2,
+                "execution_engine_diagnostic_anchor_count": 2,
+                "execution_engine_has_writable_targets": False,
+                "execution_engine_requires_more_consumer_context": True,
+                "execution_engine_consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+                "execution_engine_commentary_mode": "task_first_minimal",
+                "execution_engine_suppress_routing_receipts": True,
+                "execution_engine_surface_fast_lane": True,
+                "execution_engine_runtime_invalidated_by_step": "render_compass_dashboard",
                 "turn_intent": 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
                 "turn_surface_count": 1,
                 "turn_visible_text_count": 1,
@@ -257,57 +257,57 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["latest_budget_mode"] == "spend_when_grounded"
     assert summary["latest_speed_mode"] == "accelerate_grounded"
     assert summary["latest_packet_reliability"] == "reliable"
-    assert summary["latest_execution_governance_present"] is True
-    assert summary["latest_execution_governance_outcome"] == "admit"
-    assert summary["latest_execution_governance_mode"] == "verify"
-    assert summary["latest_execution_governance_next_move"] == "verify.selected_matrix"
-    assert summary["latest_execution_governance_closure"] == "incomplete"
-    assert summary["latest_execution_governance_wait_status"] == "building"
-    assert summary["latest_execution_governance_resume_token"] == "resume:B-072"
-    assert summary["latest_execution_governance_validation_archetype"] == "deploy"
-    assert summary["latest_execution_governance_validation_derived_from"] == ["mode:verify", "closure:incomplete"]
-    assert summary["latest_execution_governance_history_rule_count"] == 2
-    assert summary["latest_execution_governance_history_rule_hits"] == [
+    assert summary["latest_execution_engine_present"] is True
+    assert summary["latest_execution_engine_outcome"] == "admit"
+    assert summary["latest_execution_engine_mode"] == "verify"
+    assert summary["latest_execution_engine_next_move"] == "verify.selected_matrix"
+    assert summary["latest_execution_engine_closure"] == "incomplete"
+    assert summary["latest_execution_engine_wait_status"] == "building"
+    assert summary["latest_execution_engine_resume_token"] == "resume:B-072"
+    assert summary["latest_execution_engine_validation_archetype"] == "deploy"
+    assert summary["latest_execution_engine_validation_derived_from"] == ["mode:verify", "closure:incomplete"]
+    assert summary["latest_execution_engine_history_rule_count"] == 2
+    assert summary["latest_execution_engine_history_rule_hits"] == [
         "partial_scope_requires_closure",
         "reanchor_triggered",
     ]
-    assert summary["latest_execution_governance_pressure_signals"] == [
+    assert summary["latest_execution_engine_pressure_signals"] == [
         "closure:incomplete",
         "wait:building",
     ]
-    assert summary["latest_execution_governance_nearby_denial_actions"] == [
+    assert summary["latest_execution_engine_nearby_denial_actions"] == [
         "explore.broad_reset",
         "delegate.parallel_workers",
     ]
-    assert summary["latest_execution_governance_host_family"] == "codex"
-    assert summary["latest_execution_governance_model_family"] == ""
-    assert summary["latest_execution_governance_host_supports_native_spawn"] is True
-    assert summary["latest_execution_governance_target_lane"] == "consumer"
-    assert summary["latest_execution_governance_candidate_target_count"] == 2
-    assert summary["latest_execution_governance_diagnostic_anchor_count"] == 2
-    assert summary["latest_execution_governance_has_writable_targets"] is False
-    assert summary["latest_execution_governance_requires_more_consumer_context"] is True
+    assert summary["latest_execution_engine_host_family"] == "codex"
+    assert summary["latest_execution_engine_model_family"] == ""
+    assert summary["latest_execution_engine_host_supports_native_spawn"] is True
+    assert summary["latest_execution_engine_target_lane"] == "consumer"
+    assert summary["latest_execution_engine_candidate_target_count"] == 2
+    assert summary["latest_execution_engine_diagnostic_anchor_count"] == 2
+    assert summary["latest_execution_engine_has_writable_targets"] is False
+    assert summary["latest_execution_engine_requires_more_consumer_context"] is True
     assert (
-        summary["latest_execution_governance_consumer_failover"]
+        summary["latest_execution_engine_consumer_failover"]
         == "maintainer_ready_feedback_plus_bounded_narrowing"
     )
-    assert summary["latest_execution_governance_commentary_mode"] == "task_first_minimal"
-    assert summary["latest_execution_governance_suppress_routing_receipts"] is True
-    assert summary["latest_execution_governance_surface_fast_lane"] is True
-    assert summary["latest_execution_governance_runtime_invalidated_by_step"] == "render_compass_dashboard"
+    assert summary["latest_execution_engine_commentary_mode"] == "task_first_minimal"
+    assert summary["latest_execution_engine_suppress_routing_receipts"] is True
+    assert summary["latest_execution_engine_surface_fast_lane"] is True
+    assert summary["latest_execution_engine_runtime_invalidated_by_step"] == "render_compass_dashboard"
 
 
-def test_runtime_surface_summary_accepts_tuple_backed_execution_governance_lists(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+def test_runtime_surface_summary_accepts_tuple_backed_execution_engine_lists(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
     monkeypatch.setattr(
         runtime_summary.odylith_context_engine_store,
         "load_runtime_optimization_snapshot",
         lambda *, repo_root: {
             "latest_packet": {
-                "execution_governance_present": True,
-                "execution_governance_validation_derived_from": ("mode:verify", "closure:incomplete"),
-                "execution_governance_history_rule_hits": ("partial_scope_requires_closure",),
-                "execution_governance_pressure_signals": ("wait:building",),
-                "execution_governance_nearby_denial_actions": ("explore.broad_reset",),
+                "execution_engine_present": True,
+                "execution_engine_validation_derived_from": ("mode:verify", "closure:incomplete"),
+                "execution_engine_history_rule_hits": ("partial_scope_requires_closure",),
+                "execution_engine_pressure_signals": ("wait:building",),
+                "execution_engine_nearby_denial_actions": ("explore.broad_reset",),
             }
         },
     )
@@ -329,10 +329,10 @@ def test_runtime_surface_summary_accepts_tuple_backed_execution_governance_lists
 
     summary = runtime_summary.load_runtime_surface_summary(repo_root=tmp_path)
 
-    assert summary["latest_execution_governance_validation_derived_from"] == ["mode:verify", "closure:incomplete"]
-    assert summary["latest_execution_governance_history_rule_hits"] == ["partial_scope_requires_closure"]
-    assert summary["latest_execution_governance_pressure_signals"] == ["wait:building"]
-    assert summary["latest_execution_governance_nearby_denial_actions"] == ["explore.broad_reset"]
+    assert summary["latest_execution_engine_validation_derived_from"] == ["mode:verify", "closure:incomplete"]
+    assert summary["latest_execution_engine_history_rule_hits"] == ["partial_scope_requires_closure"]
+    assert summary["latest_execution_engine_pressure_signals"] == ["wait:building"]
+    assert summary["latest_execution_engine_nearby_denial_actions"] == ["explore.broad_reset"]
 
 
 def test_load_runtime_surface_summary_uses_disabled_remote_and_repo_scan_labels(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001

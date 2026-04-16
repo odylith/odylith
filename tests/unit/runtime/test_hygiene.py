@@ -166,7 +166,7 @@ INTERVENTION_CONTRACT_BUNDLE_EXPECTATIONS: tuple[tuple[str, bool], ...] = (
     ("odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md", True),
     ("odylith/registry/source/components/compass/CURRENT_SPEC.md", True),
     ("odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md", True),
-    ("odylith/registry/source/components/execution-governance/CURRENT_SPEC.md", True),
+    ("odylith/registry/source/components/execution-engine/CURRENT_SPEC.md", True),
     ("odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md", True),
     ("odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md", True),
     ("odylith/registry/source/components/proof-state/CURRENT_SPEC.md", True),

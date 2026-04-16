@@ -79,7 +79,7 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
         families=(
             "broad_shared_scope",
             "context_engine_grounding",
-            "execution_governance",
+            "execution_engine",
             "exact_path_ambiguity",
             "exact_anchor_recall",
             "explicit_workstream",
@@ -105,14 +105,16 @@ _FAMILY_ORDER = {
 
 
 def family_group_label(family: str) -> str:
-    group = _FAMILY_GROUP_BY_FAMILY.get(str(family or "").strip())
+    family_key = str(family or "").strip()
+    group = _FAMILY_GROUP_BY_FAMILY.get(family_key)
     if group is None:
         return "Other"
     return group.label
 
 
 def family_group_description(family: str) -> str:
-    group = _FAMILY_GROUP_BY_FAMILY.get(str(family or "").strip())
+    family_key = str(family or "").strip()
+    group = _FAMILY_GROUP_BY_FAMILY.get(family_key)
     if group is None:
         return ""
     return group.description

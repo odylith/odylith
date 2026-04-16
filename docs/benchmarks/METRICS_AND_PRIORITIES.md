@@ -60,7 +60,7 @@ Current diagnostic-lane efficiency guardrails:
 For the public live pair:
 
 - `odylith_on` means the full Odylith assistance stack:
-  grounding packet, selected docs and repo anchors, execution-governance
+  grounding packet, selected docs and repo anchors, execution-engine
   posture, truthful next-move hints, scenario-declared focused-check shaping,
   preflight focused-check results only when they were executed in the
   disposable benchmark workspace and logged in the report, and bounded
@@ -93,32 +93,32 @@ the runner executes it inside the disposable benchmark workspace. If that
 preflight evidence is what carries a no-op lane to completion, the report must
 say so explicitly with `validator_status_basis=focused_noop_proxy`.
 
-## Execution-Governance Metrics
+## Execution Engine Metrics
 
-Execution-governance benchmark slices are hard-gated when present. Current
-required rates on sampled execution-governance rows:
+Execution Engine benchmark slices are hard-gated when present. Current
+required rates on sampled execution-engine rows:
 
-- `execution_governance_present_rate = 1.0`
-- `execution_governance_resume_token_present_rate = 1.0`
-- `execution_governance_outcome_accuracy_rate = 1.0`
-- `execution_governance_mode_accuracy_rate = 1.0`
-- `execution_governance_next_move_accuracy_rate = 1.0`
-- `execution_governance_closure_accuracy_rate = 1.0`
-- `execution_governance_wait_status_accuracy_rate = 1.0` whenever the sampled
+- `execution_engine_present_rate = 1.0`
+- `execution_engine_resume_token_present_rate = 1.0`
+- `execution_engine_outcome_accuracy_rate = 1.0`
+- `execution_engine_mode_accuracy_rate = 1.0`
+- `execution_engine_next_move_accuracy_rate = 1.0`
+- `execution_engine_closure_accuracy_rate = 1.0`
+- `execution_engine_wait_status_accuracy_rate = 1.0` whenever the sampled
   corpus includes wait-backed rows
-- `execution_governance_validation_archetype_accuracy_rate = 1.0`
-- `execution_governance_current_phase_accuracy_rate = 1.0` whenever the
+- `execution_engine_validation_archetype_accuracy_rate = 1.0`
+- `execution_engine_current_phase_accuracy_rate = 1.0` whenever the
   sampled corpus includes stable phase rows
-- `execution_governance_last_successful_phase_accuracy_rate = 1.0` whenever
+- `execution_engine_last_successful_phase_accuracy_rate = 1.0` whenever
   the sampled corpus includes stable phase-history rows
-- `execution_governance_authoritative_lane_accuracy_rate = 1.0`
-- `execution_governance_target_lane_accuracy_rate = 1.0` whenever the sampled
+- `execution_engine_authoritative_lane_accuracy_rate = 1.0`
+- `execution_engine_target_lane_accuracy_rate = 1.0` whenever the sampled
   corpus includes target-lane rows
-- `execution_governance_resume_token_accuracy_rate = 1.0`
-- `execution_governance_host_family_accuracy_rate = 1.0`
-- `execution_governance_model_family_accuracy_rate = 1.0` whenever the sampled
+- `execution_engine_resume_token_accuracy_rate = 1.0`
+- `execution_engine_host_family_accuracy_rate = 1.0`
+- `execution_engine_model_family_accuracy_rate = 1.0` whenever the sampled
   corpus includes model-family rows
-- `execution_governance_reanchor_accuracy_rate = 1.0`
+- `execution_engine_reanchor_accuracy_rate = 1.0`
 
 ## Corpus Seriousness Floor
 
@@ -172,7 +172,7 @@ grounding-control checks:
 - Did runtime-backed slices keep session scope namespaced?
 
 For execution-engine work, those tiers are also supplemented by
-execution-governance checks:
+execution-engine checks:
 
 - Did the packet and runtime summary preserve the real `admit|deny|defer`
   posture?

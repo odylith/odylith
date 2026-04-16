@@ -10,7 +10,7 @@ from typing import Sequence
 
 from odylith.runtime.governance import authoring_execution_policy
 from odylith.runtime.governance import execution_wave_contract
-from odylith.runtime.governance import program_wave_execution_governance
+from odylith.runtime.governance import program_wave_execution_engine
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 _ROLE_TO_FIELD = {
@@ -558,7 +558,7 @@ def program_main(argv: Sequence[str] | None = None) -> int:
             raise ValueError(
                 f"program `{execution_wave_contract.program_relative_path(umbrella_id)}` already exists"
             )
-        governance = program_wave_execution_governance.program_governance_decision(
+        governance = program_wave_execution_engine.program_governance_decision(
             repo_root=repo_root,
             umbrella_spec=umbrella_spec,
             document={"umbrella_id": umbrella_id, "version": "v1", "waves": []},
@@ -570,7 +570,7 @@ def program_main(argv: Sequence[str] | None = None) -> int:
             "command": "create",
             "umbrella_id": umbrella_id,
             "program": document,
-            "execution_governance": governance.to_dict(),
+            "execution_engine": governance.to_dict(),
         }
         if not args.dry_run:
             _update_idea_metadata(umbrella_spec.path, {"execution_model": "umbrella_waves"})
@@ -648,7 +648,7 @@ def program_main(argv: Sequence[str] | None = None) -> int:
             if not updated:
                 raise ValueError(f"unknown wave `{token}`")
     mutable_document["waves"] = _sorted_waves(mutable_document)
-    governance = program_wave_execution_governance.program_governance_decision(
+    governance = program_wave_execution_engine.program_governance_decision(
         repo_root=repo_root,
         umbrella_spec=umbrella_spec,
         document=mutable_document,
@@ -659,7 +659,7 @@ def program_main(argv: Sequence[str] | None = None) -> int:
         "command": "update",
         "umbrella_id": umbrella_id,
         "program": mutable_document,
-        "execution_governance": governance.to_dict(),
+        "execution_engine": governance.to_dict(),
     }
     if not args.dry_run:
         _update_idea_metadata(umbrella_spec.path, {"execution_model": "umbrella_waves"})
@@ -678,7 +678,7 @@ def wave_main(argv: Sequence[str] | None = None) -> int:
     mutable_document = copy.deepcopy(document)
 
     if args.wave_command == "create":
-        governance = program_wave_execution_governance.wave_governance_decision(
+        governance = program_wave_execution_engine.wave_governance_decision(
             repo_root=repo_root,
             umbrella_spec=umbrella_spec,
             document=document,
@@ -702,7 +702,7 @@ def wave_main(argv: Sequence[str] | None = None) -> int:
             }
         )
     else:
-        governance = program_wave_execution_governance.wave_governance_decision(
+        governance = program_wave_execution_engine.wave_governance_decision(
             repo_root=repo_root,
             umbrella_spec=umbrella_spec,
             document=document,
@@ -772,7 +772,7 @@ def wave_main(argv: Sequence[str] | None = None) -> int:
     if args.wave_command != "status":
         target_wave = _find_wave(mutable_document, args.wave_id)
         payload["wave"] = target_wave
-        payload["execution_governance"] = governance.to_dict()
+        payload["execution_engine"] = governance.to_dict()
         if not args.dry_run:
             _write_program_document(repo_root, umbrella_id, mutable_document)
         _print_wave_payload(payload=payload, as_json=bool(args.as_json))

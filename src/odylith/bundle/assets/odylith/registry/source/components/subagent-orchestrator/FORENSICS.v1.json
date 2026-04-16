@@ -147,7 +147,6 @@
       "kind": "implementation",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "odylith",
         "odylith-context-engine",
         "release",
@@ -176,7 +175,6 @@
       ],
       "kind": "implementation",
       "mapped_components": [
-        "execution-governance",
         "odylith",
         "odylith-context-engine",
         "subagent-orchestrator",

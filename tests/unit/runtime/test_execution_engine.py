@@ -169,23 +169,23 @@ def test_resource_closure_receipts_validation_and_contradictions_cover_execution
 def test_runtime_lane_policy_blocks_wait_state_and_unknown_host_parallelism() -> None:
     wait_guard = runtime_lane_policy.delegation_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_wait_status": "building",
-            "execution_governance_wait_detail": "deploying cell-01",
+            "execution_engine_present": True,
+            "execution_engine_wait_status": "building",
+            "execution_engine_wait_detail": "deploying cell-01",
         }
     )
     unknown_guard = runtime_lane_policy.parallelism_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_host_family": "unknown",
-            "execution_governance_host_supports_native_spawn": False,
+            "execution_engine_present": True,
+            "execution_engine_host_family": "unknown",
+            "execution_engine_host_supports_native_spawn": False,
         }
     )
     claude_guard = runtime_lane_policy.parallelism_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_host_family": "claude",
-            "execution_governance_host_supports_native_spawn": True,
+            "execution_engine_present": True,
+            "execution_engine_host_family": "claude",
+            "execution_engine_host_supports_native_spawn": True,
         }
     )
 
@@ -199,25 +199,25 @@ def test_runtime_lane_policy_blocks_wait_state_and_unknown_host_parallelism() ->
 def test_runtime_lane_policy_blocks_invalidated_or_history_pressured_slices() -> None:
     invalidated_guard = runtime_lane_policy.delegation_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_runtime_invalidated_by_step": "render_compass_dashboard",
+            "execution_engine_present": True,
+            "execution_engine_runtime_invalidated_by_step": "render_compass_dashboard",
         }
     )
     history_guard = runtime_lane_policy.parallelism_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_history_rule_hits": [
+            "execution_engine_present": True,
+            "execution_engine_history_rule_hits": [
                 "user_correction_requires_promotion",
             ],
-            "execution_governance_pressure_signals": ["denials:2"],
+            "execution_engine_pressure_signals": ["denials:2"],
         }
     )
     deny_guard = runtime_lane_policy.delegation_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_outcome": "deny",
-            "execution_governance_next_move": "verify.selected_matrix",
-            "execution_governance_nearby_denial_actions": [
+            "execution_engine_present": True,
+            "execution_engine_outcome": "deny",
+            "execution_engine_next_move": "verify.selected_matrix",
+            "execution_engine_nearby_denial_actions": [
                 "explore.broad_reset",
             ],
         }
@@ -231,8 +231,8 @@ def test_runtime_lane_policy_blocks_invalidated_or_history_pressured_slices() ->
     assert "explore.broad_reset" in deny_guard.reason
 
 
-def test_execution_governance_snapshot_carries_turn_target_and_presentation_policy() -> None:
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+def test_execution_engine_snapshot_carries_turn_target_and_presentation_policy() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_packet_state": "compact",
@@ -294,30 +294,30 @@ def test_execution_governance_snapshot_carries_turn_target_and_presentation_poli
     assert contract["target_resolution"]["lane"] == "consumer"
     assert contract["presentation_policy"]["commentary_mode"] == "task_first_minimal"
 
-    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(snapshot)
 
-    assert summary["execution_governance_target_lane"] == "consumer"
-    assert summary["execution_governance_has_writable_targets"] is False
-    assert summary["execution_governance_requires_more_consumer_context"] is True
-    assert summary["execution_governance_consumer_failover"] == "maintainer_ready_feedback_plus_bounded_narrowing"
-    assert summary["execution_governance_commentary_mode"] == "task_first_minimal"
-    assert summary["execution_governance_suppress_routing_receipts"] is True
-    assert summary["execution_governance_surface_fast_lane"] is True
+    assert summary["execution_engine_target_lane"] == "consumer"
+    assert summary["execution_engine_has_writable_targets"] is False
+    assert summary["execution_engine_requires_more_consumer_context"] is True
+    assert summary["execution_engine_consumer_failover"] == "maintainer_ready_feedback_plus_bounded_narrowing"
+    assert summary["execution_engine_commentary_mode"] == "task_first_minimal"
+    assert summary["execution_engine_suppress_routing_receipts"] is True
+    assert summary["execution_engine_surface_fast_lane"] is True
 
 
 def test_runtime_lane_policy_blocks_consumer_lane_without_writable_targets() -> None:
     guard = runtime_lane_policy.delegation_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_target_lane": "consumer",
-            "execution_governance_has_writable_targets": False,
-            "execution_governance_requires_more_consumer_context": True,
-            "execution_governance_consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+            "execution_engine_present": True,
+            "execution_engine_target_lane": "consumer",
+            "execution_engine_has_writable_targets": False,
+            "execution_engine_requires_more_consumer_context": True,
+            "execution_engine_consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
         }
     )
 
     assert guard.blocked is True
-    assert guard.code == "execution-governance-consumer-fence"
+    assert guard.code == "execution-engine-consumer-fence"
     assert "does not yet have writable consumer targets" in guard.reason
 
 
@@ -438,7 +438,7 @@ def test_validation_matrix_tracks_recover_mode_and_external_resume_requirement()
     assert "mode:recover" in matrix.derived_from
 
 
-def test_execution_governance_snapshot_carries_sync_runtime_contract(tmp_path: Path) -> None:
+def test_execution_engine_snapshot_carries_sync_runtime_contract(tmp_path: Path) -> None:
     session = sync_session.GovernedSyncSession(repo_root=tmp_path)
     payload = {
         "repo_root": str(tmp_path),
@@ -454,20 +454,20 @@ def test_execution_governance_snapshot_carries_sync_runtime_contract(tmp_path: P
     }
 
     with sync_session.activate_sync_session(session):
-        snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(payload)
+        snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(payload)
 
     runtime_contract = snapshot["runtime_contract"]
-    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(snapshot)
 
     assert runtime_contract["reuse_scope"] == "sync_scoped"
     assert runtime_contract["settled_sync_session"] is True
     assert runtime_contract["repo_root"] == str(tmp_path.resolve())
-    assert summary["execution_governance_runtime_reuse_scope"] == "sync_scoped"
-    assert summary["execution_governance_runtime_settled_sync_session"] is True
+    assert summary["execution_engine_runtime_reuse_scope"] == "sync_scoped"
+    assert summary["execution_engine_runtime_settled_sync_session"] is True
 
 
-def test_execution_governance_snapshot_carries_history_and_summary_reason_fields() -> None:
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+def test_execution_engine_snapshot_carries_history_and_summary_reason_fields() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_packet_state": "compact",
@@ -486,22 +486,22 @@ def test_execution_governance_snapshot_carries_history_and_summary_reason_fields
         }
     )
 
-    compact = runtime_surface_governance.compact_execution_governance_snapshot(snapshot)
-    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+    compact = runtime_surface_governance.compact_execution_engine_snapshot(snapshot)
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(snapshot)
 
     assert "partial_scope_requires_closure" in snapshot["history_rule_hits"]
     assert "lane_drift_preflight" in snapshot["history_rule_hits"]
     assert "user_correction_requires_promotion" in snapshot["history_rule_hits"]
-    assert "execution_governance_pressure_signals" in summary
-    assert "wait:awaiting_callback" in summary["execution_governance_pressure_signals"]
-    assert "execution_governance_history_rule_hits" in summary
-    assert "execution_governance_nearby_denial_actions" in summary
-    assert "execution_governance_runtime_invalidated_by_step" in summary
+    assert "execution_engine_pressure_signals" in summary
+    assert "wait:awaiting_callback" in summary["execution_engine_pressure_signals"]
+    assert "execution_engine_history_rule_hits" in summary
+    assert "execution_engine_nearby_denial_actions" in summary
+    assert "execution_engine_runtime_invalidated_by_step" in summary
     assert compact["nearby_denial_actions"]
 
 
-def test_execution_governance_snapshot_infers_external_dependency_id_from_partial_proof_state() -> None:
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+def test_execution_engine_snapshot_infers_external_dependency_id_from_partial_proof_state() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_packet_state": "compact",
@@ -519,8 +519,8 @@ def test_execution_governance_snapshot_infers_external_dependency_id_from_partia
     assert snapshot["external_dependency"]["external_id"] == "bootstrap_session"
 
 
-def test_execution_governance_snapshot_accepts_external_mapping_without_explicit_id() -> None:
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+def test_execution_engine_snapshot_accepts_external_mapping_without_explicit_id() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "governance_slice",
             "context_packet_state": "compact",
@@ -634,31 +634,31 @@ def test_build_execution_event_stream_emits_context_pressure_event() -> None:
 def test_runtime_lane_policy_artifact_path_guard_blocks_unsafe_parallel_fanout() -> None:
     no_artifact_guard = runtime_lane_policy.parallelism_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_host_family": "claude",
-            "execution_governance_host_supports_native_spawn": True,
-            "execution_governance_host_supports_artifact_paths": False,
-            "execution_governance_closure": "incomplete",
+            "execution_engine_present": True,
+            "execution_engine_host_family": "claude",
+            "execution_engine_host_supports_native_spawn": True,
+            "execution_engine_host_supports_artifact_paths": False,
+            "execution_engine_closure": "incomplete",
         }
     )
     safe_closure_guard = runtime_lane_policy.parallelism_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_host_family": "claude",
-            "execution_governance_host_supports_native_spawn": True,
-            "execution_governance_host_supports_artifact_paths": False,
-            "execution_governance_closure": "safe",
+            "execution_engine_present": True,
+            "execution_engine_host_family": "claude",
+            "execution_engine_host_supports_native_spawn": True,
+            "execution_engine_host_supports_artifact_paths": False,
+            "execution_engine_closure": "safe",
         }
     )
 
     assert no_artifact_guard.blocked is True
-    assert no_artifact_guard.code == "execution-governance-no-artifact-paths"
+    assert no_artifact_guard.code == "execution-engine-no-artifact-paths"
     assert "artifact paths" in no_artifact_guard.reason
     assert safe_closure_guard.blocked is False
 
 
-def test_execution_governance_snapshot_applies_claude_presentation_defaults() -> None:
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+def test_execution_engine_snapshot_applies_claude_presentation_defaults() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_packet": {
@@ -674,25 +674,25 @@ def test_execution_governance_snapshot_applies_claude_presentation_defaults() ->
     assert contract["presentation_policy"]["commentary_mode"] == "task_first"
     assert contract["presentation_policy"]["suppress_routing_receipts"] is True
 
-    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
-    assert summary["execution_governance_commentary_mode"] == "task_first"
-    assert summary["execution_governance_suppress_routing_receipts"] is True
-    assert summary["execution_governance_host_supports_artifact_paths"] is False
-    assert summary["execution_governance_host_supports_interrupt"] is False
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(snapshot)
+    assert summary["execution_engine_commentary_mode"] == "task_first"
+    assert summary["execution_engine_suppress_routing_receipts"] is True
+    assert summary["execution_engine_host_supports_artifact_paths"] is False
+    assert summary["execution_engine_host_supports_interrupt"] is False
 
 
 def test_runtime_lane_policy_artifact_path_guard_does_not_fire_for_delegation() -> None:
     delegation_guard = runtime_lane_policy.delegation_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_host_family": "claude",
-            "execution_governance_host_supports_native_spawn": True,
-            "execution_governance_host_supports_artifact_paths": False,
-            "execution_governance_closure": "incomplete",
+            "execution_engine_present": True,
+            "execution_engine_host_family": "claude",
+            "execution_engine_host_supports_native_spawn": True,
+            "execution_engine_host_supports_artifact_paths": False,
+            "execution_engine_closure": "incomplete",
         }
     )
 
-    assert delegation_guard.code != "execution-governance-no-artifact-paths"
+    assert delegation_guard.code != "execution-engine-no-artifact-paths"
 
 
 def test_build_execution_event_stream_emits_critical_context_pressure() -> None:
@@ -725,8 +725,8 @@ def test_build_execution_event_stream_emits_critical_context_pressure() -> None:
     assert "context_pressure" not in {e.event_type for e in events_low}
 
 
-def test_execution_governance_snapshot_surfaces_context_pressure() -> None:
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+def test_execution_engine_snapshot_surfaces_context_pressure() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_packet": {
@@ -740,14 +740,14 @@ def test_execution_governance_snapshot_surfaces_context_pressure() -> None:
     )
 
     assert snapshot["context_pressure"] == "high"
-    compact = runtime_surface_governance.compact_execution_governance_snapshot(snapshot)
+    compact = runtime_surface_governance.compact_execution_engine_snapshot(snapshot)
     assert compact["context_pressure"] == "high"
-    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
-    assert summary["execution_governance_context_pressure"] == "high"
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(snapshot)
+    assert summary["execution_engine_context_pressure"] == "high"
 
 
-def test_execution_governance_snapshot_explicit_empty_presentation_policy_skips_claude_defaults() -> None:
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+def test_execution_engine_snapshot_explicit_empty_presentation_policy_skips_claude_defaults() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "presentation_policy": {},
@@ -915,32 +915,32 @@ def test_runtime_lane_policy_artifact_path_guard_does_not_fire_without_presence_
     """When host_supports_artifact_paths is absent from summary, guard stays open (fail-open)."""
     guard = runtime_lane_policy.parallelism_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_host_family": "claude",
-            "execution_governance_host_supports_native_spawn": True,
-            "execution_governance_closure": "incomplete",
+            "execution_engine_present": True,
+            "execution_engine_host_family": "claude",
+            "execution_engine_host_supports_native_spawn": True,
+            "execution_engine_closure": "incomplete",
         }
     )
-    assert guard.code != "execution-governance-no-artifact-paths"
+    assert guard.code != "execution-engine-no-artifact-paths"
 
 
 def test_runtime_lane_policy_delegation_guard_unaffected_by_artifact_path_fields() -> None:
     """delegation_guard never fires the artifact-path code regardless of field values."""
     guard = runtime_lane_policy.delegation_guard(
         {
-            "execution_governance_present": True,
-            "execution_governance_host_family": "claude",
-            "execution_governance_host_supports_native_spawn": True,
-            "execution_governance_host_supports_artifact_paths": False,
-            "execution_governance_closure": "destructive",
+            "execution_engine_present": True,
+            "execution_engine_host_family": "claude",
+            "execution_engine_host_supports_native_spawn": True,
+            "execution_engine_host_supports_artifact_paths": False,
+            "execution_engine_closure": "destructive",
         }
     )
-    assert guard.code != "execution-governance-no-artifact-paths"
+    assert guard.code != "execution-engine-no-artifact-paths"
 
 
-def test_execution_governance_snapshot_codex_host_no_presentation_defaults() -> None:
+def test_execution_engine_snapshot_codex_host_no_presentation_defaults() -> None:
     """Codex host should NOT get Claude presentation defaults."""
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_packet": {
@@ -954,9 +954,9 @@ def test_execution_governance_snapshot_codex_host_no_presentation_defaults() -> 
     assert "presentation_policy" not in snapshot["contract"]
 
 
-def test_execution_governance_snapshot_claude_explicit_policy_overrides_defaults() -> None:
+def test_execution_engine_snapshot_claude_explicit_policy_overrides_defaults() -> None:
     """Explicit presentation_policy on Claude host takes priority over defaults."""
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "presentation_policy": {
@@ -977,9 +977,9 @@ def test_execution_governance_snapshot_claude_explicit_policy_overrides_defaults
     assert contract["presentation_policy"]["suppress_routing_receipts"] is False
 
 
-def test_execution_governance_snapshot_context_pressure_absent_by_default() -> None:
+def test_execution_engine_snapshot_context_pressure_absent_by_default() -> None:
     """When no context_pressure is passed, it should be empty/absent in snapshot."""
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_packet": {
@@ -992,13 +992,13 @@ def test_execution_governance_snapshot_context_pressure_absent_by_default() -> N
     )
 
     assert snapshot["context_pressure"] == ""
-    compact = runtime_surface_governance.compact_execution_governance_snapshot(snapshot)
+    compact = runtime_surface_governance.compact_execution_engine_snapshot(snapshot)
     assert "context_pressure" not in compact
 
 
-def test_execution_governance_snapshot_payload_context_pressure_fallback() -> None:
+def test_execution_engine_snapshot_payload_context_pressure_fallback() -> None:
     """context_pressure in the payload dict is used as fallback."""
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_pressure": "critical",
@@ -1012,12 +1012,12 @@ def test_execution_governance_snapshot_payload_context_pressure_fallback() -> No
     )
 
     assert snapshot["context_pressure"] == "critical"
-    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
-    assert summary["execution_governance_context_pressure"] == "critical"
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(snapshot)
+    assert summary["execution_engine_context_pressure"] == "critical"
 
 
-def test_execution_governance_snapshot_governance_slice_gated_scope_prefers_recover() -> None:
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+def test_execution_engine_snapshot_governance_slice_gated_scope_prefers_recover() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "governance_slice",
             "context_packet_state": "gated_broad_scope",
@@ -1031,15 +1031,15 @@ def test_execution_governance_snapshot_governance_slice_gated_scope_prefers_reco
         host_candidates=["codex_cli"],
     )
 
-    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
-    assert summary["execution_governance_mode"] == "recover"
-    assert summary["execution_governance_next_move"] == "recover.current_blocker"
-    assert summary["execution_governance_validation_archetype"] == "recover"
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(snapshot)
+    assert summary["execution_engine_mode"] == "recover"
+    assert summary["execution_engine_next_move"] == "recover.current_blocker"
+    assert summary["execution_engine_validation_archetype"] == "recover"
 
 
-def test_execution_governance_compact_new_host_fields_are_additive() -> None:
+def test_execution_engine_compact_new_host_fields_are_additive() -> None:
     """New compact fields do not break the existing compact shape contract."""
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_packet": {
@@ -1050,7 +1050,7 @@ def test_execution_governance_compact_new_host_fields_are_additive() -> None:
         },
         host_candidates=["claude_code"],
     )
-    compact = runtime_surface_governance.compact_execution_governance_snapshot(snapshot)
+    compact = runtime_surface_governance.compact_execution_engine_snapshot(snapshot)
 
     assert compact["host_supports_native_spawn"] is True
     assert compact.get("host_supports_interrupt", False) is False
@@ -1058,16 +1058,16 @@ def test_execution_governance_compact_new_host_fields_are_additive() -> None:
     assert isinstance(compact.get("host_execution_hints"), list)
     assert len(compact.get("host_execution_hints", [])) <= 4
 
-    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
-    assert "execution_governance_host_supports_interrupt" in summary
-    assert "execution_governance_host_supports_artifact_paths" in summary
-    assert "execution_governance_host_execution_hints" in summary
-    assert isinstance(summary["execution_governance_host_execution_hints"], tuple)
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(snapshot)
+    assert "execution_engine_host_supports_interrupt" in summary
+    assert "execution_engine_host_supports_artifact_paths" in summary
+    assert "execution_engine_host_execution_hints" in summary
+    assert isinstance(summary["execution_engine_host_execution_hints"], tuple)
 
 
-def test_execution_governance_summary_fields_are_superset_of_existing_contract() -> None:
+def test_execution_engine_summary_fields_are_superset_of_existing_contract() -> None:
     """Existing summary field keys must still be present after the new additions."""
-    snapshot = runtime_surface_governance.build_packet_execution_governance_snapshot(
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
         {
             "packet_kind": "bootstrap_session",
             "context_packet": {
@@ -1078,23 +1078,23 @@ def test_execution_governance_summary_fields_are_superset_of_existing_contract()
         },
         host_candidates=["codex_cli"],
     )
-    summary = runtime_surface_governance.summary_fields_from_execution_governance(snapshot)
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(snapshot)
 
     required_keys = [
-        "execution_governance_present",
-        "execution_governance_outcome",
-        "execution_governance_mode",
-        "execution_governance_host_family",
-        "execution_governance_model_family",
-        "execution_governance_host_delegation_style",
-        "execution_governance_host_supports_native_spawn",
-        "execution_governance_host_supports_interrupt",
-        "execution_governance_host_supports_artifact_paths",
-        "execution_governance_host_execution_hints",
-        "execution_governance_commentary_mode",
-        "execution_governance_suppress_routing_receipts",
-        "execution_governance_surface_fast_lane",
-        "execution_governance_context_pressure",
+        "execution_engine_present",
+        "execution_engine_outcome",
+        "execution_engine_mode",
+        "execution_engine_host_family",
+        "execution_engine_model_family",
+        "execution_engine_host_delegation_style",
+        "execution_engine_host_supports_native_spawn",
+        "execution_engine_host_supports_interrupt",
+        "execution_engine_host_supports_artifact_paths",
+        "execution_engine_host_execution_hints",
+        "execution_engine_commentary_mode",
+        "execution_engine_suppress_routing_receipts",
+        "execution_engine_surface_fast_lane",
+        "execution_engine_context_pressure",
     ]
     for key in required_keys:
         assert key in summary, f"missing required summary key: {key}"
@@ -1125,8 +1125,8 @@ def test_history_rule_collect_includes_new_failure_classes() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_bootstrap_delivery_includes_execution_governance() -> None:
-    """Verify the non-hot-path bootstrap compactor injects execution governance."""
+def test_bootstrap_delivery_includes_execution_engine() -> None:
+    """Verify the non-hot-path bootstrap compactor injects execution engine."""
     from odylith.runtime.context_engine import session_bootstrap_payload_compactor
 
     payload = {
@@ -1141,19 +1141,19 @@ def test_bootstrap_delivery_includes_execution_governance() -> None:
     compact = session_bootstrap_payload_compactor.compact_finalized_bootstrap_payload(payload)
 
     context_packet = compact.get("context_packet", {})
-    eg = context_packet.get("execution_governance", {})
-    assert eg, f"execution_governance should be present in bootstrap; got context_packet keys: {sorted(context_packet.keys())}"
+    eg = context_packet.get("execution_engine", {})
+    assert eg, f"execution_engine should be present in bootstrap; got context_packet keys: {sorted(context_packet.keys())}"
     assert "outcome" in eg
     assert "mode" in eg
 
 
-def test_context_dossier_delivery_includes_execution_governance() -> None:
+def test_context_dossier_delivery_includes_execution_engine() -> None:
     from odylith.runtime.context_engine.odylith_context_engine_store import compact_context_dossier_for_delivery
 
     dossier = {
         "resolved": True,
-        "entity": {"id": "execution-governance", "type": "component", "title": "Execution Governance"},
-        "lookup": {"query": "execution-governance", "kind": "component"},
+        "entity": {"id": "execution-engine", "type": "component", "title": "Execution Engine"},
+        "lookup": {"query": "execution-engine", "kind": "component"},
         "matches": [],
         "relations": [],
         "related_entities": {},
@@ -1165,7 +1165,7 @@ def test_context_dossier_delivery_includes_execution_governance() -> None:
 
     result = compact_context_dossier_for_delivery(dossier)
     assert result["resolved"] is True
-    eg = result.get("execution_governance", {})
-    assert eg, "execution_governance should be present in context dossier delivery"
+    eg = result.get("execution_engine", {})
+    assert eg, "execution_engine should be present in context dossier delivery"
     assert "outcome" in eg
     assert "mode" in eg

@@ -16,12 +16,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 9,
-    "mapped_workstream_evidence_count": 9,
+    "explicit_event_count": 10,
+    "mapped_workstream_evidence_count": 10,
     "recent_path_match_count": 1,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 10
+    "timeline_event_count": 11
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -36,18 +36,58 @@
   "timeline": [
     {
       "artifacts": [
+        "odylith/radar/source/programs/B-099.execution-waves.v1.json",
+        "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+      ],
+      "confidence": "high",
+      "event_index": 542,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.",
+      "ts_iso": "2026-04-16T13:15:08-07:00",
+      "workstreams": [
+        "B-099",
+        "B-100"
+      ]
+    },
+    {
+      "artifacts": [
+        "docs/benchmarks/FAMILIES_AND_EVALS.md",
+        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+        "docs/benchmarks/README.md",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
         "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
       ],
       "confidence": "high",
-      "event_index": 423,
+      "event_index": 544,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "benchmark"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
-      "ts_iso": "2026-04-16T09:17:47-07:00",
+      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/FAMILIES_AND_EVALS.md, docs/benchmarks/METRICS_AND_PRIORITIES.md +3 more",
+      "ts_iso": "2026-04-16T13:00:28-07:00",
       "workstreams": []
     },
     {
@@ -101,7 +141,6 @@
       "kind": "decision",
       "mapped_components": [
         "benchmark",
-        "execution-governance",
         "odylith",
         "odylith-context-engine",
         "radar"

@@ -518,22 +518,22 @@ def test_render_compass_dashboard_writes_source_truth_snapshot_and_shell_href(tm
                     "summary": {"active_assignment_count": 3},
                 },
                 "current_workstreams": [
-                    {"idea_id": "B-072", "title": "Execution Governance Engine Program", "status": "implementation"},
+                    {"idea_id": "B-072", "title": "Execution Engine Engine Program", "status": "implementation"},
                     {"idea_id": "B-073", "title": "Task Contract", "status": "queued"},
                     {"idea_id": "B-079", "title": "Program/Wave Authoring CLI and Agent Ergonomics", "status": "queued"},
                 ],
                 "current_workstreams_by_window": {
                     "24h": [
-                        {"idea_id": "B-072", "title": "Execution Governance Engine Program", "status": "implementation"},
+                        {"idea_id": "B-072", "title": "Execution Engine Engine Program", "status": "implementation"},
                     ],
                     "48h": [
-                        {"idea_id": "B-072", "title": "Execution Governance Engine Program", "status": "implementation"},
+                        {"idea_id": "B-072", "title": "Execution Engine Engine Program", "status": "implementation"},
                         {"idea_id": "B-073", "title": "Task Contract", "status": "queued"},
                         {"idea_id": "B-079", "title": "Program/Wave Authoring CLI and Agent Ergonomics", "status": "queued"},
                     ],
                 },
                 "workstream_catalog": [
-                    {"idea_id": "B-072", "title": "Execution Governance Engine Program", "status": "implementation"},
+                    {"idea_id": "B-072", "title": "Execution Engine Engine Program", "status": "implementation"},
                     {"idea_id": "B-073", "title": "Task Contract", "status": "queued"},
                     {"idea_id": "B-079", "title": "Program/Wave Authoring CLI and Agent Ergonomics", "status": "queued"},
                     {"idea_id": "B-061", "title": "Older lane", "status": "finished"},

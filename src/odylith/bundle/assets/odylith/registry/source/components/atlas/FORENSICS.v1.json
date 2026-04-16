@@ -30,12 +30,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 29,
-    "mapped_workstream_evidence_count": 10,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 34,
+    "mapped_workstream_evidence_count": 11,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 7,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 29
+    "timeline_event_count": 35
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -45,6 +45,134 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
+      ],
+      "confidence": "high",
+      "event_index": 534,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "atlas",
+        "governance-intervention-engine",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
+      "ts_iso": "2026-04-16T18:33:05Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
+      ],
+      "confidence": "high",
+      "event_index": 533,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "atlas",
+        "governance-intervention-engine",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
+      "ts_iso": "2026-04-16T18:32:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
+      ],
+      "confidence": "high",
+      "event_index": 532,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "atlas",
+        "governance-intervention-engine",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
+      "ts_iso": "2026-04-16T18:32:00Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
+      ],
+      "confidence": "high",
+      "event_index": 509,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "atlas",
+        "governance-intervention-engine",
+        "odylith",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
+      "ts_iso": "2026-04-16T18:20:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/programs/B-099.execution-waves.v1.json",
+        "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+      ],
+      "confidence": "high",
+      "event_index": 542,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.",
+      "ts_iso": "2026-04-16T13:15:08-07:00",
+      "workstreams": [
+        "B-099",
+        "B-100"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py"
+      ],
+      "confidence": "high",
+      "event_index": 543,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "atlas"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+      "ts_iso": "2026-04-16T13:08:09-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "src/odylith/runtime/intervention_engine/engine.py"
@@ -58,7 +186,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -84,7 +211,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -110,7 +236,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -136,7 +261,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -162,7 +286,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -188,7 +311,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -214,7 +336,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -240,7 +361,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -266,7 +386,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",

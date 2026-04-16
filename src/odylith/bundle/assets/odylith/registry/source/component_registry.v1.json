@@ -431,7 +431,14 @@
         "B-010",
         "B-058",
         "B-059",
-        "B-063"
+        "B-063",
+        "B-082",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
       ],
       "diagrams": [
         "D-002",
@@ -442,7 +449,8 @@
         "D-018",
         "D-019",
         "D-020",
-        "D-025"
+        "D-025",
+        "D-030"
       ],
       "owner": "product",
       "status": "active",
@@ -801,18 +809,26 @@
       "kind": "runtime",
       "category": "governance_engine",
       "qualification": "curated",
-      "aliases": [
-        "execution-engine-runtime",
-        "execution-policy-runtime",
-        "execution-governance-engine",
-        "execution-governance",
-        "admissibility-runtime"
-      ],
+      "aliases": [],
       "path_prefixes": [
         "src/odylith/runtime/execution_engine"
       ],
       "workstreams": [
-        "B-072"
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
       ],
       "diagrams": [
         "D-002",

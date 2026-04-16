@@ -114,7 +114,7 @@ def _seed_governance_repo(repo_root: Path) -> None:
     (ideas_root / "2026-04-09-b-072.md").write_text(
         _idea_text(
             idea_id="B-072",
-            title="Execution Governance Engine Program",
+            title="Execution Engine Engine Program",
             status="implementation",
             promoted_to_plan=umbrella_plan,
             execution_model="umbrella_waves",

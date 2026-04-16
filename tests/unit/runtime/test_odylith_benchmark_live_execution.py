@@ -2481,7 +2481,7 @@ def test_run_live_scenario_preserves_carried_packet_summary_truth(
     result = live_execution.run_live_scenario(
         repo_root=repo_root,
         scenario={
-            "prompt": "Preserve execution-governance benchmark packet truth.",
+            "prompt": "Preserve execution-engine benchmark packet truth.",
             "required_paths": [],
             "validation_commands": [],
             "needs_write": False,
@@ -2491,20 +2491,20 @@ def test_run_live_scenario_preserves_carried_packet_summary_truth(
         prompt_payload={},
         packet_summary={
             "packet_kind": "governance_slice",
-            "execution_governance_present": True,
-            "execution_governance_mode": "verify",
-            "execution_governance_current_phase": "verify",
-            "execution_governance_resume_token": "resume:governance_slice",
+            "execution_engine_present": True,
+            "execution_engine_mode": "verify",
+            "execution_engine_current_phase": "verify",
+            "execution_engine_resume_token": "resume:governance_slice",
         },
         snapshot_paths=[],
     )
 
     packet = dict(result["packet"])
     assert packet["packet_kind"] == "governance_slice"
-    assert packet["execution_governance_present"] is True
-    assert packet["execution_governance_mode"] == "verify"
-    assert packet["execution_governance_current_phase"] == "verify"
-    assert packet["execution_governance_resume_token"] == "resume:governance_slice"
+    assert packet["execution_engine_present"] is True
+    assert packet["execution_engine_mode"] == "verify"
+    assert packet["execution_engine_current_phase"] == "verify"
+    assert packet["execution_engine_resume_token"] == "resume:governance_slice"
     assert packet["within_budget"] is True
     assert packet["route_ready"] is True
     assert packet["live_status"] == "completed"

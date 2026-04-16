@@ -5199,6 +5199,319 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-099",
+      "title": "Context Engine and Execution Engine Seamless Alignment Program",
+      "status": "queued",
+      "workstream_type": "umbrella",
+      "workstream_parent": "",
+      "workstream_children": [
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
+      ],
+      "workstream_depends_on": [
+        "B-072",
+        "B-084",
+        "B-092",
+        "B-093"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-024",
+        "D-030",
+        "D-031"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-context-engine-and-execution-engine-seamless-alignment-program.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 4,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-100",
+      "title": "Execution Engine Benchmark Proof and Canonical Cutover",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-099",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-072",
+        "B-092",
+        "B-093"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-024",
+        "D-030"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 3,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-099",
+          "wave_id": "W1",
+          "wave_label": "Execution Engine Benchmark Proof and Canonical Cutover",
+          "wave_status": "active",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-101",
+      "title": "Context Execution Handshake Snapshot Normalization",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-099",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-100"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-030"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-099",
+          "wave_id": "W2",
+          "wave_label": "Context Execution Handshake Snapshot Normalization",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-102",
+      "title": "Codex Claude Execution Contract Parity",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-099",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-084",
+        "B-100",
+        "B-101"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-030",
+        "D-031"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 3,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-099",
+          "wave_id": "W3",
+          "wave_label": "Codex Claude Execution Contract Parity",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-103",
+      "title": "Execution Snapshot Reuse and Hot Path Cost Reduction",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-099",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-091",
+        "B-101",
+        "B-102"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-030"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-099",
+          "wave_id": "W4",
+          "wave_label": "Execution Snapshot Reuse and Hot Path Cost Reduction",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-104",
+      "title": "Execution Alignment Release Proof and Governance Closure",
+      "status": "queued",
+      "workstream_type": "child",
+      "workstream_parent": "B-099",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-093",
+        "B-103"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-024",
+        "D-030",
+        "D-031"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 4,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-099",
+          "wave_id": "W5",
+          "wave_label": "Execution Alignment Release Proof and Governance Closure",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
+        }
+      ]
     }
   ],
   "releases": [
@@ -5575,6 +5888,92 @@
               "label": "Validation Matrix Synthesis, Contradiction Detection, and History-Based Failure Blocking gate"
             }
           ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "B-099",
+      "version": "v1",
+      "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json",
+      "waves": [
+        {
+          "wave_id": "W1",
+          "label": "Execution Engine Benchmark Proof and Canonical Cutover",
+          "status": "active",
+          "summary": "Execution Engine Benchmark Proof and Canonical Cutover",
+          "depends_on": [],
+          "primary_workstreams": [
+            "B-100"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-100",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
+              "label": "Execution Engine Benchmark Proof and Canonical Cutover gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W2",
+          "label": "Context Execution Handshake Snapshot Normalization",
+          "status": "planned",
+          "summary": "Context Execution Handshake Snapshot Normalization",
+          "depends_on": [
+            "W1"
+          ],
+          "primary_workstreams": [
+            "B-101"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
+        },
+        {
+          "wave_id": "W3",
+          "label": "Codex Claude Execution Contract Parity",
+          "status": "planned",
+          "summary": "Codex Claude Execution Contract Parity",
+          "depends_on": [
+            "W2"
+          ],
+          "primary_workstreams": [
+            "B-102"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
+        },
+        {
+          "wave_id": "W4",
+          "label": "Execution Snapshot Reuse and Hot Path Cost Reduction",
+          "status": "planned",
+          "summary": "Execution Snapshot Reuse and Hot Path Cost Reduction",
+          "depends_on": [
+            "W3"
+          ],
+          "primary_workstreams": [
+            "B-103"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
+        },
+        {
+          "wave_id": "W5",
+          "label": "Execution Alignment Release Proof and Governance Closure",
+          "status": "planned",
+          "summary": "Execution Alignment Release Proof and Governance Closure",
+          "depends_on": [
+            "W4"
+          ],
+          "primary_workstreams": [
+            "B-104"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
         }
       ]
     }
@@ -6267,6 +6666,48 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-15-radar-backlog-detail-fail-closed-completeness-and-authoring-hardening.md"
     },
     {
+      "id": "B-099",
+      "type": "workstream",
+      "label": "Context Engine and Execution Engine Seamless Alignment Program",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-16-context-engine-and-execution-engine-seamless-alignment-program.md"
+    },
+    {
+      "id": "B-100",
+      "type": "workstream",
+      "label": "Execution Engine Benchmark Proof and Canonical Cutover",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+    },
+    {
+      "id": "B-101",
+      "type": "workstream",
+      "label": "Context Execution Handshake Snapshot Normalization",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md"
+    },
+    {
+      "id": "B-102",
+      "type": "workstream",
+      "label": "Codex Claude Execution Contract Parity",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-16-codex-claude-execution-contract-parity.md"
+    },
+    {
+      "id": "B-103",
+      "type": "workstream",
+      "label": "Execution Snapshot Reuse and Hot Path Cost Reduction",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md"
+    },
+    {
+      "id": "B-104",
+      "type": "workstream",
+      "label": "Execution Alignment Release Proof and Governance Closure",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md"
+    },
+    {
       "id": "artifact:.github/workflows/release.yml",
       "type": "artifact",
       "label": ".github/workflows/release.yml",
@@ -6682,9 +7123,9 @@
     {
       "id": "diagram:D-030",
       "type": "diagram",
-      "label": "Execution Governance Engine Stack",
+      "label": "Execution Engine Stack",
       "diagram_id": "D-030",
-      "file": "odylith/atlas/source/odylith-execution-governance-engine-stack.mmd"
+      "file": "odylith/atlas/source/odylith-execution-engine-stack.mmd"
     },
     {
       "id": "diagram:D-031",
@@ -7173,6 +7614,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
     },
     {
       "id": "release:release-0-1-11",
@@ -9271,6 +9718,16 @@
     },
     {
       "source": "B-072",
+      "target": "B-099",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-072",
+      "target": "B-100",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-072",
       "target": "diagram:D-002",
       "edge_type": "diagram_linkage"
     },
@@ -9581,6 +10038,16 @@
     },
     {
       "source": "B-084",
+      "target": "B-099",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-084",
+      "target": "B-102",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-084",
       "target": "diagram:D-030",
       "edge_type": "diagram_linkage"
     },
@@ -9676,6 +10143,11 @@
     },
     {
       "source": "B-091",
+      "target": "B-103",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-091",
       "target": "diagram:D-005",
       "edge_type": "diagram_linkage"
     },
@@ -9693,6 +10165,16 @@
       "source": "B-091",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-092",
+      "target": "B-099",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-092",
+      "target": "B-100",
+      "edge_type": "depends_on"
     },
     {
       "source": "B-092",
@@ -9717,6 +10199,21 @@
     {
       "source": "B-093",
       "target": "B-092",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-093",
+      "target": "B-099",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-093",
+      "target": "B-100",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-093",
+      "target": "B-104",
       "edge_type": "depends_on"
     },
     {
@@ -9763,6 +10260,156 @@
       "source": "B-098",
       "target": "plan:odylith/technical-plans/done/2026-04/2026-04-15-radar-backlog-detail-fail-closed-completeness-and-authoring-hardening.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-099",
+      "target": "B-100",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-099",
+      "target": "B-101",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-099",
+      "target": "B-102",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-099",
+      "target": "B-103",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-099",
+      "target": "B-104",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-099",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "diagram:D-031",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-100",
+      "target": "B-101",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-100",
+      "target": "B-102",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-100",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-100",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-100",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-100",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-101",
+      "target": "B-102",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-101",
+      "target": "B-103",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-101",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-101",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-102",
+      "target": "B-103",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-102",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-102",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-102",
+      "target": "diagram:D-031",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-103",
+      "target": "B-104",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-103",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-103",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-104",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-104",
+      "target": "diagram:D-024",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-104",
+      "target": "diagram:D-030",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-104",
+      "target": "diagram:D-031",
+      "edge_type": "diagram_linkage"
     }
   ],
   "coverage": {
@@ -10451,6 +11098,48 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-099": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 4,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-100": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 3,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-101": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-102": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 3,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-103": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 2,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-104": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 4,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -10502,15 +11191,15 @@
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 98,
+    "workstream_count": 104,
     "release_count": 2,
     "active_release_assignment_count": 9,
-    "execution_program_count": 1,
-    "execution_wave_count": 6,
-    "node_count": 240,
-    "edge_count": 512,
+    "execution_program_count": 2,
+    "execution_wave_count": 11,
+    "node_count": 247,
+    "edge_count": 552,
     "warning_count": 4,
     "warning_item_count": 4
   },
-  "generated_utc": "2026-04-16 00:35:51Z"
+  "generated_utc": "2026-04-16 20:17:39Z"
 }

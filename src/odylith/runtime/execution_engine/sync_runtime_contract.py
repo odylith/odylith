@@ -28,7 +28,7 @@ def _repo_root(payload: Mapping[str, Any] | None = None) -> Path | None:
     return None
 
 
-def build_execution_governance_runtime_contract(
+def build_execution_engine_runtime_contract(
     *,
     payload: Mapping[str, Any] | None = None,
     snapshot: Mapping[str, Any],
@@ -53,7 +53,7 @@ def build_execution_governance_runtime_contract(
     contract["repo_root"] = str(repo_root)
     contract["provenance"] = derivation_provenance.build_derivation_provenance(
         repo_root=repo_root,
-        projection_scope="execution_governance",
+        projection_scope="execution_engine",
         projection_fingerprint=projection_fingerprint,
         sync_generation=int(session.generation if session is not None else 0),
         code_version=code_version,

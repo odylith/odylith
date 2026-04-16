@@ -33,7 +33,7 @@ The canonical public proof compares two host-matched lanes on the same task:
 - `odylith_on`
   the proof host runs with the full Odylith assistance stack: grounding,
   narrowed evidence, repo-local memory, governance surfaces,
-  execution-governance posture, truthful next-move guidance, and bounded
+  execution-engine posture, truthful next-move guidance, and bounded
   orchestration or recovery policy.
 - `odylith_off`
   is the public name for the raw host CLI lane. Internally the report may
@@ -159,7 +159,7 @@ holds these constant explicitly:
 The declared lane difference is explicit, not hidden:
 
 - `odylith_on` may use declared Odylith affordances such as selected docs,
-  execution-governance posture, and scenario-declared focused checks
+  execution-engine posture, and scenario-declared focused checks
 - any preflight evidence injected into the Odylith lane must come from checks
   executed inside the disposable benchmark workspace and be surfaced in the
   report

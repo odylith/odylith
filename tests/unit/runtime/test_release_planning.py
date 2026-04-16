@@ -385,7 +385,7 @@ def test_release_authoring_json_output_renders_list_and_show(
     assert show_payload["release"]["inherited_name"] == "Launch Title"
 
 
-def test_release_create_json_emits_execution_governance_payload(
+def test_release_create_json_emits_execution_engine_payload(
     tmp_path: Path,
     capsys,  # noqa: ANN001
 ) -> None:
@@ -409,6 +409,6 @@ def test_release_create_json_emits_execution_governance_payload(
     )
 
     payload = json.loads(capsys.readouterr().out)
-    assert payload["execution_governance"]["admissibility"]["outcome"] == "admit"
-    assert payload["execution_governance"]["contract"]["authoritative_lane"] == "governance.release_planning.authoritative"
-    assert payload["execution_governance"]["contract"]["host_profile"]["host_family"]
+    assert payload["execution_engine"]["admissibility"]["outcome"] == "admit"
+    assert payload["execution_engine"]["contract"]["authoritative_lane"] == "governance.release_planning.authoritative"
+    assert payload["execution_engine"]["contract"]["host_profile"]["host_family"]

@@ -10,6 +10,7 @@
     "D-019",
     "D-020",
     "D-025",
+    "D-030",
     "D-024",
     "D-037",
     "D-001",
@@ -30,7 +31,6 @@
     "D-032",
     "D-026",
     "D-027",
-    "D-030",
     "D-031",
     "D-033",
     "D-034",
@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 40,
-    "mapped_workstream_evidence_count": 10,
+    "explicit_event_count": 41,
+    "mapped_workstream_evidence_count": 11,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 7,
+    "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 41
+    "timeline_event_count": 42
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -54,19 +54,65 @@
   "timeline": [
     {
       "artifacts": [
-        "src/odylith/runtime/context_engine/odylith_context_engine.py"
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_delivery_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_packet_bootstrap_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_packet_finalize_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_registry_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
+        "src/odylith/runtime/context_engine/session_bootstrap_payload_compactor.py"
       ],
       "confidence": "high",
-      "event_index": 425,
+      "event_index": 549,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-context-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/context_engine/odylith_context_engine.py",
-      "ts_iso": "2026-04-16T09:10:05-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md, odylith/runtime/source/optimization-evaluation-corpus.v1.json +9 more",
+      "ts_iso": "2026-04-16T13:17:46-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/programs/B-099.execution-waves.v1.json",
+        "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+      ],
+      "confidence": "high",
+      "event_index": 542,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.",
+      "ts_iso": "2026-04-16T13:15:08-07:00",
+      "workstreams": [
+        "B-099",
+        "B-100"
+      ]
     },
     {
       "artifacts": [
@@ -146,7 +192,6 @@
       "kind": "decision",
       "mapped_components": [
         "benchmark",
-        "execution-governance",
         "odylith",
         "odylith-context-engine",
         "radar"
@@ -174,7 +219,6 @@
       "kind": "implementation",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "odylith",
         "odylith-context-engine",
         "release",
@@ -203,7 +247,6 @@
       ],
       "kind": "implementation",
       "mapped_components": [
-        "execution-governance",
         "odylith",
         "odylith-context-engine",
         "subagent-orchestrator",
@@ -1241,6 +1284,13 @@
     "B-058",
     "B-059",
     "B-063",
+    "B-082",
+    "B-099",
+    "B-100",
+    "B-101",
+    "B-102",
+    "B-103",
+    "B-104",
     "B-031",
     "B-072",
     "B-020",
@@ -1269,7 +1319,6 @@
     "B-069",
     "B-081",
     "B-083",
-    "B-082",
     "B-084",
     "B-093",
     "B-092",

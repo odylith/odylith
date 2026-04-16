@@ -1,6 +1,6 @@
 """Validate strict plan-to-workstream binding for new/touched active plans.
 
-This validator is intentionally fail-closed for execution governance:
+This validator is intentionally fail-closed for execution engine:
 - New/touched active plans cannot keep `Backlog = -`.
 - Bound workstreams must exist and remain in active execution statuses.
 - `promoted_to_plan` must point back to the active plan path.

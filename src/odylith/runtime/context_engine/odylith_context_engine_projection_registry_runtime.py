@@ -328,10 +328,10 @@ def load_registry_detail(
     runtime_mode: str = "auto",
     detail_level: str = "full",
 ) -> dict[str, Any] | None:
-    token = str(component_id or "").strip().lower()
+    root = Path(repo_root).resolve()
+    token = component_registry.normalize_component_id(str(component_id or "").strip())
     if not token:
         return None
-    root = Path(repo_root).resolve()
     normalized_detail_level = str(detail_level or "").strip().lower()
     if normalized_detail_level == "grounding_light" and not _odylith_ablation_active(repo_root=root):
         def _load_runtime_detail() -> dict[str, Any] | None:

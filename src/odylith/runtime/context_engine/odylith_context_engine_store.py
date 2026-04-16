@@ -3632,8 +3632,8 @@ def _compact_context_dossier(
         "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
         "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
     }
-    _eg = runtime_surface_governance.compact_execution_governance_snapshot(
-        runtime_surface_governance.build_packet_execution_governance_snapshot(
+    _eg = runtime_surface_governance.compact_execution_engine_snapshot(
+        runtime_surface_governance.build_packet_execution_engine_snapshot(
             {
                 "packet_kind": "context_dossier",
                 "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
@@ -3642,7 +3642,7 @@ def _compact_context_dossier(
         )
     )
     if _eg:
-        result["execution_governance"] = _eg
+        result["execution_engine"] = _eg
     return result
 
 

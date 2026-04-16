@@ -52,9 +52,9 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 340px minmax(0, 1fr);
-      gap: 16px;
-      max-width: 1580px;
+      grid-template-columns: 400px minmax(0, 1fr);
+      gap: 18px;
+      max-width: 1640px;
       margin: 0 auto;
       padding: 20px;
     }
@@ -183,6 +183,17 @@
     .search:focus {
       outline: 2px solid rgba(14, 165, 163, 0.35);
       border-color: rgba(14, 165, 163, 0.45);
+    }
+
+    .filter-pair {
+      display: grid;
+      grid-template-columns: minmax(150px, 0.78fr) minmax(190px, 1fr);
+      gap: 10px;
+      align-items: end;
+    }
+
+    .filter-field {
+      min-width: 0;
     }
 
     .chip-row {
@@ -947,6 +958,10 @@
     }
 
     @media (max-width: 760px) {
+      .filter-pair {
+        grid-template-columns: 1fr;
+      }
+
       .diagram-facts {
         grid-template-columns: 1fr;
       }
@@ -972,11 +987,24 @@
         <div id="kindFilters" class="chip-row"></div>
       </div>
 
-      <div>
-        <p class="eyebrow">Workstream Filter</p>
-        <select id="workstreamFilter" class="search">
-          <option value="all">All Workstreams</option>
-        </select>
+      <div class="filter-pair" id="sortWorkstreamFilters">
+        <div class="filter-field">
+          <p class="eyebrow">Sort Filter</p>
+          <select id="sortFilter" class="search">
+            <option value="newest">Newest Diagram</option>
+            <option value="oldest">Oldest Diagram</option>
+            <option value="reviewed">Recently Reviewed</option>
+            <option value="title">Title A-Z</option>
+            <option value="freshness">Needs Update First</option>
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <p class="eyebrow">Workstream Filter</p>
+          <select id="workstreamFilter" class="search">
+            <option value="all">All Workstreams</option>
+          </select>
+        </div>
       </div>
 
       <div>
@@ -1164,7 +1192,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=6705dbcb2842"></script>
-  <script src="mermaid-app.v1.js?v=6705dbcb2842"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=0f64bd2bb683"></script>
+  <script src="mermaid-app.v1.js?v=0f64bd2bb683"></script>
 </body>
 </html>

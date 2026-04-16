@@ -15,10 +15,10 @@
     "empty_reasons": [],
     "explicit_event_count": 26,
     "mapped_workstream_evidence_count": 11,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 26
+    "timeline_event_count": 27
   },
   "name": "Release",
   "path_prefixes": [
@@ -44,6 +44,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/release_planning_authoring.py"
+      ],
+      "confidence": "high",
+      "event_index": 552,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/release_planning_authoring.py",
+      "ts_iso": "2026-04-16T12:49:09-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "README.md"
@@ -233,7 +249,6 @@
       "kind": "implementation",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "odylith",
         "odylith-context-engine",
         "release",

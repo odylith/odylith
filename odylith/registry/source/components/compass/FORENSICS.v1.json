@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 100,
-    "mapped_workstream_evidence_count": 41,
+    "explicit_event_count": 101,
+    "mapped_workstream_evidence_count": 42,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 100
+    "timeline_event_count": 101
   },
   "name": "Compass",
   "path_prefixes": [
@@ -51,6 +51,25 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 510,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "compass",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T18:24:09Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/intervention_engine/engine.py"
@@ -63,7 +82,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -87,7 +105,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -112,7 +129,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -137,7 +153,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -162,7 +177,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -187,7 +201,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -212,7 +225,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -237,7 +249,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -261,7 +272,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -286,7 +296,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -311,7 +320,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -335,7 +343,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -360,7 +367,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -385,7 +391,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -410,7 +415,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -435,7 +439,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -497,7 +500,6 @@
       "kind": "implementation",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -527,7 +529,6 @@
       "mapped_components": [
         "casebook",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -550,7 +551,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -574,7 +574,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -599,7 +598,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -624,7 +622,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -648,7 +645,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -673,7 +669,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -698,7 +693,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -722,7 +716,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -746,7 +739,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -770,7 +762,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -795,7 +786,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -820,7 +810,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar"
@@ -844,7 +833,6 @@
       "kind": "intervention_teaser",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter"
@@ -868,7 +856,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -891,7 +878,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -914,7 +900,6 @@
       "kind": "intervention_card",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],
@@ -976,7 +961,6 @@
       "kind": "decision",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter",
@@ -1144,7 +1128,6 @@
       "kind": "implementation",
       "mapped_components": [
         "compass",
-        "execution-governance",
         "odylith",
         "odylith-context-engine",
         "release",

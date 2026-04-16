@@ -307,12 +307,12 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
     )
     proof_reopen = proof_state_runtime.proof_reopen_signal(proof_state) if proof_state else {}
     proof_resolution_state = str(proof_state_resolution.get("state", "")).strip() or ("resolved" if proof_state else "none")
-    execution_governance_payload = (
-        dict(payload.get("execution_governance", {}))
-        if isinstance(payload.get("execution_governance"), Mapping)
-        else dict(context_packet.get("execution_governance", {}))
-        if isinstance(context_packet.get("execution_governance"), Mapping)
-        else runtime_surface_governance.build_packet_execution_governance_snapshot(
+    execution_engine_payload = (
+        dict(payload.get("execution_engine", {}))
+        if isinstance(payload.get("execution_engine"), Mapping)
+        else dict(context_packet.get("execution_engine", {}))
+        if isinstance(context_packet.get("execution_engine"), Mapping)
+        else runtime_surface_governance.build_packet_execution_engine_snapshot(
             payload=payload,
             context_packet=context_packet,
             routing_handoff=routing_handoff,
@@ -452,8 +452,8 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
         "path_tokens": path_tokens,
     }
     summary.update(
-        runtime_surface_governance.summary_fields_from_execution_governance(
-            execution_governance_payload
+        runtime_surface_governance.summary_fields_from_execution_engine(
+            execution_engine_payload
         )
     )
     degraded_reason = _repo_scan_degraded_reason(summary)

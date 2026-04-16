@@ -1226,9 +1226,9 @@ def _render_html(
 
     .layout {
       display: grid;
-      grid-template-columns: 340px minmax(0, 1fr);
-      gap: 16px;
-      max-width: 1580px;
+      grid-template-columns: 400px minmax(0, 1fr);
+      gap: 18px;
+      max-width: 1640px;
       margin: 0 auto;
       padding: 20px;
     }
@@ -1315,6 +1315,17 @@ def _render_html(
     .search:focus {
       outline: 2px solid rgba(14, 165, 163, 0.35);
       border-color: rgba(14, 165, 163, 0.45);
+    }
+
+    .filter-pair {
+      display: grid;
+      grid-template-columns: minmax(150px, 0.78fr) minmax(190px, 1fr);
+      gap: 10px;
+      align-items: end;
+    }
+
+    .filter-field {
+      min-width: 0;
     }
 
     .chip-row {
@@ -1818,6 +1829,10 @@ def _render_html(
     }
 
     @media (max-width: 760px) {
+      .filter-pair {
+        grid-template-columns: 1fr;
+      }
+
       .diagram-facts {
         grid-template-columns: 1fr;
       }
@@ -1843,11 +1858,24 @@ def _render_html(
         <div id="kindFilters" class="chip-row"></div>
       </div>
 
-      <div>
-        <p class="eyebrow">Workstream Filter</p>
-        <select id="workstreamFilter" class="search">
-          <option value="all">All Workstreams</option>
-        </select>
+      <div class="filter-pair" id="sortWorkstreamFilters">
+        <div class="filter-field">
+          <p class="eyebrow">Sort Filter</p>
+          <select id="sortFilter" class="search">
+            <option value="newest">Newest Diagram</option>
+            <option value="oldest">Oldest Diagram</option>
+            <option value="reviewed">Recently Reviewed</option>
+            <option value="title">Title A-Z</option>
+            <option value="freshness">Needs Update First</option>
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <p class="eyebrow">Workstream Filter</p>
+          <select id="workstreamFilter" class="search">
+            <option value="all">All Workstreams</option>
+          </select>
+        </div>
       </div>
 
       <div>
@@ -2011,6 +2039,7 @@ def _render_html(
 
     const searchEl = document.getElementById("search");
     const kindFiltersEl = document.getElementById("kindFilters");
+    const sortFilterEl = document.getElementById("sortFilter");
     const workstreamFilterEl = document.getElementById("workstreamFilter");
     const listEl = document.getElementById("diagramList");
 
@@ -2055,6 +2084,7 @@ def _render_html(
     let activeIndex = 0;
     let selectedDiagramId = "";
     let kindFilter = "all";
+    let sortFilter = "newest";
     let freshnessFilter = "all";
     let workstreamFilter = "all";
     let activeDiagram = null;
@@ -2076,6 +2106,8 @@ def _render_html(
     const DIAGRAM_COMPACT_RE = /^D(\\d{3,})$/;
     const SIDEBAR_PREF_KEY = "mermaid.sidebar.collapsed";
     const TOOLING_BASE_HREF = __ODYLITH_TOOLING_BASE_HREF__;
+    const SORT_DEFAULT = "newest";
+    const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);
     __ODYLITH_ATLAS_QUICK_TOOLTIP_RUNTIME__
 
     function normalizeSearchToken(value) {
@@ -2108,6 +2140,45 @@ def _render_html(
         return `D-${compact[1]}`;
       }
       return "";
+    }
+
+    function canonicalizeSortToken(value) {
+      const token = String(value || "").trim().toLowerCase();
+      return SORT_TOKENS.has(token) ? token : SORT_DEFAULT;
+    }
+
+    function diagramSequence(diagram) {
+      const match = canonicalizeDiagramId(diagram && diagram.diagram_id).match(/^D-(\\d+)$/);
+      return match ? Number(match[1]) : 0;
+    }
+
+    function compareText(left, right) {
+      const a = String(left || "").toLowerCase();
+      const b = String(right || "").toLowerCase();
+      return a > b ? 1 : (a < b ? -1 : 0);
+    }
+
+    function firstNonZero(...values) {
+      return values.find((value) => Number(value) !== 0) || 0;
+    }
+
+    function sortDiagrams(rows) {
+      const token = canonicalizeSortToken(sortFilter);
+      return [...rows].sort((left, right) => {
+        const newest = diagramSequence(right) - diagramSequence(left);
+        const oldest = diagramSequence(left) - diagramSequence(right);
+        const reviewed = compareText(right.last_reviewed_utc, left.last_reviewed_utc);
+        const title = compareText(left.title, right.title);
+        if (token === "oldest") return firstNonZero(oldest, compareText(left.last_reviewed_utc, right.last_reviewed_utc), title);
+        if (token === "reviewed") return firstNonZero(reviewed, newest, title);
+        if (token === "title") return firstNonZero(title, newest);
+        if (token === "freshness") {
+          const stale = (left.freshness === "stale" ? 0 : 1) - (right.freshness === "stale" ? 0 : 1);
+          const age = Number(right.review_age_days || 0) - Number(left.review_age_days || 0);
+          return firstNonZero(stale, age, newest, title);
+        }
+        return firstNonZero(newest, reviewed, title);
+      });
     }
 
     function ownerWorkstreamsForDiagram(diagram) {
@@ -2615,6 +2686,9 @@ def _render_html(
         button.className = "diagram-btn";
         button.type = "button";
         button.setAttribute("data-diagram", diagram.diagram_id);
+        button.setAttribute("data-diagram-reviewed", diagram.last_reviewed_utc || "");
+        button.setAttribute("data-diagram-freshness", diagram.freshness || "");
+        button.setAttribute("data-diagram-review-age", String(diagram.review_age_days || 0));
         const tooltip = diagramButtonTooltip(diagram);
         button.setAttribute("data-tooltip", tooltip);
         button.setAttribute("aria-label", tooltip);
@@ -2675,12 +2749,12 @@ def _render_html(
       });
     }
 
-    function applyFilters() {
+    function applyFilters(options = {}) {
       const needle = String(searchEl.value || "").trim().toLowerCase();
       const normalizedNeedle = normalizeSearchToken(needle);
-      normalizeSelectedDiagramWorkstreamFilter();
+      if (options.normalizeWorkstreamFilter !== false) normalizeSelectedDiagramWorkstreamFilter();
       const selectedToken = canonicalizeDiagramId(selectedDiagramId);
-      activeList = allDiagrams.filter((diagram) => {
+      activeList = sortDiagrams(allDiagrams.filter((diagram) => {
         const diagramToken = canonicalizeDiagramId(diagram.diagram_id);
         if (kindFilter !== "all" && diagram.kind !== kindFilter) {
           return false;
@@ -2720,7 +2794,7 @@ def _render_html(
         }
         const normalizedText = normalizeSearchToken(textParts.join(" "));
         return normalizedText.includes(normalizedNeedle);
-      });
+      }));
 
       if (!activeList.length && selectedToken) {
         const fallback = allDiagrams.find(
@@ -2820,9 +2894,14 @@ def _render_html(
     });
 
     searchEl.addEventListener("input", applyFilters);
+    sortFilterEl.addEventListener("change", () => {
+      sortFilter = canonicalizeSortToken(sortFilterEl.value || SORT_DEFAULT);
+      sortFilterEl.value = sortFilter;
+      applyFilters();
+    });
     workstreamFilterEl.addEventListener("change", () => {
       workstreamFilter = workstreamFilterEl.value || "all";
-      applyFilters();
+      applyFilters({ normalizeWorkstreamFilter: false });
       syncAtlasNavigation();
     });
 
@@ -2958,6 +3037,8 @@ def _render_html(
     const params = new URLSearchParams(window.location.search);
     const paramWorkstream = (params.get("workstream") || "").trim();
     const paramDiagram = (params.get("diagram") || "").trim();
+    sortFilter = canonicalizeSortToken(params.get("sort") || SORT_DEFAULT);
+    sortFilterEl.value = sortFilter;
     if (WORKSTREAM_ID_RE.test(paramWorkstream)) {
       workstreamFilter = paramWorkstream;
     }

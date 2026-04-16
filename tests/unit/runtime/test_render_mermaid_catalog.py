@@ -85,6 +85,30 @@ def test_render_mermaid_catalog_indexes_diagram_ids_for_short_search_tokens() ->
     assert "diagramToken," in html
 
 
+def test_render_mermaid_catalog_defaults_to_newest_diagram_sort_filter() -> None:
+    html = renderer._render_html(  # noqa: SLF001
+        diagrams=[],
+        stats={"total": 0, "fresh": 0, "stale": 0},
+        max_review_age_days=21,
+        tooltip_lookup={},
+        generated_utc="2026-03-27T05:42:32Z",
+        brand_head_html="",
+        tooling_base_href="../index.html",
+    )
+
+    assert 'id="sortFilter"' in html
+    assert 'id="sortWorkstreamFilters"' in html
+    assert "grid-template-columns: 400px minmax(0, 1fr);" in html
+    assert "grid-template-columns: minmax(150px, 0.78fr) minmax(190px, 1fr);" in html
+    assert '<option value="newest">Newest Diagram</option>' in html
+    assert 'let sortFilter = "newest";' in html
+    assert 'const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);' in html
+    assert "function sortDiagrams(rows)" in html
+    assert "applyFilters({ normalizeWorkstreamFilter: false });" in html
+    assert "activeList = sortDiagrams(allDiagrams.filter((diagram) => {" in html
+    assert 'button.setAttribute("data-diagram-reviewed", diagram.last_reviewed_utc || "");' in html
+
+
 def test_render_mermaid_catalog_prefers_readable_initial_view() -> None:
     html = renderer._render_html(  # noqa: SLF001
         diagrams=[],

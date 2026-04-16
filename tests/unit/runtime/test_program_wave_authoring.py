@@ -173,7 +173,7 @@ def test_program_create_scaffolds_program_and_updates_execution_model(tmp_path: 
     assert payload["waves"][1]["depends_on"] == ["W1"]
 
 
-def test_program_create_json_emits_execution_governance_payload(
+def test_program_create_json_emits_execution_engine_payload(
     tmp_path: Path,
     capsys,  # noqa: ANN001
 ) -> None:
@@ -183,9 +183,9 @@ def test_program_create_json_emits_execution_governance_payload(
 
     assert rc == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["execution_governance"]["admissibility"]["outcome"] == "admit"
-    assert payload["execution_governance"]["contract"]["authoritative_lane"] == "governance.program_wave.authoritative"
-    assert payload["execution_governance"]["contract"]["host_profile"]["host_family"]
+    assert payload["execution_engine"]["admissibility"]["outcome"] == "admit"
+    assert payload["execution_engine"]["contract"]["authoritative_lane"] == "governance.program_wave.authoritative"
+    assert payload["execution_engine"]["contract"]["host_profile"]["host_family"]
 
 
 def test_program_status_and_next_fail_closed_when_program_file_is_missing(

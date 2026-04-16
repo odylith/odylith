@@ -7,10 +7,7 @@ Last updated (UTC): 2026-04-16
 
 - Component id: `execution-engine`
 - Canonical product name: Execution Engine
-- Historical name: Execution Governance
-- Public aliases: `execution-engine`, `execution-engine-runtime`,
-  `execution-policy-runtime`, `execution-governance-engine`,
-  `execution-governance`, `admissibility-runtime`
+- Accepted id: `execution-engine`
 - Primary source root: `src/odylith/runtime/execution_engine/`
 - Public overview: `docs/EXECUTION_ENGINE.md`
 - Core diagrams:
@@ -18,12 +15,10 @@ Last updated (UTC): 2026-04-16
   - `D-030` Execution Engine Stack
   - `D-031` Runtime Profile Ladder
 
-The Registry uses `execution-engine` as the canonical component id. The
-historical `execution-governance` id remains an alias so older workstreams,
-diagrams, and links can still be interpreted. In product language, "Execution
-Engine" and "Execution Governance" refer to the same runtime boundary.
-"Execution Governance" is the policy discipline; "Execution Engine" is the
-component that materializes it.
+The Registry uses `execution-engine` as the only component id. Prior naming
+lanes are not supported component aliases for new runtime, benchmark, or
+Registry lookup behavior; callers must use `execution-engine` and fail closed
+when they cannot resolve that identity.
 
 ## Purpose
 
@@ -104,7 +99,7 @@ state.
 - history-rule normalization from Casebook, packet failure classes, and proof
   memory
 - validation-matrix synthesis
-- compact execution-governance summaries for runtime surfaces
+- compact execution-engine summaries for runtime surfaces
 - runtime reuse metadata for governed sync sessions
 - local and serial lane guards for delegation and parallel fan-out
 - thin execution-wave authoring hooks that write the canonical wave contract
@@ -292,14 +287,14 @@ which claim blocked execution.
 
 ### `sync_runtime_contract.py`
 
-Adds runtime provenance for governed sync. Execution-governance snapshots
+Adds runtime provenance for governed sync. Execution Engine snapshots
 built inside an active sync session must carry reuse scope and sync
 generation so surfaces can say whether they reused active governed state or
 built a standalone packet snapshot.
 
 ### `runtime_surface_governance.py`
 
-Builds the compact execution-governance snapshot from a Context Engine packet.
+Builds the compact execution-engine snapshot from a Context Engine packet.
 It is the main integration adapter between packet truth and execution policy.
 It:
 
@@ -324,7 +319,7 @@ together.
 ### `runtime_lane_policy.py`
 
 Provides local guards for delegation and parallel fan-out. The guards consume
-compact execution-governance summaries and block delegation or parallelism
+compact execution-engine summaries and block delegation or parallelism
 when the slice needs re-anchor, has contradictions, is waiting on an external
 dependency, is on a verify or recover critical path, lacks writable consumer
 targets, has destructive or incomplete closure, or is running on a host that
@@ -480,40 +475,40 @@ when lane policy permits mutations.
 ## Sync And Surface Contract
 
 Compact packet, shell, Compass, Registry, router, orchestrator, and
-remediator summaries must read the same execution-governance snapshot instead
+remediator summaries must read the same execution-engine snapshot instead
 of deriving local policy state independently.
 
 Summary fields include:
 
-- `execution_governance_present`
-- `execution_governance_objective`
-- `execution_governance_authoritative_lane`
-- `execution_governance_outcome`
-- `execution_governance_requires_reanchor`
-- `execution_governance_mode`
-- `execution_governance_next_move`
-- `execution_governance_blocker`
-- `execution_governance_closure`
-- `execution_governance_wait_status`
-- `execution_governance_resume_token`
-- `execution_governance_validation_archetype`
-- `execution_governance_validation_derived_from`
-- `execution_governance_contradiction_count`
-- `execution_governance_history_rule_count`
-- `execution_governance_pressure_signals`
-- `execution_governance_nearby_denial_actions`
-- `execution_governance_host_family`
-- `execution_governance_host_delegation_style`
-- `execution_governance_host_supports_native_spawn`
-- `execution_governance_host_supports_interrupt`
-- `execution_governance_host_supports_artifact_paths`
-- `execution_governance_target_lane`
-- `execution_governance_has_writable_targets`
-- `execution_governance_requires_more_consumer_context`
-- `execution_governance_commentary_mode`
-- `execution_governance_runtime_reuse_scope`
-- `execution_governance_runtime_invalidated_by_step`
-- `execution_governance_context_pressure`
+- `execution_engine_present`
+- `execution_engine_objective`
+- `execution_engine_authoritative_lane`
+- `execution_engine_outcome`
+- `execution_engine_requires_reanchor`
+- `execution_engine_mode`
+- `execution_engine_next_move`
+- `execution_engine_blocker`
+- `execution_engine_closure`
+- `execution_engine_wait_status`
+- `execution_engine_resume_token`
+- `execution_engine_validation_archetype`
+- `execution_engine_validation_derived_from`
+- `execution_engine_contradiction_count`
+- `execution_engine_history_rule_count`
+- `execution_engine_pressure_signals`
+- `execution_engine_nearby_denial_actions`
+- `execution_engine_host_family`
+- `execution_engine_host_delegation_style`
+- `execution_engine_host_supports_native_spawn`
+- `execution_engine_host_supports_interrupt`
+- `execution_engine_host_supports_artifact_paths`
+- `execution_engine_target_lane`
+- `execution_engine_has_writable_targets`
+- `execution_engine_requires_more_consumer_context`
+- `execution_engine_commentary_mode`
+- `execution_engine_runtime_reuse_scope`
+- `execution_engine_runtime_invalidated_by_step`
+- `execution_engine_context_pressure`
 
 New fields must be compact, deterministic, and no-op quiet. Surface refreshes
 must not churn when the logical execution snapshot has not changed.
@@ -602,7 +597,7 @@ Shell, Compass, packet, router, or remediator code explains execution posture
 by re-deriving local policy instead of reading the shared summary.
 
 Required response: replace surface-local policy with
-`summary_fields_from_execution_governance` or the compact snapshot and add
+`summary_fields_from_execution_engine` or the compact snapshot and add
 surface regression coverage.
 
 ### Host Drift
@@ -654,7 +649,7 @@ planned action through admissibility before execution.
 
 Focused runtime validation:
 
-- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_execution_governance.py`
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_execution_engine.py`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_program_wave_authoring.py`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py`
 
@@ -672,21 +667,21 @@ For changes that alter packet integration or host behavior, also run the
 relevant Context Engine packet tests and host-runtime contract tests.
 
 ## Requirements Trace
-
-This section captures synchronized requirement and contract signals derived
-from component-linked timeline evidence.
+This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- No synchronized requirement or contract signals yet.
+- **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
+  - Scope: B-099, B-100
+  - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
 
-- 2026-04-09: Promoted execution governance into a first-class Registry component so Odylith can turn grounded truth into admissible next-action control, preserve hard user constraints, and keep the shared execution contract host-general across Codex and Claude Code. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
-- 2026-04-09: Added shared runtime-lane policy and compact surface summaries so packet reads, router or orchestrator guards, shell or Compass posture, and deterministic remediation all consume the same execution-governance snapshot instead of re-deriving local policy. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
-- 2026-04-10: Expanded the runtime contract so packet summaries can carry structured `turn_context`, lane-fenced `target_resolution`, and `presentation_policy` through the shared execution-governance snapshot. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
+- 2026-04-09: Promoted execution engine into a first-class Registry component so Odylith can turn grounded truth into admissible next-action control, preserve hard user constraints, and keep the shared execution contract host-general across Codex and Claude Code. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-09: Added shared runtime-lane policy and compact surface summaries so packet reads, router or orchestrator guards, shell or Compass posture, and deterministic remediation all consume the same execution-engine snapshot instead of re-deriving local policy. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-10: Expanded the runtime contract so packet summaries can carry structured `turn_context`, lane-fenced `target_resolution`, and `presentation_policy` through the shared execution-engine snapshot. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
 - 2026-04-11: Grew the execution profile ladder to a `(host_family, profile) -> (model, reasoning_effort)` map so Claude delegation resolves to haiku, sonnet, or opus while Codex tuples stay byte-identical, and flipped the host-capability contract to declare `supports_explicit_model_selection=True` for both validated host families. (Plan: [B-084](odylith/radar/radar.html?view=plan&workstream=B-084), Bug: [CB-103](odylith/casebook/casebook.html?view=bug&bug=CB-103))
 - 2026-04-12: Hardened the core engine with inline user-correction promotion, richer closure domains, typed pressure signals, sync-aware runtime provenance, and shared execution-event shaping so packet summaries, shell or Compass posture, and sync-backed surfaces all explain the same admissibility state. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072), Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
-- 2026-04-13: Optimized the execution engine for Claude Code with host-specific capability fields, Claude presentation defaults, context-pressure events, artifact-path lane guards, and two Claude-specific history-rule failure classes. Wired execution governance into all three delivery paths that previously bypassed it: the non-hot-path bootstrap compactor, the hot-path bootstrap delivery, and the context dossier delivery. 49 tests, 385 regression pass. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
-- 2026-04-14: Clarified Execution Governance as an intervention input rather than an intervention renderer: it now supplies shared admissibility and urgency posture to the new conversation-observation engine without owning the human voice or proposal UX. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
-- 2026-04-16: Renamed the Registry component id and dossier path from `execution-governance` to `execution-engine`, retained `execution-governance` as a compatibility alias, and expanded this spec into the detailed runtime contract for admissibility, frontier, closure, receipts, validation, host profile, and guard behavior. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-13: Optimized the execution engine for Claude Code with host-specific capability fields, Claude presentation defaults, context-pressure events, artifact-path lane guards, and two Claude-specific history-rule failure classes. Wired execution engine into all three delivery paths that previously bypassed it: the non-hot-path bootstrap compactor, the hot-path bootstrap delivery, and the context dossier delivery. 49 tests, 385 regression pass. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-14: Clarified Execution Engine as an intervention input rather than an intervention renderer: it now supplies shared admissibility and urgency posture to the new conversation-observation engine without owning the human voice or proposal UX. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-16: Cut the Registry and benchmark contract over to `execution-engine` as the only accepted component id, removed compatibility aliases, and kept the detailed runtime contract for admissibility, frontier, closure, receipts, validation, host profile, and guard behavior. (Plan: [B-100](odylith/radar/radar.html?view=plan&workstream=B-100))

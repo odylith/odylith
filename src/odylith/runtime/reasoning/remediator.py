@@ -95,7 +95,7 @@ def _packet_forbidden_moves(mode: str) -> list[str]:
     return moves
 
 
-def _packet_execution_governance(packet: Mapping[str, Any]) -> dict[str, Any]:
+def _packet_execution_engine(packet: Mapping[str, Any]) -> dict[str, Any]:
     mode = str(packet.get("execution_mode", "manual")).strip() or "manual"
     case_id = str(packet.get("case_id", "")).strip() or "case"
     goal = str(packet.get("goal", "")).strip() or f"Execute the approved remediation packet for {case_id}."
@@ -145,15 +145,15 @@ def _packet_execution_governance(packet: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _with_execution_governance(packet: Mapping[str, Any]) -> dict[str, Any]:
+def _with_execution_engine(packet: Mapping[str, Any]) -> dict[str, Any]:
     payload = dict(packet)
-    payload["execution_governance"] = _packet_execution_governance(payload)
+    payload["execution_engine"] = _packet_execution_engine(payload)
     return payload
 
 
 def _sync_packet(*, case_id: str, outcome_id: str, touched_paths: Sequence[str], goal: str) -> dict[str, Any]:
     fingerprint = _packet_fingerprint(case_id, outcome_id, "deterministic", touched_paths, goal)
-    return _with_execution_governance({
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -194,7 +194,7 @@ def _traceability_packet(*, case_id: str, outcome_id: str, goal: str) -> dict[st
         "odylith/radar/traceability-autofix-report.v1.json",
     ]
     fingerprint = _packet_fingerprint(case_id, outcome_id, "deterministic", touched_paths, goal)
-    return _with_execution_governance({
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -240,7 +240,7 @@ def _ai_packet(
     rollback_steps: Sequence[str],
 ) -> dict[str, Any]:
     fingerprint = _packet_fingerprint(case_id, outcome_id, "ai_engine", touched_paths, goal)
-    return _with_execution_governance({
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -287,7 +287,7 @@ def _hybrid_packet(
     constraints: Sequence[str],
 ) -> dict[str, Any]:
     fingerprint = _packet_fingerprint(case_id, outcome_id, "hybrid", touched_paths, goal)
-    return _with_execution_governance({
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -421,7 +421,7 @@ def compile_correction_packet(
         )
 
     fingerprint = _packet_fingerprint(case_id, outcome_id, "manual", touched_paths, prescriber_claim or decision_at_stake)
-    return _with_execution_governance({
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -454,19 +454,19 @@ def compile_correction_packet(
 def packet_summary(packet: Mapping[str, Any]) -> dict[str, Any]:
     """Return the small packet shape Odylith needs for posture and UI surfaces."""
 
-    execution_governance = (
-        dict(packet.get("execution_governance", {}))
-        if isinstance(packet.get("execution_governance"), Mapping)
+    execution_engine = (
+        dict(packet.get("execution_engine", {}))
+        if isinstance(packet.get("execution_engine"), Mapping)
         else {}
     )
     contract = (
-        dict(execution_governance.get("contract", {}))
-        if isinstance(execution_governance.get("contract"), Mapping)
+        dict(execution_engine.get("contract", {}))
+        if isinstance(execution_engine.get("contract"), Mapping)
         else {}
     )
     admissibility = (
-        dict(execution_governance.get("admissibility", {}))
-        if isinstance(execution_governance.get("admissibility"), Mapping)
+        dict(execution_engine.get("admissibility", {}))
+        if isinstance(execution_engine.get("admissibility"), Mapping)
         else {}
     )
     return {
@@ -483,9 +483,9 @@ def packet_summary(packet: Mapping[str, Any]) -> dict[str, Any]:
             if str(token).strip()
         ],
         "status": str(packet.get("status", "draft")).strip() or "draft",
-        "execution_governance_outcome": str(admissibility.get("outcome", "")).strip(),
-        "execution_governance_mode": str(contract.get("execution_mode", "")).strip(),
-        "execution_governance_authoritative_lane": str(contract.get("authoritative_lane", "")).strip(),
+        "execution_engine_outcome": str(admissibility.get("outcome", "")).strip(),
+        "execution_engine_mode": str(contract.get("execution_mode", "")).strip(),
+        "execution_engine_authoritative_lane": str(contract.get("authoritative_lane", "")).strip(),
     }
 
 
@@ -513,14 +513,14 @@ def apply_deterministic_packet(*, repo_root: Path, packet: Mapping[str, Any]) ->
             "returncode": 2,
         }
 
-    execution_governance = (
-        dict(packet.get("execution_governance", {}))
-        if isinstance(packet.get("execution_governance"), Mapping)
-        else _packet_execution_governance(packet)
+    execution_engine = (
+        dict(packet.get("execution_engine", {}))
+        if isinstance(packet.get("execution_engine"), Mapping)
+        else _packet_execution_engine(packet)
     )
     admissibility = (
-        dict(execution_governance.get("admissibility", {}))
-        if isinstance(execution_governance.get("admissibility"), Mapping)
+        dict(execution_engine.get("admissibility", {}))
+        if isinstance(execution_engine.get("admissibility"), Mapping)
         else {}
     )
     if str(admissibility.get("outcome", "")).strip() not in {"", "admit"}:
@@ -531,7 +531,7 @@ def apply_deterministic_packet(*, repo_root: Path, packet: Mapping[str, Any]) ->
                 f"{str(admissibility.get('rationale', '')).strip() or 'contract denied execution'}"
             ),
             "returncode": 2,
-            "execution_governance": execution_governance,
+            "execution_engine": execution_engine,
         }
 
     for command in commands:
@@ -553,7 +553,7 @@ def apply_deterministic_packet(*, repo_root: Path, packet: Mapping[str, Any]) ->
         "ok": True,
         "error": "",
         "returncode": 0,
-        "execution_governance": execution_governance,
+        "execution_engine": execution_engine,
     }
 
 

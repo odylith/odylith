@@ -458,7 +458,7 @@ def _history_rule_hits(
     )
 
 
-def build_packet_execution_governance_snapshot(
+def build_packet_execution_engine_snapshot(
     payload: Mapping[str, Any],
     *,
     context_packet: Mapping[str, Any] | None = None,
@@ -755,7 +755,7 @@ def build_packet_execution_governance_snapshot(
         )
         if decision.outcome != "admit"
     ][:3]
-    runtime_contract = sync_runtime_contract.build_execution_governance_runtime_contract(
+    runtime_contract = sync_runtime_contract.build_execution_engine_runtime_contract(
         payload=payload,
         snapshot={
             "contract": contract.to_dict(),
@@ -788,7 +788,7 @@ def build_packet_execution_governance_snapshot(
     }
 
 
-def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[str, Any]:
+def compact_execution_engine_snapshot(snapshot: Mapping[str, Any]) -> dict[str, Any]:
     contract = _mapping(snapshot.get("contract"))
     admissibility = _mapping(snapshot.get("admissibility"))
     frontier = _mapping(snapshot.get("frontier"))
@@ -890,100 +890,100 @@ def compact_execution_governance_snapshot(snapshot: Mapping[str, Any]) -> dict[s
     }
 
 
-def summary_fields_from_execution_governance(snapshot: Mapping[str, Any]) -> dict[str, Any]:
+def summary_fields_from_execution_engine(snapshot: Mapping[str, Any]) -> dict[str, Any]:
     if not snapshot:
         return {}
     if "contract" in snapshot:
-        compact = compact_execution_governance_snapshot(snapshot)
+        compact = compact_execution_engine_snapshot(snapshot)
     else:
         compact = dict(snapshot)
     return {
-        "execution_governance_present": bool(compact.get("present", True)),
-        "execution_governance_objective": _string(compact.get("objective")),
-        "execution_governance_authoritative_lane": _string(compact.get("authoritative_lane")),
-        "execution_governance_outcome": _string(compact.get("outcome")),
-        "execution_governance_requires_reanchor": bool(compact.get("requires_reanchor")),
-        "execution_governance_mode": _string(compact.get("mode")),
-        "execution_governance_next_move": _string(compact.get("next_move")),
-        "execution_governance_current_phase": _string(compact.get("current_phase")),
-        "execution_governance_last_successful_phase": _string(compact.get("last_successful_phase")),
-        "execution_governance_blocker": _string(compact.get("blocker")),
-        "execution_governance_closure": _string(compact.get("closure")),
-        "execution_governance_wait_status": _string(compact.get("wait_status")),
-        "execution_governance_wait_detail": _string(compact.get("wait_detail")),
-        "execution_governance_resume_token": _string(compact.get("resume_token")),
-        "execution_governance_validation_archetype": _string(compact.get("validation_archetype")),
-        "execution_governance_validation_minimum_pass_count": int(
+        "execution_engine_present": bool(compact.get("present", True)),
+        "execution_engine_objective": _string(compact.get("objective")),
+        "execution_engine_authoritative_lane": _string(compact.get("authoritative_lane")),
+        "execution_engine_outcome": _string(compact.get("outcome")),
+        "execution_engine_requires_reanchor": bool(compact.get("requires_reanchor")),
+        "execution_engine_mode": _string(compact.get("mode")),
+        "execution_engine_next_move": _string(compact.get("next_move")),
+        "execution_engine_current_phase": _string(compact.get("current_phase")),
+        "execution_engine_last_successful_phase": _string(compact.get("last_successful_phase")),
+        "execution_engine_blocker": _string(compact.get("blocker")),
+        "execution_engine_closure": _string(compact.get("closure")),
+        "execution_engine_wait_status": _string(compact.get("wait_status")),
+        "execution_engine_wait_detail": _string(compact.get("wait_detail")),
+        "execution_engine_resume_token": _string(compact.get("resume_token")),
+        "execution_engine_validation_archetype": _string(compact.get("validation_archetype")),
+        "execution_engine_validation_minimum_pass_count": int(
             compact.get("validation_minimum_pass_count", 0) or 0
         ),
-        "execution_governance_validation_derived_from": _strings(
+        "execution_engine_validation_derived_from": _strings(
             compact.get("validation_derived_from")
         ),
-        "execution_governance_event_count": int(compact.get("event_count", 0) or 0),
-        "execution_governance_contradiction_count": int(compact.get("contradiction_count", 0) or 0),
-        "execution_governance_history_rule_count": int(compact.get("history_rule_count", 0) or 0),
-        "execution_governance_history_rule_hits": _strings(compact.get("history_rule_hits")),
-        "execution_governance_pressure_signals": _strings(compact.get("pressure_signals")),
-        "execution_governance_nearby_denial_actions": _strings(
+        "execution_engine_event_count": int(compact.get("event_count", 0) or 0),
+        "execution_engine_contradiction_count": int(compact.get("contradiction_count", 0) or 0),
+        "execution_engine_history_rule_count": int(compact.get("history_rule_count", 0) or 0),
+        "execution_engine_history_rule_hits": _strings(compact.get("history_rule_hits")),
+        "execution_engine_pressure_signals": _strings(compact.get("pressure_signals")),
+        "execution_engine_nearby_denial_actions": _strings(
             compact.get("nearby_denial_actions")
         ),
-        "execution_governance_host_family": _string(compact.get("host_family")),
-        "execution_governance_model_family": _string(compact.get("model_family")),
-        "execution_governance_host_delegation_style": _string(compact.get("host_delegation_style")),
-        "execution_governance_host_supports_native_spawn": bool(
+        "execution_engine_host_family": _string(compact.get("host_family")),
+        "execution_engine_model_family": _string(compact.get("model_family")),
+        "execution_engine_host_delegation_style": _string(compact.get("host_delegation_style")),
+        "execution_engine_host_supports_native_spawn": bool(
             compact.get("host_supports_native_spawn")
         ),
-        "execution_governance_host_supports_interrupt": bool(
+        "execution_engine_host_supports_interrupt": bool(
             compact.get("host_supports_interrupt")
         ),
-        "execution_governance_host_supports_artifact_paths": bool(
+        "execution_engine_host_supports_artifact_paths": bool(
             compact.get("host_supports_artifact_paths")
         ),
-        "execution_governance_host_execution_hints": _strings(
+        "execution_engine_host_execution_hints": _strings(
             compact.get("host_execution_hints")
         ),
-        "execution_governance_turn_intent": _string(compact.get("turn_intent")),
-        "execution_governance_turn_active_tab": _string(compact.get("turn_active_tab")),
-        "execution_governance_turn_user_turn_id": _string(compact.get("turn_user_turn_id")),
-        "execution_governance_turn_supersedes_turn_id": _string(compact.get("turn_supersedes_turn_id")),
-        "execution_governance_turn_surface_count": int(compact.get("turn_surface_count", 0) or 0),
-        "execution_governance_turn_visible_text_count": int(
+        "execution_engine_turn_intent": _string(compact.get("turn_intent")),
+        "execution_engine_turn_active_tab": _string(compact.get("turn_active_tab")),
+        "execution_engine_turn_user_turn_id": _string(compact.get("turn_user_turn_id")),
+        "execution_engine_turn_supersedes_turn_id": _string(compact.get("turn_supersedes_turn_id")),
+        "execution_engine_turn_surface_count": int(compact.get("turn_surface_count", 0) or 0),
+        "execution_engine_turn_visible_text_count": int(
             compact.get("turn_visible_text_count", 0) or 0
         ),
-        "execution_governance_target_lane": _string(compact.get("target_lane")),
-        "execution_governance_candidate_target_count": int(
+        "execution_engine_target_lane": _string(compact.get("target_lane")),
+        "execution_engine_candidate_target_count": int(
             compact.get("candidate_target_count", 0) or 0
         ),
-        "execution_governance_diagnostic_anchor_count": int(
+        "execution_engine_diagnostic_anchor_count": int(
             compact.get("diagnostic_anchor_count", 0) or 0
         ),
-        "execution_governance_has_writable_targets": bool(compact.get("has_writable_targets")),
-        "execution_governance_requires_more_consumer_context": bool(
+        "execution_engine_has_writable_targets": bool(compact.get("has_writable_targets")),
+        "execution_engine_requires_more_consumer_context": bool(
             compact.get("requires_more_consumer_context")
         ),
-        "execution_governance_consumer_failover": _string(compact.get("consumer_failover")),
-        "execution_governance_commentary_mode": _string(compact.get("commentary_mode")),
-        "execution_governance_suppress_routing_receipts": bool(
+        "execution_engine_consumer_failover": _string(compact.get("consumer_failover")),
+        "execution_engine_commentary_mode": _string(compact.get("commentary_mode")),
+        "execution_engine_suppress_routing_receipts": bool(
             compact.get("suppress_routing_receipts")
         ),
-        "execution_governance_surface_fast_lane": bool(compact.get("surface_fast_lane")),
-        "execution_governance_runtime_built_from": _string(compact.get("runtime_built_from")),
-        "execution_governance_runtime_reuse_scope": _string(compact.get("runtime_reuse_scope")),
-        "execution_governance_runtime_sync_generation": int(
+        "execution_engine_surface_fast_lane": bool(compact.get("surface_fast_lane")),
+        "execution_engine_runtime_built_from": _string(compact.get("runtime_built_from")),
+        "execution_engine_runtime_reuse_scope": _string(compact.get("runtime_reuse_scope")),
+        "execution_engine_runtime_sync_generation": int(
             compact.get("runtime_sync_generation", 0) or 0
         ),
-        "execution_governance_runtime_settled_sync_session": bool(
+        "execution_engine_runtime_settled_sync_session": bool(
             compact.get("runtime_settled_sync_session")
         ),
-        "execution_governance_runtime_invalidated_by_step": _string(
+        "execution_engine_runtime_invalidated_by_step": _string(
             compact.get("runtime_invalidated_by_step")
         ),
-        "execution_governance_context_pressure": _string(compact.get("context_pressure")),
+        "execution_engine_context_pressure": _string(compact.get("context_pressure")),
     }
 
 
 __all__ = [
-    "build_packet_execution_governance_snapshot",
-    "compact_execution_governance_snapshot",
-    "summary_fields_from_execution_governance",
+    "build_packet_execution_engine_snapshot",
+    "compact_execution_engine_snapshot",
+    "summary_fields_from_execution_engine",
 ]

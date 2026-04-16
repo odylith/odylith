@@ -60,7 +60,6 @@
       "mapped_components": [
         "casebook",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter"
       ],

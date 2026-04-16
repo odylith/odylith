@@ -388,8 +388,8 @@ def test_finalized_bootstrap_payload_compactor_drops_duplicate_views() -> None:
     assert context_packet["packet_state"] == "gated_ambiguous"
     assert context_packet["retrieval_plan"] == {"ambiguity_class": "no_candidates"}
     assert context_packet["packet_quality"] == {"rc": "low"}
-    if "execution_governance" in context_packet:
-        assert isinstance(context_packet["execution_governance"], dict)
+    if "execution_engine" in context_packet:
+        assert isinstance(context_packet["execution_engine"], dict)
 
 
 def test_finalized_bootstrap_payload_compactor_preserves_turn_targets_and_anchor_followup() -> None:

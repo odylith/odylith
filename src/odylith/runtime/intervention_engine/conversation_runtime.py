@@ -390,17 +390,17 @@ def _request_context_payload(request: Any) -> dict[str, Any]:
 
 def _presentation_policy_snapshot(*, request: Any, adoption: Mapping[str, Any]) -> dict[str, Any]:
     context_payload = _request_context_payload(request)
-    execution_governance_summary = _nested_mapping(context_payload, "execution_governance_summary")
+    execution_engine_summary = _nested_mapping(context_payload, "execution_engine_summary")
     packet_summary = _nested_mapping(context_payload, "packet_summary")
     presentation_policy = _nested_mapping(context_payload, "presentation_policy")
     context_packet_presentation_policy = _nested_mapping(context_payload, "context_packet", "presentation_policy")
     return {
         "commentary_mode": _normalize_token(
             _first_present(
-                adoption.get("execution_governance_commentary_mode"),
-                _mapping_lookup(execution_governance_summary, "execution_governance_commentary_mode"),
-                _mapping_lookup(context_payload, "execution_governance_commentary_mode"),
-                _mapping_lookup(context_payload, "latest_execution_governance_commentary_mode"),
+                adoption.get("execution_engine_commentary_mode"),
+                _mapping_lookup(execution_engine_summary, "execution_engine_commentary_mode"),
+                _mapping_lookup(context_payload, "execution_engine_commentary_mode"),
+                _mapping_lookup(context_payload, "latest_execution_engine_commentary_mode"),
                 _mapping_lookup(packet_summary, "presentation_policy_commentary_mode"),
                 _mapping_lookup(presentation_policy, "commentary_mode"),
                 _mapping_lookup(context_packet_presentation_policy, "commentary_mode"),
@@ -408,10 +408,10 @@ def _presentation_policy_snapshot(*, request: Any, adoption: Mapping[str, Any]) 
         ),
         "suppress_routing_receipts": _bool_value(
             _first_present(
-                adoption.get("execution_governance_suppress_routing_receipts"),
-                _mapping_lookup(execution_governance_summary, "execution_governance_suppress_routing_receipts"),
-                _mapping_lookup(context_payload, "execution_governance_suppress_routing_receipts"),
-                _mapping_lookup(context_payload, "latest_execution_governance_suppress_routing_receipts"),
+                adoption.get("execution_engine_suppress_routing_receipts"),
+                _mapping_lookup(execution_engine_summary, "execution_engine_suppress_routing_receipts"),
+                _mapping_lookup(context_payload, "execution_engine_suppress_routing_receipts"),
+                _mapping_lookup(context_payload, "latest_execution_engine_suppress_routing_receipts"),
                 _mapping_lookup(packet_summary, "presentation_policy_suppress_routing_receipts"),
                 _mapping_lookup(presentation_policy, "suppress_routing_receipts"),
                 _mapping_lookup(context_packet_presentation_policy, "suppress_routing_receipts"),
@@ -419,10 +419,10 @@ def _presentation_policy_snapshot(*, request: Any, adoption: Mapping[str, Any]) 
         ),
         "surface_fast_lane": _bool_value(
             _first_present(
-                adoption.get("execution_governance_surface_fast_lane"),
-                _mapping_lookup(execution_governance_summary, "execution_governance_surface_fast_lane"),
-                _mapping_lookup(context_payload, "execution_governance_surface_fast_lane"),
-                _mapping_lookup(context_payload, "latest_execution_governance_surface_fast_lane"),
+                adoption.get("execution_engine_surface_fast_lane"),
+                _mapping_lookup(execution_engine_summary, "execution_engine_surface_fast_lane"),
+                _mapping_lookup(context_payload, "execution_engine_surface_fast_lane"),
+                _mapping_lookup(context_payload, "latest_execution_engine_surface_fast_lane"),
                 _mapping_lookup(packet_summary, "presentation_policy_surface_fast_lane"),
                 _mapping_lookup(presentation_policy, "surface_fast_lane"),
                 _mapping_lookup(context_packet_presentation_policy, "surface_fast_lane"),

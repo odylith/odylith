@@ -324,7 +324,7 @@ def _run_create(args: argparse.Namespace) -> dict[str, Any]:
         "dry_run": bool(args.dry_run),
         "release": release,
         "registry_path": str(state.registry_path),
-        "execution_governance": governance.to_dict(),
+        "execution_engine": governance.to_dict(),
     }
 
 
@@ -411,7 +411,7 @@ def _run_update(args: argparse.Namespace) -> dict[str, Any]:
         "dry_run": bool(args.dry_run),
         "release": updated,
         "registry_path": str(state.registry_path),
-        "execution_governance": governance.to_dict(),
+        "execution_engine": governance.to_dict(),
     }
 
 
@@ -509,7 +509,7 @@ def _event_mutation(
         "workstream_id": workstream_id,
         "workstream_release": dict(next_payload.get("workstreams", {}).get(workstream_id, {})),
         "event_log_path": str(next_state.event_log_path),
-        "execution_governance": governance.to_dict(),
+        "execution_engine": governance.to_dict(),
     }
 
 

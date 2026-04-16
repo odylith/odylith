@@ -1,5 +1,5 @@
 # Radar
-Last updated: 2026-04-15
+Last updated: 2026-04-16
 
 
 Last updated (UTC): 2026-04-15
@@ -287,6 +287,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
+  - Scope: B-099, B-100
+  - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
 - **2026-03-23 · Decision:** Successor created: B-280 reopens B-279 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
 - **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
@@ -297,8 +300,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/casebook/CURRENT_SPEC.md +1 more
 - **2026-03-20 · Decision:** Successor created: B-258 reopens B-256 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +1 more
-- **2026-03-20 · Decision:** Successor created: B-255 reopens B-253 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/compass/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

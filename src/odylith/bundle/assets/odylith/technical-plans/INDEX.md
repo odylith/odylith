@@ -1,6 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-15
+Last updated (UTC): 2026-04-16
 ## Active Plans
 
 | Plan | Status | Created | Updated | Backlog |
@@ -30,6 +30,7 @@ Last updated (UTC): 2026-04-15
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md` | In progress | 2026-04-12 | 2026-04-12 | `B-093` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md` | In progress | 2026-04-15 | 2026-04-15 | `B-097` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-14 | `B-096` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md` | In progress | 2026-04-16 | 2026-04-16 | `B-100` |
 
 ## Parked Plans
 

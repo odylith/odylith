@@ -38,7 +38,7 @@ agent reasons, plans, edits, or delegates.
 
 7. **Hand off the retained execution bridge**  
    Preserve `routing_handoff`, packet quality, and narrowing guidance so
-   orchestration and execution governance can act on the same grounded truth.
+   orchestration and execution engine can act on the same grounded truth.
 
 Common packet shapes include `bootstrap-session`, `impact`, `architecture`,
 `governance-slice`, `session-brief`, `context`, and `query`.

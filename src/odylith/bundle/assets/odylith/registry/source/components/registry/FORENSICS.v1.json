@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 26,
-    "mapped_workstream_evidence_count": 12,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 27,
+    "mapped_workstream_evidence_count": 13,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 26
+    "timeline_event_count": 28
   },
   "name": "Registry",
   "path_prefixes": [
@@ -47,6 +47,58 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/component_registry.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 551,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
+      "ts_iso": "2026-04-16T13:17:46-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/programs/B-099.execution-waves.v1.json",
+        "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+      ],
+      "confidence": "high",
+      "event_index": 542,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.",
+      "ts_iso": "2026-04-16T13:15:08-07:00",
+      "workstreams": [
+        "B-099",
+        "B-100"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/intervention_engine/engine.py"
@@ -60,7 +112,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -86,7 +137,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -112,7 +162,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -138,7 +187,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -164,7 +212,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -190,7 +237,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -249,7 +295,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -275,7 +320,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",
@@ -301,7 +345,6 @@
       "mapped_components": [
         "atlas",
         "compass",
-        "execution-governance",
         "governance-intervention-engine",
         "odylith-chatter",
         "radar",

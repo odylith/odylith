@@ -1,8 +1,8 @@
 # Odylith Context Engine
-Last updated: 2026-04-10
+Last updated: 2026-04-16
 
 
-Last updated (UTC): 2026-04-10
+Last updated (UTC): 2026-04-16
 
 ## Purpose
 Odylith Context Engine is the deterministic local grounding runtime for the
@@ -31,6 +31,9 @@ claims, and optionally materializes faster local and remote retrieval layers.
 - Admissibility or next-action control. It provides grounded truth and packets,
   but [Execution Engine](../execution-engine/CURRENT_SPEC.md) decides
   which next move is admissible.
+- Historical execution component identifiers. Context packets must carry
+  `execution-engine` when the packet addresses the Execution Engine boundary;
+  stale execution identifiers fail closed rather than being translated.
 
 ## Developer Mental Model
 - `src/odylith/runtime/context_engine/odylith_context_engine.py` is the public
@@ -69,6 +72,20 @@ claims, and optionally materializes faster local and remote retrieval layers.
 
 ## Public Command Surface
 Public entrypoint: `odylith context-engine`
+
+## Execution Engine Handshake
+- Context Engine owns the evidence cone: canonical component identity,
+  workstream and plan grounding, packet kind, route readiness, turn context,
+  target resolution, presentation policy, and recommended validation.
+- Execution Engine owns the action contract: admissibility outcome, execution
+  mode, truthful next move, closure posture, wait/resume semantics, validation
+  archetype, host profile, and delegation or parallelism guards.
+- The handoff key for this component boundary is strictly `execution-engine`.
+  Context Engine registry detail lookup, packet readiness, and benchmark packet
+  construction must not resolve stale execution identifiers into the canonical
+  component.
+  This fail-closed behavior prevents old names from silently producing
+  route-ready packets.
 
 ### Projection and daemon lifecycle
 - `warmup`
@@ -506,6 +523,9 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
+  - Scope: B-099, B-100
+  - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
 - **2026-03-23 · Decision:** Successor created: B-280 reopens B-279 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
 - **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
@@ -522,3 +542,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Added first-class release entities and selector resolution to the projection model so `context`, `query`, and governed read surfaces can resolve release ids, aliases, versions, tags, and unique exact names from one repo-local contract. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
 - 2026-04-09: Clarified the product boundary that Context Engine grounds repo truth and packets, while Execution Engine owns admissibility and next-action control. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-10: Added structured turn-intake carry-through so session packets can preserve `turn_context`, lane-fenced target resolution, and presentation policy across consumer and maintainer lanes. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
+- 2026-04-16: Added the Context Engine and Execution Engine alignment program and hard-cut the handoff to canonical `execution-engine` identity so stale execution identifiers fail closed before packet route readiness. (Plan: [B-099](odylith/radar/radar.html?view=plan&workstream=B-099), [B-100](odylith/radar/radar.html?view=plan&workstream=B-100))

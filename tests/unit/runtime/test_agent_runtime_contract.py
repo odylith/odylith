@@ -28,7 +28,7 @@ def test_timeline_event_id_uses_agent_prefix() -> None:
     )
 
 
-# Canonical Codex model tuples pinned by the B-072 execution-governance
+# Canonical Codex model tuples pinned by the B-072 execution-engine
 # contract. These must remain byte-identical across B-084 host-family
 # axis refactors; drift here is a Codex execution-ladder regression and
 # must be caught by this test before it reaches the router or orchestrator.

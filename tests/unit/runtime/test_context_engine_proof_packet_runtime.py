@@ -42,9 +42,9 @@ def test_compact_hot_path_runtime_packet_preserves_proof_state_metadata() -> Non
     assert compact["proof_state"]["lane_id"] == "proof-state-control-plane"
     assert compact["proof_state_resolution"]["state"] == "resolved"
     assert compact["claim_guard"]["highest_truthful_claim"] == "fixed live"
-    assert compact["context_packet"]["execution_governance"]["present"] is True
-    assert compact["context_packet"]["execution_governance"]["mode"] == "recover"
-    assert compact["context_packet"]["execution_governance"]["next_move"] == "recover.current_blocker"
+    assert compact["context_packet"]["execution_engine"]["present"] is True
+    assert compact["context_packet"]["execution_engine"]["mode"] == "recover"
+    assert compact["context_packet"]["execution_engine"]["next_move"] == "recover.current_blocker"
 
 
 def test_packet_summary_from_compact_payload_exposes_proof_state_fields() -> None:
@@ -88,12 +88,12 @@ def test_packet_summary_from_compact_payload_exposes_proof_state_fields() -> Non
     assert summary["claim_guard_hosted_frontier_advanced"] is True
     assert summary["claim_guard_claim_scope"] == "live"
     assert summary["claim_guard_gate_state"] == "allow_unqualified_resolution_terms"
-    assert summary["execution_governance_present"] is True
-    assert summary["execution_governance_outcome"] == "admit"
-    assert summary["execution_governance_mode"] == "recover"
-    assert summary["execution_governance_next_move"] == "recover.current_blocker"
-    assert summary["execution_governance_blocker"] == "Lambda permission lifecycle on ecs-drift-monitor invoke"
-    assert summary["execution_governance_validation_archetype"] == "recover"
+    assert summary["execution_engine_present"] is True
+    assert summary["execution_engine_outcome"] == "admit"
+    assert summary["execution_engine_mode"] == "recover"
+    assert summary["execution_engine_next_move"] == "recover.current_blocker"
+    assert summary["execution_engine_blocker"] == "Lambda permission lifecycle on ecs-drift-monitor invoke"
+    assert summary["execution_engine_validation_archetype"] == "recover"
 
 
 def test_packet_expectations_support_proof_state_contract_fields() -> None:

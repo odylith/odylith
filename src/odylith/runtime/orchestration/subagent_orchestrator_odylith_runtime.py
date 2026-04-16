@@ -336,7 +336,7 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
     auto_grounding = _nested_mapping(base, "orchestration_auto_grounding")
     runtime_execution = _nested_mapping(auto_grounding, "runtime_execution")
     odylith_write_policy = _nested_mapping(base, "odylith_write_policy")
-    execution_governance_summary = _nested_mapping(base, "execution_governance_summary")
+    execution_engine_summary = _nested_mapping(base, "execution_engine_summary")
     packet_summary = _nested_mapping(base, "packet_summary")
     target_resolution = _nested_mapping(base, "target_resolution")
     presentation_policy = _nested_mapping(base, "presentation_policy")
@@ -388,71 +388,71 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
         for token in odylith_write_policy.get("protected_roots", [])
         if str(token).strip().strip("/")
     ]
-    execution_governance_target_lane = _normalize_token(
+    execution_engine_target_lane = _normalize_token(
         _first_present(
-            _mapping_lookup(execution_governance_summary, "execution_governance_target_lane"),
-            _mapping_lookup(base, "execution_governance_target_lane"),
-            _mapping_lookup(base, "latest_execution_governance_target_lane"),
+            _mapping_lookup(execution_engine_summary, "execution_engine_target_lane"),
+            _mapping_lookup(base, "execution_engine_target_lane"),
+            _mapping_lookup(base, "latest_execution_engine_target_lane"),
             _mapping_lookup(target_resolution, "lane"),
             _mapping_lookup(packet_summary, "target_resolution_lane"),
             _mapping_lookup(context_packet_target_resolution, "lane"),
         )
     )
-    execution_governance_has_writable_targets = _bool_value(
+    execution_engine_has_writable_targets = _bool_value(
         _first_present(
-            _mapping_lookup(execution_governance_summary, "execution_governance_has_writable_targets"),
-            _mapping_lookup(base, "execution_governance_has_writable_targets"),
-            _mapping_lookup(base, "latest_execution_governance_has_writable_targets"),
+            _mapping_lookup(execution_engine_summary, "execution_engine_has_writable_targets"),
+            _mapping_lookup(base, "execution_engine_has_writable_targets"),
+            _mapping_lookup(base, "latest_execution_engine_has_writable_targets"),
             _mapping_lookup(target_resolution, "has_writable_targets"),
             _mapping_lookup(packet_summary, "target_resolution_has_writable_targets"),
             _mapping_lookup(context_packet_target_resolution, "has_writable_targets"),
         )
     )
-    execution_governance_requires_more_consumer_context = _bool_value(
+    execution_engine_requires_more_consumer_context = _bool_value(
         _first_present(
-            _mapping_lookup(execution_governance_summary, "execution_governance_requires_more_consumer_context"),
-            _mapping_lookup(base, "execution_governance_requires_more_consumer_context"),
-            _mapping_lookup(base, "latest_execution_governance_requires_more_consumer_context"),
+            _mapping_lookup(execution_engine_summary, "execution_engine_requires_more_consumer_context"),
+            _mapping_lookup(base, "execution_engine_requires_more_consumer_context"),
+            _mapping_lookup(base, "latest_execution_engine_requires_more_consumer_context"),
             _mapping_lookup(target_resolution, "requires_more_consumer_context"),
             _mapping_lookup(packet_summary, "target_resolution_requires_more_consumer_context"),
             _mapping_lookup(context_packet_target_resolution, "requires_more_consumer_context"),
         )
     )
-    execution_governance_consumer_failover = _normalize_string(
+    execution_engine_consumer_failover = _normalize_string(
         _first_present(
-            _mapping_lookup(execution_governance_summary, "execution_governance_consumer_failover"),
-            _mapping_lookup(base, "execution_governance_consumer_failover"),
-            _mapping_lookup(base, "latest_execution_governance_consumer_failover"),
+            _mapping_lookup(execution_engine_summary, "execution_engine_consumer_failover"),
+            _mapping_lookup(base, "execution_engine_consumer_failover"),
+            _mapping_lookup(base, "latest_execution_engine_consumer_failover"),
             _mapping_lookup(target_resolution, "consumer_failover"),
             _mapping_lookup(packet_summary, "target_resolution_consumer_failover"),
             _mapping_lookup(context_packet_target_resolution, "consumer_failover"),
         )
     )
-    execution_governance_commentary_mode = _normalize_token(
+    execution_engine_commentary_mode = _normalize_token(
         _first_present(
-            _mapping_lookup(execution_governance_summary, "execution_governance_commentary_mode"),
-            _mapping_lookup(base, "execution_governance_commentary_mode"),
-            _mapping_lookup(base, "latest_execution_governance_commentary_mode"),
+            _mapping_lookup(execution_engine_summary, "execution_engine_commentary_mode"),
+            _mapping_lookup(base, "execution_engine_commentary_mode"),
+            _mapping_lookup(base, "latest_execution_engine_commentary_mode"),
             _mapping_lookup(presentation_policy, "commentary_mode"),
             _mapping_lookup(packet_summary, "presentation_policy_commentary_mode"),
             _mapping_lookup(context_packet_presentation_policy, "commentary_mode"),
         )
     )
-    execution_governance_suppress_routing_receipts = _bool_value(
+    execution_engine_suppress_routing_receipts = _bool_value(
         _first_present(
-            _mapping_lookup(execution_governance_summary, "execution_governance_suppress_routing_receipts"),
-            _mapping_lookup(base, "execution_governance_suppress_routing_receipts"),
-            _mapping_lookup(base, "latest_execution_governance_suppress_routing_receipts"),
+            _mapping_lookup(execution_engine_summary, "execution_engine_suppress_routing_receipts"),
+            _mapping_lookup(base, "execution_engine_suppress_routing_receipts"),
+            _mapping_lookup(base, "latest_execution_engine_suppress_routing_receipts"),
             _mapping_lookup(presentation_policy, "suppress_routing_receipts"),
             _mapping_lookup(packet_summary, "presentation_policy_suppress_routing_receipts"),
             _mapping_lookup(context_packet_presentation_policy, "suppress_routing_receipts"),
         )
     )
-    execution_governance_surface_fast_lane = _bool_value(
+    execution_engine_surface_fast_lane = _bool_value(
         _first_present(
-            _mapping_lookup(execution_governance_summary, "execution_governance_surface_fast_lane"),
-            _mapping_lookup(base, "execution_governance_surface_fast_lane"),
-            _mapping_lookup(base, "latest_execution_governance_surface_fast_lane"),
+            _mapping_lookup(execution_engine_summary, "execution_engine_surface_fast_lane"),
+            _mapping_lookup(base, "execution_engine_surface_fast_lane"),
+            _mapping_lookup(base, "latest_execution_engine_surface_fast_lane"),
             _mapping_lookup(presentation_policy, "surface_fast_lane"),
             _mapping_lookup(packet_summary, "presentation_policy_surface_fast_lane"),
             _mapping_lookup(context_packet_presentation_policy, "surface_fast_lane"),
@@ -483,13 +483,13 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
         "odylith_fix_mode": _normalize_token(odylith_write_policy.get("odylith_fix_mode")) or "unknown",
         "allow_odylith_mutations": bool(odylith_write_policy.get("allow_odylith_mutations")),
         "protected_roots": protected_roots,
-        "execution_governance_target_lane": execution_governance_target_lane,
-        "execution_governance_has_writable_targets": execution_governance_has_writable_targets,
-        "execution_governance_requires_more_consumer_context": execution_governance_requires_more_consumer_context,
-        "execution_governance_consumer_failover": execution_governance_consumer_failover,
-        "execution_governance_commentary_mode": execution_governance_commentary_mode,
-        "execution_governance_suppress_routing_receipts": execution_governance_suppress_routing_receipts,
-        "execution_governance_surface_fast_lane": execution_governance_surface_fast_lane,
+        "execution_engine_target_lane": execution_engine_target_lane,
+        "execution_engine_has_writable_targets": execution_engine_has_writable_targets,
+        "execution_engine_requires_more_consumer_context": execution_engine_requires_more_consumer_context,
+        "execution_engine_consumer_failover": execution_engine_consumer_failover,
+        "execution_engine_commentary_mode": execution_engine_commentary_mode,
+        "execution_engine_suppress_routing_receipts": execution_engine_suppress_routing_receipts,
+        "execution_engine_surface_fast_lane": execution_engine_surface_fast_lane,
     }
 
 
