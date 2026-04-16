@@ -849,7 +849,8 @@ def test_render_registry_dashboard_supports_odylith_chatter_component_contract(t
             "- `Odylith Assist:` stays final-only.\n"
             "- Prefer `**Odylith Assist:**` when Markdown formatting is available.\n"
             "- Lead with the user win, not Odylith mechanics.\n"
-            "- Link updated governance ids inline when they were actually changed.\n"
+            "- Link updated governance IDs inline only when they actually changed.\n"
+            "- Name affected governance-contract IDs when no governed file moved.\n"
             "- Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it.\n"
             "- Keep it crisp, authentic, clear, simple, insightful, soulful, friendly, free-flowing, human, and factual.\n"
             "- Use observed counts, measured deltas, or validation outcomes.\n\n"
@@ -900,7 +901,8 @@ def test_render_registry_dashboard_supports_odylith_chatter_component_contract(t
     assert "**Odylith Assist:**" in chatter_detail["spec_markdown"]
     assert "Odylith Insight:" in chatter_detail["spec_markdown"]
     assert "Lead with the user win" in chatter_detail["spec_markdown"]
-    assert "Link updated governance ids inline when they were actually changed." in chatter_detail["spec_markdown"]
+    assert "Link updated governance IDs inline only when they actually changed." in chatter_detail["spec_markdown"]
+    assert "Name affected governance-contract IDs when no governed file moved." in chatter_detail["spec_markdown"]
     assert "broader unguided path" in chatter_detail["spec_markdown"]
     assert "crisp, authentic, clear, simple, insightful" in chatter_detail["spec_markdown"]
 

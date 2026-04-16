@@ -202,7 +202,7 @@ Related Bugs:
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py tests/unit/install/test_agents.py tests/integration/install/test_manager.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py`
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py tests/integration/runtime/test_surface_browser_ux_audit.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py tests/integration/runtime/test_surface_browser_ux_audit.py`
 - [x] `git diff --check`
 
 ## Rollout/Communication
@@ -277,10 +277,10 @@ Related Bugs:
       context-artifact scan across ambient and closeout composition instead of
       repeating that packet work inside closeout.
 - [x] Focused Tribunal-safe chatter proof passed on 2026-04-07 via
-      `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_validate_component_registry_contract.py`
+      `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_validate_component_registry_contract.py`
       with `56 passed in 5.64s`, plus `git diff --check`.
 - [x] Deep-dive hardening proof passed on 2026-04-07 via
-      `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/install/test_agents.py tests/integration/install/test_manager.py tests/unit/runtime/test_validate_component_registry_contract.py`
+      `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/install/test_agents.py tests/integration/install/test_manager.py tests/unit/runtime/test_validate_component_registry_contract.py`
       with `109 passed in 6.12s`, plus
-      `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py`
+      `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py`
       with `29 passed in 5.50s`, plus `git diff --check`.

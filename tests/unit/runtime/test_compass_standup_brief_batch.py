@@ -7,7 +7,6 @@ from pathlib import Path
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_batch as batch
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
-from odylith.runtime.surfaces import compass_standup_brief_telemetry
 
 
 class _QueuedProvider:
@@ -823,7 +822,7 @@ def test_bundle_provider_subset_by_window_respects_entry_cap(tmp_path: Path) -> 
     assert [sum(len(window) for window in scoped.values()) + len(globals_) for globals_, scoped in packs] == [4, 1]
 
 
-def test_build_brief_bundle_skips_provider_for_nonwinner_summary_churn_and_records_telemetry(tmp_path: Path) -> None:
+def test_build_brief_bundle_skips_provider_for_nonwinner_summary_churn(tmp_path: Path) -> None:
     baseline_packet = _fact_packet(idea_id="B-901", window="24h")
     changed_packet = json.loads(json.dumps(baseline_packet))
     changed_packet["summary"]["touched_workstreams"] = 7
@@ -856,17 +855,8 @@ def test_build_brief_bundle_skips_provider_for_nonwinner_summary_churn_and_recor
     assert skipped["provider_decision"] == "skipped_not_worth_calling"
     assert provider.calls == 0
 
-    telemetry_payload = json.loads(
-        compass_standup_brief_telemetry.telemetry_path(repo_root=tmp_path).read_text(encoding="utf-8")
-    )
-    attempt = telemetry_payload["attempts"][-1]
-    assert attempt["runtime_packet_fingerprint"] == "runtime-fp-901"
-    assert attempt["provider_decision"] == "skipped_not_worth_calling"
-    assert attempt["skip_reason"] == "no_winner_change"
-    assert attempt["estimated_cost"]["total_tokens"] == 0
 
-
-def test_build_brief_bundle_records_provider_failure_telemetry(tmp_path: Path) -> None:
+def test_build_brief_bundle_surfaces_provider_failure(tmp_path: Path) -> None:
     packet = _fact_packet(idea_id="B-902", window="24h")
     provider = _QueuedProvider(
         [None],
@@ -886,18 +876,10 @@ def test_build_brief_bundle_records_provider_failure_telemetry(tmp_path: Path) -
 
     assert results["global"]["24h"]["status"] == "unavailable"
     assert results["global"]["24h"]["diagnostics"]["reason"] == "credits_exhausted"
-    telemetry_payload = json.loads(
-        compass_standup_brief_telemetry.telemetry_path(repo_root=tmp_path).read_text(encoding="utf-8")
-    )
-    attempt = telemetry_payload["attempts"][-1]
-    assert attempt["runtime_packet_fingerprint"] == "runtime-fp-902"
-    assert attempt["provider_decision"] == "provider_called"
-    assert attempt["failure_kind"] == "credits_exhausted"
-    assert attempt["provider_code"] == "credits_exhausted"
-    assert attempt["provider_call_count"] == 1
+    assert provider.calls == 1
 
 
-def test_build_brief_bundle_telemetry_counts_repair_input_chars(tmp_path: Path) -> None:
+def test_build_brief_bundle_repairs_missing_batch_entries(tmp_path: Path) -> None:
     packets_global = {
         "24h": _fact_packet(idea_id="B-801", window="24h"),
         "48h": _fact_packet(idea_id="B-802", window="48h"),
@@ -921,7 +903,7 @@ def test_build_brief_bundle_telemetry_counts_repair_input_chars(tmp_path: Path) 
         ]
     )
 
-    batch.build_brief_bundle(
+    results = batch.build_brief_bundle(
         repo_root=tmp_path,
         global_fact_packets_by_window=packets_global,
         scoped_fact_packets_by_window=packets_scoped,
@@ -931,15 +913,9 @@ def test_build_brief_bundle_telemetry_counts_repair_input_chars(tmp_path: Path) 
         provider=provider,
     )
 
-    telemetry_payload = json.loads(
-        compass_standup_brief_telemetry.telemetry_path(repo_root=tmp_path).read_text(encoding="utf-8")
-    )
-    attempt = telemetry_payload["attempts"][-1]
-    assert attempt["runtime_packet_fingerprint"] == "runtime-fp-repair"
-    assert attempt["repair_count"] == 1
-    assert attempt["provider_call_count"] == 2
-    assert attempt["repair_input_chars"] > 0
-    assert attempt["input_chars"] > attempt["repair_input_chars"]
+    assert provider.calls == 2
+    assert set(results["global"]) == {"24h", "48h"}
+    assert set(results["scoped"]["24h"]) == {"B-021", "B-048"}
 
 
 def test_bundle_provider_output_schema_avoids_oneof_for_codex_structured_outputs() -> None:

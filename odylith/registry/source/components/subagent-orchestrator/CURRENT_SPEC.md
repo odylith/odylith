@@ -56,12 +56,13 @@ through Task-tool subagents and the checked-in `.claude/` project assets.
   belongs in at most one short `Odylith Assist:` line grounded in concrete
   observed counts, measured deltas, or validation outcomes. Prefer
   `**Odylith Assist:**` when Markdown formatting is available. Lead with the
-  user win, not Odylith mechanics, link updated governance ids inline when
-  they were actually changed, and frame the edge against `odylith_off` or the
-  broader unguided path when the evidence supports it. Keep it crisp,
-  authentic, clear, simple, insightful, soulful, friendly, free-flowing,
-  human, and factual. It is not part of the orchestrator's mid-task rationale
-  stream.
+  user win, not Odylith mechanics, link updated governance IDs inline only
+  when they actually changed, name affected governance-contract IDs from
+  bounded request or packet truth when no governed file moved, and frame the
+  edge against `odylith_off` or the broader unguided path when the evidence
+  supports it. Keep it crisp, authentic, clear, simple, insightful, soulful,
+  friendly, free-flowing, human, and factual. It is not part of the
+  orchestrator's mid-task rationale stream.
 
 ## Public Command Surface
 Public entrypoint: `odylith subagent-orchestrator`

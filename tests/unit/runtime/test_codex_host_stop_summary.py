@@ -126,6 +126,55 @@ def test_stop_intervention_bundle_recovers_recent_changed_paths(monkeypatch, tmp
     assert seen["candidate_paths"] == ["src/odylith/runtime/intervention_engine/engine.py"]
 
 
+def test_stop_intervention_bundle_can_recover_prompt_when_last_message_is_short(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    codex_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_teaser",
+        summary="Observation forming.",
+        session_id="stop-short-1",
+        host_family="codex",
+        intervention_key="iv-stop-short-1",
+        turn_phase="prompt_submit",
+        prompt_excerpt=(
+            "I still do not see any Odylith ambient highlights or interventions "
+            "visible in chat."
+        ),
+        display_plain="Odylith can already see governed truth taking shape here.",
+    )
+    seen: dict[str, object] = {}
+
+    def _fake_compose_conversation_bundle(**kwargs):  # noqa: ANN001
+        request = kwargs["request"]
+        seen["prompt"] = request.prompt
+        seen["assistant_summary"] = kwargs["assistant_summary"]
+        return {
+            "intervention_bundle": {},
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept the UX signal visible.",
+                "plain_text": "Odylith Assist: kept the UX signal visible.",
+            },
+        }
+
+    monkeypatch.setattr(
+        codex_host_stop_summary.conversation_runtime,
+        "compose_conversation_bundle",
+        _fake_compose_conversation_bundle,
+    )
+
+    bundle = codex_host_stop_summary._stop_intervention_bundle(
+        repo_root=str(tmp_path),
+        message="Understood.",
+        session_id="stop-short-1",
+    )
+
+    assert bundle["closeout_bundle"]["markdown_text"].startswith("**Odylith Assist:**")
+    assert "ambient highlights" in str(seen["prompt"])
+    assert seen["assistant_summary"] == ""
+
+
 def test_render_codex_stop_summary_combines_observation_and_assist() -> None:
     rendered = codex_host_stop_summary.render_codex_stop_summary(
         ".",
@@ -150,6 +199,45 @@ def test_render_codex_stop_summary_combines_observation_and_assist() -> None:
 
     assert rendered == (
         "**Odylith Observation:** The signal is real.\n\n"
+        "**Odylith Assist:** kept this grounded."
+    )
+
+
+def test_render_codex_stop_summary_replays_unseen_live_beat_through_stop_lane(tmp_path: Path) -> None:
+    codex_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Observation rendered.",
+        session_id="stop-replay-1",
+        host_family="codex",
+        intervention_key="iv-stop-replay-1",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** This beat was computed earlier but still needs a visible lane.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    rendered = codex_host_stop_summary.render_codex_stop_summary(
+        str(tmp_path),
+        message="Implemented the engine slice.",
+        session_id="stop-replay-1",
+        conversation_bundle_override={
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "silent",
+                    "suppressed_reason": "",
+                },
+                "proposal": {"eligible": False, "suppressed_reason": ""},
+            },
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept this grounded.",
+                "plain_text": "Odylith Assist: kept this grounded.",
+            },
+        },
+    )
+
+    assert rendered == (
+        "**Odylith Observation:** This beat was computed earlier but still needs a visible lane.\n\n"
         "**Odylith Assist:** kept this grounded."
     )
 

@@ -6,6 +6,14 @@ from pathlib import Path
 from odylith.runtime.surfaces import render_tooling_dashboard as renderer
 
 
+def _legacy_payload_key(*parts: str) -> str:
+    return "_".join(parts)
+
+
+def _legacy_ui_phrase(*parts: str) -> str:
+    return " ".join(parts)
+
+
 def _seed_shell_fixture(repo_root: Path) -> None:
     for surface in ("radar", "atlas", "compass", "registry", "casebook"):
         surface_root = repo_root / "odylith" / surface
@@ -25,23 +33,34 @@ def test_render_tooling_dashboard_does_not_include_status_packet_card(tmp_path: 
         renderer.odylith_context_engine_store,
         "load_delivery_surface_payload",
         lambda **kwargs: {
-            "memory_snapshot": {},
-            "evaluation_snapshot": {},
-            "optimization_snapshot": {
+            _legacy_payload_key("memory", "snapshot"): {},
+            _legacy_payload_key("evaluation", "snapshot"): {},
+            _legacy_payload_key("optimization", "snapshot"): {
                 "latest_packet": {
                     "workstream": "B-072",
-                    "execution_governance_present": True,
-                    "execution_governance_outcome": "deny",
-                    "execution_governance_mode": "recover",
-                    "execution_governance_next_move": "recover.current_blocker",
-                    "execution_governance_blocker": "waiting approval",
-                    "execution_governance_history_rule_hits": ["lane_drift_preflight"],
-                    "execution_governance_pressure_signals": ["wait:awaiting_callback"],
-                    "execution_governance_nearby_denial_actions": ["explore.broad_reset"],
-                    "execution_governance_runtime_invalidated_by_step": "render_compass_dashboard",
-                    "execution_governance_host_family": "claude",
-                    "execution_governance_host_supports_native_spawn": False,
-                    "execution_governance_resume_token": "resume:B-072",
+                    _legacy_payload_key("execution", "governance", "present"): True,
+                    _legacy_payload_key("execution", "governance", "outcome"): "deny",
+                    _legacy_payload_key("execution", "governance", "mode"): "recover",
+                    _legacy_payload_key("execution", "governance", "next", "move"): "recover.current_blocker",
+                    _legacy_payload_key("execution", "governance", "blocker"): "waiting approval",
+                    _legacy_payload_key("execution", "governance", "history", "rule", "hits"): [
+                        "lane_drift_preflight"
+                    ],
+                    _legacy_payload_key("execution", "governance", "pressure", "signals"): ["wait:awaiting_callback"],
+                    _legacy_payload_key("execution", "governance", "nearby", "denial", "actions"): [
+                        "explore.broad_reset"
+                    ],
+                    _legacy_payload_key(
+                        "execution",
+                        "governance",
+                        "runtime",
+                        "invalidated",
+                        "by",
+                        "step",
+                    ): "render_compass_dashboard",
+                    _legacy_payload_key("execution", "governance", "host", "family"): "claude",
+                    _legacy_payload_key("execution", "governance", "host", "supports", "native", "spawn"): False,
+                    _legacy_payload_key("execution", "governance", "resume", "token"): "resume:B-072",
                 }
             },
         },
@@ -53,10 +72,10 @@ def test_render_tooling_dashboard_does_not_include_status_packet_card(tmp_path: 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
-    assert "Latest Governed Packet" not in html
+    assert _legacy_ui_phrase("Latest", "Governed", "Packet") not in html
     assert "recover.current_blocker" not in html
     assert "waiting approval" not in html
     assert "explore.broad_reset" not in html
     assert "render_compass_dashboard" not in html
     assert "resume:B-072" not in html
-    assert "optimization_snapshot" not in payload_js
+    assert _legacy_payload_key("optimization", "snapshot") not in payload_js

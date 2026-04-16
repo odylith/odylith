@@ -78,6 +78,9 @@ Related Bugs:
 - [x] Test fixtures are part of the contract surface: synthetic backlog records
       must model grounded core detail unless the test is explicitly asserting
       placeholder rejection.
+- [x] A finished workstream can only be reopened by a successor when the plan
+      binding is still live. Stale active-index rows for moved/deleted or
+      terminal plans must fail closed instead of minting a continuation backlog.
 
 ## Must-Ship
 - [x] Bind `B-098` to this active plan and keep the Radar/plan indexes
@@ -96,6 +99,9 @@ Related Bugs:
       `B-090`, `B-097`, and `B-098`.
 - [x] Replace legacy placeholder-backed backlog test fixtures so future tests do
       not normalize the old `Details.` authoring pattern.
+- [x] Harden plan/workstream reconciliation so a stale active plan row cannot
+      create an accidental successor workstream after the original workstream
+      has already moved to `finished`.
 - [x] Refresh Radar and rerun focused validation.
 
 ## Should-Ship
@@ -120,6 +126,9 @@ Related Bugs:
       core-detail boilerplate.
 - [x] No current product-repo backlog record still matches the generic
       core-detail template.
+- [x] No accidental successor workstream or generated successor residue remains
+      in Radar, technical plans, Registry source, Compass runtime, or delivery
+      intelligence surfaces.
 - [x] Focused tests are green on the touched runtime, authoring, and validator
       surfaces.
 
@@ -152,7 +161,7 @@ Related Bugs:
 - [ ] [tests/unit/test_cli.py](/Users/freedom/code/odylith/tests/unit/test_cli.py)
 - [ ] [tests/unit/runtime/test_sync_cli_compat.py](/Users/freedom/code/odylith/tests/unit/runtime/test_sync_cli_compat.py)
 - [ ] [tests/unit/runtime/test_auto_promote_workstream_phase.py](/Users/freedom/code/odylith/tests/unit/runtime/test_auto_promote_workstream_phase.py)
-- [ ] [tests/unit/runtime/test_reconcile_plan_workstream_binding.py](/Users/freedom/code/odylith/tests/unit/runtime/test_reconcile_plan_workstream_binding.py)
+- [x] [tests/unit/runtime/test_reconcile_plan_workstream_binding.py](/Users/freedom/code/odylith/tests/unit/runtime/test_reconcile_plan_workstream_binding.py)
 - [ ] [tests/unit/runtime/test_context_engine_release_resolution.py](/Users/freedom/code/odylith/tests/unit/runtime/test_context_engine_release_resolution.py)
 - [ ] [tests/unit/runtime/test_legacy_backlog_normalization.py](/Users/freedom/code/odylith/tests/unit/runtime/test_legacy_backlog_normalization.py)
 - [ ] [tests/unit/runtime/test_validate_plan_workstream_binding.py](/Users/freedom/code/odylith/tests/unit/runtime/test_validate_plan_workstream_binding.py)
@@ -167,8 +176,12 @@ Related Bugs:
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_backlog_authoring.py tests/unit/runtime/test_validate_backlog_contract.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_context_engine_store.py tests/unit/runtime/test_render_backlog_ui.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_intervention_engine.py tests/unit/runtime/test_intervention_engine_apply.py tests/unit/test_cli.py -k 'backlog_create or intervention or radar'`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_reconcile_plan_workstream_binding.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_promote_workstream_phase.py tests/unit/runtime/test_reconcile_plan_workstream_binding.py tests/unit/runtime/test_context_engine_release_resolution.py tests/unit/runtime/test_legacy_backlog_normalization.py tests/unit/runtime/test_validate_plan_workstream_binding.py tests/unit/runtime/test_release_planning.py tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_release_truth_runtime.py tests/unit/runtime/test_tooling_dashboard_surface_status.py tests/unit/runtime/test_compass_governance_source_runtime.py tests/unit/runtime/test_program_wave_authoring.py`
 - [x] `PYTHONPATH=src python -m odylith.cli validate backlog-contract --repo-root .`
+- [x] `PYTHONPATH=src python -m odylith.cli validate plan-workstream-binding --repo-root .`
+- [x] `PYTHONPATH=src python -m odylith.cli governance sync-component-spec-requirements --repo-root . --check-only`
+- [x] Runtime detail audit: `B-073` detail present, no missing core fields, no idea parse errors, and `core_detail_failures=0`.
 - [x] `PYTHONPATH=src python -m odylith.cli radar refresh --repo-root .`
 - [x] `PYTHONPATH=src python -m odylith.cli registry refresh --repo-root .`
 - [x] `PYTHONPATH=src python -m compileall -q src/odylith/runtime/governance src/odylith/runtime/context_engine src/odylith/runtime/surfaces src/odylith/runtime/intervention_engine src/odylith/runtime/analysis_engine`
@@ -179,4 +192,6 @@ Related Bugs:
       workstream detail for `B-073`, while `odylith backlog create`,
       intervention-driven Radar proposals, show-capabilities apply-all, shared
       guidance, bundled skills, and backlog validation all fail closed on
-      missing, placeholder, or boilerplate core detail.
+      missing, placeholder, or boilerplate core detail; reconciliation also
+      skips stale finished-workstream plan bindings instead of creating
+      accidental successor backlogs.

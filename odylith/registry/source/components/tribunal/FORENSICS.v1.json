@@ -30,10 +30,10 @@
     "empty_reasons": [],
     "explicit_event_count": 6,
     "mapped_workstream_evidence_count": 6,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 6
+    "timeline_event_count": 7
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -74,6 +74,22 @@
         "B-022",
         "B-038"
       ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/reasoning/tribunal_engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 393,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/reasoning/tribunal_engine.py",
+      "ts_iso": "2026-04-15T22:56:19-07:00",
+      "workstreams": []
     },
     {
       "artifacts": [],

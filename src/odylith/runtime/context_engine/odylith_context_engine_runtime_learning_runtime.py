@@ -739,7 +739,7 @@ def _odylith_disabled_optimization_snapshot(
         "evaluation_posture": {},
         "learning_loop": {},
         "recommendations": [
-            "Odylith is disabled; optimization telemetry is suppressed for ablation studies."
+            "Odylith is disabled; optimization diagnostics are suppressed for ablation studies."
         ],
     }
 

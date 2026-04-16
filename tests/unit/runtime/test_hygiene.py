@@ -124,7 +124,8 @@ ODYLITH_ASSIST_MARKDOWN_LABEL = "`**Odylith Assist:**`"
 ODYLITH_ASSIST_TONE = "crisp, authentic, clear, simple, insightful"
 ODYLITH_ASSIST_MIXED_EVIDENCE = "observed counts, measured deltas, or validation outcomes"
 ODYLITH_ASSIST_USER_WIN = "Lead with the user win"
-ODYLITH_ASSIST_UPDATED_IDS = "link updated governance ids inline when they were actually changed"
+ODYLITH_ASSIST_UPDATED_IDS = "updated governance IDs inline"
+ODYLITH_ASSIST_AFFECTED_IDS = "affected governance-contract IDs"
 ODYLITH_ASSIST_UNGUIDED_PATH = "broader unguided path"
 ODYLITH_CHATTER_SPEC_TOKEN = "odylith-chatter/CURRENT_SPEC.md"
 ODYLITH_ASSIST_METADATA_ONLY = "metadata-only"
@@ -358,6 +359,7 @@ def test_odylith_assist_closeout_contract_stays_explicit_across_shared_and_bundl
         assert ODYLITH_ASSIST_MARKDOWN_LABEL in normalized, f"closeout assist markdown label drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_USER_WIN in normalized, f"closeout assist user-win framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_UPDATED_IDS in normalized, f"closeout assist updated-id framing drifted in {path.relative_to(ROOT)}"
+        assert ODYLITH_ASSIST_AFFECTED_IDS in normalized, f"closeout assist affected-id framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_UNGUIDED_PATH in normalized, f"closeout assist delta framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_TONE in normalized, f"closeout assist tone drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_MIXED_EVIDENCE in normalized, f"closeout assist evidence rule drifted in {path.relative_to(ROOT)}"
@@ -388,6 +390,7 @@ def test_odylith_assist_closeout_contract_stays_explicit_in_maintainer_and_bench
         assert ODYLITH_ASSIST_MARKDOWN_LABEL in normalized, f"maintainer/benchmark assist markdown label drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_USER_WIN in normalized, f"maintainer/benchmark assist user-win framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_UPDATED_IDS in normalized, f"maintainer/benchmark updated-id framing drifted in {path.relative_to(ROOT)}"
+        assert ODYLITH_ASSIST_AFFECTED_IDS in normalized, f"maintainer/benchmark affected-id framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_UNGUIDED_PATH in normalized, f"maintainer/benchmark assist delta framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_TONE in normalized, f"maintainer/benchmark closeout assist tone drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_MIXED_EVIDENCE in normalized or "counts, measured deltas, or validation outcomes" in normalized, (
@@ -417,6 +420,7 @@ def test_generated_registry_detail_surface_keeps_soulful_closeout_contract() -> 
     assert ODYLITH_ASSIST_MARKDOWN_LABEL.replace("`", "") in text
     assert ODYLITH_ASSIST_USER_WIN in text
     assert ODYLITH_ASSIST_UPDATED_IDS in text
+    assert ODYLITH_ASSIST_AFFECTED_IDS in text
     assert ODYLITH_ASSIST_UNGUIDED_PATH in text
     assert ODYLITH_ASSIST_TONE in text
     assert ODYLITH_ASSIST_MIXED_EVIDENCE in text
@@ -442,6 +446,7 @@ def test_odylith_chatter_component_is_tracked_in_registry_source_and_generated_s
     assert ODYLITH_ASSIST_MARKDOWN_LABEL in normalized_spec
     assert ODYLITH_ASSIST_USER_WIN in normalized_spec
     assert ODYLITH_ASSIST_UPDATED_IDS in normalized_spec
+    assert ODYLITH_ASSIST_AFFECTED_IDS in normalized_spec
     assert ODYLITH_ASSIST_UNGUIDED_PATH in normalized_spec
     assert ODYLITH_ASSIST_TONE in normalized_spec
     assert ODYLITH_ASSIST_MIXED_EVIDENCE in normalized_spec

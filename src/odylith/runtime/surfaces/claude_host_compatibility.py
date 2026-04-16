@@ -28,6 +28,7 @@ def _report_notes(report: ClaudeCompatibilityReport) -> list[str]:
         "Repo-scoped `.claude/` settings, hooks, slash commands, subagents, and skills are first-class project surfaces and ship with the install.",
         "Claude Code project assets do not require a trusted-project approval gate; checked-in `.claude/settings.json` activates immediately.",
         "Existing Claude sessions may not hot-reload changed project settings, guidance, or source-local runtime code; restart the session or render `odylith claude visible-intervention` directly before claiming another open chat is visibly active.",
+        "`odylith claude intervention-status` is the low-latency session proof for static readiness, active UX lanes, delivery-ledger state, and the visible fallback smoke command.",
         "Version compatibility is capability-based and does not pin a maximum Claude CLI version.",
     ]
     if report.claude_available and report.claude_version:

@@ -51,6 +51,43 @@ def test_prompt_submit_live_surface_keeps_top_level_observation_and_teaser(tmp_p
     assert rendered.endswith("turn that into a proposal.")
 
 
+def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> None:
+    bundle = {
+        "ambient_signals": {
+            "selected_signal": "insight",
+            "insight": {
+                "eligible": True,
+                "render_hint": "explicit_label",
+                "plain_text": "Odylith Insight: this is now grounded enough to keep visible.",
+                "markdown_text": "**Odylith Insight:** this is now grounded enough to keep visible.",
+            },
+        },
+        "intervention_bundle": {
+            "candidate": {
+                "stage": "teaser",
+                "suppressed_reason": "",
+                "teaser_text": "Odylith can already see governed truth taking shape here.",
+            },
+            "proposal": {"eligible": False, "suppressed_reason": ""},
+        },
+    }
+
+    rendered = conversation_surface.render_live_text(
+        bundle,
+        markdown=True,
+        include_proposal=False,
+    )
+    old_order = conversation_surface.render_live_text(
+        bundle,
+        markdown=True,
+        include_proposal=False,
+        prefer_ambient_over_teaser=False,
+    )
+
+    assert rendered == "**Odylith Insight:** this is now grounded enough to keep visible."
+    assert old_order == "Odylith can already see governed truth taking shape here."
+
+
 def test_post_edit_live_surface_renders_observation_and_proposal(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     bundle = conversation_surface.build_conversation_bundle(

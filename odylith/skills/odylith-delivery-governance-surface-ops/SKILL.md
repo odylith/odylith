@@ -18,7 +18,7 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
 - ground the slice through Odylith packets first
 - keep commentary focused on the slice, the repo truth, and the validation plan; avoid narrating startup, routing, or degraded-attempt internals unless the user needs a command or a blocker explanation
 - keep Odylith ambient by default during work; weave grounded governance facts into ordinary updates and only emit explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` lines when they materially change the next move
-- when closeout would benefit from naming Odylith, use at most one short `Odylith Assist:` line; prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance ids inline when they were actually changed, frame the edge against `odylith_off` or the broader unguided path when the evidence supports it, and back it with concrete observed counts, measured deltas, or validation outcomes while keeping it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Silence is better than filler.
+- when closeout would benefit from naming Odylith, use at most one short `Odylith Assist:` line; prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance IDs inline only when they actually changed, name affected governance-contract IDs from bounded request or packet truth when no governed file moved, frame the edge against `odylith_off` or the broader unguided path when the evidence supports it, and back it with concrete observed counts, measured deltas, or validation outcomes while keeping it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Silence is better than filler.
 - search existing workstream, plan, bug, component, diagram, and session or Compass context before writing
 - extend, consolidate, or reopen existing truth before creating new governed records
 - create a missing workstream and bound plan before non-trivial implementation when the slice is genuinely new
@@ -37,12 +37,13 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
   - prefer delta narration over raw packet regeneration
   - keep one packet-level provider bundle per meaningful fingerprint
   - never reopen per-scope provider fanout or fuzzy cache replay
-- record brief wallet/latency truth as telemetry, not folklore. Skip
-  provider calls when the winning story did not change, and let capacity or
-  budget failures slow the retry lane instead of hammering the same packet.
-- keep telemetry internal. Do not render telemetry/status/cockpit UI into the
-  dashboard shell: no telemetry drawer, status presenter, recorder tape, chart
-  canvas, ECharts dependency, `Telemetry Snapshot` slab, or legacy
+- keep brief provider diagnostics explicit and bounded. Skip provider calls
+  when the winning story did not change, and let capacity or budget failures
+  slow the retry lane instead of hammering the same packet. Do not add a
+  separate narration attempt recorder.
+- keep internal diagnostics out of product chrome. Do not render status/cockpit
+  UI into the dashboard shell: no status drawer, status presenter, recorder
+  tape, chart canvas, ECharts dependency, snapshot slab, or legacy
   `odylith_drawer` product path. Do not load internal delivery, evaluation,
   optimization, or memory snapshots into the top-level shell payload. If a
   slice touches dashboard shell status, add or run headless browser proof that
@@ -170,10 +171,10 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
   `Live Blocker`, `Fingerprint`, `Frontier`, `Evidence tier`,
   `Truthful claim`, and commit-hash deployment details belong in deeper
   diagnostics, not the default Registry detail surface.
-- Do not render internal telemetry or diagnostic spend evidence as default
-  dashboard shell chrome. Runtime telemetry belongs in artifacts, logs, or
-  explicit diagnostics; product shells must stay free of telemetry drawers,
-  cockpit panels, recorder tapes, and chart hydrators.
+- Do not render internal diagnostics or spend evidence as default dashboard
+  shell chrome. Runtime diagnostics belong in explicit debug artifacts; product
+  shells must stay free of status drawers, cockpit panels, recorder tapes, and
+  chart hydrators.
 - If a surface owns source-generated shell assets, keep one canonical loader
   or generator path, refresh live and bundled mirrors together, and do not
   keep a static fork of generated shared CSS when shared plus thin overrides

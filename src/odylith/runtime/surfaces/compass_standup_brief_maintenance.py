@@ -27,7 +27,6 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_batch
 from odylith.runtime.surfaces import compass_standup_brief_narrator
-from odylith.runtime.surfaces import compass_standup_brief_telemetry
 
 _REQUEST_VERSION = "v1"
 _STATE_VERSION = "v1"
@@ -48,7 +47,6 @@ _WORKER_EPOCH_RELATIVE_PATHS = (
     "src/odylith/runtime/surfaces/compass_standup_brief_batch.py",
     "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
     "src/odylith/runtime/surfaces/compass_standup_brief_substrate.py",
-    "src/odylith/runtime/surfaces/compass_standup_brief_telemetry.py",
 )
 def maintenance_request_path(*, repo_root: Path) -> Path:
     return (Path(repo_root).resolve() / _REQUEST_PATH).resolve()
@@ -391,73 +389,6 @@ def _requested_state_failure_context(
     return winner
 
 
-def _requested_telemetry_failure_context(
-    *,
-    repo_root: Path,
-    request: Mapping[str, Any] | None,
-) -> dict[str, str]:
-    if not isinstance(request, Mapping):
-        return {}
-    request_fingerprints: set[str] = set()
-
-    global_entries = request.get("global")
-    if isinstance(global_entries, Mapping):
-        for entry in global_entries.values():
-            if isinstance(entry, Mapping):
-                fingerprint = str(entry.get("fingerprint", "")).strip()
-                if fingerprint:
-                    request_fingerprints.add(fingerprint)
-
-    scoped_entries = request.get("scoped")
-    if isinstance(scoped_entries, Mapping):
-        for entries in scoped_entries.values():
-            if not isinstance(entries, Mapping):
-                continue
-            for entry in entries.values():
-                if isinstance(entry, Mapping):
-                    fingerprint = str(entry.get("fingerprint", "")).strip()
-                    if fingerprint:
-                        request_fingerprints.add(fingerprint)
-
-    if not request_fingerprints:
-        return {}
-
-    telemetry_payload = _load_json(compass_standup_brief_telemetry.telemetry_path(repo_root=repo_root))
-    attempts = telemetry_payload.get("attempts")
-    if not isinstance(attempts, Sequence):
-        return {}
-
-    winner_recorded_utc = ""
-    winner: dict[str, str] = {}
-    for attempt in attempts:
-        if not isinstance(attempt, Mapping):
-            continue
-        substrate_fingerprints = attempt.get("substrate_fingerprints")
-        if not isinstance(substrate_fingerprints, Mapping):
-            continue
-        attempt_fingerprints = {
-            str(value).strip()
-            for value in substrate_fingerprints.values()
-            if str(value).strip()
-        }
-        if not request_fingerprints.intersection(attempt_fingerprints):
-            continue
-        recorded_utc = str(attempt.get("recorded_utc", "")).strip()
-        if recorded_utc < winner_recorded_utc:
-            continue
-        winner_recorded_utc = recorded_utc
-        winner = {
-            "failure_code": (
-                str(attempt.get("provider_code", "")).strip().lower()
-                or str(attempt.get("failure_kind", "")).strip().lower()
-            ),
-            "failure_detail": str(attempt.get("provider_detail", "")).strip(),
-            "previous_model": str(attempt.get("model", "")).strip(),
-            "previous_reasoning_effort": str(attempt.get("reasoning_effort", "")).strip().lower(),
-        }
-    return winner
-
-
 def _cheap_config(
     *,
     repo_root: Path,
@@ -466,19 +397,6 @@ def _cheap_config(
 ) -> odylith_reasoning.ReasoningConfig:
     base_config = odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
     retry_context = _requested_state_failure_context(state=state, request=request)
-    telemetry_context = _requested_telemetry_failure_context(repo_root=repo_root, request=request)
-    if not str(retry_context.get("previous_model", "")).strip() and str(
-        telemetry_context.get("previous_model", "")
-    ).strip():
-        retry_context["previous_model"] = str(telemetry_context.get("previous_model", "")).strip()
-    if not str(retry_context.get("failure_code", "")).strip() and str(
-        telemetry_context.get("failure_code", "")
-    ).strip():
-        retry_context["failure_code"] = str(telemetry_context.get("failure_code", "")).strip()
-    if not str(retry_context.get("failure_detail", "")).strip() and str(
-        telemetry_context.get("failure_detail", "")
-    ).strip():
-        retry_context["failure_detail"] = str(telemetry_context.get("failure_detail", "")).strip()
     profile = odylith_reasoning.cheap_structured_reasoning_profile(
         base_config,
         previous_model=str(retry_context.get("previous_model", "")).strip(),

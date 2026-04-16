@@ -10,6 +10,9 @@ from odylith.runtime.intervention_engine import voice
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
 
 
+_AMBIENT_SIGNAL_SCORE_FLOOR = 74
+
+
 def _normalize_string(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
 
@@ -125,7 +128,7 @@ def _ambient_payload(
     if not fact:
         return {}
     score = _signal_score(intervention=intervention)
-    if score < 84:
+    if score < _AMBIENT_SIGNAL_SCORE_FLOOR:
         return {}
     signal_name, plain_text = voice.render_ambient_signal(
         moment=moment,
@@ -215,7 +218,7 @@ def render_live_text(
     *,
     markdown: bool,
     include_proposal: bool,
-    prefer_ambient_over_teaser: bool = False,
+    prefer_ambient_over_teaser: bool = True,
 ) -> str:
     intervention = _intervention_payload(bundle)
     rendered = surface_runtime.render_blocks(
@@ -249,12 +252,71 @@ def append_intervention_events(
     repo_root: Path,
     bundle: Mapping[str, Any],
     include_proposal: bool,
+    include_closeout: bool = False,
+    delivery_channel: str = "",
+    delivery_status: str = "",
+    render_surface: str = "",
+    delivery_latency_ms: float | None = None,
 ) -> list[str]:
+    events: list[str] = []
     intervention = _intervention_payload(bundle)
-    if not intervention:
-        return []
-    return surface_runtime.append_bundle_events(
-        repo_root=repo_root,
-        bundle=intervention,
-        include_proposal=include_proposal,
-    )
+    if intervention:
+        events.extend(
+            surface_runtime.append_bundle_events(
+                repo_root=repo_root,
+                bundle=intervention,
+                include_proposal=include_proposal,
+                delivery_channel=delivery_channel,
+                delivery_status=delivery_status,
+                render_surface=render_surface,
+                delivery_latency_ms=delivery_latency_ms,
+            )
+        )
+    observation = _mapping(bundle.get("observation"))
+    ambient = _selected_ambient_payload(bundle)
+    if ambient and _normalize_string(ambient.get("markdown_text")):
+        surface_runtime.stream_state.append_intervention_event(
+            repo_root=repo_root,
+            kind="ambient_signal",
+            summary=_normalize_string(ambient.get("plain_text")) or "Odylith ambient signal.",
+            session_id=_normalize_string(observation.get("session_id")),
+            host_family=_normalize_string(observation.get("host_family")),
+            intervention_key=_normalize_string(ambient.get("source_kind")) or "ambient",
+            turn_phase=_normalize_string(observation.get("turn_phase")),
+            artifacts=observation.get("changed_paths") if isinstance(observation.get("changed_paths"), list) else (),
+            display_markdown=_normalize_block_string(ambient.get("markdown_text")),
+            display_plain=_normalize_block_string(ambient.get("plain_text")),
+            prompt_excerpt=_normalize_string(observation.get("prompt_excerpt")),
+            assistant_summary=_normalize_string(observation.get("assistant_summary")),
+            moment_kind=_normalize_string(ambient.get("source_kind")),
+            semantic_signature=("ambient", _normalize_string(ambient.get("source_kind"))),
+            delivery_channel=delivery_channel,
+            delivery_status=delivery_status,
+            render_surface=render_surface,
+            delivery_latency_ms=delivery_latency_ms,
+        )
+        events.append("ambient_signal")
+    closeout_text = render_closeout_text(bundle, markdown=True) if include_closeout else ""
+    if closeout_text:
+        surface_runtime.stream_state.append_intervention_event(
+            repo_root=repo_root,
+            kind="assist_closeout",
+            summary=_normalize_string(closeout_text),
+            session_id=_normalize_string(observation.get("session_id")),
+            host_family=_normalize_string(observation.get("host_family")),
+            intervention_key="assist",
+            turn_phase=_normalize_string(observation.get("turn_phase")),
+            artifacts=observation.get("changed_paths") if isinstance(observation.get("changed_paths"), list) else (),
+            display_markdown=closeout_text,
+            display_plain=render_closeout_text(bundle, markdown=False),
+            prompt_excerpt=_normalize_string(observation.get("prompt_excerpt")),
+            assistant_summary=_normalize_string(observation.get("assistant_summary")),
+            moment_kind="assist",
+            semantic_signature=("assist",),
+            delivery_channel=delivery_channel,
+            delivery_status=delivery_status,
+            render_surface=render_surface,
+            delivery_latency_ms=delivery_latency_ms,
+        )
+        events.append("assist_closeout")
+    return events

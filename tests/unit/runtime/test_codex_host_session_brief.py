@@ -34,6 +34,7 @@ def test_render_codex_session_brief_includes_focus_actions_and_startup(tmp_path:
     )
 
     assert "Headline: Codex parity is moving" in rendered
+    assert "Interventions: Observation, Proposal, and Assist are armed" in rendered
     assert "Active workstreams: B-088, B-087" in rendered
     assert "Brief freshness:" in rendered
     assert "Next actions:" in rendered

@@ -351,7 +351,7 @@ def test_build_tribunal_payload_editor_brief_avoids_raw_paths(tmp_path: Path) ->
     assert all(not operator_readout.RAW_PATH_RE.search(brief) for brief in briefs)
 
 
-def test_build_tribunal_payload_emits_actor_influence_telemetry(tmp_path: Path) -> None:
+def test_build_tribunal_payload_emits_actor_influence_metadata(tmp_path: Path) -> None:
     payload = tribunal_engine.build_tribunal_payload(
         repo_root=tmp_path,
         delivery_payload=_delivery_payload(

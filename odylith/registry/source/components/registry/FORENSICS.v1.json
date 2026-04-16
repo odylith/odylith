@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 20,
-    "mapped_workstream_evidence_count": 6,
+    "explicit_event_count": 26,
+    "mapped_workstream_evidence_count": 12,
     "recent_path_match_count": 1,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 21
+    "timeline_event_count": 27
   },
   "name": "Registry",
   "path_prefixes": [
@@ -47,6 +47,162 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 309,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T03:57:38Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 300,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T02:54:42Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 297,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T02:54:32Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 285,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T02:37:58Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 278,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-16T02:29:52Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 276,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T02:29:51Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
     {
       "artifacts": [
         "README.md"
@@ -82,18 +238,19 @@
     },
     {
       "artifacts": [
-        "odylith/registry/source/component_registry.v1.json"
+        "src/odylith/runtime/governance/component_registry_intelligence.py",
+        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
       ],
       "confidence": "high",
-      "event_index": 272,
+      "event_index": 390,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "registry"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
-      "ts_iso": "2026-04-15T18:51:59-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/component_registry_intelligence.py, src/odylith/runtime/surfaces/render_registry_dashboard.py",
+      "ts_iso": "2026-04-15T23:28:52-07:00",
       "workstreams": []
     },
     {

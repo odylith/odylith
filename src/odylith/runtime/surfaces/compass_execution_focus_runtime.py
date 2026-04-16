@@ -104,29 +104,29 @@ def _build_execution_focus_payload(
         is_active = bool(event_age is not None and event_age <= active_window)
         is_recent = bool(event_age is not None and event_age <= recent_window)
 
-        telemetry_score = sum(
+        focus_score = sum(
             int(count or 0) * int(score_weights.get(kind, 0))
             for kind, count in kind_counts.items()
         )
         if has_implementation_signal:
-            telemetry_score += 20
+            focus_score += 20
         if source_files:
-            telemetry_score += min(12, len(source_files))
+            focus_score += min(12, len(source_files))
         if bool(row.get("explicit_open")):
-            telemetry_score += 6
+            focus_score += 6
         if context:
-            telemetry_score += 6
+            focus_score += 6
         tx_id = str(row.get("transaction_id", "")).strip()
         if tx_id and not tx_id.startswith("txn:global:auto-"):
-            telemetry_score += 2
+            focus_score += 2
         if activity_signal_count > 0:
-            telemetry_score += 4
+            focus_score += 4
         if activity_signal_count == 0 and risk_signal_count > 0:
-            telemetry_score -= 12
+            focus_score -= 12
         if generated_only_batch:
-            telemetry_score -= 24
+            focus_score -= 24
         if generated_bulk_flood:
-            telemetry_score -= 80
+            focus_score -= 80
 
         cached = {
             "events": events,
@@ -142,7 +142,7 @@ def _build_execution_focus_payload(
             "last_event_ts": last_event_ts,
             "is_active": is_active,
             "is_recent": is_recent,
-            "telemetry_score": telemetry_score,
+            "focus_score": focus_score,
         }
         row_facts_cache[id(row)] = cached
         return cached
@@ -200,8 +200,8 @@ def _build_execution_focus_payload(
     def _is_generated_bulk_flood(row: Mapping[str, Any]) -> bool:
         return bool(_row_facts(row)["generated_bulk_flood"])
 
-    def _telemetry_score(row: Mapping[str, Any]) -> int:
-        return int(_row_facts(row)["telemetry_score"])
+    def _focus_score(row: Mapping[str, Any]) -> int:
+        return int(_row_facts(row)["focus_score"])
 
     def _focus_rank(row: Mapping[str, Any]) -> tuple[int, int, int, int, int, int, int, int, int, dt.datetime, str]:
         kind_counts = _kind_counts(row)
@@ -222,7 +222,7 @@ def _build_execution_focus_payload(
             1 if bool(row.get("explicit_open")) else 0,
             1 if str(row.get("context", "")).strip() else 0,
             activity_count,
-            _telemetry_score(row),
+            _focus_score(row),
             last_ts,
             str(row.get("id", "")).strip(),
         )

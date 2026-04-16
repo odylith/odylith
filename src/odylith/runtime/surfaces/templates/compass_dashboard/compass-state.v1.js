@@ -1257,7 +1257,7 @@
           next.date = clampedDate;
         }
         if (next.date === todayToken) {
-          // "Today" should run in live mode so Global reflects trailing 24/48h telemetry.
+          // "Today" should run in live mode so Global reflects trailing 24/48h activity.
           next.date = "live";
         }
       }

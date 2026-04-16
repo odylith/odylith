@@ -1110,7 +1110,7 @@ def _apply_provider_enrichment(
     evidence_items: Sequence[Mapping[str, Any]],
 ) -> tuple[dict[str, Any], str, dict[str, Any]]:
     gate = dict(provider_gate) if isinstance(provider_gate, Mapping) else {}
-    telemetry: dict[str, Any] = {
+    provider_metadata: dict[str, Any] = {
         "state": "deterministic-only",
         "provider_used": False,
         "provider_validated": False,
@@ -1127,10 +1127,10 @@ def _apply_provider_enrichment(
         "deterministic_reason_detail": str(gate.get("reason_detail", "")).strip(),
     }
     if provider is None or not bool(gate.get("eligible", False)):
-        return dict(adjudication), "", telemetry
+        return dict(adjudication), "", provider_metadata
 
-    telemetry["provider_used"] = True
-    telemetry["state"] = "deterministic-fallback"
+    provider_metadata["provider_used"] = True
+    provider_metadata["state"] = "deterministic-fallback"
     finding = provider.generate_finding(
         prompt_payload=_provider_prompt_payload(
             dossier=dossier,
@@ -1142,39 +1142,39 @@ def _apply_provider_enrichment(
     failure_code = str(getattr(provider, "last_failure_code", "")).strip()
     failure_detail = str(getattr(provider, "last_failure_detail", "")).strip()
     if finding is None and failure_code in {"timeout", "unavailable", "transport_error"}:
-        telemetry["provider_failure_code"] = failure_code
-        telemetry["provider_failure_detail"] = failure_detail
-        telemetry["provider_runtime_degraded"] = True
-        telemetry["deterministic_reason"] = "provider unavailable"
-        telemetry["deterministic_reason_detail"] = (
+        provider_metadata["provider_failure_code"] = failure_code
+        provider_metadata["provider_failure_detail"] = failure_detail
+        provider_metadata["provider_runtime_degraded"] = True
+        provider_metadata["deterministic_reason"] = "provider unavailable"
+        provider_metadata["deterministic_reason_detail"] = (
             failure_detail
             or "Tribunal kept the deterministic result because the provider was unavailable during this run."
         )
-        return dict(adjudication), "", telemetry
+        return dict(adjudication), "", provider_metadata
     validated, errors = _validate_provider_finding(finding, evidence_items=evidence_items)
-    telemetry["provider_validation_errors"] = errors
+    provider_metadata["provider_validation_errors"] = errors
     if errors or len(validated) != len(_PROVIDER_FIELD_NAMES):
-        telemetry["deterministic_reason"] = "provider validation failed"
-        telemetry["deterministic_reason_detail"] = "Tribunal kept the deterministic result because the provider output failed grounded-evidence validation."
-        return dict(adjudication), "", telemetry
+        provider_metadata["deterministic_reason"] = "provider validation failed"
+        provider_metadata["deterministic_reason_detail"] = "Tribunal kept the deterministic result because the provider output failed grounded-evidence validation."
+        return dict(adjudication), "", provider_metadata
 
     enriched = dict(adjudication)
     for field in _PROVIDER_FIELD_NAMES:
         if field == "maintainer_brief":
             continue
         enriched[field] = str(validated[field]["text"]).strip()
-    telemetry["provider_validated"] = True
-    telemetry["state"] = "validated-ai-assisted"
-    telemetry["deterministic_reason"] = ""
-    telemetry["deterministic_reason_detail"] = ""
-    telemetry["cited_evidence_ids"] = sorted(
+    provider_metadata["provider_validated"] = True
+    provider_metadata["state"] = "validated-ai-assisted"
+    provider_metadata["deterministic_reason"] = ""
+    provider_metadata["deterministic_reason_detail"] = ""
+    provider_metadata["cited_evidence_ids"] = sorted(
         {
             token
             for field in _PROVIDER_FIELD_NAMES
             for token in validated[field]["evidence_ids"]
         }
     )
-    return enriched, str(validated["maintainer_brief"]["text"]).strip(), telemetry
+    return enriched, str(validated["maintainer_brief"]["text"]).strip(), provider_metadata
 
 
 def _can_reuse_cached_case(

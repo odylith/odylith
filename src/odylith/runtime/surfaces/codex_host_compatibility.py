@@ -22,6 +22,7 @@ def _report_notes(report: CodexCompatibilityReport) -> list[str]:
         "Repo-scoped `.codex/` and `.agents/skills/` surfaces are best-effort enhancements and must not be required for core operation.",
         "Trusted-project approval is required before `.codex/hooks.json` and `.codex/agents/*.toml` activate in Codex.",
         "Existing Codex sessions may not hot-reload changed hooks, guidance, or source-local runtime code; restart the session or render `odylith codex visible-intervention` directly before claiming another open chat is visibly active.",
+        "`odylith codex intervention-status` is the low-latency session proof for static readiness, active UX lanes, delivery-ledger state, and the visible fallback smoke command.",
         "Version compatibility is capability-based and does not pin a maximum Codex version.",
     ]
     if report.codex_available and report.codex_version:

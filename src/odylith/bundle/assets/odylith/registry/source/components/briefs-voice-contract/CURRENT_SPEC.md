@@ -23,7 +23,7 @@ maintainer-friendly narration.
 - The provider-worthiness gate that decides whether a new provider pass is
   justified.
 - The partial-salvage and subset-repair rules for bundle responses.
-- The spend and latency telemetry contract for narration attempts.
+- The provider retry and diagnostics contract for narration attempts.
 - The presentation rule that non-ready states must stay truthful, explicitly
   labeled, and must not impersonate a ready narrated brief for the selected
   scope or packet.
@@ -106,8 +106,6 @@ maintainer-friendly narration.
   `src/odylith/runtime/surfaces/compass_standup_brief_batch.py`
 - Maintenance + retry owner:
   `src/odylith/runtime/surfaces/compass_standup_brief_maintenance.py`
-- Spend telemetry owner:
-  `src/odylith/runtime/surfaces/compass_standup_brief_telemetry.py`
 - Voice validator:
   `src/odylith/runtime/surfaces/compass_standup_brief_voice_validation.py`
 - Primary consumer:
@@ -170,22 +168,13 @@ maintainer-friendly narration.
   - a section winner changed enough to alter narration
   - a storyline consequence changed materially
 
-### Spend telemetry
-- Every bundle attempt records:
-  - runtime packet fingerprint
-  - bundle fingerprint
-  - substrate fingerprint(s)
-  - provider decision
-  - input/output chars
-  - estimated token basis
-  - latency
-  - repair count
-  - salvage count
-  - skip reason
-  - failure kind
-  - provider code/detail
-- Wallet backoff uses those recorded failure classes. Capacity/budget/provider
-  failures go to the slow retry lane; `invalid_batch` stays subset-only.
+### Provider diagnostics
+- The brief runtime must not write a separate narration attempt recorder.
+- Skip decisions stay on the explicit `unavailable` brief result for the
+  affected entry.
+- Provider failures stay in the maintained brief state as bounded diagnostics.
+  Capacity, budget, and provider failures go to the slow retry lane;
+  `invalid_batch` stays subset-only.
 
 ## Guardrails
 - No deterministic or templated fallback narrator.
@@ -222,7 +211,7 @@ maintainer-friendly narration.
   Name the seam to watch and the human consequence if it drifts.
 
 ## What To Change Together
-- Substrate builder, prompt, validator, cache epoch, telemetry expectations,
+- Substrate builder, prompt, validator, cache epoch, diagnostics expectations,
   and tests when the brief contract changes.
 - Compass spec, product-surface guidance, and skills when the brief source
   states change.
@@ -243,6 +232,6 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 ## Feature History
 - 2026-04-12: Tightened the governed brief voice again around founder feedback: deterministic rules now explicitly stop at evidence eligibility and drift rejection, while the prose itself stays free-flowing, one-lane, immediate, and human. `Current execution` now prefers one active lane plus one concrete action, `Next planned` now stays on the immediate next move, `Risks to watch` now names explicit seams instead of abstract coherence language, and thin packets are required to produce shorter briefs instead of broader summary prose. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))
-- 2026-04-10: Re-architected Compass brief generation around deterministic narration substrates, exact substrate-fingerprint cache identity, delta bundle narration, provider-worthiness gating, partial salvage, spend telemetry, and daemon-backed hot refresh reuse. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-10: Re-architected Compass brief generation around deterministic narration substrates, exact substrate-fingerprint cache identity, delta bundle narration, provider-worthiness gating, partial salvage, provider diagnostics, and daemon-backed hot refresh reuse. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Promoted the Compass brief voice, exact-cache replay rule, and explicit unavailable state into one governed component, removed deterministic fallback narration from the Compass brief runtime, and invalidated stale cache epochs so old stock prose cannot survive a contract change. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Collapsed global and verified-scoped Compass warming into one packet-level narrated bundle so scope views keep live narration without reopening a second scoped provider queue. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))

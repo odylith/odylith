@@ -48,3 +48,6 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
 
     assert "never say `fixed`, `cleared`, or `resolved` without qualification" in guidance
     assert "same fingerprint as the last falsification or not" in guidance
+    assert "`odylith codex intervention-status` or `odylith claude" in guidance
+    assert "low-latency delivery ledger for Teaser/Ambient, Observation, Proposal, and" in guidance
+    assert "Assist readiness; hook payload generation alone is not enough" in guidance

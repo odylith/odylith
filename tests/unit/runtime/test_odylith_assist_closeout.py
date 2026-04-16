@@ -114,10 +114,98 @@ def test_closeout_assist_includes_linked_updated_governance_artifacts() -> None:
     assert assist["changed_path_source"] == "final_changed_paths"
     assert [row["id"] for row in assist["updated_artifacts"]] == ["B-031", "odylith-chatter"]
     assert [row["kind"] for row in assist["updated_artifacts"]] == ["workstream", "component"]
+    assert [row["id"] for row in assist["affected_contracts"]] == ["B-031", "odylith-chatter"]
+    assert "affected governance contracts" in assist["markdown_text"]
     assert "[B-031](?tab=radar&workstream=B-031)" in assist["markdown_text"]
     assert "[odylith-chatter](?tab=registry&component=odylith-chatter)" in assist["markdown_text"]
     assert "closing with 1 focused check" in assist["markdown_text"]
     assert "governed record" in assist["markdown_text"]
+
+
+def test_closeout_assist_names_contract_ids_without_changed_governance_paths() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Keep intervention UX visible across hosts.",
+        workstreams=["B-096"],
+        components=["governance-intervention-engine"],
+        validation_commands=["pytest -q tests/unit/runtime/test_intervention_engine.py"],
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+        repo_root=Path("/tmp"),
+    )
+
+    assert assist["eligible"] is True
+    assert assist["style"] == "governed_lane"
+    assert assist["updated_artifacts"] == []
+    assert [row["id"] for row in assist["affected_contracts"]] == ["B-096", "governance-intervention-engine"]
+    assert "staying inside affected governance contracts" in assist["markdown_text"]
+    assert "[B-096](?tab=radar&workstream=B-096)" in assist["markdown_text"]
+    assert "[governance-intervention-engine](?tab=registry&component=governance-intervention-engine)" in assist["markdown_text"]
+    assert "1 workstream" not in assist["markdown_text"]
+    assert "1 component" not in assist["markdown_text"]
+
+
+def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_or_ids() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt=(
+            "I still do not see any Odylith ambient highlights or interventions "
+            "visible in chat."
+        ),
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+    )
+
+    assert assist["eligible"] is True
+    assert assist["style"] == "visibility_continuity"
+    assert assist["updated_artifacts"] == []
+    assert assist["affected_contracts"] == []
+    assert "kept the UX signal from disappearing" in assist["markdown_text"]
+    assert "intervention visibility feedback" in assist["markdown_text"]
+    assert "candidate path" not in assist["markdown_text"]
+    assert "focused check" not in assist["markdown_text"]
+
+
+def test_closeout_assist_stays_silent_for_low_signal_grounded_turn_without_paths() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Thanks, that makes sense.",
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+    )
+
+    assert assist["eligible"] is False
+    assert assist["suppressed_reason"] == "missing_user_facing_delta"
 
 
 def test_closeout_assist_suppresses_routing_receipts_for_task_first_fast_lane() -> None:

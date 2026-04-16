@@ -7,7 +7,7 @@ Updated: 2026-03-28
 Backlog: B-008
 
 Goal: Make Odylith expose its real memory areas and gaps through the runtime
-memory snapshot, context-engine status output, and non-telemetry operator
+memory snapshot, context-engine status output, and operator
 readouts.
 
 Assumptions:
@@ -26,7 +26,7 @@ the status output lines, and the shell drawer readout without affecting stored
 repo truth or runtime backends.
 
 Boundary Conditions:
-- Scope includes `memory_snapshot.v1`, runtime status output, non-telemetry
+- Scope includes `memory_snapshot.v1`, runtime status output,
   diagnostic readouts, and Context Engine source-spec updates.
 - Scope excludes durable decision memory, workspace/actor identity memory,
   contradiction persistence, and hosted augmentation.
@@ -43,7 +43,7 @@ Related Bugs:
 - [x] `memory_snapshot.v1` includes named memory areas with state, summary, counts, and gaps.
 - [x] `odylith context-engine status` prints memory-area counts and headline.
 - [x] Runtime and diagnostic readouts expose a dedicated memory-area section
-      without requiring dashboard shell telemetry UI.
+      without requiring dashboard shell status UI.
 - [x] Tests cover snapshot, status, and shell rendering for the new contract.
 
 ## Non-Goals
@@ -96,7 +96,7 @@ Related Bugs:
 - [x] `pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_odylith_memory_areas.py tests/unit/runtime/test_render_tooling_dashboard.py`
 
 ## Rollout/Communication
-- [x] Ship the readout as an additive contract on top of existing runtime telemetry.
+- [x] Ship the readout as an additive contract on top of existing runtime diagnostics.
 - [x] Keep deeper collaboration-memory work deferred to later governed slices.
 
 ## Dependencies/Preconditions
@@ -115,5 +115,5 @@ Related Bugs:
 - Odylith now exposes named memory areas, not just backend implementation detail.
 - Runtime status tells operators what memory is strong, cold, or still planned.
 - Memory posture remains available through runtime/diagnostic readouts; dashboard
-  product surfaces must not render it as shell telemetry chrome.
+  product surfaces must not render it as shell status chrome.
 - The install package no longer forces the whole install stack to import eagerly during runtime-memory test collection.

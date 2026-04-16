@@ -23,6 +23,9 @@ def render_codex_session_brief(
 ) -> str:
     payload = payload_override if payload_override is not None else codex_host_shared.load_compass_runtime(repo_root)
     lines: list[str] = ["Odylith grounded brief for this Codex session."]
+    lines.append(
+        "Interventions: Observation, Proposal, and Assist are armed through hook output plus assistant-visible fallback; run `odylith codex intervention-status` if chat stays quiet."
+    )
     headline = codex_host_shared.active_workstream_headline(payload)
     if headline:
         lines.append(f"Headline: {headline}")

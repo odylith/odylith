@@ -91,8 +91,9 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "At closeout, you may add at most one short `Odylith Assist:` line" in block
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in block
     assert "Lead with the user win" in block
-    assert "link updated governance ids inline when they were actually changed" in block
-    assert "frame the edge against `odylith_off` or the broader unguided path" in block
+    assert "link updated governance IDs inline when they were actually changed" in block
+    assert "name the affected governance-contract IDs" in block
+    assert "Frame the edge against `odylith_off` or the broader unguided path" in block
     assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in block
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in block
     assert "Use only concrete observed counts, measured deltas, or validation outcomes, and ground the line in concrete observed counts, measured deltas, or validation outcomes" not in block
@@ -117,7 +118,13 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "Odylith didn't return immediately" not in block
     assert "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`." not in block
     assert "surface the earned Observation/Proposal beat visibly at the hook moment" in block
-    assert "Stop is the fallback closeout lane, not the primary intervention moment." in block
+    assert "`odylith codex intervention-status` or `odylith claude" in block
+    assert "low-latency delivery ledger for Teaser, Ambient Highlight, Observation," in block
+    assert "Proposal, and Assist readiness; hook payload generation alone is not enough" in block
+    assert "Explicit feedback that Odylith ambient highlights, interventions, Assist," in block
+    assert "ordinary low-signal short" in block
+    assert "Stop is the fallback closeout and live-beat recovery lane" in block
+    assert "unseen Ambient Highlight" in block
 
 
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:

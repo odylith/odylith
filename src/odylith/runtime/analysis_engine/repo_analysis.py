@@ -69,7 +69,7 @@ _LABEL_PATTERNS: list[tuple[set[str], str]] = [
     ({"payment", "billing", "invoice", "checkout", "stripe"}, "Payments"),
     ({"storage", "upload", "file", "blob", "s3"}, "Storage"),
     ({"cache", "redis", "memcache"}, "Cache"),
-    ({"log", "trace", "monitor", "observ", "telemetry"}, "Observability"),
+    ({"log", "trace", "monitor", "observ"}, "Observability"),
     ({"test", "spec", "fixture", "mock"}, "Tests"),
     ({"memory", "embed", "vector", "similarity"}, "Memory"),
     ({"dashboard", "surface", "shell", "panel"}, "Dashboard"),

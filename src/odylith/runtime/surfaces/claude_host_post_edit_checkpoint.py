@@ -160,6 +160,9 @@ def main(argv: list[str] | None = None) -> int:
             repo_root=repo_root,
             bundle=bundle,
             include_proposal=True,
+            delivery_channel="system_message_and_assistant_fallback",
+            delivery_status="assistant_fallback_ready",
+            render_surface="claude_post_tool_use",
         )
     payload_out = host_surface_runtime.claude_post_tool_payload(
         developer_context=developer_context,

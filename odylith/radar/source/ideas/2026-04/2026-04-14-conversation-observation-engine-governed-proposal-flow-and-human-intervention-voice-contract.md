@@ -103,6 +103,16 @@ host observation points. The engine should:
   governed targets are concrete
 - write proposal lifecycle events into Compass and derive pending proposal
   state there instead of introducing a shadow store
+- attach delivery metadata to the same Compass intervention events so Codex
+  and Claude can report whether Teaser/Ambient, Observation, Proposal, and
+  Assist are armed or recently visible-ready without a second status store
+- let final `Odylith Assist` name the affected workstream, component, diagram,
+  or bug IDs from bounded request, packet, target-ref, or changed-path truth
+  while only calling records updated when changed-path evidence proves it
+- expose low-latency `odylith codex intervention-status` and
+  `odylith claude intervention-status` commands that show static readiness,
+  active UX lanes, recent delivery-ledger events, pending proposals, and the
+  exact visible-fallback smoke command
 - carry the originating prompt excerpt and rich proposal display payload through
   that lifecycle so later hooks and downstream surfaces keep reasoning from the
   human conversation instead of Odylith's own pending-status summaries
@@ -178,6 +188,18 @@ host observation points. The engine should:
 - Pending proposal state carries enough rich markdown and status payload for
   downstream surfaces to render the same delightful Proposal UX without
   rebuilding it from summary strings.
+- Codex and Claude can prove per-session intervention activation through a
+  cheap delivery-ledger status surface before anyone claims the UX is active in
+  a live chat.
+- Teaser and Ambient Highlight are distinct UX lanes: prompt submit stays
+  lightweight, while checkpoint/stop recovery can surface a mature ambient
+  beat instead of repeating a stale teaser.
+- `Odylith Assist` appears more consistently for meaningful closeouts,
+  including explicit "I cannot see Odylith" visibility-feedback turns, while
+  ordinary low-signal acknowledgements remain silent.
+- Host-hidden Ambient Highlight, Observation, and Proposal beats can replay
+  through Stop's one-shot continuation path before Assist, so the visible
+  product experience does not collapse into Assist-only closeouts.
 
 ## Validation
 - Focused runtime tests for the shared engine and both host integrations pass.
@@ -239,6 +261,13 @@ surface, and the brand contract must be governed as rigorously as the runtime.
 - Keep regression tests proving prompt memory survives the full intervention
   lifecycle and that richer pending-proposal payloads stay within hot-path
   latency budgets.
+- Keep regression tests proving ambient beats stale teaser text after evidence
+  matures, Stop recovers from short final messages using session prompt memory,
+  visibility-feedback Assist is narrow and meaningful, and exact-label dedupe
+  never suppresses a closeout the user has not actually seen.
+- Keep tests proving unseen Ambient, Observation, and Proposal events from
+  prompt/checkpoint lanes can recover through the same Stop visibility
+  mechanism as Assist.
 
 ## Open Questions
 - Which update and reopen helper paths should be promoted from preview-only to

@@ -9,6 +9,16 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.intervention_engine import stream_state
 
 
+_STOP_RECOVERABLE_LIVE_KINDS: tuple[str, ...] = (
+    "capture_proposed",
+    "intervention_card",
+    "ambient_signal",
+    "intervention_teaser",
+)
+_STOP_RECOVERY_SKIP_STATUSES: frozenset[str] = frozenset({"manual_visible"})
+_STOP_RECOVERY_SKIP_CHANNELS: frozenset[str] = frozenset({"manual_visible_command", "stop_one_shot_guard"})
+
+
 def _normalize_string(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
 
@@ -139,6 +149,43 @@ def recent_session_ids(
     return rows[:8]
 
 
+def recent_session_live_markdown(*, repo_root: Path, session_id: str, limit: int = 120) -> str:
+    """Return the latest non-closeout live beat that Stop can replay visibly.
+
+    Checkpoint hook channels are not equally visible across hosts. Stop is the
+    proven one-shot continuation lane, so it may replay an earlier generated
+    Ambient/Observation/Proposal/teaser beat when that beat has not already
+    been explicitly rendered by the manual-visible or Stop lanes.
+    """
+
+    normalized_session = _normalize_string(session_id)
+    if not normalized_session:
+        return ""
+    for event in reversed(
+        stream_state.load_recent_intervention_events(
+            repo_root=repo_root,
+            limit=max(1, int(limit)),
+            session_id=normalized_session,
+        )
+    ):
+        kind = _normalize_string(event.get("kind")).lower()
+        if kind not in _STOP_RECOVERABLE_LIVE_KINDS:
+            continue
+        if _normalize_string(event.get("turn_phase")).lower() == "stop_summary":
+            continue
+        if _normalize_string(event.get("delivery_status")).lower() in _STOP_RECOVERY_SKIP_STATUSES:
+            continue
+        if _normalize_string(event.get("delivery_channel")).lower() in _STOP_RECOVERY_SKIP_CHANNELS:
+            continue
+        display = _normalize_block_string(event.get("display_markdown")) or _normalize_block_string(event.get("display_plain"))
+        if display:
+            return display
+        summary = _normalize_string(event.get("summary"))
+        if summary:
+            return summary
+    return ""
+
+
 def observation_envelope(
     *,
     host_family: str,
@@ -225,6 +272,10 @@ def append_bundle_events(
     repo_root: Path,
     bundle: Mapping[str, Any],
     include_proposal: bool,
+    delivery_channel: str = "",
+    delivery_status: str = "",
+    render_surface: str = "",
+    delivery_latency_ms: float | None = None,
 ) -> list[str]:
     observation = _mapping(bundle.get("observation"))
     candidate = _mapping(bundle.get("candidate"))
@@ -267,6 +318,10 @@ def append_bundle_events(
             assistant_summary=assistant_summary,
             moment_kind=_normalize_string(moment.get("kind")),
             semantic_signature=semantic_signature if isinstance(semantic_signature, list) else (),
+            delivery_channel=delivery_channel,
+            delivery_status=delivery_status,
+            render_surface=render_surface,
+            delivery_latency_ms=delivery_latency_ms,
         )
         events.append("intervention_teaser")
     if stage == "card" and not _normalize_string(candidate.get("suppressed_reason")) and _normalize_string(candidate.get("markdown_text")):
@@ -287,6 +342,10 @@ def append_bundle_events(
             assistant_summary=assistant_summary,
             moment_kind=_normalize_string(moment.get("kind")),
             semantic_signature=semantic_signature if isinstance(semantic_signature, list) else (),
+            delivery_channel=delivery_channel,
+            delivery_status=delivery_status,
+            render_surface=render_surface,
+            delivery_latency_ms=delivery_latency_ms,
         )
         events.append("intervention_card")
     if (
@@ -315,6 +374,10 @@ def append_bundle_events(
             assistant_summary=assistant_summary,
             moment_kind=_normalize_string(moment.get("kind")),
             semantic_signature=semantic_signature if isinstance(semantic_signature, list) else (),
+            delivery_channel=delivery_channel,
+            delivery_status=delivery_status,
+            render_surface=render_surface,
+            delivery_latency_ms=delivery_latency_ms,
         )
         events.append("capture_proposed")
     return events

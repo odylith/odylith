@@ -89,6 +89,7 @@ _CLAUDE_HOST_COMMAND_MODULES = {
     "statusline": "odylith.runtime.surfaces.claude_host_statusline",
     "pre-compact-snapshot": "odylith.runtime.surfaces.claude_host_precompact_snapshot",
     "compatibility": "odylith.runtime.surfaces.claude_host_compatibility",
+    "intervention-status": "odylith.runtime.surfaces.claude_host_intervention_status",
     "session-start": "odylith.runtime.surfaces.claude_host_session_brief",
     "subagent-start": "odylith.runtime.surfaces.claude_host_subagent_start",
     "prompt-context": "odylith.runtime.surfaces.claude_host_prompt_context",
@@ -108,6 +109,7 @@ _CODEX_HOST_COMMAND_MODULES = {
     "visible-intervention": "odylith.runtime.surfaces.codex_host_visible_intervention",
     "stop-summary": "odylith.runtime.surfaces.codex_host_stop_summary",
     "compatibility": "odylith.runtime.surfaces.codex_host_compatibility",
+    "intervention-status": "odylith.runtime.surfaces.codex_host_intervention_status",
 }
 _SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
 _COMPONENT_AUTHORING_MODULE = "odylith.runtime.governance.component_authoring"
@@ -2217,6 +2219,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("prompt-context", "Render discreet Odylith Claude UserPromptSubmit context."),
         ("prompt-teaser", "Render best-effort Odylith Claude UserPromptSubmit teaser output."),
         ("bash-guard", "Evaluate the Odylith destructive-command guard for Claude Bash hooks."),
+        ("intervention-status", "Report Claude Odylith intervention activation and visible-delivery posture."),
         ("post-edit-checkpoint", "Refresh Odylith governance dashboards after a Claude Write/Edit/MultiEdit tool call."),
         ("post-bash-checkpoint", "Nudge Odylith checkpointing after edit-like Claude Bash tool calls."),
         ("visible-intervention", "Render chat-visible Odylith Markdown when Claude hook display is hidden."),
@@ -2236,6 +2239,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("prompt-context", "Render the Odylith-grounded Codex UserPromptSubmit hook output."),
         ("bash-guard", "Evaluate the Odylith destructive-command guard for Codex Bash hooks."),
         ("post-bash-checkpoint", "Nudge Odylith checkpointing after edit-like Codex tool calls."),
+        ("intervention-status", "Report Codex Odylith intervention activation and visible-delivery posture."),
         ("visible-intervention", "Render chat-visible Odylith Markdown when Codex hook display is hidden."),
         ("stop-summary", "Log meaningful Codex stop summaries to Compass."),
         ("compatibility", "Inspect the local Codex compatibility posture for Odylith."),

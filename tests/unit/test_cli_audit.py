@@ -353,6 +353,7 @@ for wave_command in (
 for codex_command in (
     "bash-guard",
     "compatibility",
+    "intervention-status",
     "post-bash-checkpoint",
     "prompt-context",
     "session-start-ground",
@@ -373,6 +374,7 @@ for codex_command in (
 for claude_command in (
     "bash-guard",
     "compatibility",
+    "intervention-status",
     "post-bash-checkpoint",
     "post-edit-checkpoint",
     "pre-compact-snapshot",

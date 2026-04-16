@@ -36,6 +36,21 @@ _CONVENTIONAL_COMMIT_PREFIX_RE = re.compile(
 )
 _RETIRED_SURFACE_MARKER = "sen" "tinel"
 _RETIRED_SURFACE_LABEL = "retired control surface"
+_CASEBOOK_BUG_PATH_PREFIX = "odylith/casebook/bugs/"
+_UNIT_RUNTIME_TEST_PREFIX = "tests/unit/runtime/"
+_ACTIVE_SURFACE_MODULE_STEMS: frozenset[str] = frozenset(
+    {
+        "compass_standup_brief_batch",
+        "compass_standup_brief_maintenance",
+        "compass_standup_brief_narrator",
+        "compass_standup_brief_substrate",
+        "compass_standup_brief_voice_validation",
+        "tooling_dashboard_cheatsheet_presenter",
+        "tooling_dashboard_release_presenter",
+        "tooling_dashboard_shell_presenter",
+        "tooling_dashboard_welcome_presenter",
+    }
+)
 _GENERIC_TX_HEADLINE_RE = re.compile(
     r"^(?:"
     r"(?:edited|updated|modified|changed)\s+(?:\d+\s+)?files?"
@@ -491,18 +506,15 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
     commits: list[dict[str, Any]] = []
     current: dict[str, Any] | None = None
     files: list[str] = []
+    live_casebook_bug_paths = _load_casebook_index_paths(repo_root)
 
     for raw in out.splitlines():
         if "\x1f" in raw:
             if current is not None:
-                current["files"] = sorted(
-                    {
-                        normalized
-                        for item in files
-                        if item.strip()
-                        for normalized in [_normalize_repo_token(item, repo_root=repo_root)]
-                        if normalized and not _contains_retired_surface_marker(normalized)
-                    }
+                current["files"] = _normalized_publishable_activity_files(
+                    repo_root=repo_root,
+                    files=files,
+                    live_casebook_bug_paths=live_casebook_bug_paths,
                 )
                 commits.append(current)
             parts = raw.split("\x1f")
@@ -533,14 +545,10 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
             files.append(raw.strip())
 
     if current is not None:
-        current["files"] = sorted(
-            {
-                normalized
-                for item in files
-                if item.strip()
-                for normalized in [_normalize_repo_token(item, repo_root=repo_root)]
-                if normalized and not _contains_retired_surface_marker(normalized)
-            }
+        current["files"] = _normalized_publishable_activity_files(
+            repo_root=repo_root,
+            files=files,
+            live_casebook_bug_paths=live_casebook_bug_paths,
         )
         commits.append(current)
 
@@ -577,9 +585,11 @@ def _collect_git_local_changes(repo_root: Path) -> list[dict[str, str]]:
         if " -> " in path:
             path = path.split(" -> ", 1)[1].strip()
         token = _normalize_repo_token(path, repo_root=repo_root)
-        if not token or _contains_retired_surface_marker(token):
-            continue
-        if _should_skip_internal_runtime_artifact(token):
+        if _should_skip_publishable_activity_path(
+            repo_root=repo_root,
+            path=token,
+            live_casebook_bug_paths=live_casebook_bug_paths,
+        ):
             continue
         if _should_skip_deleted_casebook_bug(
             repo_root=repo_root,
@@ -596,6 +606,51 @@ def _collect_git_local_changes(repo_root: Path) -> list[dict[str, str]]:
             continue
         rows.append({"status": status.strip() or status, "path": token})
     return rows
+
+
+def _normalized_publishable_activity_files(
+    *,
+    repo_root: Path,
+    files: Sequence[str],
+    live_casebook_bug_paths: set[str],
+) -> list[str]:
+    return sorted(
+        {
+            normalized
+            for item in files
+            if str(item or "").strip()
+            for normalized in [_normalize_repo_token(str(item), repo_root=repo_root)]
+            if not _should_skip_publishable_activity_path(
+                repo_root=repo_root,
+                path=normalized,
+                live_casebook_bug_paths=live_casebook_bug_paths,
+            )
+        }
+    )
+
+
+def _should_skip_publishable_activity_path(
+    *,
+    repo_root: Path,
+    path: str,
+    live_casebook_bug_paths: set[str],
+) -> bool:
+    token = str(path or "").strip()
+    if not token:
+        return True
+    if _contains_retired_surface_marker(token):
+        return True
+    if _is_retired_surface_module_path(token):
+        return True
+    if _should_skip_internal_runtime_artifact(token):
+        return True
+    if _is_deindexed_missing_casebook_bug_path(
+        repo_root=repo_root,
+        path=token,
+        live_casebook_bug_paths=live_casebook_bug_paths,
+    ):
+        return True
+    return False
 
 
 def _load_casebook_index_paths(repo_root: Path) -> set[str]:
@@ -637,6 +692,20 @@ def _should_skip_deleted_casebook_bug(
     return not _resolve(repo_root, token).exists()
 
 
+def _is_deindexed_missing_casebook_bug_path(
+    *,
+    repo_root: Path,
+    path: str,
+    live_casebook_bug_paths: set[str],
+) -> bool:
+    token = str(path or "").strip()
+    if not token.startswith(_CASEBOOK_BUG_PATH_PREFIX) or not token.endswith(".md"):
+        return False
+    if token in live_casebook_bug_paths:
+        return False
+    return not _resolve(repo_root, token).exists()
+
+
 def _should_skip_internal_runtime_artifact(path: str) -> bool:
     token = str(path or "").strip().lower()
     if not token:
@@ -663,6 +732,28 @@ def _should_skip_deleted_legacy_bug_path(
 def _contains_retired_surface_marker(text: str) -> bool:
     token = str(text or "").strip().lower()
     return bool(token) and _RETIRED_SURFACE_MARKER in token
+
+
+def _surface_module_stem_from_activity_path(path: str) -> str:
+    token = str(path or "").strip().replace("\\", "/").lower()
+    if token.startswith("src/odylith/runtime/surfaces/") and token.endswith(".py"):
+        return Path(token).stem
+    if token.startswith(_UNIT_RUNTIME_TEST_PREFIX) and token.endswith(".py"):
+        stem = Path(token).stem
+        if stem.startswith("test_"):
+            return stem.removeprefix("test_")
+    return ""
+
+
+def _is_retired_surface_module_path(path: str) -> bool:
+    stem = _surface_module_stem_from_activity_path(path)
+    if not stem:
+        return False
+    governed_family = stem.startswith("compass_standup_brief_")
+    shell_presenter_family = stem.startswith("tooling_dashboard_") and stem.endswith("_presenter")
+    if not governed_family and not shell_presenter_family:
+        return False
+    return stem not in _ACTIVE_SURFACE_MODULE_STEMS
 
 
 def _sanitize_retired_surface_text(text: str) -> str:
@@ -748,6 +839,7 @@ def _load_agent_stream_events(
         return []
 
     events: list[dict[str, Any]] = []
+    live_casebook_bug_paths = _load_casebook_index_paths(repo_root)
     for idx, raw in enumerate(stream_path.read_text(encoding="utf-8").splitlines(), start=1):
         line = str(raw or "").strip()
         if not line:
@@ -792,7 +884,13 @@ def _load_agent_stream_events(
             seen_artifacts: set[str] = set()
             for token in artifact_values:
                 normalized = _normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
-                if not normalized or normalized in seen_artifacts:
+                if normalized in seen_artifacts:
+                    continue
+                if _should_skip_publishable_activity_path(
+                    repo_root=repo_root,
+                    path=normalized,
+                    live_casebook_bug_paths=live_casebook_bug_paths,
+                ):
                     continue
                 seen_artifacts.add(normalized)
                 artifacts.append(normalized)

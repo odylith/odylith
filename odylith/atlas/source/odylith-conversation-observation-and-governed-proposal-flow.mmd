@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-16 for B-096 and CB-121 to show how one shared cross-host engine turns conversation evidence into humane observations, confirmation-gated proposals, chat-visible assistant fallback, and Compass-audited governed writes across dev, dogfood, and consumer lanes.
+%% Reviewed 2026-04-16 for B-096 and CB-121 to show how one shared cross-host engine turns conversation evidence into humane observations, confirmation-gated proposals, chat-visible assistant fallback, delivery-status proof, and Compass-audited governed writes across dev, dogfood, and consumer lanes.
 flowchart LR
     User["Live conversation turn<br/>prompt + assistant summary + edit or bash checkpoint"] --> Hosts
     Packet["Grounded packet + delivery truth<br/>packet summary + active refs + lane context"] --> Envelope
@@ -34,6 +34,7 @@ flowchart LR
     Core --> Observation["**Odylith Observation**<br/>one short human line<br/>the non-obvious fact that changes the next move"]
     Core --> Proposal["**Odylith Proposal**<br/>flat per-surface actions<br/>one confirmation for the whole bundle"]
     Core --> Events["Compass lifecycle events<br/>intervention_teaser<br/>intervention_card<br/>capture_proposed<br/>capture_applied<br/>capture_declined"]
+    Core --> DeliveryMetadata["Delivery metadata<br/>delivery_channel + delivery_status<br/>render_surface"]
 
     Observation --> Chatter["Odylith Chatter + assistant render<br/>friendly + delightful + soulful<br/>simple + clear + accurate + human"]
     Proposal --> Chatter
@@ -44,6 +45,10 @@ flowchart LR
     ManualVisible --> Chat
     HookPayloads --> StopGuard["Stop one-shot continuation<br/>recover missed Assist or late Observation"]
     StopGuard --> Chat
+    DeliveryMetadata --> Events
+    Events --> Ledger["Delivery ledger<br/>Teaser + Ambient + Observation<br/>Proposal + Assist visibility"]
+    Ledger --> Status["intervention-status CLI<br/>readiness + active lanes<br/>recent visible-ready beats + smoke"]
+    Status --> Chat
 
     Proposal --> Confirm{"User confirms<br/>apply this proposal"}
     Confirm -->|yes| Apply["CLI-first apply<br/>Radar + Registry + Atlas + Casebook<br/>only where a safe helper exists"]

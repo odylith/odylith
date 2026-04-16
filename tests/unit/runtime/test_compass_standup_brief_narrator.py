@@ -2218,7 +2218,7 @@ def test_build_standup_brief_rejects_cached_current_execution_when_freshness_evi
     _assert_unavailable(reused, reason="provider_deferred")
 
 
-def test_build_standup_brief_rejects_cached_risk_section_when_it_degrades_into_counts_only_telemetry(
+def test_build_standup_brief_rejects_cached_risk_section_when_it_degrades_into_raw_counts(
     tmp_path: Path,
 ) -> None:
     seeded_provider = _FakeProvider(_valid_provider_result())

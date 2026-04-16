@@ -38,7 +38,7 @@ _POP_MISSING = object()
 
 
 @dataclass(frozen=True, slots=True)
-class MemoryTelemetry:
+class MemoryStats:
     total_bytes: int | None
     available_bytes: int | None
     source: str
@@ -49,25 +49,25 @@ class MemoryTelemetry:
 class CacheBudgetPolicy:
     mode: str
     low_ram: bool
-    telemetry: MemoryTelemetry
+    memory: MemoryStats
     hot_path_budget_bytes: int
     show_working_budget_bytes: int
 
     @classmethod
     def detect(cls) -> "CacheBudgetPolicy":
-        telemetry = detect_memory_telemetry()
+        memory = detect_memory_stats()
         low_ram = (
-            not telemetry.detected
-            or (telemetry.total_bytes is not None and telemetry.total_bytes <= _LOW_RAM_TOTAL_BYTES)
+            not memory.detected
+            or (memory.total_bytes is not None and memory.total_bytes <= _LOW_RAM_TOTAL_BYTES)
             or (
-                telemetry.available_bytes is not None
-                and telemetry.available_bytes < _LOW_RAM_AVAILABLE_BYTES
+                memory.available_bytes is not None
+                and memory.available_bytes < _LOW_RAM_AVAILABLE_BYTES
             )
         )
         return cls(
             mode="low_ram" if low_ram else "normal",
             low_ram=low_ram,
-            telemetry=telemetry,
+            memory=memory,
             hot_path_budget_bytes=(
                 _LOW_RAM_HOT_PATH_BUDGET_BYTES if low_ram else _NORMAL_HOT_PATH_BUDGET_BYTES
             ),
@@ -79,10 +79,10 @@ class CacheBudgetPolicy:
         )
 
 
-def detect_memory_telemetry() -> MemoryTelemetry:
+def detect_memory_stats() -> MemoryStats:
     total_bytes, available_bytes, source = _sysconf_memory_bytes()
     if total_bytes is not None or available_bytes is not None:
-        return MemoryTelemetry(
+        return MemoryStats(
             total_bytes=total_bytes,
             available_bytes=available_bytes,
             source=source or "sysconf",
@@ -90,13 +90,13 @@ def detect_memory_telemetry() -> MemoryTelemetry:
         )
     total_bytes, available_bytes, source = _darwin_memory_bytes()
     if total_bytes is not None or available_bytes is not None:
-        return MemoryTelemetry(
+        return MemoryStats(
             total_bytes=total_bytes,
             available_bytes=available_bytes,
             source=source or "darwin",
             detected=True,
         )
-    return MemoryTelemetry(
+    return MemoryStats(
         total_bytes=None,
         available_bytes=None,
         source="unknown",
@@ -441,8 +441,8 @@ def scaled_cache_budget_bytes(*, base_budget_bytes: int, numerator: int, denomin
 __all__ = [
     "ByteBudgetedSegmentedCache",
     "CacheBudgetPolicy",
-    "MemoryTelemetry",
-    "detect_memory_telemetry",
+    "MemoryStats",
+    "detect_memory_stats",
     "estimate_object_size_bytes",
     "scaled_cache_budget_bytes",
 ]

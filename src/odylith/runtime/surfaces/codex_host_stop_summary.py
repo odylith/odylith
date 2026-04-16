@@ -27,8 +27,6 @@ def _stop_intervention_bundle(
     if isinstance(bundle_override, Mapping):
         return dict(bundle_override)
     summary = codex_host_shared.meaningful_stop_summary(message)
-    if not summary:
-        return {}
     resolved_root = Path(repo_root).expanduser().resolve()
     prompt_excerpt = intervention_surface_runtime.recent_session_prompt_excerpt(
         repo_root=resolved_root,
@@ -48,6 +46,8 @@ def _stop_intervention_bundle(
         session_id=session_id,
         field="components",
     )
+    if not any((summary, prompt_excerpt, changed_paths, workstreams, components)):
+        return {}
     grounded = bool(prompt_excerpt or summary or changed_paths or workstreams or components)
     request = orchestrator.OrchestrationRequest(
         prompt=prompt_excerpt or summary,
@@ -124,6 +124,12 @@ def render_codex_stop_summary(
         markdown=True,
         include_proposal=False,
     )
+    recovered_live_text = intervention_surface_runtime.recent_session_live_markdown(
+        repo_root=Path(repo_root).expanduser().resolve(),
+        session_id=session_id,
+    )
+    if recovered_live_text and (not live_text or "Odylith can already" in live_text):
+        live_text = recovered_live_text
     closeout_text = conversation_surface.render_closeout_text(
         bundle,
         markdown=True,
@@ -164,6 +170,10 @@ def main(argv: list[str] | None = None) -> int:
             repo_root=Path(args.repo_root).expanduser().resolve(),
             bundle=bundle,
             include_proposal=False,
+            include_closeout=True,
+            delivery_channel="stop_one_shot_guard",
+            delivery_status="stop_continuation_ready",
+            render_surface="codex_stop",
         )
     if rendered:
         sys.stdout.write(

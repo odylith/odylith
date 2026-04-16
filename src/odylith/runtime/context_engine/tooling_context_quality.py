@@ -554,7 +554,7 @@ def summarize_packet_quality(
     packet_metrics: Mapping[str, Any],
     final_payload: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Return compact packet-quality telemetry suitable for payloads and timing."""
+    """Return compact packet-quality diagnostics suitable for payloads and timing."""
 
     payload = final_payload if isinstance(final_payload, Mapping) else {}
     retained_plan = _retained_retrieval_plan(payload, retrieval_plan)

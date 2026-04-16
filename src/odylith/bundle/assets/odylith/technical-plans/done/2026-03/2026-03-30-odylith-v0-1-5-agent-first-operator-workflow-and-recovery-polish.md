@@ -127,8 +127,8 @@ Related Bugs:
         focused contract tests on the updated text.
 
 ## Validation/Test Plan
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/test_cli.py tests/unit/install/test_agents.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_tooling_context_routing.py tests/integration/install/test_manager.py`
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_tooling_context_packet_builder.py tests/unit/runtime/test_odylith_benchmark_runner.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py tests/unit/install/test_agents.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_tooling_context_routing.py tests/integration/install/test_manager.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_tooling_context_packet_builder.py tests/unit/runtime/test_odylith_benchmark_runner.py`
 - [x] `git diff --check`
 
 ## Rollout/Communication

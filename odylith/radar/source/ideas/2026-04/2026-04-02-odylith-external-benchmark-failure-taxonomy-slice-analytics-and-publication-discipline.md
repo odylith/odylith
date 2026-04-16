@@ -7,11 +7,11 @@ priority: P1
 commercial_value: 4
 product_impact: 4
 market_value: 5
-impacted_parts: external benchmark telemetry, failure taxonomy, slice analytics, publication fairness, score reproducibility, and benchmark narrative discipline
+impacted_parts: external benchmark evidence, failure taxonomy, slice analytics, publication fairness, score reproducibility, and benchmark narrative discipline
 sizing: M
 complexity: High
 ordering_score: 100
-ordering_rationale: External benchmark scores will attract disproportionate attention, so Odylith needs a stronger telemetry and publication contract before those numbers become part of the public story; otherwise the repo will optimize toward headlines instead of learning.
+ordering_rationale: External benchmark scores will attract disproportionate attention, so Odylith needs a stronger evidence and publication contract before those numbers become part of the public story; otherwise the repo will optimize toward headlines instead of learning.
 confidence: high
 founder_override: no
 promoted_to_plan:
@@ -48,7 +48,7 @@ bootstrapped lanes, or warm and cold container postures.
   understand what an Odylith score actually means before trusting it.
 
 ## Opportunity
-If Odylith treats external benchmarks as governed telemetry rather than only as
+If Odylith treats external benchmarks as governed evidence rather than only as
 marketing numbers, then every run becomes a structured learning signal. The
 same framework also prevents accidental or deliberate publication drift once
 leaderboard-style reporting enters the product narrative.

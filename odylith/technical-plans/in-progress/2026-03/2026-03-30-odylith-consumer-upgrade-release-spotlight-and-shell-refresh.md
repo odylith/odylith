@@ -110,7 +110,7 @@ Related Bugs:
 
 ## Non-Goals
 - [ ] Product-repo maintainer upgrade changes.
-- [ ] Adding hosted release telemetry.
+- [ ] Adding hosted release usage tracking.
 - [ ] Reworking unrelated dashboard panels.
 - [ ] Rewriting the full `odylith sync` contract for every surface.
 - [ ] Treating commit-time autofix as the primary consumer freshness posture.

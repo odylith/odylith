@@ -13,7 +13,7 @@ improving the benchmark proof against the Codex/full-scan baseline.
 Assumptions:
 - Repo truth remains authoritative over any local memory artifact.
 - The new memory model should surface higher-signal judgment without leaking
-  verbose telemetry into the hot-path prompt payload.
+  verbose diagnostics into the hot-path prompt payload.
 - The local memory backend is mature enough to be promoted into a first-class
   Registry component.
 

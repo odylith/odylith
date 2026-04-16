@@ -94,7 +94,7 @@ series of special cases.
 ## Non-Goals
 - changing product-repo maintainer upgrade posture beyond clearer guardrails
 - redesigning the main dashboard information architecture outside the popup
-- adding remote telemetry or hosted release analytics
+- adding remote usage tracking or hosted release analytics
 
 ## Risks
 - automatic surface refresh could make upgrade or reinstall feel slower if it blocks on shell rendering

@@ -70,6 +70,35 @@ _TOKEN_STOPWORDS = {
     "with",
     "work",
 }
+_VISIBILITY_PRODUCT_TOKENS = {
+    "ambient",
+    "assist",
+    "intervention",
+    "interventions",
+    "observation",
+    "observations",
+    "odylith",
+    "proposal",
+    "proposals",
+}
+_VISIBILITY_DELIVERY_TOKENS = {
+    "chat",
+    "hook",
+    "hooks",
+    "output",
+    "outputs",
+    "see",
+    "seen",
+    "show",
+    "showing",
+    "shown",
+    "surface",
+    "surfaced",
+    "surfacing",
+    "visible",
+    "visibility",
+    "ux",
+}
 
 
 def _normalize_string(value: Any) -> str:
@@ -547,6 +576,78 @@ def _artifact_phrase(rows: Sequence[Mapping[str, Any]]) -> tuple[str, str]:
     return f"updating {markdown}", f"updating {plain}"
 
 
+def _affected_contract_rows(
+    *,
+    updated_artifacts: Sequence[Mapping[str, Any]],
+    request: Any,
+    repo_root: Path | None,
+    context_rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    allowed_kinds = {"workstream", "component", "diagram", "bug"}
+
+    def add(row: Mapping[str, Any]) -> None:
+        kind = _normalize_token(row.get("kind"))
+        entity_id = _normalize_string(row.get("id"))
+        if kind not in allowed_kinds or not entity_id:
+            return
+        key = (kind, entity_id)
+        if key in seen:
+            return
+        seen.add(key)
+        rows.append(dict(row))
+
+    for row in updated_artifacts:
+        if isinstance(row, Mapping):
+            add(row)
+    for row in _request_anchor_artifacts(
+        request=request,
+        repo_root=repo_root,
+        context_rows=context_rows,
+    ):
+        add(row)
+    return rows[:4]
+
+
+def _affected_contract_phrase(rows: Sequence[Mapping[str, Any]], *, verb: str) -> tuple[str, str]:
+    if not rows:
+        return "", ""
+    markdown = _join_items([str(row.get("markdown_ref", "")).strip() for row in rows])
+    plain = _join_items([str(row.get("plain_ref", "")).strip() for row in rows])
+    return f"{verb} affected governance contracts {markdown}", f"{verb} affected governance contracts {plain}"
+
+
+def _visibility_feedback_phrase(*, request: Any, assistant_summary: str = "") -> tuple[str, str]:
+    """Detect product-feedback turns where Assist should not stay silent.
+
+    This is deliberately narrow: a generic short turn still suppresses Assist,
+    but explicit feedback about Odylith visibility, hooks, interventions,
+    ambient highlights, Observations, Proposals, or Assist deserves a grounded
+    closeout even when no files changed.
+    """
+
+    text = _normalize_string(
+        " ".join(
+            [
+                str(_field(request, "prompt") or ""),
+                str(assistant_summary or ""),
+            ]
+        )
+    )
+    if not text:
+        return "", ""
+    tokens = _meaningful_tokens(text)
+    product_hits = tokens & _VISIBILITY_PRODUCT_TOKENS
+    delivery_hits = tokens & _VISIBILITY_DELIVERY_TOKENS
+    if not product_hits or not delivery_hits:
+        return "", ""
+    if "odylith" not in tokens and len(product_hits | delivery_hits) < 3:
+        return "", ""
+    phrase = "carrying the intervention visibility feedback into this closeout"
+    return phrase, phrase
+
+
 def _meaningful_tokens(*values: str) -> set[str]:
     tokens: set[str] = set()
     for value in values:
@@ -569,6 +670,7 @@ def _signal_information_tokens(payload: Mapping[str, Any]) -> set[str]:
 def _assist_information_tokens(payload: Mapping[str, Any]) -> set[str]:
     rows: list[str] = [str(payload.get("plain_text", "")), str(payload.get("style", ""))]
     rows.extend(str(row.get("id", "")).strip() for row in payload.get("updated_artifacts", []) or [] if isinstance(row, Mapping))
+    rows.extend(str(row.get("id", "")).strip() for row in payload.get("affected_contracts", []) or [] if isinstance(row, Mapping))
     return _meaningful_tokens(*rows)
 
 
@@ -653,6 +755,7 @@ def _suppressed_assist_payload(
     metrics: Mapping[str, Any],
     reason: str,
     updated_artifacts: Sequence[Mapping[str, Any]],
+    affected_contracts: Sequence[Mapping[str, Any]] = (),
     changed_path_source: str,
 ) -> dict[str, Any]:
     return {
@@ -667,6 +770,7 @@ def _suppressed_assist_payload(
         "delta": "",
         "proof": "",
         "updated_artifacts": [dict(row) for row in updated_artifacts],
+        "affected_contracts": [dict(row) for row in affected_contracts],
         "changed_path_source": changed_path_source,
         "suppressed_reason": reason,
         "metrics": dict(metrics),
@@ -1020,6 +1124,7 @@ def compose_closeout_assist(
     changed_path_source: str = "",
     metrics: Mapping[str, Any] | None = None,
     context_rows: Sequence[Mapping[str, Any]] | None = None,
+    assistant_summary: str = "",
 ) -> dict[str, Any]:
     metrics = dict(metrics) if isinstance(metrics, Mapping) else _evidence_metrics(request=request, decision=decision, adoption=adoption)
     effective_changed_paths = list(final_changed_paths or [])
@@ -1037,11 +1142,18 @@ def compose_closeout_assist(
         final_changed_paths=effective_changed_paths,
         context_rows=context_rows,
     )
+    affected_contracts = _affected_contract_rows(
+        updated_artifacts=updated_artifacts,
+        request=request,
+        repo_root=repo_root,
+        context_rows=list(context_rows or []),
+    )
     if not metrics["grounded"]:
         return _suppressed_assist_payload(
             metrics=metrics,
             reason="not_grounded",
             updated_artifacts=updated_artifacts,
+            affected_contracts=affected_contracts,
             changed_path_source=changed_path_source,
         )
     if metrics["requires_widening"]:
@@ -1049,6 +1161,7 @@ def compose_closeout_assist(
             metrics=metrics,
             reason="requires_widening",
             updated_artifacts=updated_artifacts,
+            affected_contracts=affected_contracts,
             changed_path_source=changed_path_source,
         )
     if not metrics["route_ready"] and not metrics["grounded_delegate"]:
@@ -1056,6 +1169,7 @@ def compose_closeout_assist(
             metrics=metrics,
             reason="not_route_ready",
             updated_artifacts=updated_artifacts,
+            affected_contracts=affected_contracts,
             changed_path_source=changed_path_source,
         )
 
@@ -1084,6 +1198,28 @@ def compose_closeout_assist(
         else ""
     )
     artifact_markdown_phrase, artifact_plain_phrase = _artifact_phrase(updated_artifacts)
+    updated_contracts = [
+        row
+        for row in affected_contracts
+        if any(
+            _normalize_token(row.get("kind")) == _normalize_token(updated.get("kind"))
+            and _normalize_string(row.get("id")) == _normalize_string(updated.get("id"))
+            for updated in updated_artifacts
+            if isinstance(updated, Mapping)
+        )
+    ]
+    contract_update_markdown_phrase, contract_update_plain_phrase = _affected_contract_phrase(
+        updated_contracts,
+        verb="updating",
+    )
+    contract_scope_markdown_phrase, contract_scope_plain_phrase = _affected_contract_phrase(
+        affected_contracts,
+        verb="staying inside",
+    )
+    visibility_markdown_phrase, visibility_plain_phrase = _visibility_feedback_phrase(
+        request=request,
+        assistant_summary=assistant_summary,
+    )
 
     style = ""
     user_win = ""
@@ -1097,9 +1233,12 @@ def compose_closeout_assist(
         user_win = "kept the work moving"
         delta_markdown = "without turning the repo into the usual broader `odylith_off` scavenger hunt"
         delta_plain = "without turning the repo into the usual broader odylith_off scavenger hunt"
-        if artifact_markdown_phrase:
-            proof_parts_markdown.append(artifact_markdown_phrase)
-            proof_parts_plain.append(artifact_plain_phrase)
+        if contract_update_markdown_phrase or artifact_markdown_phrase:
+            proof_parts_markdown.append(contract_update_markdown_phrase or artifact_markdown_phrase)
+            proof_parts_plain.append(contract_update_plain_phrase or artifact_plain_phrase)
+        elif contract_scope_markdown_phrase:
+            proof_parts_markdown.append(contract_scope_markdown_phrase)
+            proof_parts_plain.append(contract_scope_plain_phrase)
         proof_parts_markdown.append(f"keeping the slice to {focus_phrase}")
         proof_parts_plain.append(f"keeping the slice to {focus_phrase}")
         if metrics["suppress_routing_receipts"]:
@@ -1116,9 +1255,12 @@ def compose_closeout_assist(
         user_win = "kept this change honest"
         delta_markdown = "instead of letting the code outrun the governed record"
         delta_plain = delta_markdown
-        if artifact_markdown_phrase:
-            proof_parts_markdown.append(artifact_markdown_phrase)
-            proof_parts_plain.append(artifact_plain_phrase)
+        if contract_update_markdown_phrase or artifact_markdown_phrase:
+            proof_parts_markdown.append(contract_update_markdown_phrase or artifact_markdown_phrase)
+            proof_parts_plain.append(contract_update_plain_phrase or artifact_plain_phrase)
+        elif contract_scope_markdown_phrase:
+            proof_parts_markdown.append(contract_scope_markdown_phrase)
+            proof_parts_plain.append(contract_scope_plain_phrase)
         else:
             proof_parts_markdown.append(f"staying inside {governance_phrase}")
             proof_parts_plain.append(f"staying inside {governance_phrase}")
@@ -1133,9 +1275,12 @@ def compose_closeout_assist(
         user_win = "kept this on the shortest safe path"
         delta_markdown = "instead of cracking open an `odylith_off`-style repo sweep"
         delta_plain = "instead of cracking open an odylith_off-style repo sweep"
-        if artifact_markdown_phrase:
-            proof_parts_markdown.append(artifact_markdown_phrase)
-            proof_parts_plain.append(artifact_plain_phrase)
+        if contract_update_markdown_phrase or artifact_markdown_phrase:
+            proof_parts_markdown.append(contract_update_markdown_phrase or artifact_markdown_phrase)
+            proof_parts_plain.append(contract_update_plain_phrase or artifact_plain_phrase)
+        elif contract_scope_markdown_phrase:
+            proof_parts_markdown.append(contract_scope_markdown_phrase)
+            proof_parts_plain.append(contract_scope_plain_phrase)
         proof_parts_markdown.append(f"grounding the work to {focus_phrase}")
         proof_parts_plain.append(f"grounding the work to {focus_phrase}")
         if validation_phrase:
@@ -1146,11 +1291,24 @@ def compose_closeout_assist(
         user_win = "kept the proof tight"
         delta_markdown = "instead of widening just to feel busy"
         delta_plain = delta_markdown
-        if artifact_markdown_phrase:
-            proof_parts_markdown.append(artifact_markdown_phrase)
-            proof_parts_plain.append(artifact_plain_phrase)
+        if contract_update_markdown_phrase or artifact_markdown_phrase:
+            proof_parts_markdown.append(contract_update_markdown_phrase or artifact_markdown_phrase)
+            proof_parts_plain.append(contract_update_plain_phrase or artifact_plain_phrase)
+        elif contract_scope_markdown_phrase:
+            proof_parts_markdown.append(contract_scope_markdown_phrase)
+            proof_parts_plain.append(contract_scope_plain_phrase)
         proof_parts_markdown.append(f"closing with {validation_phrase}")
         proof_parts_plain.append(f"closing with {validation_phrase}")
+    elif visibility_markdown_phrase:
+        style = "visibility_continuity"
+        user_win = "kept the UX signal from disappearing"
+        delta_markdown = "instead of treating quiet hooks as proof Odylith had nothing useful to say"
+        delta_plain = delta_markdown
+        if contract_scope_markdown_phrase:
+            proof_parts_markdown.append(contract_scope_markdown_phrase)
+            proof_parts_plain.append(contract_scope_plain_phrase)
+        proof_parts_markdown.append(visibility_markdown_phrase)
+        proof_parts_plain.append(visibility_plain_phrase)
 
     proof_markdown = _join_phrases(proof_parts_markdown)
     proof_plain = _join_phrases(proof_parts_plain)
@@ -1159,6 +1317,7 @@ def compose_closeout_assist(
             metrics=metrics,
             reason="missing_user_facing_delta",
             updated_artifacts=updated_artifacts,
+            affected_contracts=affected_contracts,
             changed_path_source=changed_path_source,
         )
 
@@ -1183,10 +1342,13 @@ def compose_closeout_assist(
         "delta": delta_markdown,
         "proof": proof_markdown,
         "updated_artifacts": updated_artifacts,
+        "affected_contracts": affected_contracts,
         "changed_path_source": changed_path_source,
         "suppressed_reason": "",
         "metrics": metrics,
     }
+
+
 def compose_conversation_bundle(
     *,
     request: Any,
@@ -1267,6 +1429,7 @@ def compose_conversation_bundle(
             changed_path_source=changed_path_source,
             metrics=metrics,
             context_rows=context_rows,
+            assistant_summary=assistant_summary,
         ),
         claim_guard=claim_guard,
         claim_lint=claim_lint,

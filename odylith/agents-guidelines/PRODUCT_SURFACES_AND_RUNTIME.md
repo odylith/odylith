@@ -91,6 +91,10 @@
   stop fallback. Stop may still recover a late Observation or a closeout
   Assist line, but the product should not make users wait until stop to feel a
   live intervention.
+- When a host keeps checkpoint output hidden, Stop is the hard visibility
+  fallback for all earned Odylith live beats, not only Assist. Replay the
+  latest unseen Ambient Highlight, Observation, or Proposal before the Assist
+  line and send the combined text through the same one-shot continuation path.
 - Success-only governance refresh receipts must not drown out an earned
   Observation or Proposal. Keep routine success quiet when a stronger live beat
   exists; surface refresh status only when it failed, skipped, or when no live
@@ -134,10 +138,33 @@
   visible-intervention` are the shared manual escape hatches when a host keeps
   hook output hidden. They render plain Markdown, not JSON, and agents should
   show that output directly instead of rewriting it.
+- `odylith codex intervention-status` and `odylith claude
+  intervention-status` are the shared low-latency activation probes. They read
+  static host wiring plus the Compass-derived delivery ledger so operators can
+  see whether Teaser, Ambient Highlight, Observation, Proposal, and Assist are
+  armed and whether this session has actually recorded a visible-ready beat.
+- Treat Teaser and Ambient Highlight as distinct product lanes. Prompt submit
+  is teaser-only; ambient highlights belong to checkpoint and stop recovery
+  once enough evidence exists, and they should not be starved by an older
+  teaser after the signal matures.
+- Delivery-ledger state is derived from Compass intervention events. Do not
+  create a second host-local truth store just to answer "is it active here?";
+  add the missing delivery metadata to the existing stream event path.
 - `Odylith Assist` may recover at Stop from concrete validation proof in the
   assistant summary when changed paths are unavailable. That proof path is
   intentionally narrow: it can say the proof stayed tight, but it must not
   claim artifact updates without changed-path or governed-target evidence.
+  It may still name affected governance-contract IDs from bounded request,
+  packet, or target-ref truth, provided the copy distinguishes "staying
+  inside" from "updating".
+- `Odylith Assist` may also recover at Stop from explicit product-visibility
+  feedback, such as a user saying ambient highlights, interventions,
+  Observations, Proposals, Assist, hooks, or chat output are not visible. This
+  is a narrow continuity lane; ordinary short acknowledgements still stay
+  silent.
+- Stop visible-delivery dedupe must match the exact generated Odylith labels.
+  Do not suppress an Assist closeout merely because an Observation, Insight,
+  History, Risks, or Proposal label already appeared earlier.
 - If the user cannot tell in a breath why Odylith stepped in, or if the
   Proposal turns into a mini report, the UX has failed.
 - Multiline Observation and Proposal markdown is part of the shipped product
@@ -182,12 +209,12 @@
   - local `file:` opening must keep working without a web server
 - Radar, Atlas, Compass, Registry, and Odylith are shell-owned child surfaces: direct opens should canonicalize back into `odylith/index.html` with the relevant tab/scope state preserved.
 - Prefer diagram-pinned Atlas routes when available so cross-surface links land on reviewed Mermaid context instead of a generic workstream view.
-- Product dashboard shells must never render internal telemetry as product UI.
-  Do not add or restore shell telemetry drawers, status presenters, cockpit
-  grids, recorder tapes, chart canvases, ECharts hydration, `Telemetry
-  Snapshot` slabs, or legacy `odylith_drawer` render paths. Telemetry and spend
-  evidence may stay in runtime artifacts or explicit diagnostics, but the
-  top-level shell must not load, embed, or render internal delivery,
+- Product dashboard shells must never render internal diagnostic feeds as
+  product UI. Do not add or restore shell status drawers, status presenters,
+  cockpit grids, recorder tapes, chart canvases, ECharts hydration, snapshot
+  slabs, or legacy `odylith_drawer` render paths. Runtime diagnostics may stay
+  in explicit debug artifacts, but the top-level shell must not load, embed, or
+  render internal delivery,
   evaluation, optimization, or memory snapshots. Browser tests must prove those
   strings, selectors, scripts, and snapshot payload keys are absent.
 - Canonical generated roots are:
@@ -203,7 +230,7 @@
 - Odylith refresh defaults to `on-demand`, not a mandatory background daemon and not part of the normal hot path for every local coding loop.
 - In consumer repos, the shell may show passive runtime-freshness warnings before commit time by reading existing local runtime state only; that notice must never start sync, never start background work, and never silently rewrite tracked `odylith/` truth.
 - Passive freshness warnings must stay narrow and failure-oriented. They are not
-  permission to reintroduce broad telemetry/status cockpit chrome in the shell.
+  permission to reintroduce broad status cockpit chrome in the shell.
 - In consumer repos, autonomous Odylith fixes must not run `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, or `odylith dashboard refresh`; those mutate `odylith/` or `.odylith/` and belong to operator- or maintainer-authorized recovery flows.
 - In the Odylith product repo, keep the shell frozen for benchmark and proof posture: no passive live-refresh probe, no hidden dashboard heating, and no benchmark-lane-only convenience behavior.
 - Plain `odylith sync --repo-root .` is the fast selective upkeep path.
@@ -311,8 +338,8 @@
   drift, non-winner summary churn, and exact substrate matches must stay local.
 - Partial salvage is required. Keep valid global or scoped entries from a mixed
   bundle response and repair only the missing subset once.
-- Record narration spend telemetry locally: input/output size, latency, repair
-  count, salvage count, skip reason, failure kind, and provider code/detail.
+- Keep narration provider diagnostics bounded to explicit brief state and debug
+  artifacts. Do not add a separate narration attempt recorder.
 - Global and scoped Compass narration should warm as one packet-level bundle.
   Do not reintroduce a second scoped provider queue or scope-by-scope provider
   fanout after refresh.

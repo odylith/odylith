@@ -17,7 +17,7 @@ surface into the shell renderer.
 - Shared developer-note and cheatsheet drawers.
 - Shared branding, favicon, manifest, and tab lockup behavior.
 - Externalized shell asset bundling for the checked-in root surface.
-- A hard product boundary that keeps internal telemetry, diagnostic spend
+- A hard product boundary that keeps internal diagnostics, provider-spend
   evidence, recorder tapes, cockpit panels, charts, and status slabs out of the
   dashboard DOM.
 
@@ -26,7 +26,7 @@ surface into the shell renderer.
   Casebook.
 - Reinterpreting child-surface data contracts in the shell.
 - Acting as a source of truth for governance state. It reads derived payloads.
-- Rendering internal telemetry or diagnostic records as product chrome.
+- Rendering internal diagnostic records as product chrome.
 
 ## Developer Mental Model
 - The shell is intentionally thin.
@@ -69,11 +69,11 @@ surface into the shell renderer.
 - Shared KPI/stat-card contracts need the same proof posture: browser audits
   must check computed card, label, and value styling plus release-card
   labeling across the affected governance surfaces.
-- The shell must not render internal telemetry UI. Do not add a shell telemetry
+- The shell must not render internal diagnostic UI. Do not add a shell status
   drawer, status presenter, recorder tape, cockpit grid, chart canvas, ECharts
-  dependency, or `Telemetry Snapshot`-style status slab. Internal telemetry may
-  remain in runtime artifacts and explicit diagnostics, but the top-level
-  dashboard shell must not load, embed, or render internal delivery,
+  dependency, or snapshot-style status slab. Internal diagnostics may remain in
+  explicit debug artifacts, but the top-level dashboard shell must not load,
+  embed, or render internal delivery,
   evaluation, optimization, or memory snapshots. Browser tests must prove
   absence from both product DOM and the shell payload.
 
@@ -126,7 +126,7 @@ This is deliberate:
 - brand payload from `brand_assets.tooling_shell_brand_payload(...)`
 
 The presenter then derives maintainer-note and cheatsheet shell context before
-externalizing the bundle. It must not derive or render shell telemetry payloads.
+externalizing the bundle. It must not derive or render shell diagnostic payloads.
 
 If the persisted Tribunal reasoning artifact is missing, shell refresh must
 still build a deterministic `case_queue` from delivery scopes without waiting
@@ -149,7 +149,7 @@ project current Compass freshness or failure posture when the Compass tab is
 active so parent-surface success does not masquerade as a fresh child brief.
 But if the Compass frame already carries the relevant stale or failed-refresh
 warning, the shell must not restate the same warning above the iframe. The shell
-also must not replace that dedupe rule with internal telemetry/status chrome.
+also must not replace that dedupe rule with internal status cockpit chrome.
 Compass no longer carries a second deep-refresh contract. The shell may ask
 Compass to refresh or wait for that refresh, but it must not invent or
 advertise a minute-scale `full` rerender path the child surface no longer
@@ -260,13 +260,13 @@ the child surfaces.
 - When a child surface already explains its own stale-runtime or freshness
   posture in-frame, the shell must not add a second banner that repeats the
   same issue in wrapper language. The shell no longer has a general status
-  presenter; wrapper-level notices must be explicit, narrow, and not telemetry
-  or diagnostic cockpit UI.
+  presenter; wrapper-level notices must be explicit, narrow, and not diagnostic
+  cockpit UI.
 - The bottom-right recovery dock is for global shell reopen actions such as the
   starter guide or upgrade spotlight. Do not add per-surface status reopen
   buttons there.
-- Product dashboard DOM must not contain `system-status-shell`,
-  `telemetry-stat-*`, `odylith-recorder-*`, `odylith-chart-*`, ECharts
+- Product dashboard DOM must not contain `system-status-shell`, legacy stat-grid
+  selector families, `odylith-recorder-*`, `odylith-chart-*`, ECharts
   hydration, or legacy `odylith_drawer` rendering paths.
 - Product shell payloads must not contain internal `memory_snapshot`,
   `optimization_snapshot`, or `evaluation_snapshot` data. Those artifacts stay
@@ -327,7 +327,7 @@ artifacts to that header.
 - `odylith sync --repo-root . --check-only`
 - `PYTHONPATH=src python -m odylith.runtime.surfaces.render_tooling_dashboard --repo-root . --output odylith/index.html`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_brand_assets.py tests/unit/runtime/test_tooling_dashboard_frontend_contract.py`
-- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_never_renders_internal_telemetry_status_across_tabs`
+- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_never_renders_internal_status_across_tabs`
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
@@ -358,4 +358,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Fixed the shell runtime-status bootstrap so Compass stale/failure disclosure survives first load and later runtime probes instead of being cleared by a probe payload that lacks shell-facing status records. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Reinstated shell-versus-child warning dedupe for Compass failures so the wrapper stays quiet when the Compass frame already explains the failed refresh. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Added provider-neutral scope-budget gating to the shared shell contract so Compass and sibling governance consumers can map cheap versus escalated compute policy through one host-agnostic ladder contract. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071))
-- 2026-04-16: Deleted the shell telemetry/status presenter, ECharts dependency, recorder/chart CSS, and telemetry render path after CB-120 proved internal telemetry was leaking into dashboard product surfaces. Dashboard now treats any telemetry cockpit, recorder, chart, or status slab in the shell DOM as a regression. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-120`)
+- 2026-04-16: Deleted the shell status presenter, ECharts dependency, recorder/chart CSS, and internal status render path after CB-120 proved diagnostic cockpit chrome was leaking into dashboard product surfaces. Dashboard now treats any cockpit, recorder, chart, or status slab in the shell DOM as a regression. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-120`)

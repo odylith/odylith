@@ -102,7 +102,7 @@ component boundary.
 ## Non-Goals
 - retaining raw chat transcripts as primary memory
 - making hosted memory authoritative over repo truth
-- broadening prompt payloads with verbose telemetry that does not improve
+- broadening prompt payloads with verbose diagnostics that does not improve
   coding outcomes
 - changing the optional remote retrieval provider contract
 
@@ -166,7 +166,7 @@ or disproved its decisions.
 - `.odylith/runtime/odylith-memory/odylith-judgment-memory.v1.json` becomes a
   durable local runtime artifact
 - runtime and diagnostic readouts expose judgment-memory posture without
-  reintroducing dashboard shell telemetry UI
+  reintroducing dashboard shell status UI
 - the local memory backend becomes a first-class Registry component
 
 ## Migration/Compatibility

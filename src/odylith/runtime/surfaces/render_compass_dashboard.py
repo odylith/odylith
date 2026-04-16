@@ -469,7 +469,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--active-window-minutes",
         type=int,
         default=_DEFAULT_ACTIVE_WINDOW_MINUTES,
-        help="Telemetry live/active freshness window in minutes.",
+        help="Live/active Compass freshness window in minutes.",
     )
     parser.add_argument(
         "--agent-stream",

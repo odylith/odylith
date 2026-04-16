@@ -106,7 +106,8 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - `src/odylith/runtime/intervention_engine/conversation_runtime.py`
   Shared ambient-signal selection, closeout Assist composition, and
   conversation-bundle assembly for subagent orchestration plus host-adoption
-  summaries.
+  summaries, including the bounded `affected_contracts` payload used by
+  `Odylith Assist` to name touched or scoped governance contracts.
 - `src/odylith/runtime/intervention_engine/delivery_runtime.py`
   Shared delivery-signal snapshot reader and Tribunal-context normalization
   for both ambient signaling and closeout truth.
@@ -118,6 +119,11 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - `src/odylith/runtime/intervention_engine/stream_state.py`
   Compass stream reads plus cached derived session-memory and
   pending-proposal state.
+- `src/odylith/runtime/intervention_engine/delivery_ledger.py`
+  Low-latency delivery read model that derives active chat-visible posture,
+  recent Observation/Proposal/Ambient/Assist delivery, and pending proposal
+  context from the Compass intervention stream without creating a second
+  host-local truth store.
 - `src/odylith/runtime/intervention_engine/apply.py`
   CLI-first apply and decline handling for supported proposal bundles.
 - `src/odylith/runtime/intervention_engine/cli.py`
@@ -228,14 +234,32 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - `odylith codex visible-intervention` and `odylith claude
   visible-intervention` render plain Markdown fallback output for the assistant
   to show directly when host hook display is unproven or hidden.
+- `odylith codex intervention-status` and `odylith claude
+  intervention-status` report static host readiness, active UX lanes, recent
+  delivery-ledger events, pending proposal count, and a fast smoke command.
+  These commands are the cheap operator proof before claiming a session has
+  live Observation/Proposal/Ambient/Assist delivery.
 - Stop-summary hooks may block once with a continuation reason when a real
   Observation or `Odylith Assist:` closeout was generated but is not already
   visible in the last assistant message. The `stop_hook_active` guard prevents
   loops.
+- Stop-summary is also the hard visibility fallback for earlier live beats.
+  If a prompt/checkpoint generated an Ambient Highlight, `Odylith Observation`,
+  or `Odylith Proposal` through a host path that may have stayed hidden, Stop
+  may replay that latest non-closeout beat before the Assist line and send the
+  combined text through the same one-shot continuation mechanism.
 - Stop-summary Assist may use concrete validation/pass signals from the
   assistant summary when changed paths are unavailable. This recovery path is
   proof-only: it may say the proof stayed tight, but it must not claim
   artifact updates without changed-path or governed-target evidence.
+- Stop-summary Assist may also recover from explicit user feedback about
+  missing Odylith visibility, ambient highlights, Observations, Proposals,
+  Assist, hooks, or chat surfacing. This lane is intentionally narrow: it may
+  say the UX signal stayed alive, but it must stay silent for ordinary
+  low-signal short turns.
+- Stop-summary visibility dedupe must compare the labels in the generated
+  visible text, not merely the existence of any prior Odylith label. A prior
+  Observation is not proof that the current Assist closeout was already shown.
 - Success-only governance refresh receipts must not displace an earned visible
   intervention. If a checkpoint already has a real Observation or Proposal,
   the visible surface should stay on that beat and keep routine refresh
@@ -278,10 +302,18 @@ through the heavier closeout chatter stack just to speak one truthful line.
   refs recovered from the shared event stream are part of the stop-surface
   contract so closeout and Observation upgrades do not speak from an empty
   context.
+- Closeout recovery may name affected workstream, component, diagram, or bug
+  IDs from bounded request, packet, changed-path, or target-ref truth. It must
+  distinguish updated governed records from contracts merely kept in scope.
 - Apply and decline are part of the same continuity chain. Terminal proposal
   events must preserve `moment_kind` and semantic signature so later runtime
   consumers can still understand which governed moment was applied, declined,
   or rendered stale.
+- Delivery metadata is part of the same event stream. Teaser, ambient,
+  Observation, Proposal, and Assist events may carry `delivery_channel`,
+  `delivery_status`, and `render_surface` so `intervention-status` can answer
+  whether a specific Codex or Claude session is actually visible-ready without
+  doing fresh repo search or relying on host payload faith.
 - Empty or missing hook session ids must fall back to a stable host-local
   synthetic session token. Intervention runtime may recover recent memory only
   from that resolved session; an empty session id must never widen into
@@ -352,6 +384,12 @@ through the heavier closeout chatter stack just to speak one truthful line.
   `ObservationEnvelope`.
 - `odylith governance capture-apply`
   Apply or decline one confirmed `Odylith Proposal` payload.
+- `odylith codex intervention-status`
+  Report Codex static hook readiness plus the Compass-derived visible-delivery
+  ledger for the active session.
+- `odylith claude intervention-status`
+  Report Claude project-hook readiness plus the Compass-derived
+  visible-delivery ledger for the active session.
 
 These commands are shared across Codex, Claude, maintainer `source-local`,
 pinned dogfood, and consumer pinned-runtime lanes. Host-specific wrappers may
@@ -368,6 +406,10 @@ parallel payload schemas.
 - Casebook actions may capture or reopen a bug when the target helper exists.
 - Apply emits Compass lifecycle events:
   `capture_applied` or `capture_declined`.
+- The visibility ledger also derives from Compass stream kinds
+  `intervention_teaser`, `ambient_signal`, `intervention_card`,
+  `capture_proposed`, and `assist_closeout`, using delivery metadata rather
+  than a second mutable status file.
 - Apply must refresh only the touched governed surfaces. It must not widen into
   a full-repo sync just to close one proposal.
 - Apply must reject stale terminal bundles and preview-only bundles before any
@@ -404,8 +446,10 @@ parallel payload schemas.
 
 ## Validation Playbook
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_engine.py`
+- `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_delivery_status.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_engine_apply.py tests/unit/runtime/test_intervention_engine_performance.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_conversation_surface.py`
+- `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_intervention_host_surface_runtime.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_prompt_context.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_claude_host_post_edit_checkpoint.py tests/unit/runtime/test_claude_host_post_bash_checkpoint.py`
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_stop_summary.py`
@@ -415,7 +459,12 @@ parallel payload schemas.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- No synchronized requirement or contract signals yet.
+- **2026-04-15 · Implementation:** Completed intervention chat-visibility hardening: Codex and Claude now report assistant-visible readiness, visible-intervention renders Observation/Proposal/Assist Markdown, Stop Assist recovers from validation proof without claiming artifacts, and CB-121 plus B-096 governance records were updated.
+  - Scope: B-096
+  - Evidence: odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md, src/odylith/runtime/intervention_engine/host_surface_runtime.py +1 more
+- **2026-04-15 · Implementation:** Fixed intervention chat visibility contract: assistant-render fallback, visible-intervention CLI, Codex Bash-only hook truth, Stop one-shot Assist recovery, and CB-121 casebook capture.
+  - Scope: B-096
+  - Evidence: odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md, src/odylith/runtime/intervention_engine/host_surface_runtime.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -424,3 +473,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Hardened the product contract so rich markdown survives the full host and Compass path, duplicate suppression keys stay causal rather than overly coarse, proposal apply is all-or-nothing for CLI-safe bundles, and warm-cache latency stays covered by focused regression tests. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Extended intervention lifecycle events to carry prompt memory and rich pending-proposal display payloads so later hooks keep reasoning from the human conversation and Compass can expose delightful proposal previews without rebuilding them downstream. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Split rich reasoning signature from stable continuity identity, added a cross-phase continuity runtime, and allowed first-time Proposal upgrades to surface without re-announcing a duplicate Observation. This made teaser, Observation, and Proposal feel like one evolving thought instead of three disconnected hook artifacts. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-16: Added a delivery ledger and host `intervention-status` commands so Codex and Claude can prove static readiness, active UX lanes, recent visible-ready delivery, pending proposal state, and manual fallback smoke without treating hook payload generation as chat visibility. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-16: Extended closeout Assist bundles with bounded affected-contract IDs so Codex and Claude can show the governed workstream, component, diagram, or bug contract involved even when the final visible beat is validation-only. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-16: Hardened live UX surfacing so Ambient Highlight is a distinct checkpoint/stop lane, ambient beats no longer lose to stale teasers after evidence matures, Stop can recover meaningful Assist from explicit visibility-feedback turns even when the final answer is short, and visible-delivery dedupe only suppresses exact generated labels. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-16: Routed unseen Ambient Highlight, Observation, and Proposal beats through the same Stop one-shot continuation path as Assist, so host-hidden checkpoint output no longer leaves the user seeing only `Odylith Assist`. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)

@@ -35,7 +35,7 @@ flowchart TB
     Bundle["One provider bundle<br/>global + verified scoped entries together"]
     Repair["One subset repair max"]
     Salvage["Persist valid entries immediately<br/>salvage partial good output"]
-    Telemetry["Record spend telemetry<br/>input/output size, latency, repair, salvage, failure kind"]
+    Diagnostics["Bound provider diagnostics<br/>explicit state and debug artifacts"]
     Backoff["Budget/capacity/provider failures -> slow retry lane"]
     Patch{"Runtime fingerprint still current?"}
     PatchYes["Patch warmed provider/cache results into live runtime"]
@@ -61,7 +61,7 @@ flowchart TB
   NoProvider --> Build --> Budget --> Delta --> Worth
   Worth -->|Exact match| CacheHit
   Worth -->|No winner change| Skip
-  Worth -->|Meaningful change| Enqueue --> Bundle --> Repair --> Salvage --> Telemetry --> Backoff --> Patch
+  Worth -->|Meaningful change| Enqueue --> Bundle --> Repair --> Salvage --> Diagnostics --> Backoff --> Patch
   Patch -->|Yes| PatchYes
   Patch -->|No| PatchNo
   CacheHit --> PatchYes

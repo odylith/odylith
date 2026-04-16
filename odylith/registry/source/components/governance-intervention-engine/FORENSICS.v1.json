@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 17,
-    "mapped_workstream_evidence_count": 17,
+    "explicit_event_count": 35,
+    "mapped_workstream_evidence_count": 35,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 5,
+    "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 18
+    "timeline_event_count": 36
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -37,30 +37,488 @@
   "timeline": [
     {
       "artifacts": [
-        "claude/settings.json",
         "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
         "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
-        "odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md",
         "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/project-root/.claude/settings.json",
-        "src/odylith/runtime/common/claude_cli_capabilities.py",
-        "src/odylith/runtime/intervention_engine/engine.py",
+        "src/odylith/runtime/intervention_engine/conversation_runtime.py",
+        "src/odylith/runtime/intervention_engine/conversation_surface.py",
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py",
-        "src/odylith/runtime/intervention_engine/signal_kernel.py",
-        "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
-        "src/odylith/runtime/surfaces/claude_host_prompt_teaser.py"
+        "src/odylith/runtime/intervention_engine/stream_state.py",
+        "src/odylith/runtime/intervention_engine/surface_runtime.py",
+        "src/odylith/runtime/surfaces/claude_host_post_edit_checkpoint.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_teaser.py",
+        "src/odylith/runtime/surfaces/claude_host_stop_summary.py",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/codex_host_stop_summary.py",
+        "src/odylith/runtime/intervention_engine/delivery_ledger.py"
       ],
       "confidence": "high",
-      "event_index": 267,
+      "event_index": 385,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "governance-intervention-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: claude/settings.json, odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md +10 more",
-      "ts_iso": "2026-04-15T19:08:12-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md, odylith/agents-guidelines/CODEX_HOST_CONTRACT.md +14 more",
+      "ts_iso": "2026-04-16T08:23:17-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 313,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-16T03:58:01Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 312,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-16T03:57:49Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 309,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T03:57:38Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 308,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-16T03:57:38Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 300,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T02:54:42Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 299,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-16T02:54:42Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 297,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T02:54:32Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 296,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-16T02:54:32Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
+      ],
+      "confidence": "high",
+      "event_index": 294,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T02:53:38Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 285,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T02:37:58Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 284,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-16T02:37:58Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 282,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T02:37:41Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 278,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-16T02:29:52Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 277,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-16T02:29:52Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 276,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
+      "ts_iso": "2026-04-16T02:29:51Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 275,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-16T02:29:51Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md",
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py",
+        "src/odylith/runtime/surfaces/host_visible_intervention.py"
+      ],
+      "confidence": "high",
+      "event_index": 333,
+      "explicit_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Completed intervention chat-visibility hardening: Codex and Claude now report assistant-visible readiness, visible-intervention renders Observation/Proposal/Assist Markdown, Stop Assist recovers from validation proof without claiming artifacts, and CB-121 plus B-096 governance records were updated.",
+      "ts_iso": "2026-04-15T21:35:01-07:00",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md",
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py",
+        "src/odylith/runtime/surfaces/host_visible_intervention.py"
+      ],
+      "confidence": "high",
+      "event_index": 323,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Fixed intervention chat visibility contract: assistant-render fallback, visible-intervention CLI, Codex Bash-only hook truth, Stop one-shot Assist recovery, and CB-121 casebook capture.",
+      "ts_iso": "2026-04-15T21:20:30-07:00",
+      "workstreams": [
+        "B-096"
+      ]
     },
     {
       "artifacts": [

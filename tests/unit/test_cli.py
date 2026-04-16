@@ -314,7 +314,7 @@ def test_bug_capture_rejects_sentence_reproducibility(tmp_path: Path) -> None:
             severity="P1",
             **_bug_capture_kwargs(
                 reproducibility=(
-                    "High; render odylith/index.html and the telemetry shell block "
+                    "High; render odylith/index.html and the diagnostic shell block "
                     "appears above dashboard tabs."
                 ),
             ),

@@ -91,7 +91,7 @@
   tests/integration/install/test_bundle.py::test_bundle_root_contains_installed_agents_entrypoint
   tests/integration/install/test_manager.py -k 'install_bundle_bootstraps_customer_owned_tree_without_copying_product_bundle or upgrade_install_resyncs_consumer_guidance_and_skills'`
   passed on 2026-04-14. A second 2026-04-14 proof wave also passed with
-  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  `PYTHONPATH=src python3 -m pytest -q
   tests/unit/runtime/test_sync_cli_compat.py
   tests/unit/runtime/test_owned_surface_refresh_authoring.py
   tests/unit/runtime/test_odylith_memory_backend.py
@@ -103,7 +103,7 @@
   `sync --impact-mode selective <casebook,plan,spec,atlas>`: `6.9s`
   sync-reported / `7.33s` wall with the local LanceDB/Tantivy substrate still
   reporting `ready: true`. A third 2026-04-14 proof wave also passed with
-  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  `PYTHONPATH=src python3 -m pytest -q
   tests/unit/runtime/test_runtime_read_session.py
   tests/unit/runtime/test_incremental_import_graph.py
   tests/unit/runtime/test_session_brief_refresh_queue.py
@@ -114,16 +114,16 @@
   dashboard_refresh_reuses_fingerprint_when_surface_is_unchanged or
   render_session_brief or render_codex_session_brief or
   main_writes_session_start_hook_json or main_writes_project_memory'`
-  (`12 passed`) plus `PYTHONPATH=src .venv/bin/python -m pytest -q
+  (`12 passed`) plus `PYTHONPATH=src python3 -m pytest -q
   tests/unit/runtime/test_odylith_context_engine_store.py -k
   'load_backlog_detail_uses_cached_runtime_projection_rows or
   load_backlog_list_reuses_cached_runtime_rows or
   build_governance_slice_hot_path_requests_unfinalized_impact or
   build_governance_slice_hot_path_uses_grounding_light_workstream_detail'`
-  (`4 passed`) and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  (`4 passed`) and `PYTHONPATH=src python3 -m pytest -q
   tests/unit/runtime/test_sync_cli_compat.py -k 'dashboard_refresh'`
   (`11 passed`). A fourth 2026-04-14 hardening wave also passed with
-  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  `PYTHONPATH=src python3 -m pytest -q
   tests/unit/runtime/test_codex_host_post_bash_checkpoint.py
   tests/unit/runtime/test_claude_host_post_edit_checkpoint.py`
   (`21 passed`) after move-out-of-governed, shell-tail, redirection-tail, and
@@ -149,7 +149,7 @@
   planner, git-scan, and broad-preflight work unless the touched owned surface
   itself still needs targeted validation. The hot-path runtime cache budget must
   stay explicit and low-RAM aware (`<= 8 GiB` total RAM, `< 1.5 GiB`
-  available, or unknown telemetry -> conservative mode), `odylith show` must
+  available, or unknown memory stats -> conservative mode), `odylith show` must
   persist and reuse unchanged parse rows instead of reparsing the full repo, and
   repeated manual surface refreshes or SessionStart stale-brief checks must
   consult fingerprint/marker state before launching another render or Compass

@@ -61,6 +61,9 @@ def main(argv: list[str] | None = None) -> int:
             repo_root=Path(repo_root).expanduser().resolve(),
             bundle=bundle,
             include_proposal=False,
+            delivery_channel="stdout_teaser",
+            delivery_status="best_effort_visible",
+            render_surface="claude_user_prompt_submit",
         )
         sys.stdout.write(teaser)
     return 0

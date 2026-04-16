@@ -290,7 +290,10 @@ def visible_delivery_already_present(*, last_assistant_message: str, visible_tex
         return False
     if visible in last:
         return True
-    return any(label in last for label in _VISIBLE_DELIVERY_LABELS)
+    visible_labels = [label for label in _VISIBLE_DELIVERY_LABELS if label in visible]
+    if not visible_labels:
+        return False
+    return all(label in last for label in visible_labels)
 
 
 def stop_visible_delivery_reason(visible_text: str) -> str:

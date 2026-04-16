@@ -16,12 +16,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 8,
-    "mapped_workstream_evidence_count": 8,
+    "explicit_event_count": 9,
+    "mapped_workstream_evidence_count": 9,
     "recent_path_match_count": 0,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 8
+    "timeline_event_count": 9
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -34,6 +34,39 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "README.md"
+      ],
+      "confidence": "high",
+      "event_index": 233,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-005.",
+      "ts_iso": "2026-04-16T01:31:39Z",
+      "workstreams": [
+        "B-005",
+        "B-020",
+        "B-022",
+        "B-038"
+      ]
+    },
     {
       "artifacts": [
         "odylith/radar/source/INDEX.md",
@@ -81,8 +114,10 @@
       "kind": "decision",
       "mapped_components": [
         "benchmark",
+        "dashboard",
         "odylith",
         "radar",
+        "release",
         "subagent-orchestrator"
       ],
       "meaningful": false,

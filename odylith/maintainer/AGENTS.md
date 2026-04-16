@@ -196,13 +196,14 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - At closeout, you may add at most one short `Odylith Assist:` line if it
   helps summarize what Odylith materially contributed. Prefer
   `**Odylith Assist:**` when Markdown formatting is available; otherwise use
-  `Odylith Assist:`. Lead with the user win, link updated governance ids inline
-  when they were actually changed, and frame the edge against `odylith_off` or
-  the broader unguided path when the evidence supports it. Keep it crisp,
-  authentic, clear, simple, insightful, soulful, friendly, free-flowing,
-  human, and factual. Use only concrete observed counts, measured deltas, or
-  validation outcomes; if the evidence is thin or the user-facing delta is not
-  clear, omit it.
+  `Odylith Assist:`. Lead with the user win, link updated governance IDs inline
+  when they were actually changed, and when no governed file moved, name the
+  affected governance-contract IDs from bounded request or packet truth without
+  calling them updated. Frame the edge against `odylith_off` or the broader
+  unguided path when the evidence supports it. Keep it crisp, authentic, clear,
+  simple, insightful, soulful, friendly, free-flowing, human, and factual. Use
+  only concrete observed counts, measured deltas, or validation outcomes; if
+  the evidence is thin or the user-facing delta is not clear, omit it.
 - Treat Odylith-routed native delegation as the default execution path for
   substantive grounded maintainer work in both maintainer postures when the
   current host supports it. Codex is the currently validated native-spawn

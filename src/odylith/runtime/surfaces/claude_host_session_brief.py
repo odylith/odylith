@@ -62,7 +62,13 @@ def _summary_from_start_output(output: str) -> str:
             commands = payload.get("recommended_commands")
             if isinstance(commands, list) and commands:
                 summary.append(f"next command: {commands[0]}")
-    return "\n".join(f"{_STARTUP_PREFIX}: {line}" for line in summary if line).strip()
+    rendered = "\n".join(f"{_STARTUP_PREFIX}: {line}" for line in summary if line).strip()
+    if rendered:
+        return (
+            f"{rendered}\n"
+            f"{_STARTUP_PREFIX}: interventions armed for Observation, Proposal, and Assist; run `odylith claude intervention-status` if chat stays quiet."
+        )
+    return ""
 
 
 def render_session_brief(

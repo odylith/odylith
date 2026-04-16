@@ -72,7 +72,7 @@ Related Bugs:
 - [2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md)
 - [2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md)
 - [2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md)
-- [2026-04-16-dashboard-shell-telemetry-cockpit-leaked-into-product-render.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-16-dashboard-shell-telemetry-cockpit-leaked-into-product-render.md)
+- [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md)
 - no related Casebook-specific bug record exists yet for detail-view field repetition or header-collapse regressions; keep the failure mode visible in this plan and handoff until it is formalized
 - April 16 follow-on: the live CB-120 screenshot exposed bad source truth in
       `Reproducibility`; all Casebook records now keep that field to one compact
@@ -167,8 +167,8 @@ Related Bugs:
       underfilled by collapsing the rendered audit to the selected `audit_day`
       even when the prior local day still contained populated in-window
       activity.
-- [x] The shared dashboard shell rendered internal telemetry cockpit/status UI
-      above child surfaces, including `Telemetry Snapshot`, recorder tape,
+- [x] The shared dashboard shell rendered internal diagnostic cockpit/status UI
+      above child surfaces, including the legacy snapshot slab, recorder tape,
       chart DOM, and ECharts hydration. CB-120 now fixes that as a product
       invariant breach, not as polish.
 - [ ] Compass is still below release bar after the maintained-global narration
@@ -268,9 +268,8 @@ Related Bugs:
       fact packets.
 - [x] Provider-worthiness gating now skips narration attempts for trivial or
       non-winner deltas and records that decision explicitly.
-- [x] Brief spend telemetry now records bundle fingerprint, substrate
-      fingerprints, latency, input/output size, salvage count, repair count,
-      skip reason, and provider failure detail.
+- [x] Brief provider diagnostics now stay bounded to explicit brief state and
+      debug artifacts instead of a separate narration attempt recorder.
 - [x] Daemon-backed hot refresh can now reuse the last matching Compass
       runtime payload directly instead of rebuilding on every unchanged
       request.
@@ -370,9 +369,9 @@ Related Bugs:
       planning as separate operator workflows with explicit examples instead
       of blurring ship targeting and umbrella execution into one planning
       concept.
-- [x] Dashboard shell telemetry/status/cockpit code is deleted from the product
-      shell. Internal telemetry may remain in runtime diagnostics, but it must
-      not render as shell DOM, drawers, recorder tapes, charts, ECharts
+- [x] Dashboard shell status/cockpit code is deleted from the product shell.
+      Internal diagnostics may remain in explicit debug artifacts, but they
+      must not render as shell DOM, drawers, recorder tapes, charts, ECharts
       hydration, or product guidance.
 - [ ] Benchmark proof remains green after the fix.
 
@@ -474,11 +473,11 @@ Related Bugs:
   - [ ] Mitigation: prefer runtime-backed refresh and explicit stale-state
     signaling; reserve tracked-truth mutation for explicit sync and commit-time
     repair.
-- [x] Risk: internal telemetry or diagnostic spend evidence regrows into
+- [x] Risk: internal diagnostics or spend evidence regrows into
       dashboard product UI.
-  - [x] Mitigation: delete the shell telemetry/status presenter path, strip the
+  - [x] Mitigation: delete the shell status presenter path, strip the
         CSS/JS/template hooks, codify the ban in Dashboard governance and
-        skills, and prove with headless Chromium that hostile legacy telemetry
+        skills, and prove with headless Chromium that hostile legacy diagnostic
         payload keys do not render across tabs.
 
 ## Validation/Test Plan
@@ -525,7 +524,7 @@ Related Bugs:
 - [x] `git diff --check`
 - [x] `python -m playwright install chromium`
 - [x] `pytest tests/unit/runtime/test_render_tooling_dashboard.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py tests/unit/runtime/test_tooling_dashboard_runtime_builder.py tests/unit/runtime/test_tooling_dashboard_template_context.py -q`
-- [x] `pytest tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_never_renders_internal_telemetry_status_across_tabs -q`
+- [x] `pytest tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_never_renders_internal_status_across_tabs -q`
 
 ## Rollout/Communication
 - [ ] Note the Casebook regression explicitly so future Compass or shell
@@ -757,9 +756,9 @@ Related Bugs:
       Compass refresh too: if Compass already carries the failed-refresh
       warning inside the frame, the shell must not add a second wrapper banner
       above it, and browser proof now watches that exact regression directly.
-- [x] April 16 telemetry-removal follow-on closes CB-120: the dashboard shell no
-      longer has a telemetry/status presenter, no longer ships ECharts or
-      telemetry recorder/chart CSS, and Playwright injects legacy telemetry
+- [x] April 16 diagnostic-removal follow-on closes CB-120: the dashboard shell
+      no longer has a status presenter, no longer ships ECharts or
+      recorder/chart CSS, and Playwright injects legacy diagnostic
       payload keys while proving Radar, Registry, Casebook, Atlas, and Compass
       render without those strings or selectors.
 - [x] April 7 Compass closeout follow-on reconciles the remaining open Compass

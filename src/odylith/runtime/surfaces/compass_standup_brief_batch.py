@@ -4,14 +4,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import time
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
 from odylith.runtime.surfaces import compass_standup_brief_substrate
-from odylith.runtime.surfaces import compass_standup_brief_telemetry
 
 
 DEFAULT_SCOPED_PROVIDER_PACK_SIZE = 12
@@ -140,15 +138,6 @@ def _sections_schema() -> dict[str, Any]:
 def _provider_failure_should_abort_fanout(provider: odylith_reasoning.ReasoningProvider) -> bool:
     metadata = odylith_reasoning.provider_failure_metadata(provider)
     return str(metadata.get("code", "")).strip().lower() in _ABORT_FANOUT_FAILURE_CODES
-
-
-def _request_profile_metadata(
-    request: odylith_reasoning.StructuredReasoningRequest,
-) -> tuple[str, str]:
-    return (
-        str(getattr(request, "model", "")).strip(),
-        str(getattr(request, "reasoning_effort", "")).strip(),
-    )
 
 
 def _batch_provider_system_prompt() -> str:
@@ -1337,7 +1326,6 @@ def _resolve_bundle_pack(
     global_packets_by_window: Mapping[str, Mapping[str, Any]],
     scoped_packets_by_window: Mapping[str, Mapping[str, Mapping[str, Any]]],
     generated_utc: str,
-    runtime_packet_fingerprint: str,
     config: odylith_reasoning.ReasoningConfig,
     provider: odylith_reasoning.ReasoningProvider,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, dict[str, Any]]]]:
@@ -1368,59 +1356,14 @@ def _resolve_bundle_pack(
         global_substrates_by_window=global_substrates,
         scoped_substrates_by_window=scoped_substrates,
     )
-    substrate_fingerprints = {
-        _bundle_entry_key(window_key=window_key): str(substrate.get("fingerprint", "")).strip()
-        for window_key, substrate in global_substrates.items()
-    }
-    for window_key, window_substrates in scoped_substrates.items():
-        for scope_id, substrate in window_substrates.items():
-            substrate_fingerprints[_bundle_entry_key(window_key=window_key, scope_id=scope_id)] = str(
-                substrate.get("fingerprint", "")
-            ).strip()
-    request_started = time.perf_counter()
-    output_chars = 0
-    repair_count = 0
-    initial_input_chars = _bundle_request_payload_chars(
-        repo_root=repo_root,
-        global_packets_by_window=global_packets_by_window,
-        scoped_packets_by_window=scoped_packets_by_window,
-    )
-    repair_input_chars = 0
-
     initial_request = _bundle_provider_request(
         repo_root=repo_root,
         global_packets_by_window=global_packets_by_window,
         scoped_packets_by_window=scoped_packets_by_window,
         config=config,
     )
-    request_model, request_reasoning_effort = _request_profile_metadata(initial_request)
     raw_result = provider.generate_structured(request=initial_request)
-    if isinstance(raw_result, Mapping):
-        output_chars += len(json.dumps(raw_result, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
     if not isinstance(raw_result, Mapping):
-        failure = odylith_reasoning.provider_failure_metadata(provider)
-        compass_standup_brief_telemetry.record_attempt(
-            repo_root=repo_root,
-            runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
-            bundle_fingerprint=bundle_fingerprint,
-            substrate_fingerprints=substrate_fingerprints,
-            provider_decision="provider_called",
-            input_chars=initial_input_chars,
-            output_chars=0,
-            latency_ms=(time.perf_counter() - request_started) * 1000.0,
-            repair_count=0,
-            salvage_count=0,
-            provider_call_count=1,
-            failure_kind=(
-                narrator._failure_reason_from_provider_code(failure.get("code", ""))  # noqa: SLF001
-                if hasattr(narrator, "_failure_reason_from_provider_code")
-                else ""
-            ),
-            provider_code=str(failure.get("code", "")).strip(),
-            provider_detail=str(failure.get("detail", "")).strip(),
-            model=request_model,
-            reasoning_effort=request_reasoning_effort,
-        )
         return {}, {}
 
     ready_global, ready_scoped, errors, missing_entries = _validate_bundle_response(
@@ -1444,7 +1387,6 @@ def _resolve_bundle_pack(
         if window_key != "__global__" and scope_ids
     }
     if errors and (missing_global or missing_scoped):
-        repair_count = 1
         repair_request = _bundle_repair_provider_request(
             repo_root=repo_root,
             global_packets_by_window=missing_global,
@@ -1453,17 +1395,8 @@ def _resolve_bundle_pack(
             validation_errors=errors,
             config=config,
         )
-        repair_input_chars = len(
-            json.dumps(repair_request.prompt_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-        )
-        repair_model, repair_reasoning_effort = _request_profile_metadata(repair_request)
         repaired_result = provider.generate_structured(request=repair_request)
         if isinstance(repaired_result, Mapping):
-            output_chars += len(json.dumps(repaired_result, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
-            if repair_model:
-                request_model = repair_model
-            if repair_reasoning_effort:
-                request_reasoning_effort = repair_reasoning_effort
             repaired_global, repaired_scoped, _repair_errors, _repair_missing = _validate_bundle_response(
                 response=repaired_result,
                 global_packets_by_window=missing_global,
@@ -1497,25 +1430,6 @@ def _resolve_bundle_pack(
             brief["last_successful_narration_fingerprint"] = str(
                 scoped_substrates.get(window_key, {}).get(scope_id, {}).get("fingerprint", "")
             ).strip()
-    total_expected = len(global_substrates) + sum(len(window) for window in scoped_substrates.values())
-    total_ready = len(ready_global) + sum(len(window) for window in ready_scoped.values())
-    compass_standup_brief_telemetry.record_attempt(
-        repo_root=repo_root,
-        runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
-        bundle_fingerprint=bundle_fingerprint,
-        substrate_fingerprints=substrate_fingerprints,
-        provider_decision="provider_called",
-        input_chars=initial_input_chars + repair_input_chars,
-        output_chars=output_chars,
-        latency_ms=(time.perf_counter() - request_started) * 1000.0,
-        repair_count=repair_count,
-        salvage_count=max(0, total_ready - max(0, total_expected - len(missing_global) - sum(len(v) for k, v in missing_scoped.items() if k != "__global__"))),
-        failure_kind="invalid_batch" if errors and total_ready < total_expected else "",
-        repair_input_chars=repair_input_chars,
-        provider_call_count=1 + repair_count,
-        model=request_model,
-        reasoning_effort=request_reasoning_effort,
-    )
     return ready_global, ready_scoped
 
 
@@ -1776,7 +1690,6 @@ def build_window_briefs(
         require_auto_mode=False,
         allow_implicit_local_provider=True,
     )
-    resolved_profile = odylith_reasoning.cheap_structured_reasoning_profile(resolved_config)
 
     results: dict[str, dict[str, Any]] = {}
     cold_packets: dict[str, Mapping[str, Any]] = {}
@@ -1874,21 +1787,6 @@ def build_brief_bundle(
                     generated_utc=generated_utc,
                     decision_reason=str(prepared.get("decision_reason", "")).strip() or "no_winner_change",
                 )
-                compass_standup_brief_telemetry.record_attempt(
-                    repo_root=repo_root,
-                    runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
-                    bundle_fingerprint="",
-                    substrate_fingerprints={str(window_key).strip(): fingerprint},
-                    provider_decision="skipped_not_worth_calling",
-                    input_chars=0,
-                    output_chars=0,
-                    latency_ms=0.0,
-                    repair_count=0,
-                    salvage_count=0,
-                    skip_reason=str(prepared.get("decision_reason", "")).strip(),
-                    model=str(resolved_profile.model or "").strip(),
-                    reasoning_effort=str(resolved_profile.reasoning_effort or "minimal").strip(),
-                )
 
     for window_key, window_packets in scoped_fact_packets_by_window.items():
         if not isinstance(window_packets, Mapping):
@@ -1926,21 +1824,6 @@ def build_brief_bundle(
                         decision_reason=str(prepared.get("decision_reason", "")).strip() or "no_winner_change",
                     )
                     skipped_scoped[str(window_key).strip()] = skipped_window
-                    compass_standup_brief_telemetry.record_attempt(
-                        repo_root=repo_root,
-                        runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
-                        bundle_fingerprint="",
-                        substrate_fingerprints={_bundle_entry_key(window_key=str(window_key).strip(), scope_id=scope_token): fingerprint},
-                        provider_decision="skipped_not_worth_calling",
-                        input_chars=0,
-                        output_chars=0,
-                        latency_ms=0.0,
-                        repair_count=0,
-                        salvage_count=0,
-                        skip_reason=str(prepared.get("decision_reason", "")).strip(),
-                        model=str(resolved_profile.model or "").strip(),
-                        reasoning_effort=str(resolved_profile.reasoning_effort or "minimal").strip(),
-                    )
         if cached_window:
             ready_scoped[str(window_key).strip()] = cached_window
         if cold_window:
@@ -2004,7 +1887,6 @@ def build_brief_bundle(
             global_packets_by_window=pack_globals,
             scoped_packets_by_window=pack_scoped,
             generated_utc=generated_utc,
-            runtime_packet_fingerprint=str(runtime_packet_fingerprint).strip(),
             config=resolved_config,
             provider=resolved_provider,
         )

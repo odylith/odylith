@@ -719,13 +719,13 @@ def compact_bootstrap_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def compact_finalized_bootstrap_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
-    """Return a slim bootstrap delivery payload while full telemetry stays internal."""
+    """Return a slim bootstrap delivery payload while full diagnostics stay internal."""
 
     return _compact_bootstrap_delivery_payload(payload)
 
 
 def compact_finalized_session_brief_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
-    """Return a slim session-brief delivery payload while full telemetry stays internal."""
+    """Return a slim session-brief delivery payload while full diagnostics stay internal."""
 
     return _compact_session_brief_delivery_payload(payload)
 

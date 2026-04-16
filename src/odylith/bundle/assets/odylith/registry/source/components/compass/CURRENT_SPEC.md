@@ -35,10 +35,11 @@ standup-level summary should be.
 - `odylith/compass/runtime/agent-stream.v1.jsonl` is the canonical
   append-oriented local event truth for the surface.
 - Conversation-observation lifecycle events
-  (`intervention_teaser`, `intervention_card`, `capture_proposed`,
-  `capture_applied`, `capture_declined`) live in that same canonical stream;
-  Compass derives pending proposal state from those events instead of keeping
-  a second proposal ledger.
+  (`intervention_teaser`, `ambient_signal`, `intervention_card`,
+  `capture_proposed`, `capture_applied`, `capture_declined`,
+  `assist_closeout`) live in that same canonical stream; Compass derives
+  pending proposal state and visible-delivery status from those events instead
+  of keeping a second proposal or host-status ledger.
 - That pending-proposal read model is UX-bearing, not just a counter. It must
   preserve prompt-rooted context plus rich proposal display payloads and status
   so downstream shells and future surfaces can render the same delightful
@@ -345,10 +346,9 @@ epoch, renderer, copied brief text, and fail-closed runtime states:
 - Partial salvage is required. Valid global and scoped entries from a mixed
   bundle response must persist immediately instead of being discarded because a
   sibling entry was malformed.
-- Narration spend telemetry is a runtime artifact, not a dashboard anecdote.
-  Compass records input/output size, latency, repair count, salvage count,
-  skip reason, failure kind, and provider code/detail for every bundle
-  attempt.
+- Narration provider diagnostics belong in explicit brief state and debug
+  artifacts, not dashboard anecdotes or shell chrome. Compass must not write a
+  separate provider-attempt recorder.
 - The brief should read like a thoughtful maintainer talking to a teammate:
   friendly, calm, direct, simple, factual, precise, and human.
 - Compass keeps the wording free-flowing. Deterministic rules stop at
@@ -685,3 +685,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Hardened workstream progress truth so Compass counts only execution-relevant checklist sections, shows checklist-only state for active implementation lanes with zero checked execution tasks, and stops narrating those rows as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068); Bug: `CB-087`)
 - 2026-04-14: Added intervention and proposal audit events plus derived pending proposal state so Compass can show the `Odylith Observation` / `Odylith Proposal` lifecycle without inventing a second source of truth. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Hardened Compass pending proposal state so it preserves prompt-rooted context, proposal status, and rich proposal markdown from the intervention lifecycle events instead of collapsing the UX into terse pending-summary strings. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-16: Extended intervention stream truth with ambient/Assist delivery kinds plus delivery metadata so `intervention-status` can prove recent visible-ready behavior without creating a second host-local status store. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)

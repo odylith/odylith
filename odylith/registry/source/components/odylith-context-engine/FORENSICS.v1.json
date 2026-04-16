@@ -54,6 +54,25 @@
   "timeline": [
     {
       "artifacts": [
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
+        "src/odylith/runtime/context_engine/session_bootstrap_payload_compactor.py",
+        "src/odylith/runtime/context_engine/tooling_context_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 388,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/optimization-evaluation-corpus.v1.json, src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py +2 more",
+      "ts_iso": "2026-04-16T07:28:57-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
         "README.md"
       ],
       "confidence": "high",
@@ -84,22 +103,6 @@
         "B-022",
         "B-038"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
-      ],
-      "confidence": "high",
-      "event_index": 270,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith-context-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-      "ts_iso": "2026-04-15T17:18:28-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

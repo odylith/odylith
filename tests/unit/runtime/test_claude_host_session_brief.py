@@ -56,6 +56,7 @@ def test_render_session_brief_summarizes_start_output() -> None:
     assert "selection: focused on B-083" in rendered
     assert "relevant doc: odylith/CLAUDE.md" in rendered
     assert "next command: ./.odylith/bin/odylith context --repo-root . B-083" in rendered
+    assert "interventions armed for Observation, Proposal, and Assist" in rendered
 
 
 def test_render_session_brief_returns_empty_string_when_start_output_empty() -> None:

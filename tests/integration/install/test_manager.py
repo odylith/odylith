@@ -645,8 +645,9 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "At closeout, you may add at most one short `Odylith Assist:` line" in guidance_text
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
     assert "Lead with the user win" in guidance_text
-    assert "link updated governance ids inline when they were actually changed" in guidance_text
-    assert "frame the edge against `odylith_off` or the broader unguided path" in guidance_text
+    assert "link updated governance IDs inline when they were actually changed" in guidance_text
+    assert "name the affected governance-contract IDs" in guidance_text
+    assert "Frame the edge against `odylith_off` or the broader unguided path" in guidance_text
     assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in guidance_text
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
     assert "Silence is better than filler." in guidance_text
@@ -700,8 +701,9 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "At closeout, you may add at most one short `Odylith Assist:` line" in root_agents
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
     assert "Lead with the user win" in root_agents
-    assert "link updated governance ids inline when they were actually changed" in root_agents
-    assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
+    assert "link updated governance IDs inline when they were actually changed" in root_agents
+    assert "name the affected governance-contract IDs" in root_agents
+    assert "Frame the edge against `odylith_off` or the broader unguided path" in root_agents
     assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in root_agents
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
     assert "Silence is better than filler." in root_agents
@@ -1394,8 +1396,9 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "At closeout, you may add at most one short `Odylith Assist:` line" in guidance_text
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
     assert "Lead with the user win" in guidance_text
-    assert "link updated governance ids inline when they were actually changed" in guidance_text
-    assert "frame the edge against `odylith_off` or the broader unguided path" in guidance_text
+    assert "link updated governance IDs inline when they were actually changed" in guidance_text
+    assert "name the affected governance-contract IDs" in guidance_text
+    assert "Frame the edge against `odylith_off` or the broader unguided path" in guidance_text
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
     assert "Silence is better than filler." in guidance_text
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in guidance_text
@@ -1445,8 +1448,9 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert "At closeout, you may add at most one short `Odylith Assist:` line" in root_agents
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
     assert "Lead with the user win" in root_agents
-    assert "link updated governance ids inline when they were actually changed" in root_agents
-    assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
+    assert "link updated governance IDs inline when they were actually changed" in root_agents
+    assert "name the affected governance-contract IDs" in root_agents
+    assert "Frame the edge against `odylith_off` or the broader unguided path" in root_agents
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
     assert "Silence is better than filler." in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents

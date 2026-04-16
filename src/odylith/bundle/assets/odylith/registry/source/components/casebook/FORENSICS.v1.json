@@ -27,12 +27,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 2,
-    "mapped_workstream_evidence_count": 1,
+    "explicit_event_count": 3,
+    "mapped_workstream_evidence_count": 2,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 2,
+    "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 2
+    "timeline_event_count": 3
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -41,6 +41,36 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md",
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py",
+        "src/odylith/runtime/surfaces/host_visible_intervention.py"
+      ],
+      "confidence": "high",
+      "event_index": 323,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "execution-governance",
+        "governance-intervention-engine",
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Fixed intervention chat visibility contract: assistant-render fallback, visible-intervention CLI, Codex Bash-only hook truth, Stop one-shot Assist recovery, and CB-121 casebook capture.",
+      "ts_iso": "2026-04-15T21:20:30-07:00",
+      "workstreams": [
+        "B-096"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "medium",
@@ -118,6 +148,7 @@
     "B-013",
     "B-017",
     "B-062",
-    "B-078"
+    "B-078",
+    "B-097"
   ]
 }

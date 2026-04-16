@@ -8,9 +8,7 @@ Scope: applies to all files under `odylith/atlas/source/`.
 ## Ownership
 - Atlas diagram source is repo-local Odylith truth for the current repository.
 - Odylith owns the schema, guidance, and render contract for this surface.
-- In consumer repos diagnosing Odylith product issues, Atlas source is
-  read-only: collect diagram ids, source paths, and stale or parse evidence
-  for handoff instead of editing local Atlas truth.
+- In consumer repos diagnosing Odylith product issues, Atlas source is read-only: collect diagram ids, source paths, and stale or parse evidence for the maintainer instead of editing local Atlas truth.
 - Do not relocate Atlas source into a shared docs bucket.
 
 ## Contract

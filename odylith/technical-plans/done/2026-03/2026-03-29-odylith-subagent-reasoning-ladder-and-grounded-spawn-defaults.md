@@ -86,7 +86,7 @@ Related Bugs:
     are in place.
 
 ## Validation/Test Plan
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_evaluation_ledger.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_subagent_surface_validation.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_evaluation_ledger.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_subagent_surface_validation.py`
 - [x] `odylith benchmark --repo-root .`
 - [ ] `git diff --check`
 

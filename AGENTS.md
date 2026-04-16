@@ -39,12 +39,19 @@ Paths under `odylith/` follow `odylith/AGENTS.md`.
   surface the earned Observation/Proposal beat visibly at the hook moment when
   the host renders hook output. If the host keeps hook output hidden, render
   the assistant-visible fallback Markdown in chat instead of claiming the
-  engine is active. Stop is the fallback closeout lane, not the primary intervention moment.
+  engine is active. Stop is the fallback closeout and live-beat recovery lane,
+  not the primary intervention moment; unseen Ambient Highlight,
+  Observation, or Proposal beats may replay there before Assist.
 - Hook `systemMessage` or `additionalContext` generation is not proof of
   chat-visible UX. The user-visible contract is satisfied only by rendered
   chat text or by a host channel that is proven visible in the active session.
   When in doubt, run `odylith codex visible-intervention` or `odylith claude
   visible-intervention` and show that Markdown directly.
+- Before claiming the intervention UX is active in a specific chat, run or
+  cite `odylith codex intervention-status` or `odylith claude
+  intervention-status` for that host/session. That status surface is the
+  low-latency delivery ledger for Teaser, Ambient Highlight, Observation,
+  Proposal, and Assist readiness; hook payload generation alone is not enough.
 - Existing Codex and Claude sessions may not hot-reload changed hooks,
   guidance, or source-local runtime code. After changing intervention
   visibility behavior, prove it in a newly started or explicitly reloaded
@@ -53,7 +60,12 @@ Paths under `odylith/` follow `odylith/AGENTS.md`.
 - If you need to show that UX to a human in-chat, prefer rendered Markdown or
   plain prose. Do not wrap the product moment in fenced raw Markdown unless
   the task is explicitly about debugging the raw source text.
-- At closeout, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance ids inline when they were actually changed, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real.
+- At closeout, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance IDs inline when they were actually changed, and when no governed file moved, name the affected governance-contract IDs from bounded request or packet truth without calling them updated. Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real.
+- Explicit feedback that Odylith ambient highlights, interventions, Assist,
+  Observations, Proposals, hooks, or chat output are not visible is a real
+  closeout signal. A short `Odylith Assist:` may acknowledge that visibility
+  continuity without claiming artifact updates; ordinary low-signal short
+  turns should still stay silent.
 - For substantive tasks, follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step; identify the active workstream, component, or packet; then move into repo scan, tests, and edits.
 - In consumer repos, grounding Odylith is diagnosis authority, not blanket write authority: if the issue target is Odylith itself, stop at diagnosis and maintainer-ready feedback unless the operator explicitly authorizes Odylith mutation.
 - Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes when they change `odylith/` or `.odylith/`; do not run them autonomously as Odylith fixes in consumer repos.

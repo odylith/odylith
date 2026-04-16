@@ -93,6 +93,25 @@ def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_pa
     assert "show the Odylith Markdown directly" in rendered
 
 
+def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="I do not think it is working",
+        session_id="visible-session",
+        record_delivery=True,
+    )
+
+    events = host_visible_intervention.stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+        session_id="visible-session",
+    )
+    assert rendered.startswith("**Odylith Observation:** This is a visibility failure")
+    assert events[-1]["delivery_status"] == "manual_visible"
+    assert events[-1]["delivery_channel"] == "manual_visible_command"
+
+
 def test_visible_intervention_replaces_generic_teaser_for_visibility_failure(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,

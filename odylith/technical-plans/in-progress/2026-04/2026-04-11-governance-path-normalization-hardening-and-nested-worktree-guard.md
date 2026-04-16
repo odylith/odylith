@@ -215,7 +215,7 @@ Related Bugs:
       worktree-copy paths.
 
 ## Validation Handoff
-- Run `PYTHONPATH=src .venv/bin/python -m pytest
+- Run `PYTHONPATH=src python3 -m pytest
   tests/unit/runtime/test_agent_governance_intelligence.py
   tests/unit/runtime/test_consumer_profile.py
   tests/unit/runtime/test_workstream_inference.py -q` and report the

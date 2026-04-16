@@ -179,6 +179,57 @@ def test_stop_intervention_bundle_recovers_recent_changed_paths(monkeypatch, tmp
     assert seen["candidate_paths"] == ["src/odylith/runtime/intervention_engine/voice.py"]
 
 
+def test_stop_intervention_bundle_can_recover_prompt_when_last_message_is_short(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    claude_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_teaser",
+        summary="Observation forming.",
+        session_id="claude-stop-short-1",
+        host_family="claude",
+        intervention_key="iv-claude-stop-short-1",
+        turn_phase="prompt_submit",
+        prompt_excerpt=(
+            "I still do not see any Odylith ambient highlights or interventions "
+            "visible in chat."
+        ),
+        display_plain="Odylith can already see governed truth taking shape here.",
+    )
+    seen: dict[str, object] = {}
+
+    def _fake_compose_conversation_bundle(**kwargs):  # noqa: ANN001
+        request = kwargs["request"]
+        seen["prompt"] = request.prompt
+        seen["assistant_summary"] = kwargs["assistant_summary"]
+        return {
+            "intervention_bundle": {},
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept the UX signal visible.",
+                "plain_text": "Odylith Assist: kept the UX signal visible.",
+            },
+        }
+
+    monkeypatch.setattr(
+        claude_host_stop_summary.conversation_runtime,
+        "compose_conversation_bundle",
+        _fake_compose_conversation_bundle,
+    )
+
+    bundle = claude_host_stop_summary._stop_intervention_bundle(
+        repo_root=tmp_path,
+        payload={
+            "session_id": "claude-stop-short-1",
+            "last_assistant_message": "Understood.",
+        },
+    )
+
+    assert bundle["closeout_bundle"]["markdown_text"].startswith("**Odylith Assist:**")
+    assert "ambient highlights" in str(seen["prompt"])
+    assert seen["assistant_summary"] == ""
+
+
 def test_render_stop_summary_combines_observation_and_assist(tmp_path: Path) -> None:
     rendered = claude_host_stop_summary.render_stop_summary(
         repo_root=tmp_path,
@@ -202,6 +253,47 @@ def test_render_stop_summary_combines_observation_and_assist(tmp_path: Path) -> 
 
     assert rendered == (
         "**Odylith Observation:** The signal is real.\n\n"
+        "**Odylith Assist:** kept this grounded."
+    )
+
+
+def test_render_stop_summary_replays_unseen_live_beat_through_stop_lane(tmp_path: Path) -> None:
+    claude_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Ambient signal rendered.",
+        session_id="claude-stop-replay-1",
+        host_family="claude",
+        intervention_key="ambient",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Insight:** this beat was computed earlier but still needs a visible lane.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    rendered = claude_host_stop_summary.render_stop_summary(
+        repo_root=tmp_path,
+        payload={
+            "last_assistant_message": "Implemented the engine slice.",
+            "session_id": "claude-stop-replay-1",
+        },
+        conversation_bundle_override={
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "silent",
+                    "suppressed_reason": "",
+                },
+                "proposal": {"eligible": False, "suppressed_reason": ""},
+            },
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept this grounded.",
+                "plain_text": "Odylith Assist: kept this grounded.",
+            },
+        },
+    )
+
+    assert rendered == (
+        "**Odylith Insight:** this beat was computed earlier but still needs a visible lane.\n\n"
         "**Odylith Assist:** kept this grounded."
     )
 

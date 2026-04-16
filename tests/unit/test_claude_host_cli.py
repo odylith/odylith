@@ -194,3 +194,22 @@ def test_claude_host_cli_dispatches_compatibility_command(monkeypatch) -> None:
             ["--repo-root", "/tmp/repo", "--json"],
         )
     ]
+
+
+def test_claude_host_cli_dispatches_intervention_status_command(monkeypatch) -> None:
+    seen: list[tuple[str, list[str]]] = []
+    monkeypatch.setattr(
+        cli,
+        "_run_module_main",
+        lambda module_name, argv: seen.append((module_name, list(argv))) or 0,
+    )
+
+    exit_code = cli.main(["claude", "intervention-status", "--repo-root", "/tmp/repo", "--json"])
+
+    assert exit_code == 0
+    assert seen == [
+        (
+            "odylith.runtime.surfaces.claude_host_intervention_status",
+            ["--repo-root", "/tmp/repo", "--json"],
+        )
+    ]

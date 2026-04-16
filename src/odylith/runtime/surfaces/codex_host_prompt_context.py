@@ -126,6 +126,9 @@ def main(argv: list[str] | None = None) -> int:
         repo_root=Path(args.repo_root).expanduser().resolve(),
         bundle=bundle,
         include_proposal=False,
+        delivery_channel="assistant_fallback_context",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_user_prompt_submit",
     )
     sys.stdout.write(
         json.dumps(

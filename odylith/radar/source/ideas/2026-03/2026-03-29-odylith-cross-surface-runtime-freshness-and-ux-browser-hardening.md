@@ -72,8 +72,8 @@ That means:
 - exact cache identity on the narration substrate fingerprint
 - delta bundle narration from changed winner facts and prior accepted brief
 - provider-worthiness gating so trivial/non-winner churn never burns credits
-- record brief wallet and latency evidence as internal runtime artifacts, not as
-  dashboard shell telemetry UI
+- keep brief wallet and latency evidence in explicit provider diagnostics, not
+  dashboard shell status UI
 - daemon-backed hot refresh reuse so unchanged Compass does not repay process
   and import costs
 Keep the prose human and free-flowing. The governed contract should be strict
@@ -106,9 +106,9 @@ Extend that same model into a balanced live-shell posture:
 - keep provider spend off the blocking refresh path entirely; exact cache may
   replay live narration, but fresh narration warms only in the maintained
   sidecar and only once per new packet fingerprint
-- keep internal telemetry and diagnostic evidence out of dashboard product DOM:
-  no shell telemetry drawer, cockpit, recorder tape, chart hydrator, or
-  `Telemetry Snapshot` status slab may render above child surfaces
+- keep internal diagnostics out of dashboard product DOM:
+  no shell status drawer, cockpit, recorder tape, chart hydrator, or snapshot
+  status slab may render above child surfaces
 - make stale or mixed-worktree posture explicit in the shell instead of hiding
   it until commit time
 - keep benchmark and release-proof lanes frozen so no hidden live-refresh path
@@ -132,8 +132,8 @@ Extend that same model into a balanced live-shell posture:
   traceability autofix conflicts that belong in diagnostics artifacts instead
 - add broader browser proof for shell UX/UI across Compass, Atlas, Radar,
   Registry, and Casebook
-- delete shell telemetry/status/cockpit code from the product shell and prove
-  legacy telemetry payload keys cannot reappear in rendered dashboard tabs
+- delete shell status/cockpit code from the product shell and prove legacy
+  diagnostic payload keys cannot reappear in rendered dashboard tabs
 - align search semantics across Radar, Registry, Atlas, and Casebook so exact
   ids and punctuation-insensitive human queries do not behave differently
   depending on which governance surface the operator happened to open first
@@ -164,7 +164,7 @@ Extend that same model into a balanced live-shell posture:
 - default operator-facing shell surfaces agree on which traceability warnings
   deserve primary warning treatment
 - browser proof covers broader shell UX/UI freshness paths, not just Compass
-- browser proof fails if shell telemetry strings, selectors, recorder UI, chart
+- browser proof fails if shell status strings, selectors, recorder UI, chart
   DOM, or ECharts hydration reappear across Radar, Registry, Casebook, Atlas, or
   Compass
 - browser proof catches bounded Compass refresh regressions so a passing
@@ -192,8 +192,8 @@ Extend that same model into a balanced live-shell posture:
 - benchmark proof stays green
 
 ## Guardrail
-- CB-120 makes this explicit: internal telemetry may remain a runtime diagnostic
-  artifact, but it must never render as dashboard shell chrome, drawers, status
+- CB-120 makes this explicit: internal diagnostics may remain explicit debug
+  artifacts, but they must never render as dashboard shell chrome, drawers, status
   slabs, recorder tapes, cockpit panels, charts, or product guidance.
 
 ## Validation
@@ -273,7 +273,7 @@ Extend that same model into a balanced live-shell posture:
 - implemented on 2026-04-10 for the local-substrate brief follow-up:
   Compass now fingerprints exact brief reuse on the deterministic narration
   substrate instead of raw packets, computes provider-worthiness locally from
-  winner deltas, records brief spend telemetry per bundle attempt, and reuses
+  winner deltas, keeps brief spend diagnostics bounded, and reuses
   daemon-held runtime payloads on hot unchanged refreshes
 - implemented on 2026-04-08 for shell freshness projection bootstrap:
   the tooling shell now preserves its precomputed Compass stale/failure status

@@ -47,7 +47,7 @@ def test_casebook_source_validation_accepts_compact_reproducibility(tmp_path: Pa
 def test_casebook_source_validation_rejects_prose_reproducibility(tmp_path: Path) -> None:
     _write_bug(
         tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-prose.md",
-        reproducibility="High; render odylith/index.html and the telemetry block appears above tabs.",
+        reproducibility="High; render odylith/index.html and the diagnostic block appears above tabs.",
     )
 
     result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)

@@ -1,8 +1,8 @@
 # Odylith Chatter
-Last updated: 2026-04-14
+Last updated: 2026-04-16
 
 
-Last updated (UTC): 2026-04-14
+Last updated (UTC): 2026-04-16
 
 ## Purpose
 Odylith Chatter is Odylith's cross-posture narration contract. It governs how
@@ -19,8 +19,9 @@ end-of-work outcomes instead of canned self-promotion.
   task-first, and human instead of sounding like a control-plane receipt.
 - The closeout-side consumption contract for carried intervention payloads.
 - The final `Odylith Assist:` closeout contract, including the rule to link
-  updated governance ids inline when they were actually changed, plus tone
-  guardrails.
+  updated governance IDs inline when they were actually changed, name affected
+  governance-contract IDs when the slice stayed inside known truth, and keep
+  tone guardrails intact.
 - Benchmark-safe consumption of precomputed Tribunal-backed delivery signals
   when those signals sharpen ambient narration without requiring a live
   diagnosis pass.
@@ -79,8 +80,10 @@ end-of-work outcomes instead of canned self-promotion.
   `Odylith Assist:` line plus at most one supplemental closeout line.
 - Prefer `**Odylith Assist:**` when Markdown formatting is available;
   otherwise use `Odylith Assist:`.
-- Lead that assist line with the user win, not Odylith mechanics, and link
-  updated governance ids inline when they were actually changed.
+- Lead that assist line with the user win, not Odylith mechanics. Link updated
+  governance IDs inline when they were actually changed; if no governed file
+  moved, name the affected governance-contract IDs from bounded request or
+  packet truth without calling them updated.
 - When the evidence supports it, frame the edge against `odylith_off` or the
   broader unguided path.
 - Odylith's voice should stay crisp, authentic, clear, simple, insightful,
@@ -151,9 +154,21 @@ end-of-work outcomes instead of canned self-promotion.
   text directly, and checkpoint developer-context bundles may carry the same
   Assist text forward for continuity. Keeping `Odylith Assist:` trapped in
   orchestration summary state is a product bug, not an acceptable fallback.
+- When Assist is actually emitted through Stop or a manual visible fallback,
+  the intervention delivery ledger may record an `assist_closeout` event with
+  delivery metadata. Chatter owns the voice and eligibility of that closeout;
+  the intervention engine owns the low-latency visibility proof read model.
+- Assist may emit for explicit Odylith visibility-feedback turns even when no
+  files changed, if the prompt or assistant summary names the product signal
+  and the delivery problem clearly enough to be user-facing evidence. This is
+  the humane recovery path for "I do not see the interventions" feedback, not
+  a generic encouragement generator.
 - Lead with the user win, not Odylith mechanics.
-- Link updated governance ids inline when the final changed paths prove those
+- Link updated governance IDs inline when the final changed paths prove those
   records really moved.
+- Name affected governance-contract IDs from bounded request, packet, or
+  target-ref truth when no changed path proves an update but the work plainly
+  stayed inside those contracts. Do not describe those contracts as updated.
 - When the evidence supports it, frame the edge against `odylith_off` or the
   broader unguided path.
 - Use only concrete observed counts, measured deltas, or validation outcomes
@@ -280,3 +295,6 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Hardened the observation/proposal carry-through so prompt-rooted context and rich markdown remain first-class conversation payload, preventing later host or Compass consumers from degrading the UX into self-referential pending-summary narration. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Split the architecture cleanly so live mid-turn teaser/Observation/Proposal rendering runs through the intervention-engine fast path, while Chatter stays responsible for task-first narration policy and the final `Odylith Assist:` closeout. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Clarified that cross-phase moment continuity is intervention-owned too, so Chatter consumes stable carried intervention payloads instead of rebuilding stale or duplicate Observation/Proposal beats from stream summaries. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-16: Linked `Odylith Assist` closeout visibility to the intervention delivery ledger so Codex and Claude can prove Assist was visible-ready without moving Assist voice ownership out of Chatter. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-16: Extended `Odylith Assist` closeout payloads with affected governance-contract IDs so closeouts can name B-096, component dossiers, diagrams, or bugs even when the final turn only validated within those contracts instead of editing them. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-16: Added the visibility-continuity Assist style so explicit product UX feedback about missing ambient/intervention chat output earns a short human closeout, while ordinary low-signal short turns still suppress Assist. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)

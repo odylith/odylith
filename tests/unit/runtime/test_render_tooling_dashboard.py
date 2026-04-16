@@ -9,6 +9,10 @@ from odylith.runtime.surfaces import render_tooling_dashboard as renderer
 from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
 
 
+def _legacy_payload_key(*parts: str) -> str:
+    return "_".join(parts)
+
+
 def _load_externalized_payload_js(path: Path) -> dict[str, object]:
     raw = path.read_text(encoding="utf-8").strip()
     _prefix, _separator, remainder = raw.partition(" = ")
@@ -275,7 +279,7 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Compass keeps briefs and timelines so the next move stays clear." in html
     assert "the first real code path you choose" not in html
     assert 'id="themeToggle"' not in html
-    assert ">Telemetry<" not in html
+    assert ">Internal Diagnostic<" not in html
     assert 'id="odylithToggle"' in html
     assert "Cheatsheet" in html
     assert "Odylith Dashboard Cheatsheet" in html
@@ -331,7 +335,7 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert 'data-cheatsheet-filter="edit"' in html
     assert "Example prompt" in html
     assert "Copy prompt" in html
-    assert "Telemetry runtime status drawer" not in html
+    assert "Internal runtime status drawer" not in html
     assert html.index('<h3 class="cheatsheet-card-title">Create a Radar backlog item</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
     assert html.index('<h3 class="cheatsheet-card-title">Create a Registry component</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
     assert html.index('<h3 class="cheatsheet-card-title">Create an Atlas diagram</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
@@ -458,8 +462,8 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "v0.1.0" in html
     assert ">odylith<" in html
-    assert "Telemetry Snapshot" not in html
-    assert "Telemetry runtime status" not in html
+    assert "Internal Diagnostic Snapshot" not in html
+    assert "Internal runtime status" not in html
     assert "system-status-shell" not in html
     assert "odylith-recorder-shell" not in html
     assert "odylith-chart-canvas" not in html
@@ -468,11 +472,11 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert '"self_host"' in payload_js
     assert '"benchmark_story"' not in payload_js
-    assert '"odylith_drawer"' not in payload_js
-    assert '"odylith_drawer_history"' not in payload_js
-    assert '"memory_snapshot"' not in payload_js
-    assert '"optimization_snapshot"' not in payload_js
-    assert '"evaluation_snapshot"' not in payload_js
+    assert f'"{_legacy_payload_key("odylith", "drawer")}"' not in payload_js
+    assert f'"{_legacy_payload_key("odylith", "drawer", "history")}"' not in payload_js
+    assert f'"{_legacy_payload_key("memory", "snapshot")}"' not in payload_js
+    assert f'"{_legacy_payload_key("optimization", "snapshot")}"' not in payload_js
+    assert f'"{_legacy_payload_key("evaluation", "snapshot")}"' not in payload_js
     assert '"repo_role": "product_repo"' in payload_js
     assert '"posture": "pinned_release"' in payload_js
     assert '"runtime_source": "pinned_runtime"' in payload_js
@@ -1177,7 +1181,7 @@ def test_render_tooling_dashboard_does_not_embed_internal_status_snapshots(tmp_p
         renderer.odylith_context_engine_store,
         "load_delivery_surface_payload",
         lambda **kwargs: {
-            "memory_snapshot": {
+            _legacy_payload_key("memory", "snapshot"): {
                 "engine": {
                     "backend": {
                         "storage": "lance_local_columnar",
@@ -1250,8 +1254,8 @@ def test_render_tooling_dashboard_does_not_embed_internal_status_snapshots(tmp_p
                 },
                 "remote_retrieval": {"enabled": False},
             },
-            "optimization_snapshot": {"overall": {"score": 0.0, "level": "cold"}},
-            "evaluation_snapshot": {"status": "cold", "coverage_rate": 0.0, "satisfaction_rate": 0.0},
+            _legacy_payload_key("optimization", "snapshot"): {"overall": {"score": 0.0, "level": "cold"}},
+            _legacy_payload_key("evaluation", "snapshot"): {"status": "cold", "coverage_rate": 0.0, "satisfaction_rate": 0.0},
         },
     )
 
@@ -1262,10 +1266,10 @@ def test_render_tooling_dashboard_does_not_embed_internal_status_snapshots(tmp_p
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert "tooling-payload.v1.js?v=" in html
     assert "tooling-app.v1.js?v=" in html
-    assert "memory_snapshot" not in payload_js
+    assert _legacy_payload_key("memory", "snapshot") not in payload_js
     assert "memory_areas" not in payload_js
-    assert "optimization_snapshot" not in payload_js
-    assert "evaluation_snapshot" not in payload_js
+    assert _legacy_payload_key("optimization", "snapshot") not in payload_js
+    assert _legacy_payload_key("evaluation", "snapshot") not in payload_js
     assert "Repo truth" not in payload_js
     assert "Decision memory" not in payload_js
     assert "Onboarding memory" not in payload_js

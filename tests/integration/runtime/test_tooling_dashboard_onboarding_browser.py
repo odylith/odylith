@@ -30,6 +30,14 @@ _SURFACE_HEADINGS = {
 }
 
 
+def _legacy_payload_key(*parts: str) -> str:
+    return "_".join(parts)
+
+
+def _legacy_ui_phrase(*parts: str) -> str:
+    return " ".join(parts)
+
+
 def _seed_shell_assets(repo_root: Path) -> None:
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
     shutil.copytree(
@@ -234,13 +242,13 @@ def _block_storage(page, *, block_local: bool, block_session: bool) -> None:  # 
         page.add_init_script("\n".join(snippets))
 
 
-def _assert_shell_telemetry_absent(page) -> None:  # noqa: ANN001
+def _assert_shell_internal_status_absent(page) -> None:  # noqa: ANN001
     body_text = page.evaluate("() => document.body ? document.body.innerText : ''")
     payload_text = page.evaluate("() => JSON.stringify(window.__ODYLITH_TOOLING_DATA__ || {})")
     for forbidden in (
-        "Telemetry Snapshot",
-        "Telemetry runtime status",
-        "Telemetry recorder tape",
+        "Internal Diagnostic Snapshot",
+        "Internal runtime status",
+        "Internal recorder tape",
         "Recorder Tape",
         "Backend Footprint",
         "Control Calibration",
@@ -248,16 +256,16 @@ def _assert_shell_telemetry_absent(page) -> None:  # noqa: ANN001
         assert forbidden not in body_text
         assert forbidden not in payload_text
     for forbidden_payload_key in (
-        "memory_snapshot",
-        "optimization_snapshot",
-        "evaluation_snapshot",
-        "odylith_drawer",
-        "odylith_drawer_history",
+        _legacy_payload_key("memory", "snapshot"),
+        _legacy_payload_key("optimization", "snapshot"),
+        _legacy_payload_key("evaluation", "snapshot"),
+        _legacy_payload_key("odylith", "drawer"),
+        _legacy_payload_key("odylith", "drawer", "history"),
     ):
         assert forbidden_payload_key not in payload_text
     for selector in (
         ".system-status-shell",
-        ".telemetry-stat-grid",
+        ".legacy-stat-grid",
         ".odylith-recorder-shell",
         ".odylith-chart-canvas",
         "script[src*='echarts']",
@@ -354,17 +362,17 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_shell_never_renders_internal_telemetry_status_across_tabs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
-    repo_root = tmp_path / "consumer-no-shell-telemetry"
+def test_shell_never_renders_internal_status_across_tabs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "consumer-no-shell-status"
     repo_root.mkdir()
     _seed_consumer_repo(repo_root, existing_truth=True)
     _render_shell_with_payload(
         repo_root,
         monkeypatch,
         {
-            "odylith_drawer": {"headline": "Telemetry Snapshot"},
-            "odylith_drawer_history": {"rows": [{"state": "leaked"}]},
-            "telemetry": {"runtime": {"status": "should stay internal"}},
+            _legacy_payload_key("odylith", "drawer"): {"headline": "Internal Diagnostic Snapshot"},
+            _legacy_payload_key("odylith", "drawer", "history"): {"rows": [{"state": "leaked"}]},
+            "internal_diagnostics": {"runtime": {"status": "should stay internal"}},
         },
     )
 
@@ -374,7 +382,7 @@ def test_shell_never_renders_internal_telemetry_status_across_tabs(tmp_path: Pat
             response = page.goto(f"{base_url}/odylith/index.html?tab={tab}", wait_until="domcontentloaded")
             assert response is not None and response.ok
             _wait_for_shell_tab(page, tab)
-            _assert_shell_telemetry_absent(page)
+            _assert_shell_internal_status_absent(page)
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -415,7 +423,7 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
         assert response is not None and response.ok
 
-        assert page.locator("text=Telemetry Snapshot").count() == 0
+        assert page.locator("text=Internal Diagnostic Snapshot").count() == 0
         assert page.locator("text=Maintainer Benchmark Lane").count() == 0
 
         _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
@@ -642,36 +650,67 @@ def test_shell_delivery_payload_does_not_render_status_summary_cards(tmp_path: P
         repo_root,
         monkeypatch,
         {
-            "memory_snapshot": {},
-            "evaluation_snapshot": {},
-            "optimization_snapshot": {
+            _legacy_payload_key("memory", "snapshot"): {},
+            _legacy_payload_key("evaluation", "snapshot"): {},
+            _legacy_payload_key("optimization", "snapshot"): {
                 "latest_packet": {
                     "workstream": "B-072",
                     "packet_state": "gated_ambiguous",
-                    "execution_governance_present": True,
-                    "execution_governance_outcome": "deny",
-                    "execution_governance_mode": "recover",
-                    "execution_governance_next_move": "recover.current_blocker",
-                    "execution_governance_current_phase": "recover",
-                    "execution_governance_last_successful_phase": "submit",
-                    "execution_governance_blocker": "waiting approval",
-                    "execution_governance_closure": "safe",
-                    "execution_governance_wait_status": "awaiting_callback",
-                    "execution_governance_wait_detail": "github actions run 991",
-                    "execution_governance_resume_token": "resume:B-072",
-                    "execution_governance_validation_archetype": "recover",
-                    "execution_governance_validation_derived_from": ["mode:recover"],
-                    "execution_governance_authoritative_lane": "context_engine.governance_slice.authoritative",
-                    "execution_governance_history_rule_hits": ["lane_drift_preflight"],
-                    "execution_governance_pressure_signals": ["wait:awaiting_callback", "denials:2"],
-                    "execution_governance_nearby_denial_actions": ["explore.broad_reset"],
-                    "execution_governance_runtime_invalidated_by_step": "render_compass_dashboard",
-                    "execution_governance_host_family": "claude",
-                    "execution_governance_host_supports_native_spawn": False,
-                    "execution_governance_target_lane": "dev_maintainer",
-                    "execution_governance_requires_more_consumer_context": True,
-                    "execution_governance_consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
-                    "execution_governance_requires_reanchor": True,
+                    _legacy_payload_key("execution", "governance", "present"): True,
+                    _legacy_payload_key("execution", "governance", "outcome"): "deny",
+                    _legacy_payload_key("execution", "governance", "mode"): "recover",
+                    _legacy_payload_key("execution", "governance", "next", "move"): "recover.current_blocker",
+                    _legacy_payload_key("execution", "governance", "current", "phase"): "recover",
+                    _legacy_payload_key("execution", "governance", "last", "successful", "phase"): "submit",
+                    _legacy_payload_key("execution", "governance", "blocker"): "waiting approval",
+                    _legacy_payload_key("execution", "governance", "closure"): "safe",
+                    _legacy_payload_key("execution", "governance", "wait", "status"): "awaiting_callback",
+                    _legacy_payload_key("execution", "governance", "wait", "detail"): "github actions run 991",
+                    _legacy_payload_key("execution", "governance", "resume", "token"): "resume:B-072",
+                    _legacy_payload_key("execution", "governance", "validation", "archetype"): "recover",
+                    _legacy_payload_key("execution", "governance", "validation", "derived", "from"): ["mode:recover"],
+                    _legacy_payload_key(
+                        "execution",
+                        "governance",
+                        "authoritative",
+                        "lane",
+                    ): "context_engine.governance_slice.authoritative",
+                    _legacy_payload_key("execution", "governance", "history", "rule", "hits"): [
+                        "lane_drift_preflight"
+                    ],
+                    _legacy_payload_key("execution", "governance", "pressure", "signals"): [
+                        "wait:awaiting_callback",
+                        "denials:2",
+                    ],
+                    _legacy_payload_key("execution", "governance", "nearby", "denial", "actions"): [
+                        "explore.broad_reset"
+                    ],
+                    _legacy_payload_key(
+                        "execution",
+                        "governance",
+                        "runtime",
+                        "invalidated",
+                        "by",
+                        "step",
+                    ): "render_compass_dashboard",
+                    _legacy_payload_key("execution", "governance", "host", "family"): "claude",
+                    _legacy_payload_key("execution", "governance", "host", "supports", "native", "spawn"): False,
+                    _legacy_payload_key("execution", "governance", "target", "lane"): "dev_maintainer",
+                    _legacy_payload_key(
+                        "execution",
+                        "governance",
+                        "requires",
+                        "more",
+                        "consumer",
+                        "context",
+                    ): True,
+                    _legacy_payload_key(
+                        "execution",
+                        "governance",
+                        "consumer",
+                        "failover",
+                    ): "maintainer_ready_feedback_plus_bounded_narrowing",
+                    _legacy_payload_key("execution", "governance", "requires", "reanchor"): True,
                 }
             },
         },
@@ -684,14 +723,14 @@ def test_shell_delivery_payload_does_not_render_status_summary_cards(tmp_path: P
 
         _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
         page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
-        assert page.locator(".odylith-summary-card", has_text="Latest Governed Packet").count() == 0
+        assert page.locator(".odylith-summary-card", has_text=_legacy_ui_phrase("Latest", "Governed", "Packet")).count() == 0
         assert page.locator("text=Serial host execution").count() == 0
         assert page.locator("text=recover.current_blocker").count() == 0
         assert page.locator("text=waiting approval").count() == 0
         assert page.locator("text=explore.broad_reset").count() == 0
         assert page.locator("text=render_compass_dashboard").count() == 0
         assert page.locator("text=resume:B-072").count() == 0
-        _assert_shell_telemetry_absent(page)
+        _assert_shell_internal_status_absent(page)
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

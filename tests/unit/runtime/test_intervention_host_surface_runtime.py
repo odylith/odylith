@@ -27,6 +27,38 @@ def test_recent_session_helpers_do_not_bleed_without_session_id(tmp_path: Path) 
     assert surface_runtime.recent_session_ids(repo_root=tmp_path, session_id="", field="workstreams") == []
 
 
+def test_recent_session_live_markdown_recovers_unseen_live_beats_only(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Already shown.",
+        session_id="known-session",
+        host_family="codex",
+        intervention_key="iv-visible",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** Already shown.",
+        delivery_channel="manual_visible_command",
+        delivery_status="manual_visible",
+    )
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="capture_proposed",
+        summary="Proposal ready.",
+        session_id="known-session",
+        host_family="codex",
+        intervention_key="iv-unseen",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="-----\nOdylith Proposal: keep this visible.\n-----",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    assert surface_runtime.recent_session_live_markdown(
+        repo_root=tmp_path,
+        session_id="known-session",
+    ) == "-----\nOdylith Proposal: keep this visible.\n-----"
+
+
 def test_compose_host_conversation_bundle_recovers_recent_checkpoint_context(tmp_path: Path) -> None:
     surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
@@ -54,6 +86,9 @@ def test_compose_host_conversation_bundle_recovers_recent_checkpoint_context(tmp
     assert bundle["intervention_bundle"]
     assert assist["eligible"] is True
     assert "1 candidate path" in assist["markdown_text"]
+    assert "[B-096](?tab=radar&workstream=B-096)" in assist["markdown_text"]
+    assert "[governance-intervention-engine](?tab=registry&component=governance-intervention-engine)" in assist["markdown_text"]
+    assert [row["id"] for row in assist["affected_contracts"]] == ["B-096", "governance-intervention-engine"]
 
 
 def test_codex_post_tool_payload_uses_additional_context_and_system_message() -> None:
@@ -127,6 +162,31 @@ def test_visible_delivery_already_present_suppresses_stop_block() -> None:
     assert host_surface_runtime.visible_delivery_already_present(
         last_assistant_message="Implemented the fix.\n\n**Odylith Assist:** kept this grounded.",
         visible_text="**Odylith Assist:** kept this grounded.",
+    )
+
+
+def test_visible_delivery_already_present_requires_the_same_visible_labels() -> None:
+    assert not host_surface_runtime.visible_delivery_already_present(
+        last_assistant_message="Implemented the fix.\n\n**Odylith Observation:** The signal is real.",
+        visible_text="**Odylith Assist:** kept this grounded.",
+    )
+    assert not host_surface_runtime.visible_delivery_already_present(
+        last_assistant_message="Implemented the fix.\n\n**Odylith Observation:** The signal is real.",
+        visible_text=(
+            "**Odylith Observation:** The signal is real.\n\n"
+            "**Odylith Assist:** kept this grounded."
+        ),
+    )
+    assert host_surface_runtime.visible_delivery_already_present(
+        last_assistant_message=(
+            "Implemented the fix.\n\n"
+            "**Odylith Observation:** The signal is real.\n\n"
+            "**Odylith Assist:** kept this grounded."
+        ),
+        visible_text=(
+            "**Odylith Observation:** The signal is real.\n\n"
+            "**Odylith Assist:** kept this grounded."
+        ),
     )
 
 

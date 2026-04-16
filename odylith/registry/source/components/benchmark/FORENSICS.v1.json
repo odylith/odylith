@@ -36,6 +36,23 @@
   "timeline": [
     {
       "artifacts": [
+        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 381,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "benchmark"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/METRICS_AND_PRIORITIES.md, odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+      "ts_iso": "2026-04-16T07:28:57-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
         "README.md"
       ],
       "confidence": "high",
@@ -66,24 +83,6 @@
         "B-022",
         "B-038"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
-      ],
-      "confidence": "high",
-      "event_index": 265,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "benchmark"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/benchmark/CURRENT_SPEC.md, odylith/runtime/source/optimization-evaluation-corpus.v1.json +1 more",
-      "ts_iso": "2026-04-15T17:41:20-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [

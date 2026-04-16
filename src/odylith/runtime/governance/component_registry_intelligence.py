@@ -52,6 +52,8 @@ DEFAULT_IDEAS_ROOT = "odylith/radar/source/ideas"
 DEFAULT_STREAM_PATH = agent_runtime_contract.AGENT_STREAM_PATH
 DEFAULT_TRACEABILITY_GRAPH_PATH = "odylith/radar/traceability-graph.v1.json"
 DEFAULT_WORKSPACE_ACTIVITY_WINDOW_HOURS = 48
+_CASEBOOK_BUG_PATH_PREFIX = "odylith/casebook/bugs/"
+_UNIT_RUNTIME_TEST_PREFIX = "tests/unit/runtime/"
 
 
 def default_manifest_path(*, repo_root: Path) -> Path:
@@ -77,6 +79,19 @@ _PRODUCT_LAYER_NORMALIZATION_VERSION = "consumer-distro-suffix-v1"
 _RADAR_IDEA_CONTRACT_VERSION = f"v0.1.11:{backlog_contract.IDEA_SPEC_CACHE_VERSION}"
 _COMPONENT_INDEX_CACHE_VERSION = "v2"
 _COMPONENT_REPORT_CACHE_VERSION = "v4"
+_ACTIVE_SURFACE_MODULE_STEMS: frozenset[str] = frozenset(
+    {
+        "compass_standup_brief_batch",
+        "compass_standup_brief_maintenance",
+        "compass_standup_brief_narrator",
+        "compass_standup_brief_substrate",
+        "compass_standup_brief_voice_validation",
+        "tooling_dashboard_cheatsheet_presenter",
+        "tooling_dashboard_release_presenter",
+        "tooling_dashboard_shell_presenter",
+        "tooling_dashboard_welcome_presenter",
+    }
+)
 _SKILL_TRIGGER_HEADING_RE = re.compile(r"^###\s+(.+?)\s*$", re.I)
 _SKILL_TRIGGER_ITEM_RE = re.compile(r"^\s*-\s*`([^`]+)`\s*$")
 _SKILL_TRIGGER_PHRASE_RE = re.compile(r'^\s*-\s*"([^"]+)"\s*$')
@@ -751,7 +766,7 @@ def _cached_component_registry_report_payload(
 
     workspace_activity = []
     for raw in governance.collect_git_changed_paths(repo_root=repo_root):
-        normalized = _normalize_path(repo_root, str(raw or ""))
+        normalized = _normalize_workspace_activity_path(repo_root=repo_root, token=str(raw or ""))
         if not normalized or not is_meaningful_workspace_artifact(normalized, repo_root=repo_root):
             continue
         workspace_activity.append(
@@ -1791,7 +1806,7 @@ def _collect_event_artifacts(*, repo_root: Path, raw_values: Any) -> list[str]:
     rows: list[str] = []
     if isinstance(raw_values, list):
         for item in raw_values:
-            token = _normalize_path(repo_root, str(item or ""))
+            token = _normalize_workspace_activity_path(repo_root=repo_root, token=str(item or ""))
             if token:
                 rows.append(token)
     return sorted(set(rows))
@@ -2015,12 +2030,67 @@ def map_stream_events(
 _RETIRED_SURFACE_MARKER = "sen" "tinel"
 
 
+def _surface_module_stem_from_activity_path(path: str) -> str:
+    token = str(path or "").strip().replace("\\", "/").lower()
+    if token.startswith("src/odylith/runtime/surfaces/") and token.endswith(".py"):
+        return Path(token).stem
+    if token.startswith(_UNIT_RUNTIME_TEST_PREFIX) and token.endswith(".py"):
+        stem = Path(token).stem
+        if stem.startswith("test_"):
+            return stem.removeprefix("test_")
+    return ""
+
+
+def _is_retired_surface_module_path(path: str) -> bool:
+    stem = _surface_module_stem_from_activity_path(path)
+    if not stem:
+        return False
+    governed_family = stem.startswith("compass_standup_brief_")
+    shell_presenter_family = stem.startswith("tooling_dashboard_") and stem.endswith("_presenter")
+    if not governed_family and not shell_presenter_family:
+        return False
+    return stem not in _ACTIVE_SURFACE_MODULE_STEMS
+
+
 def _normalize_workspace_activity_path(*, repo_root: Path, token: str) -> str:
     normalized = workstream_inference.normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
     normalized = normalized.lstrip("./")
     if _RETIRED_SURFACE_MARKER in normalized.lower():
         return ""
+    if _is_retired_surface_module_path(normalized):
+        return ""
+    if _is_deindexed_missing_casebook_bug_path(repo_root=repo_root, path=normalized):
+        return ""
     return normalized
+
+
+def _load_casebook_index_paths(repo_root: Path) -> set[str]:
+    index_path = (Path(repo_root).resolve() / "odylith" / "casebook" / "bugs" / "INDEX.md")
+    if not index_path.is_file():
+        return set()
+    try:
+        text = index_path.read_text(encoding="utf-8")
+    except OSError:
+        return set()
+    paths: set[str] = set()
+    for match in re.finditer(r"\(([^)\n]+\.md)\)", text):
+        raw = match.group(1).strip()
+        if not raw or raw.startswith("http://") or raw.startswith("https://"):
+            continue
+        candidate = raw if "/" in raw else f"{_CASEBOOK_BUG_PATH_PREFIX}{raw}"
+        normalized = _normalize_path(repo_root, candidate)
+        if normalized:
+            paths.add(normalized)
+    return paths
+
+
+def _is_deindexed_missing_casebook_bug_path(*, repo_root: Path, path: str) -> bool:
+    token = str(path or "").strip()
+    if not token.startswith(_CASEBOOK_BUG_PATH_PREFIX) or not token.endswith(".md"):
+        return False
+    if token in _load_casebook_index_paths(repo_root):
+        return False
+    return not (Path(repo_root).resolve() / token).exists()
 
 
 def _stable_missing_workspace_activity_when(*, repo_root: Path, path: Path, now: dt.datetime) -> dt.datetime:

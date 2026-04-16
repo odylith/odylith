@@ -97,7 +97,7 @@ Related Bugs:
         Compass, and session steps in both the guidance and supporting skills.
 
 ## Validation/Test Plan
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/install/test_agents.py tests/integration/install/test_manager.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_agents.py tests/integration/install/test_manager.py`
 - [x] `git diff --check`
 - [x] `./.odylith/bin/odylith sync --repo-root . --check-only`
 

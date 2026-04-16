@@ -13,10 +13,12 @@ from odylith.runtime.common import agent_runtime_contract
 _INTERVENTION_EVENT_KINDS: frozenset[str] = frozenset(
     {
         "intervention_teaser",
+        "ambient_signal",
         "intervention_card",
         "capture_proposed",
         "capture_applied",
         "capture_declined",
+        "assist_closeout",
     }
 )
 _EVENT_STREAM_CACHE: dict[tuple[str, int, int], list[dict[str, Any]]] = {}
@@ -122,6 +124,10 @@ def append_intervention_event(
     assistant_summary: str = "",
     moment_kind: str = "",
     semantic_signature: Sequence[str] = (),
+    delivery_channel: str = "",
+    delivery_status: str = "",
+    render_surface: str = "",
+    delivery_latency_ms: float | None = None,
 ) -> dict[str, Any]:
     normalized_kind = _normalize_string(kind).lower()
     if normalized_kind not in _INTERVENTION_EVENT_KINDS:
@@ -149,7 +155,12 @@ def append_intervention_event(
         "assistant_summary": _normalize_string(assistant_summary),
         "moment_kind": _normalize_string(moment_kind).lower(),
         "semantic_signature": _normalize_string_list(semantic_signature),
+        "delivery_channel": _normalize_string(delivery_channel).lower(),
+        "delivery_status": _normalize_string(delivery_status).lower(),
+        "render_surface": _normalize_string(render_surface).lower(),
     }
+    if delivery_latency_ms is not None:
+        payload["delivery_latency_ms"] = round(max(0.0, float(delivery_latency_ms)), 3)
     payload = {key: value for key, value in payload.items() if value not in ("", [], {})}
     stream_path = _agent_stream_path(repo_root=repo_root)
     stream_path.parent.mkdir(parents=True, exist_ok=True)
@@ -285,6 +296,9 @@ def pending_proposal_state(*, repo_root: Path, limit: int = 400) -> dict[str, An
                 "prompt_excerpt": _normalize_string(row.get("prompt_excerpt")),
                 "moment_kind": _normalize_string(row.get("moment_kind")).lower(),
                 "semantic_signature": _normalize_string_list(row.get("semantic_signature")),
+                "delivery_channel": _normalize_string(row.get("delivery_channel")).lower(),
+                "delivery_status": _normalize_string(row.get("delivery_status")).lower(),
+                "render_surface": _normalize_string(row.get("render_surface")).lower(),
                 "ts_iso": _normalize_string(row.get("ts_iso")),
             }
         )

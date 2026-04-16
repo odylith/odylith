@@ -41,8 +41,6 @@ def _stop_intervention_bundle(
     summary = claude_host_shared.meaningful_stop_summary(
         str(payload.get("last_assistant_message", ""))
     )
-    if not summary:
-        return {}
     session_id = claude_host_shared.hook_session_id(payload)
     prompt_excerpt = intervention_surface_runtime.recent_session_prompt_excerpt(
         repo_root=repo_root,
@@ -62,6 +60,8 @@ def _stop_intervention_bundle(
         session_id=session_id,
         field="components",
     )
+    if not any((summary, prompt_excerpt, changed_paths, workstreams, components)):
+        return {}
     grounded = bool(prompt_excerpt or summary or changed_paths or workstreams or components)
     request = orchestrator.OrchestrationRequest(
         prompt=prompt_excerpt or summary,
@@ -125,6 +125,12 @@ def render_stop_summary(
         markdown=True,
         include_proposal=False,
     )
+    recovered_live_text = intervention_surface_runtime.recent_session_live_markdown(
+        repo_root=repo_root,
+        session_id=str(payload.get("session_id", "")).strip() or claude_host_shared.hook_session_id(payload),
+    )
+    if recovered_live_text and (not live_text or "Odylith can already" in live_text):
+        live_text = recovered_live_text
     closeout_text = conversation_surface.render_closeout_text(
         bundle,
         markdown=True,
@@ -156,14 +162,13 @@ def main(argv: list[str] | None = None) -> int:
     summary = claude_host_shared.meaningful_stop_summary(
         str(payload.get("last_assistant_message", ""))
     )
-    if not summary:
-        return 0
     workstreams = claude_host_shared.extract_workstreams(summary)
-    claude_host_shared.run_compass_log(
-        project_dir=repo_root,
-        summary=summary,
-        workstreams=workstreams,
-    )
+    if summary:
+        claude_host_shared.run_compass_log(
+            project_dir=repo_root,
+            summary=summary,
+            workstreams=workstreams,
+        )
     bundle = _stop_intervention_bundle(repo_root=repo_root, payload=payload)
     rendered = render_stop_summary(
         repo_root=repo_root,
@@ -175,6 +180,10 @@ def main(argv: list[str] | None = None) -> int:
             repo_root=repo_root,
             bundle=bundle,
             include_proposal=False,
+            include_closeout=True,
+            delivery_channel="stop_one_shot_guard",
+            delivery_status="stop_continuation_ready",
+            render_surface="claude_stop",
         )
     if rendered:
         sys.stdout.write(

@@ -112,7 +112,7 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "benchmark-corpus-expansion-mirror-integrity",
         "benchmark-taxonomy-and-heatmap-family-order-evolution",
         "compass-wave-and-release-posture-surface-sync",
-        "tooling-dashboard-governance-shell-render-contract",
+        "tooling-dashboard-shell-render-contract",
         "subagent-routing-and-remediator-guardrail-carry-through",
         "benchmark-live-comparison-contract-and-report-schema",
         "live-observed-path-attribution-contract-parity",
@@ -183,7 +183,8 @@ def test_benchmark_corpus_keeps_final_only_odylith_assist_closeout_contract() ->
     assert any("Odylith Insight" in rule and "Odylith History" in rule and "Odylith Risks" in rule for rule in rules)
     assert any("at most one short Odylith Assist line" in rule for rule in rules)
     assert any("bold Markdown label" in rule for rule in rules)
-    assert any("Lead with the user win" in rule and "updated governance ids inline" in rule for rule in rules)
+    assert any("Lead with the user win" in rule and "updated governance IDs inline" in rule for rule in rules)
+    assert any("affected governance-contract IDs" in rule for rule in rules)
     assert any("broader unguided path" in rule for rule in rules)
     assert any("crisp, authentic, clear, simple, insightful" in rule for rule in rules)
     assert any(

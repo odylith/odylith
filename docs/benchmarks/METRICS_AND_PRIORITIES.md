@@ -206,11 +206,13 @@ Benchmark writeups should state measured results first. If Odylith is named
 directly beyond lane labels, keep that to one final-only `Odylith Assist:`
 line backed by measured proof or a measured report, prefer
 `**Odylith Assist:**` when Markdown is available, lead with the user win, link
-updated governance ids inline when they changed, and only frame the edge
-against `odylith_off` or the broader unguided path when the evidence supports
-it. Keep the voice crisp, authentic, clear, simple, insightful, soulful,
-friendly, free-flowing, human, and factual. Use only concrete observed counts,
-measured deltas, or validation outcomes; silence is better than filler. Follow
+updated governance IDs inline only when they actually changed, name affected
+governance-contract IDs from bounded request or packet truth when no governed
+file moved, and only frame the edge against `odylith_off` or the broader
+unguided path when the evidence supports it. Keep the voice crisp, authentic,
+clear, simple, insightful, soulful, friendly, free-flowing, human, and factual.
+Use only concrete observed counts, measured deltas, or validation outcomes;
+silence is better than filler. Follow
 [Odylith Chatter](../../odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md)
 for the detailed closeout wording contract.
 

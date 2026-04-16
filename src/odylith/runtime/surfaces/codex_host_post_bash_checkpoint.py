@@ -665,6 +665,9 @@ def main(argv: list[str] | None = None) -> int:
             repo_root=project_dir,
             bundle=bundle,
             include_proposal=True,
+            delivery_channel="system_message_and_assistant_fallback",
+            delivery_status="assistant_fallback_ready",
+            render_surface="codex_post_tool_use",
         )
     payload_out = host_surface_runtime.codex_post_tool_payload(
         developer_context=developer_context,

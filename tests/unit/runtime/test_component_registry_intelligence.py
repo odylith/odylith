@@ -278,6 +278,44 @@ def test_normalize_workspace_activity_path_preserves_raw_bundle_source_mirror_to
     assert normalized == "src/odylith/bundle/assets/odylith/radar/source/INDEX.md"
 
 
+def test_normalize_workspace_activity_path_skips_retired_surface_modules(tmp_path: Path) -> None:
+    retired = registry._normalize_workspace_activity_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        token="src/odylith/runtime/surfaces/compass_standup_brief_attempts.py",
+    )
+    retired_test = registry._normalize_workspace_activity_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        token="tests/unit/runtime/test_tooling_dashboard_debug_presenter.py",
+    )
+    active = registry._normalize_workspace_activity_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        token="src/odylith/runtime/surfaces/compass_standup_brief_batch.py",
+    )
+
+    assert retired == ""
+    assert retired_test == ""
+    assert active == "src/odylith/runtime/surfaces/compass_standup_brief_batch.py"
+
+
+def test_normalize_workspace_activity_path_skips_deindexed_missing_casebook_bug(tmp_path: Path) -> None:
+    bug_dir = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_dir.mkdir(parents=True, exist_ok=True)
+    (bug_dir / "INDEX.md").write_text(
+        "# Bug Index\n\n"
+        "| id | date | title | severity | component | status | link |\n"
+        "| --- | --- | --- | --- | --- | --- | --- |\n"
+        "| CB-999 | 2026-04-16 | Keep | P1 | dashboard | Open | [keep.md](keep.md) |\n",
+        encoding="utf-8",
+    )
+
+    normalized = registry._normalize_workspace_activity_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        token="odylith/casebook/bugs/removed-entry.md",
+    )
+
+    assert normalized == ""
+
+
 def test_collect_recent_workspace_paths_dedupes_bundle_source_mirror_aliases(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001

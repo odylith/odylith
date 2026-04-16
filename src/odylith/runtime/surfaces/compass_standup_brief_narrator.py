@@ -1484,7 +1484,7 @@ def _validate_brief_response(
             if _REPO_PATH_RE.search(text):
                 errors.append(f"section {key} bullet {bullet_index} exposed a raw repository path")
             if _COUNTS_ONLY_LEAD_RE.search(text):
-                errors.append(f"section {key} bullet {bullet_index} leads with counts-only telemetry")
+                errors.append(f"section {key} bullet {bullet_index} leads with raw counts only")
             if _DISCOURAGED_PHRASE_RE.search(text):
                 errors.append(f"section {key} bullet {bullet_index} uses discouraged filler phrasing")
             if _FIRST_PERSON_LEAD_RE.search(text):

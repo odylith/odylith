@@ -122,7 +122,7 @@ Related Bugs:
       continuity and one plain-stdout teaser hook for transcript visibility.
       Codex uses structured `systemMessage`.
 - [ ] Claude Code async hooks are the wrong lane for the primary live
-      Observation/Proposal UX. Async is fine for background telemetry, but
+      Observation/Proposal UX. Async is fine for background diagnostics, but
       post-edit intervention output must be synchronous if users are meant to
       see it at the moment it matters.
 - [ ] Bare changed paths with no governed fact should stay silent. Near-zero
@@ -134,6 +134,10 @@ Related Bugs:
       command-style exec payloads must trigger the same visible checkpoint lane
       as Bash, or the engine can be technically active while the user sees no
       mid-turn Observation/Proposal after real Codex edits.
+- [ ] Chat visibility needs its own delivery ledger. Green hook payload tests
+      prove computation, not lived UX; operators need a cheap host/session
+      status surface that says which lanes are armed, what was recently
+      visible-ready, and how to force the fallback Markdown now.
 
 ## Must-Ship
 - [x] Add `src/odylith/runtime/intervention_engine/` as a first-class shared
@@ -196,6 +200,13 @@ Related Bugs:
       exposing that unfinished customization surface in this release.
 - [x] Emit Compass stream events for teaser, observation, proposal, apply, and
       decline so later runtime surfaces can reason about proposal lifecycle.
+- [x] Add low-latency `odylith codex intervention-status` and
+      `odylith claude intervention-status` surfaces that report static host
+      readiness, active UX lanes, delivery-ledger evidence, pending proposals,
+      and a smoke command without slow host probes.
+- [x] Extend intervention stream events with delivery metadata for
+      Teaser/Ambient, Observation, Proposal, and Assist so visibility status is
+      derived from Compass rather than a second mutable status file.
 
 ## Defer
 - [ ] User-selectable voice packs or per-repo voice overrides.
@@ -247,6 +258,10 @@ Related Bugs:
 - [x] Pending proposal state carries rich proposal display payloads and status
       so downstream surfaces can render the same Proposal UX without rebuilding
       it from logs.
+- [x] Operators can now ask whether the intervention engine is active in Codex
+      or Claude and receive one compact Markdown status with readiness checks,
+      active UX lanes, recent visible-ready delivery, pending proposal count,
+      and a direct `visible-intervention` smoke command.
 - [x] Chatter, Compass, host contracts, Registry specs, Atlas, and maintainer
       guidance all describe the same observation/proposal UX and voice rules.
 - [x] Agent guidance now explicitly forbids demoing Observation or Proposal UX
@@ -357,3 +372,22 @@ Related Bugs:
       claiming artifact updates. Codex and Claude `visible-intervention`
       smokes both render the same `**Odylith Assist:**` line from that proof
       path.
+- [x] Stop-summary Assist now carries bounded `affected_contracts` and renders
+      the governed workstream, component, diagram, or bug IDs involved in the
+      closeout. It says `updating` only when governed changed paths prove a
+      write and otherwise says the proof stayed inside affected contracts.
+- [x] Ambient surfacing now has its own checkpoint/stop recovery lane and wins
+      over stale teaser text once the signal has matured, while prompt submit
+      stays teaser-only.
+- [x] Stop-summary Assist now recovers from explicit Odylith visibility
+      feedback even when the last assistant message is too short to be a
+      meaningful implementation summary. Ordinary low-signal short turns still
+      suppress Assist.
+- [x] Stop visible-delivery dedupe now matches the generated Odylith labels
+      instead of suppressing a closeout just because any prior Odylith label
+      appeared.
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_conversation_surface.py tests/unit/runtime/test_intervention_host_surface_runtime.py tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_stop_summary.py tests/unit/runtime/test_intervention_delivery_status.py` (`71 passed`)
+- [x] Stop now replays the latest unseen Ambient Highlight, Observation, or
+      Proposal from the session event stream before Assist, using the same
+      one-shot continuation path that made Assist visible.
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_host_surface_runtime.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_stop_summary.py` (`39 passed`)

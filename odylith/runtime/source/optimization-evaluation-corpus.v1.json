@@ -15,7 +15,7 @@
         "Use explicit Odylith Insight, Odylith History, or Odylith Risks labels only when the point is strong enough to earn the interruption.",
         "At closeout, at most one short Odylith Assist line may appear, plus at most one optional supplemental line.",
         "Prefer the bold Markdown label when formatting is available; otherwise use plain Odylith Assist.",
-        "Lead with the user win, not Odylith mechanics, and link updated governance ids inline when they were actually changed.",
+        "Lead with the user win, not Odylith mechanics, link updated governance IDs inline only when they actually changed, and name affected governance-contract IDs from bounded request or packet truth when no governed file moved.",
         "When the evidence supports it, frame the edge against odylith_off or the broader unguided path.",
         "Keep the voice crisp, authentic, clear, simple, insightful, soulful, friendly, free-flowing, human, and factual.",
         "Use only concrete observed counts, measured deltas, or validation outcomes; silence is better than filler.",
@@ -2314,28 +2314,26 @@
       }
     },
     {
-      "case_id": "tooling-dashboard-governance-shell-render-contract",
-      "label": "Tooling dashboard governance shell render stays end-to-end",
+      "case_id": "tooling-dashboard-shell-render-contract",
+      "label": "Tooling dashboard shell render stays end-to-end",
       "family": "cross_file_feature",
       "priority": "high",
-      "summary": "Shell governance work should stay grounded across presenter logic, rendered HTML, and shell integration proof instead of fixing one formatting seam in isolation.",
+      "summary": "Shell rendering work should stay grounded across shell composition, rendered HTML, and shell integration proof instead of fixing one formatting seam in isolation.",
       "benchmark": {
-        "prompt": "Repair the tooling-dashboard execution-governance shell path end to end so presenter data, rendered HTML, and shell integration proof stay aligned.",
+        "prompt": "Repair the tooling-dashboard shell render path end to end so payload sanitization, rendered HTML, and shell integration proof stay aligned.",
         "paths": [
-          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
           "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
           "src/odylith/runtime/surfaces/templates/tooling_dashboard/page.html.j2"
         ],
         "required_paths": [
-          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
           "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
           "src/odylith/runtime/surfaces/templates/tooling_dashboard/page.html.j2",
-          "tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py",
+          "tests/unit/runtime/test_render_tooling_dashboard.py",
           "tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py",
           "tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
         ],
         "validation_commands": [
-          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
         ],
         "allow_noop_completion": true,
         "needs_write": true,
@@ -2343,7 +2341,6 @@
       },
       "match": {
         "paths_any": [
-          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
           "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py"
         ],
         "domains_any": [
@@ -2711,14 +2708,12 @@
         "paths": [
           "src/odylith/runtime/execution_engine/receipts.py",
           "src/odylith/runtime/execution_engine/validation.py",
-          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py"
+          "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
         ],
         "required_paths": [
           "src/odylith/runtime/execution_engine/receipts.py",
           "src/odylith/runtime/execution_engine/validation.py",
-          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
           "tests/unit/runtime/test_execution_governance.py",
-          "tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py",
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
         ],
         "critical_paths": [
@@ -2727,7 +2722,7 @@
           "tests/unit/runtime/test_execution_governance.py"
         ],
         "validation_commands": [
-          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py"
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_render_tooling_dashboard.py"
         ],
         "allow_noop_completion": true,
         "correctness_critical": true,
@@ -2811,25 +2806,22 @@
       "label": "Runtime surface wait status stays carried through",
       "family": "external_dependency_recovery",
       "priority": "high",
-      "summary": "External wait-state work should stay grounded across runtime surface summaries and shell presenters instead of dropping semantic wait posture in one layer.",
+      "summary": "External wait-state work should stay grounded across runtime surface summaries and shell rendering instead of dropping semantic wait posture in one layer.",
       "benchmark": {
         "prompt": "Repair the execution wait-status carry-through so runtime summaries and shell surfaces preserve semantic waiting and resume posture end to end.",
         "paths": [
           "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
-          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
           "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py"
         ],
         "required_paths": [
           "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
-          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py",
           "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py",
           "tests/unit/runtime/test_odylith_runtime_surface_summary.py",
-          "tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py",
           "tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py",
           "odylith/registry/source/components/execution-governance/CURRENT_SPEC.md"
         ],
         "validation_commands": [
-          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_tooling_dashboard_execution_governance_presenter.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py"
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py"
         ],
         "allow_noop_completion": true,
         "needs_write": true,
@@ -2839,7 +2831,7 @@
       "match": {
         "paths_any": [
           "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
-          "src/odylith/runtime/surfaces/tooling_dashboard_execution_governance_presenter.py"
+          "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py"
         ]
       },
       "expect": {

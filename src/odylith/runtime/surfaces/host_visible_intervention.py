@@ -9,6 +9,7 @@ from typing import Sequence
 
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import stream_state
 
 
 def _normalize_text(value: object) -> str:
@@ -69,6 +70,7 @@ def render_visible_intervention(
     session_id: str = "",
     include_proposal: bool | None = None,
     include_closeout: bool | None = None,
+    record_delivery: bool = False,
 ) -> str:
     """Render the exact Markdown an assistant should show when hooks are hidden."""
 
@@ -105,7 +107,37 @@ def render_visible_intervention(
             parts.append(token)
     rendered = "\n\n".join(parts).strip()
     if _operator_reports_visibility_failure(prompt=prompt, summary=summary) and "**Odylith Observation:**" not in rendered:
-        return _operator_visibility_failure_observation(host_family=host_family)
+        fallback = _operator_visibility_failure_observation(host_family=host_family)
+        if record_delivery:
+            stream_state.append_intervention_event(
+                repo_root=Path(repo_root).expanduser().resolve(),
+                kind="intervention_card",
+                summary="Visibility failure fallback rendered.",
+                session_id=session_id,
+                host_family=host_family,
+                intervention_key=f"visible-fallback-{_normalize_text(host_family).lower() or 'host'}",
+                turn_phase=normalized_phase,
+                display_markdown=fallback,
+                display_plain=fallback.replace("**", ""),
+                prompt_excerpt=prompt,
+                assistant_summary=summary,
+                moment_kind="visibility",
+                semantic_signature=("visibility", "fallback"),
+                delivery_channel="manual_visible_command",
+                delivery_status="manual_visible",
+                render_surface=f"{_normalize_text(host_family).lower() or 'host'}_visible_intervention",
+            )
+        return fallback
+    if rendered and record_delivery:
+        conversation_surface.append_intervention_events(
+            repo_root=Path(repo_root).expanduser().resolve(),
+            bundle=bundle,
+            include_proposal=proposal,
+            include_closeout=closeout,
+            delivery_channel="manual_visible_command",
+            delivery_status="manual_visible",
+            render_surface=f"{_normalize_text(host_family).lower() or 'host'}_visible_intervention",
+        )
     return rendered
 
 
@@ -143,6 +175,7 @@ def main_with_host(host_family: str, argv: list[str] | None = None) -> int:
         session_id=args.session_id,
         include_proposal=True if args.include_proposal else None,
         include_closeout=True if args.include_closeout else None,
+        record_delivery=True,
     )
     if rendered:
         sys.stdout.write(rendered + "\n")
